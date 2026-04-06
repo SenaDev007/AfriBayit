@@ -217,7 +217,7 @@ export default function NewPropertyPage() {
       <Navbar />
 
       <main className="pt-16 min-h-screen bg-gray-50">
-        <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+        <div className="max-w-2xl mx-auto px-6 lg:px-20 py-8 sm:py-12">
 
           {/* Header */}
           <div className="mb-6">

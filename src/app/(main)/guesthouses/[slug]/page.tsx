@@ -111,7 +111,7 @@ export default async function GuesthouseDetailPage({ params }: GuesthouseDetailP
       <main className="pt-16 min-h-screen bg-gray-50">
         {/* ── Breadcrumb ── */}
         <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 text-sm text-gray-500">
+          <div className="container-app flex items-center gap-2 text-sm text-[#6B7280]">
             <Link href="/" className="hover:text-[#0070BA] transition-colors">Accueil</Link>
             <span>/</span>
             <Link href="/guesthouses" className="hover:text-[#0070BA] transition-colors">Guesthouses</Link>
@@ -121,7 +121,7 @@ export default async function GuesthouseDetailPage({ params }: GuesthouseDetailP
         </div>
 
         {/* ── Photo Gallery ── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="container-app pt-6">
           {guesthouse.images.length > 0 ? (
             <div className="grid grid-cols-4 gap-2 h-72 sm:h-96 rounded-2xl overflow-hidden">
               {/* Main large image */}
@@ -171,7 +171,7 @@ export default async function GuesthouseDetailPage({ params }: GuesthouseDetailP
         </div>
 
         {/* ── Main Content ── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-app py-8">
           <div className="flex flex-col lg:flex-row gap-8">
 
             {/* ── LEFT COLUMN (2/3) ── */}

@@ -45,29 +45,26 @@ const PAYMENT_METHODS = [
 export default function Footer() {
   return (
     <footer className="bg-[#003087] text-white">
-      {/* Main footer content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          {/* Brand */}
+      <div className="container-app py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
                 <span className="text-[#0070BA] font-bold text-xl">A</span>
               </div>
-              <span className="font-bold text-xl">
-                Afri<span className="text-[#009CDE]">Bayit</span>
+              <span className="font-bold text-xl text-white">
+                Afri<span className="text-white/95">Bayit</span>
               </span>
             </Link>
-            <p className="text-blue-200 text-sm leading-relaxed mb-5">
+            <p className="text-sm text-white/80 leading-[1.7] mb-5">
               La première super-app immobilière d&apos;Afrique.
               Où l&apos;Afrique trouve sa maison.
             </p>
-            <p className="text-blue-200 text-xs">
+            <p className="text-sm text-white/70">
               🇧🇯 Bénin · 🇨🇮 Côte d&apos;Ivoire<br />
               🇧🇫 Burkina Faso · 🇹🇬 Togo
             </p>
 
-            {/* Social links */}
             <div className="flex gap-3 mt-5">
               {["facebook", "twitter", "instagram", "linkedin", "youtube"].map((social) => (
                 <a
@@ -75,7 +72,7 @@ export default function Footer() {
                   href={`https://${social}.com`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors duration-200"
                   aria-label={social}
                 >
                   <span className="text-xs font-bold capitalize">{social[0].toUpperCase()}</span>
@@ -84,7 +81,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links */}
           <div>
             <h4 className="font-semibold text-sm mb-4 text-white uppercase tracking-wider">
               Immobilier
@@ -94,7 +90,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-200 hover:text-white transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -112,7 +108,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-200 hover:text-white transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -130,7 +126,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-200 hover:text-white transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -148,7 +144,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-blue-200 hover:text-white transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -156,9 +152,8 @@ export default function Footer() {
               ))}
             </ul>
 
-            {/* Payment methods */}
             <div className="mt-6">
-              <h5 className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-3">
+              <h5 className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-3">
                 Paiements acceptés
               </h5>
               <div className="flex flex-wrap gap-1.5">
@@ -176,17 +171,14 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-blue-200 text-sm">
+        <div className="container-app py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-white/80">
             © {new Date().getFullYear()} AfriBayit. Tous droits réservés.
           </p>
-          <div className="flex items-center gap-6">
-            <p className="text-blue-200 text-xs">
-              🔒 Transactions sécurisées · KYC vérifié · Escrow intégré
-            </p>
-          </div>
+          <p className="text-sm text-white/70">
+            🔒 Transactions sécurisées · KYC vérifié · Escrow intégré
+          </p>
         </div>
       </div>
     </footer>

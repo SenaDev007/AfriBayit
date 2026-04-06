@@ -81,7 +81,7 @@ export default async function ArtisanDetailPage({ params }: ArtisanDetailPagePro
       <main className="pt-16 min-h-screen bg-gray-50">
         {/* Breadcrumb */}
         <div className="bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="container-app py-3">
             <nav className="flex items-center gap-2 text-sm text-gray-500">
               <Link href="/" className="hover:text-[#0070BA] transition-colors">Accueil</Link>
               <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@ export default async function ArtisanDetailPage({ params }: ArtisanDetailPagePro
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-app py-8">
           {/* Hero Card */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
             <div className="bg-gradient-to-r from-[#003087] via-[#0070BA] to-blue-400 h-28 sm:h-36" />

@@ -118,7 +118,7 @@ export default function TermsPage() {
 
       {/* Page Header */}
       <div className="bg-[#003087] py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container-app">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
             Conditions Générales d&apos;Utilisation
           </h1>
@@ -129,7 +129,7 @@ export default function TermsPage() {
       </div>
 
       {/* Body */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 container-app w-full py-12">
         <div className="flex gap-10">
           {/* Sidebar TOC */}
           <aside className="hidden lg:block w-64 shrink-0">

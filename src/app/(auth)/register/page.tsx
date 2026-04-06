@@ -120,19 +120,19 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left — Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-white">
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-20 py-12 bg-[#F8FAFC]">
         <div className="w-full max-w-lg">
           <Link href="/" className="flex items-center gap-2.5 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#0070BA] flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-[#0070BA] flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-xl">A</span>
             </div>
-            <span className="font-bold text-2xl text-[#003087]">
+            <span className="font-bold text-[28px] leading-none text-[#003087]">
               Afri<span className="text-[#0070BA]">Bayit</span>
             </span>
           </Link>
 
-          <h1 className="text-3xl font-bold text-[#003087] mb-2">Créer un compte</h1>
-          <p className="text-gray-500 mb-6">
+          <h1 className="text-4xl font-bold text-[#003087] mb-2 leading-[1.2]">Créer un compte</h1>
+          <p className="text-[#6B7280] text-base leading-[1.7] mb-6">
             Déjà membre ?{" "}
             <Link href="/login" className="text-[#0070BA] font-medium hover:underline">Se connecter</Link>
           </p>

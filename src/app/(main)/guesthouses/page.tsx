@@ -30,7 +30,7 @@ export default async function GuesthousesPage() {
       <main className="pt-16 min-h-screen bg-gray-50">
         {/* Hero */}
         <div className="bg-gradient-to-r from-emerald-700 to-[#003087] py-14 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center text-white">
+          <div className="container-app text-center text-white">
             <Badge variant="gold" className="mb-3">🏡 Certification AfriBayit</Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Guesthouses Africaines
@@ -64,7 +64,7 @@ export default async function GuesthousesPage() {
 
         {/* Certification badge info */}
         <div className="bg-white border-b border-gray-100 py-4 px-4">
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-6">
+          <div className="container-app flex flex-wrap items-center justify-center gap-6">
             {[
               { icon: "✅", label: "Inspection virtuelle" },
               { icon: "📸", label: "Photos vérifiées" },
@@ -80,7 +80,7 @@ export default async function GuesthousesPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-app py-8">
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <button className="px-4 py-2 bg-[#0070BA] text-white rounded-full text-sm font-medium">

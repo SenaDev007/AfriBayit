@@ -155,7 +155,7 @@ export default function AcademyPage() {
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] py-20 px-4">
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="container-app text-center">
           <span className="inline-block bg-white/15 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
             Plateforme de Formation
           </span>
@@ -186,7 +186,7 @@ export default function AcademyPage() {
 
       {/* Stats */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container-app">
           <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100">
             {stats.map((stat) => (
               <div key={stat.label} className="py-8 text-center">
@@ -202,7 +202,7 @@ export default function AcademyPage() {
 
       {/* Courses */}
       <section id="courses" className="py-16 px-4 scroll-mt-20">
-        <div className="max-w-5xl mx-auto">
+        <div className="container-app">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="text-2xl font-bold text-[#003087]">

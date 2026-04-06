@@ -100,7 +100,7 @@ export default function PrivacyPage() {
 
       {/* Page Header */}
       <div className="bg-[#003087] py-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container-app">
           <div className="flex items-center gap-3 mb-3">
             <span className="inline-flex items-center gap-1.5 bg-blue-800 text-blue-100 text-xs font-semibold px-3 py-1 rounded-full">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
       </div>
 
       {/* Body */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 container-app w-full py-12">
         <div className="flex gap-10">
           {/* Sidebar TOC */}
           <aside className="hidden lg:block w-64 shrink-0">

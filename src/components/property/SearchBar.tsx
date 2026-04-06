@@ -66,7 +66,7 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
 
   if (variant === "compact") {
     return (
-      <div className="flex items-center gap-2 bg-white rounded-xl shadow border border-gray-100 p-2">
+      <div className="flex items-center gap-2 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-100 p-2">
         <div className="relative flex-1">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -86,9 +86,9 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
       {/* Tabs */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3">
         {[
           { key: "buy", label: "Acheter" },
           { key: "rent", label: "Louer" },
@@ -96,8 +96,9 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
         ].map(({ key, label }) => (
           <button
             key={key}
+            type="button"
             onClick={() => setActiveTab(key as typeof activeTab)}
-            className={`px-5 py-2 rounded-t-xl text-sm font-semibold transition-all ${
+            className={`px-5 py-2.5 rounded-t-xl text-[15px] font-semibold transition-all min-h-[44px] ${
               activeTab === key
                 ? "bg-white text-[#003087] shadow-sm"
                 : "bg-white/20 text-white hover:bg-white/30"
@@ -109,7 +110,7 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
       </div>
 
       {/* Search form */}
-      <div className="bg-white rounded-2xl rounded-tl-none shadow-2xl p-2 flex flex-col sm:flex-row gap-2">
+      <div className="bg-white rounded-2xl rounded-tl-none shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] p-5 md:p-6 flex flex-col sm:flex-row gap-4 sm:gap-3">
         {/* Query */}
         <div className="flex-1 relative">
           <svg
@@ -130,7 +131,7 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full pl-11 pr-4 py-3.5 text-sm focus:outline-none rounded-xl text-gray-700 placeholder-gray-400"
+            className="w-full pl-11 pr-4 py-4 text-base focus:outline-none rounded-xl text-gray-700 placeholder-gray-400"
           />
         </div>
 
@@ -145,7 +146,7 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            className="pl-9 pr-8 py-3.5 text-sm focus:outline-none bg-transparent cursor-pointer text-gray-700 appearance-none w-full sm:w-auto min-w-[150px]"
+            className="pl-9 pr-8 py-4 text-[15px] focus:outline-none bg-transparent cursor-pointer text-gray-700 appearance-none w-full sm:w-auto min-w-[150px]"
           >
             <option value="">Tous les pays</option>
             {COUNTRIES.map((c) => (
@@ -164,7 +165,7 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="px-4 py-3.5 text-sm focus:outline-none bg-transparent cursor-pointer text-gray-700 appearance-none w-full sm:w-auto min-w-[140px]"
+                className="px-4 py-4 text-[15px] focus:outline-none bg-transparent cursor-pointer text-gray-700 appearance-none w-full sm:w-auto min-w-[140px]"
               >
                 {PROPERTY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -178,8 +179,8 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
         {/* Search button */}
         <Button
           onClick={handleSearch}
-          size="lg"
-          className="rounded-xl px-6"
+          size="xl"
+          className="rounded-xl shrink-0"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -189,25 +190,28 @@ export default function SearchBar({ variant = "hero", initialValues }: SearchBar
       </div>
 
       {/* Quick suggestions */}
-      <div className="flex flex-wrap gap-2 mt-3">
-        <span className="text-white/70 text-sm">Populaire :</span>
-        {[
-          "Villa à Cotonou",
-          "Appartement Abidjan",
-          "Studio Lomé",
-          "Terrain Ouagadougou",
-        ].map((suggestion) => (
-          <button
-            key={suggestion}
-            onClick={() => {
-              setQuery(suggestion);
-              setTimeout(handleSearch, 100);
-            }}
-            className="text-sm text-white/90 hover:text-white bg-white/15 hover:bg-white/25 px-3 py-1 rounded-full transition-colors"
-          >
-            {suggestion}
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-x-4 sm:gap-y-3 text-left sm:text-center">
+        <span className="text-white/75 text-sm font-medium shrink-0">Populaire :</span>
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-start sm:justify-center">
+          {[
+            "Villa à Cotonou",
+            "Appartement Abidjan",
+            "Studio Lomé",
+            "Terrain Ouagadougou",
+          ].map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => {
+                setQuery(suggestion);
+                setTimeout(handleSearch, 100);
+              }}
+              className="text-sm text-white/95 hover:text-white bg-white/15 hover:bg-white/25 px-4 py-2 rounded-full transition-colors leading-snug"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

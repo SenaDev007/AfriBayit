@@ -152,7 +152,7 @@ export default function ArtisansPage() {
       <main className="pt-16 min-h-screen bg-gray-50">
         {/* Hero */}
         <div className="bg-gradient-to-r from-[#003087] via-[#0070BA] to-purple-600 py-14 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="container-app">
             <div className="text-center text-white mb-8">
               <Badge variant="gold" className="mb-3">🔧 AfriBayit ProMatch</Badge>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -198,7 +198,7 @@ export default function ArtisansPage() {
 
         {/* Categories */}
         <div className="bg-white border-b border-gray-100 py-4 px-4 overflow-x-auto">
-          <div className="max-w-7xl mx-auto">
+          <div className="container-app">
             <div className="flex gap-2 min-w-max">
               {ARTISAN_CATEGORIES.map((cat) => (
                 <button
@@ -217,7 +217,7 @@ export default function ArtisansPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-app py-8">
           {/* Stats bar */}
           <div className="flex items-center justify-between mb-6">
             <div>

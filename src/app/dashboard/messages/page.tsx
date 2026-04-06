@@ -51,7 +51,7 @@ export default async function DashboardMessagesPage() {
       <Navbar />
 
       <main className="pt-16 min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto w-full max-w-3xl px-6 lg:px-20 py-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div className="flex items-center gap-3">

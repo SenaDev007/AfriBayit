@@ -64,7 +64,7 @@ export default async function RentalsPage() {
       <main className="pt-16 min-h-screen bg-gray-50">
         {/* Hero */}
         <div className="bg-gradient-to-r from-amber-600 to-orange-700 py-14 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center text-white">
+          <div className="container-app text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Location Courte Durée
             </h1>
@@ -102,7 +102,7 @@ export default async function RentalsPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="container-app py-8">
           {/* Features */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             {[

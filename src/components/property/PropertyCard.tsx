@@ -26,7 +26,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
       : "success";
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm card-hover">
+    <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.08)] card-hover">
       {/* Image */}
       <div className="relative h-52 overflow-hidden bg-gray-100">
         {primaryImage && !imgError ? (
@@ -103,9 +103,9 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
       {/* Content */}
       <Link href={`/properties/${property.slug}`}>
-        <div className="p-4">
+        <div className="p-8 flex flex-col gap-2">
           {/* Location */}
-          <p className="text-xs text-[#0070BA] font-medium mb-1 flex items-center gap-1">
+          <p className="text-sm text-[#0070BA] font-medium mb-1 flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -118,12 +118,12 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           </p>
 
           {/* Title */}
-          <h3 className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2 mb-2">
+          <h3 className="font-semibold text-xl text-[#111827] leading-snug line-clamp-2">
             {property.title}
           </h3>
 
           {/* Specs */}
-          <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+          <div className="flex items-center gap-3 text-sm text-[#6B7280] mb-1 flex-wrap">
             {property.surface && (
               <span className="flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,13 +160,13 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                 {formattedPrice}
               </p>
               {property.listingType === "LONG_TERM_RENTAL" && (
-                <p className="text-xs text-gray-400">/mois</p>
+                <p className="text-sm text-[#6B7280]">/mois</p>
               )}
               {property.listingType === "SHORT_TERM_RENTAL" && (
-                <p className="text-xs text-gray-400">/nuit</p>
+                <p className="text-sm text-[#6B7280]">/nuit</p>
               )}
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="flex items-center gap-1 text-sm text-[#6B7280]">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

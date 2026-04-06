@@ -168,12 +168,12 @@ const topContributors = [
 
 export default function CommunityPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       <Navbar />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] py-16 px-4">
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="container-app text-center">
           <span className="inline-block bg-white/15 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
             Réseau Immobilier Africain
           </span>
@@ -195,15 +195,15 @@ export default function CommunityPage() {
       </section>
 
       {/* Stats bar */}
-      <section className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="grid grid-cols-3 divide-x divide-gray-100">
+      <section className="bg-[#003087] py-12 border-b border-white/10">
+        <div className="container-app">
+          <div className="grid grid-cols-3 gap-6 md:gap-12">
             {communityStats.map((s) => (
-              <div key={s.label} className="py-7 text-center">
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#003087] mb-0.5">
+              <div key={s.label} className="text-center py-2">
+                <div className="text-4xl sm:text-5xl font-extrabold text-[#FFB900] mb-2 leading-none">
                   {s.value}
                 </div>
-                <div className="text-xs sm:text-sm text-gray-500">{s.label}</div>
+                <div className="text-sm text-white/70">{s.label}</div>
               </div>
             ))}
           </div>
@@ -211,7 +211,7 @@ export default function CommunityPage() {
       </section>
 
       {/* Main content */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 container-app w-full py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left column: Discussions */}
           <div className="flex-1 min-w-0">

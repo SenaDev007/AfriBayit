@@ -29,28 +29,27 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95";
+      "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
     const variants = {
       primary:
-        "bg-[#0070BA] text-white hover:bg-[#005fa3] focus:ring-[#0070BA] shadow-lg hover:shadow-xl",
+        "bg-[#0070BA] text-white hover:bg-[#003087] focus:ring-[#0070BA] shadow-md hover:shadow-lg",
       secondary:
         "bg-[#003087] text-white hover:bg-[#002570] focus:ring-[#003087] shadow-md hover:shadow-lg",
       outline:
-        "border-2 border-[#0070BA] text-[#0070BA] hover:bg-[#0070BA] hover:text-white focus:ring-[#0070BA]",
-      ghost:
-        "text-[#0070BA] hover:bg-blue-50 focus:ring-[#0070BA]",
+        "border-2 border-[#0070BA] text-[#0070BA] bg-transparent hover:bg-[#0070BA] hover:text-white focus:ring-[#0070BA]",
+      ghost: "text-[#0070BA] hover:bg-slate-100 focus:ring-[#0070BA]",
       gold:
-        "bg-gradient-to-r from-[#FFB900] to-[#FF8C00] text-white hover:from-[#e6a800] hover:to-[#e07800] focus:ring-[#FFB900] shadow-lg hover:shadow-xl",
+        "bg-gradient-to-r from-[#FFB900] to-[#FF8C00] text-white hover:from-[#e6a800] hover:to-[#e07800] focus:ring-[#FFB900] shadow-md hover:shadow-lg",
       danger:
         "bg-[#D93025] text-white hover:bg-[#c12a20] focus:ring-[#D93025]",
     };
 
     const sizes = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-5 py-2.5 text-sm",
-      lg: "px-6 py-3 text-base",
-      xl: "px-8 py-4 text-lg",
+      sm: "px-4 py-2 text-sm rounded-xl",
+      md: "px-7 py-3.5 text-sm rounded-xl",
+      lg: "px-7 py-3.5 text-base rounded-xl",
+      xl: "h-14 px-8 text-base rounded-xl min-h-[56px]",
     };
 
     return (
