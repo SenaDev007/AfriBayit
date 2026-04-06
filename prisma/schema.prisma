@@ -1,0 +1,823 @@
+// AfriBayit - Prisma Schema v1.0
+// Plateforme Immobilière Pan-Africaine
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum UserType {
+  BUYER
+  SELLER
+  INVESTOR
+  TOURIST
+  ARTISAN
+  AGENCY
+  GUESTHOUSE_OWNER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum KYCStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  STUDIO
+  OFFICE
+  LAND
+  COMMERCIAL
+  WAREHOUSE
+}
+
+enum PropertyStatus {
+  DRAFT
+  ACTIVE
+  RENTED
+  SOLD
+  ARCHIVED
+}
+
+enum ListingType {
+  SALE
+  LONG_TERM_RENTAL
+  SHORT_TERM_RENTAL
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  DISPUTED
+}
+
+enum TransactionStatus {
+  PENDING
+  ESCROW
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum ArtisanCategory {
+  GROS_OEUVRE
+  SECOND_OEUVRE
+  FINITION_DECORATION
+  GENIE_TECHNIQUE
+  EXTERIEURS
+  RENOVATION_MAINTENANCE
+  NUMERIQUE_INNOVATION
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PROFESSIONAL
+}
+
+enum Country {
+  BJ // Bénin
+  CI // Côte d'Ivoire
+  BF // Burkina Faso
+  TG // Togo
+  SN // Sénégal
+  GH // Ghana
+  NG // Nigeria
+  CM // Cameroun
+  ML // Mali
+  NE // Niger
+  OTHER
+}
+
+enum Currency {
+  XOF // FCFA UEMOA
+  XAF // FCFA CEMAC
+  GHS // Cedi ghanéen
+  NGN // Naira
+  KES // Shilling kényan
+  ZAR // Rand sud-africain
+  EUR
+  USD
+}
+
+// ─────────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(cuid())
+  email         String?    @unique
+  phone         String?    @unique
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  name          String?
+  firstName     String?
+  lastName      String?
+  image         String?
+  password      String?    // hashed
+
+  userType      UserType   @default(BUYER)
+  status        UserStatus @default(PENDING)
+  kycStatus     KYCStatus  @default(NONE)
+
+  country       Country?
+  city          String?
+  address       String?
+
+  bio           String?
+  language      String     @default("fr")
+
+  // Reputation
+  reputationScore Int      @default(500)
+  totalReviews    Int      @default(0)
+
+  // Premium
+  isPremium     Boolean    @default(false)
+  premiumUntil  DateTime?
+
+  // Loyalty
+  loyaltyPoints Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  properties    Property[]
+  bookings      Booking[]  @relation("BookingGuest")
+  hostBookings  Booking[]  @relation("BookingHost")
+  guesthouses   Guesthouse[]
+  artisanProfile Artisan?
+  enrollments   Enrollment[]
+  sentMessages  Message[]  @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  reviews       Review[]   @relation("ReviewAuthor")
+  receivedReviews Review[] @relation("ReviewTarget")
+  favorites     Favorite[]
+  notifications Notification[]
+  transactions  Transaction[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────
+// PROPERTIES (Immobilier Core)
+// ─────────────────────────────────────────────
+
+model Property {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  slug        String         @unique
+
+  type        PropertyType
+  listingType ListingType
+  status      PropertyStatus @default(DRAFT)
+
+  // Pricing
+  price       Float
+  priceUnit   String         @default("FCFA") // FCFA, XOF, EUR...
+  currency    Currency       @default(XOF)
+
+  // Location
+  country     Country
+  city        String
+  district    String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+
+  // Features
+  surface     Float?         // m²
+  bedrooms    Int?
+  bathrooms   Int?
+  floors      Int?
+  yearBuilt   Int?
+
+  // Boolean features
+  hasGarage   Boolean        @default(false)
+  hasPool     Boolean        @default(false)
+  hasGarden   Boolean        @default(false)
+  hasBalcony  Boolean        @default(false)
+  hasSecurity Boolean        @default(false)
+  hasGenerator Boolean       @default(false)
+  hasWifi     Boolean        @default(false)
+  hasAC       Boolean        @default(false)
+
+  // Extra features (JSONB)
+  features    Json?
+
+  // Analytics
+  viewCount   Int            @default(0)
+  favoriteCount Int          @default(0)
+
+  // Score d'investissement 0-100
+  investmentScore Float?
+
+  // Virtual tour
+  virtualTourUrl String?
+  matterportId   String?
+
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id])
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  images      PropertyImage[]
+  bookings    Booking[]
+  reviews     Review[]
+  favorites   Favorite[]
+  priceHistory PriceHistory[]
+
+  @@index([country, city])
+  @@index([type, listingType])
+  @@index([price])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id          String   @id @default(cuid())
+  propertyId  String
+  url         String
+  alt         String?
+  order       Int      @default(0)
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model PriceHistory {
+  id         String   @id @default(cuid())
+  propertyId String
+  price      Float
+  currency   Currency
+  date       DateTime @default(now())
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("price_history")
+}
+
+// ─────────────────────────────────────────────
+// GUESTHOUSES
+// ─────────────────────────────────────────────
+
+model Guesthouse {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  slug        String   @unique
+
+  // Location
+  country     Country
+  city        String
+  district    String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+
+  // Features
+  hasBreakfast Boolean @default(false)
+  hasParking   Boolean @default(false)
+  hasWifi      Boolean @default(true)
+  hasAC        Boolean @default(false)
+  hasPool      Boolean @default(false)
+
+  // Certification
+  isCertified  Boolean  @default(false)
+  certifiedAt  DateTime?
+  certScore    Float?
+
+  // Rating
+  avgRating    Float    @default(0)
+  totalReviews Int      @default(0)
+
+  // Status
+  isActive     Boolean  @default(true)
+
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  rooms       GuesthouseRoom[]
+  images      GuesthouseImage[]
+  staff       GuesthouseStaff[]
+  pricingRules GuesthousePricingRule[]
+  bookings    GuesthouseBooking[]
+  reviews     Review[]
+
+  @@map("guesthouses")
+}
+
+model GuesthouseRoom {
+  id           String   @id @default(cuid())
+  guesthouseId String
+  name         String
+  description  String?
+
+  capacity     Int      @default(2)
+  bedType      String?  // King, Queen, Twin...
+
+  // Pricing
+  basePrice    Float
+  currency     Currency @default(XOF)
+
+  // Features (JSONB)
+  amenities    Json?
+
+  // Status
+  isAvailable  Boolean  @default(true)
+
+  guesthouse   Guesthouse @relation(fields: [guesthouseId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  images       GuesthouseRoomImage[]
+  bookings     GuesthouseBooking[]
+
+  @@map("guesthouse_rooms")
+}
+
+model GuesthouseRoomImage {
+  id     String @id @default(cuid())
+  roomId String
+  url    String
+  alt    String?
+  order  Int    @default(0)
+
+  room   GuesthouseRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("guesthouse_room_images")
+}
+
+model GuesthouseImage {
+  id           String     @id @default(cuid())
+  guesthouseId String
+  url          String
+  alt          String?
+  order        Int        @default(0)
+  isPrimary    Boolean    @default(false)
+
+  guesthouse   Guesthouse @relation(fields: [guesthouseId], references: [id], onDelete: Cascade)
+
+  @@map("guesthouse_images")
+}
+
+model GuesthouseStaff {
+  id           String     @id @default(cuid())
+  guesthouseId String
+  name         String
+  role         String     // receptionist, cleaner, manager
+  phone        String?
+  accessLevel  String     @default("limited")
+
+  guesthouse   Guesthouse @relation(fields: [guesthouseId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime   @default(now())
+
+  @@map("guesthouse_staff")
+}
+
+model GuesthousePricingRule {
+  id           String     @id @default(cuid())
+  guesthouseId String
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  multiplier   Float      // ex: 1.5 for +50%
+  description  String?    // "Fête nationale", "CAN 2026"
+
+  guesthouse   Guesthouse @relation(fields: [guesthouseId], references: [id], onDelete: Cascade)
+
+  @@map("guesthouse_pricing_rules")
+}
+
+model GuesthouseBooking {
+  id           String        @id @default(cuid())
+  guesthouseId String
+  roomId       String
+  guestId      String
+
+  checkIn      DateTime
+  checkOut     DateTime
+  nights       Int
+  guests       Int
+
+  // Pricing
+  baseAmount   Float
+  finalAmount  Float
+  currency     Currency      @default(XOF)
+
+  // Options
+  includeBreakfast Boolean   @default(false)
+  breakfastAmount Float?
+
+  status       BookingStatus @default(PENDING)
+
+  // Payment
+  paidAt       DateTime?
+  paymentRef   String?
+
+  guesthouse   Guesthouse    @relation(fields: [guesthouseId], references: [id])
+  room         GuesthouseRoom @relation(fields: [roomId], references: [id])
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("guesthouse_bookings")
+}
+
+// ─────────────────────────────────────────────
+// BOOKINGS (Short-term Rentals / Properties)
+// ─────────────────────────────────────────────
+
+model Booking {
+  id         String        @id @default(cuid())
+  propertyId String
+  guestId    String
+  hostId     String
+
+  checkIn    DateTime
+  checkOut   DateTime
+  nights     Int
+  guests     Int
+
+  // Pricing
+  nightlyRate  Float
+  totalAmount  Float
+  serviceFee   Float        // commission voyageur 12-15%
+  hostAmount   Float        // montant net hôte
+  currency     Currency     @default(XOF)
+
+  status       BookingStatus @default(PENDING)
+
+  // Payment
+  paidAt       DateTime?
+  paymentRef   String?
+  paymentMethod String?     // mobile_money, card, etc.
+
+  // Messages
+  guestNote    String?
+  hostNote     String?
+
+  // Check-in/out
+  checkInCode  String?      // QR code
+  checkedInAt  DateTime?
+  checkedOutAt DateTime?
+
+  property    Property  @relation(fields: [propertyId], references: [id])
+  guest       User      @relation("BookingGuest", fields: [guestId], references: [id])
+  host        User      @relation("BookingHost", fields: [hostId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  transaction Transaction?
+
+  @@map("bookings")
+}
+
+// ─────────────────────────────────────────────
+// ARTISANS — ProMatch
+// ─────────────────────────────────────────────
+
+model Artisan {
+  id          String          @id @default(cuid())
+  userId      String          @unique
+
+  businessName String?
+  category    ArtisanCategory
+  specialty   String[]
+  description String?
+
+  // Location
+  country     Country
+  city        String
+  serviceArea String[]        // autres villes couvertes
+
+  // Experience
+  yearsExp    Int             @default(0)
+
+  // Certification
+  isCertified  Boolean        @default(false)
+  certifiedAt  DateTime?
+  certScore    Float?
+
+  // Rating
+  avgRating    Float          @default(0)
+  totalReviews Int            @default(0)
+
+  // Pricing
+  hourlyRate   Float?
+  dailyRate    Float?
+  currency     Currency       @default(XOF)
+
+  // Availability
+  isAvailable  Boolean        @default(true)
+  emergencyService Boolean    @default(false) // disponible 24/7
+
+  // Portfolio
+  completedJobs Int           @default(0)
+
+  user        User            @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  images      ArtisanImage[]
+  services    ArtisanService[]
+  reviews     Review[]
+
+  @@map("artisans")
+}
+
+model ArtisanImage {
+  id        String   @id @default(cuid())
+  artisanId String
+  url       String
+  caption   String?
+  order     Int      @default(0)
+
+  artisan   Artisan  @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+
+  @@map("artisan_images")
+}
+
+model ArtisanService {
+  id          String   @id @default(cuid())
+  artisanId   String
+  name        String
+  description String?
+  basePrice   Float?
+  currency    Currency @default(XOF)
+  duration    String?  // "2 jours", "1 semaine"
+
+  artisan     Artisan  @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+
+  @@map("artisan_services")
+}
+
+// ─────────────────────────────────────────────
+// COURSES & FORMATION — AfriBayit Academy
+// ─────────────────────────────────────────────
+
+model Course {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  slug        String      @unique
+
+  level       CourseLevel @default(BEGINNER)
+  category    String      // immobilier, investissement, legal, artisan...
+  language    String      @default("fr")
+
+  price       Float       @default(0)
+  currency    Currency    @default(XOF)
+
+  thumbnailUrl String?
+  videoUrl     String?
+  duration     Int?        // minutes
+
+  isPublished  Boolean    @default(false)
+  isCertified  Boolean    @default(false)
+
+  instructorId String?    // userId
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  enrollments Enrollment[]
+  modules     CourseModule[]
+
+  @@map("courses")
+}
+
+model CourseModule {
+  id       String @id @default(cuid())
+  courseId String
+  title    String
+  order    Int
+  videoUrl String?
+  duration Int?   // minutes
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("course_modules")
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+
+  progress    Float     @default(0) // 0-100%
+  completedAt DateTime?
+  certUrl     String?   // URL certificat
+
+  user        User      @relation(fields: [userId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+// ─────────────────────────────────────────────
+// TRANSACTIONS & ESCROW
+// ─────────────────────────────────────────────
+
+model Transaction {
+  id          String            @id @default(cuid())
+  bookingId   String?           @unique
+
+  senderId    String
+  receiverId  String
+
+  amount      Float
+  commission  Float             // commission AfriBayit
+  netAmount   Float             // montant net reçu
+  currency    Currency          @default(XOF)
+
+  status      TransactionStatus @default(PENDING)
+
+  type        String            // sale, short_rental, long_rental, artisan, hotel
+
+  // Escrow
+  inEscrow    Boolean           @default(false)
+  escrowAt    DateTime?
+  releasedAt  DateTime?
+
+  // Payment details
+  paymentMethod String?
+  paymentRef    String?
+
+  // External refs
+  fedapayRef    String?         // FedaPay transaction ID
+
+  booking     Booking?          @relation(fields: [bookingId], references: [id])
+  sender      User              @relation(fields: [senderId], references: [id])
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("transactions")
+}
+
+// ─────────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────────
+
+model Review {
+  id         String    @id @default(cuid())
+  authorId   String
+  targetId   String?   // userId (artisan/hôte)
+  propertyId String?
+  guesthouseId String?
+  artisanId  String?
+
+  rating     Int       // 1-5
+  title      String?
+  comment    String?
+
+  isVerified Boolean   @default(false) // vérifiée par IA
+
+  author     User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+  target     User?     @relation("ReviewTarget", fields: [targetId], references: [id])
+  property   Property? @relation(fields: [propertyId], references: [id])
+  guesthouse Guesthouse? @relation(fields: [guesthouseId], references: [id])
+  artisan    Artisan?  @relation(fields: [artisanId], references: [id])
+
+  createdAt  DateTime  @default(now())
+
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────────
+// FAVORITES
+// ─────────────────────────────────────────────
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@map("favorites")
+}
+
+// ─────────────────────────────────────────────
+// MESSAGES & NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  isRead     Boolean  @default(false)
+
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id])
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+
+  createdAt  DateTime @default(now())
+
+  @@map("messages")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // booking, message, review, price_alert, etc.
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
