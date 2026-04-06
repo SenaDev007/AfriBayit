@@ -4,86 +4,60 @@ import Footer from "@/components/layout/Footer";
 import PropertyCard from "@/components/property/PropertyCard";
 import Button from "@/components/ui/Button";
 import type { PropertyCard as PropertyCardType } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Location Courte Durée",
   description: "Réservez des logements pour courtes durées en Afrique — paiement Mobile Money, check-in numérique.",
 };
 
-const MOCK_RENTALS: PropertyCardType[] = [
-  {
-    id: "r1",
-    title: "Appartement cosy vue mer — Badalabougou, Bamako",
-    slug: "appartement-vue-mer-bamako",
-    type: "APARTMENT",
-    listingType: "SHORT_TERM_RENTAL",
-    status: "ACTIVE",
-    price: 35000,
-    currency: "XOF",
-    country: "ML",
-    city: "Bamako",
-    district: "Badalabougou",
-    surface: 65,
-    bedrooms: 2,
-    bathrooms: 1,
-    hasWifi: true,
-    hasAC: true,
-    images: [],
-    viewCount: 1823,
-    favoriteCount: 134,
-    owner: { id: "u1", name: "Fatoumata K.", isPremium: false },
-    createdAt: "2025-01-20",
-  },
-  {
-    id: "r2",
-    title: "Suite de luxe avec piscine privée — Cocody",
-    slug: "suite-luxe-piscine-cocody",
-    type: "APARTMENT",
-    listingType: "SHORT_TERM_RENTAL",
-    status: "ACTIVE",
-    price: 95000,
-    currency: "XOF",
-    country: "CI",
-    city: "Abidjan",
-    district: "Cocody",
-    surface: 120,
-    bedrooms: 3,
-    bathrooms: 2,
-    hasPool: true,
-    hasAC: true,
-    hasWifi: true,
-    images: [],
-    viewCount: 3201,
-    favoriteCount: 287,
-    owner: { id: "u2", name: "Résidence Excellence", isPremium: true },
-    createdAt: "2025-01-15",
-  },
-  {
-    id: "r3",
-    title: "Studio moderne proche plage — Lomé",
-    slug: "studio-plage-lome",
-    type: "STUDIO",
-    listingType: "SHORT_TERM_RENTAL",
-    status: "ACTIVE",
-    price: 20000,
-    currency: "XOF",
-    country: "TG",
-    city: "Lomé",
-    district: "Bè Plage",
-    surface: 30,
-    bedrooms: 1,
-    bathrooms: 1,
-    hasWifi: true,
-    hasAC: false,
-    images: [],
-    viewCount: 945,
-    favoriteCount: 67,
-    owner: { id: "u3", name: "Jean-Marc A.", isPremium: false },
-    createdAt: "2025-02-01",
-  },
-];
+export default async function RentalsPage() {
+  const properties = await prisma.property.findMany({
+    where: { listingType: "SHORT_TERM_RENTAL", status: "ACTIVE" },
+    include: {
+      images: { where: { isPrimary: true }, take: 1 },
+      owner: { select: { id: true, name: true, isPremium: true } },
+      _count: { select: { favorites: true } },
+    },
+    orderBy: { viewCount: "desc" },
+    take: 12,
+  });
 
-export default function RentalsPage() {
+  const rentals: PropertyCardType[] = properties.map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    type: p.type as string,
+    listingType: p.listingType as string,
+    status: p.status as string,
+    price: p.price,
+    currency: p.currency as string,
+    country: p.country as string,
+    city: p.city,
+    district: p.district ?? undefined,
+    surface: p.surface ?? undefined,
+    bedrooms: p.bedrooms ?? undefined,
+    bathrooms: p.bathrooms ?? undefined,
+    hasAC: p.hasAC,
+    hasPool: p.hasPool,
+    hasGarage: p.hasGarage,
+    hasGarden: p.hasGarden,
+    hasBalcony: p.hasBalcony,
+    hasSecurity: p.hasSecurity,
+    hasGenerator: p.hasGenerator,
+    hasWifi: p.hasWifi,
+    images: p.images.map((img) => ({ url: img.url, alt: img.alt ?? undefined })),
+    viewCount: p.viewCount,
+    favoriteCount: p._count.favorites,
+    investmentScore: p.investmentScore ?? undefined,
+    owner: {
+      id: p.owner.id,
+      name: p.owner.name ?? undefined,
+      isPremium: p.owner.isPremium,
+    },
+    createdAt: p.createdAt.toISOString(),
+    publishedAt: p.publishedAt?.toISOString() ?? undefined,
+  }));
   return (
     <>
       <Navbar />
@@ -146,14 +120,28 @@ export default function RentalsPage() {
           </div>
 
           {/* Rentals grid */}
-          <h2 className="text-2xl font-bold text-[#003087] mb-5">
-            Logements disponibles
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {MOCK_RENTALS.map((rental) => (
-              <PropertyCard key={rental.id} property={rental} />
-            ))}
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-2xl font-bold text-[#003087]">
+              Logements disponibles
+            </h2>
+            <span className="text-sm text-gray-400">
+              {rentals.length} logement{rentals.length !== 1 ? "s" : ""}
+            </span>
           </div>
+
+          {rentals.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <span className="text-5xl block mb-4">🏘️</span>
+              <p className="text-lg font-medium">Aucun logement disponible pour le moment.</p>
+              <p className="text-sm mt-1">De nouvelles offres arrivent prochainement !</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {rentals.map((rental) => (
+                <PropertyCard key={rental.id} property={rental} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
       <Footer />

@@ -1,26 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 type LoginTab = "email" | "phone";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
   const [tab, setTab] = useState<LoginTab>("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
 
   const [form, setForm] = useState({
     email: "",
     phone: "",
+    phonePrefix: "+229",
     password: "",
     otp: "",
   });
-  const [otpSent, setOtpSent] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -28,44 +33,71 @@ export default function LoginPage() {
   };
 
   const handleSendOTP = async () => {
-    if (!form.phone) {
-      setError("Veuillez saisir votre numéro de téléphone");
-      return;
-    }
+    if (!form.phone) { setError("Veuillez saisir votre numéro"); return; }
     setLoading(true);
-    // TODO: appel API OTP
-    await new Promise((r) => setTimeout(r, 1000));
-    setOtpSent(true);
-    setLoading(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
     try {
-      // TODO: appel signIn depuis next-auth
-      await new Promise((r) => setTimeout(r, 1000));
-      router.push("/dashboard");
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: form.phonePrefix + form.phone }),
+      });
+      if (res.ok) setOtpSent(true);
+      else setError("Impossible d'envoyer le code. Vérifiez votre numéro.");
     } catch {
-      setError("Email ou mot de passe incorrect");
+      setError("Erreur réseau. Réessayez.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOAuth = async (provider: string) => {
-    // TODO: signIn(provider)
-    console.log("OAuth:", provider);
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.email || !form.password) { setError("Remplissez tous les champs"); return; }
+    setLoading(true);
+    setError("");
+    const result = await signIn("credentials", {
+      email: form.email,
+      password: form.password,
+      redirect: false,
+    });
+    if (result?.error) {
+      setError("Email ou mot de passe incorrect");
+      setLoading(false);
+    } else {
+      router.push(callbackUrl);
+      router.refresh();
+    }
+  };
+
+  const handleOTPLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.otp || form.otp.length < 6) { setError("Saisissez le code à 6 chiffres"); return; }
+    setLoading(true);
+    setError("");
+    const result = await signIn("credentials", {
+      phone: form.phonePrefix + form.phone,
+      otp: form.otp,
+      redirect: false,
+    });
+    if (result?.error) {
+      setError("Code incorrect ou expiré");
+      setLoading(false);
+    } else {
+      router.push(callbackUrl);
+      router.refresh();
+    }
+  };
+
+  const handleOAuth = async (provider: "google" | "facebook") => {
+    setLoading(true);
+    await signIn(provider, { callbackUrl });
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left panel - Form */}
+      {/* Left — Form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-white">
         <div className="w-full max-w-md">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 mb-8">
             <div className="w-10 h-10 rounded-xl bg-[#0070BA] flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-xl">A</span>
@@ -83,11 +115,12 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* OAuth Providers */}
+          {/* OAuth */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               onClick={() => handleOAuth("google")}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -99,7 +132,8 @@ export default function LoginPage() {
             </button>
             <button
               onClick={() => handleOAuth("facebook")}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -114,19 +148,14 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Tabs: Email / Phone */}
+          {/* Tabs */}
           <div className="flex gap-1 p-1 bg-gray-100 rounded-xl mb-6">
-            {[
-              { key: "email", label: "📧 Email" },
-              { key: "phone", label: "📱 Téléphone" },
-            ].map(({ key, label }) => (
+            {[{ key: "email", label: "📧 Email" }, { key: "phone", label: "📱 Téléphone" }].map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => setTab(key as LoginTab)}
+                onClick={() => { setTab(key as LoginTab); setError(""); setOtpSent(false); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                  tab === key
-                    ? "bg-white text-[#003087] shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                  tab === key ? "bg-white text-[#003087] shadow-sm" : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {label}
@@ -135,145 +164,125 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {tab === "email" ? (
-              <>
+          {tab === "email" ? (
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <Input
+                label="Email"
+                type="email"
+                placeholder="vous@example.com"
+                value={form.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                required
+                icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>}
+              />
+              <div>
                 <Input
-                  label="Email"
-                  type="email"
-                  placeholder="vous@example.com"
-                  value={form.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
+                  label="Mot de passe"
+                  type="password"
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
                   required
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  }
                 />
-                <div>
-                  <Input
-                    label="Mot de passe"
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={(e) => handleChange("password", e.target.value)}
-                    required
-                    icon={
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    }
-                  />
-                  <div className="flex justify-end mt-1">
-                    <Link href="/forgot-password" className="text-sm text-[#0070BA] hover:underline">
-                      Mot de passe oublié ?
-                    </Link>
-                  </div>
+                <div className="flex justify-end mt-1">
+                  <Link href="/forgot-password" className="text-sm text-[#0070BA] hover:underline">
+                    Mot de passe oublié ?
+                  </Link>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Numéro de téléphone
-                  </label>
-                  <div className="flex gap-2">
-                    <select className="input-afri w-28 flex-shrink-0">
-                      <option value="+229">🇧🇯 +229</option>
-                      <option value="+225">🇨🇮 +225</option>
-                      <option value="+226">🇧🇫 +226</option>
-                      <option value="+228">🇹🇬 +228</option>
-                      <option value="+221">🇸🇳 +221</option>
-                      <option value="+233">🇬🇭 +233</option>
-                      <option value="+234">🇳🇬 +234</option>
-                    </select>
-                    <input
-                      type="tel"
-                      placeholder="97 00 00 00"
-                      value={form.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
-                      className="input-afri flex-1"
-                    />
-                  </div>
-                </div>
-                {!otpSent ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    fullWidth
-                    onClick={handleSendOTP}
-                    loading={loading}
-                  >
-                    Envoyer le code OTP
-                  </Button>
-                ) : (
-                  <Input
-                    label="Code OTP (6 chiffres)"
-                    type="text"
-                    placeholder="123456"
-                    value={form.otp}
-                    onChange={(e) => handleChange("otp", e.target.value)}
-                    maxLength={6}
-                    hint="Code envoyé par SMS"
-                  />
-                )}
-              </>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-[#D93025] flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </p>
               </div>
-            )}
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              loading={loading}
-              disabled={
-                tab === "phone" && !otpSent
-                  ? true
-                  : false
-              }
-            >
-              {tab === "phone" && otpSent ? "Vérifier le code" : "Se connecter"}
-            </Button>
-          </form>
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <p className="text-sm text-[#D93025] flex items-center gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
+                    {error}
+                  </p>
+                </div>
+              )}
+
+              <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+                Se connecter
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleOTPLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
+                <div className="flex gap-2">
+                  <select
+                    value={form.phonePrefix}
+                    onChange={(e) => handleChange("phonePrefix", e.target.value)}
+                    className="input-afri w-28 flex-shrink-0"
+                  >
+                    <option value="+229">🇧🇯 +229</option>
+                    <option value="+225">🇨🇮 +225</option>
+                    <option value="+226">🇧🇫 +226</option>
+                    <option value="+228">🇹🇬 +228</option>
+                    <option value="+221">🇸🇳 +221</option>
+                    <option value="+233">🇬🇭 +233</option>
+                    <option value="+234">🇳🇬 +234</option>
+                  </select>
+                  <input
+                    type="tel"
+                    placeholder="97 00 00 00"
+                    value={form.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    className="input-afri flex-1"
+                  />
+                </div>
+              </div>
+
+              {!otpSent ? (
+                <Button type="button" variant="outline" fullWidth onClick={handleSendOTP} loading={loading}>
+                  Envoyer le code OTP
+                </Button>
+              ) : (
+                <Input
+                  label="Code OTP (6 chiffres)"
+                  type="text"
+                  placeholder="123456"
+                  value={form.otp}
+                  onChange={(e) => handleChange("otp", e.target.value)}
+                  maxLength={6}
+                  hint="Code envoyé par SMS. Valable 10 minutes."
+                />
+              )}
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                  <p className="text-sm text-[#D93025]">{error}</p>
+                </div>
+              )}
+
+              {otpSent && (
+                <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+                  Vérifier le code
+                </Button>
+              )}
+            </form>
+          )}
 
           <p className="text-center text-xs text-gray-400 mt-6">
             En vous connectant, vous acceptez nos{" "}
             <Link href="/terms" className="text-[#0070BA] hover:underline">CGU</Link>{" "}
             et notre{" "}
-            <Link href="/privacy" className="text-[#0070BA] hover:underline">
-              Politique de confidentialité
-            </Link>
+            <Link href="/privacy" className="text-[#0070BA] hover:underline">Politique de confidentialité</Link>
           </p>
         </div>
       </div>
 
-      {/* Right panel - Visual */}
+      {/* Right — Visual */}
       <div className="hidden lg:flex flex-1 bg-hero items-center justify-center p-12">
         <div className="text-center text-white max-w-md">
           <div className="text-8xl mb-6 float">🏡</div>
           <h2 className="text-4xl font-bold mb-4">
-            Bienvenue sur
-            <br />
+            Bienvenue sur<br />
             <span className="text-[#FFB900]">AfriBayit</span>
           </h2>
           <p className="text-white/80 text-lg leading-relaxed mb-8">
-            La première super-app immobilière africaine.
+            La première super-app immobilière africaine.<br />
             Où les rêves deviennent adresses.
           </p>
-
-          {/* Trust indicators */}
           <div className="grid grid-cols-2 gap-4">
             {[
               { icon: "🔒", label: "Transactions sécurisées" },
@@ -281,10 +290,7 @@ export default function LoginPage() {
               { icon: "🌍", label: "4 pays couverts" },
               { icon: "💳", label: "Mobile Money intégré" },
             ].map((item) => (
-              <div
-                key={item.label}
-                className="glass rounded-xl p-3 text-center"
-              >
+              <div key={item.label} className="glass rounded-xl p-3 text-center">
                 <span className="text-2xl block mb-1">{item.icon}</span>
                 <span className="text-sm text-white/90">{item.label}</span>
               </div>
@@ -293,5 +299,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-gray-400">Chargement...</p></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

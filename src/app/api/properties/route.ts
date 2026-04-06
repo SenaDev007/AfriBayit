@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -177,7 +178,11 @@ const createPropertySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: verify auth session
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await request.json();
     const parsed = createPropertySchema.safeParse(body);
 
@@ -197,7 +202,7 @@ export async function POST(request: NextRequest) {
       data: {
         ...data,
         slug,
-        ownerId: "TODO_FROM_AUTH", // remplacer par l'ID de l'utilisateur connecté
+        ownerId: session.user.id!,
         country: data.country as any,
         currency: data.currency as any,
         type: data.type as any,

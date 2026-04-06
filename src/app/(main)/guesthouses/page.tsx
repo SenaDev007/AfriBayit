@@ -6,119 +6,23 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import StarRating from "@/components/ui/StarRating";
 import { formatCurrency, COUNTRY_LABELS } from "@/lib/utils";
-import type { GuesthouseCard } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Guesthouses Certifiées — Hébergement Afrique",
   description: "Réservez des guesthouses certifiées AfriBayit en Afrique de l'Ouest — chambre par chambre, petit-déjeuner, paiement Mobile Money.",
 };
 
-const MOCK_GUESTHOUSES: GuesthouseCard[] = [
-  {
-    id: "g1",
-    name: "La Palmeraie de Cocody",
-    slug: "palmeraie-cocody",
-    country: "CI",
-    city: "Abidjan",
-    district: "Cocody",
-    avgRating: 4.8,
-    totalReviews: 127,
-    isCertified: true,
-    hasBreakfast: true,
-    images: [],
-    rooms: [
-      { id: "r1", basePrice: 45000, currency: "XOF" },
-      { id: "r2", basePrice: 35000, currency: "XOF" },
-    ],
-  },
-  {
-    id: "g2",
-    name: "Maison de l'Espoir",
-    slug: "maison-espoir-cotonou",
-    country: "BJ",
-    city: "Cotonou",
-    district: "Haie Vive",
-    avgRating: 4.6,
-    totalReviews: 89,
-    isCertified: true,
-    hasBreakfast: false,
-    images: [],
-    rooms: [
-      { id: "r3", basePrice: 25000, currency: "XOF" },
-      { id: "r4", basePrice: 30000, currency: "XOF" },
-    ],
-  },
-  {
-    id: "g3",
-    name: "Villa Akakpo — Lomé",
-    slug: "villa-akakpo-lome",
-    country: "TG",
-    city: "Lomé",
-    district: "Bè",
-    avgRating: 4.9,
-    totalReviews: 56,
-    isCertified: true,
-    hasBreakfast: true,
-    images: [],
-    rooms: [
-      { id: "r5", basePrice: 20000, currency: "XOF" },
-      { id: "r6", basePrice: 25000, currency: "XOF" },
-    ],
-  },
-  {
-    id: "g4",
-    name: "Résidence Ouaga Center",
-    slug: "residence-ouaga-center",
-    country: "BF",
-    city: "Ouagadougou",
-    district: "Koulouba",
-    avgRating: 4.4,
-    totalReviews: 34,
-    isCertified: false,
-    hasBreakfast: false,
-    images: [],
-    rooms: [
-      { id: "r7", basePrice: 18000, currency: "XOF" },
-    ],
-  },
-  {
-    id: "g5",
-    name: "Chez Aminata — Yopougon",
-    slug: "chez-aminata-yopougon",
-    country: "CI",
-    city: "Abidjan",
-    district: "Yopougon",
-    avgRating: 4.7,
-    totalReviews: 91,
-    isCertified: true,
-    hasBreakfast: true,
-    images: [],
-    rooms: [
-      { id: "r8", basePrice: 28000, currency: "XOF" },
-      { id: "r9", basePrice: 32000, currency: "XOF" },
-      { id: "r10", basePrice: 38000, currency: "XOF" },
-    ],
-  },
-  {
-    id: "g6",
-    name: "Le Havre du Voyageur",
-    slug: "havre-voyageur-dakar",
-    country: "SN",
-    city: "Dakar",
-    district: "Plateau",
-    avgRating: 4.5,
-    totalReviews: 73,
-    isCertified: true,
-    hasBreakfast: true,
-    images: [],
-    rooms: [
-      { id: "r11", basePrice: 30000, currency: "XOF" },
-      { id: "r12", basePrice: 40000, currency: "XOF" },
-    ],
-  },
-];
-
-export default function GuesthousesPage() {
+export default async function GuesthousesPage() {
+  const guesthouses = await prisma.guesthouse.findMany({
+    where: { isActive: true },
+    include: {
+      images: { take: 1 },
+      rooms: { where: { isAvailable: true }, select: { id: true, basePrice: true, currency: true } },
+    },
+    orderBy: { avgRating: "desc" },
+    take: 12,
+  });
   return (
     <>
       <Navbar />
@@ -191,21 +95,42 @@ export default function GuesthousesPage() {
               </button>
             ))}
             <div className="ml-auto text-sm text-gray-500">
-              {MOCK_GUESTHOUSES.length} établissements
+              {guesthouses.length} établissement{guesthouses.length !== 1 ? "s" : ""}
             </div>
           </div>
 
           {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {MOCK_GUESTHOUSES.map((gh) => {
-              const minPrice = Math.min(...gh.rooms.map((r) => r.basePrice));
+            {guesthouses.length === 0 && (
+              <div className="col-span-3 text-center py-16 text-gray-400">
+                <span className="text-5xl block mb-4">🏡</span>
+                <p className="text-lg font-medium">Aucune guesthouse disponible pour le moment.</p>
+                <p className="text-sm mt-1">Revenez bientôt — de nouveaux établissements arrivent !</p>
+              </div>
+            )}
+            {guesthouses.map((gh) => {
+              const minPrice = gh.rooms.length > 0
+                ? Math.min(...gh.rooms.map((r) => r.basePrice))
+                : null;
+              const primaryImage = gh.images[0];
+              const href = `/guesthouses/${gh.slug ?? gh.id}`;
 
               return (
-                <Link key={gh.id} href={`/guesthouses/${gh.slug}`}>
+                <Link key={gh.id} href={href}>
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm card-hover overflow-hidden">
                     {/* Image */}
-                    <div className="h-48 bg-gradient-to-br from-emerald-100 to-teal-200 relative flex items-center justify-center">
-                      <span className="text-6xl opacity-40">🏡</span>
+                    <div className="h-48 relative overflow-hidden">
+                      {primaryImage ? (
+                        <img
+                          src={primaryImage.url}
+                          alt={primaryImage.alt ?? gh.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center">
+                          <span className="text-6xl opacity-40">🏡</span>
+                        </div>
+                      )}
                       {gh.isCertified && (
                         <div className="absolute top-3 left-3">
                           <span className="badge-certified">✓ Certifiée AfriBayit</span>
@@ -216,11 +141,13 @@ export default function GuesthousesPage() {
                           <Badge variant="gold" size="sm">🍳 Petit-déj inclus</Badge>
                         </div>
                       )}
-                      <div className="absolute bottom-3 left-3 bg-white/90 rounded-lg px-3 py-1">
-                        <span className="text-sm font-bold text-[#003087]">
-                          À partir de {formatCurrency(minPrice, gh.rooms[0].currency)}/nuit
-                        </span>
-                      </div>
+                      {minPrice !== null && (
+                        <div className="absolute bottom-3 left-3 bg-white/90 rounded-lg px-3 py-1">
+                          <span className="text-sm font-bold text-[#003087]">
+                            À partir de {formatCurrency(minPrice, String(gh.rooms[0].currency))}/nuit
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Info */}
@@ -233,11 +160,11 @@ export default function GuesthousesPage() {
                               <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                             </svg>
                             {gh.district ? `${gh.district}, ` : ""}{gh.city}
-                            {" · "}{COUNTRY_LABELS[gh.country]?.split(" ")[1]}
+                            {" · "}{COUNTRY_LABELS[gh.country as string]?.split(" ")[1] ?? gh.country}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xs text-gray-400">{gh.rooms.length} chambres</p>
+                          <p className="text-xs text-gray-400">{gh.rooms.length} chambre{gh.rooms.length !== 1 ? "s" : ""}</p>
                         </div>
                       </div>
 

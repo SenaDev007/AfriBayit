@@ -1,120 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { formatCurrency, formatCompactCurrency } from "@/lib/utils";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Tableau de bord",
 };
-
-// Mock user data
-const MOCK_USER = {
-  name: "Stevens Akpovi",
-  email: "stevens@example.com",
-  userType: "SELLER",
-  isPremium: true,
-  kycStatus: "VERIFIED",
-  loyaltyPoints: 1250,
-  reputationScore: 847,
-  country: "BJ",
-};
-
-const STATS = [
-  { label: "Annonces actives", value: "8", icon: "🏠", trend: "+2 ce mois", color: "#0070BA" },
-  { label: "Vues totales", value: "12,450", icon: "👁️", trend: "+18% vs mois dernier", color: "#003087" },
-  { label: "Revenus ce mois", value: formatCompactCurrency(2850000, "XOF"), icon: "💰", trend: "+12%", color: "#00A651" },
-  { label: "Messages non lus", value: "5", icon: "💬", trend: "3 nouveaux", color: "#FFB900" },
-];
-
-const MY_PROPERTIES = [
-  {
-    id: "1",
-    title: "Villa 4ch — Cocody, Abidjan",
-    price: 75000000,
-    currency: "XOF",
-    status: "ACTIVE",
-    listingType: "SALE",
-    views: 1247,
-    favorites: 89,
-    lastActivity: "il y a 2h",
-  },
-  {
-    id: "2",
-    title: "Appartement T3 — Haie Vive, Cotonou",
-    price: 350000,
-    currency: "XOF",
-    status: "ACTIVE",
-    listingType: "LONG_TERM_RENTAL",
-    views: 834,
-    favorites: 45,
-    lastActivity: "il y a 1j",
-  },
-  {
-    id: "3",
-    title: "Studio meublé — Lomé",
-    price: 25000,
-    currency: "XOF",
-    status: "RENTED",
-    listingType: "SHORT_TERM_RENTAL",
-    views: 2100,
-    favorites: 167,
-    lastActivity: "Loué jusqu'au 20 Fév",
-  },
-];
-
-const RECENT_MESSAGES = [
-  {
-    id: "m1",
-    senderName: "Moussa Koné",
-    senderAvatar: "MK",
-    preview: "Bonjour, je suis très intéressé par la villa de Cocody...",
-    time: "10:30",
-    unread: true,
-    propertyTitle: "Villa 4ch — Cocody",
-  },
-  {
-    id: "m2",
-    senderName: "Aminata Diallo",
-    senderAvatar: "AD",
-    preview: "Pouvez-vous me préciser si la piscine est...",
-    time: "Hier",
-    unread: true,
-    propertyTitle: "Villa 4ch — Cocody",
-  },
-  {
-    id: "m3",
-    senderName: "Jean-Pierre Mensah",
-    senderAvatar: "JM",
-    preview: "Merci pour la visite d'hier. Nous avons discuté avec...",
-    time: "Lun",
-    unread: false,
-    propertyTitle: "Appartement T3",
-  },
-];
-
-const TRANSACTIONS = [
-  {
-    id: "t1",
-    type: "Loyer mensuel",
-    amount: 350000,
-    currency: "XOF",
-    status: "RELEASED",
-    date: "01 Fév 2025",
-    party: "Client Haie Vive",
-  },
-  {
-    id: "t2",
-    type: "Réservation courte",
-    amount: 75000,
-    currency: "XOF",
-    status: "ESCROW",
-    date: "15 Fév 2025",
-    party: "Famille Ouédraogo",
-  },
-];
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: "success",
@@ -130,7 +27,65 @@ const TRANSACTION_COLORS: Record<string, string> = {
   DISPUTED: "danger",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const userId = session.user.id as string;
+
+  const [user, properties, transactions, messages] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        userType: true,
+        isPremium: true,
+        kycStatus: true,
+        loyaltyPoints: true,
+        reputationScore: true,
+        country: true,
+      },
+    }),
+    prisma.property.findMany({
+      where: { ownerId: userId },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      include: {
+        images: { where: { isPrimary: true }, take: 1 },
+        _count: { select: { favorites: true } },
+      },
+    }),
+    prisma.transaction.findMany({
+      where: { OR: [{ senderId: userId }, { receiverId: userId }] },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.message.findMany({
+      where: { receiverId: userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        sender: { select: { id: true, name: true, image: true } },
+      },
+    }),
+  ]);
+
+  if (!user) redirect("/login");
+
+  // Computed stats
+  const activeProperties = properties.filter((p) => p.status === "ACTIVE").length;
+  const totalViews = properties.reduce((sum, p) => sum + p.viewCount, 0);
+  const unreadMessages = messages.filter((m) => !m.isRead).length;
+
+  const STATS = [
+    { label: "Annonces actives", value: String(activeProperties), icon: "🏠", trend: `${properties.length} au total`, color: "#0070BA" },
+    { label: "Vues totales", value: totalViews.toLocaleString("fr-FR"), icon: "👁️", trend: "Toutes annonces confondues", color: "#003087" },
+    { label: "Transactions", value: String(transactions.length), icon: "💰", trend: "Récentes", color: "#00A651" },
+    { label: "Messages non lus", value: String(unreadMessages), icon: "💬", trend: `${messages.length} reçus au total`, color: "#FFB900" },
+  ];
+
   return (
     <>
       <Navbar />
@@ -141,17 +96,17 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-2xl font-bold text-[#003087]">
-                Bonjour, {MOCK_USER.name.split(" ")[0]} 👋
+                Bonjour, {user.name?.split(" ")[0] ?? "Utilisateur"} 👋
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                {MOCK_USER.isPremium && (
+                {user.isPremium && (
                   <span className="badge-premium">Premium</span>
                 )}
-                {MOCK_USER.kycStatus === "VERIFIED" && (
+                {user.kycStatus === "VERIFIED" && (
                   <span className="badge-certified">✓ KYC Vérifié</span>
                 )}
                 <span className="text-sm text-gray-400">
-                  {formatCompactCurrency(MOCK_USER.loyaltyPoints)} points fidélité
+                  {formatCompactCurrency(user.loyaltyPoints)} points fidélité
                 </span>
               </div>
             </div>
@@ -198,7 +153,10 @@ export default function DashboardPage() {
                   </Link>
                 </div>
                 <div className="space-y-3">
-                  {MY_PROPERTIES.map((prop) => (
+                  {properties.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-4">Aucune annonce pour l&apos;instant.</p>
+                  )}
+                  {properties.map((prop) => (
                     <div
                       key={prop.id}
                       className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -213,33 +171,35 @@ export default function DashboardPage() {
                           {prop.title}
                         </p>
                         <p className="text-xs text-[#0070BA] font-semibold mt-0.5">
-                          {formatCurrency(prop.price, prop.currency)}
+                          {formatCurrency(Number(prop.price), prop.currency as string)}
                           {prop.listingType === "LONG_TERM_RENTAL" && "/mois"}
                           {prop.listingType === "SHORT_TERM_RENTAL" && "/nuit"}
                         </p>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-xs text-gray-400">
-                            👁️ {prop.views.toLocaleString()}
+                            👁️ {prop.viewCount.toLocaleString("fr-FR")}
                           </span>
                           <span className="text-xs text-gray-400">
-                            ❤️ {prop.favorites}
+                            ❤️ {prop._count.favorites}
                           </span>
                           <span className="text-xs text-gray-400">
-                            {prop.lastActivity}
+                            {new Date(prop.updatedAt).toLocaleDateString("fr-FR")}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex flex-col items-end gap-2">
-                        <Badge variant={STATUS_COLORS[prop.status] as any} size="sm">
-                          {prop.status === "ACTIVE" ? "Active" : prop.status === "RENTED" ? "Louée" : prop.status}
+                        <Badge variant={STATUS_COLORS[prop.status as string] as any} size="sm">
+                          {prop.status === "ACTIVE" ? "Active" : prop.status === "RENTED" ? "Louée" : prop.status as string}
                         </Badge>
                         <div className="flex gap-1">
-                          <button className="p-1 text-gray-400 hover:text-[#0070BA] transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
+                          <Link href={`/properties/${prop.slug}/edit`}>
+                            <button className="p-1 text-gray-400 hover:text-[#0070BA] transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
+                          </Link>
                           <button className="p-1 text-gray-400 hover:text-[#D93025] transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -264,7 +224,10 @@ export default function DashboardPage() {
                   </Link>
                 </div>
                 <div className="space-y-3">
-                  {TRANSACTIONS.map((tx) => (
+                  {transactions.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-4">Aucune transaction pour l&apos;instant.</p>
+                  )}
+                  {transactions.map((tx) => (
                     <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-[#0070BA]/10 flex items-center justify-center">
@@ -272,15 +235,17 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-800 text-sm">{tx.type}</p>
-                          <p className="text-xs text-gray-400">{tx.party} · {tx.date}</p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(tx.createdAt).toLocaleDateString("fr-FR")}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-[#003087]">
-                          +{formatCurrency(tx.amount, tx.currency)}
+                          +{formatCurrency(Number(tx.amount), tx.currency as string)}
                         </p>
-                        <Badge variant={TRANSACTION_COLORS[tx.status] as any} size="sm">
-                          {tx.status === "RELEASED" ? "Reçu" : tx.status === "ESCROW" ? "En séquestre" : tx.status}
+                        <Badge variant={TRANSACTION_COLORS[tx.status as string] as any} size="sm">
+                          {tx.status === "RELEASED" ? "Reçu" : tx.status === "ESCROW" ? "En séquestre" : tx.status as string}
                         </Badge>
                       </div>
                     </div>
@@ -296,29 +261,40 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                     Messages
-                    <span className="w-5 h-5 rounded-full bg-[#D93025] text-white text-xs flex items-center justify-center">
-                      {RECENT_MESSAGES.filter((m) => m.unread).length}
-                    </span>
+                    {unreadMessages > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-[#D93025] text-white text-xs flex items-center justify-center">
+                        {unreadMessages}
+                      </span>
+                    )}
                   </h2>
                   <Link href="/dashboard/messages" className="text-sm text-[#0070BA] hover:underline">
                     Voir tout
                   </Link>
                 </div>
                 <div className="space-y-3">
-                  {RECENT_MESSAGES.map((msg) => (
-                    <div key={msg.id} className={`flex gap-3 p-2 rounded-xl cursor-pointer transition-colors ${msg.unread ? "bg-blue-50" : "hover:bg-gray-50"}`}>
+                  {messages.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-4">Aucun message pour l&apos;instant.</p>
+                  )}
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex gap-3 p-2 rounded-xl cursor-pointer transition-colors ${
+                        !msg.isRead ? "bg-blue-50" : "hover:bg-gray-50"
+                      }`}
+                    >
                       <div className="w-9 h-9 rounded-full bg-[#0070BA] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {msg.senderAvatar}
+                        {msg.sender.name?.slice(0, 2).toUpperCase() ?? "??"}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className={`text-sm font-medium truncate ${msg.unread ? "text-[#003087]" : "text-gray-700"}`}>
-                            {msg.senderName}
+                          <p className={`text-sm font-medium truncate ${!msg.isRead ? "text-[#003087]" : "text-gray-700"}`}>
+                            {msg.sender.name ?? "Inconnu"}
                           </p>
-                          <span className="text-xs text-gray-400 flex-shrink-0 ml-1">{msg.time}</span>
+                          <span className="text-xs text-gray-400 flex-shrink-0 ml-1">
+                            {new Date(msg.createdAt).toLocaleDateString("fr-FR")}
+                          </span>
                         </div>
-                        <p className="text-xs text-gray-400 truncate">{msg.preview}</p>
-                        <p className="text-xs text-[#0070BA] mt-0.5">{msg.propertyTitle}</p>
+                        <p className="text-xs text-gray-400 truncate">{msg.content}</p>
                       </div>
                     </div>
                   ))}
@@ -355,8 +331,12 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">🛡️</span>
                   <div>
-                    <p className="font-bold">Compte vérifié</p>
-                    <p className="text-white/70 text-xs">KYC · AML · Premium</p>
+                    <p className="font-bold">
+                      {user.kycStatus === "VERIFIED" ? "Compte vérifié" : "Vérification requise"}
+                    </p>
+                    <p className="text-white/70 text-xs">
+                      {user.isPremium ? "KYC · AML · Premium" : "KYC · AML"}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-1.5 text-sm">

@@ -1,120 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import StarRating from "@/components/ui/StarRating";
+import ContactForm from "@/components/property/ContactForm";
+import CreditCalculator from "@/components/property/CreditCalculator";
 import { formatCurrency, PROPERTY_TYPE_LABELS, LISTING_TYPE_LABELS, COUNTRY_LABELS } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Détail du bien",
 };
-
-// Mock property data
-const MOCK_PROPERTY = {
-  id: "1",
-  title: "Villa moderne 4 chambres avec piscine — Cocody, Abidjan",
-  slug: "villa-moderne-4-chambres-cocody",
-  type: "VILLA",
-  listingType: "SALE",
-  status: "ACTIVE",
-  price: 75000000,
-  currency: "XOF",
-  country: "CI",
-  city: "Abidjan",
-  district: "Cocody",
-  address: "Rue des Jardins, Résidence Palmeraie",
-  latitude: 5.3600,
-  longitude: -4.0083,
-  surface: 320,
-  bedrooms: 4,
-  bathrooms: 3,
-  floors: 2,
-  yearBuilt: 2021,
-  hasGarage: true,
-  hasPool: true,
-  hasGarden: true,
-  hasBalcony: true,
-  hasSecurity: true,
-  hasGenerator: true,
-  hasWifi: true,
-  hasAC: true,
-  description: `Superbe villa contemporaine de 320m² construite en 2021, idéalement située dans le quartier résidentiel prisé de Cocody.
-
-Cette propriété d'exception offre une architecture moderne associant pierres naturelles et grandes baies vitrées, créant une harmonie parfaite entre intérieur et extérieur.
-
-Au rez-de-chaussée : un grand séjour lumineux avec double hauteur, une salle à manger, une cuisine équipée dernière génération, et une chambre d'ami avec salle de bain privative.
-
-À l'étage : 3 chambres dont une suite parentale avec dressing et terrasse privée offrant vue sur la ville.
-
-L'extérieur propose une piscine à débordement, un espace barbecue, un jardin paysagé et un garage pour 2 véhicules.`,
-  virtualTourUrl: "https://tour.afribayit.com/villa-cocody",
-  investmentScore: 87,
-  images: [
-    { url: "/properties/villa-1.jpg", alt: "Façade villa", isPrimary: true },
-    { url: "/properties/villa-2.jpg", alt: "Piscine", isPrimary: false },
-    { url: "/properties/villa-3.jpg", alt: "Salon", isPrimary: false },
-    { url: "/properties/villa-4.jpg", alt: "Cuisine", isPrimary: false },
-    { url: "/properties/villa-5.jpg", alt: "Suite parentale", isPrimary: false },
-  ],
-  owner: {
-    id: "u1",
-    name: "Agence Premium CI",
-    image: null,
-    isPremium: true,
-    totalProperties: 48,
-    avgRating: 4.8,
-    totalReviews: 127,
-  },
-  reviews: [
-    {
-      id: "r1",
-      author: { name: "Mamadou K.", avatar: "MK" },
-      rating: 5,
-      comment: "Propriété exactement comme décrite. Visite organisée rapidement, très professionnel.",
-      createdAt: "2025-01-10",
-    },
-    {
-      id: "r2",
-      author: { name: "Adjoua B.", avatar: "AB" },
-      rating: 5,
-      comment: "Villa magnifique, emplacement parfait. La piscine est vraiment impressionnante.",
-      createdAt: "2025-01-20",
-    },
-  ],
-  createdAt: "2025-01-15",
-  publishedAt: "2025-01-16",
-};
-
-const SIMILAR_PROPERTIES = [
-  {
-    id: "sim1",
-    title: "Villa 3 chambres — Marcory",
-    slug: "villa-3ch-marcory",
-    price: 55000000,
-    currency: "XOF",
-    city: "Abidjan",
-    district: "Marcory",
-    bedrooms: 3,
-    surface: 250,
-    type: "VILLA",
-    listingType: "SALE",
-  },
-  {
-    id: "sim2",
-    title: "Appartement de luxe — Plateau",
-    slug: "appartement-luxe-plateau",
-    price: 85000000,
-    currency: "XOF",
-    city: "Abidjan",
-    district: "Plateau",
-    bedrooms: 4,
-    surface: 200,
-    type: "APARTMENT",
-    listingType: "SALE",
-  },
-];
 
 const FEATURES = [
   { key: "hasPool", label: "Piscine", icon: "🏊" },
@@ -133,7 +32,51 @@ interface PropertyDetailPageProps {
 
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const { id } = await params;
-  const property = MOCK_PROPERTY; // remplacer par fetch depuis API
+
+  const property = await prisma.property.findFirst({
+    where: { OR: [{ id: id }, { slug: id }], status: "ACTIVE" },
+    include: {
+      images: true,
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          isPremium: true,
+          _count: { select: { properties: true } },
+        },
+      },
+      reviews: {
+        include: { author: { select: { id: true, name: true, image: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      },
+      _count: { select: { favorites: true } },
+    },
+  });
+
+  if (!property) return notFound();
+
+  // Increment view count (fire-and-forget, don't block render)
+  prisma.property.update({
+    where: { id: property.id },
+    data: { viewCount: { increment: 1 } },
+  }).catch(() => {});
+
+  const similarProperties = await prisma.property.findMany({
+    where: {
+      city: property.city,
+      listingType: property.listingType,
+      status: "ACTIVE",
+      NOT: { id: property.id },
+    },
+    take: 3,
+    include: { images: { where: { isPrimary: true }, take: 1 } },
+    orderBy: { viewCount: "desc" },
+  });
+
+  const price = Number(property.price);
+  const currency = property.currency as string;
 
   return (
     <>
@@ -148,8 +91,8 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               <span>›</span>
               <Link href="/properties" className="hover:text-[#0070BA]">Immobilier</Link>
               <span>›</span>
-              <Link href={`/properties?country=${property.country}`} className="hover:text-[#0070BA]">
-                {COUNTRY_LABELS[property.country]}
+              <Link href={`/properties?country=${property.country as string}`} className="hover:text-[#0070BA]">
+                {COUNTRY_LABELS[property.country as string]}
               </Link>
               <span>›</span>
               <span className="text-gray-700 font-medium line-clamp-1">{property.title}</span>
@@ -212,10 +155,10 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 {/* Header */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   <Badge variant="primary">
-                    {LISTING_TYPE_LABELS[property.listingType]}
+                    {LISTING_TYPE_LABELS[property.listingType as string]}
                   </Badge>
                   <Badge variant="gray">
-                    {PROPERTY_TYPE_LABELS[property.type]}
+                    {PROPERTY_TYPE_LABELS[property.type as string]}
                   </Badge>
                   {property.owner.isPremium && (
                     <span className="badge-premium">Annonce Premium</span>
@@ -233,7 +176,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   </svg>
                   <span>
                     {property.address} · {property.district}, {property.city}
-                    {" · "}{COUNTRY_LABELS[property.country]}
+                    {" · "}{COUNTRY_LABELS[property.country as string]}
                   </span>
                 </div>
 
@@ -340,12 +283,14 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   {property.reviews.map((review) => (
                     <div key={review.id} className="flex gap-3">
                       <div className="w-9 h-9 rounded-full bg-[#0070BA] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {review.author.avatar}
+                        {review.author.name?.slice(0, 2).toUpperCase() || "??"}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <p className="font-medium text-gray-800 text-sm">{review.author.name}</p>
-                          <span className="text-xs text-gray-400">{review.createdAt}</span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(review.createdAt).toLocaleDateString("fr-FR")}
+                          </span>
                         </div>
                         <StarRating rating={review.rating} size="sm" className="mb-1" />
                         <p className="text-gray-600 text-sm">{review.comment}</p>
@@ -363,7 +308,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 {/* Price */}
                 <div className="mb-5">
                   <p className="text-3xl font-bold text-[#003087]">
-                    {formatCurrency(property.price, property.currency)}
+                    {formatCurrency(price, currency)}
                   </p>
                   {property.listingType !== "SALE" && (
                     <p className="text-gray-400 text-sm">
@@ -372,7 +317,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   )}
                   {property.surface && (
                     <p className="text-sm text-gray-500 mt-1">
-                      ≈ {formatCurrency(Math.round(property.price / property.surface), property.currency)} / m²
+                      ≈ {formatCurrency(Math.round(price / property.surface), currency)} / m²
                     </p>
                   )}
                 </div>
@@ -390,46 +335,22 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                       )}
                     </p>
                     <StarRating
-                      rating={property.owner.avgRating}
+                      rating={0}
                       size="sm"
                       showValue
                       showCount
-                      count={property.owner.totalReviews}
+                      count={0}
                     />
                     <p className="text-xs text-gray-400">
-                      {property.owner.totalProperties} annonces
+                      {property.owner._count.properties} annonces
                     </p>
                   </div>
                 </div>
 
                 {/* Contact form */}
-                <div className="space-y-3 mb-5">
-                  <input
-                    type="text"
-                    placeholder="Votre nom"
-                    className="input-afri"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email ou téléphone"
-                    className="input-afri"
-                  />
-                  <textarea
-                    rows={3}
-                    placeholder="Je suis intéressé(e) par cette propriété..."
-                    className="input-afri resize-none"
-                  />
-                  <input
-                    type="date"
-                    placeholder="Date de visite souhaitée"
-                    className="input-afri"
-                  />
-                </div>
+                <ContactForm ownerId={property.owner.id} propertyId={property.id} />
 
                 <div className="flex flex-col gap-2">
-                  <Button variant="primary" fullWidth size="lg">
-                    Envoyer un message
-                  </Button>
                   <Button variant="outline" fullWidth size="md">
                     📞 Appeler le vendeur
                   </Button>
@@ -451,44 +372,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </div>
 
               {/* Loan calculator */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  💰 Simulateur de crédit
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-gray-500">Apport personnel</label>
-                    <input
-                      type="number"
-                      defaultValue={15000000}
-                      className="input-afri mt-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">Durée (années)</label>
-                    <select className="input-afri mt-1 text-sm">
-                      {[10, 15, 20, 25, 30].map((y) => (
-                        <option key={y} value={y}>{y} ans</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">Taux d&apos;intérêt (%)</label>
-                    <input
-                      type="number"
-                      defaultValue={8}
-                      step={0.1}
-                      className="input-afri mt-1 text-sm"
-                    />
-                  </div>
-                  <div className="bg-blue-50 rounded-xl p-3">
-                    <p className="text-xs text-gray-500">Mensualité estimée</p>
-                    <p className="text-xl font-bold text-[#003087]">
-                      {formatCurrency(580000, "XOF")}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <CreditCalculator price={price} currency={currency} />
 
               {/* Neighborhood info */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -530,7 +414,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               Biens similaires à {property.city}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {SIMILAR_PROPERTIES.map((sim) => (
+              {similarProperties.map((sim) => (
                 <Link key={sim.id} href={`/properties/${sim.slug}`}>
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 card-hover">
                     <div className="h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl mb-3 flex items-center justify-center">
@@ -540,7 +424,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                     </div>
                     <h3 className="font-semibold text-gray-800 text-sm mb-1">{sim.title}</h3>
                     <p className="text-xs text-gray-400 mb-2">{sim.district}, {sim.city}</p>
-                    <p className="font-bold text-[#003087]">{formatCurrency(sim.price, sim.currency)}</p>
+                    <p className="font-bold text-[#003087]">{formatCurrency(Number(sim.price), sim.currency as string)}</p>
                   </div>
                 </Link>
               ))}

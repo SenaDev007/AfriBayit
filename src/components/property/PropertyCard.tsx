@@ -59,9 +59,16 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
         {/* Favorite button */}
         <button
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault();
             setIsFavorited(!isFavorited);
+            try {
+              await fetch("/api/favorites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ propertyId: property.id }),
+              });
+            } catch { /* silent */ }
           }}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow hover:bg-white transition-colors"
           aria-label={isFavorited ? "Retirer des favoris" : "Ajouter aux favoris"}
