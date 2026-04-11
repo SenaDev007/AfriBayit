@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { sendKYCStatusEmail } from "@/lib/email";
 
 const actionSchema = z.object({
   action: z.enum(["approve", "reject"]),
@@ -43,7 +44,10 @@ export async function PATCH(
 
   const { action, rejectReason } = parsed.data;
 
-  const doc = await prisma.kYCDocument.findUnique({ where: { id } });
+  const doc = await prisma.kYCDocument.findUnique({
+    where: { id },
+    include: { user: { select: { email: true, name: true } } },
+  });
   if (!doc) {
     return NextResponse.json({ error: "Document introuvable" }, { status: 404 });
   }
@@ -80,7 +84,7 @@ export async function PATCH(
       data: { kycStatus: newKycStatus },
     });
 
-    // Notify user
+    // In-app notification
     await prisma.notification.create({
       data: {
         userId: doc.userId,
@@ -90,6 +94,11 @@ export async function PATCH(
         href: "/kyc",
       },
     });
+
+    // Email (non-bloquant)
+    if (doc.user?.email) {
+      sendKYCStatusEmail(doc.user.email, doc.user.name ?? doc.user.email, "approved", doc.docType).catch(() => {});
+    }
 
     return NextResponse.json({ ok: true, action: "approved" });
   }
@@ -113,7 +122,7 @@ export async function PATCH(
     },
   });
 
-  // Notify user
+  // In-app notification
   await prisma.notification.create({
     data: {
       userId: doc.userId,
@@ -123,6 +132,11 @@ export async function PATCH(
       href: "/kyc",
     },
   });
+
+  // Email (non-bloquant)
+  if (doc.user?.email) {
+    sendKYCStatusEmail(doc.user.email, doc.user.name ?? doc.user.email, "rejected", doc.docType, rejectReason).catch(() => {});
+  }
 
   return NextResponse.json({ ok: true, action: "rejected" });
 }

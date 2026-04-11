@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import bcryptjs from "bcryptjs";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +28,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("Reset link: /reset-password?token=" + token + "&email=" + email);
+    // Envoi email réinitialisation (non-bloquant)
+    sendPasswordResetEmail(email, token).catch(() => {});
+    // Dev fallback
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[dev] Reset link: /reset-password?token=" + token + "&email=" + email);
+    }
 
     return NextResponse.json(
       { message: "Email de réinitialisation envoyé" },

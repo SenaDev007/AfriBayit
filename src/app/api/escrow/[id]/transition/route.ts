@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { verifyEscrowOTP, REQUIRES_2FA } from "@/lib/otp";
 import { writeLedgerRelease, writeLedgerRefund, writeLedgerEntry } from "@/lib/ledger";
 import { refundPayment } from "@/lib/pal";
+import { sendEscrowStatusEmail } from "@/lib/email";
+import { sendFundsReleasedSMS, sendRefundSMS } from "@/lib/sms";
 
 // Valid state transitions (CDC §7B escrow state machine)
 const TRANSITIONS: Record<string, string[]> = {
@@ -31,7 +33,13 @@ export async function PATCH(
   const body = await req.json();
   const { newState, paymentRef, note, otp } = body;
 
-  const escrow = await prisma.escrowTransaction.findUnique({ where: { id } });
+  const escrow = await prisma.escrowTransaction.findUnique({
+    where: { id },
+    include: {
+      buyer: { select: { email: true, name: true, phone: true } },
+      seller: { select: { email: true, name: true, phone: true } },
+    },
+  });
   if (!escrow) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const isBuyer = escrow.buyerId === session.user.id;
@@ -177,6 +185,28 @@ export async function PATCH(
           href: "/dashboard",
         },
       });
+    }
+  }
+
+  // ── Emails + SMS pour états terminaux ────────────────────────
+  if (newState === "RELEASED") {
+    if (escrow.seller?.email) {
+      sendEscrowStatusEmail(escrow.seller.email, escrow.seller.name ?? "", "RELEASED", id, escrow.amount).catch(() => {});
+    }
+    if (escrow.buyer?.email) {
+      sendEscrowStatusEmail(escrow.buyer.email, escrow.buyer.name ?? "", "RELEASED", id, escrow.amount).catch(() => {});
+    }
+    if (escrow.seller?.phone) {
+      sendFundsReleasedSMS(escrow.seller.phone, escrow.amount).catch(() => {});
+    }
+  }
+
+  if (newState === "REFUNDED") {
+    if (escrow.buyer?.email) {
+      sendEscrowStatusEmail(escrow.buyer.email, escrow.buyer.name ?? "", "REFUNDED", id, escrow.amount).catch(() => {});
+    }
+    if (escrow.buyer?.phone) {
+      sendRefundSMS(escrow.buyer.phone, escrow.amount).catch(() => {});
     }
   }
 

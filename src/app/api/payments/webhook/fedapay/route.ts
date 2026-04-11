@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fedapayAdapter } from "@/lib/pal/fedapay";
 import { writeLedgerEntry } from "@/lib/ledger";
+import { sendEscrowStatusEmail } from "@/lib/email";
+import { sendPaymentReceivedSMS } from "@/lib/sms";
 
 /**
  * POST /api/payments/webhook/fedapay
  * Receives FedaPay webhook events and updates escrow state.
- * Register this URL in your FedaPay dashboard.
  */
 export async function POST(request: NextRequest) {
   const signature = request.headers.get("x-fedapay-signature") ?? "";
@@ -14,10 +15,8 @@ export async function POST(request: NextRequest) {
 
   const event = fedapayAdapter.verifyWebhook(payload, signature);
 
-  // If no secret configured, parse raw (dev mode only)
   let afribayitRef = event?.afribayitRef;
   if (!event) {
-    // Dev fallback: trust payload without signature check
     if (process.env.NODE_ENV === "production") {
       return new NextResponse("Signature invalide", { status: 401 });
     }
@@ -29,17 +28,17 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!afribayitRef) {
-    return new NextResponse("Ref introuvable", { status: 400 });
-  }
+  if (!afribayitRef) return new NextResponse("Ref introuvable", { status: 400 });
 
   const escrow = await prisma.escrowTransaction.findUnique({
     where: { id: afribayitRef },
+    include: {
+      buyer: { select: { email: true, name: true, phone: true } },
+      seller: { select: { email: true, name: true, phone: true } },
+    },
   });
 
-  if (!escrow) {
-    return new NextResponse("Escrow introuvable", { status: 404 });
-  }
+  if (!escrow) return new NextResponse("Escrow introuvable", { status: 404 });
 
   const eventType = event?.eventType;
 
@@ -59,7 +58,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Write ledger: DEPOSIT from buyer
     await writeLedgerEntry({
       escrowId: escrow.id,
       entryType: "DEPOSIT",
@@ -70,7 +68,7 @@ export async function POST(request: NextRequest) {
       description: `Dépôt FedaPay — ${escrow.reference}`,
     });
 
-    // Notify both parties
+    // In-app notifications
     await prisma.notification.createMany({
       data: [
         {
@@ -89,6 +87,17 @@ export async function POST(request: NextRequest) {
         },
       ],
     });
+
+    // Emails + SMS (non-bloquants)
+    if (escrow.buyer?.email) {
+      sendEscrowStatusEmail(escrow.buyer.email, escrow.buyer.name ?? "", "FUNDED", escrow.id, escrow.amount).catch(() => {});
+    }
+    if (escrow.seller?.email) {
+      sendEscrowStatusEmail(escrow.seller.email, escrow.seller.name ?? "", "FUNDED", escrow.id, escrow.amount).catch(() => {});
+    }
+    if (escrow.seller?.phone) {
+      sendPaymentReceivedSMS(escrow.seller.phone, escrow.amount).catch(() => {});
+    }
   }
 
   if (eventType === "payment.failed") {

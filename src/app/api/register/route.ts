@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendWelcomeEmail } from "@/lib/email";
 
 const registerSchema = z.object({
   firstName: z.string().min(2).max(50),
@@ -68,8 +69,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send verification email via Resend
-    // await sendVerificationEmail(user.email, user.id);
+    // Email de bienvenue (non-bloquant)
+    sendWelcomeEmail(user.email ?? "", user.name ?? user.email ?? "").catch(() => {});
 
     return NextResponse.json(
       { data: user, message: "Compte créé avec succès" },
