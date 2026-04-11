@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import StarRating from "@/components/ui/StarRating";
 import ContactForm from "@/components/property/ContactForm";
 import CreditCalculator from "@/components/property/CreditCalculator";
+import BookingWidget from "@/components/property/BookingWidget";
 import { formatCurrency, PROPERTY_TYPE_LABELS, LISTING_TYPE_LABELS, COUNTRY_LABELS } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
@@ -303,7 +304,19 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
             {/* Sidebar */}
             <div className="space-y-5">
-              {/* Price card */}
+              {/* SHORT_TERM_RENTAL → BookingWidget avec calendrier */}
+              {property.listingType === "SHORT_TERM_RENTAL" ? (
+                <div className="sticky top-20">
+                  <BookingWidget
+                    propertyId={property.id}
+                    propertyTitle={property.title}
+                    nightlyRate={price}
+                    currency={currency}
+                    maxGuests={property.bedrooms ? property.bedrooms * 2 : 6}
+                  />
+                </div>
+              ) : (
+              /* SALE / LONG_TERM_RENTAL → fiche vendeur + formulaire contact */
               <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 sticky top-20">
                 {/* Price */}
                 <div className="mb-5">
@@ -311,9 +324,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                     {formatCurrency(price, currency)}
                   </p>
                   {property.listingType !== "SALE" && (
-                    <p className="text-gray-400 text-sm">
-                      {property.listingType === "LONG_TERM_RENTAL" ? "/ mois" : "/ nuit"}
-                    </p>
+                    <p className="text-gray-400 text-sm">/ mois</p>
                   )}
                   {property.surface && (
                     <p className="text-sm text-gray-500 mt-1">
@@ -334,23 +345,16 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                         <span className="badge-premium">Pro</span>
                       )}
                     </p>
-                    <StarRating
-                      rating={0}
-                      size="sm"
-                      showValue
-                      showCount
-                      count={0}
-                    />
+                    <StarRating rating={0} size="sm" showValue showCount count={0} />
                     <p className="text-xs text-gray-400">
                       {property.owner._count.properties} annonces
                     </p>
                   </div>
                 </div>
 
-                {/* Contact form */}
                 <ContactForm ownerId={property.owner.id} propertyId={property.id} />
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 mt-3">
                   <Button variant="outline" fullWidth size="md">
                     📞 Appeler le vendeur
                   </Button>
@@ -359,7 +363,6 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   </Button>
                 </div>
 
-                {/* Trust badges */}
                 <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                   {[
                     "✅ Propriété vérifiée",
@@ -370,6 +373,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Loan calculator */}
               <CreditCalculator price={price} currency={currency} />
