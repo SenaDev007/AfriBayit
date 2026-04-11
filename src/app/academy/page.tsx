@@ -154,7 +154,7 @@ export default function AcademyPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] py-20 px-4">
+      <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] pt-[88px] pb-20">
         <div className="container-app text-center">
           <span className="inline-block bg-white/15 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
             Plateforme de Formation
@@ -201,7 +201,7 @@ export default function AcademyPage() {
       </section>
 
       {/* Courses */}
-      <section id="courses" className="py-16 px-4 scroll-mt-20">
+      <section id="courses" className="py-16 scroll-mt-20">
         <div className="container-app">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
@@ -354,9 +354,9 @@ export default function AcademyPage() {
       {/* Enterprise CTA */}
       <section
         id="enterprise"
-        className="bg-gray-50 border-t border-gray-100 py-16 px-4 scroll-mt-20"
+        className="bg-gray-50 border-t border-gray-100 py-16 scroll-mt-20"
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-6">
           <div className="bg-gradient-to-br from-[#003087] to-[#0070BA] rounded-2xl p-10 text-center text-white">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">
               Formez votre équipe

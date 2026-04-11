@@ -27,9 +27,9 @@ export default async function GuesthousesPage() {
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* Hero */}
-        <div className="bg-gradient-to-r from-emerald-700 to-[#003087] py-14 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-emerald-700 to-[#003087] py-14">
           <div className="container-app text-center text-white">
             <Badge variant="gold" className="mb-3">🏡 Certification AfriBayit</Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -63,7 +63,7 @@ export default async function GuesthousesPage() {
         </div>
 
         {/* Certification badge info */}
-        <div className="bg-white border-b border-gray-100 py-4 px-4">
+        <div className="bg-white border-b border-gray-100 py-4">
           <div className="container-app flex flex-wrap items-center justify-center gap-6">
             {[
               { icon: "✅", label: "Inspection virtuelle" },

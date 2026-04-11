@@ -61,9 +61,9 @@ export default async function RentalsPage() {
   return (
     <>
       <Navbar />
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* Hero */}
-        <div className="bg-gradient-to-r from-amber-600 to-orange-700 py-14 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-amber-600 to-orange-700 py-14">
           <div className="container-app text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Location Courte Durée

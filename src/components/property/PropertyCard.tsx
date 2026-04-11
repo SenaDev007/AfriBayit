@@ -103,7 +103,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
       {/* Content */}
       <Link href={`/properties/${property.slug}`}>
-        <div className="p-8 flex flex-col gap-2">
+        <div className="p-5 flex flex-col gap-3">
           {/* Location */}
           <p className="text-sm text-[#0070BA] font-medium mb-1 flex items-center gap-1">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

@@ -108,9 +108,9 @@ export default async function GuesthouseDetailPage({ params }: GuesthouseDetailP
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* ── Breadcrumb ── */}
-        <div className="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-3">
+        <div className="bg-white border-b border-gray-100 py-3">
           <div className="container-app flex items-center gap-2 text-sm text-[#6B7280]">
             <Link href="/" className="hover:text-[#0070BA] transition-colors">Accueil</Link>
             <span>/</span>

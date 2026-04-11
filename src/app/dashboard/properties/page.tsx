@@ -47,7 +47,7 @@ export default async function DashboardPropertiesPage() {
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         <div className="container-app py-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

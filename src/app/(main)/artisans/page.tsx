@@ -149,9 +149,9 @@ export default function ArtisansPage() {
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* Hero */}
-        <div className="bg-gradient-to-r from-[#003087] via-[#0070BA] to-purple-600 py-14 px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-[#003087] via-[#0070BA] to-purple-600 py-14">
           <div className="container-app">
             <div className="text-center text-white mb-8">
               <Badge variant="gold" className="mb-3">🔧 AfriBayit ProMatch</Badge>
@@ -197,7 +197,7 @@ export default function ArtisansPage() {
         </div>
 
         {/* Categories */}
-        <div className="bg-white border-b border-gray-100 py-4 px-4 overflow-x-auto">
+        <div className="bg-white border-b border-gray-100 py-4 overflow-x-auto">
           <div className="container-app">
             <div className="flex gap-2 min-w-max">
               {ARTISAN_CATEGORIES.map((cat) => (

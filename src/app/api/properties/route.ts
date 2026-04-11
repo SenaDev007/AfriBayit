@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
+import { validateLegalDoc } from "@/lib/legalDocs";
 
 const querySchema = z.object({
   q: z.string().optional(),
@@ -174,6 +175,9 @@ const createPropertySchema = z.object({
   hasGenerator: z.boolean().optional(),
   hasWifi: z.boolean().optional(),
   hasAC: z.boolean().optional(),
+  // Legal document §10B
+  legalDocType: z.string().optional(),
+  legalDocUrl: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -195,6 +199,25 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data;
 
+    // Validate legal document type against country matrix (§10B CDC)
+    let legalDocStatus = "PENDING";
+    if (data.legalDocType && data.country) {
+      const { found, info } = validateLegalDoc(data.country, data.legalDocType);
+      if (found) {
+        if (info?.status === "REJECTED") {
+          return NextResponse.json(
+            {
+              error: `Document foncier refusé pour le ${data.country}`,
+              reason: info.note,
+              docType: data.legalDocType,
+            },
+            { status: 422 }
+          );
+        }
+        legalDocStatus = info?.status ?? "PENDING";
+      }
+    }
+
     // Generate slug
     const slug = `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
 
@@ -207,6 +230,7 @@ export async function POST(request: NextRequest) {
         currency: data.currency as any,
         type: data.type as any,
         listingType: data.listingType as any,
+        legalDocStatus,
       },
     });
 

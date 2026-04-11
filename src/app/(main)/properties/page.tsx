@@ -179,9 +179,9 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* Header with search */}
-        <div className="bg-white border-b border-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white border-b border-gray-100 py-6">
           <div className="container-app">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <div>

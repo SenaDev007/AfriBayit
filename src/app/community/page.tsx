@@ -172,7 +172,7 @@ export default function CommunityPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] py-16 px-4">
+      <section className="bg-gradient-to-br from-[#003087] to-[#0070BA] pt-[88px] pb-16">
         <div className="container-app text-center">
           <span className="inline-block bg-white/15 text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-5 tracking-wide uppercase">
             Réseau Immobilier Africain

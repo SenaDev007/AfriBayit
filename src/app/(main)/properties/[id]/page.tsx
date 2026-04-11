@@ -82,7 +82,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         {/* Breadcrumb */}
         <div className="bg-white border-b border-gray-100">
           <div className="container-app py-3">

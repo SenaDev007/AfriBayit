@@ -136,6 +136,9 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                     <Link href="/properties/new" className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#374151] hover:bg-slate-50 hover:text-[#0070BA] transition-colors duration-200" onClick={() => setUserMenuOpen(false)}>
                       <span>➕</span> Publier une annonce
                     </Link>
+                    <Link href="/kyc" className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#374151] hover:bg-slate-50 hover:text-[#0070BA] transition-colors duration-200" onClick={() => setUserMenuOpen(false)}>
+                      <span>🛡️</span> Vérification KYC
+                    </Link>
                     <div className="border-t border-slate-100 mt-1 pt-1">
                       <button
                         type="button"

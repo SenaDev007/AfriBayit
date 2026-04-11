@@ -179,6 +179,7 @@ model User {
   favorites     Favorite[]
   notifications Notification[]
   transactions  Transaction[]
+  kycDocuments  KYCDocument[]
 
   @@map("users")
 }
@@ -279,6 +280,11 @@ model Property {
   // Virtual tour
   virtualTourUrl String?
   matterportId   String?
+
+  // Legal document (§10B CDC) — validated at publication
+  legalDocType   String?        // Code du document foncier (ex: TITRE_FONCIER, PUH...)
+  legalDocUrl    String?        // URL du document uploadé (Cloudflare R2 / local)
+  legalDocStatus String         @default("PENDING") // PENDING | ACCEPTED | CONDITIONAL | REJECTED
 
   ownerId     String
   owner       User           @relation(fields: [ownerId], references: [id])
@@ -1284,12 +1290,16 @@ model KYCDocument {
   mimeType   String?
   isVerified Boolean    @default(false)
   verifiedAt DateTime?
+  verifiedBy String?    // Admin user ID who approved
   rejectedAt DateTime?
   rejectReason String?
 
   createdAt  DateTime   @default(now())
 
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([isVerified])
   @@map("kyc_documents")
 }
 
