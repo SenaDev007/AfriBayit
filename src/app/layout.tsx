@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
+import RebeccaWidget from "@/components/ai/RebeccaWidget";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -60,7 +62,21 @@ export default function RootLayout({
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#374151]">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          {children}
+          <RebeccaWidget />
+        </SessionProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              borderRadius: "12px",
+              fontFamily: "var(--font-inter)",
+              fontSize: "14px",
+            },
+          }}
+        />
       </body>
     </html>
   );

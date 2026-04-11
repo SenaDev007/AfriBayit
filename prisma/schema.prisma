@@ -809,9 +809,10 @@ model Message {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // booking, message, review, price_alert, etc.
+  type      String   // booking, message, review, price_alert, payment, system
   title     String
   message   String
+  href      String?  // lien de navigation
   data      Json?
   isRead    Boolean  @default(false)
 
@@ -819,5 +820,529 @@ model Notification {
 
   createdAt DateTime @default(now())
 
+  @@index([userId, isRead])
   @@map("notifications")
+}
+
+// ─────────────────────────────────────────────
+// ONBOARDING PROFILE (§4 CDC)
+// ─────────────────────────────────────────────
+
+model OnboardingProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  profileType  String   // buyer, seller, investor, tourist, artisan, agency, guesthouse
+  country      String?
+  city         String?
+  interests    String[] // ['achat', 'location', 'investissement'...]
+  budget       String?
+  notifEmail   Boolean  @default(true)
+  notifSMS     Boolean  @default(false)
+  notifPush    Boolean  @default(true)
+  notifNews    Boolean  @default(false)
+  completedAt  DateTime @default(now())
+
+  @@map("onboarding_profiles")
+}
+
+// ─────────────────────────────────────────────
+// ESCROW STATE MACHINE (§7B CDC)
+// ─────────────────────────────────────────────
+
+enum EscrowState {
+  CREATED
+  FUNDED
+  IN_PROGRESS
+  VALIDATION
+  RELEASED
+  REFUNDED
+  EXPIRED
+  DISPUTED
+}
+
+enum EscrowType {
+  PROPERTY_SALE
+  LONG_TERM_RENTAL
+  SHORT_TERM_RENTAL
+  ARTISAN_SERVICE
+  HOTEL_BOOKING
+  GEOTRUST_MISSION
+}
+
+model EscrowTransaction {
+  id            String      @id @default(cuid())
+  reference     String      @unique @default(cuid()) // ESC-XXXX
+  type          EscrowType
+  state         EscrowState @default(CREATED)
+
+  buyerId       String
+  sellerId      String
+
+  amount        Float
+  commission    Float       // 2-5% CDC §6
+  netAmount     Float
+  currency      Currency    @default(XOF)
+
+  // Related entity
+  propertyId    String?
+  bookingId     String?
+  artisanJobId  String?
+
+  // Payment
+  paymentMethod String?     // mobile_money, card
+  paymentRef    String?
+  fedapayRef    String?
+
+  // State timestamps
+  fundedAt      DateTime?
+  startedAt     DateTime?
+  validationAt  DateTime?
+  releasedAt    DateTime?
+  refundedAt    DateTime?
+  expiresAt     DateTime?
+
+  // Validation
+  buyerValidated  Boolean   @default(false)
+  sellerValidated Boolean   @default(false)
+  disputeReason   String?
+
+  // Audit log
+  stateHistory  Json?       // [{state, at, by}]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([state])
+  @@map("escrow_transactions")
+}
+
+// ─────────────────────────────────────────────
+// HOTELS & OTA (§7D CDC)
+// ─────────────────────────────────────────────
+
+enum HotelPlan {
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum HotelNetworkType {
+  DIRECT   // hôtel partenaire direct
+  OTA      // via OTA (Booking.com, Expedia)
+}
+
+model Hotel {
+  id            String          @id @default(cuid())
+  name          String
+  description   String
+  slug          String          @unique
+
+  // Network type
+  networkType   HotelNetworkType @default(DIRECT)
+  plan          HotelPlan?
+
+  // OTA
+  bookingComId  String?         // Booking.com property ID
+  otaIds        Json?           // {"booking": "xxx", "expedia": "yyy"}
+
+  // Location
+  country       Country
+  city          String
+  district      String?
+  address       String?
+  latitude      Float?
+  longitude     Float?
+
+  // Classification
+  stars         Int             @default(3)
+  category      String?         // hotel, resort, boutique, auberge
+
+  // Features
+  hasPool       Boolean         @default(false)
+  hasRestaurant Boolean         @default(false)
+  hasSpa        Boolean         @default(false)
+  hasGym        Boolean         @default(false)
+  hasConference Boolean         @default(false)
+  hasParking    Boolean         @default(false)
+  hasWifi       Boolean         @default(true)
+  hasAC         Boolean         @default(true)
+
+  // Rating
+  avgRating     Float           @default(0)
+  totalReviews  Int             @default(0)
+
+  // Status
+  isActive      Boolean         @default(true)
+  isVerified    Boolean         @default(false)
+
+  ownerId       String?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  rooms         HotelRoom[]
+  images        HotelImage[]
+  bookings      HotelBooking[]
+
+  @@index([country, city])
+  @@map("hotels")
+}
+
+model HotelRoom {
+  id          String        @id @default(cuid())
+  hotelId     String
+  name        String        // "Chambre Supérieure", "Suite Junior"
+  description String?
+  roomCode    String?
+
+  capacity    Int           @default(2)
+  bedType     String?       // King, Queen, Twin, Double
+  floor       Int?
+
+  // Pricing
+  basePrice   Float
+  currency    Currency      @default(XOF)
+
+  // Amenities (JSONB)
+  amenities   Json?
+
+  isAvailable Boolean       @default(true)
+
+  hotel       Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  bookings    HotelBooking[]
+  images      HotelRoomImage[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("hotel_rooms")
+}
+
+model HotelRoomImage {
+  id     String    @id @default(cuid())
+  roomId String
+  url    String
+  alt    String?
+  order  Int       @default(0)
+
+  room   HotelRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_room_images")
+}
+
+model HotelImage {
+  id        String  @id @default(cuid())
+  hotelId   String
+  url       String
+  alt       String?
+  order     Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  hotel     Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_images")
+}
+
+model HotelBooking {
+  id        String        @id @default(cuid())
+  hotelId   String
+  roomId    String
+  guestId   String
+
+  checkIn   DateTime
+  checkOut  DateTime
+  nights    Int
+  guests    Int
+
+  // Pricing
+  roomRate  Float
+  taxes     Float         @default(0)
+  totalAmount Float
+  currency  Currency      @default(XOF)
+
+  // Commission §6: 10-15%
+  commission  Float
+  netAmount   Float
+
+  status    BookingStatus @default(PENDING)
+
+  // Source
+  source    String        @default("direct") // direct, booking_com, expedia
+  otaRef    String?
+
+  // Payment
+  paidAt    DateTime?
+  paymentRef String?
+
+  hotel     Hotel         @relation(fields: [hotelId], references: [id])
+  room      HotelRoom     @relation(fields: [roomId], references: [id])
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("hotel_bookings")
+}
+
+// ─────────────────────────────────────────────
+// GEOTRUST (§7C CDC)
+// ─────────────────────────────────────────────
+
+enum GeoTrustLevel {
+  STANDARD
+  EXPERT
+  ELITE
+}
+
+enum GeoServiceCode {
+  GEO_GPS
+  SURF
+  BORN
+  INSP
+  TOPO
+  CONF
+  DRON
+  CERT
+}
+
+enum GeoMissionStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  VALIDATION
+  COMPLETED
+  CANCELLED
+}
+
+model Geometer {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  displayName  String
+  level        GeoTrustLevel @default(STANDARD)
+  specialties  GeoServiceCode[]
+  country      Country
+  city         String
+  phone        String?
+
+  // Certification
+  certifiedAt  DateTime?
+  certScore    Float?
+  badgeCode    String?
+
+  // Stats
+  totalMissions Int          @default(0)
+  avgRating     Float        @default(0)
+  isAvailable   Boolean      @default(true)
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  missions     GeoTrustMission[]
+
+  @@map("geometers")
+}
+
+model GeoTrustMission {
+  id           String           @id @default(cuid())
+  reference    String           @unique @default(cuid())
+
+  propertyId   String?
+  requesterId  String
+  geometerId   String?
+
+  serviceCode  GeoServiceCode
+  status       GeoMissionStatus @default(PENDING)
+
+  // Location
+  country      Country
+  city         String
+  address      String?
+  latitude     Float?
+  longitude    Float?
+
+  // Pack
+  packName     String?          // Standard, Certification, Drone
+
+  // Pricing
+  price        Float
+  currency     Currency         @default(XOF)
+
+  // Schedule
+  scheduledAt  DateTime?
+  completedAt  DateTime?
+
+  // Report
+  reportUrl    String?
+  surfaceFound Float?           // superficie constatée
+  notes        String?
+
+  // Validation
+  isValidated  Boolean          @default(false)
+  validatedAt  DateTime?
+
+  geometer     Geometer?        @relation(fields: [geometerId], references: [id])
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([requesterId])
+  @@index([status])
+  @@map("geotrust_missions")
+}
+
+// ─────────────────────────────────────────────
+// SUBSCRIPTIONS / HELM (§5.5b / §11 CDC)
+// ─────────────────────────────────────────────
+
+enum SubscriptionPlan {
+  // HELM Agent plans
+  HELM_SEED     // 15,000 FCFA/mois
+  HELM_GROW     // 35,000 FCFA/mois
+  HELM_LEAD     // 75,000 FCFA/mois
+  HELM_NETWORK  // Sur devis
+
+  // PMS Hotel plans
+  PMS_STARTER   // 9,900 FCFA/mois
+  PMS_PRO       // 24,900 FCFA/mois
+  PMS_ENTERPRISE
+
+  // Artisan Pro
+  ARTISAN_PRO   // 8,900 FCFA/mois
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  userId      String
+
+  plan        SubscriptionPlan
+  status      SubscriptionStatus @default(TRIAL)
+
+  // Pricing
+  amount      Float
+  currency    Currency           @default(XOF)
+  billingCycle String            @default("monthly") // monthly, yearly
+
+  // Dates
+  startDate   DateTime           @default(now())
+  endDate     DateTime?
+  trialEnd    DateTime?
+  cancelledAt DateTime?
+
+  // Payment
+  paymentMethod String?          // mobile_money, card
+  fedapayRef    String?
+  stripeRef     String?
+
+  // Limits (tracked)
+  listingsUsed  Int              @default(0)
+  listingsMax   Int              @default(5)
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+// ─────────────────────────────────────────────
+// KYC DOCUMENTS (§5.0 CDC)
+// ─────────────────────────────────────────────
+
+enum KYCDocType {
+  CNI
+  PASSPORT
+  PERMIS
+  RCCM      // Registre commerce artisan
+  PATENTE
+  SELFIE
+  UTILITY_BILL
+}
+
+enum KYCLevel {
+  KYC0  // browse only
+  KYC1  // 500K XOF/month
+  KYC2  // 5M XOF/month
+  KYC3  // unlimited
+}
+
+model KYCDocument {
+  id         String     @id @default(cuid())
+  userId     String
+  docType    KYCDocType
+  url        String     // Cloudflare R2 URL
+  fileSize   Int?
+  mimeType   String?
+  isVerified Boolean    @default(false)
+  verifiedAt DateTime?
+  rejectedAt DateTime?
+  rejectReason String?
+
+  createdAt  DateTime   @default(now())
+
+  @@index([userId])
+  @@map("kyc_documents")
+}
+
+// ─────────────────────────────────────────────
+// COMMUNITY GAMIFICATION (§5.7 CDC)
+// ─────────────────────────────────────────────
+
+enum BadgeType {
+  FIRST_LISTING
+  VERIFIED_AGENT
+  TOP_REVIEWER
+  COMMUNITY_STAR
+  EARLY_ADOPTER
+  SUPER_HOST
+  AMBASSADOR
+}
+
+model UserBadge {
+  id        String    @id @default(cuid())
+  userId    String
+  badge     BadgeType
+  awardedAt DateTime  @default(now())
+  note      String?
+
+  @@unique([userId, badge])
+  @@map("user_badges")
+}
+
+model PointTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int      // positive = earned, negative = spent
+  reason    String   // listing_published, review_left, etc.
+  refId     String?  // related entity id
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("point_transactions")
+}
+
+// ─────────────────────────────────────────────
+// AI CHAT (§8 CDC)
+// ─────────────────────────────────────────────
+
+model AIChatSession {
+  id        String    @id @default(cuid())
+  userId    String?   // nullable for anonymous
+  channel   String    @default("web") // web, mobile, whatsapp, sms
+  messages  Json      // [{role, content, ts}]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("ai_chat_sessions")
 }

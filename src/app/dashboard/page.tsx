@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
   const userId = session.user.id as string;
 
-  const [user, properties, transactions, messages] = await Promise.all([
+  const [user, properties, transactions, messages, escrowTx, subscription, badges] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -70,6 +70,16 @@ export default async function DashboardPage() {
         sender: { select: { id: true, name: true, image: true } },
       },
     }),
+    prisma.escrowTransaction.findMany({
+      where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.subscription.findFirst({
+      where: { userId, status: { in: ["TRIAL", "ACTIVE"] } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.userBadge.findMany({ where: { userId } }),
   ]);
 
   if (!user) redirect("/login");
@@ -78,11 +88,12 @@ export default async function DashboardPage() {
   const activeProperties = properties.filter((p) => p.status === "ACTIVE").length;
   const totalViews = properties.reduce((sum, p) => sum + p.viewCount, 0);
   const unreadMessages = messages.filter((m) => !m.isRead).length;
+  const activeEscrow = escrowTx.filter((e) => !["RELEASED", "REFUNDED", "EXPIRED"].includes(e.state)).length;
 
   const STATS = [
     { label: "Annonces actives", value: String(activeProperties), icon: "🏠", trend: `${properties.length} au total`, color: "#0070BA" },
     { label: "Vues totales", value: totalViews.toLocaleString("fr-FR"), icon: "👁️", trend: "Toutes annonces confondues", color: "#003087" },
-    { label: "Transactions", value: String(transactions.length), icon: "💰", trend: "Récentes", color: "#00A651" },
+    { label: "Escrow actifs", value: String(activeEscrow), icon: "🔒", trend: `${escrowTx.length} transactions`, color: "#00A651" },
     { label: "Messages non lus", value: String(unreadMessages), icon: "💬", trend: `${messages.length} reçus au total`, color: "#FFB900" },
   ];
 
@@ -90,7 +101,7 @@ export default async function DashboardPage() {
     <>
       <Navbar />
 
-      <main className="pt-16 min-h-screen bg-gray-50">
+      <main className="pt-[72px] min-h-screen bg-gray-50">
         <div className="container-app py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -215,41 +226,54 @@ export default async function DashboardPage() {
                 </Button>
               </Card>
 
-              {/* Transactions */}
+              {/* Escrow Transactions */}
               <Card>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-800">Transactions récentes</h2>
+                  <h2 className="text-lg font-bold text-gray-800">Escrow — Transactions</h2>
                   <Link href="/dashboard/transactions" className="text-sm text-[#0070BA] hover:underline">
                     Voir tout
                   </Link>
                 </div>
                 <div className="space-y-3">
-                  {transactions.length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-4">Aucune transaction pour l&apos;instant.</p>
+                  {escrowTx.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-4">Aucune transaction escrow pour l&apos;instant.</p>
                   )}
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#0070BA]/10 flex items-center justify-center">
-                          <span className="text-lg">💰</span>
+                  {escrowTx.map((tx) => {
+                    const isBuyer = tx.buyerId === userId;
+                    const stateColors: Record<string, string> = {
+                      CREATED: "gray", FUNDED: "primary", IN_PROGRESS: "primary",
+                      VALIDATION: "gold", RELEASED: "success", REFUNDED: "gray",
+                      EXPIRED: "gray", DISPUTED: "danger",
+                    };
+                    const stateLabels: Record<string, string> = {
+                      CREATED: "Créé", FUNDED: "Financé", IN_PROGRESS: "En cours",
+                      VALIDATION: "Validation", RELEASED: "Libéré", REFUNDED: "Remboursé",
+                      EXPIRED: "Expiré", DISPUTED: "Litige",
+                    };
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-[#0070BA]/10 flex items-center justify-center">
+                            <span className="text-lg">🔒</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800 text-sm">{tx.type.replace(/_/g, " ")}</p>
+                            <p className="text-xs text-gray-400">
+                              {isBuyer ? "Acheteur" : "Vendeur"} · {new Date(tx.createdAt).toLocaleDateString("fr-FR")}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-800 text-sm">{tx.type}</p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(tx.createdAt).toLocaleDateString("fr-FR")}
+                        <div className="text-right">
+                          <p className="font-bold text-[#003087]">
+                            {formatCurrency(Number(tx.amount), tx.currency as string)}
                           </p>
+                          <Badge variant={stateColors[tx.state] as any} size="sm">
+                            {stateLabels[tx.state] ?? tx.state}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-[#003087]">
-                          +{formatCurrency(Number(tx.amount), tx.currency as string)}
-                        </p>
-                        <Badge variant={TRANSACTION_COLORS[tx.status as string] as any} size="sm">
-                          {tx.status === "RELEASED" ? "Reçu" : tx.status === "ESCROW" ? "En séquestre" : tx.status as string}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
             </div>
@@ -325,6 +349,44 @@ export default async function DashboardPage() {
                   ))}
                 </div>
               </Card>
+
+              {/* Subscription */}
+              {subscription && (
+                <Card className="border border-[#FFB900]/30 bg-amber-50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">⭐</span>
+                    <p className="font-bold text-[#003087]">
+                      {subscription.plan.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Actif jusqu&apos;au {subscription.endDate ? new Date(subscription.endDate).toLocaleDateString("fr-FR") : "—"}
+                  </p>
+                  <div className="mt-2 text-xs text-gray-600">
+                    Annonces : {subscription.listingsUsed}/{subscription.listingsMax === 9999 ? "∞" : subscription.listingsMax}
+                  </div>
+                </Card>
+              )}
+
+              {/* Badges */}
+              {badges.length > 0 && (
+                <Card>
+                  <h3 className="font-bold text-gray-800 mb-3">Badges ({badges.length})</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {badges.map((b) => {
+                      const BADGE_ICONS: Record<string, string> = {
+                        FIRST_LISTING: "🏠", VERIFIED_AGENT: "✅", TOP_REVIEWER: "⭐",
+                        COMMUNITY_STAR: "🌟", EARLY_ADOPTER: "🚀", SUPER_HOST: "🏆", AMBASSADOR: "🌍",
+                      };
+                      return (
+                        <span key={b.badge} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                          {BADGE_ICONS[b.badge] ?? "🎖️"} {b.badge.replace(/_/g, " ")}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
 
               {/* KYC/Verification status */}
               <Card className="bg-gradient-to-br from-[#003087] to-[#0070BA] text-white">

@@ -11,11 +11,12 @@ const FOOTER_LINKS = {
   ],
   services: [
     { href: "/guesthouses", label: "Guesthouses" },
+    { href: "/hotels", label: "Hôtels & OTA" },
     { href: "/artisans", label: "Artisans BTP" },
-    { href: "/artisans/emergency", label: "Urgences 24h/7j" },
+    { href: "/geotrust", label: "GeoTrust Foncier" },
     { href: "/academy", label: "Formation Academy" },
     { href: "/community", label: "Communauté" },
-    { href: "/invest", label: "Investir" },
+    { href: "/tarifs", label: "Abonnements Agents" },
   ],
   compagnie: [
     { href: "/about", label: "À propos" },

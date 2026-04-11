@@ -54,6 +54,20 @@ const SERVICES = [
     href: "/community",
     iconBg: "bg-cyan-100",
   },
+  {
+    icon: "🏨",
+    title: "Hôtels & OTA",
+    desc: "630+ hôtels partenaires avec disponibilités Booking.com & Expedia synchronisées en temps réel.",
+    href: "/hotels",
+    iconBg: "bg-teal-100",
+  },
+  {
+    icon: "📐",
+    title: "GeoTrust Foncier",
+    desc: "Validation physique du terrain par géomètres certifiés. Rapports blockchain. Zéro fraude foncière.",
+    href: "/geotrust",
+    iconBg: "bg-emerald-100",
+  },
 ];
 
 const CITIES = [
@@ -189,7 +203,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {SERVICES.map((service) => (
               <Link key={service.href} href={service.href} className="block h-full">
-                <div className="group bg-white rounded-2xl p-8 h-full border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.08)] card-hover">
+                <div className="group bg-white rounded-2xl p-6 h-full border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.08)] card-hover">
                   <div
                     className={`w-12 h-12 rounded-xl ${service.iconBg} flex items-center justify-center text-2xl mb-6`}
                   >
@@ -239,7 +253,7 @@ export default function HomePage() {
                 key={city.name}
                 href={`/properties?country=${city.country}&city=${city.name}`}
               >
-                <div className="group bg-[#F8FAFC] rounded-2xl p-8 text-center border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] card-hover">
+                <div className="group bg-[#F8FAFC] rounded-2xl p-4 text-center border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] card-hover">
                   <span className="text-4xl mb-3 block">{city.flag}</span>
                   <h3 className="text-xl font-semibold text-[#111827] group-hover:text-[#0070BA] transition-colors duration-200">
                     {city.name}

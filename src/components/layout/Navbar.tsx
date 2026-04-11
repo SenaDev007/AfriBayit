@@ -4,15 +4,30 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Button from "@/components/ui/Button";
+import NotificationBell from "@/components/layout/NotificationBell";
 import { cn } from "@/lib/utils";
 
+// Primary nav links (shown at lg breakpoint)
 const NAV_LINKS = [
+  { href: "/properties", label: "Immobilier" },
+  { href: "/hotels", label: "Hôtels" },
+  { href: "/artisans", label: "Artisans" },
+  { href: "/geotrust", label: "GeoTrust" },
+  { href: "/academy", label: "Formation" },
+  { href: "/community", label: "Communauté" },
+];
+
+// All links for mobile menu
+const ALL_NAV_LINKS = [
   { href: "/properties", label: "Immobilier" },
   { href: "/rentals", label: "Locations" },
   { href: "/guesthouses", label: "Guesthouses" },
+  { href: "/hotels", label: "Hôtels" },
   { href: "/artisans", label: "Artisans" },
+  { href: "/geotrust", label: "GeoTrust" },
   { href: "/academy", label: "Formation" },
   { href: "/community", label: "Communauté" },
+  { href: "/tarifs", label: "Abonnements" },
 ];
 
 interface NavbarProps {
@@ -81,6 +96,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-3">
+            {session?.user && <NotificationBell solidNav={solidNav} />}
             {session?.user ? (
               <div className="relative">
                 <button
@@ -192,7 +208,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
       {mobileOpen && (
         <div className="lg:hidden bg-white border-t border-slate-100 shadow-xl max-h-[calc(100vh-72px)] overflow-y-auto">
           <div className="container-app py-3 space-y-1">
-            {NAV_LINKS.map((link) => (
+            {ALL_NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
