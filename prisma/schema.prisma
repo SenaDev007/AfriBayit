@@ -180,6 +180,8 @@ model User {
   notifications Notification[]
   transactions  Transaction[]
   kycDocuments  KYCDocument[]
+  escrowAsBuyer  EscrowTransaction[] @relation("EscrowBuyer")
+  escrowAsSeller EscrowTransaction[] @relation("EscrowSeller")
 
   @@map("users")
 }
@@ -918,10 +920,49 @@ model EscrowTransaction {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
+  buyer         User        @relation("EscrowBuyer", fields: [buyerId], references: [id])
+  seller        User        @relation("EscrowSeller", fields: [sellerId], references: [id])
+
   @@index([buyerId])
   @@index([sellerId])
   @@index([state])
   @@map("escrow_transactions")
+}
+
+// ─────────────────────────────────────────────
+// LEDGER FINANCIER DOUBLE-ENTRÉE (§7B CDC)
+// ─────────────────────────────────────────────
+
+enum LedgerEntryType {
+  DEPOSIT      // Buyer funds escrow
+  COMMISSION   // Platform fee deducted
+  RELEASE      // Funds released to seller
+  REFUND       // Funds returned to buyer
+  ADJUSTMENT   // Manual admin correction
+}
+
+model LedgerEntry {
+  id            String          @id @default(cuid())
+  escrowId      String?         // Related escrow transaction
+  entryType     LedgerEntryType
+  /// Account debited (buyer:userId, seller:userId, escrow:platform, platform:revenue)
+  debitAccount  String
+  /// Account credited
+  creditAccount String
+  amount        Float
+  currency      Currency        @default(XOF)
+  description   String
+  /// SHA256 hash of previous entry ID — immutable audit chain
+  prevHash      String?
+  hash          String?
+
+  createdAt     DateTime        @default(now())
+
+  @@index([escrowId])
+  @@index([debitAccount])
+  @@index([creditAccount])
+  @@index([createdAt])
+  @@map("ledger_entries")
 }
 
 // ─────────────────────────────────────────────
