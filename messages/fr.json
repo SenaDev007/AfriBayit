@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "properties": "Annonces",
+    "hotels": "Hôtels",
+    "artisans": "Artisans",
+    "geotrust": "GeoTrust",
+    "academy": "Academy",
+    "community": "Communauté",
+    "publish": "Publier",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "dashboard": "Tableau de bord",
+    "logout": "Déconnexion"
+  },
+  "home": {
+    "hero_title": "Votre plateforme immobilière pan-africaine",
+    "hero_subtitle": "Achetez, vendez ou louez en toute sécurité avec l'escrow obligatoire",
+    "hero_cta": "Explorer les annonces",
+    "hero_cta_secondary": "Publier une annonce",
+    "search_placeholder": "Ville, quartier, type de bien...",
+    "stats_properties": "annonces actives",
+    "stats_countries": "pays couverts",
+    "stats_hotels": "hôtels partenaires",
+    "stats_artisans": "artisans certifiés"
+  },
+  "properties": {
+    "title": "Annonces Immobilières",
+    "publish": "Publier une annonce",
+    "empty": "Aucune annonce trouvée",
+    "empty_hint": "Essayez de modifier vos filtres ou votre recherche.",
+    "reset_filters": "Réinitialiser les filtres",
+    "filters_title": "Filtres",
+    "sort_recent": "Plus récents",
+    "sort_price_asc": "Prix croissant",
+    "sort_price_desc": "Prix décroissant",
+    "sort_score": "Score investissement",
+    "sort_views": "Plus consultés"
+  },
+  "escrow": {
+    "title": "Paiement sécurisé",
+    "description": "Tous les paiements transitent par notre escrow certifié BCEAO",
+    "badge": "Escrow protégé"
+  },
+  "kyc": {
+    "level0": "Navigation libre",
+    "level1": "500 000 XOF/mois",
+    "level2": "5 000 000 XOF/mois",
+    "level3": "Illimité"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Envoyer",
+    "search": "Rechercher",
+    "see_all": "Voir tout",
+    "per_month": "/mois",
+    "per_year": "/an",
+    "per_night": "/nuit",
+    "fcfa": "FCFA"
+  }
+}

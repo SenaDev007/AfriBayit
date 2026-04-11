@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "properties": "Listings",
+    "hotels": "Hotels",
+    "artisans": "Artisans",
+    "geotrust": "GeoTrust",
+    "academy": "Academy",
+    "community": "Community",
+    "publish": "List Property",
+    "login": "Sign In",
+    "register": "Sign Up",
+    "dashboard": "Dashboard",
+    "logout": "Sign Out"
+  },
+  "home": {
+    "hero_title": "Your Pan-African Real Estate Platform",
+    "hero_subtitle": "Buy, sell or rent securely with mandatory escrow protection",
+    "hero_cta": "Browse Listings",
+    "hero_cta_secondary": "List a Property",
+    "search_placeholder": "City, neighborhood, property type...",
+    "stats_properties": "active listings",
+    "stats_countries": "countries covered",
+    "stats_hotels": "partner hotels",
+    "stats_artisans": "certified artisans"
+  },
+  "properties": {
+    "title": "Property Listings",
+    "publish": "List a Property",
+    "empty": "No listings found",
+    "empty_hint": "Try adjusting your filters or search terms.",
+    "reset_filters": "Reset filters",
+    "filters_title": "Filters",
+    "sort_recent": "Most recent",
+    "sort_price_asc": "Price: Low to High",
+    "sort_price_desc": "Price: High to Low",
+    "sort_score": "Investment score",
+    "sort_views": "Most viewed"
+  },
+  "escrow": {
+    "title": "Secure Payment",
+    "description": "All payments go through our BCEAO-certified escrow system",
+    "badge": "Escrow protected"
+  },
+  "kyc": {
+    "level0": "Free browsing",
+    "level1": "500,000 XOF/month",
+    "level2": "5,000,000 XOF/month",
+    "level3": "Unlimited"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "see_all": "See all",
+    "per_month": "/month",
+    "per_year": "/year",
+    "per_night": "/night",
+    "fcfa": "FCFA"
+  }
+}

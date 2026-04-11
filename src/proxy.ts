@@ -5,6 +5,21 @@ import { RATE_LIMITS } from "@/lib/rateLimit";
 const PROTECTED_PATHS = ["/dashboard", "/properties/new", "/artisans/register", "/kyc", "/admin"];
 const AUTH_PATHS = ["/login", "/register", "/forgot-password"];
 
+// Subdomain → country mapping (multitenancy §5 CDC)
+// bj.afribayit.com → BJ, ci.afribayit.com → CI, etc.
+const SUBDOMAIN_COUNTRIES: Record<string, string> = {
+  bj: "BJ",
+  ci: "CI",
+  bf: "BF",
+  tg: "TG",
+};
+
+function detectCountryFromSubdomain(req: Request): string | null {
+  const host = req.headers.get("host") ?? "";
+  const subdomain = host.split(".")[0].toLowerCase();
+  return SUBDOMAIN_COUNTRIES[subdomain] ?? null;
+}
+
 // Auth-level rate limited routes (§10.2.1 CDC)
 const AUTH_RATE_ROUTES = [
   "/api/auth/",
@@ -83,6 +98,12 @@ export default auth((req) => {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
+  // ── Multitenancy: inject country from subdomain ──────────────
+  const country = detectCountryFromSubdomain(req);
+  if (country) {
+    response.headers.set("x-afribayit-country", country);
+  }
 
   return response;
 });

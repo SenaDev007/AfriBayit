@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useNotificationStream } from "@/hooks/useNotificationStream";
 
 interface Notification {
   id: string;
@@ -75,17 +76,31 @@ export default function NotificationBell({ solidNav }: NotificationBellProps) {
     }
   }, [session?.user]);
 
-  // Fetch on mount + poll every 60s
+  // Initial fetch on mount
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60_000);
-    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   // Fetch when panel opens
   useEffect(() => {
     if (open) fetchNotifications();
   }, [open, fetchNotifications]);
+
+  // SSE — live push notifications (replaces 60s polling)
+  useNotificationStream({
+    enabled: !!session?.user,
+    onInit: ({ notifications: notifs, unreadCount: count }) => {
+      setNotifications(notifs);
+      setUnreadCount(count);
+    },
+    onNotification: ({ notifications: newNotifs, unreadCount: count }) => {
+      setNotifications((prev) => {
+        const ids = new Set(prev.map((n) => n.id));
+        return [...newNotifs.filter((n) => !ids.has(n.id)), ...prev].slice(0, 50);
+      });
+      setUnreadCount(count);
+    },
+  });
 
   // Close on outside click
   useEffect(() => {
