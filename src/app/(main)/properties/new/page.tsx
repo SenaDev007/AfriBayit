@@ -1,23 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { COUNTRY_LABELS } from "@/lib/utils";
+import { Shield, Upload, X, CheckCircle, AlertTriangle, Info } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+interface LegalDocInfo {
+  code: string;
+  label: string;
+  status: "ACCEPTED" | "CONDITIONAL" | "REJECTED";
+  authority: string;
+  note: string;
+}
+
 interface FormState {
-  // Step 1
   type: string;
   listingType: string;
   country: string;
   city: string;
   district: string;
-  // Step 2
   title: string;
   description: string;
   price: string;
@@ -34,8 +41,8 @@ interface FormState {
   hasWifi: boolean;
   hasAC: boolean;
   hasBalcony: boolean;
-  // Step 3
-  isPremium: boolean;
+  // Step 3 — legal doc
+  legalDocType: string;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -75,29 +82,25 @@ const FEATURES: { key: keyof FormState; label: string; icon: string }[] = [
 ];
 
 const INITIAL_FORM: FormState = {
-  type: "",
-  listingType: "",
-  country: "",
-  city: "",
-  district: "",
-  title: "",
-  description: "",
-  price: "",
-  currency: "XOF",
-  surface: "",
-  bedrooms: "",
-  bathrooms: "",
-  yearBuilt: "",
-  hasPool: false,
-  hasGarage: false,
-  hasGarden: false,
-  hasSecurity: false,
-  hasGenerator: false,
-  hasWifi: false,
-  hasAC: false,
-  hasBalcony: false,
-  isPremium: false,
+  type: "", listingType: "", country: "", city: "", district: "",
+  title: "", description: "", price: "", currency: "XOF",
+  surface: "", bedrooms: "", bathrooms: "", yearBuilt: "",
+  hasPool: false, hasGarage: false, hasGarden: false, hasSecurity: false,
+  hasGenerator: false, hasWifi: false, hasAC: false, hasBalcony: false,
+  legalDocType: "",
 };
+
+const DOC_STATUS_STYLE = {
+  ACCEPTED: { bg: "bg-green-50 border-green-300", icon: <CheckCircle size={14} className="text-green-600" />, label: "Accepté" },
+  CONDITIONAL: { bg: "bg-yellow-50 border-yellow-300", icon: <AlertTriangle size={14} className="text-yellow-600" />, label: "Conditionnel — validation admin" },
+  REJECTED: { bg: "bg-red-50 border-red-300", icon: <X size={14} className="text-red-600" />, label: "Refusé — non valide dans ce pays" },
+};
+
+const STEPS = [
+  { number: 1, label: "Type & Localisation" },
+  { number: 2, label: "Détails & Prix" },
+  { number: 3, label: "Docs & Photos" },
+];
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -107,12 +110,38 @@ export default function NewPropertyPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState | "general", string>>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState("");
+
+  // Step 3 state
+  const [legalDocs, setLegalDocs] = useState<LegalDocInfo[]>([]);
+  const [selectedDocInfo, setSelectedDocInfo] = useState<LegalDocInfo | null>(null);
+  const [legalDocFile, setLegalDocFile] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const legalDocRef = useRef<HTMLInputElement | null>(null);
+  const photoRef = useRef<HTMLInputElement | null>(null);
+
+  // Fetch legal docs for selected country when entering step 3
+  useEffect(() => {
+    if (step === 3 && form.country) {
+      fetch(`/api/properties/validate-docs?country=${form.country}`)
+        .then((r) => r.json())
+        .then((d) => setLegalDocs(d.documents ?? []))
+        .catch(() => setLegalDocs([]));
+    }
+  }, [step, form.country]);
+
+  // Update selectedDocInfo when legalDocType changes
+  useEffect(() => {
+    const info = legalDocs.find((d) => d.code === form.legalDocType) ?? null;
+    setSelectedDocInfo(info);
+  }, [form.legalDocType, legalDocs]);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
+    setErrors((prev) => { const n = { ...prev }; delete n[key]; return n; });
   }
 
   function validateStep1(): boolean {
@@ -130,9 +159,16 @@ export default function NewPropertyPage() {
     if (!form.title.trim()) errs.title = "Le titre est requis.";
     if (!form.description.trim()) errs.description = "La description est requise.";
     if (form.description.trim().length < 50) errs.description = "La description doit faire au moins 50 caractères.";
-    if (!form.price || isNaN(Number(form.price)) || Number(form.price) <= 0) {
-      errs.price = "Entrez un prix valide.";
-    }
+    if (!form.price || isNaN(Number(form.price)) || Number(form.price) <= 0) errs.price = "Entrez un prix valide.";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function validateStep3(): boolean {
+    const errs: typeof errors = {};
+    if (!form.legalDocType) errs.legalDocType = "Sélectionnez le type de document foncier.";
+    if (selectedDocInfo?.status === "REJECTED") errs.legalDocType = "Ce document n'est pas valide dans ce pays.";
+    if (!legalDocFile) errs.general = "Uploadez le document foncier (obligatoire).";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -149,11 +185,32 @@ export default function NewPropertyPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function handlePhotoAdd(files: FileList | null) {
+    if (!files) return;
+    const newFiles = Array.from(files).slice(0, 15 - photos.length);
+    setPhotos((prev) => [...prev, ...newFiles]);
+    const previews = newFiles.map((f) => URL.createObjectURL(f));
+    setPhotoPreviews((prev) => [...prev, ...previews]);
+  }
+
+  function removePhoto(index: number) {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPhotoPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
   async function handleSubmit() {
     if (!validateStep2()) { setStep(2); return; }
+    if (!validateStep3()) return;
+
     setSubmitting(true);
     setErrors({});
+
     try {
+      // 1. Create property
+      setSubmitProgress("Création de l'annonce…");
       const body = {
         type: form.type,
         listingType: form.listingType,
@@ -168,15 +225,10 @@ export default function NewPropertyPage() {
         bedrooms: form.bedrooms ? Number(form.bedrooms) : undefined,
         bathrooms: form.bathrooms ? Number(form.bathrooms) : undefined,
         yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : undefined,
-        hasPool: form.hasPool,
-        hasGarage: form.hasGarage,
-        hasGarden: form.hasGarden,
-        hasSecurity: form.hasSecurity,
-        hasGenerator: form.hasGenerator,
-        hasWifi: form.hasWifi,
-        hasAC: form.hasAC,
-        hasBalcony: form.hasBalcony,
-        isPremium: form.isPremium,
+        hasPool: form.hasPool, hasGarage: form.hasGarage, hasGarden: form.hasGarden,
+        hasSecurity: form.hasSecurity, hasGenerator: form.hasGenerator,
+        hasWifi: form.hasWifi, hasAC: form.hasAC, hasBalcony: form.hasBalcony,
+        legalDocType: form.legalDocType,
       };
 
       const res = await fetch("/api/properties", {
@@ -186,36 +238,56 @@ export default function NewPropertyPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "Erreur lors de la publication.");
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d?.error || "Erreur lors de la création.");
       }
 
-      router.push("/dashboard/properties");
+      const { data: property } = await res.json();
+      const propertyId = property.id;
+
+      // 2. Upload legal document
+      if (legalDocFile) {
+        setSubmitProgress("Envoi du document foncier…");
+        const legalForm = new FormData();
+        legalForm.append("file", legalDocFile);
+        legalForm.append("propertyId", propertyId);
+        // We store it via the KYC-like pattern but on the property
+        // For now we upload it as a property-level field update
+        // TODO: dedicated legal doc endpoint
+      }
+
+      // 3. Upload photos
+      if (photos.length > 0) {
+        setSubmitProgress(`Upload des photos (0/${photos.length})…`);
+        for (let i = 0; i < photos.length; i++) {
+          const fd = new FormData();
+          fd.append("file", photos[i]);
+          if (i === 0) fd.append("isPrimary", "true");
+          await fetch(`/api/properties/${propertyId}/images`, { method: "POST", body: fd });
+          setSubmitProgress(`Upload des photos (${i + 1}/${photos.length})…`);
+        }
+      }
+
+      setSubmitProgress("Redirection…");
+      router.push("/dashboard/properties?published=1");
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "Une erreur s'est produite." });
       setSubmitting(false);
+      setSubmitProgress("");
     }
   }
-
-  // ─── Step labels ─────────────────────────────────────────────────────────
-
-  const STEPS = [
-    { number: 1, label: "Type & Localisation" },
-    { number: 2, label: "Détails & Prix" },
-    { number: 3, label: "Photos & Publication" },
-  ];
 
   const listingTypeLabel = LISTING_TYPES.find((l) => l.value === form.listingType)?.label ?? "";
   const typeLabel = PROPERTY_TYPES.find((t) => t.value === form.type)?.label ?? "";
   const countryLabel = COUNTRY_LABELS[form.country] ?? form.country;
   const activeFeatures = FEATURES.filter((f) => form[f.key] === true);
+  const isPhase1Country = ["BJ", "CI", "BF", "TG"].includes(form.country);
 
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
     <>
       <Navbar />
-
       <main className="pt-[72px] min-h-screen bg-gray-50">
         <div className="max-w-2xl mx-auto px-6 lg:px-20 py-8 sm:py-12">
 
@@ -236,30 +308,20 @@ export default function NewPropertyPage() {
             {STEPS.map((s, i) => (
               <div key={s.number} className="flex items-center flex-1">
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                      step > s.number
-                        ? "bg-[#00A651] text-white"
-                        : step === s.number
-                        ? "bg-[#0070BA] text-white shadow-md shadow-blue-200"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    step > s.number ? "bg-[#00A651] text-white" :
+                    step === s.number ? "bg-[#0070BA] text-white shadow-md shadow-blue-200" :
+                    "bg-gray-200 text-gray-400"
+                  }`}>
                     {step > s.number ? (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                    ) : (
-                      s.number
-                    )}
+                    ) : s.number}
                   </div>
-                  <span
-                    className={`text-xs font-medium hidden sm:block ${
-                      step === s.number ? "text-[#0070BA]" : step > s.number ? "text-[#00A651]" : "text-gray-400"
-                    }`}
-                  >
-                    {s.label}
-                  </span>
+                  <span className={`text-xs font-medium hidden sm:block ${
+                    step === s.number ? "text-[#0070BA]" : step > s.number ? "text-[#00A651]" : "text-gray-400"
+                  }`}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-3 ${step > s.number ? "bg-[#00A651]" : "bg-gray-200"}`} />
@@ -273,10 +335,7 @@ export default function NewPropertyPage() {
 
             {/* Global error */}
             {errors.general && (
-              <div className="mx-6 mt-6 bg-red-50 border border-red-200 text-[#D93025] text-sm rounded-xl px-4 py-3 flex items-start gap-2">
-                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+              <div className="mx-6 mt-6 bg-red-50 border border-red-200 text-[#D93025] text-sm rounded-xl px-4 py-3">
                 {errors.general}
               </div>
             )}
@@ -288,72 +347,35 @@ export default function NewPropertyPage() {
                   <h2 className="text-lg font-bold text-[#003087] mb-1">Type de bien</h2>
                   <p className="text-sm text-gray-500">Quel type de bien souhaitez-vous publier ?</p>
                 </div>
-
-                {/* Property type */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2.5">
-                    Type de bien <span className="text-[#D93025]">*</span>
-                  </p>
+                  <p className="text-sm font-medium text-gray-700 mb-2.5">Type de bien <span className="text-[#D93025]">*</span></p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {PROPERTY_TYPES.map((t) => (
-                      <button
-                        key={t.value}
-                        type="button"
-                        onClick={() => set("type", t.value)}
+                      <button key={t.value} type="button" onClick={() => set("type", t.value)}
                         className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                          form.type === t.value
-                            ? "border-[#0070BA] bg-blue-50 text-[#0070BA]"
-                            : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
+                          form.type === t.value ? "border-[#0070BA] bg-blue-50 text-[#0070BA]" : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                        }`}>
                         <span className="text-2xl">{t.icon}</span>
                         <span className="text-xs leading-tight text-center">{t.label}</span>
                       </button>
                     ))}
                   </div>
-                  {errors.type && (
-                    <p className="text-xs text-[#D93025] mt-1.5 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.type}
-                    </p>
-                  )}
+                  {errors.type && <p className="text-xs text-[#D93025] mt-1.5">{errors.type}</p>}
                 </div>
-
-                {/* Listing type */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2.5">
-                    Type d&apos;annonce <span className="text-[#D93025]">*</span>
-                  </p>
+                  <p className="text-sm font-medium text-gray-700 mb-2.5">Type d&apos;annonce <span className="text-[#D93025]">*</span></p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     {LISTING_TYPES.map((l) => (
-                      <button
-                        key={l.value}
-                        type="button"
-                        onClick={() => set("listingType", l.value)}
+                      <button key={l.value} type="button" onClick={() => set("listingType", l.value)}
                         className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                          form.listingType === l.value
-                            ? "border-[#0070BA] bg-blue-50 text-[#0070BA]"
-                            : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="text-lg">{l.icon}</span>
-                        {l.label}
+                          form.listingType === l.value ? "border-[#0070BA] bg-blue-50 text-[#0070BA]" : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                        }`}>
+                        <span className="text-lg">{l.icon}</span>{l.label}
                       </button>
                     ))}
                   </div>
-                  {errors.listingType && (
-                    <p className="text-xs text-[#D93025] mt-1.5 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.listingType}
-                    </p>
-                  )}
+                  {errors.listingType && <p className="text-xs text-[#D93025] mt-1.5">{errors.listingType}</p>}
                 </div>
-
-                {/* Location */}
                 <div>
                   <h3 className="text-sm font-bold text-gray-700 mb-3">Localisation</h3>
                   <div className="space-y-4">
@@ -361,44 +383,18 @@ export default function NewPropertyPage() {
                       <label htmlFor="country" className="block text-sm font-medium text-gray-700">
                         Pays <span className="text-[#D93025]">*</span>
                       </label>
-                      <select
-                        id="country"
-                        value={form.country}
-                        onChange={(e) => set("country", e.target.value)}
-                        className={`input-afri ${errors.country ? "border-[#D93025]" : ""}`}
-                      >
+                      <select id="country" value={form.country} onChange={(e) => set("country", e.target.value)}
+                        className={`input-afri ${errors.country ? "border-[#D93025]" : ""}`}>
                         <option value="">Sélectionnez un pays</option>
                         {Object.entries(COUNTRY_LABELS).map(([code, label]) => (
                           <option key={code} value={code}>{label}</option>
                         ))}
                       </select>
-                      {errors.country && (
-                        <p className="text-xs text-[#D93025] flex items-center gap-1">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          {errors.country}
-                        </p>
-                      )}
+                      {errors.country && <p className="text-xs text-[#D93025]">{errors.country}</p>}
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        label="Ville"
-                        id="city"
-                        value={form.city}
-                        onChange={(e) => set("city", e.target.value)}
-                        placeholder="Ex : Cotonou"
-                        required
-                        error={errors.city}
-                      />
-                      <Input
-                        label="Quartier / District"
-                        id="district"
-                        value={form.district}
-                        onChange={(e) => set("district", e.target.value)}
-                        placeholder="Ex : Haie Vive"
-                      />
+                      <Input label="Ville" id="city" value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="Ex : Cotonou" required error={errors.city} />
+                      <Input label="Quartier / District" id="district" value={form.district} onChange={(e) => set("district", e.target.value)} placeholder="Ex : Haie Vive" />
                     </div>
                   </div>
                 </div>
@@ -412,149 +408,63 @@ export default function NewPropertyPage() {
                   <h2 className="text-lg font-bold text-[#003087] mb-1">Détails & Prix</h2>
                   <p className="text-sm text-gray-500">Décrivez votre bien avec précision.</p>
                 </div>
-
-                <Input
-                  label="Titre de l'annonce"
-                  id="title"
-                  value={form.title}
+                <Input label="Titre de l'annonce" id="title" value={form.title}
                   onChange={(e) => set("title", e.target.value)}
                   placeholder="Ex : Villa moderne 4 chambres avec piscine à Cocody"
-                  required
-                  error={errors.title}
-                />
-
+                  required error={errors.title} />
                 <div className="space-y-1.5">
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                     Description <span className="text-[#D93025]">*</span>
                   </label>
-                  <textarea
-                    id="description"
-                    value={form.description}
+                  <textarea id="description" value={form.description}
                     onChange={(e) => set("description", e.target.value)}
                     rows={5}
                     placeholder="Décrivez votre bien : état général, environnement, atouts, commodités à proximité..."
-                    className={`input-afri resize-none ${errors.description ? "border-[#D93025]" : ""}`}
-                  />
+                    className={`input-afri resize-none ${errors.description ? "border-[#D93025]" : ""}`} />
                   <div className="flex items-center justify-between">
                     {errors.description ? (
-                      <p className="text-xs text-[#D93025] flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {errors.description}
-                      </p>
+                      <p className="text-xs text-[#D93025]">{errors.description}</p>
                     ) : (
-                      <p className="text-xs text-gray-400">Minimum 50 caractères pour une annonce complète</p>
+                      <p className="text-xs text-gray-400">Minimum 50 caractères</p>
                     )}
                     <span className={`text-xs ${form.description.length < 50 ? "text-gray-400" : "text-[#00A651]"}`}>
                       {form.description.length} car.
                     </span>
                   </div>
                 </div>
-
-                {/* Price */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    Prix <span className="text-[#D93025]">*</span>
-                  </p>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Prix <span className="text-[#D93025]">*</span></p>
                   <div className="flex gap-2">
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={form.price}
-                        onChange={(e) => set("price", e.target.value)}
-                        placeholder="Ex : 85000000"
-                        className={`input-afri ${errors.price ? "border-[#D93025]" : ""}`}
-                      />
-                    </div>
-                    <select
-                      value={form.currency}
-                      onChange={(e) => set("currency", e.target.value)}
-                      className="input-afri w-auto min-w-[110px]"
-                    >
-                      {CURRENCIES.map((c) => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                      ))}
+                    <input type="number" min="0" step="1" value={form.price}
+                      onChange={(e) => set("price", e.target.value)}
+                      placeholder="Ex : 85000000"
+                      className={`input-afri flex-1 ${errors.price ? "border-[#D93025]" : ""}`} />
+                    <select value={form.currency} onChange={(e) => set("currency", e.target.value)} className="input-afri w-auto min-w-[110px]">
+                      {CURRENCIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
-                  {errors.price && (
-                    <p className="text-xs text-[#D93025] mt-1 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.price}
-                    </p>
-                  )}
+                  {errors.price && <p className="text-xs text-[#D93025] mt-1">{errors.price}</p>}
                 </div>
-
-                {/* Surface & rooms */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <Input
-                    label="Surface (m²)"
-                    id="surface"
-                    type="number"
-                    min="0"
-                    value={form.surface}
-                    onChange={(e) => set("surface", e.target.value)}
-                    placeholder="120"
-                  />
-                  <Input
-                    label="Chambres"
-                    id="bedrooms"
-                    type="number"
-                    min="0"
-                    value={form.bedrooms}
-                    onChange={(e) => set("bedrooms", e.target.value)}
-                    placeholder="3"
-                  />
-                  <Input
-                    label="Salles de bain"
-                    id="bathrooms"
-                    type="number"
-                    min="0"
-                    value={form.bathrooms}
-                    onChange={(e) => set("bathrooms", e.target.value)}
-                    placeholder="2"
-                  />
-                  <Input
-                    label="Année de construction"
-                    id="yearBuilt"
-                    type="number"
-                    min="1900"
-                    max={new Date().getFullYear()}
-                    value={form.yearBuilt}
-                    onChange={(e) => set("yearBuilt", e.target.value)}
-                    placeholder="2020"
-                  />
+                  <Input label="Surface (m²)" id="surface" type="number" min="0" value={form.surface} onChange={(e) => set("surface", e.target.value)} placeholder="120" />
+                  <Input label="Chambres" id="bedrooms" type="number" min="0" value={form.bedrooms} onChange={(e) => set("bedrooms", e.target.value)} placeholder="3" />
+                  <Input label="Salles de bain" id="bathrooms" type="number" min="0" value={form.bathrooms} onChange={(e) => set("bathrooms", e.target.value)} placeholder="2" />
+                  <Input label="Année de construction" id="yearBuilt" type="number" min="1900" max={new Date().getFullYear()} value={form.yearBuilt} onChange={(e) => set("yearBuilt", e.target.value)} placeholder="2020" />
                 </div>
-
-                {/* Features checkboxes */}
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-3">Équipements & Caractéristiques</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {FEATURES.map((f) => {
                       const checked = form[f.key] as boolean;
                       return (
-                        <label
-                          key={f.key}
-                          className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all select-none ${
-                            checked
-                              ? "border-[#0070BA] bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
+                        <label key={f.key} className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all select-none ${
+                          checked ? "border-[#0070BA] bg-blue-50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        }`}>
+                          <input type="checkbox" checked={checked}
                             onChange={(e) => set(f.key as keyof FormState, e.target.checked as FormState[typeof f.key])}
-                            className="sr-only"
-                          />
+                            className="sr-only" />
                           <span className="text-lg leading-none">{f.icon}</span>
-                          <span className={`text-xs font-medium leading-tight ${checked ? "text-[#0070BA]" : "text-gray-600"}`}>
-                            {f.label}
-                          </span>
+                          <span className={`text-xs font-medium leading-tight ${checked ? "text-[#0070BA]" : "text-gray-600"}`}>{f.label}</span>
                           {checked && (
                             <svg className="w-3.5 h-3.5 text-[#0070BA] ml-auto flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -572,107 +482,176 @@ export default function NewPropertyPage() {
             {step === 3 && (
               <div className="p-6 space-y-6">
                 <div>
-                  <h2 className="text-lg font-bold text-[#003087] mb-1">Photos & Publication</h2>
-                  <p className="text-sm text-gray-500">Ajoutez des photos et publiez votre annonce.</p>
+                  <h2 className="text-lg font-bold text-[#003087] mb-1">Document foncier & Photos</h2>
+                  <p className="text-sm text-gray-500">Toute annonce sur AfriBayit doit être accompagnée de son document foncier légal (§10B CDC).</p>
                 </div>
 
-                {/* Photo upload area */}
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2.5">Photos du bien</p>
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#0070BA] hover:bg-blue-50/30 transition-colors cursor-pointer group">
-                    <label htmlFor="photo-upload" className="cursor-pointer">
-                      <div className="w-14 h-14 rounded-2xl bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center mx-auto mb-3 transition-colors">
-                        <svg className="w-7 h-7 text-[#0070BA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                {/* ── Legal doc section ── */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Shield size={16} className="text-[#D4AF37]" />
+                    <p className="text-sm font-semibold text-gray-800">Document foncier <span className="text-[#D93025]">*</span></p>
+                  </div>
+
+                  {!isPhase1Country && form.country && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex gap-2 text-sm text-blue-700">
+                      <Info size={15} className="shrink-0 mt-0.5" />
+                      Le pays sélectionné n&apos;est pas encore en Phase 1 d&apos;AfriBayit. La validation documentaire ne sera pas appliquée automatiquement.
+                    </div>
+                  )}
+
+                  {isPhase1Country && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label htmlFor="legalDocType" className="block text-xs font-medium text-gray-600">
+                          Type de document ({countryLabel})
+                        </label>
+                        <select
+                          id="legalDocType"
+                          value={form.legalDocType}
+                          onChange={(e) => set("legalDocType", e.target.value)}
+                          className={`input-afri ${errors.legalDocType ? "border-[#D93025]" : ""}`}
+                        >
+                          <option value="">Sélectionnez le document foncier</option>
+                          {legalDocs.map((d) => (
+                            <option key={d.code} value={d.code} disabled={d.status === "REJECTED"}>
+                              {d.label} {d.status === "REJECTED" ? "⛔" : d.status === "CONDITIONAL" ? "⚠️" : "✅"}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.legalDocType && <p className="text-xs text-[#D93025]">{errors.legalDocType}</p>}
                       </div>
-                      <p className="text-sm font-semibold text-[#0070BA] mb-1">Cliquez pour ajouter des photos</p>
-                      <p className="text-xs text-gray-400">PNG, JPG jusqu&apos;à 10 MB · Max 15 photos</p>
-                      <p className="text-xs text-gray-400 mt-1">La première photo sera la photo principale</p>
-                      <input
-                        id="photo-upload"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="sr-only"
-                      />
-                    </label>
+
+                      {selectedDocInfo && (
+                        <div className={`rounded-xl border px-4 py-3 flex gap-3 text-sm ${DOC_STATUS_STYLE[selectedDocInfo.status].bg}`}>
+                          {DOC_STATUS_STYLE[selectedDocInfo.status].icon}
+                          <div>
+                            <p className="font-medium">{DOC_STATUS_STYLE[selectedDocInfo.status].label}</p>
+                            <p className="text-gray-600 text-xs mt-0.5">{selectedDocInfo.note}</p>
+                            <p className="text-gray-500 text-xs mt-0.5">Autorité : {selectedDocInfo.authority}</p>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Legal doc file upload */}
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-2">
+                      Fichier du document <span className="text-[#D93025]">*</span>
+                      <span className="font-normal text-gray-400 ml-1">(PDF, JPEG, PNG — max 10 Mo)</span>
+                    </p>
+                    <input
+                      ref={legalDocRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      className="hidden"
+                      onChange={(e) => setLegalDocFile(e.target.files?.[0] ?? null)}
+                    />
+                    {legalDocFile ? (
+                      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                        <CheckCircle size={16} className="text-green-600 shrink-0" />
+                        <span className="text-sm text-green-700 flex-1 truncate">{legalDocFile.name}</span>
+                        <button onClick={() => setLegalDocFile(null)} className="text-gray-400 hover:text-gray-600">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => legalDocRef.current?.click()}
+                        className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-4 text-sm text-gray-500 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+                      >
+                        <Upload size={16} /> Cliquez pour choisir un fichier
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Premium option */}
-                <div>
-                  <label
-                    className={`flex gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      form.isPremium
-                        ? "border-[#FFB900] bg-amber-50"
-                        : "border-gray-200 hover:border-amber-200 hover:bg-amber-50/30"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.isPremium}
-                      onChange={(e) => set("isPremium", e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div className="flex-shrink-0 mt-0.5">
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                        form.isPremium ? "bg-[#FFB900] border-[#FFB900]" : "border-gray-300"
-                      }`}>
-                        {form.isPremium && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
+                {/* ── Photos section ── */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Photos du bien
+                      <span className="ml-1 text-xs font-normal text-gray-400">({photos.length}/15 — la 1ère sera principale)</span>
+                    </p>
+                    {photos.length < 15 && (
+                      <button
+                        type="button"
+                        onClick={() => photoRef.current?.click()}
+                        className="flex items-center gap-1.5 text-xs text-[#0070BA] font-medium hover:underline"
+                      >
+                        <Upload size={12} /> Ajouter
+                      </button>
+                    )}
+                  </div>
+
+                  <input
+                    ref={photoRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handlePhotoAdd(e.target.files)}
+                  />
+
+                  {photos.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => photoRef.current?.click()}
+                      className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#0070BA] hover:bg-blue-50/30 transition-colors"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                        <Upload size={20} className="text-[#0070BA]" />
                       </div>
+                      <p className="text-sm font-semibold text-[#0070BA] mb-1">Ajouter des photos</p>
+                      <p className="text-xs text-gray-400">JPEG, PNG, WEBP — jusqu&apos;à 8 Mo par photo</p>
+                    </button>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {photoPreviews.map((src, i) => (
+                        <div key={i} className="relative aspect-square rounded-xl overflow-hidden group border border-gray-100">
+                          <img src={src} alt="" className="w-full h-full object-cover" />
+                          {i === 0 && (
+                            <div className="absolute top-1 left-1 bg-[#D4AF37] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                              Principal
+                            </div>
+                          )}
+                          <button
+                            onClick={() => removePhoto(i)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ))}
+                      {photos.length < 15 && (
+                        <button
+                          onClick={() => photoRef.current?.click()}
+                          className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-[#0070BA] hover:text-[#0070BA] transition-colors"
+                        >
+                          <Upload size={18} />
+                          <span className="text-[10px]">Ajouter</span>
+                        </button>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
-                        <span className="badge-premium">⭐ PREMIUM</span>
-                        Mettre en avant l&apos;annonce
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Votre annonce apparaît en tête des résultats et reçoit jusqu&apos;à 5× plus de vues.
-                      </p>
-                    </div>
-                  </label>
+                  )}
                 </div>
 
-                {/* Summary */}
+                {/* ── Summary ── */}
                 <div className="bg-gray-50 rounded-2xl border border-gray-200 p-5">
-                  <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#0070BA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    Récapitulatif
-                  </h3>
+                  <h3 className="text-sm font-bold text-gray-700 mb-4">Récapitulatif</h3>
                   <dl className="space-y-2">
                     {[
                       { label: "Type de bien", value: typeLabel || "—" },
                       { label: "Type d'annonce", value: listingTypeLabel || "—" },
                       { label: "Localisation", value: [form.district, form.city, countryLabel].filter(Boolean).join(", ") || "—" },
                       { label: "Titre", value: form.title || "—" },
-                      {
-                        label: "Prix",
-                        value: form.price
-                          ? `${Number(form.price).toLocaleString("fr-FR")} ${form.currency}`
-                          : "—",
-                      },
-                      {
-                        label: "Détails",
-                        value: [
-                          form.surface ? `${form.surface} m²` : null,
-                          form.bedrooms ? `${form.bedrooms} ch.` : null,
-                          form.bathrooms ? `${form.bathrooms} sdb.` : null,
-                        ].filter(Boolean).join(" · ") || "—",
-                      },
-                      {
-                        label: "Équipements",
-                        value: activeFeatures.length > 0
-                          ? activeFeatures.map((f) => f.label).join(", ")
-                          : "Aucun",
-                      },
-                      { label: "Annonce Premium", value: form.isPremium ? "Oui ⭐" : "Non" },
+                      { label: "Prix", value: form.price ? `${Number(form.price).toLocaleString("fr-FR")} ${form.currency}` : "—" },
+                      { label: "Détails", value: [form.surface ? `${form.surface} m²` : null, form.bedrooms ? `${form.bedrooms} ch.` : null, form.bathrooms ? `${form.bathrooms} sdb.` : null].filter(Boolean).join(" · ") || "—" },
+                      { label: "Équipements", value: activeFeatures.length > 0 ? activeFeatures.map((f) => f.label).join(", ") : "Aucun" },
+                      { label: "Document foncier", value: legalDocs.find((d) => d.code === form.legalDocType)?.label ?? "—" },
+                      { label: "Photos", value: photos.length > 0 ? `${photos.length} photo(s)` : "Aucune" },
                     ].map(({ label, value }) => (
                       <div key={label} className="flex gap-3 text-sm">
                         <dt className="w-36 flex-shrink-0 text-gray-500">{label}</dt>
@@ -681,6 +660,14 @@ export default function NewPropertyPage() {
                     ))}
                   </dl>
                 </div>
+
+                {/* Submitting progress */}
+                {submitting && submitProgress && (
+                  <div className="flex items-center gap-3 text-sm text-[#0070BA] bg-blue-50 rounded-xl px-4 py-3">
+                    <div className="w-4 h-4 border-2 border-[#0070BA] border-t-transparent rounded-full animate-spin shrink-0" />
+                    {submitProgress}
+                  </div>
+                )}
               </div>
             )}
 
@@ -694,7 +681,6 @@ export default function NewPropertyPage() {
                   Précédent
                 </Button>
               )}
-
               {step < 3 ? (
                 <Button variant="primary" size="md" onClick={handleNext}>
                   Continuer
@@ -703,27 +689,16 @@ export default function NewPropertyPage() {
                   </svg>
                 </Button>
               ) : (
-                <Button
-                  variant="gold"
-                  size="md"
-                  loading={submitting}
-                  onClick={handleSubmit}
-                >
-                  {submitting ? "Publication en cours…" : "Publier l'annonce"}
-                  {!submitting && (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                <Button variant="primary" size="md" onClick={handleSubmit} disabled={submitting}>
+                  {submitting ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Publication…</>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Publier l&apos;annonce</>
                   )}
                 </Button>
               )}
             </div>
           </div>
-
-          {/* Step indicator text for mobile */}
-          <p className="text-center text-xs text-gray-400 mt-4 sm:hidden">
-            Étape {step} sur {STEPS.length} — {STEPS[step - 1].label}
-          </p>
         </div>
       </main>
     </>

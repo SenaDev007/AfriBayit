@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import AnalyticsSection from "@/components/analytics/AnalyticsSection";
 import { formatCurrency, formatCompactCurrency } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -150,6 +151,11 @@ export default async function DashboardPage() {
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* Analytics + Charts */}
+          <div className="mb-8">
+            <AnalyticsSection />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
