@@ -2,11 +2,13 @@
 // Plateforme Immobilière Pan-Africaine
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 // ─────────────────────────────────────────────
@@ -287,6 +289,9 @@ model Property {
   legalDocType   String?        // Code du document foncier (ex: TITRE_FONCIER, PUH...)
   legalDocUrl    String?        // URL du document uploadé (Cloudflare R2 / local)
   legalDocStatus String         @default("PENDING") // PENDING | ACCEPTED | CONDITIONAL | REJECTED
+
+  // Semantic search — pgvector (text-embedding-3-small, 1536 dims)
+  embedding      Unsupported("vector(1536)")?
 
   ownerId     String
   owner       User           @relation(fields: [ownerId], references: [id])

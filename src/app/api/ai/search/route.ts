@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { semanticSearch } from "@/lib/embeddings";
 
 const aiSearchSchema = z.object({
-  query: z.string().min(5).max(500),
+  query: z.string().min(3).max(500),
   language: z.string().default("fr"),
+  // Optional structured filters to combine with semantic search
+  country: z.string().optional(),
+  type: z.string().optional(),
+  listingType: z.string().optional(),
+  minPrice: z.coerce.number().optional(),
+  maxPrice: z.coerce.number().optional(),
 });
 
-// Mapping of French property terms to filter values
-const TERM_MAPPINGS = {
+// ─── Natural language keyword parser (fallback + filter extraction) ───────────
+
+const TERM_MAPPINGS: Record<string, Record<string, unknown>> = {
   // Property types
   villa: { type: "VILLA" },
   appartement: { type: "APARTMENT" },
@@ -26,42 +34,32 @@ const TERM_MAPPINGS = {
 
   // Countries
   bénin: { country: "BJ" },
+  benin: { country: "BJ" },
   "côte d'ivoire": { country: "CI" },
-  "burkina faso": { country: "BF" },
-  togo: { country: "TG" },
-  sénégal: { country: "SN" },
-  ghana: { country: "GH" },
-  nigeria: { country: "NG" },
-
-  // Cities
-  cotonou: { city: "Cotonou", country: "BJ" },
+  ivoirien: { country: "CI" },
   abidjan: { city: "Abidjan", country: "CI" },
+  "burkina faso": { country: "BF" },
   ouagadougou: { city: "Ouagadougou", country: "BF" },
+  togo: { country: "TG" },
   lomé: { city: "Lomé", country: "TG" },
-  dakar: { city: "Dakar", country: "SN" },
-  accra: { city: "Accra", country: "GH" },
-  lagos: { city: "Lagos", country: "NG" },
+  lome: { city: "Lomé", country: "TG" },
+  cotonou: { city: "Cotonou", country: "BJ" },
 
   // Features
   piscine: { hasPool: true },
   garage: { hasGarage: true },
   climatisation: { hasAC: true },
+  "clim ": { hasAC: true },
   sécurité: { hasSecurity: true },
   jardin: { hasGarden: true },
-
-  // Bedrooms
-  "1 chambre": { minBedrooms: 1 },
-  "2 chambres": { minBedrooms: 2 },
-  "3 chambres": { minBedrooms: 3 },
-  "4 chambres": { minBedrooms: 4 },
-  "5 chambres": { minBedrooms: 5 },
+  groupelec: { hasGenerator: true },
+  "groupe électrogène": { hasGenerator: true },
 };
 
 function parseNaturalLanguage(query: string): Record<string, unknown> {
   const lowerQuery = query.toLowerCase();
   const filters: Record<string, unknown> = {};
 
-  // Apply term mappings
   for (const [term, values] of Object.entries(TERM_MAPPINGS)) {
     if (lowerQuery.includes(term)) {
       Object.assign(filters, values);
@@ -69,33 +67,39 @@ function parseNaturalLanguage(query: string): Record<string, unknown> {
   }
 
   // Extract budget with regex
-  const budgetRegex = /(\d+(?:[,.]\d+)?)\s*(m(?:illions?)?|k|mil)?(?:\s*fcfa)?/gi;
+  const budgetRegex = /(\d+(?:[,.]\d+)?)\s*(m(?:illions?)?|k|mil)?(?:\s*(?:fcfa|xof|cfa))?/gi;
   const budgetMatches = [...lowerQuery.matchAll(budgetRegex)];
   if (budgetMatches.length > 0) {
     const match = budgetMatches[0];
     let amount = parseFloat(match[1].replace(",", "."));
     const unit = match[2]?.toLowerCase();
-
-    if (unit === "m" || unit === "mil" || unit === "millions" || unit === "million") {
-      amount *= 1_000_000;
-    } else if (unit === "k") {
-      amount *= 1_000;
-    }
-
-    if (amount > 0) {
-      filters.maxPrice = amount;
-    }
+    if (unit === "m" || unit === "mil" || unit?.startsWith("million")) amount *= 1_000_000;
+    else if (unit === "k") amount *= 1_000;
+    if (amount >= 100) filters.maxPrice = amount;
   }
 
-  // Extract bedroom count with regex
+  // Bedroom count
   const bedroomRegex = /(\d+)\s*(?:chambres?|pièces?|ch\.?)/i;
   const bedroomMatch = lowerQuery.match(bedroomRegex);
-  if (bedroomMatch) {
-    filters.minBedrooms = parseInt(bedroomMatch[1]);
-  }
+  if (bedroomMatch) filters.minBedrooms = parseInt(bedroomMatch[1]);
 
   return filters;
 }
+
+function buildSummary(filters: Record<string, unknown>, query: string): string {
+  const parts: string[] = [];
+  if (filters.type) parts.push(String(filters.type).toLowerCase());
+  if (filters.listingType === "SALE") parts.push("à vendre");
+  else if (filters.listingType) parts.push("en location");
+  if (filters.city) parts.push(`à ${filters.city}`);
+  else if (filters.country) parts.push(`en ${filters.country}`);
+  if (filters.minBedrooms) parts.push(`${filters.minBedrooms}+ chambres`);
+  if (filters.maxPrice) parts.push(`budget max ${Number(filters.maxPrice).toLocaleString("fr-FR")} FCFA`);
+  if (filters.hasPool) parts.push("avec piscine");
+  return parts.length > 0 ? `Recherche : ${parts.join(", ")}` : query;
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
@@ -103,45 +107,57 @@ export async function POST(request: NextRequest) {
     const parsed = aiSearchSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Requête invalide" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Requête invalide" }, { status: 400 });
     }
 
-    const { query } = parsed.data;
+    const { query, country, type, listingType, minPrice, maxPrice } = parsed.data;
 
-    // Parse natural language query
-    const extractedFilters = parseNaturalLanguage(query);
+    // Extract keyword filters from natural language
+    const nlFilters = parseNaturalLanguage(query);
 
-    // Generate human-readable summary
-    const parts: string[] = [];
-    if (extractedFilters.type) parts.push(String(extractedFilters.type).toLowerCase());
-    if (extractedFilters.listingType === "SALE") parts.push("à vendre");
-    else if (extractedFilters.listingType) parts.push("en location");
-    if (extractedFilters.city) parts.push(`à ${extractedFilters.city}`);
-    else if (extractedFilters.country) parts.push(`en ${extractedFilters.country}`);
-    if (extractedFilters.minBedrooms) parts.push(`${extractedFilters.minBedrooms}+ chambres`);
-    if (extractedFilters.maxPrice) parts.push(`budget max ${Number(extractedFilters.maxPrice).toLocaleString()} FCFA`);
-    if (extractedFilters.hasPool) parts.push("avec piscine");
+    // Merge explicit params over NL-extracted ones
+    const mergedFilters: Record<string, unknown> = {
+      ...nlFilters,
+      ...(country && { country }),
+      ...(type && { type }),
+      ...(listingType && { listingType }),
+      ...(minPrice !== undefined && { minPrice }),
+      ...(maxPrice !== undefined && { maxPrice }),
+    };
 
-    const summary = parts.length > 0
-      ? `Je recherche : ${parts.join(", ")}`
-      : "Recherche de propriétés en Afrique";
+    const summary = buildSummary(mergedFilters, query);
 
-    // Build URL params
+    // ── Semantic search (pgvector) ──────────────────────────────────────────
+    let semanticResults: Awaited<ReturnType<typeof semanticSearch>> = [];
+    if (process.env.OPENAI_API_KEY) {
+      semanticResults = await semanticSearch(query, {
+        limit: 6,
+        country: (mergedFilters.country as string) ?? undefined,
+        type: (mergedFilters.type as string) ?? undefined,
+        listingType: (mergedFilters.listingType as string) ?? undefined,
+        minPrice: (mergedFilters.minPrice as number) ?? undefined,
+        maxPrice: (mergedFilters.maxPrice as number) ?? undefined,
+      });
+    }
+
+    // ── URL for keyword fallback redirect ─────────────────────────────────
     const urlParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(extractedFilters)) {
-      if (value !== undefined) {
-        urlParams.set(key, String(value));
-      }
-    }
+    if (mergedFilters.country) urlParams.set("country", String(mergedFilters.country));
+    if (mergedFilters.city) urlParams.set("city", String(mergedFilters.city));
+    if (mergedFilters.type) urlParams.set("type", String(mergedFilters.type));
+    if (mergedFilters.listingType) urlParams.set("listingType", String(mergedFilters.listingType));
+    if (mergedFilters.maxPrice) urlParams.set("maxPrice", String(mergedFilters.maxPrice));
+    if (mergedFilters.minBedrooms) urlParams.set("bedrooms", String(mergedFilters.minBedrooms));
+    if (mergedFilters.hasPool) urlParams.set("hasPool", "true");
+    if (!urlParams.toString() && query) urlParams.set("q", query);
 
     return NextResponse.json({
       data: {
-        filters: extractedFilters,
+        filters: mergedFilters,
         summary,
         redirectUrl: `/properties?${urlParams.toString()}`,
+        semanticResults,
+        hasSemanticResults: semanticResults.length > 0,
         suggestions: [
           "Affiner par budget",
           "Chercher par quartier",

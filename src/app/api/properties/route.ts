@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { validateLegalDoc } from "@/lib/legalDocs";
+import { embedProperty } from "@/lib/embeddings";
 
 const querySchema = z.object({
   q: z.string().optional(),
@@ -233,6 +234,13 @@ export async function POST(request: NextRequest) {
         legalDocStatus,
       },
     });
+
+    // Trigger embedding in background (no await — non-blocking)
+    if (process.env.OPENAI_API_KEY) {
+      embedProperty(property.id).catch((e) =>
+        console.error("[embed] property embed error:", e)
+      );
+    }
 
     return NextResponse.json({ data: property }, { status: 201 });
   } catch (error) {

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { semanticSearch } from "@/lib/embeddings";
 
-// Rebecca AI — CDC §8.2 — Claude Sonnet backbone
+// Rebecca AI — CDC §8.2 — Claude Sonnet backbone + RAG (pgvector)
 // Requires ANTHROPIC_API_KEY in .env.local
 
-const SYSTEM_PROMPT = `Tu es Rebecca, l'assistante IA d'AfriBayit — la plateforme immobilière pan-africaine couvrant le Bénin, la Côte d'Ivoire, le Burkina Faso et le Togo.
+const BASE_SYSTEM_PROMPT = `Tu es Rebecca, l'assistante IA d'AfriBayit — la plateforme immobilière pan-africaine couvrant le Bénin, la Côte d'Ivoire, le Burkina Faso et le Togo.
 
 Ton rôle :
 - Aider les utilisateurs à trouver des propriétés, logements, hôtels, artisans
@@ -33,6 +34,55 @@ Pays couverts : Bénin 🇧🇯, Côte d'Ivoire 🇨🇮, Burkina Faso 🇧🇫,
 
 Ne réponds PAS aux sujets hors immobilier/construction/investissement Afrique.`;
 
+// ─── RAG context builder ──────────────────────────────────────────────────────
+
+const PROPERTY_KEYWORDS = [
+  "propriété", "appartement", "maison", "villa", "studio", "terrain", "bureau",
+  "vendre", "acheter", "louer", "location", "annonce", "chambre", "surface", "m²",
+  "prix", "budget", "fcfa", "xof", "cotonou", "abidjan", "ouagadougou", "lomé",
+  "bénin", "benin", "côte d'ivoire", "ivoire", "burkina", "togo",
+  "investir", "investissement", "immobilier", "bien",
+];
+
+function isPropertyQuery(message: string): boolean {
+  const lower = message.toLowerCase();
+  return PROPERTY_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+async function buildRagContext(message: string): Promise<string> {
+  if (!process.env.OPENAI_API_KEY || !isPropertyQuery(message)) return "";
+
+  try {
+    const results = await semanticSearch(message, { limit: 4 });
+    if (results.length === 0) return "";
+
+    const listingLabel: Record<string, string> = {
+      SALE: "à vendre",
+      LONG_TERM_RENTAL: "location longue durée",
+      SHORT_TERM_RENTAL: "location courte durée",
+    };
+    const countryLabel: Record<string, string> = {
+      BJ: "Bénin", CI: "Côte d'Ivoire", BF: "Burkina Faso", TG: "Togo",
+    };
+
+    const lines = results.map((r, i) => {
+      const typeLabel = r.type.charAt(0) + r.type.slice(1).toLowerCase();
+      const listing = listingLabel[r.listingType] ?? r.listingType;
+      const country = countryLabel[r.country] ?? r.country;
+      const price = Number(r.price).toLocaleString("fr-FR");
+      const surface = r.surface ? ` — ${r.surface} m²` : "";
+      const beds = r.bedrooms ? ` — ${r.bedrooms} ch.` : "";
+      return `${i + 1}. [${typeLabel} ${listing}] ${r.title} — ${r.city}, ${country}${surface}${beds} — ${price} ${r.currency} — /properties/${r.id}`;
+    });
+
+    return `\n\n---\nANNONCES DISPONIBLES (pertinentes pour ce message) :\n${lines.join("\n")}\n---\nSi l'utilisateur cherche un bien, mentionne ces annonces avec leurs liens.`;
+  } catch {
+    return "";
+  }
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   const body = await req.json();
@@ -59,10 +109,14 @@ export async function POST(req: NextRequest) {
       const Anthropic = (await import("@anthropic-ai/sdk")).default;
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+      // RAG: inject relevant property listings into system prompt
+      const ragContext = await buildRagContext(message);
+      const systemPrompt = BASE_SYSTEM_PROMPT + ragContext;
+
       const response = await client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 600,
-        system: SYSTEM_PROMPT,
+        max_tokens: 800,
+        system: systemPrompt,
         messages,
       });
 
