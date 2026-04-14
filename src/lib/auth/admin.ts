@@ -6,11 +6,12 @@ export type AdminPermission =
   | 'audit:read'
   | 'audit:write'
   | 'kyc:review'
+  | 'escrow:resolve'
   | 'system:reset'
 
 const PERMISSIONS: Record<string, AdminPermission[]> = {
-  AGENCY: ['audit:read', 'audit:write', 'kyc:review'],
-  DEVELOPER: ['audit:read', 'audit:write', 'kyc:review', 'system:reset']
+  AGENCY: ['audit:read', 'audit:write', 'kyc:review', 'escrow:resolve'],
+  DEVELOPER: ['audit:read', 'audit:write', 'kyc:review', 'escrow:resolve', 'system:reset']
 }
 
 function getToken(request: NextRequest) {

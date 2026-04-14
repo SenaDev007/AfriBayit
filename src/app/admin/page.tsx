@@ -51,6 +51,17 @@ type AdminAlerts = {
     }>
 }
 
+type AdminDispute = {
+    id: string
+    amount: number
+    currency: string
+    updatedAt: string
+    escrow: {
+        state: string
+        disputeReason: string | null
+    } | null
+}
+
 const adminStats = [
     {
         title: 'Utilisateurs Actifs',
@@ -151,6 +162,7 @@ export default function AdminDashboard() {
     const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([])
     const [adminMessage, setAdminMessage] = useState('')
     const [alerts, setAlerts] = useState<AdminAlerts | null>(null)
+    const [disputes, setDisputes] = useState<AdminDispute[]>([])
 
     const getAuthToken = () => {
         if (typeof window === 'undefined') return null
@@ -162,10 +174,11 @@ export default function AdminDashboard() {
         if (!token) return
 
         const headers = { Authorization: `Bearer ${token}` }
-        const [kycRes, auditRes, alertsRes] = await Promise.all([
+        const [kycRes, auditRes, alertsRes, disputesRes] = await Promise.all([
             fetch('/api/admin/kyc?status=PENDING', { headers }),
             fetch('/api/security/audit?limit=10', { headers }),
-            fetch('/api/admin/alerts', { headers })
+            fetch('/api/admin/alerts', { headers }),
+            fetch('/api/admin/disputes', { headers })
         ])
 
         if (kycRes.ok) {
@@ -181,6 +194,11 @@ export default function AdminDashboard() {
         if (alertsRes.ok) {
             const alertsData = await alertsRes.json()
             setAlerts(alertsData)
+        }
+
+        if (disputesRes.ok) {
+            const disputesData = await disputesRes.json()
+            setDisputes(disputesData.disputes || [])
         }
     }
 
@@ -202,6 +220,26 @@ export default function AdminDashboard() {
 
         const data = await res.json()
         setAdminMessage(data.message || (res.ok ? 'Mise a jour KYC effectuee' : 'Erreur KYC admin'))
+        await loadAdminCompliance()
+    }
+
+    const handleResolveDispute = async (transactionId: string, resolution: 'RELEASE' | 'REFUND') => {
+        const token = getAuthToken()
+        if (!token) {
+            setAdminMessage('Session expirée, reconnectez-vous.')
+            return
+        }
+
+        const res = await fetch('/api/admin/disputes', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ transactionId, resolution })
+        })
+        const data = await res.json()
+        setAdminMessage(data.message || (res.ok ? 'Litige traite' : 'Erreur traitement litige'))
         await loadAdminCompliance()
     }
 
@@ -386,6 +424,43 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </>
+                    )}
+                </div>
+
+                <div className="mt-8 bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                    <h3 className="text-xl font-semibold text-neutral-900 mb-4">Litiges escrow a traiter</h3>
+                    {disputes.length === 0 ? (
+                        <p className="text-sm text-neutral-500">Aucun litige actif.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {disputes.map((dispute) => (
+                                <div key={dispute.id} className="border border-neutral-200 rounded-lg p-4">
+                                    <p className="text-sm font-medium text-neutral-900">
+                                        TX {dispute.id.slice(0, 8)}... • {dispute.amount} {dispute.currency}
+                                    </p>
+                                    <p className="text-xs text-neutral-500 mt-1">
+                                        Escrow: {dispute.escrow?.state || 'N/A'} • Maj: {new Date(dispute.updatedAt).toLocaleString('fr-FR')}
+                                    </p>
+                                    {dispute.escrow?.disputeReason && (
+                                        <p className="text-xs text-red-700 mt-1">Motif: {dispute.escrow.disputeReason}</p>
+                                    )}
+                                    <div className="flex gap-2 mt-3">
+                                        <button
+                                            onClick={() => handleResolveDispute(dispute.id, 'RELEASE')}
+                                            className="px-3 py-1.5 text-xs rounded bg-emerald-600 text-white hover:bg-emerald-700"
+                                        >
+                                            Resolver par release
+                                        </button>
+                                        <button
+                                            onClick={() => handleResolveDispute(dispute.id, 'REFUND')}
+                                            className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                                        >
+                                            Resolver par refund
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 
