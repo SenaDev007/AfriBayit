@@ -10,13 +10,13 @@ import {
   ChevronRight,
   CheckCircle
 } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Button } from '@/components/ui/Button'
+import { useRouter } from 'next/navigation'
 
 // Real testimonials will be fetched from API
 
 export function TestimonialsSection() {
-  const { t } = useLanguage()
+  const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [testimonials, setTestimonials] = useState<any[]>([])
   const [stats, setStats] = useState<any[]>([])
@@ -71,7 +71,7 @@ export function TestimonialsSection() {
   }
 
   return (
-    <section ref={ref} className="py-20 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-900">
+    <section ref={ref} className="py-20 bg-gradient-to-br from-[#F4F7FF] via-white to-[#FFF9E9]">
       <div className="container-custom">
         <div className="max-w-4xl mx-auto text-center mb-16">
           <motion.div
@@ -79,11 +79,11 @@ export function TestimonialsSection() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-              {t('testimonials.title')}
+            <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-6">
+              Retours clients vérifiés
             </h2>
-            <p className="text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              {t('testimonials.subtitle')}
+            <p className="text-xl text-neutral-600 leading-relaxed">
+              Des parcours réels sur la chaîne complète: recherche, vérification, notaire et escrow.
             </p>
           </motion.div>
         </div>
@@ -105,10 +105,10 @@ export function TestimonialsSection() {
           ) : (
             stats.map((stat, index) => (
               <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary-600 mb-2">
-                  {stat.number}
+                <div className="text-3xl md:text-4xl font-bold text-[#003087] mb-2">
+                  {stat.value ?? stat.number}
                 </div>
-                <div className="text-neutral-600 dark:text-neutral-300 font-medium">
+                <div className="text-neutral-600 font-medium">
                   {stat.label}
                 </div>
               </div>
@@ -123,12 +123,12 @@ export function TestimonialsSection() {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="relative max-w-4xl mx-auto"
         >
-          <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#003087]/10">
             <div className="p-8 md:p-12">
               {/* Quote Icon */}
               <div className="flex justify-center mb-8">
-                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
-                  <Quote className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                <div className="w-16 h-16 bg-[#003087]/10 rounded-full flex items-center justify-center">
+                  <Quote className="w-8 h-8 text-[#003087]" />
                 </div>
               </div>
 
@@ -158,12 +158,12 @@ export function TestimonialsSection() {
                       ))}
                     </div>
 
-                    <blockquote className="text-xl md:text-2xl text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6">
-                      "{testimonials[currentIndex].text}"
+                    <blockquote className="text-xl md:text-2xl text-neutral-700 leading-relaxed mb-6">
+                      "{testimonials[currentIndex].text || testimonials[currentIndex].comment}"
                     </blockquote>
                   </>
                 ) : (
-                  <div className="text-neutral-500 dark:text-neutral-400">
+                  <div className="text-neutral-500">
                     Aucun témoignage disponible pour le moment.
                   </div>
                 )}
@@ -187,20 +187,20 @@ export function TestimonialsSection() {
                       <div className="font-semibold text-neutral-900 dark:text-neutral-100">
                         {testimonials[currentIndex].name}
                       </div>
-                      <div className="text-neutral-600 dark:text-neutral-300">
+                      <div className="text-neutral-600">
                         {testimonials[currentIndex].role}
                       </div>
-                      <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                      <div className="text-sm text-neutral-500">
                         {testimonials[currentIndex].location}
                       </div>
                     </div>
                   </div>
 
                   <div className="text-center md:text-right">
-                    <div className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
-                      Investissement
+                    <div className="text-sm text-neutral-500 mb-1">
+                      Montant engagé
                     </div>
-                    <div className="font-semibold text-primary-600 dark:text-primary-400">
+                    <div className="font-semibold text-[#003087]">
                       {testimonials[currentIndex].investment}
                     </div>
                   </div>
@@ -214,9 +214,9 @@ export function TestimonialsSection() {
             <div className="flex items-center justify-center space-x-4 mt-8">
               <button
                 onClick={prevTestimonial}
-                className="w-12 h-12 bg-white dark:bg-neutral-800 rounded-full shadow-lg flex items-center justify-center hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+                className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#003087]/10 transition-colors duration-200"
               >
-                <ChevronLeft className="w-6 h-6 text-neutral-600 dark:text-neutral-300" />
+                <ChevronLeft className="w-6 h-6 text-neutral-600" />
               </button>
 
               {/* Dots */}
@@ -226,8 +226,8 @@ export function TestimonialsSection() {
                     key={index}
                     onClick={() => goToTestimonial(index)}
                     className={`w-3 h-3 rounded-full transition-colors duration-200 ${index === currentIndex
-                      ? 'bg-primary-600'
-                      : 'bg-neutral-300 dark:bg-neutral-600 hover:bg-neutral-400 dark:hover:bg-neutral-500'
+                      ? 'bg-[#003087]'
+                      : 'bg-neutral-300 hover:bg-neutral-400'
                       }`}
                   />
                 ))}
@@ -235,9 +235,9 @@ export function TestimonialsSection() {
 
               <button
                 onClick={nextTestimonial}
-                className="w-12 h-12 bg-white dark:bg-neutral-800 rounded-full shadow-lg flex items-center justify-center hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors duration-200"
+                className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#003087]/10 transition-colors duration-200"
               >
-                <ChevronRight className="w-6 h-6 text-neutral-600 dark:text-neutral-300" />
+                <ChevronRight className="w-6 h-6 text-neutral-600" />
               </button>
             </div>
           )}
@@ -250,8 +250,12 @@ export function TestimonialsSection() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="text-center mt-16"
         >
-          <Button size="lg" className="shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
-            Rejoindre la communauté
+          <Button
+            size="lg"
+            onClick={() => router.push('/community')}
+            className="shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
+          >
+            Rejoindre la communauté investisseurs
           </Button>
         </motion.div>
       </div>
