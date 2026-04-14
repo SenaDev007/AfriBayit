@@ -6,136 +6,66 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Youtube,
-  ArrowUp
+  ShieldCheck,
+  Landmark
 } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
-import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
 
 export function Footer() {
-  const { t } = useLanguage()
-  const [showScrollTop, setShowScrollTop] = useState(false)
+  const quickLinks = [
+    { href: '/properties', label: 'Immobilier' },
+    { href: '/hotels', label: 'Hôtellerie' },
+    { href: '/artisans', label: 'Marketplace artisans' },
+    { href: '/learning', label: 'Académie' },
+    { href: '/community', label: 'Communauté' }
+  ]
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const footerLinks = {
-    quick: [
-      { href: '/properties', label: t('nav.properties') },
-      { href: '/hotels', label: t('nav.hotels') },
-      { href: '/learning', label: t('nav.learning') },
-      { href: '/community', label: t('nav.community') },
-      { href: '/about', label: t('nav.about') },
-      { href: '/contact', label: t('nav.contact') },
-    ],
-    services: [
-      { href: '/services/property-search', label: 'Recherche de propriétés' },
-      { href: '/services/virtual-tours', label: 'Visites virtuelles' },
-      { href: '/services/investment-advice', label: 'Conseils d\'investissement' },
-      { href: '/services/legal-support', label: 'Support juridique' },
-      { href: '/services/valuation', label: 'Évaluation immobilière' },
-      { href: '/services/marketing', label: 'Marketing immobilier' },
-    ],
-    support: [
-      { href: '/help', label: 'Centre d\'aide' },
-      { href: '/faq', label: 'FAQ' },
-      { href: '/contact', label: 'Nous contacter' },
-      { href: '/status', label: 'Statut du service' },
-      { href: '/feedback', label: 'Retours' },
-      { href: '/bug-report', label: 'Signaler un bug' },
-    ],
-    legal: [
-      { href: '/privacy', label: 'Politique de confidentialité' },
-      { href: '/terms', label: 'Conditions d\'utilisation' },
-      { href: '/cookies', label: 'Politique des cookies' },
-      { href: '/gdpr', label: 'RGPD' },
-      { href: '/disclaimer', label: 'Avertissement' },
-      { href: '/accessibility', label: 'Accessibilité' },
-    ],
-  }
-
-  const socialLinks = [
-    { href: 'https://facebook.com/afribayit', icon: Facebook, label: 'Facebook' },
-    { href: 'https://twitter.com/afribayit', icon: Twitter, label: 'Twitter' },
-    { href: 'https://instagram.com/afribayit', icon: Instagram, label: 'Instagram' },
-    { href: 'https://linkedin.com/company/afribayit', icon: Linkedin, label: 'LinkedIn' },
-    { href: 'https://youtube.com/@afribayit', icon: Youtube, label: 'YouTube' },
+  const legalLinks = [
+    { href: '/privacy', label: 'Politique de confidentialité' },
+    { href: '/terms', label: "Conditions d'utilisation" }
   ]
 
   return (
-    <footer className="bg-neutral-900 dark:bg-neutral-950 text-white">
-      {/* Scroll to Top Button */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{
-          opacity: showScrollTop ? 1 : 0,
-          scale: showScrollTop ? 1 : 0
-        }}
-        onClick={scrollToTop}
-        className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-      >
-        <ArrowUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform duration-200" />
-      </motion.button>
-
+    <footer className="bg-[#001F5B] text-white">
       <div className="container-custom">
-        {/* Main Footer Content */}
-        <div className="py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-2 mb-6 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+        <div className="py-14 grid lg:grid-cols-[1.2fr_1fr_1fr] gap-10">
+          <div>
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/25 flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold">AfriBayit</span>
+              <div>
+                <p className="font-semibold text-xl leading-none">AfriBayit</p>
+                <p className="text-xs text-white/70 mt-1">Plateforme immobilière africaine nouvelle génération</p>
+              </div>
             </Link>
-
-            <p className="text-neutral-300 mb-6 leading-relaxed">
-              {t('footer.description')}
+            <p className="text-white/80 mt-5 max-w-md leading-relaxed text-sm">
+              Écosystème premium: annonces immobilières, locations courte durée, escrow sécurisé,
+              KYC et conformité légale pour bâtir la confiance sur tout le parcours.
             </p>
-
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-neutral-300">
-                <Mail className="w-5 h-5 text-primary-400" />
+            <div className="space-y-2 mt-6 text-sm">
+              <div className="inline-flex items-center gap-2 text-white/85">
+                <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                <span>Bénin · Côte d’Ivoire · Burkina Faso · Togo</span>
+              </div>
+              <div className="inline-flex items-center gap-2 text-white/85">
+                <Mail className="w-4 h-4 text-[#D4AF37]" />
                 <span>contact@afribayit.com</span>
               </div>
-              <div className="flex items-center space-x-3 text-neutral-300">
-                <Phone className="w-5 h-5 text-primary-400" />
+              <div className="inline-flex items-center gap-2 text-white/85">
+                <Phone className="w-4 h-4 text-[#D4AF37]" />
                 <span>+225 20 30 40 50</span>
               </div>
-              <div className="flex items-center space-x-3 text-neutral-300">
-                <MapPin className="w-5 h-5 text-primary-400" />
-                <span>Abidjan, Côte d'Ivoire</span>
-              </div>
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">
-              {t('footer.quick.links')}
-            </h3>
+            <h3 className="font-serif text-2xl text-white mb-4">Navigation</h3>
             <ul className="space-y-3">
-              {footerLinks.quick.map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-neutral-300 hover:text-primary-400 transition-colors duration-200"
+                    className="text-white/80 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -144,53 +74,22 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">
-              {t('footer.services')}
-            </h3>
-            <ul className="space-y-3">
-              {footerLinks.services.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-neutral-300 hover:text-primary-400 transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <h3 className="font-serif text-2xl text-white mb-4">Confiance & conformité</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="inline-flex items-center gap-2 text-white/80">
+                <ShieldCheck className="w-4 h-4 text-[#00A651]" />
+                Vérification KYC multi-niveaux
+              </li>
+              <li className="inline-flex items-center gap-2 text-white/80">
+                <Landmark className="w-4 h-4 text-[#D4AF37]" />
+                Escrow transactionnel traçable
+              </li>
             </ul>
-          </div>
-
-          {/* Support & Legal */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6 text-white">
-              {t('footer.support')}
-            </h3>
-            <ul className="space-y-3 mb-8">
-              {footerLinks.support.map((link) => (
+            <ul className="space-y-2 mt-5">
+              {legalLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-neutral-300 hover:text-primary-400 transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <h3 className="text-lg font-semibold mb-6 text-white">
-              {t('footer.legal')}
-            </h3>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-neutral-300 hover:text-primary-400 transition-colors duration-200"
-                  >
+                  <Link href={link.href} className="text-white/75 hover:text-white transition-colors text-sm">
                     {link.label}
                   </Link>
                 </li>
@@ -199,62 +98,9 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Newsletter Section */}
-        <div className="py-8 border-t border-neutral-800">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-bold mb-4 text-white">
-              {t('newsletter.title')}
-            </h3>
-            <p className="text-neutral-300 mb-6">
-              {t('newsletter.subtitle')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder={t('newsletter.placeholder')}
-                className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <button className="btn btn-primary whitespace-nowrap">
-                {t('newsletter.button')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="py-8 border-t border-neutral-800">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-            {/* Copyright */}
-            <p className="text-neutral-400 text-sm">
-              {t('footer.copyright')}
-            </p>
-
-            {/* Social Links */}
-            <div className="flex items-center space-x-4">
-              <span className="text-neutral-400 text-sm mr-2">
-                {t('footer.social')}:
-              </span>
-              {socialLinks.map((social) => (
-                <a
-                  key={social.href}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-neutral-800 hover:bg-primary-600 rounded-lg flex items-center justify-center transition-colors duration-200 group"
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-5 h-5 text-neutral-400 group-hover:text-white" />
-                </a>
-              ))}
-            </div>
-
-            {/* Language & Currency */}
-            <div className="flex items-center space-x-4 text-sm text-neutral-400">
-              <span>Français</span>
-              <span>•</span>
-              <span>XOF</span>
-            </div>
-          </div>
+        <div className="py-6 border-t border-white/15 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+          <p className="text-sm text-white/70">© {new Date().getFullYear()} AfriBayit Technologies. Tous droits réservés.</p>
+          <p className="text-xs text-white/60">Version marché pilote · UX conforme CDC M1</p>
         </div>
       </div>
     </footer>
