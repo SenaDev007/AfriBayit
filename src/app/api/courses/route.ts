@@ -26,16 +26,16 @@ export async function GET(request: NextRequest) {
 
     // Get courses with pagination
     const [courses, total] = await Promise.all([
-      prisma.courses.findMany({
+      prisma.course.findMany({
         where,
         include: {
-          course_modules: {
+          modules: {
             orderBy: { order: 'asc' }
           },
           _count: {
             select: {
               enrollments: true,
-              course_modules: true
+              modules: true
             }
           }
         },
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.courses.count({ where })
+      prisma.course.count({ where })
     ])
 
     return NextResponse.json({

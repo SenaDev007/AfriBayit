@@ -1,285 +1,356 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-import bcrypt from "bcryptjs";
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter } as any);
+const prisma = new PrismaClient()
+
+const countries = ['BJ', 'CI', 'BF', 'TG'] as const
+const cities = ['Cotonou', 'Abidjan', 'Ouagadougou', 'Lome'] as const
+
+async function upsertUser(params: {
+  email: string
+  firstName: string
+  lastName: string
+  userType: 'ADMIN' | 'SELLER' | 'BUYER' | 'ARTISAN' | 'AGENCY'
+  city: string
+  country: 'BJ' | 'CI' | 'BF' | 'TG'
+}) {
+  const password = await bcrypt.hash('Seed@2026!', 10)
+  return prisma.user.upsert({
+    where: { email: params.email },
+    update: {
+      firstName: params.firstName,
+      lastName: params.lastName,
+      name: `${params.firstName} ${params.lastName}`,
+      city: params.city,
+      country: params.country,
+      status: 'ACTIVE',
+      kycStatus: 'VERIFIED'
+    },
+    create: {
+      email: params.email,
+      firstName: params.firstName,
+      lastName: params.lastName,
+      name: `${params.firstName} ${params.lastName}`,
+      password,
+      userType: params.userType,
+      status: 'ACTIVE',
+      kycStatus: 'VERIFIED',
+      country: params.country,
+      city: params.city,
+      isPremium: true
+    }
+  })
+}
 
 async function main() {
-  console.log("🌍 AfriBayit — Seeding database...");
+  console.log('🌱 Seed AfriBayit: démarrage...')
 
-  // Create admin user
-  const adminPassword = await bcrypt.hash("Admin@2025!", 12);
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@afribayit.com" },
-    update: {},
-    create: {
-      email: "admin@afribayit.com",
-      name: "Admin AfriBayit",
-      firstName: "Admin",
-      lastName: "AfriBayit",
-      password: adminPassword,
-      userType: "ADMIN",
-      status: "ACTIVE",
-      kycStatus: "VERIFIED",
-      isPremium: true,
-      country: "BJ",
-      city: "Cotonou",
-    },
-  });
+  const admin = await upsertUser({
+    email: 'admin@afribayit.com',
+    firstName: 'Admin',
+    lastName: 'AfriBayit',
+    userType: 'ADMIN',
+    city: 'Cotonou',
+    country: 'BJ'
+  })
 
-  // Create sample seller
-  const sellerPassword = await bcrypt.hash("Seller@2025!", 12);
-  const seller = await prisma.user.upsert({
-    where: { email: "stevens.akpovi@example.com" },
-    update: {},
-    create: {
-      email: "stevens.akpovi@example.com",
-      name: "Stevens T. AKPOVI",
-      firstName: "Stevens",
-      lastName: "AKPOVI",
-      password: sellerPassword,
-      userType: "SELLER",
-      status: "ACTIVE",
-      kycStatus: "VERIFIED",
-      isPremium: true,
-      country: "BJ",
-      city: "Cotonou",
-    },
-  });
+  const seller = await upsertUser({
+    email: 'seller@afribayit.com',
+    firstName: 'Stevens',
+    lastName: 'Akpovi',
+    userType: 'SELLER',
+    city: 'Abidjan',
+    country: 'CI'
+  })
 
-  // Create sample properties
-  const properties = [
-    {
-      title: "Villa moderne 4 chambres avec piscine — Cocody, Abidjan",
-      description: "Superbe villa contemporaine de 320m² dans le quartier résidentiel de Cocody. Architecture moderne avec grandes baies vitrées, piscine à débordement et jardin paysagé.",
-      slug: "villa-moderne-4ch-cocody-abidjan",
-      type: "VILLA" as const,
-      listingType: "SALE" as const,
-      status: "ACTIVE" as const,
-      price: 75000000,
-      currency: "XOF" as const,
-      country: "CI" as const,
-      city: "Abidjan",
-      district: "Cocody",
-      surface: 320,
-      bedrooms: 4,
-      bathrooms: 3,
-      yearBuilt: 2021,
-      hasPool: true,
-      hasGarage: true,
-      hasGarden: true,
-      hasAC: true,
-      hasSecurity: true,
-      hasGenerator: true,
-      hasWifi: true,
-      investmentScore: 87,
-      ownerId: seller.id,
-    },
-    {
-      title: "Appartement T3 meublé — Haie Vive, Cotonou",
-      description: "Appartement entièrement meublé de 90m² dans le quartier prisé de Haie Vive. Idéal pour familles ou professionnels.",
-      slug: "appartement-t3-haie-vive-cotonou",
-      type: "APARTMENT" as const,
-      listingType: "LONG_TERM_RENTAL" as const,
-      status: "ACTIVE" as const,
-      price: 350000,
-      currency: "XOF" as const,
-      country: "BJ" as const,
-      city: "Cotonou",
-      district: "Haie Vive",
-      surface: 90,
-      bedrooms: 3,
-      bathrooms: 2,
-      hasAC: true,
-      hasWifi: true,
-      investmentScore: 72,
-      ownerId: seller.id,
-    },
-    {
-      title: "Terrain viabilisé 600m² — Secteur 27, Ouagadougou",
-      description: "Terrain plat et viabilisé dans le secteur résidentiel 27. Documents fonciers certifiés OHADA. Idéal pour construction villa ou immeuble.",
-      slug: "terrain-600m2-secteur27-ouagadougou",
-      type: "LAND" as const,
-      listingType: "SALE" as const,
-      status: "ACTIVE" as const,
-      price: 12000000,
-      currency: "XOF" as const,
-      country: "BF" as const,
-      city: "Ouagadougou",
-      district: "Secteur 27",
-      surface: 600,
-      investmentScore: 65,
-      ownerId: seller.id,
-    },
-    {
-      title: "Studio cosy vue mer — Lomé Plage",
-      description: "Studio moderne de 35m² à 50m de la plage. Parfait pour courtes durées ou séjours d'affaires. Climatisé, wifi haut débit.",
-      slug: "studio-vue-mer-lome-plage",
-      type: "STUDIO" as const,
-      listingType: "SHORT_TERM_RENTAL" as const,
-      status: "ACTIVE" as const,
-      price: 25000,
-      currency: "XOF" as const,
-      country: "TG" as const,
-      city: "Lomé",
-      district: "Quartier Plage",
-      surface: 35,
-      bedrooms: 1,
-      bathrooms: 1,
-      hasAC: true,
-      hasWifi: true,
-      ownerId: seller.id,
-    },
-  ];
+  await upsertUser({
+    email: 'buyer@afribayit.com',
+    firstName: 'Aicha',
+    lastName: 'Diallo',
+    userType: 'BUYER',
+    city: 'Lome',
+    country: 'TG'
+  })
 
-  for (const prop of properties) {
-    await prisma.property.upsert({
-      where: { slug: prop.slug },
-      update: {},
+  const propertyTypes = ['VILLA', 'APARTMENT', 'LAND', 'HOUSE', 'COMMERCIAL'] as const
+  for (let i = 1; i <= 12; i++) {
+    const city = cities[(i - 1) % cities.length]
+    const country = countries[(i - 1) % countries.length]
+    const type = propertyTypes[(i - 1) % propertyTypes.length]
+    const listingType = i % 3 === 0 ? 'SHORT_TERM_RENTAL' : i % 2 === 0 ? 'LONG_TERM_RENTAL' : 'SALE'
+    const property = await prisma.property.upsert({
+      where: { slug: `seed-property-${i}` },
+      update: {
+        title: `Bien premium ${i} - ${city}`,
+        city,
+        country,
+        type,
+        listingType,
+        status: 'ACTIVE',
+        investmentScore: 60 + i,
+        publishedAt: new Date()
+      },
       create: {
-        ...prop,
-        publishedAt: new Date(),
-      },
-    });
-  }
+        title: `Bien premium ${i} - ${city}`,
+        description: `Annonce immobilière ${i} conforme CDC, avec informations vérifiées et parcours sécurisé.`,
+        slug: `seed-property-${i}`,
+        type,
+        listingType,
+        status: 'ACTIVE',
+        price: 18000000 + i * 2750000,
+        currency: 'XOF',
+        country,
+        city,
+        district: `Quartier ${i}`,
+        address: `Rue ${i}, ${city}`,
+        surface: 90 + i * 14,
+        bedrooms: (i % 5) + 1,
+        bathrooms: (i % 3) + 1,
+        hasGarage: i % 2 === 0,
+        hasPool: i % 3 === 0,
+        hasGarden: i % 2 === 1,
+        hasSecurity: true,
+        hasGenerator: i % 4 === 0,
+        hasWifi: true,
+        hasAC: i % 2 === 0,
+        legalDocStatus: 'VERIFIED',
+        investmentScore: 60 + i,
+        ownerId: seller.id,
+        publishedAt: new Date()
+      }
+    })
 
-  // Create sample artisan
-  const artisanUser = await prisma.user.upsert({
-    where: { email: "kouame.artisan@example.com" },
-    update: {},
-    create: {
-      email: "kouame.artisan@example.com",
-      name: "Jean-Baptiste Kouamé",
-      firstName: "Jean-Baptiste",
-      lastName: "Kouamé",
-      password: await bcrypt.hash("Artisan@2025!", 12),
-      userType: "ARTISAN",
-      status: "ACTIVE",
-      kycStatus: "VERIFIED",
-      country: "CI",
-      city: "Abidjan",
-    },
-  });
-
-  await prisma.artisan.upsert({
-    where: { userId: artisanUser.id },
-    update: {},
-    create: {
-      userId: artisanUser.id,
-      businessName: "Kouamé Construction",
-      category: "GROS_OEUVRE",
-      specialty: ["Maçonnerie", "Coffrage", "Béton armé", "Terrassement"],
-      description: "Maçon professionnel avec 15 ans d'expérience en Côte d'Ivoire. Spécialisé dans les villas et immeubles résidentiels.",
-      country: "CI",
-      city: "Abidjan",
-      serviceArea: ["Cocody", "Plateau", "Marcory", "Yopougon"],
-      yearsExp: 15,
-      isCertified: true,
-      certifiedAt: new Date("2024-06-15"),
-      avgRating: 4.9,
-      totalReviews: 87,
-      dailyRate: 45000,
-      currency: "XOF",
-      completedJobs: 145,
-    },
-  });
-
-  // Create sample guesthouse
-  const ghOwner = await prisma.user.upsert({
-    where: { email: "aminata.guesthouse@example.com" },
-    update: {},
-    create: {
-      email: "aminata.guesthouse@example.com",
-      name: "Aminata Diallo",
-      firstName: "Aminata",
-      lastName: "Diallo",
-      password: await bcrypt.hash("Owner@2025!", 12),
-      userType: "GUESTHOUSE_OWNER",
-      status: "ACTIVE",
-      kycStatus: "VERIFIED",
-      country: "CI",
-      city: "Abidjan",
-    },
-  });
-
-  const guesthouse = await prisma.guesthouse.upsert({
-    where: { slug: "palmeraie-cocody-abidjan" },
-    update: {},
-    create: {
-      name: "La Palmeraie de Cocody",
-      slug: "palmeraie-cocody-abidjan",
-      description: "Guesthouse certifiée dans le cœur de Cocody. 6 chambres climatisées, petit-déjeuner inclus, parking sécurisé.",
-      country: "CI",
-      city: "Abidjan",
-      district: "Cocody",
-      address: "Rue des Jardins N°45",
-      hasBreakfast: true,
-      hasParking: true,
-      hasWifi: true,
-      hasAC: true,
-      isCertified: true,
-      certifiedAt: new Date("2024-09-01"),
-      certScore: 92,
-      avgRating: 4.8,
-      totalReviews: 127,
-      ownerId: ghOwner.id,
-    },
-  });
-
-  // Create rooms for the guesthouse
-  const rooms = [
-    {
-      name: "Chambre Deluxe Double",
-      description: "Grande chambre avec lit king size et salle de bain privée",
-      capacity: 2,
-      bedType: "King Size",
-      basePrice: 45000,
-      amenities: { wifi: true, ac: true, tv: true, minibar: false },
-    },
-    {
-      name: "Chambre Standard",
-      description: "Chambre confortable avec lit double",
-      capacity: 2,
-      bedType: "Double",
-      basePrice: 35000,
-      amenities: { wifi: true, ac: true, tv: true },
-    },
-    {
-      name: "Suite Junior",
-      description: "Suite avec espace salon séparé",
-      capacity: 3,
-      bedType: "King Size",
-      basePrice: 65000,
-      amenities: { wifi: true, ac: true, tv: true, balcony: true },
-    },
-  ];
-
-  for (const room of rooms) {
-    await prisma.guesthouseRoom.create({
+    await prisma.propertyImage.deleteMany({ where: { propertyId: property.id } })
+    await prisma.propertyImage.create({
       data: {
-        guesthouseId: guesthouse.id,
-        ...room,
-        currency: "XOF",
-      },
-    });
+        propertyId: property.id,
+        url: `https://picsum.photos/seed/afribayit-property-${i}/1200/800`,
+        alt: `Photo propriété ${i}`,
+        order: 1,
+        isPrimary: true
+      }
+    })
   }
 
-  console.log("✅ Seeding completed!");
-  console.log("📧 Admin: admin@afribayit.com / Admin@2025!");
-  console.log("📧 Seller: stevens.akpovi@example.com / Seller@2025!");
-  console.log("📧 Artisan: kouame.artisan@example.com / Artisan@2025!");
-  console.log("📧 Guesthouse owner: aminata.guesthouse@example.com / Owner@2025!");
+  for (let i = 1; i <= 10; i++) {
+    const city = cities[(i - 1) % cities.length]
+    const country = countries[(i - 1) % countries.length]
+    const hotel = await prisma.hotel.upsert({
+      where: { slug: `seed-hotel-${i}` },
+      update: {
+        name: `Hôtel Signature ${i}`,
+        city,
+        country,
+        isActive: true,
+        isVerified: true
+      },
+      create: {
+        name: `Hôtel Signature ${i}`,
+        description: `Hôtel partenaire ${i} avec standards premium et réservation sécurisée.`,
+        slug: `seed-hotel-${i}`,
+        networkType: i % 2 === 0 ? 'DIRECT' : 'OTA',
+        country,
+        city,
+        district: `Centre ${city}`,
+        stars: ((i % 3) + 3),
+        category: 'hotel',
+        hasPool: i % 2 === 0,
+        hasRestaurant: true,
+        hasSpa: i % 3 === 0,
+        hasGym: i % 2 === 1,
+        hasConference: i % 4 === 0,
+        hasParking: true,
+        hasWifi: true,
+        hasAC: true,
+        avgRating: 4.1 + i * 0.05,
+        totalReviews: 20 + i * 8,
+        isActive: true,
+        isVerified: true
+      }
+    })
+
+    await prisma.hotelRoom.deleteMany({ where: { hotelId: hotel.id } })
+    await prisma.hotelRoom.create({
+      data: {
+        hotelId: hotel.id,
+        name: 'Chambre Deluxe',
+        description: 'Chambre premium avec services hôteliers complets.',
+        roomCode: `DLX-${i}`,
+        capacity: 2,
+        bedType: 'Queen',
+        basePrice: 45000 + i * 3000,
+        currency: 'XOF',
+        isAvailable: true
+      }
+    })
+  }
+
+  const artisanCategories = ['GROS_OEUVRE', 'SECOND_OEUVRE', 'FINITION_DECORATION', 'GENIE_TECHNIQUE'] as const
+  for (let i = 1; i <= 10; i++) {
+    const city = cities[(i - 1) % cities.length]
+    const country = countries[(i - 1) % countries.length]
+    const artisanUser = await upsertUser({
+      email: `artisan${i}@afribayit.com`,
+      firstName: `Artisan${i}`,
+      lastName: 'Pro',
+      userType: 'ARTISAN',
+      city,
+      country
+    })
+
+    const artisan = await prisma.artisan.upsert({
+      where: { userId: artisanUser.id },
+      update: {
+        businessName: `Atelier BTP ${i}`,
+        city,
+        country,
+        isAvailable: true,
+        isCertified: true,
+        avgRating: 4 + i * 0.06
+      },
+      create: {
+        userId: artisanUser.id,
+        businessName: `Atelier BTP ${i}`,
+        category: artisanCategories[(i - 1) % artisanCategories.length],
+        specialty: ['Rénovation', 'Finition', 'Maintenance'],
+        description: `Prestataire BTP ${i} référencé et contrôlé.`,
+        country,
+        city,
+        serviceArea: [city],
+        yearsExp: 4 + i,
+        isCertified: true,
+        certifiedAt: new Date(),
+        avgRating: 4 + i * 0.06,
+        totalReviews: 8 + i * 2,
+        dailyRate: 25000 + i * 1800,
+        currency: 'XOF',
+        completedJobs: 6 + i * 3,
+        isAvailable: true
+      }
+    })
+
+    await prisma.artisanService.deleteMany({ where: { artisanId: artisan.id } })
+    await prisma.artisanImage.deleteMany({ where: { artisanId: artisan.id } })
+    await prisma.artisanService.create({
+      data: {
+        artisanId: artisan.id,
+        name: `Service principal ${i}`,
+        description: 'Prestation standardisée ProMatch',
+        basePrice: 50000 + i * 2000,
+        currency: 'XOF',
+        duration: '2 jours'
+      }
+    })
+    await prisma.artisanImage.create({
+      data: {
+        artisanId: artisan.id,
+        url: `https://picsum.photos/seed/afribayit-artisan-${i}/800/600`,
+        caption: `Portfolio artisan ${i}`,
+        order: 1
+      }
+    })
+  }
+
+  const levels = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'PROFESSIONAL'] as const
+  for (let i = 1; i <= 10; i++) {
+    const course = await prisma.course.upsert({
+      where: { slug: `seed-course-${i}` },
+      update: {
+        title: `Formation immobilière ${i}`,
+        isPublished: true,
+        isCertified: true
+      },
+      create: {
+        title: `Formation immobilière ${i}`,
+        description: `Parcours académique ${i} pour professionnaliser les acteurs immobiliers.`,
+        slug: `seed-course-${i}`,
+        level: levels[(i - 1) % levels.length],
+        category: i % 2 === 0 ? 'investissement' : 'legal',
+        language: 'fr',
+        price: i % 3 === 0 ? 0 : 12000 + i * 1800,
+        currency: 'XOF',
+        duration: 75 + i * 10,
+        isPublished: true,
+        isCertified: true
+      }
+    })
+
+    await prisma.courseModule.deleteMany({ where: { courseId: course.id } })
+    await prisma.courseModule.createMany({
+      data: [
+        { courseId: course.id, title: 'Module 1 - Fondamentaux', order: 1, duration: 30 },
+        { courseId: course.id, title: 'Module 2 - Cas pratiques', order: 2, duration: 35 },
+        { courseId: course.id, title: 'Module 3 - Évaluation', order: 3, duration: 25 }
+      ]
+    })
+  }
+
+  const forumAuthors = [
+    await upsertUser({
+      email: 'forum1@afribayit.com',
+      firstName: 'Mariam',
+      lastName: 'Kone',
+      userType: 'INVESTOR',
+      city: 'Abidjan',
+      country: 'CI'
+    }),
+    await upsertUser({
+      email: 'forum2@afribayit.com',
+      firstName: 'Ibrahim',
+      lastName: 'Traore',
+      userType: 'INVESTOR',
+      city: 'Ouagadougou',
+      country: 'BF'
+    })
+  ]
+  const categories = ['INVESTISSEMENT', 'JURIDIQUE', 'CONSEILS', 'FINANCE', 'GENERAL'] as const
+  for (let i = 1; i <= 12; i++) {
+    const author = forumAuthors[(i - 1) % forumAuthors.length]
+    await prisma.forumPost.upsert({
+      where: { id: `seed_forum_${String(i).padStart(2, '0')}` },
+      update: {
+        title: `Discussion CDC ${i}`,
+        body: `Post communautaire ${i} sur le marché immobilier local.`,
+        category: categories[(i - 1) % categories.length],
+        isPinned: i <= 2,
+        viewCount: 50 + i * 15
+      },
+      create: {
+        id: `seed_forum_${String(i).padStart(2, '0')}`,
+        authorId: author.id,
+        title: `Discussion CDC ${i}`,
+        body: `Post communautaire ${i} sur le marché immobilier local.`,
+        category: categories[(i - 1) % categories.length],
+        isPinned: i <= 2,
+        isLocked: false,
+        viewCount: 50 + i * 15
+      }
+    })
+  }
+
+  const [propertyCount, hotelCount, artisanCount, courseCount, forumCount] = await Promise.all([
+    prisma.property.count({ where: { status: 'ACTIVE' } }),
+    prisma.hotel.count({ where: { isActive: true } }),
+    prisma.artisan.count({ where: { isAvailable: true } }),
+    prisma.course.count({ where: { isPublished: true } }),
+    prisma.forumPost.count()
+  ])
+
+  console.log('✅ Seed terminé')
+  console.log(`🏠 Propriétés actives: ${propertyCount}`)
+  console.log(`🏨 Hôtels actifs: ${hotelCount}`)
+  console.log(`🛠️ Artisans actifs: ${artisanCount}`)
+  console.log(`🎓 Cours publiés: ${courseCount}`)
+  console.log(`💬 Posts forum: ${forumCount}`)
+  console.log(`👤 Admin seed: ${admin.email}`)
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await prisma.$disconnect()
   })
   .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

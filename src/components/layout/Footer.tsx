@@ -16,7 +16,9 @@ export function Footer() {
     { href: '/hotels', label: 'Hôtellerie' },
     { href: '/artisans', label: 'Marketplace artisans' },
     { href: '/learning', label: 'Académie' },
-    { href: '/community', label: 'Communauté' }
+    { href: '/community', label: 'Communauté' },
+    { href: '/geotrust', label: 'GeoTrust' },
+    { href: '/notaire', label: 'Notaire' }
   ]
 
   const legalLinks = [

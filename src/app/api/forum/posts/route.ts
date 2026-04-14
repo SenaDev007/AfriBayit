@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
 
     // Get forum posts with pagination
     const [posts, total] = await Promise.all([
-      prisma.forum_posts.findMany({
+      prisma.forumPost.findMany({
         where,
         include: {
-          users: {
+          author: {
             select: {
               id: true,
               firstName: true,
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
           },
           _count: {
             select: {
-              forum_replies: true
+              replies: true
             }
           }
         },
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.forum_posts.count({ where })
+      prisma.forumPost.count({ where })
     ])
 
     return NextResponse.json({

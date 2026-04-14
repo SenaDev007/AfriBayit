@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const bedrooms = searchParams.get('bedrooms')
     const bathrooms = searchParams.get('bathrooms')
     const featured = searchParams.get('featured')
+    const sort = searchParams.get('sort') || 'newest'
 
     const skip = (page - 1) * limit
 
@@ -51,16 +52,25 @@ export async function GET(request: NextRequest) {
       where.investmentScore = { not: null }
     }
 
+    let orderBy: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' }
+    if (sort === 'price_asc') {
+      orderBy = { price: 'asc' }
+    } else if (sort === 'price_desc') {
+      orderBy = { price: 'desc' }
+    } else if (sort === 'popular') {
+      orderBy = { viewCount: 'desc' }
+    }
+
     // Get properties with pagination
     const [rows, total] = await Promise.all([
-      prisma.properties.findMany({
+      prisma.property.findMany({
         where,
         include: {
-          property_images: {
+          images: {
             orderBy: { order: 'asc' },
             take: 1
           },
-          users: {
+          owner: {
             select: {
               id: true,
               firstName: true,
@@ -76,11 +86,11 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: limit
       }),
-      prisma.properties.count({ where })
+      prisma.property.count({ where })
     ])
 
     const properties = rows.map((row) => ({
@@ -106,18 +116,18 @@ export async function GET(request: NextRequest) {
         country: row.country,
         address: row.address
       },
-      images: row.property_images.map((img) => ({
+      images: row.images.map((img) => ({
         imageUrl: img.url,
         altText: img.alt,
         isPrimary: img.isPrimary,
         orderIndex: img.order
       })),
       owner: {
-        id: row.users.id,
-        firstName: row.users.firstName,
-        lastName: row.users.lastName,
-        avatarUrl: row.users.image,
-        reputationScore: row.users.reputationScore
+        id: row.owner.id,
+        firstName: row.owner.firstName,
+        lastName: row.owner.lastName,
+        avatarUrl: row.owner.image,
+        reputationScore: row.owner.reputationScore
       },
       _count: row._count
     }))

@@ -2,9 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { Users, MessageCircle, TrendingUp, Award, Calendar, MapPin } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
-import { Button } from '@/components/ui/Button'
+import { Users, MessageCircle, TrendingUp, Award, MapPin, ShieldCheck } from 'lucide-react'
 
 const forumCategories = [
     {
@@ -64,31 +62,20 @@ const recentPosts = [
 ]
 
 export default function CommunityPage() {
-    const { t } = useLanguage()
     const [apiPosts, setApiPosts] = useState<any[]>([])
 
     useEffect(() => {
         const load = async () => {
-            const response = await fetch('/api/forum/posts?limit=5')
+            const response = await fetch('/api/forum/posts?limit=10', { cache: 'no-store' })
             const data = await response.json()
             setApiPosts(data.posts || [])
         }
         load()
     }, [])
 
-    const handleForumClick = (categoryId: number) => {
-        console.log('Forum clicked:', categoryId)
-        alert(`Rejoindre la discussion ${categoryId}`)
-    }
-
-    const handleBackToHome = () => {
-        window.location.href = '/'
-    }
-
     return (
-        <div className="min-h-screen bg-white dark:bg-neutral-900">
-            {/* Header Section */}
-            <section className="pt-32 pb-20 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
+        <div className="min-h-screen bg-[#F7F9FC]">
+            <section className="pt-32 pb-20 bg-[linear-gradient(135deg,#003087_0%,#001F5B_75%)]">
                 <div className="container-custom">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -96,39 +83,36 @@ export default function CommunityPage() {
                         transition={{ duration: 0.8 }}
                         className="max-w-4xl mx-auto text-center"
                     >
-                        <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-                            <span className="text-gradient">
-                                {t('nav.community')}
-                            </span>
+                        <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                            Communauté investisseurs
                         </h1>
-                        <p className="text-xl text-neutral-600 dark:text-neutral-300 mb-8 leading-relaxed">
-                            Rejoignez notre communauté d'experts et d'investisseurs immobiliers
+                        <p className="text-xl text-white/85 mb-8 leading-relaxed">
+                            Forums, mentoring, analyses marchés et échanges entre investisseurs par pays.
                         </p>
 
-                        {/* Community Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                             <div className="text-center">
-                                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Users className="w-8 h-8 text-primary-600" />
+                                <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <Users className="w-8 h-8 text-[#D4AF37]" />
                                 </div>
-                                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">15,000+</div>
-                                <div className="text-neutral-600 dark:text-neutral-300">Membres Actifs</div>
+                                <div className="text-3xl font-bold text-white mb-2">15,000+</div>
+                                <div className="text-white/80">Membres actifs</div>
                             </div>
 
                             <div className="text-center">
-                                <div className="w-16 h-16 bg-accent-100 dark:bg-accent-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <MessageCircle className="w-8 h-8 text-accent-600" />
+                                <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <MessageCircle className="w-8 h-8 text-[#D4AF37]" />
                                 </div>
-                                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">8,500+</div>
-                                <div className="text-neutral-600 dark:text-neutral-300">Discussions</div>
+                                <div className="text-3xl font-bold text-white mb-2">8,500+</div>
+                                <div className="text-white/80">Discussions</div>
                             </div>
 
                             <div className="text-center">
-                                <div className="w-16 h-16 bg-secondary-100 dark:bg-secondary-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Award className="w-8 h-8 text-secondary-600" />
+                                <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <Award className="w-8 h-8 text-[#D4AF37]" />
                                 </div>
-                                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">500+</div>
-                                <div className="text-neutral-600 dark:text-neutral-300">Experts Certifiés</div>
+                                <div className="text-3xl font-bold text-white mb-2">500+</div>
+                                <div className="text-white/80">Experts certifiés</div>
                             </div>
                         </div>
                     </motion.div>
@@ -139,10 +123,10 @@ export default function CommunityPage() {
             <section className="py-20">
                 <div className="container-custom">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+                        <h2 className="text-3xl md:text-4xl font-bold text-[#003087] mb-4">
                             Forums de Discussion
                         </h2>
-                        <p className="text-lg text-neutral-600 dark:text-neutral-300">
+                        <p className="text-lg text-neutral-600">
                             Participez aux discussions dans nos forums spécialisés
                         </p>
                     </div>
@@ -154,21 +138,21 @@ export default function CommunityPage() {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                                className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-300"
+                                className="bg-white rounded-2xl border border-[#003087]/10 shadow-sm p-8 hover:shadow-xl transition-shadow duration-300"
                             >
-                                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-2xl flex items-center justify-center mb-6">
-                                    <category.icon className="w-8 h-8 text-primary-600" />
+                                <div className="w-16 h-16 bg-[#003087]/10 rounded-2xl flex items-center justify-center mb-6">
+                                    <category.icon className="w-8 h-8 text-[#003087]" />
                                 </div>
 
-                                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                                <h3 className="text-xl font-semibold text-neutral-900 mb-3">
                                     {category.title}
                                 </h3>
 
-                                <p className="text-neutral-600 dark:text-neutral-300 mb-6">
+                                <p className="text-neutral-600 mb-6">
                                     {category.description}
                                 </p>
 
-                                <div className="flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+                                <div className="flex items-center justify-between text-sm text-neutral-500 mb-6">
                                     <div className="flex items-center">
                                         <MessageCircle className="w-4 h-4 mr-1" />
                                         {category.posts} posts
@@ -179,19 +163,15 @@ export default function CommunityPage() {
                                     </div>
                                 </div>
 
-                                <Button
-                                    onClick={() => handleForumClick(category.id)}
-                                    className="w-full"
-                                >
+                                <button className="w-full rounded-full bg-[#003087] hover:bg-[#00266e] text-white px-4 py-2.5">
                                     Rejoindre la discussion
-                                </Button>
+                                </button>
                             </motion.div>
                         ))}
                     </div>
 
-                    {/* Recent Posts */}
-                    <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg p-8">
-                        <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+                    <div className="bg-white rounded-2xl border border-[#003087]/10 shadow-sm p-8">
+                        <h3 className="text-2xl font-bold text-[#003087] mb-6">
                             Discussions Récentes
                         </h3>
 
@@ -199,24 +179,24 @@ export default function CommunityPage() {
                             {(apiPosts.length > 0 ? apiPosts.map((p: any) => ({
                                 id: p.id,
                                 title: p.title,
-                                author: `${p.users?.firstName || ''} ${p.users?.lastName || ''}`.trim(),
+                                author: `${p.author?.firstName || ''} ${p.author?.lastName || ''}`.trim(),
                                 category: p.category || 'Forum',
-                                replies: p._count?.forum_replies || 0,
-                                views: p.viewsCount || 0,
+                                replies: p._count?.replies || 0,
+                                views: p.viewCount || 0,
                                 time: 'recent'
-                            })) : recentPosts).map((post, index) => (
+                            })) : recentPosts).slice(0, 10).map((post, index) => (
                                 <motion.div
                                     key={post.id}
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.1 }}
-                                    className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors duration-200"
+                                    className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors duration-200"
                                 >
                                     <div className="flex-1">
-                                        <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                                        <h4 className="font-semibold text-neutral-900 mb-1">
                                             {post.title}
                                         </h4>
-                                        <div className="flex items-center text-sm text-neutral-500 dark:text-neutral-400">
+                                        <div className="flex items-center text-sm text-neutral-500">
                                             <span>Par {post.author}</span>
                                             <span className="mx-2">•</span>
                                             <span>{post.category}</span>
@@ -225,7 +205,7 @@ export default function CommunityPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-neutral-400">
+                                    <div className="flex items-center space-x-4 text-sm text-neutral-500">
                                         <div className="flex items-center">
                                             <MessageCircle className="w-4 h-4 mr-1" />
                                             {post.replies}
@@ -240,23 +220,23 @@ export default function CommunityPage() {
                         </div>
                     </div>
 
-                    {/* Coming Soon Message */}
-                    <div className="max-w-2xl mx-auto text-center py-20 mt-16">
-                        <Users className="w-24 h-24 text-primary-600 mx-auto mb-8" />
-                        <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
-                            Communauté en Développement
+                    <div className="max-w-3xl mx-auto text-center py-14 mt-16 rounded-3xl bg-white border border-[#003087]/10">
+                        <h3 className="text-2xl font-bold text-[#003087] mb-4">
+                            Contenu CDC: communauté orientée action
                         </h3>
-                        <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-8">
-                            Notre plateforme communautaire complète sera bientôt disponible avec
-                            des forums, événements, mentorat et networking.
+                        <p className="text-lg text-neutral-600 px-6">
+                            Mentoring, événements réseau pays et discussions modérées avec profils vérifiés.
                         </p>
-                        <Button
-                            onClick={handleBackToHome}
-                            size="lg"
-                        >
-                            Retour à l'accueil
-                        </Button>
+                        <div className="mt-5 inline-flex items-center gap-2 text-sm rounded-full bg-[#00A651]/15 text-[#0b7f44] px-3 py-1.5">
+                            <ShieldCheck className="w-4 h-4" />
+                            Modération et traçabilité renforcées
+                        </div>
                     </div>
+                    {apiPosts.length > 0 && apiPosts.length < 10 && (
+                        <p className="mt-6 text-sm text-neutral-500 text-center">
+                            Données BDD disponibles: {apiPosts.length} posts forum (objectif 10+).
+                        </p>
+                    )}
                 </div>
             </section>
         </div>

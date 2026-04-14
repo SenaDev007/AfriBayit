@@ -32,25 +32,25 @@ export async function GET(request: NextRequest) {
     }
 
     if (minRating) {
-      where.starRating = {
+      where.stars = {
         gte: parseInt(minRating)
       }
     }
 
     // Get hotels with pagination
     const [hotels, total] = await Promise.all([
-      prisma.hotels.findMany({
+      prisma.hotel.findMany({
         where,
         include: {
-          hotel_rooms: {
+          rooms: {
             where: { isAvailable: true },
             take: 3,
             orderBy: { basePrice: 'asc' }
           },
           _count: {
             select: {
-              hotel_bookings: true,
-              hotel_rooms: true
+              bookings: true,
+              rooms: true
             }
           }
         },
@@ -58,16 +58,16 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit
       }),
-      prisma.hotels.count({ where })
+      prisma.hotel.count({ where })
     ])
 
     const normalizedHotels = hotels.map((hotel) => ({
       ...hotel,
       starRating: hotel.stars,
-      rooms: hotel.hotel_rooms,
+      rooms: hotel.rooms,
       _count: {
-        bookings: hotel._count.hotel_bookings,
-        rooms: hotel._count.hotel_rooms
+        bookings: hotel._count.bookings,
+        rooms: hotel._count.rooms
       }
     }))
 

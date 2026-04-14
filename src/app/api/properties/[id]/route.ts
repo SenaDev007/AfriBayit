@@ -9,13 +9,13 @@ type RouteContext = {
 
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
-    const row = await prisma.properties.findUnique({
+    const row = await prisma.property.findUnique({
       where: { id: context.params.id },
       include: {
-        property_images: {
+        images: {
           orderBy: { order: 'asc' }
         },
-        users: {
+        owner: {
           select: {
             id: true,
             firstName: true,
@@ -65,20 +65,20 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         country: row.country,
         address: row.address
       },
-      images: row.property_images.map((img) => ({
+      images: row.images.map((img) => ({
         imageUrl: img.url,
         altText: img.alt,
         isPrimary: img.isPrimary,
         orderIndex: img.order
       })),
       owner: {
-        id: row.users.id,
-        firstName: row.users.firstName,
-        lastName: row.users.lastName,
-        email: row.users.email,
-        phone: row.users.phone,
-        avatarUrl: row.users.image,
-        reputationScore: row.users.reputationScore
+        id: row.owner.id,
+        firstName: row.owner.firstName,
+        lastName: row.owner.lastName,
+        email: row.owner.email,
+        phone: row.owner.phone,
+        avatarUrl: row.owner.image,
+        reputationScore: row.owner.reputationScore
       },
       reviews: row.reviews,
       _count: row._count
