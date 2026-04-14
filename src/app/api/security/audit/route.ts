@@ -1,36 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/db'
-
-const ADMIN_TYPES = new Set(['AGENCY', 'DEVELOPER'])
-
-async function requireAdmin(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { error: NextResponse.json({ message: "Token d'authentification requis" }, { status: 401 }) }
-  }
-
-  try {
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
-    const user = await prisma.users.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, userType: true }
-    })
-
-    if (!user || !ADMIN_TYPES.has(user.userType)) {
-      return { error: NextResponse.json({ message: 'Acces non autorise' }, { status: 403 }) }
-    }
-
-    return { user }
-  } catch {
-    return { error: NextResponse.json({ message: 'Token invalide' }, { status: 401 }) }
-  }
-}
+import { requireAdminPermission } from '@/lib/auth/admin'
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAdmin(request)
+    const auth = await requireAdminPermission(request, 'audit:read')
     if ('error' in auth) return auth.error
 
     const { searchParams } = new URL(request.url)
@@ -73,7 +47,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAdmin(request)
+    const auth = await requireAdminPermission(request, 'audit:write')
     if ('error' in auth) return auth.error
 
     const { action, entity, entityId, metadata } = await request.json()

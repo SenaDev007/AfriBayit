@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireAdminPermission } from '@/lib/auth/admin'
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdminPermission(request, 'system:reset')
+    if ('error' in auth) return auth.error
+
     if (process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { success: false, message: 'Endpoint desactive en production' },

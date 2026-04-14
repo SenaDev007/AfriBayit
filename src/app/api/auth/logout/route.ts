@@ -25,9 +25,17 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             message: 'Déconnexion réussie'
         })
+        response.cookies.set('auth_token', '', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 0
+        })
+        return response
 
     } catch (error) {
         console.error('Logout error:', error)

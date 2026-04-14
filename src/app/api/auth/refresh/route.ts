@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
         // Generate new JWT token
         const newToken = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, profileType: user.profileType },
             process.env.JWT_SECRET!,
             { expiresIn: '7d' }
         )
@@ -48,10 +48,20 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             token: newToken,
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         })
+
+        response.cookies.set('auth_token', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60
+        })
+
+        return response
 
     } catch (error) {
         console.error('Refresh token error:', error)
