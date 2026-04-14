@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdminPermission } from '@/lib/auth/admin'
+import { logAdminAudit } from '@/lib/audit/adminAudit'
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,7 +62,14 @@ export async function PATCH(request: NextRequest) {
 
     const existing = await prisma.kyc_documents.findUnique({
       where: { id: documentId },
-      select: { id: true, userId: true }
+      select: {
+        id: true,
+        userId: true,
+        isVerified: true,
+        verifiedAt: true,
+        rejectedAt: true,
+        rejectReason: true
+      }
     })
 
     if (!existing) {
@@ -87,18 +95,27 @@ export async function PATCH(request: NextRequest) {
       }
     })
 
-    await prisma.audit_logs.create({
-      data: {
-        id: crypto.randomUUID(),
-        userId: auth.user.id,
-        action: isVerify ? 'KYC_VERIFIED' : 'KYC_REJECTED',
-        entity: 'KYC_DOCUMENT',
-        entityId: updatedDoc.id,
-        metadata: {
-          targetUserId: existing.userId,
-          rejectReason
+    await logAdminAudit({
+      actorUserId: auth.user.id,
+      action: isVerify ? 'KYC_VERIFIED' : 'KYC_REJECTED',
+      entity: 'KYC_DOCUMENT',
+      entityId: updatedDoc.id,
+      request,
+      metadata: {
+        targetUserId: existing.userId,
+        reason: rejectReason,
+        before: {
+          isVerified: existing.isVerified,
+          verifiedAt: existing.verifiedAt,
+          rejectedAt: existing.rejectedAt,
+          rejectReason: existing.rejectReason
         },
-        createdAt: new Date()
+        after: {
+          isVerified: updatedDoc.isVerified,
+          verifiedAt: updatedDoc.verifiedAt,
+          rejectedAt: updatedDoc.rejectedAt,
+          rejectReason: updatedDoc.rejectReason
+        }
       }
     })
 

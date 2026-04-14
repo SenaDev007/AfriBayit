@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdminPermission } from '@/lib/auth/admin'
+import { getAuditRequestContext, logAdminAudit } from '@/lib/audit/adminAudit'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,8 +14,13 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action')
     const skip = (page - 1) * limit
 
-    const where: { action?: string } = {}
+    const entity = searchParams.get('entity')
+    const actorUserId = searchParams.get('actorUserId')
+
+    const where: { action?: string; entity?: string; userId?: string } = {}
     if (action) where.action = action
+    if (entity) where.entity = entity
+    if (actorUserId) where.userId = actorUserId
 
     const [auditLogs, total] = await Promise.all([
       prisma.audit_logs.findMany({
@@ -55,21 +61,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'action requise' }, { status: 400 })
     }
 
-    const auditLog = await prisma.audit_logs.create({
-      data: {
-        id: crypto.randomUUID(),
-        userId: auth.user.id,
-        action,
-        entity,
-        entityId,
-        metadata: metadata ?? null,
-        ip: request.headers.get('x-forwarded-for') ?? null,
-        userAgent: request.headers.get('user-agent') ?? null,
-        createdAt: new Date()
+    const requestCtx = getAuditRequestContext(request)
+    const auditLog = await logAdminAudit({
+      actorUserId: auth.user.id,
+      action,
+      entity,
+      entityId,
+      request,
+      metadata: {
+        ...(metadata ?? {}),
+        source: 'admin-api'
       }
     })
 
-    return NextResponse.json({ message: "Log d'audit cree", auditLog })
+    return NextResponse.json({ message: "Log d'audit cree", auditLog, context: requestCtx })
   } catch (error) {
     console.error('Create audit log error:', error)
     return NextResponse.json(

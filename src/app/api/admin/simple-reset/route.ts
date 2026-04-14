@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdminPermission } from '@/lib/auth/admin'
+import { logAdminAudit } from '@/lib/audit/adminAudit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +17,17 @@ export async function POST(request: NextRequest) {
 
     await prisma.notifications.deleteMany()
     await prisma.sessions.deleteMany()
+
+    await logAdminAudit({
+      actorUserId: auth.user.id,
+      action: 'SYSTEM_RESET_SIMPLE',
+      entity: 'SYSTEM',
+      entityId: null,
+      request,
+      metadata: {
+        resetScope: ['notifications', 'sessions']
+      }
+    })
 
     return NextResponse.json({
       success: true,
