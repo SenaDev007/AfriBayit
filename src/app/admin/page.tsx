@@ -37,6 +37,20 @@ type AdminAuditLog = {
     createdAt: string
 }
 
+type AdminAlerts = {
+    summary: {
+        pendingKyc: number
+        disputedTransactions: number
+        unreconciledEscrows: number
+    }
+    recentCriticalLogs: Array<{
+        id: string
+        action: string
+        entity: string | null
+        createdAt: string
+    }>
+}
+
 const adminStats = [
     {
         title: 'Utilisateurs Actifs',
@@ -136,6 +150,7 @@ export default function AdminDashboard() {
     const [kycDocs, setKycDocs] = useState<AdminKycDoc[]>([])
     const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([])
     const [adminMessage, setAdminMessage] = useState('')
+    const [alerts, setAlerts] = useState<AdminAlerts | null>(null)
 
     const getAuthToken = () => {
         if (typeof window === 'undefined') return null
@@ -147,9 +162,10 @@ export default function AdminDashboard() {
         if (!token) return
 
         const headers = { Authorization: `Bearer ${token}` }
-        const [kycRes, auditRes] = await Promise.all([
+        const [kycRes, auditRes, alertsRes] = await Promise.all([
             fetch('/api/admin/kyc?status=PENDING', { headers }),
-            fetch('/api/security/audit?limit=10', { headers })
+            fetch('/api/security/audit?limit=10', { headers }),
+            fetch('/api/admin/alerts', { headers })
         ])
 
         if (kycRes.ok) {
@@ -160,6 +176,11 @@ export default function AdminDashboard() {
         if (auditRes.ok) {
             const auditData = await auditRes.json()
             setAuditLogs(auditData.auditLogs || [])
+        }
+
+        if (alertsRes.ok) {
+            const alertsData = await alertsRes.json()
+            setAlerts(alertsData)
         }
     }
 
@@ -329,6 +350,43 @@ export default function AdminDashboard() {
                             ))}
                         </div>
                     </div>
+                </div>
+
+                <div className="mt-8 bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                    <h3 className="text-xl font-semibold text-neutral-900 mb-4">Centre d'alertes CDC</h3>
+                    {!alerts ? (
+                        <p className="text-sm text-neutral-500">Chargement des alertes...</p>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                    <p className="text-xs text-amber-800">KYC en attente</p>
+                                    <p className="text-2xl font-bold text-amber-900">{alerts.summary.pendingKyc}</p>
+                                </div>
+                                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                                    <p className="text-xs text-red-800">Transactions en litige</p>
+                                    <p className="text-2xl font-bold text-red-900">{alerts.summary.disputedTransactions}</p>
+                                </div>
+                                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                                    <p className="text-xs text-orange-800">Escrows en litige</p>
+                                    <p className="text-2xl font-bold text-orange-900">{alerts.summary.unreconciledEscrows}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                {(alerts.recentCriticalLogs || []).map((log) => (
+                                    <div key={log.id} className="border border-neutral-200 rounded-lg p-3">
+                                        <p className="text-sm font-medium text-neutral-900">{log.action}</p>
+                                        <p className="text-xs text-neutral-500">
+                                            {log.entity || 'SYSTEM'} • {new Date(log.createdAt).toLocaleString('fr-FR')}
+                                        </p>
+                                    </div>
+                                ))}
+                                {alerts.recentCriticalLogs.length === 0 && (
+                                    <p className="text-sm text-neutral-500">Aucune alerte critique récente.</p>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
