@@ -2,42 +2,40 @@
 
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Counter } from '@/components/ui/Counter'
 
 const stats = [
   {
-    number: 50000,
+    number: 12400,
     suffix: '+',
-    label: 'Propriétés',
-    description: 'Propriétés disponibles sur la plateforme',
-    color: 'from-blue-500 to-blue-600'
+    label: 'Biens vérifiés',
+    description: 'Annonces qualifiées avec contrôles documentaires et géographiques',
+    color: 'from-[#003087] to-[#009CDE]'
   },
   {
-    number: 100000,
-    suffix: '+',
-    label: 'Utilisateurs',
-    description: 'Utilisateurs actifs mensuels',
-    color: 'from-green-500 to-green-600'
+    number: 4920,
+    suffix: '',
+    label: 'Transactions sécurisées',
+    description: 'Parcours sous gouvernance escrow avec checkpoints notariaux',
+    color: 'from-[#00A651] to-[#0b7f44]'
   },
   {
-    number: 25,
-    suffix: '+',
-    label: 'Pays',
-    description: 'Pays africains couverts',
-    color: 'from-purple-500 to-purple-600'
+    number: 96,
+    suffix: '%',
+    label: 'Dossiers conformes',
+    description: 'Taux de complétude KYC/KYB avant engagement contractuel',
+    color: 'from-[#D4AF37] to-[#b8932c]'
   },
   {
-    number: 10000,
+    number: 48,
     suffix: '+',
-    label: 'Transactions',
-    description: 'Transactions réalisées',
-    color: 'from-orange-500 to-orange-600'
+    label: 'Heures gagnées / dossier',
+    description: 'Réduction moyenne des délais grâce à l\'orchestration digitale',
+    color: 'from-[#2C2E2F] to-[#101112]'
   }
 ]
 
 export function StatsSection() {
-  const { t } = useLanguage()
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.2,
@@ -70,10 +68,10 @@ export function StatsSection() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-neutral-900">
-              AfriBayit en Chiffres
+              Indicateurs de confiance AfriBayit
             </h2>
             <p className="text-xl text-neutral-600 leading-relaxed">
-              La plateforme immobilière qui révolutionne l'Afrique
+              Pilotage CDC orienté conformité, performance opérationnelle et sécurité transactionnelle.
             </p>
           </motion.div>
         </div>
@@ -125,7 +123,7 @@ export function StatsSection() {
         >
           <div className="inline-flex items-center space-x-2 bg-white/70 border border-neutral-200 backdrop-blur-md rounded-full px-6 py-3 shadow-sm">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-neutral-700">Plateforme en ligne 24/7</span>
+            <span className="text-sm font-medium text-neutral-700">Supervision active 24/7 avec journal d’audit enrichi</span>
           </div>
         </motion.div>
       </div>

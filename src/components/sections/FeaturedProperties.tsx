@@ -12,16 +12,18 @@ import {
   Car,
   Ruler,
   Star,
-  Eye
+  Eye,
+  ShieldCheck,
+  Landmark
 } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Button } from '@/components/ui/Button'
 import { formatPrice } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 // Data must come from the database – no hardcoded fallbacks
 
 export function FeaturedProperties() {
-  const { t } = useLanguage()
+  const router = useRouter()
   const [favorites, setFavorites] = useState<string[]>([])
   const [properties, setProperties] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,32 +62,29 @@ export function FeaturedProperties() {
   }
 
   const handleShare = (propertyId: string) => {
-    // In a real app, this would open a share modal or copy link to clipboard
+    const propertyUrl = `${window.location.origin}/properties/${propertyId}`
     if (navigator.share) {
       navigator.share({
         title: 'Propriété AfriBayit',
         text: 'Découvrez cette propriété sur AfriBayit',
-        url: window.location.href
+        url: propertyUrl
       })
     } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href)
+      navigator.clipboard.writeText(propertyUrl)
       alert('Lien copié dans le presse-papiers!')
     }
   }
 
-  const handleContactAgent = (agentName: string) => {
-    // In a real app, this would open a contact modal or navigate to contact page
-    alert(`Contacter ${agentName}`)
+  const handleContactAgent = (propertyId: string) => {
+    router.push(`/properties/${propertyId}?intent=contact`)
   }
 
   const handleViewProperty = (propertyId: string) => {
-    // Navigate to property details page
-    window.location.href = `/properties/${propertyId}`
+    router.push(`/properties/${propertyId}`)
   }
 
   const handleViewAllProperties = () => {
-    window.location.href = '/properties'
+    router.push('/properties')
   }
 
   return (
@@ -98,10 +97,10 @@ export function FeaturedProperties() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-              {t('property.featured')}
+              Propriétés premium vérifiées
             </h2>
             <p className="text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Découvrez nos propriétés sélectionnées avec soin par nos experts
+              Sélection CDC avec contrôles KYC, signaux GeoTrust et préparation notariale.
             </p>
           </motion.div>
         </div>
@@ -158,7 +157,7 @@ export function FeaturedProperties() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 flex space-x-2">
+                  <div className="absolute top-4 left-4 flex flex-wrap gap-2 max-w-[80%]">
                     {property.isPremium && (
                       <span className="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-full">
                         Premium
@@ -169,6 +168,14 @@ export function FeaturedProperties() {
                         Vérifié
                       </span>
                     )}
+                    <span className="px-3 py-1 bg-[#003087] text-white text-xs font-medium rounded-full inline-flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      GeoTrust
+                    </span>
+                    <span className="px-3 py-1 bg-[#2C2E2F] text-white text-xs font-medium rounded-full inline-flex items-center gap-1">
+                      <Landmark className="w-3 h-3" />
+                      Notaire prêt
+                    </span>
                   </div>
 
                   {/* Actions */}
@@ -213,7 +220,7 @@ export function FeaturedProperties() {
                     </h3>
                     <div className="flex items-center text-neutral-500 dark:text-neutral-400 text-sm">
                       <MapPin className="w-4 h-4 mr-1" />
-                      {property.location ? `${property.location.city}${property.location.country ? ', ' + property.location.country : ''}` : ''}
+                      {[property.city, property.country].filter(Boolean).join(', ')}
                     </div>
                   </div>
 
@@ -294,7 +301,7 @@ export function FeaturedProperties() {
                           {`${property.owner?.firstName || ''} ${property.owner?.lastName || ''}`.trim()}
                         </div>
                         <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                          Agent immobilier
+                          Agent immobilier certifié
                         </div>
                       </div>
                     </div>
@@ -302,12 +309,12 @@ export function FeaturedProperties() {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleContactAgent(`${property.owner?.firstName || ''} ${property.owner?.lastName || ''}`.trim())
+                        handleContactAgent(property.id)
                       }}
                       size="sm"
                       className="text-xs"
                     >
-                      Contacter
+                      Contacter l'agent
                     </Button>
                   </div>
                 </div>

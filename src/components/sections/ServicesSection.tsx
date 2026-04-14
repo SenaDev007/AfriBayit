@@ -12,61 +12,61 @@ import {
   Shield,
   ArrowRight
 } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
 import { Button } from '@/components/ui/Button'
+import { useRouter } from 'next/navigation'
 
 const services = [
   {
     icon: Building2,
-    title: 'Recherche de Propriétés',
-    description: 'IA avancée, visites virtuelles 360°, et recommandations personnalisées',
+    title: 'Immobilier vérifié',
+    description: 'Inventaire résidentiel et commercial avec scoring confiance et filtrage métier',
     features: [
-      'Recherche conversationnelle par IA',
-      'Visites virtuelles immersives',
-      'Recommandations personnalisées',
-      'Analyse prédictive des prix'
+      'Annonce validée KYC/KYB',
+      'Contrôle documentaire et conformité',
+      'Scoring de risque géospatial',
+      'Parcours acquisition/livraison'
     ],
-    color: 'from-blue-500 to-blue-600',
-    bgColor: 'from-blue-50 to-blue-100'
+    color: 'from-[#003087] to-[#009CDE]',
+    bgColor: 'from-[#eef3ff] to-[#dde9ff]'
   },
   {
     icon: Hotel,
-    title: 'Réservation Hôtelière',
-    description: 'Hôtels de luxe et hébergements locaux avec réservation instantanée',
+    title: 'Hôtellerie OTA/GDS',
+    description: 'Agrégation DB/LIVE/HYBRID avec disponibilité et tarification consolidées',
     features: [
-      'Réservation instantanée',
-      'Comparaison de prix temps réel',
-      'Check-in numérique',
-      'Concierge virtuel'
+      'Connecteurs Amadeus/Expedia/Booking',
+      'Rate-limit et cache serveurs',
+      'Persistance snapshot des tarifs',
+      'Pipeline réservation extensible'
     ],
-    color: 'from-green-500 to-green-600',
-    bgColor: 'from-green-50 to-green-100'
+    color: 'from-[#00A651] to-[#0b7f44]',
+    bgColor: 'from-[#ebfff4] to-[#d7f7e7]'
   },
   {
     icon: GraduationCap,
-    title: 'Académie Immobilière',
-    description: 'Formations certifiantes et conseils d\'experts pour investir intelligemment',
+    title: 'Académie & montée en compétences',
+    description: 'Parcours certifiants pour investisseurs, agents et opérateurs immobiliers',
     features: [
-      'Cours en ligne interactifs',
-      'Certifications reconnues',
-      'Mentorat individuel',
-      'Bibliothèque de ressources'
+      'Programmes professionnalisants',
+      'Suivi de progression apprenant',
+      'Contenus orientés terrain Afrique',
+      'Certification orientée employabilité'
     ],
-    color: 'from-purple-500 to-purple-600',
-    bgColor: 'from-purple-50 to-purple-100'
+    color: 'from-[#2C2E2F] to-[#101112]',
+    bgColor: 'from-[#f0f1f2] to-[#e1e4e6]'
   },
   {
     icon: Users,
-    title: 'Communauté',
-    description: 'Réseau d\'experts, forums et événements de networking',
+    title: 'Communauté investisseurs',
+    description: 'Forum, entraide et intelligence collective pour sécuriser les décisions',
     features: [
-      'Forums spécialisés',
-      'Événements de networking',
-      'Système de mentorat',
-      'Marketplace de services'
+      'Discussions modérées par catégorie',
+      'Capitalisation retours terrain',
+      'Mentorat et réponses experts',
+      'Canal de veille marché'
     ],
-    color: 'from-orange-500 to-orange-600',
-    bgColor: 'from-orange-50 to-orange-100'
+    color: 'from-[#D4AF37] to-[#b8932c]',
+    bgColor: 'from-[#fff8e8] to-[#f8ecc8]'
   }
 ]
 
@@ -89,7 +89,7 @@ const technologies = [
 ]
 
 export function ServicesSection() {
-  const { t } = useLanguage()
+  const router = useRouter()
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1
@@ -97,19 +97,19 @@ export function ServicesSection() {
 
   const handleServiceClick = (serviceTitle: string) => {
     console.log('Service clicked:', serviceTitle)
-    // Navigate to appropriate page based on service
+    // Routage explicite par module CDC
     switch (serviceTitle) {
-      case 'Recherche de Propriétés':
-        window.location.href = '/properties'
+      case 'Immobilier vérifié':
+        router.push('/properties')
         break
-      case 'Réservation Hôtelière':
-        window.location.href = '/hotels'
+      case 'Hôtellerie OTA/GDS':
+        router.push('/hotels')
         break
-      case 'Académie Immobilière':
-        window.location.href = '/learning'
+      case 'Académie & montée en compétences':
+        router.push('/learning')
         break
-      case 'Communauté':
-        window.location.href = '/community'
+      case 'Communauté investisseurs':
+        router.push('/community')
         break
       default:
         console.log('Unknown service:', serviceTitle)
@@ -126,10 +126,10 @@ export function ServicesSection() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-              {t('services.title')}
+              Modules opérationnels AfriBayit
             </h2>
             <p className="text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              {t('services.subtitle')}
+              Chaque module couvre un maillon critique du parcours immobilier, de la découverte à la transaction sécurisée.
             </p>
           </motion.div>
         </div>
@@ -194,10 +194,10 @@ export function ServicesSection() {
         >
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
-              Technologies Révolutionnaires
+              Fondations technologiques
             </h3>
             <p className="text-xl text-neutral-600 dark:text-neutral-300">
-              Des innovations de pointe pour une expérience immobilière unique
+              Une architecture pensée pour la conformité, la traçabilité et la performance.
             </p>
           </div>
 
