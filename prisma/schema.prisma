@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
+  url        = env("DATABASE_URL")
   extensions = [vector]
 }
 
@@ -1486,7 +1487,7 @@ model NotaireProfile {
 
   // KYC docs submitted for certification
   diplomaUrl       String?             // Diplôme de notariat
-  agrémentUrl      String?             // Agrément Chambre Nationale
+  agrementUrl      String?             // Agrement Chambre Nationale
   carteProUrl      String?             // Carte professionnelle
 
   // Stats
