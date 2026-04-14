@@ -6,6 +6,8 @@ import { Hotel, Search, Star, MapPin, Calendar, Users, ShieldCheck } from 'lucid
 
 export default function HotelsPage() {
     const [hotels, setHotels] = useState<any[]>([])
+    const [providerHealth, setProviderHealth] = useState<any[]>([])
+    const [source, setSource] = useState<'db' | 'live' | 'hybrid'>('hybrid')
     const [searchData, setSearchData] = useState({
         destination: '',
         checkIn: '',
@@ -17,9 +19,10 @@ export default function HotelsPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const response = await fetch('/api/hotels?limit=10', { cache: 'no-store' })
+                const response = await fetch('/api/hotels?limit=10&source=hybrid', { cache: 'no-store' })
                 const data = await response.json()
                 setHotels(data.hotels || [])
+                setProviderHealth(data.providerHealth || [])
             } finally {
                 setLoading(false)
             }
@@ -32,9 +35,14 @@ export default function HotelsPage() {
         const params = new URLSearchParams()
         if (searchData.destination) params.set('city', searchData.destination)
         params.set('limit', '10')
+        params.set('source', source)
+        if (searchData.checkIn) params.set('checkIn', searchData.checkIn)
+        if (searchData.checkOut) params.set('checkOut', searchData.checkOut)
+        params.set('adults', searchData.guests.replace(/\D/g, '') || '1')
         const response = await fetch(`/api/hotels?${params.toString()}`, { cache: 'no-store' })
         const data = await response.json()
         setHotels(data.hotels || [])
+        setProviderHealth(data.providerHealth || [])
         setLoading(false)
     }
 
@@ -56,6 +64,21 @@ export default function HotelsPage() {
                         </p>
 
                         <div className="max-w-4xl mx-auto bg-white/10 border border-white/20 rounded-2xl p-6">
+                            <div className="mb-5 flex flex-wrap items-center justify-center gap-2">
+                                {(['db', 'live', 'hybrid'] as const).map((mode) => (
+                                    <button
+                                        key={mode}
+                                        type="button"
+                                        onClick={() => setSource(mode)}
+                                        className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${source === mode
+                                            ? 'bg-[#D4AF37] text-[#001F5B]'
+                                            : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                                            }`}
+                                    >
+                                        {mode.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                                 <div>
                                     <label className="block text-sm font-medium text-white mb-2">
@@ -172,10 +195,35 @@ export default function HotelsPage() {
                                     <p className="text-sm text-neutral-600">{hotel.city}, {hotel.country}</p>
                                     <p className="text-sm text-neutral-500 mt-2">Chambres disponibles: {hotel._count?.rooms || 0}</p>
                                     <p className="text-sm text-neutral-500">Réservations: {hotel._count?.bookings || 0}</p>
+                                    {!!hotel.minPrice && (
+                                        <p className="text-sm text-neutral-600 mt-1">
+                                            A partir de {hotel.minPrice} {hotel.currency || 'XOF'}
+                                        </p>
+                                    )}
+                                    {'provider' in hotel && (
+                                        <p className="text-xs text-neutral-500 mt-2">
+                                            Source: {String(hotel.provider).toUpperCase()}
+                                        </p>
+                                    )}
                                     <div className="mt-3 inline-flex items-center gap-1 text-xs rounded-full bg-[#00A651]/15 text-[#0b7f44] px-2.5 py-1">
                                         <ShieldCheck className="w-3.5 h-3.5" />
                                         Fournisseur vérifié
                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {!loading && providerHealth.length > 0 && (
+                        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {providerHealth.map((provider) => (
+                                <div
+                                    key={provider.provider}
+                                    className="rounded-xl border border-[#003087]/10 bg-white p-3 text-sm text-neutral-700"
+                                >
+                                    <p className="font-semibold uppercase text-[#003087]">{provider.provider}</p>
+                                    <p>
+                                        Statut: {provider.ok ? 'OK' : 'KO'} | Config: {provider.configured ? 'OK' : 'Manquante'}
+                                    </p>
                                 </div>
                             ))}
                         </div>
