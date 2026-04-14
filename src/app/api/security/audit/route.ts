@@ -2,122 +2,105 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
-    try {
-        const authHeader = request.headers.get('authorization')
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json(
-                { message: 'Token d\'authentification requis' },
-                { status: 401 }
-            )
-        }
+const ADMIN_TYPES = new Set(['AGENCY', 'DEVELOPER'])
 
-        const token = authHeader.substring(7)
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
+async function requireAdmin(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { error: NextResponse.json({ message: "Token d'authentification requis" }, { status: 401 }) }
+  }
 
-        // Check if user is admin
-        const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
-            select: { profileType: true }
-        })
+  try {
+    const token = authHeader.substring(7)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, userType: true }
+    })
 
-        if (user?.profileType !== 'AGENCY' && user?.profileType !== 'DEVELOPER') {
-            return NextResponse.json(
-                { message: 'Accès non autorisé' },
-                { status: 403 }
-            )
-        }
-
-        const { searchParams } = new URL(request.url)
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '50')
-        const type = searchParams.get('type')
-        const startDate = searchParams.get('startDate')
-        const endDate = searchParams.get('endDate')
-
-        const skip = (page - 1) * limit
-
-        // Build where clause
-        const where: any = {}
-
-        if (type) {
-            where.type = type
-        }
-
-        if (startDate && endDate) {
-            where.createdAt = {
-                gte: new Date(startDate),
-                lte: new Date(endDate)
-            }
-        }
-
-        // Get audit logs
-        const [auditLogs, total] = await Promise.all([
-            prisma.auditLog.findMany({
-                where,
-                include: {
-                    user: {
-                        select: {
-                            id: true,
-                            firstName: true,
-                            lastName: true,
-                            email: true
-                        }
-                    }
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit
-            }),
-            prisma.auditLog.count({ where })
-        ])
-
-        return NextResponse.json({
-            auditLogs,
-            pagination: {
-                page,
-                limit,
-                total,
-                pages: Math.ceil(total / limit),
-                hasMore: page * limit < total
-            }
-        })
-
-    } catch (error) {
-        console.error('Audit logs error:', error)
-        return NextResponse.json(
-            { message: 'Erreur lors de la récupération des logs d\'audit' },
-            { status: 500 }
-        )
+    if (!user || !ADMIN_TYPES.has(user.userType)) {
+      return { error: NextResponse.json({ message: 'Acces non autorise' }, { status: 403 }) }
     }
+
+    return { user }
+  } catch {
+    return { error: NextResponse.json({ message: 'Token invalide' }, { status: 401 }) }
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const auth = await requireAdmin(request)
+    if ('error' in auth) return auth.error
+
+    const { searchParams } = new URL(request.url)
+    const page = Math.max(1, Number(searchParams.get('page') || 1))
+    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit') || 20)))
+    const action = searchParams.get('action')
+    const skip = (page - 1) * limit
+
+    const where: { action?: string } = {}
+    if (action) where.action = action
+
+    const [auditLogs, total] = await Promise.all([
+      prisma.audit_logs.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.audit_logs.count({ where })
+    ])
+
+    return NextResponse.json({
+      auditLogs,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasMore: page * limit < total
+      }
+    })
+  } catch (error) {
+    console.error('Audit logs error:', error)
+    return NextResponse.json(
+      { message: "Erreur lors de la recuperation des logs d'audit" },
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: NextRequest) {
-    try {
-        const { action, resource, details, userId } = await request.json()
+  try {
+    const auth = await requireAdmin(request)
+    if ('error' in auth) return auth.error
 
-        // Create audit log entry
-        const auditLog = await prisma.auditLog.create({
-            data: {
-                userId,
-                action,
-                resource,
-                details,
-                ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-                userAgent: request.headers.get('user-agent') || 'unknown'
-            }
-        })
-
-        return NextResponse.json({
-            message: 'Log d\'audit créé',
-            auditLog
-        })
-
-    } catch (error) {
-        console.error('Create audit log error:', error)
-        return NextResponse.json(
-            { message: 'Erreur lors de la création du log d\'audit' },
-            { status: 500 }
-        )
+    const { action, entity, entityId, metadata } = await request.json()
+    if (!action) {
+      return NextResponse.json({ message: 'action requise' }, { status: 400 })
     }
+
+    const auditLog = await prisma.audit_logs.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: auth.user.id,
+        action,
+        entity,
+        entityId,
+        metadata: metadata ?? null,
+        ip: request.headers.get('x-forwarded-for') ?? null,
+        userAgent: request.headers.get('user-agent') ?? null,
+        createdAt: new Date()
+      }
+    })
+
+    return NextResponse.json({ message: "Log d'audit cree", auditLog })
+  } catch (error) {
+    console.error('Create audit log error:', error)
+    return NextResponse.json(
+      { message: "Erreur lors de la creation du log d'audit" },
+      { status: 500 }
+    )
+  }
 }

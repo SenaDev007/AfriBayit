@@ -9,7 +9,9 @@ type RouteContext = {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const body = await request.json()
-    const targetStatus = body.status as
+    const requestedStatus = String(body.status || '').toUpperCase()
+    const normalizedStatus = requestedStatus === 'COMPLETED' ? 'RELEASED' : requestedStatus
+    const targetStatus = normalizedStatus as
       | 'PENDING'
       | 'ESCROW'
       | 'RELEASED'
@@ -18,6 +20,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!targetStatus) {
       return NextResponse.json({ message: 'status requis' }, { status: 400 })
+    }
+
+    if (!['PENDING', 'ESCROW', 'RELEASED', 'CANCELLED', 'DISPUTED'].includes(targetStatus)) {
+      return NextResponse.json({ message: 'status invalide' }, { status: 400 })
     }
 
     const existingTransaction = await prisma.transactions.findUnique({

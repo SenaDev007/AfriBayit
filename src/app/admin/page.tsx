@@ -16,7 +16,26 @@ import {
     BarChart3,
     Activity
 } from 'lucide-react'
-import { useLanguage } from '@/components/providers/LanguageProvider'
+
+type AdminKycDoc = {
+    id: string
+    docType: string
+    createdAt: string
+    users: {
+        id: string
+        firstName: string | null
+        lastName: string | null
+        email: string | null
+        userType: string
+    }
+}
+
+type AdminAuditLog = {
+    id: string
+    action: string
+    entity: string | null
+    createdAt: string
+}
 
 const adminStats = [
     {
@@ -113,8 +132,61 @@ const recentActivities = [
 ]
 
 export default function AdminDashboard() {
-    const { t } = useLanguage()
     const [activeTab, setActiveTab] = useState('overview')
+    const [kycDocs, setKycDocs] = useState<AdminKycDoc[]>([])
+    const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([])
+    const [adminMessage, setAdminMessage] = useState('')
+
+    const getAuthToken = () => {
+        if (typeof window === 'undefined') return null
+        return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+    }
+
+    const loadAdminCompliance = async () => {
+        const token = getAuthToken()
+        if (!token) return
+
+        const headers = { Authorization: `Bearer ${token}` }
+        const [kycRes, auditRes] = await Promise.all([
+            fetch('/api/admin/kyc?status=PENDING', { headers }),
+            fetch('/api/security/audit?limit=10', { headers })
+        ])
+
+        if (kycRes.ok) {
+            const kycData = await kycRes.json()
+            setKycDocs(kycData.kycDocuments || [])
+        }
+
+        if (auditRes.ok) {
+            const auditData = await auditRes.json()
+            setAuditLogs(auditData.auditLogs || [])
+        }
+    }
+
+    const handleKycAction = async (documentId: string, action: 'VERIFY' | 'REJECT') => {
+        const token = getAuthToken()
+        if (!token) {
+            setAdminMessage('Session expirée, reconnectez-vous.')
+            return
+        }
+
+        const res = await fetch('/api/admin/kyc', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ documentId, action })
+        })
+
+        const data = await res.json()
+        setAdminMessage(data.message || (res.ok ? 'Mise a jour KYC effectuee' : 'Erreur KYC admin'))
+        await loadAdminCompliance()
+    }
+
+    useEffect(() => {
+        loadAdminCompliance()
+    }, [])
 
     return (
         <div className="min-h-screen bg-neutral-50">
@@ -258,6 +330,62 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                 </div>
+
+                <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                        <h3 className="text-xl font-semibold text-neutral-900 mb-4">Validation KYC centralisee</h3>
+                        {kycDocs.length === 0 ? (
+                            <p className="text-sm text-neutral-500">Aucun dossier KYC en attente.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {kycDocs.slice(0, 6).map((doc) => (
+                                    <div key={doc.id} className="border border-neutral-200 rounded-lg p-3">
+                                        <p className="text-sm font-medium text-neutral-900">
+                                            {doc.users.firstName || 'Utilisateur'} {doc.users.lastName || ''} ({doc.users.userType})
+                                        </p>
+                                        <p className="text-xs text-neutral-500">{doc.users.email || 'Email indisponible'} • {doc.docType}</p>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleKycAction(doc.id, 'VERIFY')}
+                                                className="px-2.5 py-1.5 text-xs rounded bg-emerald-600 text-white hover:bg-emerald-700"
+                                            >
+                                                Valider
+                                            </button>
+                                            <button
+                                                onClick={() => handleKycAction(doc.id, 'REJECT')}
+                                                className="px-2.5 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700"
+                                            >
+                                                Rejeter
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                        <h3 className="text-xl font-semibold text-neutral-900 mb-4">Audit de securite</h3>
+                        {auditLogs.length === 0 ? (
+                            <p className="text-sm text-neutral-500">Aucun evenement d'audit.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {auditLogs.map((log) => (
+                                    <div key={log.id} className="text-sm text-neutral-700 border-b border-neutral-100 pb-2">
+                                        <p className="font-medium">{log.action}</p>
+                                        <p className="text-xs text-neutral-500">
+                                            {log.entity || 'N/A'} • {new Date(log.createdAt).toLocaleString('fr-FR')}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {adminMessage && (
+                    <p className="mt-4 text-sm text-primary-700">{adminMessage}</p>
+                )}
             </div>
         </div>
     )

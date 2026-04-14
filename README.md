@@ -134,6 +134,20 @@ npm run build
 npm start
 ```
 
+### Vercel (recommandé)
+1. Importer le repo GitHub dans Vercel.
+2. Ajouter les variables d'environnement du fichier `.env.example` dans les settings Vercel.
+3. Laisser les commandes par défaut:
+   - Install: `npm install`
+   - Build: `npm run build`
+4. Déployer. Le script `postinstall` exécute automatiquement `prisma generate`.
+
+Variables minimales requises en production:
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+
 ### Docker
 ```bash
 docker-compose up -d
