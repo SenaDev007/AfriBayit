@@ -5,6 +5,45 @@ const prisma = new PrismaClient()
 
 const countries = ['BJ', 'CI', 'BF', 'TG'] as const
 const cities = ['Cotonou', 'Abidjan', 'Ouagadougou', 'Lome'] as const
+const districtsByCity: Record<(typeof cities)[number], string[]> = {
+  Cotonou: ['Haie Vive', 'Cadjehoun', 'Fidjrosse', 'Akpakpa'],
+  Abidjan: ['Cocody', 'Marcory', 'Plateau', 'Yopougon'],
+  Ouagadougou: ['Ouaga 2000', 'Koulouba', 'Pissy', 'Tampouy'],
+  Lome: ['Baguida', 'Hedzranawoe', 'Agoe', 'Kodjoviakope']
+}
+const propertyTitleByType: Record<string, string[]> = {
+  VILLA: ['Villa contemporaine', 'Villa familiale', 'Villa haut standing'],
+  APARTMENT: ['Appartement meublé', 'Appartement lumineux', 'Appartement moderne'],
+  LAND: ['Terrain viabilisé', 'Parcelle d’investissement', 'Terrain constructible'],
+  HOUSE: ['Maison rénovée', 'Maison urbaine', 'Maison avec cour'],
+  COMMERCIAL: ['Local commercial', 'Immeuble mixte', 'Espace bureaux']
+}
+const propertyPriceRangeByListingType: Record<string, [number, number]> = {
+  SALE: [18000000, 120000000],
+  LONG_TERM_RENTAL: [200000, 1500000],
+  SHORT_TERM_RENTAL: [25000, 120000]
+}
+const hotelNameByCity: Record<(typeof cities)[number], string[]> = {
+  Cotonou: ['Solea Marina', 'Residhome Cotonou', 'Palmeraie Littorale'],
+  Abidjan: ['Riviera Grand Hotel', 'Ebene Suites', 'Lagon Business Hotel'],
+  Ouagadougou: ['Savane Prestige', 'Kadiogo Center Hotel', 'Mossi Signature'],
+  Lome: ['Oceanis Lome', 'Azur Garden Hotel', 'Teranga Boutique']
+}
+const artisanBusinessPrefixes = ['Atelier', 'Maison', 'Studio', 'Bati', 'Pro']
+const forumTopics = [
+  'Investissement locatif en zone urbaine',
+  'Sécurisation juridique des transactions',
+  'Financement bancaire et apport personnel',
+  'Rentabilité des locations courte durée',
+  'Fiscalité immobilière locale',
+  'Négociation vendeur-acquéreur',
+  'Réhabilitation de biens anciens',
+  'Conformité notariale et actes',
+  'Escrow et gestion des litiges',
+  'Tendances marché résidentiel',
+  'Opportunités dans les villes secondaires',
+  'Check-list avant acquisition'
+]
 
 async function upsertUser(params: {
   email: string
@@ -78,12 +117,20 @@ async function main() {
     const country = countries[(i - 1) % countries.length]
     const type = propertyTypes[(i - 1) % propertyTypes.length]
     const listingType = i % 3 === 0 ? 'SHORT_TERM_RENTAL' : i % 2 === 0 ? 'LONG_TERM_RENTAL' : 'SALE'
+    const district = districtsByCity[city][(i - 1) % districtsByCity[city].length]
+    const titleBase = propertyTitleByType[type][(i - 1) % propertyTitleByType[type].length]
+    const [minPrice, maxPrice] = propertyPriceRangeByListingType[listingType]
+    const price = minPrice + Math.round(((maxPrice - minPrice) * ((i % 7) + 1)) / 9)
+    const bedrooms = type === 'LAND' || type === 'COMMERCIAL' ? null : (i % 5) + 1
+    const bathrooms = type === 'LAND' ? null : (i % 3) + 1
+    const title = `${titleBase} - ${district}, ${city}`
     const property = await prisma.property.upsert({
       where: { slug: `seed-property-${i}` },
       update: {
-        title: `Bien premium ${i} - ${city}`,
+        title,
         city,
         country,
+        district,
         type,
         listingType,
         status: 'ACTIVE',
@@ -91,21 +138,21 @@ async function main() {
         publishedAt: new Date()
       },
       create: {
-        title: `Bien premium ${i} - ${city}`,
-        description: `Annonce immobilière ${i} conforme CDC, avec informations vérifiées et parcours sécurisé.`,
+        title,
+        description: `Annonce ${listingType === 'SALE' ? 'vente' : listingType === 'LONG_TERM_RENTAL' ? 'location longue durée' : 'location courte durée'} à ${district}. Dossier vérifié, scoring investissement et compatibilité escrow.`,
         slug: `seed-property-${i}`,
         type,
         listingType,
         status: 'ACTIVE',
-        price: 18000000 + i * 2750000,
+        price,
         currency: 'XOF',
         country,
         city,
-        district: `Quartier ${i}`,
-        address: `Rue ${i}, ${city}`,
-        surface: 90 + i * 14,
-        bedrooms: (i % 5) + 1,
-        bathrooms: (i % 3) + 1,
+        district,
+        address: `Rue ${10 + i}, ${district}, ${city}`,
+        surface: type === 'LAND' ? 220 + i * 45 : 70 + i * 12,
+        bedrooms,
+        bathrooms,
         hasGarage: i % 2 === 0,
         hasPool: i % 3 === 0,
         hasGarden: i % 2 === 1,
@@ -135,23 +182,27 @@ async function main() {
   for (let i = 1; i <= 10; i++) {
     const city = cities[(i - 1) % cities.length]
     const country = countries[(i - 1) % countries.length]
+    const district = districtsByCity[city][(i - 1) % districtsByCity[city].length]
+    const hotelBase = hotelNameByCity[city][(i - 1) % hotelNameByCity[city].length]
+    const hotelName = `${hotelBase} ${i}`
     const hotel = await prisma.hotel.upsert({
       where: { slug: `seed-hotel-${i}` },
       update: {
-        name: `Hôtel Signature ${i}`,
+        name: hotelName,
         city,
         country,
+        district,
         isActive: true,
         isVerified: true
       },
       create: {
-        name: `Hôtel Signature ${i}`,
-        description: `Hôtel partenaire ${i} avec standards premium et réservation sécurisée.`,
+        name: hotelName,
+        description: `Hôtel partenaire à ${district} avec service réception 24/7, réservation sécurisée et conformité CDC.`,
         slug: `seed-hotel-${i}`,
         networkType: i % 2 === 0 ? 'DIRECT' : 'OTA',
         country,
         city,
-        district: `Centre ${city}`,
+        district,
         stars: ((i % 3) + 3),
         category: 'hotel',
         hasPool: i % 2 === 0,
@@ -201,7 +252,7 @@ async function main() {
     const artisan = await prisma.artisan.upsert({
       where: { userId: artisanUser.id },
       update: {
-        businessName: `Atelier BTP ${i}`,
+        businessName: `${artisanBusinessPrefixes[(i - 1) % artisanBusinessPrefixes.length]} BTP ${city}`,
         city,
         country,
         isAvailable: true,
@@ -210,10 +261,10 @@ async function main() {
       },
       create: {
         userId: artisanUser.id,
-        businessName: `Atelier BTP ${i}`,
+        businessName: `${artisanBusinessPrefixes[(i - 1) % artisanBusinessPrefixes.length]} BTP ${city}`,
         category: artisanCategories[(i - 1) % artisanCategories.length],
-        specialty: ['Rénovation', 'Finition', 'Maintenance'],
-        description: `Prestataire BTP ${i} référencé et contrôlé.`,
+        specialty: ['Rénovation', 'Finition', 'Maintenance', 'Mise en conformité'],
+        description: `Prestataire BTP référencé pour chantiers résidentiels et commerciaux à ${city}.`,
         country,
         city,
         serviceArea: [city],
@@ -234,8 +285,8 @@ async function main() {
     await prisma.artisanService.create({
       data: {
         artisanId: artisan.id,
-        name: `Service principal ${i}`,
-        description: 'Prestation standardisée ProMatch',
+        name: i % 2 === 0 ? 'Rénovation intérieure' : 'Travaux gros oeuvre',
+        description: 'Prestation standardisée ProMatch avec devis détaillé et planning.',
         basePrice: 50000 + i * 2000,
         currency: 'XOF',
         duration: '2 jours'
@@ -309,8 +360,8 @@ async function main() {
     await prisma.forumPost.upsert({
       where: { id: `seed_forum_${String(i).padStart(2, '0')}` },
       update: {
-        title: `Discussion CDC ${i}`,
-        body: `Post communautaire ${i} sur le marché immobilier local.`,
+        title: forumTopics[i - 1],
+        body: `Discussion ${i} : retour terrain, points de vigilance et opportunités liées au sujet "${forumTopics[i - 1]}".`,
         category: categories[(i - 1) % categories.length],
         isPinned: i <= 2,
         viewCount: 50 + i * 15
@@ -318,8 +369,8 @@ async function main() {
       create: {
         id: `seed_forum_${String(i).padStart(2, '0')}`,
         authorId: author.id,
-        title: `Discussion CDC ${i}`,
-        body: `Post communautaire ${i} sur le marché immobilier local.`,
+        title: forumTopics[i - 1],
+        body: `Discussion ${i} : retour terrain, points de vigilance et opportunités liées au sujet "${forumTopics[i - 1]}".`,
         category: categories[(i - 1) % categories.length],
         isPinned: i <= 2,
         isLocked: false,
