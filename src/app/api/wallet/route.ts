@@ -16,7 +16,21 @@ export async function GET(request: Request) {
 
     if (type) where.type = type;
 
-    const [transactions, total] = await Promise.all([
+    const [user, transactions, total] = await Promise.all([
+      db.user.findUnique({
+        where: { id: auth.userId },
+        select: {
+          walletBalance: true,
+          escrowHeld: true,
+          pendingPayout: true,
+          afriPoints: true,
+          currency: true,
+          kycLevel: true,
+          name: true,
+          avatar: true,
+          score: true,
+        },
+      }),
       db.walletTransaction.findMany({
         where,
         skip: (page - 1) * limit,
@@ -27,12 +41,23 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({
+      summary: {
+        balance: user?.walletBalance ?? 0,
+        escrowHeld: user?.escrowHeld ?? 0,
+        pendingPayout: user?.pendingPayout ?? 0,
+        afriPoints: user?.afriPoints ?? 0,
+        currency: user?.currency ?? 'XOF',
+        kycLevel: user?.kycLevel ?? 0,
+        name: user?.name ?? '',
+        avatar: user?.avatar ?? null,
+        score: user?.score ?? 0,
+      },
       transactions,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error('Wallet API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch wallet transactions' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch wallet data' }, { status: 500 });
   }
 }
 

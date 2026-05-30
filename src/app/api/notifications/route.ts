@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const category = searchParams.get('category');
     const read = searchParams.get('read');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
-    const where: Record<string, unknown> = { userId };
+    // Users can only see their own notifications
+    const where: Record<string, unknown> = { userId: auth.userId };
 
     if (category) where.category = category;
     if (read !== null) where.read = read === 'true';
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     ]);
 
     const unreadCount = await db.notification.count({
-      where: { userId, read: false },
+      where: { userId: auth.userId, read: false },
     });
 
     return NextResponse.json({
@@ -46,6 +46,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const notification = await db.notification.create({
@@ -72,15 +75,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
+    // Users can only mark their own notifications as read
     const result = await db.notification.updateMany({
-      where: { userId, read: false },
+      where: { userId: auth.userId, read: false },
       data: { read: true, readAt: new Date() },
     });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -43,11 +44,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const review = await db.review.create({
       data: {
-        reviewerId: body.reviewerId,
+        reviewerId: auth.userId,
         targetId: body.targetId,
         targetType: body.targetType,
         rating: body.rating,

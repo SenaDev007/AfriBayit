@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -38,11 +39,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const notary = await db.notary.create({
       data: {
-        userId: body.userId,
+        userId: auth.userId,
         licenseNumber: body.licenseNumber,
         chamberName: body.chamberName,
         specialty: body.specialty,

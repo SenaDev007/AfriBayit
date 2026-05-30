@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 const REBECCA_SYSTEM_PROMPT = `You are Rebecca, the AI assistant for AfriBayit — Africa's premier real estate platform. You help users find properties, understand the buying process in West Africa, navigate escrow transactions, and connect with certified agents, notaries, and geometers. You are professional, warm, and knowledgeable about African real estate law (OHADA, Code Foncier). You speak French primarily but can switch to English or local languages. Never give binding legal advice — always recommend consulting a certified notary.`;
 
@@ -8,7 +9,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
+
+    // Verify user is a participant in the conversation
+    const participant = await db.conversationParticipant.findFirst({
+      where: { conversationId: id, userId: auth.userId },
+    });
+
+    if (!participant && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -43,22 +57,35 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const body = await request.json();
-    const { senderId, content, messageType } = body;
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
 
-    if (!content || !senderId) {
+    const { id } = await params;
+
+    // Verify user is a participant in the conversation
+    const participant = await db.conversationParticipant.findFirst({
+      where: { conversationId: id, userId: auth.userId },
+    });
+
+    if (!participant && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { content, messageType } = body;
+
+    if (!content) {
       return NextResponse.json(
-        { error: 'senderId et content sont requis' },
+        { error: 'content est requis' },
         { status: 400 }
       );
     }
 
-    // Save user message
+    // Save user message — use auth.userId instead of body.senderId
     const message = await db.chatMessage.create({
       data: {
         conversationId: id,
-        senderId,
+        senderId: auth.userId,
         content,
         messageType: messageType || 'text',
         metadata: body.metadata ? JSON.stringify(body.metadata) : null,
@@ -99,7 +126,7 @@ export async function POST(
         const chatHistory = recentMessages
           .reverse()
           .map((msg) => ({
-            role: msg.senderId === senderId ? 'user' as const : 'assistant' as const,
+            role: msg.senderId === auth.userId ? 'user' as const : 'assistant' as const,
             content: msg.content,
           }));
 

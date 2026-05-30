@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard({ requiredRoles: ['admin'] });
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
 

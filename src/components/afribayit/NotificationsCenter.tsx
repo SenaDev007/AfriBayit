@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { notifications as mockNotifications } from '@/lib/mockData';
+import { useAuthStore } from '@/stores/authStore';
+import { useNotifications, useMarkNotificationRead } from '@/hooks/useNotifications';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface NotificationsCenterProps {
   isOpen: boolean;
@@ -17,6 +19,12 @@ const typeIcons: Record<string, string> = {
   alert: '🔔',
   system: '⚙️',
   promotion: '🎁',
+  community: '👥',
+  rebecca: '🤖',
+  certification: '✅',
+  profile: '👤',
+  premium: '👑',
+  security: '🔒',
 };
 
 const typeColors: Record<string, string> = {
@@ -25,18 +33,31 @@ const typeColors: Record<string, string> = {
   alert: '#D4AF37',
   system: '#6b7280',
   promotion: '#D93025',
+  community: '#003087',
+  rebecca: '#9333ea',
+  certification: '#00A651',
+  profile: '#009CDE',
+  premium: '#D4AF37',
+  security: '#D93025',
 };
 
 export default function NotificationsCenter({ isOpen, onClose }: NotificationsCenterProps) {
-  const [notifs, setNotifs] = useState(mockNotifications);
+  const { user } = useAuthStore();
+  const userId = user?.id;
   const [filter, setFilter] = useState<string>('all');
 
-  const unreadCount = notifs.filter(n => !n.read).length;
+  const { data, isLoading, isError } = useNotifications(userId, 1, 50);
+  const markReadMutation = useMarkNotificationRead();
 
-  const filtered = filter === 'all' ? notifs : notifs.filter(n => n.type === filter);
+  const notifications = (data?.notifications ?? []) as Record<string, unknown>[];
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const filtered = filter === 'all' ? notifications : notifications.filter(n => String(n.type) === filter || String(n.category) === filter);
 
   const markAllRead = () => {
-    setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+    notifications.filter(n => !n.read).forEach(n => {
+      markReadMutation.mutate(String(n.id));
+    });
   };
 
   return (
@@ -65,7 +86,11 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
                   <p className="text-xs text-gray-500">{unreadCount} non lue{unreadCount !== 1 ? 's' : ''}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={markAllRead} className="text-xs text-[#003087] font-medium hover:underline">
+                  <button
+                    onClick={markAllRead}
+                    disabled={unreadCount === 0 || markReadMutation.isPending}
+                    className="text-xs text-[#003087] font-medium hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
                     Tout marquer lu
                   </button>
                   <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
@@ -86,46 +111,86 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
                       filter === f ? 'bg-[#003087] text-white' : 'bg-gray-100 text-gray-600'
                     }`}
                   >
-                    {f === 'all' ? 'Toutes' : typeIcons[f] + ' ' + f.charAt(0).toUpperCase() + f.slice(1)}
+                    {f === 'all' ? 'Toutes' : (typeIcons[f] ?? '📋') + ' ' + f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Notification List */}
-            <div className="divide-y">
-              {filtered.map((notif) => (
-                <motion.div
-                  key={notif.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    !notif.read ? 'bg-[#003087]/3' : ''
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${typeColors[notif.type]}10` }}
-                    >
-                      <span className="text-lg">{typeIcons[notif.type]}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{notif.title}</h4>
-                        {!notif.read && (
-                          <span className="w-2 h-2 bg-[#003087] rounded-full shrink-0" />
-                        )}
+            {/* Error State */}
+            {isError && (
+              <div className="p-6 text-center">
+                <p className="text-sm text-[#D93025]">Erreur lors du chargement des notifications</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="divide-y">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-40 mb-1" />
+                        <Skeleton className="h-3 w-full mb-1" />
+                        <Skeleton className="h-3 w-20" />
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
-                      <p className="text-[10px] text-gray-400 mt-1">
-                        {new Date(notif.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isLoading && !isError && filtered.length === 0 && (
+              <div className="p-8 text-center">
+                <span className="text-3xl block mb-2">🔔</span>
+                <p className="text-sm text-gray-500">Aucune notification</p>
+              </div>
+            )}
+
+            {/* Notification List */}
+            {!isLoading && !isError && (
+              <div className="divide-y">
+                {filtered.map((notif) => {
+                  const notifType = String(notif.type ?? notif.category ?? 'system');
+                  const notifRead = Boolean(notif.read);
+                  const notifDate = String(notif.createdAt ?? notif.date ?? '');
+                  return (
+                    <motion.div
+                      key={String(notif.id)}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                        !notifRead ? 'bg-[#003087]/3' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${typeColors[notifType] || '#6b7280'}10` }}
+                        >
+                          <span className="text-lg">{typeIcons[notifType] || '📋'}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{String(notif.title ?? '')}</h4>
+                            {!notifRead && (
+                              <span className="w-2 h-2 bg-[#003087] rounded-full shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{String(notif.message ?? '')}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            {notifDate ? new Date(notifDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

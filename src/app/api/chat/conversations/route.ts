@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
+    // Users can only see their own conversations
     const conversations = await db.conversation.findMany({
       where: {
-        participants: { some: { userId } },
+        participants: { some: { userId: auth.userId } },
         status: 'active',
       },
       orderBy: { updatedAt: 'desc' },
@@ -40,7 +38,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
+
+    // Ensure the authenticated user is included as a participant
+    const participantIds = (body.participantIds as string[] || []);
+    if (!participantIds.includes(auth.userId)) {
+      participantIds.push(auth.userId);
+    }
 
     const conversation = await db.conversation.create({
       data: {
@@ -48,9 +55,9 @@ export async function POST(request: Request) {
         status: 'active',
         metadata: body.metadata ? JSON.stringify(body.metadata) : null,
         participants: {
-          create: (body.participantIds as string[]).map((userId: string) => ({
+          create: participantIds.map((userId: string) => ({
             userId,
-            role: 'participant',
+            role: userId === auth.userId ? 'participant' : 'participant',
           })),
         },
       },

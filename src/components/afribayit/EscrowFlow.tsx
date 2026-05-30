@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { escrowStates } from '@/lib/mockData';
+import { useEscrowList } from '@/hooks/useEscrow';
 
 interface EscrowFlowProps {
   onNavigate: (section: string) => void;
@@ -10,6 +10,7 @@ interface EscrowFlowProps {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
+// Static config — payment providers
 const paymentProviders = [
   { key: 'mtn', name: 'MTN Mobile Money', icon: '📱', color: '#FFC300' },
   { key: 'orange', name: 'Orange Money', icon: '🍊', color: '#FF6600' },
@@ -17,10 +18,22 @@ const paymentProviders = [
   { key: 'carte', name: 'Carte bancaire', icon: '💳', color: '#003087' },
 ];
 
+// Static config — escrow state machine
+const escrowStates = [
+  { key: 'CREATED', label: 'Créé', icon: '📋' },
+  { key: 'FUNDED', label: 'Financé', icon: '💰' },
+  { key: 'IN_PROGRESS', label: 'En cours', icon: '🔄' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '⚖️' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', icon: '📝' },
+  { key: 'RELEASED', label: 'Libéré', icon: '✅' },
+];
+
 export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   const [step, setStep] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const { data, isLoading } = useEscrowList();
 
   const steps = [
     { title: 'Choisir le moyen de paiement', desc: 'Sélectionnez votre fournisseur de paiement' },
@@ -58,27 +71,41 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           className="bg-white rounded-3xl p-6 shadow-sm border mb-6"
         >
           <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Cycle de vie Escrow</h3>
-          <div className="flex items-start gap-2 overflow-x-auto pb-2">
-            {escrowStates.map((state, i) => (
-              <div key={state.key} className="flex items-start shrink-0">
-                <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                    i <= 2 ? 'bg-[#00A651]/10' : 'bg-gray-100'
-                  }`}>
-                    {state.icon}
+          {isLoading ? (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-start shrink-0">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse" />
+                    <div className="w-20 h-3 bg-gray-100 rounded mt-1 animate-pulse" />
                   </div>
-                  <p className={`text-[10px] font-medium mt-1 text-center w-20 ${
-                    i <= 2 ? 'text-[#00A651]' : 'text-gray-400'
-                  }`}>
-                    {state.label}
-                  </p>
+                  {i < 5 && <div className="w-8 h-0.5 mt-5 bg-gray-200 shrink-0" />}
                 </div>
-                {i < escrowStates.length - 1 && (
-                  <div className={`w-8 h-0.5 mt-5 shrink-0 ${i < 2 ? 'bg-[#00A651]' : 'bg-gray-200'}`} />
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 overflow-x-auto pb-2">
+              {escrowStates.map((state, i) => (
+                <div key={state.key} className="flex items-start shrink-0">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                      i <= 2 ? 'bg-[#00A651]/10' : 'bg-gray-100'
+                    }`}>
+                      {state.icon}
+                    </div>
+                    <p className={`text-[10px] font-medium mt-1 text-center w-20 ${
+                      i <= 2 ? 'text-[#00A651]' : 'text-gray-400'
+                    }`}>
+                      {state.label}
+                    </p>
+                  </div>
+                  {i < escrowStates.length - 1 && (
+                    <div className={`w-8 h-0.5 mt-5 shrink-0 ${i < 2 ? 'bg-[#00A651]' : 'bg-gray-200'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Payment Steps */}

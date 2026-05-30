@@ -2,20 +2,26 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSubscriptions } from '@/hooks/useSubscriptions';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
+  userId?: string;
+}
+
+interface Subscription {
+  id: string;
+  plan: string;
+  category: string;
+  price: number;
+  nextBilling: string;
+  paymentMethod: string;
+  status: 'active' | 'cancelled' | 'past_due';
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-interface PlanFeature {
-  name: string;
-  seed: string | boolean;
-  grow: string | boolean;
-  lead: string | boolean;
-}
-
+// Static config — agent plan definitions (not DB data)
 const agentTiers = [
   {
     id: 'helm-seed',
@@ -75,6 +81,7 @@ const agentTiers = [
   },
 ];
 
+// Static config — hotel plan definitions
 const hotelTiers = [
   {
     id: 'pms-starter',
@@ -129,6 +136,7 @@ const hotelTiers = [
   },
 ];
 
+// Static config — artisan plan definition
 const artisanPlan = {
   id: 'artisan-pro',
   name: 'Artisan Pro',
@@ -148,6 +156,14 @@ const artisanPlan = {
   ],
 };
 
+// Static config — comparison features
+interface PlanFeature {
+  name: string;
+  seed: string | boolean;
+  grow: string | boolean;
+  lead: string | boolean;
+}
+
 const comparisonFeatures: PlanFeature[] = [
   { name: 'Annonces actives', seed: '15', grow: '50', lead: '∞' },
   { name: 'Photos', seed: 'Illimitées', grow: '+ Vidéo', lead: '+ Vidéo 360°' },
@@ -162,20 +178,15 @@ const comparisonFeatures: PlanFeature[] = [
 
 type CategoryKey = 'agent' | 'hotel' | 'artisan';
 
-const currentSubscription = {
-  plan: 'HELM GROW',
-  category: 'agent' as CategoryKey,
-  price: 35000,
-  nextBilling: '01 Avril 2025',
-  paymentMethod: 'MTN Mobile Money · **7890',
-  status: 'active' as const,
-};
-
-export default function SubscriptionsModule({ onNavigate }: ModuleProps) {
+export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('agent');
   const [showComparison, setShowComparison] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  const { data: subscriptionsData, isLoading: subsLoading } = useSubscriptions(userId);
+  const subscriptions: Subscription[] = (subscriptionsData?.subscriptions as Subscription[]) || [];
+  const currentSubscription = subscriptions[0] || null;
 
   const categories: { key: CategoryKey; label: string; icon: string }[] = [
     { key: 'agent', label: 'Agent', icon: '💼' },
@@ -216,22 +227,40 @@ export default function SubscriptionsModule({ onNavigate }: ModuleProps) {
           transition={{ delay: 0.1 }}
           className="bg-gradient-to-r from-[#003087] to-[#001a4d] rounded-3xl p-5 mb-8 text-white"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs text-white/60 mb-1">Abonnement actuel</p>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display text-xl font-bold">{currentSubscription.plan}</h3>
-                <span className="px-2 py-0.5 bg-[#00A651] text-white text-[10px] font-bold rounded-full">Actif</span>
+          {subsLoading ? (
+            <div className="animate-pulse">
+              <div className="h-3 bg-white/20 rounded w-24 mb-2" />
+              <div className="h-6 bg-white/20 rounded w-32 mb-2" />
+              <div className="h-3 bg-white/20 rounded w-48" />
+            </div>
+          ) : currentSubscription ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs text-white/60 mb-1">Abonnement actuel</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-xl font-bold">{currentSubscription.plan}</h3>
+                  <span className="px-2 py-0.5 bg-[#00A651] text-white text-[10px] font-bold rounded-full">
+                    {currentSubscription.status === 'active' ? 'Actif' : currentSubscription.status}
+                  </span>
+                </div>
+                <p className="text-sm text-white/70 mt-1">
+                  Prochaine facturation : {currentSubscription.nextBilling} · {currentSubscription.paymentMethod}
+                </p>
               </div>
-              <p className="text-sm text-white/70 mt-1">
-                Prochaine facturation : {currentSubscription.nextBilling} · {currentSubscription.paymentMethod}
-              </p>
+              <div className="text-right">
+                <p className="font-mono text-2xl font-bold">{new Intl.NumberFormat('fr-FR').format(currentSubscription.price)} FCFA</p>
+                <p className="text-xs text-white/60">/mois</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-mono text-2xl font-bold">{new Intl.NumberFormat('fr-FR').format(currentSubscription.price)} FCFA</p>
-              <p className="text-xs text-white/60">/mois</p>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-white/60 mb-1">Aucun abonnement actif</p>
+                <h3 className="font-display text-xl font-bold">Choisissez un plan</h3>
+                <p className="text-sm text-white/70 mt-1">Débloquez toutes les fonctionnalités d&apos;AfriBayit</p>
+              </div>
             </div>
-          </div>
+          )}
         </motion.div>
 
         {/* Category Tabs */}
@@ -292,14 +321,14 @@ export default function SubscriptionsModule({ onNavigate }: ModuleProps) {
                   <button
                     onClick={() => { setSelectedPlan(tier.id); setShowUpgrade(true); }}
                     className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
-                      currentSubscription.plan === tier.name
+                      currentSubscription?.plan === tier.name
                         ? 'bg-gray-100 text-gray-500 cursor-default'
                         : tier.color === '#D4AF37'
                           ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]'
                           : 'bg-[#003087] text-white hover:bg-[#0047b3]'
                     }`}
                   >
-                    {currentSubscription.plan === tier.name ? 'Plan actuel' : 'Choisir'}
+                    {currentSubscription?.plan === tier.name ? 'Plan actuel' : 'Choisir'}
                   </button>
                 </motion.div>
               ))}
@@ -404,7 +433,7 @@ export default function SubscriptionsModule({ onNavigate }: ModuleProps) {
             >
               <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Confirmer le changement</h3>
               <p className="text-sm text-gray-500 mb-4">
-                Vous allez {currentSubscription.price < 35000 ? 'upgrader' : 'changer'} votre abonnement. Le prorata sera calculé automatiquement.
+                Vous allez changer votre abonnement. Le prorata sera calculé automatiquement.
               </p>
               <div className="p-3 bg-gray-50 rounded-2xl mb-4">
                 <p className="text-xs text-gray-500">Nouveau plan</p>

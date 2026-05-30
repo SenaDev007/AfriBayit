@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
@@ -28,8 +29,22 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Verify the notary exists and user is the owner or admin
+    const existingNotary = await db.notary.findUnique({ where: { id } });
+
+    if (!existingNotary) {
+      return NextResponse.json({ error: 'Notary not found' }, { status: 404 });
+    }
+
+    if (existingNotary.userId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     const notary = await db.notary.update({
       where: { id },

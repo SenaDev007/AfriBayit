@@ -2,7 +2,45 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { forumPosts, reputationLevels, currentUser } from '@/lib/mockData';
+import { useCommunityPosts, useCommunityGroups, useCommunityEvents } from '@/hooks/useCommunity';
+
+interface Post {
+  id: string;
+  title: string;
+  author: string;
+  avatar: string;
+  replies: number;
+  views: number;
+  category: string;
+  lastActivity: string;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  role: string;
+  city: string;
+  score: number;
+  avatar: string;
+  skills: string[];
+}
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  type: string;
+  attendees: number;
+}
+
+// Static config — reputation levels
+const reputationLevels = [
+  { name: 'Découvreur', min: 0, max: 100, color: '#6b7280', icon: '🌱' },
+  { name: 'Acteur', min: 100, max: 300, color: '#009CDE', icon: '⭐' },
+  { name: 'Expert', min: 300, max: 600, color: '#00A651', icon: '🏆' },
+  { name: 'Ambassadeur', min: 600, max: Infinity, color: '#D4AF37', icon: '👑' },
+];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -12,17 +50,64 @@ const tabs = [
   { key: 'events', label: 'Événements' },
 ];
 
-const events = [
-  { id: '1', title: 'Salon Immobilier Afrique 2025', date: '15 Mars 2025', location: 'Abidjan, CI', type: 'Salon', attendees: 2500 },
-  { id: '2', title: 'Masterclass Investissement', date: '22 Mars 2025', location: 'Cotonou, BJ', type: 'Workshop', attendees: 120 },
-  { id: '3', title: 'GeoTrust Summit', date: '5 Avril 2025', location: 'Lomé, TG', type: 'Conférence', attendees: 500 },
-  { id: '4', title: 'Formation Agent Certifié', date: '12 Avril 2025', location: 'En ligne', type: 'Formation', attendees: 200 },
-];
+function PostSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border animate-pulse">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+          <div className="flex gap-3">
+            <div className="h-3 bg-gray-100 rounded w-16" />
+            <div className="h-3 bg-gray-100 rounded w-12" />
+            <div className="h-3 bg-gray-100 rounded w-14" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border text-center animate-pulse">
+      <div className="w-16 h-16 rounded-full bg-gray-200 mx-auto mb-3" />
+      <div className="h-4 bg-gray-200 rounded w-20 mx-auto mb-2" />
+      <div className="h-3 bg-gray-100 rounded w-16 mx-auto mb-3" />
+      <div className="h-8 bg-gray-200 rounded-full w-24 mx-auto" />
+    </div>
+  );
+}
+
+function EventSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border flex items-center gap-4 animate-pulse">
+      <div className="w-14 h-14 rounded-2xl bg-gray-200 shrink-0" />
+      <div className="flex-1">
+        <div className="h-4 bg-gray-200 rounded w-48 mb-2" />
+        <div className="flex gap-3">
+          <div className="h-3 bg-gray-100 rounded w-16" />
+          <div className="h-3 bg-gray-100 rounded w-20" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CommunityModule() {
   const [activeTab, setActiveTab] = useState('forum');
 
-  const userRepLevel = reputationLevels.find(l => currentUser.score >= l.min && currentUser.score < l.max) || reputationLevels[0];
+  const { data: postsData, isLoading: postsLoading, error: postsError } = useCommunityPosts();
+  const { data: groupsData, isLoading: groupsLoading } = useCommunityGroups();
+  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCommunityEvents();
+
+  const posts: Post[] = (postsData?.posts as Post[]) || [];
+  const groups: Group[] = (groupsData?.groups as Group[]) || [];
+  const events: Event[] = (eventsData?.events as Event[]) || [];
+
+  // Use a default user score for reputation display
+  const currentUserScore = 87;
+  const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -55,7 +140,7 @@ export default function CommunityModule() {
               <span className="text-2xl">{userRepLevel.icon}</span>
               <div>
                 <p className="text-sm font-semibold text-[#2C2E2F]">{userRepLevel.name}</p>
-                <p className="text-xs text-gray-500">{currentUser.score} points de réputation</p>
+                <p className="text-xs text-gray-500">{currentUserScore} points de réputation</p>
               </div>
             </div>
             <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>
@@ -66,7 +151,7 @@ export default function CommunityModule() {
             <div
               className="h-full rounded-full transition-all"
               style={{
-                width: `${Math.min((currentUser.score / 600) * 100, 100)}%`,
+                width: `${Math.min((currentUserScore / 600) * 100, 100)}%`,
                 backgroundColor: userRepLevel.color,
               }}
             />
@@ -96,7 +181,26 @@ export default function CommunityModule() {
         {/* Forum */}
         {activeTab === 'forum' && (
           <div className="space-y-3">
-            {forumPosts.map((post, i) => (
+            {postsLoading && (
+              Array.from({ length: 4 }).map((_, i) => (
+                <PostSkeleton key={i} />
+              ))
+            )}
+            {postsError && (
+              <div className="text-center py-12">
+                <span className="text-4xl block mb-3">⚠️</span>
+                <p className="text-gray-600 font-semibold mb-1">Impossible de charger les posts</p>
+                <p className="text-sm text-gray-400">{postsError.message}</p>
+              </div>
+            )}
+            {!postsLoading && !postsError && posts.length === 0 && (
+              <div className="text-center py-12">
+                <span className="text-4xl block mb-3">💬</span>
+                <p className="text-gray-600 font-semibold mb-1">Aucun sujet de discussion</p>
+                <p className="text-sm text-gray-400">Soyez le premier à lancer un débat !</p>
+              </div>
+            )}
+            {!postsLoading && !postsError && posts.map((post, i) => (
               <motion.div
                 key={post.id}
                 initial={{ opacity: 0, y: 15 }}
@@ -128,15 +232,23 @@ export default function CommunityModule() {
         {/* Profiles */}
         {activeTab === 'profiles' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { name: 'Kofi Mensah', role: 'Agent Immobilier', city: 'Cotonou', score: 580, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face', skills: ['Vente', 'Estimation', 'Négociation'] },
-              { name: 'Aminata Diallo', role: 'Agent Premium', city: 'Abidjan', score: 420, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face', skills: ['Luxe', 'Investissement', 'Expatriation'] },
-              { name: 'Fatou Diop', role: 'Architecte', city: 'Abidjan', score: 350, avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face', skills: ['Design', 'Construction', 'Durable'] },
-            ].map((profile, i) => {
+            {groupsLoading && (
+              Array.from({ length: 3 }).map((_, i) => (
+                <ProfileSkeleton key={i} />
+              ))
+            )}
+            {!groupsLoading && groups.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <span className="text-4xl block mb-3">👤</span>
+                <p className="text-gray-600 font-semibold mb-1">Aucun profil trouvé</p>
+                <p className="text-sm text-gray-400">Revenez plus tard</p>
+              </div>
+            )}
+            {!groupsLoading && groups.map((profile, i) => {
               const repLevel = reputationLevels.find(l => profile.score >= l.min && profile.score < l.max) || reputationLevels[0];
               return (
                 <motion.div
-                  key={profile.name}
+                  key={profile.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
@@ -168,7 +280,26 @@ export default function CommunityModule() {
         {/* Events */}
         {activeTab === 'events' && (
           <div className="space-y-4">
-            {events.map((event, i) => (
+            {eventsLoading && (
+              Array.from({ length: 4 }).map((_, i) => (
+                <EventSkeleton key={i} />
+              ))
+            )}
+            {eventsError && (
+              <div className="text-center py-12">
+                <span className="text-4xl block mb-3">⚠️</span>
+                <p className="text-gray-600 font-semibold mb-1">Impossible de charger les événements</p>
+                <p className="text-sm text-gray-400">{eventsError.message}</p>
+              </div>
+            )}
+            {!eventsLoading && !eventsError && events.length === 0 && (
+              <div className="text-center py-12">
+                <span className="text-4xl block mb-3">📅</span>
+                <p className="text-gray-600 font-semibold mb-1">Aucun événement à venir</p>
+                <p className="text-sm text-gray-400">Revenez bientôt pour de nouveaux événements</p>
+              </div>
+            )}
+            {!eventsLoading && !eventsError && events.map((event, i) => (
               <motion.div
                 key={event.id}
                 initial={{ opacity: 0, y: 15 }}

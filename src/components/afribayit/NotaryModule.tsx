@@ -2,6 +2,31 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNotaries } from '@/hooks/useNotaries';
+import { useEscrowList } from '@/hooks/useEscrow';
+
+interface Notary {
+  id: string;
+  name: string;
+  license: string;
+  zone: string;
+  country: string;
+  rating: number;
+  missions: number;
+  certificationLevel: string;
+  avatar: string;
+  available: boolean;
+  specialities: string[];
+  subscription: string;
+}
+
+interface EscrowAccount {
+  id: string;
+  property: string;
+  buyer: string;
+  amount: number;
+  status: string;
+}
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -9,86 +34,7 @@ interface ModuleProps {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const notaries = [
-  {
-    id: 'not-001',
-    name: 'Me. Aminata Sanou',
-    license: 'ANDF-BJ-2024-0142',
-    zone: 'Cotonou',
-    country: 'Bénin',
-    rating: 4.9,
-    missions: 87,
-    certificationLevel: 'Expert',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face',
-    available: true,
-    specialities: ['Vente immobilière', 'Titre foncier', 'Succession'],
-    subscription: 'Premium',
-  },
-  {
-    id: 'not-002',
-    name: 'Me. Kofi Asante',
-    license: 'ANDF-CI-2024-0089',
-    zone: 'Abidjan',
-    country: "Côte d'Ivoire",
-    rating: 4.8,
-    missions: 124,
-    certificationLevel: 'Expert',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    available: true,
-    specialities: ['Bail commercial', 'Société immobilière', 'Investissement'],
-    subscription: 'Premium',
-  },
-  {
-    id: 'not-003',
-    name: 'Me. Essohana Kpémissi',
-    license: 'ANDF-TG-2024-0056',
-    zone: 'Lomé',
-    country: 'Togo',
-    rating: 4.7,
-    missions: 45,
-    certificationLevel: 'Certifié',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    available: false,
-    specialities: ['Titre foncier', 'Donation', 'Hypothèque'],
-    subscription: 'Standard',
-  },
-  {
-    id: 'not-004',
-    name: 'Me. Fatimata Ouédraogo',
-    license: 'ANDF-BF-2024-0031',
-    zone: 'Ouagadougou',
-    country: 'Burkina Faso',
-    rating: 4.6,
-    missions: 32,
-    certificationLevel: 'Certifié',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face',
-    available: true,
-    specialities: ['Vente terrain', 'Bail', 'Expropriation'],
-    subscription: 'Standard',
-  },
-  {
-    id: 'not-005',
-    name: 'Me. Jean-Claude Houénou',
-    license: 'ANDF-BJ-2024-0078',
-    zone: 'Porto-Novo',
-    country: 'Bénin',
-    rating: 4.5,
-    missions: 56,
-    certificationLevel: 'Senior',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-    available: true,
-    specialities: ['Succession', 'Partage', 'Titre foncier'],
-    subscription: 'Premium',
-  },
-];
-
-const assignedTransactions = [
-  { id: 'txn-n01', property: 'Villa Prestige Les Cocotiers', buyer: 'M. Kouassi Jean', amount: 85000000, status: 'NOTARY_IN_PROGRESS' },
-  { id: 'txn-n02', property: 'Terrain Akodessewa', buyer: 'Mme. Lawson Afi', amount: 15000000, status: 'NOTARY_ASSIGNED' },
-  { id: 'txn-n03', property: 'Penthouse Signature Cocody', buyer: 'Société InvestAfrik', amount: 120000000, status: 'DEED_SIGNED' },
-  { id: 'txn-n04', property: 'Villa Jardin Kpalimé', buyer: 'M. Mensah Kofi', amount: 45000000, status: 'ANDF_REGISTERED' },
-];
-
+// Static config — escrow notary state machine
 const escrowNotaryStates = [
   { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '⚖️', color: '#009CDE' },
   { key: 'NOTARY_IN_PROGRESS', label: 'En cours notaire', icon: '📋', color: '#D4AF37' },
@@ -96,6 +42,7 @@ const escrowNotaryStates = [
   { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: '✅', color: '#003087' },
 ];
 
+// Static config — certification steps
 const certificationSteps = [
   { step: 1, title: 'Inscription', desc: 'Création du compte notaire sur AfriBayit', icon: '📋' },
   { step: 2, title: 'Documents KYC', desc: 'Carte ANDF, diplôme, extrait casier judiciaire', icon: '📄' },
@@ -104,14 +51,36 @@ const certificationSteps = [
   { step: 5, title: 'Certification', desc: 'Badge Notaire Certifié AfriBayit délivré', icon: '🏅' },
 ];
 
+// Static config — subscription tiers
 const subscriptionTiers = [
   { name: 'Standard', price: 'Gratuit', commission: '15%', features: ['5 missions/mois', 'Profil basique', 'Support email'] },
   { name: 'Premium', price: '25 000 FCFA/mois', commission: '12%', features: ['Missions illimitées', 'Profil avancé', 'Support prioritaire', 'Statistiques'] },
   { name: 'Elite', price: '50 000 FCFA/mois', commission: '10%', features: ['Tout Premium +', 'Mise en avant', 'API Access', 'Compte dédié'] },
 ];
 
+// Static config — filter options
 const zones = ['Toutes', 'Cotonou', 'Abidjan', 'Lomé', 'Ouagadougou', 'Porto-Novo'];
 const levels = ['Tous', 'Certifié', 'Senior', 'Expert'];
+
+function NotarySkeleton() {
+  return (
+    <div className="bg-white rounded-3xl p-5 shadow-sm border animate-pulse">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-14 h-14 rounded-2xl bg-gray-200" />
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 rounded w-28 mb-2" />
+          <div className="h-3 bg-gray-200 rounded w-36 mb-1" />
+          <div className="h-3 bg-gray-200 rounded w-20" />
+        </div>
+      </div>
+      <div className="flex gap-2 mb-3">
+        <div className="h-4 w-12 bg-gray-100 rounded-full" />
+        <div className="h-4 w-16 bg-gray-100 rounded-full" />
+      </div>
+      <div className="h-9 bg-gray-200 rounded-full mt-3" />
+    </div>
+  );
+}
 
 function getCertificationColor(level: string): string {
   switch (level) {
@@ -138,6 +107,15 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const [selectedLevel, setSelectedLevel] = useState('Tous');
   const [activeTab, setActiveTab] = useState<'notaries' | 'dashboard' | 'certification' | 'revenue'>('notaries');
   const [certStep, setCertStep] = useState(0);
+
+  const { data: notariesData, isLoading: notariesLoading, error: notariesError } = useNotaries(
+    undefined,
+    selectedZone === 'Toutes' ? undefined : selectedZone
+  );
+  const { data: escrowData, isLoading: escrowLoading } = useEscrowList();
+
+  const notaries: Notary[] = (notariesData?.notaries as Notary[]) || [];
+  const escrowAccounts: EscrowAccount[] = (escrowData?.escrowAccounts as EscrowAccount[]) || [];
 
   const filteredNotaries = notaries.filter(n => {
     const matchSearch = n.name.toLowerCase().includes(searchQuery.toLowerCase()) || n.license.toLowerCase().includes(searchQuery.toLowerCase());
@@ -226,63 +204,92 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 </select>
               </div>
 
+              {/* Loading */}
+              {notariesLoading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <NotarySkeleton key={i} />
+                  ))}
+                </div>
+              )}
+
+              {/* Error */}
+              {notariesError && (
+                <div className="text-center py-12">
+                  <span className="text-4xl block mb-3">⚠️</span>
+                  <p className="text-gray-600 font-semibold mb-1">Impossible de charger les notaires</p>
+                  <p className="text-sm text-gray-400">{notariesError.message}</p>
+                </div>
+              )}
+
+              {/* Empty */}
+              {!notariesLoading && !notariesError && filteredNotaries.length === 0 && (
+                <div className="text-center py-12">
+                  <span className="text-4xl block mb-3">⚖️</span>
+                  <p className="text-gray-600 font-semibold mb-1">Aucun notaire trouvé</p>
+                  <p className="text-sm text-gray-400">Modifiez vos critères de recherche</p>
+                </div>
+              )}
+
               {/* Notary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredNotaries.map((notary, i) => (
-                  <motion.div
-                    key={notary.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                    whileHover={{ y: -4 }}
-                    className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
-                  >
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="relative">
-                        <img src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl object-cover" />
-                        <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-display text-base font-bold text-[#2C2E2F] truncate group-hover:text-[#003087] transition-colors">
-                          {notary.name}
-                        </h3>
-                        <p className="text-xs text-gray-400 font-mono">{notary.license}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getCertificationColor(notary.certificationLevel) }}>
-                            {notary.certificationLevel}
-                          </span>
-                          <span className="text-xs text-gray-500">{notary.zone}, {notary.country}</span>
+              {!notariesLoading && !notariesError && filteredNotaries.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredNotaries.map((notary, i) => (
+                    <motion.div
+                      key={notary.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                      whileHover={{ y: -4 }}
+                      className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
+                    >
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="relative">
+                          <img src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl object-cover" />
+                          <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display text-base font-bold text-[#2C2E2F] truncate group-hover:text-[#003087] transition-colors">
+                            {notary.name}
+                          </h3>
+                          <p className="text-xs text-gray-400 font-mono">{notary.license}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getCertificationColor(notary.certificationLevel) }}>
+                              {notary.certificationLevel}
+                            </span>
+                            <span className="text-xs text-gray-500">{notary.zone}, {notary.country}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-4 mb-3">
-                      <span className="flex items-center gap-1 text-xs text-gray-600">
-                        <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        {notary.rating}
-                      </span>
-                      <span className="text-xs text-gray-500">📋 {notary.missions} missions</span>
-                    </div>
+                      <div className="flex items-center gap-4 mb-3">
+                        <span className="flex items-center gap-1 text-xs text-gray-600">
+                          <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          {notary.rating}
+                        </span>
+                        <span className="text-xs text-gray-500">📋 {notary.missions} missions</span>
+                      </div>
 
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {notary.specialities.map(s => (
-                        <span key={s} className="px-2 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-600">{s}</span>
-                      ))}
-                    </div>
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {notary.specialities.map(s => (
+                          <span key={s} className="px-2 py-0.5 bg-gray-50 rounded-full text-[10px] text-gray-600">{s}</span>
+                        ))}
+                      </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      <span className={`text-xs font-medium ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
-                        {notary.available ? '● Disponible' : '○ Indisponible'}
-                      </span>
-                      <button className="px-4 py-1.5 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors">
-                        Contacter
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                      <div className="flex items-center justify-between pt-3 border-t">
+                        <span className={`text-xs font-medium ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
+                          {notary.available ? '● Disponible' : '○ Indisponible'}
+                        </span>
+                        <button className="px-4 py-1.5 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors">
+                          Contacter
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -299,9 +306,9 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Transactions assignées', value: '4', icon: '📋', color: '#009CDE' },
-                  { label: 'Actes en cours', value: '2', icon: '📝', color: '#D4AF37' },
-                  { label: 'ANDF enregistrés', value: '1', icon: '✅', color: '#00A651' },
+                  { label: 'Transactions assignées', value: String(escrowAccounts.length), icon: '📋', color: '#009CDE' },
+                  { label: 'Actes en cours', value: String(escrowAccounts.filter(e => e.status === 'NOTARY_IN_PROGRESS').length), icon: '📝', color: '#D4AF37' },
+                  { label: 'ANDF enregistrés', value: String(escrowAccounts.filter(e => e.status === 'ANDF_REGISTERED').length), icon: '✅', color: '#00A651' },
                   { label: 'Revenus ce mois', value: '1 250 000 FCFA', icon: '💰', color: '#003087' },
                 ].map((stat, i) => (
                   <motion.div
@@ -345,22 +352,34 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Assigned Transactions */}
               <div className="bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions assignées</h3>
-                <div className="space-y-3">
-                  {assignedTransactions.map((txn) => (
-                    <div key={txn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.property}</p>
-                        <p className="text-xs text-gray-500">{txn.buyer}</p>
+                {escrowLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : escrowAccounts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-400">Aucune transaction assignée</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {escrowAccounts.map((txn) => (
+                      <div key={txn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.property}</p>
+                          <p className="text-xs text-gray-500">{txn.buyer}</p>
+                        </div>
+                        <div className="text-right ml-4 shrink-0">
+                          <p className="font-mono text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(txn.amount)} FCFA</p>
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getEscrowStateColor(txn.status) }}>
+                            {getEscrowStateLabel(txn.status)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right ml-4 shrink-0">
-                        <p className="font-mono text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(txn.amount)} FCFA</p>
-                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getEscrowStateColor(txn.status) }}>
-                          {getEscrowStateLabel(txn.status)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* ANDF Registration Status */}

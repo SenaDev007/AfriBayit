@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
@@ -36,6 +37,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
 
@@ -43,7 +47,7 @@ export async function POST(
       data: {
         hotelId: id,
         bookingId: body.bookingId,
-        userId: body.userId,
+        userId: auth.userId,
         cleanliness: body.cleanliness,
         comfort: body.comfort,
         location: body.location,

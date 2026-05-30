@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -49,13 +50,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const event = await db.communityEvent.create({
       data: {
         title: body.title,
         description: body.description,
-        organizerId: body.organizerId,
+        organizerId: auth.userId,
         groupId: body.groupId,
         eventType: body.eventType,
         country: body.country,

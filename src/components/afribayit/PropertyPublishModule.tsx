@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCreateProperty } from '@/hooks/useProperties';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -9,6 +10,7 @@ interface ModuleProps {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
+// Static config — property types
 const propertyTypes = [
   { value: 'villa', label: 'Villa', icon: '🏡' },
   { value: 'appartement', label: 'Appartement', icon: '🏢' },
@@ -18,12 +20,14 @@ const propertyTypes = [
   { value: 'chambre', label: 'Studio/Chambre', icon: '🛏️' },
 ];
 
+// Static config — transaction types
 const transactionTypes = [
   { value: 'achat', label: 'À vendre', icon: '💰' },
   { value: 'location', label: 'À louer', icon: '🔑' },
   { value: 'investissement', label: 'Investissement', icon: '📈' },
 ];
 
+// Static config — cities
 const cities = [
   { value: 'cotonou', label: 'Cotonou', country: 'Bénin' },
   { value: 'abidjan', label: 'Abidjan', country: "Côte d'Ivoire" },
@@ -33,22 +37,24 @@ const cities = [
   { value: 'yamoussoukro', label: 'Yamoussoukro', country: "Côte d'Ivoire" },
 ];
 
+// Static config — features list
 const featuresList = [
   'Piscine', 'Jardin', 'Climatisation', 'Garage', 'Alarme', 'Wi-Fi',
   'Meublé', 'Vue panoramique', 'Parking', 'Sécurité 24/7',
   'Cuisine équipée', 'Terrasse', 'Balcon', 'Forage', 'Dépendance',
 ];
 
+// Static config — legal docs by country
 const legalDocsByCountry: Record<string, { value: string; label: string; required: boolean }[]> = {
   'Bénin': [
     { value: 'titre_foncier', label: 'Titre Foncier', required: true },
     { value: 'acd', label: 'ACD (Arrêté de Concession Définitive)', required: false },
     { value: 'permis_construire', label: 'Permis de Construire', required: false },
-    { value: 'certificat_urbanisme', label: 'Certificat d\'Urbanisme', required: false },
+    { value: 'certificat_urbanisme', label: "Certificat d'Urbanisme", required: false },
   ],
   "Côte d'Ivoire": [
     { value: 'titre_foncier', label: 'Titre Foncier', required: true },
-    { value: 'jugement_hommologation', label: 'Jugement d\'Homologation', required: false },
+    { value: 'jugement_hommologation', label: "Jugement d'Homologation", required: false },
     { value: 'permis_construire', label: 'Permis de Construire', required: false },
     { value: 'certificat_conformite', label: 'Certificat de Conformité', required: false },
   ],
@@ -65,12 +71,21 @@ const legalDocsByCountry: Record<string, { value: string; label: string; require
   ],
 };
 
+// Static config — publish steps
 const publishSteps = [
   { step: 1, title: 'Informations', desc: 'Type, prix, surface, localisation', icon: '📋' },
   { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: '✍️' },
-  { step: 3, title: 'Photos', desc: 'Jusqu\'à 20 photos', icon: '📸' },
+  { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: '📸' },
   { step: 4, title: 'Documents', desc: 'Titres et documents légaux', icon: '📄' },
   { step: 5, title: 'Validation', desc: 'Révision et soumission', icon: '✅' },
+];
+
+// Static config — validation status
+const validationStatus = [
+  { step: 'Soumission', status: 'completed', date: '12 Mar 2025 14:30' },
+  { step: 'Vérification IA documents', status: 'in_progress', date: '' },
+  { step: 'Validation humaine', status: 'pending', date: '' },
+  { step: 'Publication', status: 'pending', date: '' },
 ];
 
 interface FormData {
@@ -107,17 +122,13 @@ const initialFormData: FormData = {
   legalDocs: [],
 };
 
-const validationStatus = [
-  { step: 'Soumission', status: 'completed', date: '12 Mar 2025 14:30' },
-  { step: 'Vérification IA documents', status: 'in_progress', date: '' },
-  { step: 'Validation humaine', status: 'pending', date: '' },
-  { step: 'Publication', status: 'pending', date: '' },
-];
-
 export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const createPropertyMutation = useCreateProperty();
 
   const selectedCity = cities.find(c => c.value === formData.city);
   const selectedCountry = selectedCity?.country || '';
@@ -164,8 +175,30 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
     }
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    setSubmitError(null);
+    try {
+      await createPropertyMutation.mutateAsync({
+        propertyType: formData.propertyType,
+        transactionType: formData.transactionType,
+        price: Number(formData.price),
+        surface: Number(formData.surface),
+        rooms: Number(formData.rooms) || 0,
+        bedrooms: Number(formData.bedrooms) || 0,
+        bathrooms: Number(formData.bathrooms) || 0,
+        city: selectedCity?.label || formData.city,
+        country: selectedCountry,
+        quartier: formData.quartier,
+        title: formData.title,
+        description: formData.description,
+        features: formData.features,
+        images: formData.photos,
+        legalDocs: formData.legalDocs,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Erreur lors de la soumission');
+    }
   };
 
   if (submitted) {
@@ -473,7 +506,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <p className="text-xs text-gray-500">
                     {selectedCountry
                       ? `Documents requis pour ${selectedCountry}`
-                      : 'Sélectionnez d\'abord une ville pour voir les documents requis'}
+                      : "Sélectionnez d'abord une ville pour voir les documents requis"}
                   </p>
                 </div>
 
@@ -534,6 +567,14 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Révision & Soumission</h2>
                   <p className="text-xs text-gray-500">Vérifiez les informations avant de publier</p>
                 </div>
+
+                {/* Error */}
+                {submitError && (
+                  <div className="p-3 bg-[#D93025]/5 rounded-2xl flex items-center gap-2">
+                    <span className="text-sm">⚠️</span>
+                    <p className="text-xs text-[#D93025]">{submitError}</p>
+                  </div>
+                )}
 
                 {/* Summary */}
                 <div className="space-y-3">
@@ -613,10 +654,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 if (currentStep < 5) setCurrentStep(currentStep + 1);
                 else handleSubmit();
               }}
-              disabled={!canProceed()}
+              disabled={!canProceed() || createPropertyMutation.isPending}
               className="flex-1 py-2.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {currentStep === 5 ? 'Soumettre l\'annonce' : 'Continuer'}
+              {createPropertyMutation.isPending
+                ? 'Soumission en cours...'
+                : currentStep === 5 ? "Soumettre l'annonce" : 'Continuer'
+              }
             </motion.button>
           </div>
         </div>

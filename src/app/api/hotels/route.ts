@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -46,6 +47,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const hotel = await db.hotel.create({
@@ -62,7 +66,7 @@ export async function POST(request: Request) {
         policies: body.policies ? JSON.stringify(body.policies) : null,
         available: body.available ?? true,
         connectionLevel: body.connectionLevel || 1,
-        ownerId: body.ownerId,
+        ownerId: auth.userId,
         otaRefs: body.otaRefs ? JSON.stringify(body.otaRefs) : null,
         lat: body.lat,
         lng: body.lng,

@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { properties, countries, getPropertyTypeLabel } from '@/lib/mockData';
+import { useProperties } from '@/hooks/useProperties';
+import { COUNTRIES_CONFIG, getPropertyTypeLabel } from '@/lib/afribayit-utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
 
 interface SearchResultsProps {
@@ -11,6 +13,52 @@ interface SearchResultsProps {
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
+
+// Config constants (not from DB)
+const TABS = [
+  { key: 'achat', label: 'Acheter' },
+  { key: 'location', label: 'Louer' },
+  { key: 'investissement', label: 'Investir' },
+] as const;
+
+const PROPERTY_TYPES = ['all', 'villa', 'appartement', 'terrain', 'bureau', 'commerce', 'chambre'] as const;
+
+function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="flex gap-4 p-4 rounded-3xl bg-white border">
+        <Skeleton className="w-40 h-28 rounded-xl shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+          <Skeleton className="h-6 w-1/3" />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-3xl bg-white border overflow-hidden">
+      <Skeleton className="aspect-[4/3] w-full rounded-none" />
+      <div className="p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-4 w-8 rounded-full" />
+        </div>
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+        <div className="pt-3 border-t border-gray-100">
+          <Skeleton className="h-6 w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SearchResults({ initialTab = 'achat', onSelectProperty }: SearchResultsProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -24,34 +72,28 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
   const [sortBy, setSortBy] = useState('recent');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const tabs = [
-    { key: 'achat', label: 'Acheter' },
-    { key: 'location', label: 'Louer' },
-    { key: 'investissement', label: 'Investir' },
-  ];
+  // Build filter params for the API call
+  const filterParams = useMemo(() => ({
+    transaction: activeTab,
+    type: selectedType !== 'all' ? selectedType : undefined,
+    country: selectedCountry !== 'all' ? selectedCountry : undefined,
+    city: selectedCity !== 'all' ? selectedCity : undefined,
+    minPrice: priceRange[0] > 0 ? String(priceRange[0]) : undefined,
+    maxPrice: priceRange[1] < 200000000 ? String(priceRange[1]) : undefined,
+    verified: verifiedOnly ? 'true' : undefined,
+    geoTrust: geoTrustOnly ? 'true' : undefined,
+    sortBy,
+    limit: 24,
+  }), [activeTab, selectedType, selectedCountry, selectedCity, priceRange, verifiedOnly, geoTrustOnly, sortBy]);
 
-  const propertyTypes = ['all', 'villa', 'appartement', 'terrain', 'bureau', 'commerce', 'chambre'];
+  const { data, isLoading, isError } = useProperties(filterParams);
 
-  const filtered = useMemo(() => {
-    let result = properties.filter(p => p.transaction === activeTab);
-    if (selectedType !== 'all') result = result.filter(p => p.type === selectedType);
-    if (selectedCountry !== 'all') result = result.filter(p => p.country === selectedCountry);
-    if (selectedCity !== 'all') result = result.filter(p => p.city === selectedCity);
-    if (verifiedOnly) result = result.filter(p => p.verified);
-    if (geoTrustOnly) result = result.filter(p => p.geoTrust);
-    result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-
-    if (sortBy === 'recent') result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    else if (sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
-    else if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
-    else if (sortBy === 'popular') result.sort((a, b) => b.views - a.views);
-
-    return result;
-  }, [activeTab, selectedType, selectedCountry, selectedCity, priceRange, verifiedOnly, geoTrustOnly, sortBy]);
+  const properties = data?.properties || [];
+  const totalResults = data?.pagination?.total || 0;
 
   const allCities = useMemo(() => {
-    if (selectedCountry === 'all') return countries.flatMap(c => c.cities);
-    return countries.find(c => c.name === selectedCountry)?.cities || [];
+    if (selectedCountry === 'all') return COUNTRIES_CONFIG.flatMap(c => c.cities);
+    return COUNTRIES_CONFIG.find(c => c.name === selectedCountry)?.cities || [];
   }, [selectedCountry]);
 
   return (
@@ -64,7 +106,9 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">
                 Rechercher un bien
               </h1>
-              <p className="text-sm text-gray-500 mt-1">{filtered.length} bien{filtered.length !== 1 ? 's' : ''} trouvé{filtered.length !== 1 ? 's' : ''}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {isLoading ? 'Chargement...' : `${totalResults} bien${totalResults !== 1 ? 's' : ''} trouvé${totalResults !== 1 ? 's' : ''}`}
+              </p>
             </div>
             {/* Mobile Filter Toggle */}
             <button
@@ -80,7 +124,7 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
 
           {/* Transaction Tabs */}
           <div className="flex gap-2 mb-4">
-            {tabs.map(tab => (
+            {TABS.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
@@ -130,7 +174,7 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
               <div className="mb-5">
                 <label className="text-xs font-medium text-gray-500 mb-2 block">Type de bien</label>
                 <div className="flex flex-wrap gap-1.5">
-                  {propertyTypes.map(type => (
+                  {PROPERTY_TYPES.map(type => (
                     <button
                       key={type}
                       onClick={() => setSelectedType(type)}
@@ -155,7 +199,7 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
                   className="w-full text-sm px-3 py-2 rounded-xl border bg-gray-50 outline-none"
                 >
                   <option value="all">Tous les pays</option>
-                  {countries.map(c => (
+                  {COUNTRIES_CONFIG.map(c => (
                     <option key={c.code} value={c.name}>{c.name}</option>
                   ))}
                 </select>
@@ -279,47 +323,74 @@ export default function SearchResults({ initialTab = 'achat', onSelectProperty }
               </div>
             </div>
 
+            {/* Loading State */}
+            {isLoading && (
+              <div className={viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5'
+                : 'space-y-4'
+              }>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SearchCardSkeleton key={i} compact={viewMode === 'list'} />
+                ))}
+              </div>
+            )}
+
+            {/* Error State */}
+            {isError && (
+              <div className="text-center py-20">
+                <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <h3 className="font-display text-xl font-bold text-gray-400 mb-2">Erreur de chargement</h3>
+                <p className="text-sm text-gray-400">Impossible de charger les résultats. Veuillez réessayer.</p>
+              </div>
+            )}
+
             {/* Grid/List */}
-            <AnimatePresence mode="wait">
-              {filtered.length === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center py-20"
-                >
-                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-display text-xl font-bold text-gray-400 mb-2">Aucun bien trouvé</h3>
-                  <p className="text-sm text-gray-400">Essayez de modifier vos critères de recherche</p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="results"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className={viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5'
-                    : 'space-y-4'
-                  }
-                >
-                  {filtered.map((property, i) => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      index={i}
-                      onSelect={onSelectProperty}
-                      compact={viewMode === 'list'}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {!isLoading && !isError && (
+              <AnimatePresence mode="wait">
+                {properties.length === 0 ? (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-20"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-display text-xl font-bold text-gray-400 mb-2">Aucun bien trouvé</h3>
+                    <p className="text-sm text-gray-400">Essayez de modifier vos critères de recherche</p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className={viewMode === 'grid'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5'
+                      : 'space-y-4'
+                    }
+                  >
+                    {properties.map((property, i) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        index={i}
+                        onSelect={onSelectProperty}
+                        compact={viewMode === 'list'}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </div>

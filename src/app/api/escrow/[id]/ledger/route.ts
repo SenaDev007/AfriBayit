@@ -1,16 +1,34 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const entryType = searchParams.get('entryType');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
+
+    // Verify user is a participant in the escrow transaction
+    const account = await db.escrowAccount.findUnique({
+      where: { id },
+    });
+
+    if (!account) {
+      return NextResponse.json({ error: 'Escrow account not found' }, { status: 404 });
+    }
+
+    // Only allow buyer, seller, or admin to view ledger
+    if (account.buyerId !== auth.userId && account.sellerId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     const where: Record<string, unknown> = { escrowAccountId: id };
     if (entryType) where.entryType = entryType;
@@ -40,6 +58,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
 
@@ -50,6 +71,11 @@ export async function POST(
 
     if (!account) {
       return NextResponse.json({ error: 'Escrow account not found' }, { status: 404 });
+    }
+
+    // Only allow buyer, seller, or admin to create ledger entries
+    if (account.buyerId !== auth.userId && account.sellerId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
     let newBalance = account.balance;

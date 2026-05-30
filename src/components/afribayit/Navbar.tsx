@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { properties, countries } from '@/lib/mockData';
+import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 
 interface NavbarProps {
   activeSection: string;
@@ -13,13 +13,22 @@ interface NavbarProps {
   isLoggedIn: boolean;
 }
 
-const navLinks = [
+// Config constants (not from DB)
+const NAV_LINKS = [
   { key: 'acheter', label: 'Acheter', section: 'search' },
   { key: 'louer', label: 'Louer', section: 'search-rent' },
   { key: 'investir', label: 'Investir', section: 'search-invest' },
   { key: 'artisans', label: 'Artisans', section: 'artisans' },
   { key: 'academie', label: 'Académie', section: 'academy' },
-];
+] as const;
+
+const MOBILE_NAV_ITEMS = [
+  { key: 'home', label: 'Accueil', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  { key: 'search', label: 'Rechercher', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+  { key: 'artisans', label: 'Artisans', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+  { key: 'academy', label: 'Académie', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+  { key: 'dashboard', label: 'Profil', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+] as const;
 
 export default function Navbar({
   activeSection,
@@ -71,7 +80,7 @@ export default function Navbar({
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                 <motion.button
                   key={link.key}
                   whileHover={{ y: -1 }}
@@ -105,7 +114,7 @@ export default function Navbar({
                       : 'bg-white/10 border-white/20 text-white'
                   }`}
                 >
-                  {countries.map((c) => (
+                  {COUNTRIES_CONFIG.map((c) => (
                     <option key={c.code} value={c.name}>{c.name}</option>
                   ))}
                 </select>
@@ -241,7 +250,7 @@ export default function Navbar({
               </div>
 
               <div className="space-y-1">
-                {navLinks.map((link) => (
+                {NAV_LINKS.map((link) => (
                   <button
                     key={link.key}
                     onClick={() => {
@@ -289,7 +298,7 @@ export default function Navbar({
                     onChange={(e) => setSelectedCountry(e.target.value)}
                     className="w-full appearance-none text-sm font-medium px-4 py-2.5 rounded-full border border-gray-200 bg-white text-[#2C2E2F]"
                   >
-                    {countries.map((c) => (
+                    {COUNTRIES_CONFIG.map((c) => (
                       <option key={c.code} value={c.name}>{c.name}</option>
                     ))}
                   </select>
@@ -303,13 +312,7 @@ export default function Navbar({
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden glass border-t border-white/20 safe-area-bottom">
         <div className="flex items-center justify-around py-2 px-2">
-          {[
-            { key: 'home', label: 'Accueil', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-            { key: 'search', label: 'Rechercher', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
-            { key: 'artisans', label: 'Artisans', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-            { key: 'academy', label: 'Académie', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-            { key: 'dashboard', label: 'Profil', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-          ].map((item) => (
+          {MOBILE_NAV_ITEMS.map((item) => (
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}

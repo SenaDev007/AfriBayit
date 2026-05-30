@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Property, getPropertyTypeLabel, getTransactionLabel } from '@/lib/mockData';
+import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel } from '@/lib/afribayit-utils';
 
 interface PropertyCardProps {
-  property: Property;
+  property: PropertyData;
   index?: number;
   onSelect: (id: string) => void;
   compact?: boolean;
@@ -14,6 +14,12 @@ interface PropertyCardProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function PropertyCard({ property, index = 0, onSelect, compact = false }: PropertyCardProps) {
+  // Compute price label from the data
+  const priceLabel = formatPrice(property.price, property.transaction);
+
+  // Fallback image if no images available
+  const primaryImage = property.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -27,7 +33,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       {/* Image */}
       <div className="relative overflow-hidden aspect-[4/3]">
         <img
-          src={property.images[0]}
+          src={primaryImage}
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -134,7 +140,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         {/* Price */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <p className="font-mono-data text-lg font-bold text-[#D4AF37]">
-            {property.priceLabel}
+            {priceLabel}
           </p>
         </div>
       </div>

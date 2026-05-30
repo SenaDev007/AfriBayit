@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
+    // Users can only see their own favorites
     const favorites = await db.favorite.findMany({
-      where: { userId },
+      where: { userId: auth.userId },
       orderBy: { createdAt: 'desc' },
       include: {
         property: {
@@ -40,11 +38,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const favorite = await db.favorite.create({
       data: {
-        userId: body.userId,
+        userId: auth.userId,
         propertyId: body.propertyId,
       },
     });
@@ -64,16 +65,19 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const propertyId = searchParams.get('propertyId');
 
-    if (!userId || !propertyId) {
-      return NextResponse.json({ error: 'userId and propertyId are required' }, { status: 400 });
+    if (!propertyId) {
+      return NextResponse.json({ error: 'propertyId is required' }, { status: 400 });
     }
 
+    // Users can only delete their own favorites
     const favorite = await db.favorite.deleteMany({
-      where: { userId, propertyId },
+      where: { userId: auth.userId, propertyId },
     });
 
     // Decrement property favorites count

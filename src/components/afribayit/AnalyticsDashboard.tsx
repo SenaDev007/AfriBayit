@@ -2,40 +2,98 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '@/stores/authStore';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useProperties } from '@/hooks/useProperties';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const kpis = [
-  { label: 'Revenus totaux', value: '24 500 000 FCFA', change: '+22%', icon: '💰', color: '#D4AF37' },
-  { label: 'Transactions', value: '47', change: '+15%', icon: '📊', color: '#00A651' },
-  { label: 'Nouveaux clients', value: '128', change: '+30%', icon: '👥', color: '#009CDE' },
-  { label: 'Taux de satisfaction', value: '98%', change: '+2%', icon: '⭐', color: '#003087' },
-];
-
-const chartData = [
-  { month: 'Jan', value: 65 },
-  { month: 'Fév', value: 78 },
-  { month: 'Mar', value: 90 },
-  { month: 'Avr', value: 85 },
-  { month: 'Mai', value: 95 },
-  { month: 'Jun', value: 110 },
-  { month: 'Jul', value: 102 },
-  { month: 'Aoû', value: 120 },
-  { month: 'Sep', value: 115 },
-  { month: 'Oct', value: 130 },
-  { month: 'Nov', value: 142 },
-  { month: 'Déc', value: 155 },
-];
-
-const barData = [
-  { label: 'Cotonou', value: 45, color: '#003087' },
-  { label: 'Abidjan', value: 38, color: '#009CDE' },
-  { label: 'Lomé', value: 22, color: '#D4AF37' },
-  { label: 'Ouaga', value: 15, color: '#00A651' },
-];
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
+}
 
 export default function AnalyticsDashboard() {
   const [period, setPeriod] = useState('12m');
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId, 1, 100);
+  const { data: propsData, isLoading: propsLoading, isError: propsError } = useProperties({ limit: 100 });
+
+  const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
+  const properties = (propsData?.properties ?? []) as Record<string, unknown>[];
+
+  // Compute analytics from live data
+  const totalRevenue = transactions
+    .filter(t => String(t.status) === 'RELEASED')
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  const totalTransactions = transactions.length;
+  const newClients = new Set(transactions.map(t => String(t.buyerId))).size;
+
+  const satisfactionRate = transactions.length > 0
+    ? Math.round((transactions.filter(t => String(t.status) === 'RELEASED').length / transactions.length) * 100)
+    : 0;
+
+  const kpis = [
+    { label: 'Revenus totaux', value: formatPrice(totalRevenue), change: '—', icon: '💰', color: '#D4AF37' },
+    { label: 'Transactions', value: String(totalTransactions), change: '—', icon: '📊', color: '#00A651' },
+    { label: 'Nouveaux clients', value: String(newClients), change: '—', icon: '👥', color: '#009CDE' },
+    { label: 'Taux de satisfaction', value: `${satisfactionRate}%`, change: '—', icon: '⭐', color: '#003087' },
+  ];
+
+  // Monthly revenue chart from transactions
+  const monthlyRevenue: Record<string, number> = {};
+  transactions.forEach(t => {
+    const date = String(t.createdAt ?? t.date ?? '');
+    if (date) {
+      const monthKey = date.substring(0, 7); // "YYYY-MM"
+      monthlyRevenue[monthKey] = (monthlyRevenue[monthKey] || 0) + (Number(t.amount) || 0);
+    }
+  });
+
+  const monthLabels: Record<string, string> = {
+    '01': 'Jan', '02': 'Fév', '03': 'Mar', '04': 'Avr', '05': 'Mai', '06': 'Jun',
+    '07': 'Jul', '08': 'Aoû', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Déc',
+  };
+
+  // Sort months and generate chart data
+  const sortedMonths = Object.keys(monthlyRevenue).sort();
+  const chartData = sortedMonths.map(m => ({
+    month: monthLabels[m.substring(5, 7)] || m,
+    value: monthlyRevenue[m] / 1000000, // Scale to millions for display
+  }));
+
+  // If no data, show placeholder
+  const hasChartData = chartData.length > 0;
+
+  // City breakdown from properties
+  const cityBreakdown: Record<string, number> = {};
+  properties.forEach(p => {
+    const city = String(p.city ?? 'Autre');
+    cityBreakdown[city] = (cityBreakdown[city] || 0) + 1;
+  });
+
+  const cityColors: Record<string, string> = {
+    'Cotonou': '#003087',
+    'Abidjan': '#009CDE',
+    'Lomé': '#D4AF37',
+    'Ouagadougou': '#00A651',
+  };
+
+  const totalProps = properties.length || 1;
+  const barData = Object.entries(cityBreakdown)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 4)
+    .map(([city, count]) => ({
+      label: city,
+      value: Math.round((count / totalProps) * 100),
+      color: cityColors[city] || '#6b7280',
+    }));
+
+  const isLoading = txnLoading || propsLoading;
+  const hasError = txnError || propsError;
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -66,24 +124,41 @@ export default function AnalyticsDashboard() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {kpis.map((kpi, i) => (
-            <motion.div
-              key={kpi.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-              className="bg-white rounded-2xl p-4 shadow-sm border"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xl">{kpi.icon}</span>
-                <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">
-                  {kpi.change}
-                </span>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
+                <div className="flex items-center justify-between mb-2">
+                  <Skeleton className="w-6 h-6 rounded" />
+                  <Skeleton className="h-4 w-10 rounded-full" />
+                </div>
+                <Skeleton className="h-6 w-24 mb-1" />
+                <Skeleton className="h-3 w-28" />
               </div>
-              <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
-              <p className="text-xs text-gray-500">{kpi.label}</p>
-            </motion.div>
-          ))}
+            ))
+          ) : hasError ? (
+            <div className="col-span-4 bg-red-50 rounded-2xl p-4 text-center">
+              <p className="text-sm text-[#D93025]">Erreur lors du chargement des données analytiques</p>
+            </div>
+          ) : (
+            kpis.map((kpi, i) => (
+              <motion.div
+                key={kpi.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                className="bg-white rounded-2xl p-4 shadow-sm border"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xl">{kpi.icon}</span>
+                  <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">
+                    {kpi.change}
+                  </span>
+                </div>
+                <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+                <p className="text-xs text-gray-500">{kpi.label}</p>
+              </motion.div>
+            ))
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -95,23 +170,37 @@ export default function AnalyticsDashboard() {
             className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border"
           >
             <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Revenus mensuels</h3>
-            <div className="h-64 flex items-end gap-2">
-              {chartData.map((item, i) => {
-                const maxVal = Math.max(...chartData.map(d => d.value));
-                const height = (item.value / maxVal) * 100;
-                return (
-                  <div key={item.month} className="flex-1 flex flex-col items-center gap-1">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}%` }}
-                      transition={{ duration: 0.6, delay: i * 0.05, ease: easeOut }}
-                      className="w-full rounded-t-lg bg-gradient-to-t from-[#003087] to-[#009CDE] min-h-[4px]"
-                    />
-                    <span className="text-[9px] text-gray-400">{item.month}</span>
+            {isLoading ? (
+              <div className="h-64 flex items-end gap-2">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="flex-1">
+                    <Skeleton className="w-full rounded-t-lg" style={{ height: `${Math.random() * 80 + 20}%` }} />
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : !hasChartData ? (
+              <div className="h-64 flex items-center justify-center">
+                <p className="text-sm text-gray-500">Aucune donnée de revenu disponible</p>
+              </div>
+            ) : (
+              <div className="h-64 flex items-end gap-2">
+                {chartData.map((item, i) => {
+                  const maxVal = Math.max(...chartData.map(d => d.value));
+                  const height = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+                  return (
+                    <div key={item.month} className="flex-1 flex flex-col items-center gap-1">
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${Math.max(height, 4)}%` }}
+                        transition={{ duration: 0.6, delay: i * 0.05, ease: easeOut }}
+                        className="w-full rounded-t-lg bg-gradient-to-t from-[#003087] to-[#009CDE] min-h-[4px]"
+                      />
+                      <span className="text-[9px] text-gray-400">{item.month}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
 
           {/* Bar Chart */}
@@ -122,28 +211,46 @@ export default function AnalyticsDashboard() {
             className="bg-white rounded-3xl p-6 shadow-sm border"
           >
             <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Par ville</h3>
-            <div className="space-y-4">
-              {barData.map((item, i) => {
-                const maxVal = Math.max(...barData.map(d => d.value));
-                return (
-                  <div key={item.label}>
+            {isLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600">{item.label}</span>
-                      <span className="font-mono-data text-sm font-bold" style={{ color: item.color }}>{item.value}%</span>
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-10" />
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(item.value / maxVal) * 100}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : barData.length === 0 ? (
+              <div className="flex items-center justify-center h-32">
+                <p className="text-sm text-gray-500">Aucune donnée par ville</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {barData.map((item, i) => {
+                  const maxVal = Math.max(...barData.map(d => d.value));
+                  return (
+                    <div key={item.label}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-600">{item.label}</span>
+                        <span className="font-mono-data text-sm font-bold" style={{ color: item.color }}>{item.value}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(item.value / maxVal) * 100}%` }}
+                          transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
         </div>
 
@@ -167,8 +274,8 @@ export default function AnalyticsDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { title: 'Tendance positive', desc: 'Les revenus ont augmenté de 22% sur la période. Cotonou est votre marché le plus dynamique.' },
-                { title: 'Opportunité détectée', desc: 'Le segment "Terrain" à Lomé montre une demande croissante de +35%. Envisagez d\'augmenter vos annonces.' },
+                { title: 'Tendance positive', desc: totalRevenue > 0 ? `Les revenus s'élèvent à ${formatPrice(totalRevenue)} sur la période sélectionnée.` : 'Connectez-vous pour voir les tendances de vos revenus.' },
+                { title: 'Opportunité détectée', desc: barData.length > 0 ? `${barData[0].label} est votre marché le plus dynamique avec ${barData[0].value}% des propriétés.` : 'Les données de marché apparaîtront une fois vos propriétés publiées.' },
               ].map((insight, i) => (
                 <div key={i} className="bg-white/10 rounded-2xl p-4 backdrop-blur">
                   <h4 className="text-white text-sm font-semibold mb-1">{insight.title}</h4>

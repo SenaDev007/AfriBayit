@@ -2,66 +2,67 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useProfile } from '@/hooks/useProfiles';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
+  userId?: string;
+}
+
+interface ProfileData {
+  name: string;
+  headline: string;
+  location: string;
+  avatar: string;
+  coverPhoto: string;
+  availability: 'available' | 'busy' | 'offline';
+  bio: string;
+  skills: { name: string; endorsements: number }[];
+  experience: { id: string; title: string; company: string; period: string; desc: string }[];
+  education: { id: string; degree: string; school: string; year: string }[];
+  certifications: { id: string; name: string; icon: string; color: string; year: string }[];
+  portfolio: { id: string; title: string; image: string; type: string }[];
+  recommendations: { id: string; author: string; avatar: string; text: string }[];
+  stats: {
+    profileViews: number;
+    searchAppearances: number;
+    connections: number;
+    credibilityScore: number;
+  };
+  profileCompleteness: number;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const profileData = {
-  name: 'Aminata Diallo',
-  headline: 'Agent Immobilier Certifié · Spécialiste Haut Standing Abidjan',
-  location: 'Abidjan, Côte d\'Ivoire',
-  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop&crop=face',
-  coverPhoto: 'https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?w=800&h=300&fit=crop',
-  availability: 'available' as const,
-  bio: 'Agent immobilier certifié avec plus de 8 ans d\'expérience sur le marché ivoirien. Spécialisée dans les biens haut standing à Cocody, Plateau et Marcory. Membre fondatrice du réseau AfriBayit Côte d\'Ivoire. Passionnée par l\'accompagnement personnalisé et la transparence des transactions.',
-  skills: [
-    { name: 'Négociation immobilière', endorsements: 42 },
-    { name: 'Estimation de biens', endorsements: 38 },
-    { name: 'Droit foncier ivoirien', endorsements: 31 },
-    { name: 'Home staging', endorsements: 25 },
-    { name: 'Investissement locatif', endorsements: 19 },
-    { name: 'Gestion locative', endorsements: 15 },
-  ],
-  experience: [
-    { id: 'exp-1', title: 'Agent Immobilier Certifié', company: 'AfriBayit Immobilière Côte d\'Ivoire', period: '2022 – Présent', desc: 'Gestion d\'un portefeuille de 52 biens. Spécialiste transactions haut standing. Certification AfriBayit Level 3.' },
-    { id: 'exp-2', title: 'Consultante Immobilière', company: 'SCI Les Palmiers', period: '2019 – 2022', desc: 'Conseil en investissement immobilier. Gestion d\'un parc de 30 logements locatifs.' },
-    { id: 'exp-3', title: 'Assistante Commerciale', company: 'Agence Immobilière du Plateau', period: '2016 – 2019', desc: 'Prospection, visites et suivi des dossiers de vente et location.' },
-  ],
-  education: [
-    { id: 'edu-1', degree: 'Master Immobilier & Urbanisme', school: 'Université Félix Houphouët-Boigny', year: '2016' },
-    { id: 'edu-2', degree: 'Licence Droit des Affaires', school: 'Université Joseph Ki-Zerbo', year: '2014' },
-  ],
-  certifications: [
-    { id: 'cert-1', name: 'Agent Certifié AfriBayit', icon: '🏅', color: '#D4AF37', year: '2023' },
-    { id: 'cert-2', name: 'GeoTrust Expert', icon: '✅', color: '#00A651', year: '2023' },
-    { id: 'cert-3', name: 'Academy : Investissement Immobilier', icon: '📚', color: '#009CDE', year: '2022' },
-    { id: 'cert-4', name: 'Droit Foncier Africain', icon: '⚖️', color: '#003087', year: '2022' },
-  ],
-  portfolio: [
-    { id: 'p-1', title: 'Villa Prestige Les Cocotiers', image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=300&fit=crop', type: 'Vente' },
-    { id: 'p-2', title: 'Penthouse Signature Cocody', image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop', type: 'Vente' },
-    { id: 'p-3', title: 'Appartement Standing Marcory', image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop', type: 'Location' },
-  ],
-  recommendations: [
-    { id: 'rec-1', author: 'Kouassi Jean', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face', text: 'Aminata est une professionnelle exceptionnelle. Elle a su trouver la villa de nos rêves en un temps record. Transparence totale sur les processus.' },
-    { id: 'rec-2', author: 'Mme. Lawson Afi', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&crop=face', text: 'Grâce à son expertise du marché, j\'ai pu investir dans les meilleures conditions. Je recommande vivement !' },
-  ],
-  stats: {
-    profileViews: 1240,
-    searchAppearances: 89,
-    connections: 156,
-    credibilityScore: 92,
-  },
-  profileCompleteness: 85,
-};
-
 type TabKey = 'about' | 'experience' | 'portfolio' | 'recommendations' | 'stats';
 
-export default function ProfessionalProfileModule({ onNavigate }: ModuleProps) {
+function ProfileSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-40 sm:h-52 bg-gray-200 rounded-b-3xl" />
+      <div className="relative -mt-16 mb-6 px-4">
+        <div className="flex items-end gap-4">
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gray-200 border-4 border-white" />
+          <div className="flex-1 pb-2">
+            <div className="h-6 bg-gray-200 rounded w-40 mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-64 mb-1" />
+            <div className="h-3 bg-gray-100 rounded w-32" />
+          </div>
+        </div>
+      </div>
+      <div className="space-y-4 px-4">
+        <div className="h-32 bg-gray-100 rounded-3xl" />
+        <div className="h-48 bg-gray-100 rounded-3xl" />
+      </div>
+    </div>
+  );
+}
+
+export default function ProfessionalProfileModule({ onNavigate, userId }: ModuleProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('about');
+
+  const { data: profileDataRaw, isLoading, error } = useProfile(userId || 'demo-user');
+  const profileData = profileDataRaw as ProfileData | undefined;
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'about', label: 'À propos', icon: '👤' },
@@ -70,6 +71,30 @@ export default function ProfessionalProfileModule({ onNavigate }: ModuleProps) {
     { key: 'recommendations', label: 'Recommandations', icon: '💬' },
     { key: 'stats', label: 'Statistiques', icon: '📊' },
   ];
+
+  if (isLoading) {
+    return (
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
+          <ProfileSkeleton />
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !profileData) {
+    return (
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
+          <div className="text-center py-20">
+            <span className="text-4xl block mb-3">⚠️</span>
+            <p className="text-gray-600 font-semibold mb-1">Impossible de charger le profil</p>
+            <p className="text-sm text-gray-400">{error?.message || 'Profil non trouvé'}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -225,25 +250,31 @@ export default function ProfessionalProfileModule({ onNavigate }: ModuleProps) {
             <motion.div key="experience" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-3xl p-5 shadow-sm border">
                 <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Expérience professionnelle</h3>
-                <div className="relative pl-6 border-l-2 border-[#003087]/10 space-y-6">
-                  {profileData.experience.map((exp, i) => (
-                    <motion.div
-                      key={exp.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.15, ease: easeOut }}
-                      className="relative"
-                    >
-                      <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-[#003087] border-2 border-white" />
-                      <div className="p-4 bg-gray-50 rounded-2xl">
-                        <h4 className="text-sm font-bold text-[#2C2E2F]">{exp.title}</h4>
-                        <p className="text-xs text-[#003087] font-semibold">{exp.company}</p>
-                        <p className="text-xs text-gray-400 mb-2">{exp.period}</p>
-                        <p className="text-xs text-gray-600">{exp.desc}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                {profileData.experience.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-400">Aucune expérience renseignée</p>
+                  </div>
+                ) : (
+                  <div className="relative pl-6 border-l-2 border-[#003087]/10 space-y-6">
+                    {profileData.experience.map((exp, i) => (
+                      <motion.div
+                        key={exp.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.15, ease: easeOut }}
+                        className="relative"
+                      >
+                        <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-[#003087] border-2 border-white" />
+                        <div className="p-4 bg-gray-50 rounded-2xl">
+                          <h4 className="text-sm font-bold text-[#2C2E2F]">{exp.title}</h4>
+                          <p className="text-xs text-[#003087] font-semibold">{exp.company}</p>
+                          <p className="text-xs text-gray-400 mb-2">{exp.period}</p>
+                          <p className="text-xs text-gray-600">{exp.desc}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -251,58 +282,74 @@ export default function ProfessionalProfileModule({ onNavigate }: ModuleProps) {
           {/* ===== PORTFOLIO ===== */}
           {activeTab === 'portfolio' && (
             <motion.div key="portfolio" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {profileData.portfolio.map((item, i) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1, ease: easeOut }}
-                    whileHover={{ y: -4 }}
-                    className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
-                  >
-                    <div className="aspect-[4/3] overflow-hidden">
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                    <div className="p-3">
-                      <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{item.title}</h4>
-                      <span className={`text-[10px] font-medium ${item.type === 'Vente' ? 'text-[#D4AF37]' : 'text-[#009CDE]'}`}>
-                        {item.type}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              {profileData.portfolio.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl block mb-3">📸</span>
+                  <p className="text-gray-600 font-semibold mb-1">Aucun projet dans le portfolio</p>
+                  <p className="text-sm text-gray-400">Les projets apparaîtront ici</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {profileData.portfolio.map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1, ease: easeOut }}
+                      whileHover={{ y: -4 }}
+                      className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
+                    >
+                      <div className="aspect-[4/3] overflow-hidden">
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      <div className="p-3">
+                        <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{item.title}</h4>
+                        <span className={`text-[10px] font-medium ${item.type === 'Vente' ? 'text-[#D4AF37]' : 'text-[#009CDE]'}`}>
+                          {item.type}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
           {/* ===== RECOMMENDATIONS ===== */}
           {activeTab === 'recommendations' && (
             <motion.div key="recommendations" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="space-y-4">
-              {profileData.recommendations.map((rec, i) => (
-                <motion.div
-                  key={rec.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.15, ease: easeOut }}
-                  className="bg-white rounded-3xl p-5 shadow-sm border"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <img src={rec.avatar} alt={rec.author} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="text-sm font-semibold text-[#2C2E2F]">{rec.author}</p>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(s => (
-                          <svg key={s} className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
+              {profileData.recommendations.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl block mb-3">💬</span>
+                  <p className="text-gray-600 font-semibold mb-1">Aucune recommandation</p>
+                  <p className="text-sm text-gray-400">Les recommandations apparaîtront ici</p>
+                </div>
+              ) : (
+                profileData.recommendations.map((rec, i) => (
+                  <motion.div
+                    key={rec.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.15, ease: easeOut }}
+                    className="bg-white rounded-3xl p-5 shadow-sm border"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <img src={rec.avatar} alt={rec.author} className="w-10 h-10 rounded-full object-cover" />
+                      <div>
+                        <p className="text-sm font-semibold text-[#2C2E2F]">{rec.author}</p>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => (
+                            <svg key={s} className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed italic">&ldquo;{rec.text}&rdquo;</p>
-                </motion.div>
-              ))}
+                    <p className="text-sm text-gray-600 leading-relaxed italic">&ldquo;{rec.text}&rdquo;</p>
+                  </motion.div>
+                ))
+              )}
             </motion.div>
           )}
 

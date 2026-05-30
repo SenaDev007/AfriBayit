@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
+    // Users can only see their own subscriptions
     const subscriptions = await db.subscription.findMany({
-      where: { userId },
+      where: { userId: auth.userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -24,11 +22,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const subscription = await db.subscription.create({
       data: {
-        userId: body.userId,
+        userId: auth.userId,
         planType: body.planType,
         priceXof: body.priceXof,
         currency: body.currency || 'XOF',

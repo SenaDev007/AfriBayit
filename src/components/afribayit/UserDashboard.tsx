@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { currentUser, transactions, kycLevels, formatPrice } from '@/lib/mockData';
+import { useAuthStore } from '@/stores/authStore';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useWallet } from '@/hooks/useWallet';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserDashboardProps {
   onNavigate: (section: string) => void;
@@ -20,18 +23,49 @@ const sideNavItems = [
 
 const statusColors: Record<string, string> = {
   CREATED: '#6b7280', FUNDED: '#009CDE', IN_PROGRESS: '#D4AF37',
-  NOTARY_ASSIGNED: '#003087', DEED_SIGNED: '#00A651', RELEASED: '#00A651'
+  NOTARY_ASSIGNED: '#003087', DEED_SIGNED: '#00A651', RELEASED: '#00A651',
+  DOCS_VALIDATED: '#009CDE', GEOTRUST_VALIDATED: '#00A651', NOTARY_IN_PROGRESS: '#D4AF37',
+  ANDF_REGISTERED: '#003087', DISPUTED: '#D93025', REFUNDED: '#6b7280', EXPIRED: '#6b7280',
 };
 
 const statusLabels: Record<string, string> = {
   CREATED: 'Créé', FUNDED: 'Financé', IN_PROGRESS: 'En cours',
-  NOTARY_ASSIGNED: 'Notaire', DEED_SIGNED: 'Acte signé', RELEASED: 'Libéré'
+  NOTARY_ASSIGNED: 'Notaire', DEED_SIGNED: 'Acte signé', RELEASED: 'Libéré',
+  DOCS_VALIDATED: 'Docs validés', GEOTRUST_VALIDATED: 'GeoTrust validé',
+  NOTARY_IN_PROGRESS: 'Notaire en cours', ANDF_REGISTERED: 'ANDF enregistré',
+  DISPUTED: 'Litige', REFUNDED: 'Remboursé', EXPIRED: 'Expiré',
 };
+
+const kycLevels = [
+  { level: 0, name: "Anonyme", color: "#6b7280", maxActions: "Consultation uniquement", icon: "👤" },
+  { level: 1, name: "Standard", color: "#009CDE", maxActions: "Contacts limités, pas de transaction", icon: "🆔" },
+  { level: 2, name: "Avancé", color: "#00A651", maxActions: "Transactions, escrow, publications", icon: "✅" },
+  { level: 3, name: "Pro", color: "#D4AF37", maxActions: "Accès complet, API, outils pro", icon: "👑" },
+];
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
+}
 
 export default function UserDashboard({ onLogout }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const user = currentUser;
-  const userKyc = kycLevels[user.kycLevel];
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
+  const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId);
+
+  const summary = walletData?.summary;
+  const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
+  const userKyc = summary ? kycLevels[summary.kycLevel] ?? kycLevels[0] : kycLevels[0];
+
+  const userName = summary?.name || user?.name || 'Utilisateur';
+  const userAvatar = summary?.avatar || user?.avatar || '';
+  const userKycLevel = summary?.kycLevel ?? user?.kycLevel ?? 0;
+  const userScore = summary?.score ?? 0;
+  const walletBalance = summary?.balance ?? 0;
+  const escrowHeld = summary?.escrowHeld ?? 0;
+  const pendingPayout = summary?.pendingPayout ?? 0;
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -41,13 +75,19 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
           <aside className="lg:w-60 shrink-0">
             <div className="bg-white rounded-3xl p-4 shadow-sm border sticky top-24">
               <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-11 h-11 rounded-full object-cover border-2 border-[#D4AF37]"
-                />
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt={userName}
+                    className="w-11 h-11 rounded-full object-cover border-2 border-[#D4AF37]"
+                  />
+                ) : (
+                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center border-2 border-[#D4AF37]">
+                    <span className="text-gray-500 text-sm font-bold">{userName.charAt(0)}</span>
+                  </div>
+                )}
                 <div>
-                  <h3 className="text-sm font-semibold text-[#2C2E2F]">{user.name}</h3>
+                  <h3 className="text-sm font-semibold text-[#2C2E2F]">{userName}</h3>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
                     {userKyc.icon} {userKyc.name}
                   </span>
@@ -85,67 +125,100 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
           <div className="flex-1 min-w-0">
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {[
-                { label: 'Annonces actives', value: '3', icon: '🏠', color: '#003087' },
-                { label: 'Transactions', value: '7', icon: '📊', color: '#00A651' },
-                { label: 'Solde wallet', value: formatPrice(user.walletBalance), icon: '💰', color: '#D4AF37' },
-                { label: 'Score AfriBayit', value: `${user.score}/100`, icon: '⭐', color: '#009CDE' },
-              ].map((kpi, i) => (
-                <motion.div
-                  key={kpi.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                  className="bg-white rounded-2xl p-4 shadow-sm border"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl">{kpi.icon}</span>
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
+              {walletLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
+                    <div className="flex items-center justify-between mb-3">
+                      <Skeleton className="w-8 h-8 rounded" />
+                      <Skeleton className="w-2 h-2 rounded-full" />
+                    </div>
+                    <Skeleton className="h-6 w-20 mb-1" />
+                    <Skeleton className="h-3 w-24" />
                   </div>
-                  <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
-                </motion.div>
-              ))}
+                ))
+              ) : walletError ? (
+                <div className="col-span-4 bg-red-50 rounded-2xl p-4 text-center">
+                  <p className="text-sm text-[#D93025]">Erreur lors du chargement des données du wallet</p>
+                </div>
+              ) : (
+                [
+                  { label: 'Annonces actives', value: '—', icon: '🏠', color: '#003087' },
+                  { label: 'Transactions', value: String(transactions.length), icon: '📊', color: '#00A651' },
+                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: '💰', color: '#D4AF37' },
+                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: '⭐', color: '#009CDE' },
+                ].map((kpi, i) => (
+                  <motion.div
+                    key={kpi.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                    className="bg-white rounded-2xl p-4 shadow-sm border"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl">{kpi.icon}</span>
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
+                    </div>
+                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                  </motion.div>
+                ))
+              )}
             </div>
 
             {/* Wallet Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-              className="bg-navy-gradient rounded-3xl p-6 sm:p-8 mb-6 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <p className="text-white/60 text-xs mb-1">Portefeuille AfriBayit</p>
-                    <p className="font-mono-data text-3xl sm:text-4xl font-bold text-white">
-                      {new Intl.NumberFormat('fr-FR').format(user.walletBalance)} <span className="text-sm text-white/60">FCFA</span>
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                    </svg>
-                  </div>
-                </div>
+            {walletLoading ? (
+              <div className="bg-navy-gradient rounded-3xl p-6 sm:p-8 mb-6">
+                <Skeleton className="h-4 w-32 mb-2 bg-white/20" />
+                <Skeleton className="h-10 w-48 mb-6 bg-white/20" />
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-white/40 text-[10px] mb-0.5">Escrow bloqué</p>
-                    <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(user.escrowHeld)}</p>
-                  </div>
-                  <div>
-                    <p className="text-white/40 text-[10px] mb-0.5">En attente</p>
-                    <p className="font-mono-data text-sm font-bold text-white">{new Intl.NumberFormat('fr-FR').format(user.pendingPayout)}</p>
-                  </div>
-                  <div>
-                    <p className="text-white/40 text-[10px] mb-0.5">KYC Level</p>
-                    <p className="text-sm font-bold text-white">{userKyc.icon} {userKyc.name}</p>
-                  </div>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 rounded-2xl bg-white/20" />
+                  ))}
                 </div>
               </div>
-            </motion.div>
+            ) : walletError ? (
+              <div className="bg-red-50 rounded-3xl p-6 mb-6 border border-red-200 text-center">
+                <p className="text-sm text-[#D93025]">Impossible de charger les données du portefeuille</p>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
+                className="bg-navy-gradient rounded-3xl p-6 sm:p-8 mb-6 relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-white/60 text-xs mb-1">Portefeuille AfriBayit</p>
+                      <p className="font-mono-data text-3xl sm:text-4xl font-bold text-white">
+                        {new Intl.NumberFormat('fr-FR').format(walletBalance)} <span className="text-sm text-white/60">FCFA</span>
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-white/40 text-[10px] mb-0.5">Escrow bloqué</p>
+                      <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(escrowHeld)}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-[10px] mb-0.5">En attente</p>
+                      <p className="font-mono-data text-sm font-bold text-white">{new Intl.NumberFormat('fr-FR').format(pendingPayout)}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-[10px] mb-0.5">KYC Level</p>
+                      <p className="text-sm font-bold text-white">{userKyc.icon} {userKyc.name}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Transactions */}
             <motion.div
@@ -155,27 +228,60 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
               className="bg-white rounded-3xl p-6 shadow-sm border"
             >
               <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions récentes</h3>
-              <div className="space-y-3">
-                {transactions.map((txn) => (
-                  <div key={txn.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${statusColors[txn.status]}10` }}>
-                      <span className="text-lg">
-                        {txn.status === 'RELEASED' ? '✅' : txn.status === 'FUNDED' ? '💰' : txn.status === 'IN_PROGRESS' ? '🔄' : '📋'}
-                      </span>
+              {txnLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 p-3">
+                      <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-40 mb-1" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <div className="text-right">
+                        <Skeleton className="h-4 w-20 mb-1 ml-auto" />
+                        <Skeleton className="h-3 w-14 ml-auto" />
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#2C2E2F] truncate">{txn.propertyTitle}</p>
-                      <p className="text-xs text-gray-400">{txn.date}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{new Intl.NumberFormat('fr-FR').format(txn.amount)}</p>
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${statusColors[txn.status]}10`, color: statusColors[txn.status] }}>
-                        {statusLabels[txn.status]}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : txnError ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-[#D93025]">Erreur lors du chargement des transactions</p>
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-gray-500">Aucune transaction trouvée</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((txn) => {
+                    const status = String(txn.status ?? 'CREATED');
+                    const amount = Number(txn.amount ?? 0);
+                    const propertyTitle = String(txn.propertyTitle ?? (txn as Record<string, unknown>).propertyId ?? 'Transaction');
+                    const date = String(txn.date ?? txn.createdAt ?? '');
+                    const displayDate = date ? new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                    return (
+                      <div key={String(txn.id)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10` }}>
+                          <span className="text-lg">
+                            {status === 'RELEASED' ? '✅' : status === 'FUNDED' ? '💰' : status === 'IN_PROGRESS' ? '🔄' : '📋'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#2C2E2F] truncate">{propertyTitle}</p>
+                          <p className="text-xs text-gray-400">{displayDate}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{new Intl.NumberFormat('fr-FR').format(amount)}</p>
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10`, color: statusColors[status] || '#6b7280' }}>
+                            {statusLabels[status] || status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </motion.div>
 
             {/* KYC Progress */}
@@ -191,11 +297,11 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                   <div
                     key={level.level}
                     className={`p-3 rounded-2xl border-2 text-center transition-colors ${
-                      user.kycLevel >= level.level ? 'border-[#00A651] bg-[#00A651]/5' : 'border-gray-100 bg-gray-50'
+                      userKycLevel >= level.level ? 'border-[#00A651] bg-[#00A651]/5' : 'border-gray-100 bg-gray-50'
                     }`}
                   >
                     <span className="text-2xl block mb-1">{level.icon}</span>
-                    <p className="text-xs font-semibold" style={{ color: user.kycLevel >= level.level ? '#00A651' : '#9ca3af' }}>
+                    <p className="text-xs font-semibold" style={{ color: userKycLevel >= level.level ? '#00A651' : '#9ca3af' }}>
                       {level.name}
                     </p>
                     <p className="text-[10px] text-gray-400 mt-0.5">Niveau {level.level}</p>

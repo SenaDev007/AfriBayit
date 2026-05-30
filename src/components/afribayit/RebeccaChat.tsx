@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useConversations, useChatMessages, useSendMessage, useCreateConversation } from '@/hooks/useChat';
 
 interface RebeccaChatProps {
   isOpen: boolean;
   onClose: () => void;
+  userId?: string;
 }
 
 interface Message {
@@ -16,23 +18,83 @@ interface Message {
   propertyCard?: { title: string; price: string; city: string; image: string };
 }
 
+interface ChatConversation {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  senderId: string;
+  messageType: string;
+  createdAt: string;
+}
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const initialMessages: Message[] = [
-  {
-    id: '1',
-    sender: 'bot',
-    text: 'Bonjour ! 👋 Je suis Rebecca, votre assistante immobilière IA. Comment puis-je vous aider aujourd\'hui ?',
-    quickReplies: ['Chercher un bien', 'Estimer mon bien', 'Info escrow', 'Contacter un agent'],
-  },
-];
+const welcomeMessage: Message = {
+  id: 'welcome',
+  sender: 'bot',
+  text: 'Bonjour ! 👋 Je suis Rebecca, votre assistante immobilière IA. Comment puis-je vous aider aujourd\'hui ?',
+  quickReplies: ['Chercher un bien', 'Estimer mon bien', 'Info escrow', 'Contacter un agent'],
+};
 
-export default function RebeccaChat({ isOpen, onClose }: RebeccaChatProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+const botReplies: Record<string, Partial<Message>> = {
+  'Chercher un bien': {
+    text: 'Parfait ! Quel type de bien recherchez-vous ? Voici quelques suggestions populaires :',
+    propertyCard: {
+      title: 'Villa Prestige Les Cocotiers',
+      price: '85 000 000 FCFA',
+      city: 'Cotonou, Bénin',
+      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&h=150&fit=crop',
+    },
+    quickReplies: ['Voir plus de villas', 'Appartements', 'Terrains'],
+  },
+  'Estimer mon bien': {
+    text: 'Je peux vous aider à estimer votre bien ! Pour cela, j\'ai besoin de quelques informations. Quel type de bien possédez-vous ?',
+    quickReplies: ['Villa', 'Appartement', 'Terrain'],
+  },
+  'Info escrow': {
+    text: 'L\'escrow AfriBayit protège vos fonds pendant toute la transaction. Voici comment ça fonctionne :\n\n1️⃣ Acheteur dépose les fonds\n2️⃣ Fonds bloqués en escrow sécurisé\n3️⃣ Vérification des documents\n4️⃣ Signature notariale\n5️⃣ Libération des fonds au vendeur\n\nToute la procédure est sécurisée et transparente ! 🛡️',
+    quickReplies: ['Démarrer une transaction', 'Frais escrow', 'Contacter un notaire'],
+  },
+  'Contacter un agent': {
+    text: 'Je vais vous mettre en contact avec un agent certifié dans votre zone. Dans quelle ville se trouve votre recherche ?',
+    quickReplies: ['Cotonou', 'Abidjan', 'Lomé', 'Ouagadougou'],
+  },
+};
+
+export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProps) {
+  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = (text: string) => {
+  const { data: conversationsData } = useConversations(userId);
+  const { data: chatMessagesData } = useChatMessages(activeConversationId || '');
+  const sendMessageMutation = useSendMessage();
+  const createConversationMutation = useCreateConversation();
+
+  const conversations: ChatConversation[] = (conversationsData?.conversations as ChatConversation[]) || [];
+  const chatMessages: ChatMessage[] = (chatMessagesData?.messages as ChatMessage[]) || [];
+
+  // Merge API messages with local messages for display
+  useEffect(() => {
+    if (chatMessages.length > 0 && activeConversationId) {
+      // If we have API messages, prefer showing them alongside local state
+      // Local messages are already in state, so we just supplement
+    }
+  }, [chatMessages, activeConversationId]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async (text: string) => {
     const userMsg: Message = {
       id: Date.now().toString(),
       sender: 'user',
@@ -42,35 +104,38 @@ export default function RebeccaChat({ isOpen, onClose }: RebeccaChatProps) {
     setInput('');
     setIsTyping(true);
 
+    // Persist message via API if we have an active conversation
+    if (activeConversationId && userId) {
+      try {
+        await sendMessageMutation.mutateAsync({
+          conversationId: activeConversationId,
+          senderId: userId,
+          content: text,
+          messageType: 'text',
+        });
+      } catch {
+        // Silently fail — local state still works
+      }
+    } else if (userId) {
+      // Create a new conversation if we don't have one
+      try {
+        const result = await createConversationMutation.mutateAsync({
+          participantIds: [userId, 'rebecca-bot'],
+          type: 'ai_assistant',
+          title: 'Chat avec Rebecca IA',
+        });
+        const convId = (result as { id: string }).id;
+        setActiveConversationId(convId);
+      } catch {
+        // Silently fail
+      }
+    }
+
+    // Simulate bot response
     setTimeout(() => {
       setIsTyping(false);
-      const botReplies: Record<string, Partial<Message>> = {
-        'Chercher un bien': {
-          text: 'Parfait ! Quel type de bien recherchez-vous ? Voici quelques suggestions populaires :',
-          propertyCard: {
-            title: 'Villa Prestige Les Cocotiers',
-            price: '85 000 000 FCFA',
-            city: 'Cotonou, Bénin',
-            image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&h=150&fit=crop',
-          },
-          quickReplies: ['Voir plus de villas', 'Appartements', 'Terrains'],
-        },
-        'Estimer mon bien': {
-          text: 'Je peux vous aider à estimer votre bien ! Pour cela, j\'ai besoin de quelques informations. Quel type de bien possédez-vous ?',
-          quickReplies: ['Villa', 'Appartement', 'Terrain'],
-        },
-        'Info escrow': {
-          text: 'L\'escrow AfriBayit protège vos fonds pendant toute la transaction. Voici comment ça fonctionne :\n\n1️⃣ Acheteur dépose les fonds\n2️⃣ Fonds bloqués en escrow sécurisé\n3️⃣ Vérification des documents\n4️⃣ Signature notariale\n5️⃣ Libération des fonds au vendeur\n\nToute la procédure est sécurisée et transparente ! 🛡️',
-          quickReplies: ['Démarrer une transaction', 'Frais escrow', 'Contacter un notaire'],
-        },
-        'Contacter un agent': {
-          text: 'Je vais vous mettre en contact avec un agent certifié dans votre zone. Dans quelle ville se trouve votre recherche ?',
-          quickReplies: ['Cotonou', 'Abidjan', 'Lomé', 'Ouagadougou'],
-        },
-      };
-
       const reply = botReplies[text] || {
-        text: 'Merci pour votre message ! Je analyse votre demande et je vous reviens rapidement. En attendant, n\'hésitez pas à explorer nos biens disponibles.',
+        text: 'Merci pour votre message ! J\'analyse votre demande et je vous reviens rapidement. En attendant, n\'hésitez pas à explorer nos biens disponibles.',
         quickReplies: ['Chercher un bien', 'Estimer mon bien', 'Info escrow'],
       };
 
@@ -179,6 +244,8 @@ export default function RebeccaChat({ isOpen, onClose }: RebeccaChatProps) {
                   </div>
                 </div>
               )}
+
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar */}

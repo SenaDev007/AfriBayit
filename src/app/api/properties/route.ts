@@ -14,32 +14,91 @@ export async function GET(request: Request) {
     const maxPrice = searchParams.get('maxPrice');
     const verified = searchParams.get('verified');
     const geoTrust = searchParams.get('geoTrust');
+    const premium = searchParams.get('premium');
+    const sortBy = searchParams.get('sortBy') || 'recent';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
     const where: Record<string, unknown> = { status: 'published' };
 
-    if (type) where.type = type;
-    if (transaction) where.transaction = transaction;
-    if (city) where.city = city;
-    if (country) where.country = country;
+    if (type && type !== 'all') where.type = type;
+    if (transaction && transaction !== 'all') where.transaction = transaction;
+    if (city && city !== 'all') where.city = city;
+    if (country && country !== 'all') where.country = country;
     if (verified === 'true') where.verified = true;
     if (geoTrust === 'true') where.geoTrust = true;
+    if (premium === 'true') where.premium = true;
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) (where.price as Record<string, number>).gte = parseFloat(minPrice);
       if (maxPrice) (where.price as Record<string, number>).lte = parseFloat(maxPrice);
     }
 
-    const [properties, total] = await Promise.all([
+    // Determine sort order
+    let orderBy: Record<string, string> = { createdAt: 'desc' };
+    if (sortBy === 'price-asc') orderBy = { price: 'asc' };
+    else if (sortBy === 'price-desc') orderBy = { price: 'desc' };
+    else if (sortBy === 'popular') orderBy = { views: 'desc' };
+
+    const [propertiesRaw, total] = await Promise.all([
       db.property.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              verified: true,
+              professionalProfile: {
+                select: {
+                  agencyName: true,
+                  credibilityScore: true,
+                },
+              },
+            },
+          },
+        },
       }),
       db.property.count({ where }),
     ]);
+
+    // Parse JSON fields and shape response
+    const properties = propertiesRaw.map((p) => {
+      const { owner, ...rest } = p;
+      // Parse JSON string fields
+      let images: string[] = [];
+      try {
+        images = rest.images ? JSON.parse(rest.images) : [];
+      } catch {
+        images = [];
+      }
+
+      let features: string[] = [];
+      try {
+        features = rest.features ? JSON.parse(rest.features) : [];
+      } catch {
+        features = [];
+      }
+
+      return {
+        ...rest,
+        images,
+        features,
+        agent: owner
+          ? {
+              id: owner.id,
+              name: owner.name,
+              avatar: owner.avatar,
+              company: owner.professionalProfile?.agencyName,
+              certified: owner.verified,
+            }
+          : undefined,
+      };
+    });
 
     return NextResponse.json({
       properties,

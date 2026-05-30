@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/stores/authStore';
+import { useWallet, type WalletTransaction } from '@/hooks/useWallet';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -10,34 +13,6 @@ interface ModuleProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 type TransactionType = 'deposit' | 'withdrawal' | 'escrow_fund' | 'escrow_release' | 'commission' | 'subscription';
-
-const walletData = {
-  balance: 2450000,
-  escrowHeld: 15000000,
-  pendingPayout: 850000,
-  afriPoints: 3450,
-};
-
-const transactions: {
-  id: string;
-  type: TransactionType;
-  label: string;
-  amount: number;
-  date: string;
-  status: 'completed' | 'pending' | 'failed';
-  reference: string;
-}[] = [
-  { id: 'wtxn-01', type: 'deposit', label: 'Dépôt Mobile Money', amount: 500000, date: '2025-03-12', status: 'completed', reference: 'MM-20250312-001' },
-  { id: 'wtxn-02', type: 'escrow_fund', label: 'Financement Escrow — Villa Cocotiers', amount: -85000000, date: '2025-03-10', status: 'completed', reference: 'ESC-20250310-042' },
-  { id: 'wtxn-03', type: 'commission', label: 'Commission vente — Terrain Akodessewa', amount: 150000, date: '2025-03-08', status: 'completed', reference: 'COM-20250308-018' },
-  { id: 'wtxn-04', type: 'escrow_release', label: 'Libération Escrow — Studio Fidjrossè', amount: 120000, date: '2025-03-05', status: 'completed', reference: 'REL-20250305-009' },
-  { id: 'wtxn-05', type: 'subscription', label: 'Abonnement HELM GROW — Mars', amount: -35000, date: '2025-03-01', status: 'completed', reference: 'SUB-20250301-003' },
-  { id: 'wtxn-06', type: 'withdrawal', label: 'Retrait Mobile Money', amount: -200000, date: '2025-02-28', status: 'completed', reference: 'WD-20250228-012' },
-  { id: 'wtxn-07', type: 'deposit', label: 'Dépôt Stripe', amount: 1200000, date: '2025-02-25', status: 'completed', reference: 'STR-20250225-007' },
-  { id: 'wtxn-08', type: 'commission', label: 'Commission location — Appart Plateau', amount: 35000, date: '2025-02-20', status: 'pending', reference: 'COM-20250220-031' },
-  { id: 'wtxn-09', type: 'escrow_fund', label: 'Financement Escrow — Penthouse Cocody', amount: -120000000, date: '2025-02-15', status: 'pending', reference: 'ESC-20250215-055' },
-  { id: 'wtxn-10', type: 'withdrawal', label: 'Retrait Orange Money', amount: -500000, date: '2025-02-10', status: 'failed', reference: 'WD-20250210-008' },
-];
 
 const filterTypes: { key: TransactionType | 'all'; label: string; icon: string }[] = [
   { key: 'all', label: 'Tous', icon: '📋' },
@@ -62,7 +37,15 @@ const currencyRates = {
   USD: 0.00165,
 };
 
-function getTypeColor(type: TransactionType): string {
+const paymentProviders = [
+  { key: 'mtn', name: 'MTN Mobile Money', icon: '📱', color: '#FFC300' },
+  { key: 'orange', name: 'Orange Money', icon: '🍊', color: '#FF6600' },
+  { key: 'moov', name: 'Moov Money', icon: '🔵', color: '#0066CC' },
+  { key: 'fedapay', name: 'FedaPay', icon: '💳', color: '#003087' },
+  { key: 'stripe', name: 'Stripe', icon: '💜', color: '#635bff' },
+];
+
+function getTypeColor(type: string): string {
   switch (type) {
     case 'deposit': return '#00A651';
     case 'withdrawal': return '#D93025';
@@ -74,7 +57,7 @@ function getTypeColor(type: TransactionType): string {
   }
 }
 
-function getTypeIcon(type: TransactionType): string {
+function getTypeIcon(type: string): string {
   switch (type) {
     case 'deposit': return '📥';
     case 'withdrawal': return '📤';
@@ -108,9 +91,22 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawProvider, setWithdrawProvider] = useState<string | null>(null);
 
+  const { user } = useAuthStore();
+  const userId = user?.id;
+
+  const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
+
+  const summary = walletData?.summary;
+  const transactions = walletData?.transactions ?? [];
+
+  const balance = summary?.balance ?? 0;
+  const escrowHeld = summary?.escrowHeld ?? 0;
+  const pendingPayout = summary?.pendingPayout ?? 0;
+  const afriPoints = summary?.afriPoints ?? 0;
+
   const filteredTransactions = filterType === 'all'
     ? transactions
-    : transactions.filter(t => t.type === filterType);
+    : transactions.filter((t: WalletTransaction) => t.type === filterType);
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'overview', label: 'Aperçu', icon: '💳' },
@@ -118,14 +114,6 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
     { key: 'add', label: 'Ajouter fonds', icon: '📥' },
     { key: 'withdraw', label: 'Retirer', icon: '📤' },
     { key: 'points', label: 'AfriPoints', icon: '⭐' },
-  ];
-
-  const paymentProviders = [
-    { key: 'mtn', name: 'MTN Mobile Money', icon: '📱', color: '#FFC300' },
-    { key: 'orange', name: 'Orange Money', icon: '🍊', color: '#FF6600' },
-    { key: 'moov', name: 'Moov Money', icon: '🔵', color: '#0066CC' },
-    { key: 'fedapay', name: 'FedaPay', icon: '💳', color: '#003087' },
-    { key: 'stripe', name: 'Stripe', icon: '💜', color: '#635bff' },
   ];
 
   return (
@@ -178,31 +166,49 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
           ))}
         </div>
 
+        {walletError && (
+          <div className="bg-red-50 rounded-2xl p-4 mb-6 text-center border border-red-200">
+            <p className="text-sm text-[#D93025]">Erreur lors du chargement des données du portefeuille. Veuillez réessayer.</p>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {/* ===== OVERVIEW ===== */}
           {activeTab === 'overview' && (
             <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="space-y-5">
               {/* Balance Card */}
-              <div className="bg-gradient-to-br from-[#003087] to-[#001a4d] rounded-3xl p-6 text-white">
-                <p className="text-sm text-white/60 mb-1">Solde disponible</p>
-                <p className="font-mono text-3xl sm:text-4xl font-bold mb-4">
-                  {convertCurrency(walletData.balance, selectedCurrency)}
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 bg-white/10 rounded-2xl">
-                    <p className="text-[10px] text-white/60">Escrow bloqué</p>
-                    <p className="font-mono text-sm font-bold">{convertCurrency(walletData.escrowHeld, selectedCurrency)}</p>
-                  </div>
-                  <div className="p-3 bg-white/10 rounded-2xl">
-                    <p className="text-[10px] text-white/60">Paiement en attente</p>
-                    <p className="font-mono text-sm font-bold">{convertCurrency(walletData.pendingPayout, selectedCurrency)}</p>
-                  </div>
-                  <div className="p-3 bg-white/10 rounded-2xl">
-                    <p className="text-[10px] text-white/60">AfriPoints</p>
-                    <p className="font-mono text-sm font-bold text-[#D4AF37]">⭐ {walletData.afriPoints}</p>
+              {walletLoading ? (
+                <div className="bg-gradient-to-br from-[#003087] to-[#001a4d] rounded-3xl p-6">
+                  <Skeleton className="h-4 w-32 mb-2 bg-white/20" />
+                  <Skeleton className="h-10 w-48 mb-4 bg-white/20" />
+                  <div className="grid grid-cols-3 gap-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 rounded-2xl bg-white/20" />
+                    ))}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-gradient-to-br from-[#003087] to-[#001a4d] rounded-3xl p-6 text-white">
+                  <p className="text-sm text-white/60 mb-1">Solde disponible</p>
+                  <p className="font-mono text-3xl sm:text-4xl font-bold mb-4">
+                    {convertCurrency(balance, selectedCurrency)}
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-white/10 rounded-2xl">
+                      <p className="text-[10px] text-white/60">Escrow bloqué</p>
+                      <p className="font-mono text-sm font-bold">{convertCurrency(escrowHeld, selectedCurrency)}</p>
+                    </div>
+                    <div className="p-3 bg-white/10 rounded-2xl">
+                      <p className="text-[10px] text-white/60">Paiement en attente</p>
+                      <p className="font-mono text-sm font-bold">{convertCurrency(pendingPayout, selectedCurrency)}</p>
+                    </div>
+                    <div className="p-3 bg-white/10 rounded-2xl">
+                      <p className="text-[10px] text-white/60">AfriPoints</p>
+                      <p className="font-mono text-sm font-bold text-[#D4AF37]">⭐ {afriPoints}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -231,22 +237,41 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   <h3 className="font-display text-base font-bold text-[#2C2E2F]">Transactions récentes</h3>
                   <button onClick={() => setActiveTab('history')} className="text-xs text-[#003087] font-semibold">Voir tout →</button>
                 </div>
-                <div className="space-y-3">
-                  {transactions.slice(0, 4).map(txn => (
-                    <div key={txn.id} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
-                        {getTypeIcon(txn.type)}
+                {walletLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                        <div className="flex-1">
+                          <Skeleton className="h-4 w-40 mb-1" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.label}</p>
-                        <p className="text-xs text-gray-400">{txn.date}</p>
+                    ))}
+                  </div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500">Aucune transaction récente</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.slice(0, 4).map((txn: WalletTransaction) => (
+                      <div key={txn.id} className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
+                          {getTypeIcon(txn.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.reference || txn.type}</p>
+                          <p className="text-xs text-gray-400">{new Date(txn.createdAt).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        <p className={`font-mono text-sm font-bold shrink-0 ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
+                          {txn.amount > 0 ? '+' : '-'}{formatFCFA(txn.amount)}
+                        </p>
                       </div>
-                      <p className={`font-mono text-sm font-bold shrink-0 ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
-                        {txn.amount > 0 ? '+' : '-'}{formatFCFA(txn.amount)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -270,35 +295,57 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               </div>
 
               <div className="bg-white rounded-3xl p-5 shadow-sm border">
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {filteredTransactions.map((txn, i) => (
-                    <motion.div
-                      key={txn.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05, ease: easeOut }}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
-                    >
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
-                        {getTypeIcon(txn.type)}
+                {walletLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+                        <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                        <div className="flex-1">
+                          <Skeleton className="h-4 w-40 mb-1" />
+                          <Skeleton className="h-3 w-32" />
+                        </div>
+                        <div className="text-right">
+                          <Skeleton className="h-4 w-20 mb-1 ml-auto" />
+                          <Skeleton className="h-3 w-14 ml-auto" />
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.label}</p>
-                        <p className="text-[10px] text-gray-400 font-mono">{txn.reference} · {txn.date}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className={`font-mono text-sm font-bold ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
-                          {txn.amount > 0 ? '+' : ''}{formatFCFA(txn.amount)}
-                        </p>
-                        <span className={`text-[10px] font-semibold ${
-                          txn.status === 'completed' ? 'text-[#00A651]' : txn.status === 'pending' ? 'text-[#D4AF37]' : 'text-[#D93025]'
-                        }`}>
-                          {txn.status === 'completed' ? '✅ Validé' : txn.status === 'pending' ? '⏳ En attente' : '❌ Échoué'}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : filteredTransactions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500">Aucune transaction trouvée</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                    {filteredTransactions.map((txn: WalletTransaction, i: number) => (
+                      <motion.div
+                        key={txn.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05, ease: easeOut }}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
+                      >
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
+                          {getTypeIcon(txn.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.reference || txn.type}</p>
+                          <p className="text-[10px] text-gray-400 font-mono">{txn.reference ?? '—'} · {new Date(txn.createdAt).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className={`font-mono text-sm font-bold ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
+                            {txn.amount > 0 ? '+' : ''}{formatFCFA(txn.amount)}
+                          </p>
+                          <span className={`text-[10px] font-semibold ${
+                            txn.status === 'completed' ? 'text-[#00A651]' : txn.status === 'pending' ? 'text-[#D4AF37]' : 'text-[#D93025]'
+                          }`}>
+                            {txn.status === 'completed' ? '✅ Validé' : txn.status === 'pending' ? '⏳ En attente' : '❌ Échoué'}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -359,7 +406,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
             <motion.div key="withdraw" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-lg mx-auto">
               <div className="bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Retirer des fonds</h3>
-                <p className="text-xs text-gray-500 mb-4">Solde disponible : <span className="font-mono font-bold text-[#00A651]">{formatFCFA(walletData.balance)}</span></p>
+                <p className="text-xs text-gray-500 mb-4">Solde disponible : <span className="font-mono font-bold text-[#00A651]">{formatFCFA(balance)}</span></p>
 
                 <div className="mb-5">
                   <label className="text-xs text-gray-500 mb-1 block">Montant du retrait (FCFA)</label>
@@ -398,7 +445,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 <button
-                  disabled={!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > walletData.balance}
+                  disabled={!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance}
                   className="w-full py-3 bg-[#D93025] text-white rounded-full font-semibold text-sm hover:bg-[#b3261e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Retirer {withdrawAmount ? formatFCFA(Number(withdrawAmount)) : ''}
@@ -411,11 +458,19 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
           {activeTab === 'points' && (
             <motion.div key="points" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="space-y-5">
               {/* Points Balance */}
-              <div className="bg-gradient-to-br from-[#D4AF37] to-[#a08820] rounded-3xl p-6 text-white text-center">
-                <p className="text-sm text-white/60 mb-1">Vos AfriPoints</p>
-                <p className="font-mono text-4xl font-bold mb-2">⭐ {walletData.afriPoints}</p>
-                <p className="text-xs text-white/70">1 point = 1 FCFA de crédit</p>
-              </div>
+              {walletLoading ? (
+                <div className="bg-gradient-to-br from-[#D4AF37] to-[#a08820] rounded-3xl p-6 text-white text-center">
+                  <Skeleton className="h-4 w-32 mx-auto mb-2 bg-white/20" />
+                  <Skeleton className="h-12 w-24 mx-auto mb-2 bg-white/20" />
+                  <Skeleton className="h-3 w-40 mx-auto bg-white/20" />
+                </div>
+              ) : (
+                <div className="bg-gradient-to-br from-[#D4AF37] to-[#a08820] rounded-3xl p-6 text-white text-center">
+                  <p className="text-sm text-white/60 mb-1">Vos AfriPoints</p>
+                  <p className="font-mono text-4xl font-bold mb-2">⭐ {afriPoints}</p>
+                  <p className="text-xs text-white/70">1 point = 1 FCFA de crédit</p>
+                </div>
+              )}
 
               {/* Redemption Options */}
               <div className="bg-white rounded-3xl p-5 shadow-sm border">
@@ -436,9 +491,9 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         <p className="text-sm text-[#2C2E2F] font-medium">{item.reward}</p>
                       </div>
                       <button
-                        disabled={!item.available || walletData.afriPoints < item.points}
+                        disabled={!item.available || afriPoints < item.points}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                          item.available && walletData.afriPoints >= item.points
+                          item.available && afriPoints >= item.points
                             ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}

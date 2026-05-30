@@ -2,48 +2,67 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { geometerServices, formatPrice } from '@/lib/mockData';
+import { useGeometers, useGeometerMissions } from '@/hooks/useGeotrust';
+
+interface Geometer {
+  id: string;
+  name: string;
+  avatar: string;
+  city: string;
+  country: string;
+  rating: number;
+  reviews: number;
+  certifications: string[];
+  missions: number;
+}
+
+interface Mission {
+  id: string;
+  propertyTitle: string;
+  status: string;
+  geometerId: string;
+  createdAt: string;
+}
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const geometers = [
-  {
-    id: 'g1',
-    name: 'Ing. Paul Dossou',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    city: 'Cotonou',
-    country: 'Bénin',
-    rating: 4.9,
-    reviews: 67,
-    certifications: ['Géomètre Expert', 'GeoTrust Certifié', 'Drone License'],
-    missions: 156,
-  },
-  {
-    id: 'g2',
-    name: 'Ing. Aïssatou Bah',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-    city: 'Abidjan',
-    country: 'Côte d\'Ivoire',
-    rating: 4.8,
-    reviews: 45,
-    certifications: ['Géomètre Expert', 'Topographe'],
-    missions: 89,
-  },
-  {
-    id: 'g3',
-    name: 'Ing. Komlan Agbéko',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    city: 'Lomé',
-    country: 'Togo',
-    rating: 4.7,
-    reviews: 34,
-    certifications: ['Géomètre Certifié', 'GeoTrust'],
-    missions: 67,
-  },
+// Static config — geometer service catalog (not DB data)
+const geometerServices = [
+  { id: 'geo-1', name: 'Vérification superficie', price: '50 000 FCFA', icon: '📐', description: 'Mesure précise de la superficie réelle du terrain' },
+  { id: 'geo-2', name: 'Inspection terrain', price: '75 000 FCFA', icon: '🔍', description: 'Inspection complète : limites, servitudes, risques' },
+  { id: 'geo-3', name: 'Bornage', price: '120 000 FCFA', icon: '📍', description: 'Bornage officiel avec pose de bornes' },
+  { id: 'geo-4', name: 'Drone mapping', price: '200 000 FCFA', icon: '🚁', description: 'Cartographie aérienne haute résolution' },
+  { id: 'geo-5', name: 'Certificat GeoTrust', price: '30 000 FCFA', icon: '✅', description: 'Certificat de conformité géométrique' },
+  { id: 'geo-6', name: 'Topographie complète', price: '350 000 FCFA', icon: '🗺️', description: 'Étude topographique complète avec plan' },
 ];
+
+function GeometerSkeleton() {
+  return (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border animate-pulse">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-14 h-14 rounded-full bg-gray-200" />
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 rounded w-28 mb-2" />
+          <div className="h-3 bg-gray-200 rounded w-20" />
+        </div>
+      </div>
+      <div className="flex gap-2 mb-3">
+        <div className="h-4 w-20 bg-gray-100 rounded-full" />
+        <div className="h-4 w-16 bg-gray-100 rounded-full" />
+      </div>
+      <div className="h-10 bg-gray-200 rounded-full" />
+    </div>
+  );
+}
 
 export default function GeoTrustModule() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
+
+  const { data: geometersData, isLoading: geometersLoading, error: geometersError } = useGeometers();
+  const { data: missionsData, isLoading: missionsLoading } = useGeometerMissions();
+
+  const geometers: Geometer[] = (geometersData?.geometers as Geometer[]) || [];
+  const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -93,44 +112,75 @@ export default function GeoTrustModule() {
         {/* Geometer Profiles */}
         <div>
           <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Nos Géomètres</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {geometers.map((geo, i) => (
-              <motion.div
-                key={geo.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <img src={geo.avatar} alt={geo.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#009CDE]" />
-                  <div>
-                    <h3 className="font-semibold text-[#2C2E2F]">{geo.name}</h3>
-                    <p className="text-xs text-gray-500">{geo.city}, {geo.country}</p>
+
+          {/* Loading State */}
+          {geometersLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <GeometerSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {geometersError && (
+            <div className="text-center py-12">
+              <span className="text-4xl block mb-3">⚠️</span>
+              <p className="text-gray-600 font-semibold mb-1">Impossible de charger les géomètres</p>
+              <p className="text-sm text-gray-400">{geometersError.message}</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!geometersLoading && !geometersError && geometers.length === 0 && (
+            <div className="text-center py-12">
+              <span className="text-4xl block mb-3">🗺️</span>
+              <p className="text-gray-600 font-semibold mb-1">Aucun géomètre disponible</p>
+              <p className="text-sm text-gray-400">Revenez plus tard</p>
+            </div>
+          )}
+
+          {/* Geometer Cards */}
+          {!geometersLoading && !geometersError && geometers.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {geometers.map((geo, i) => (
+                <motion.div
+                  key={geo.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
+                  className="bg-white rounded-3xl p-6 shadow-sm border"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <img src={geo.avatar} alt={geo.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#009CDE]" />
+                    <div>
+                      <h3 className="font-semibold text-[#2C2E2F]">{geo.name}</h3>
+                      <p className="text-xs text-gray-500">{geo.city}, {geo.country}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                  <span className="flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    {geo.rating} ({geo.reviews} avis)
-                  </span>
-                  <span>{geo.missions} missions</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {geo.certifications.map((cert) => (
-                    <span key={cert} className="px-2.5 py-1 bg-[#009CDE]/5 text-[#009CDE] text-[10px] font-medium rounded-full">
-                      {cert}
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {geo.rating} ({geo.reviews} avis)
                     </span>
-                  ))}
-                </div>
-                <button className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
-                  Demander un devis
-                </button>
-              </motion.div>
-            ))}
-          </div>
+                    <span>{geo.missions} missions</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {geo.certifications.map((cert) => (
+                      <span key={cert} className="px-2.5 py-1 bg-[#009CDE]/5 text-[#009CDE] text-[10px] font-medium rounded-full">
+                        {cert}
+                      </span>
+                    ))}
+                  </div>
+                  <button className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
+                    Demander un devis
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mission Workflow */}
