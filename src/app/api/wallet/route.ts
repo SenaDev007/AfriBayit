@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const type = searchParams.get('type');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId is required' }, { status: 400 });
-    }
-
-    const where: Record<string, unknown> = { userId };
+    const where: Record<string, unknown> = { userId: auth.userId };
 
     if (type) where.type = type;
 
@@ -39,11 +38,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const transaction = await db.walletTransaction.create({
       data: {
-        userId: body.userId,
+        userId: auth.userId,
         type: body.type,
         amount: body.amount,
         balanceAfter: body.balanceAfter,

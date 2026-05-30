@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+const REBECCA_SYSTEM_PROMPT = `You are Rebecca, the AI assistant for AfriBayit — Africa's premier real estate platform. You help users find properties, understand the buying process in West Africa, navigate escrow transactions, and connect with certified agents, notaries, and geometers. You are professional, warm, and knowledgeable about African real estate law (OHADA, Code Foncier). You speak French primarily but can switch to English or local languages. Never give binding legal advice — always recommend consulting a certified notary.`;
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -43,13 +45,22 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await request.json();
+    const { senderId, content, messageType } = body;
 
+    if (!content || !senderId) {
+      return NextResponse.json(
+        { error: 'senderId et content sont requis' },
+        { status: 400 }
+      );
+    }
+
+    // Save user message
     const message = await db.chatMessage.create({
       data: {
         conversationId: id,
-        senderId: body.senderId,
-        content: body.content,
-        messageType: body.messageType || 'text',
+        senderId,
+        content,
+        messageType: messageType || 'text',
         metadata: body.metadata ? JSON.stringify(body.metadata) : null,
       },
       include: {
@@ -64,6 +75,94 @@ export async function POST(
       where: { id },
       data: { updatedAt: new Date() },
     });
+
+    // Check if this is a Rebecca conversation - generate AI response
+    const conversation = await db.conversation.findUnique({
+      where: { id },
+    });
+
+    if (conversation?.type === 'rebecca') {
+      try {
+        // Fetch recent messages for context
+        const recentMessages = await db.chatMessage.findMany({
+          where: { conversationId: id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          include: {
+            sender: {
+              select: { id: true, name: true },
+            },
+          },
+        });
+
+        // Build conversation history for AI
+        const chatHistory = recentMessages
+          .reverse()
+          .map((msg) => ({
+            role: msg.senderId === senderId ? 'user' as const : 'assistant' as const,
+            content: msg.content,
+          }));
+
+        // Use z-ai-web-dev-sdk for AI response
+        const { default: ZAI } = await import('z-ai-web-dev-sdk');
+        const zai = new ZAI();
+
+        const aiResponse = await zai.chat.completions.create({
+          model: 'glm-4-flash',
+          messages: [
+            { role: 'system', content: REBECCA_SYSTEM_PROMPT },
+            ...chatHistory,
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        });
+
+        const aiContent = aiResponse.choices?.[0]?.message?.content || 
+          'Je suis Rebecca, votre assistante AfriBayit. Comment puis-je vous aider avec votre projet immobilier ?';
+
+        // Find or create Rebecca system user
+        let rebeccaUser = await db.user.findFirst({
+          where: { email: 'rebecca@afribayit.com' },
+        });
+
+        if (!rebeccaUser) {
+          rebeccaUser = await db.user.create({
+            data: {
+              email: 'rebecca@afribayit.com',
+              name: 'Rebecca IA',
+              role: 'admin',
+              verified: true,
+            },
+          });
+        }
+
+        // Save Rebecca's response
+        const rebeccaMessage = await db.chatMessage.create({
+          data: {
+            conversationId: id,
+            senderId: rebeccaUser.id,
+            content: aiContent,
+            messageType: 'text',
+            metadata: JSON.stringify({ aiGenerated: true, model: 'rebecca-ia' }),
+          },
+          include: {
+            sender: {
+              select: { id: true, name: true, avatar: true },
+            },
+          },
+        });
+
+        // Return both messages
+        return NextResponse.json({
+          userMessage: message,
+          rebeccaMessage,
+        }, { status: 201 });
+      } catch (aiError) {
+        console.error('Rebecca AI error:', aiError);
+        // Return just the user message if AI fails
+        return NextResponse.json(message, { status: 201 });
+      }
+    }
 
     return NextResponse.json(message, { status: 201 });
   } catch (error) {

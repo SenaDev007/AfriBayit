@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { transactionCreateSchema } from '@/lib/validations/transaction.schema';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const transactions = await db.transaction.findMany({
+      where: {
+        OR: [
+          { buyerId: auth.userId },
+          { sellerId: auth.userId },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
@@ -28,23 +39,34 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard({ requireKycLevel: 1 });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
+    const validated = transactionCreateSchema.parse(body);
 
     const transaction = await db.transaction.create({
       data: {
-        propertyId: body.propertyId,
-        buyerId: body.buyerId,
-        sellerId: body.sellerId,
-        amount: body.amount,
-        commission: body.commission || 0,
-        currency: body.currency || 'XOF',
+        propertyId: validated.propertyId,
+        buyerId: validated.buyerId,
+        sellerId: validated.sellerId,
+        amount: validated.amount,
+        commission: validated.commission,
+        currency: validated.currency,
         status: 'CREATED',
-        paymentProvider: body.paymentProvider,
+        notaryId: validated.notaryId,
+        geometerId: validated.geometerId,
       },
     });
 
     return NextResponse.json(transaction, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'issues' in error) {
+      return NextResponse.json(
+        { error: 'Données invalides', details: (error as { issues: unknown[] }).issues },
+        { status: 400 }
+      );
+    }
     console.error('Transaction creation error:', error);
     return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 });
   }

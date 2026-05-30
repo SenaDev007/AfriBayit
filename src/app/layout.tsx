@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import NextAuthProvider from "@/components/providers/NextAuthProvider";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
+import AppShell from "@/components/providers/AppShell";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -49,8 +52,14 @@ export default function RootLayout({
       <body
         className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable} font-body antialiased bg-background text-foreground`}
       >
-        {children}
-        <Toaster />
+        <NextAuthProvider>
+          <ReactQueryProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+            <Toaster />
+          </ReactQueryProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
