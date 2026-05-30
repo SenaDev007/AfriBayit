@@ -23,6 +23,12 @@ import AcademyModule from '@/components/afribayit/AcademyModule';
 import CommunityModule from '@/components/afribayit/CommunityModule';
 import NotificationsCenter from '@/components/afribayit/NotificationsCenter';
 import AnalyticsDashboard from '@/components/afribayit/AnalyticsDashboard';
+import NotaryModule from '@/components/afribayit/NotaryModule';
+import GuesthouseModule from '@/components/afribayit/GuesthouseModule';
+import WalletModule from '@/components/afribayit/WalletModule';
+import ProfessionalProfileModule from '@/components/afribayit/ProfessionalProfileModule';
+import SubscriptionsModule from '@/components/afribayit/SubscriptionsModule';
+import PropertyPublishModule from '@/components/afribayit/PropertyPublishModule';
 
 type Section =
   | 'home'
@@ -38,7 +44,13 @@ type Section =
   | 'hospitality'
   | 'academy'
   | 'community'
-  | 'analytics';
+  | 'analytics'
+  | 'notary'
+  | 'guesthouse'
+  | 'wallet'
+  | 'profile'
+  | 'subscriptions'
+  | 'publish';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -166,6 +178,52 @@ export default function AfriBayitApp() {
 
       case 'analytics':
         return <AnalyticsDashboard />;
+
+      case 'notary':
+        return <NotaryModule onNavigate={handleNavigate} />;
+
+      case 'guesthouse':
+        return <GuesthouseModule onNavigate={handleNavigate} />;
+
+      case 'wallet':
+        return isLoggedIn ? (
+          <WalletModule onNavigate={handleNavigate} />
+        ) : (
+          <div className="min-h-screen pt-20 flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="font-display text-2xl font-bold text-gray-400 mb-4">Connectez-vous</h2>
+              <button
+                onClick={() => setAuthMode('login')}
+                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold"
+              >
+                Se connecter
+              </button>
+            </div>
+          </div>
+        );
+
+      case 'profile':
+        return <ProfessionalProfileModule onNavigate={handleNavigate} />;
+
+      case 'subscriptions':
+        return <SubscriptionsModule onNavigate={handleNavigate} />;
+
+      case 'publish':
+        return isLoggedIn ? (
+          <PropertyPublishModule onNavigate={handleNavigate} />
+        ) : (
+          <div className="min-h-screen pt-20 flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="font-display text-2xl font-bold text-gray-400 mb-4">Réservé aux agents certifiés</h2>
+              <button
+                onClick={() => setAuthMode('login')}
+                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold"
+              >
+                Se connecter
+              </button>
+            </div>
+          </div>
+        );
 
       default:
         return null;

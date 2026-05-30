@@ -10,7 +10,11 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "db:seed": "DATABASE_URL=\"postgresql://neondb_owner:npg_VPlSR7Z9UiYD@ep-polished-glitter-agic460a-pooler.c-2.eu-central-1.aws.neon.tech/AfriBayit?sslmode=require\" tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "DATABASE_URL=\"postgresql://neondb_owner:npg_VPlSR7Z9UiYD@ep-polished-glitter-agic460a-pooler.c-2.eu-central-1.aws.neon.tech/AfriBayit?sslmode=require\" tsx prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
