@@ -1,0 +1,271 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-dm-mono);
+  --font-display: var(--font-cormorant);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* AfriBayit Custom Colors */
+  --color-navy: #003087;
+  --color-navy-light: #0047b3;
+  --color-navy-dark: #001f5c;
+  --color-blue-light: #009CDE;
+  --color-gold: #D4AF37;
+  --color-gold-light: #e6c65c;
+  --color-gold-dark: #b8961f;
+  --color-green-success: #00A651;
+  --color-red-attention: #D93025;
+  --color-gray-premium: #2C2E2F;
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: #FFFFFF;
+  --foreground: #2C2E2F;
+  --card: #FFFFFF;
+  --card-foreground: #2C2E2F;
+  --popover: #FFFFFF;
+  --popover-foreground: #2C2E2F;
+  --primary: #003087;
+  --primary-foreground: #FFFFFF;
+  --secondary: #f0f4f8;
+  --secondary-foreground: #2C2E2F;
+  --muted: #f5f7fa;
+  --muted-foreground: #6b7280;
+  --accent: #009CDE;
+  --accent-foreground: #FFFFFF;
+  --destructive: #D93025;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #003087;
+  --chart-1: #003087;
+  --chart-2: #009CDE;
+  --chart-3: #D4AF37;
+  --chart-4: #00A651;
+  --chart-5: #D93025;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #2C2E2F;
+  --sidebar-primary: #003087;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #f0f4f8;
+  --sidebar-accent-foreground: #2C2E2F;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #003087;
+}
+
+.dark {
+  --background: #0f1117;
+  --foreground: #f0f4f8;
+  --card: #1a1d24;
+  --card-foreground: #f0f4f8;
+  --popover: #1a1d24;
+  --popover-foreground: #f0f4f8;
+  --primary: #009CDE;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1e2330;
+  --secondary-foreground: #f0f4f8;
+  --muted: #1e2330;
+  --muted-foreground: #94a3b8;
+  --accent: #009CDE;
+  --accent-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.15);
+  --ring: #009CDE;
+  --chart-1: #009CDE;
+  --chart-2: #D4AF37;
+  --chart-3: #00A651;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --sidebar: #0f1117;
+  --sidebar-foreground: #f0f4f8;
+  --sidebar-primary: #009CDE;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1e2330;
+  --sidebar-accent-foreground: #f0f4f8;
+  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-ring: #009CDE;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* AfriBayit Custom Utilities */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-cormorant), Georgia, serif;
+  }
+  .font-body {
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
+  }
+  .font-mono-data {
+    font-family: var(--font-dm-mono), monospace;
+  }
+  .glass {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .glass-navy {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(0, 48, 135, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .glass-dark {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(15, 17, 23, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
+  }
+  .navy-shadow {
+    box-shadow: 0 4px 24px rgba(0, 48, 135, 0.12), 0 1px 4px rgba(0, 48, 135, 0.06);
+  }
+  .card-shadow {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+  .pill {
+    border-radius: 9999px;
+  }
+  .radius-card {
+    border-radius: 1.5rem;
+  }
+  .radius-search {
+    border-radius: 1.5rem;
+  }
+}
+
+/* Float Animation for Hero Cards */
+@keyframes float1 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(1deg); }
+  66% { transform: translateY(-6px) rotate(-1deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(-1deg); }
+  66% { transform: translateY(-16px) rotate(1deg); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-14px) rotate(1.5deg); }
+  66% { transform: translateY(-4px) rotate(-0.5deg); }
+}
+
+.animate-float-1 {
+  animation: float1 6s ease-in-out infinite;
+}
+.animate-float-2 {
+  animation: float2 7s ease-in-out infinite 0.5s;
+}
+.animate-float-3 {
+  animation: float3 5.5s ease-in-out infinite 1s;
+}
+
+/* Typing Indicator */
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+.typing-dot:nth-child(1) { animation: typing-dot 1.4s infinite 0s; }
+.typing-dot:nth-child(2) { animation: typing-dot 1.4s infinite 0.2s; }
+.typing-dot:nth-child(3) { animation: typing-dot 1.4s infinite 0.4s; }
+
+/* Pulse Gold */
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(212, 175, 55, 0); }
+}
+.animate-pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+/* Navy gradient */
+.bg-navy-gradient {
+  background: linear-gradient(135deg, #003087 0%, #001f5c 50%, #001440 100%);
+}
+
+/* Noise texture overlay */
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 48, 135, 0.2);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 48, 135, 0.4);
+}
+
+/* Price display */
+.price-display {
+  font-family: var(--font-dm-mono), monospace;
+  font-weight: 600;
+  color: #D4AF37;
+}
+
+/* AfriBayit transition */
+.transition-afribayit {
+  transition: cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -1,0 +1,201 @@
+'use client';
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { forumPosts, reputationLevels, currentUser } from '@/lib/mockData';
+
+const easeOut = [0.16, 1, 0.3, 1] as const;
+
+const tabs = [
+  { key: 'forum', label: 'Forum' },
+  { key: 'profiles', label: 'Profils Pro' },
+  { key: 'events', label: 'Événements' },
+];
+
+const events = [
+  { id: '1', title: 'Salon Immobilier Afrique 2025', date: '15 Mars 2025', location: 'Abidjan, CI', type: 'Salon', attendees: 2500 },
+  { id: '2', title: 'Masterclass Investissement', date: '22 Mars 2025', location: 'Cotonou, BJ', type: 'Workshop', attendees: 120 },
+  { id: '3', title: 'GeoTrust Summit', date: '5 Avril 2025', location: 'Lomé, TG', type: 'Conférence', attendees: 500 },
+  { id: '4', title: 'Formation Agent Certifié', date: '12 Avril 2025', location: 'En ligne', type: 'Formation', attendees: 200 },
+];
+
+export default function CommunityModule() {
+  const [activeTab, setActiveTab] = useState('forum');
+
+  const userRepLevel = reputationLevels.find(l => currentUser.score >= l.min && currentUser.score < l.max) || reputationLevels[0];
+
+  return (
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
+            🤝 AfriBayit Connect
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+            Communauté <span className="text-[#00A651]">Africaine</span>
+          </h1>
+          <p className="text-gray-500 max-w-lg mx-auto">
+            Connectez-vous avec des professionnels de l&apos;immobilier, partagez vos expériences, et développez votre réseau.
+          </p>
+        </motion.div>
+
+        {/* Reputation Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{userRepLevel.icon}</span>
+              <div>
+                <p className="text-sm font-semibold text-[#2C2E2F]">{userRepLevel.name}</p>
+                <p className="text-xs text-gray-500">{currentUser.score} points de réputation</p>
+              </div>
+            </div>
+            <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>
+              {userRepLevel.name}
+            </span>
+          </div>
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min((currentUser.score / 600) * 100, 100)}%`,
+                backgroundColor: userRepLevel.color,
+              }}
+            />
+          </div>
+          <div className="flex justify-between mt-1.5 text-[10px] text-gray-400">
+            {reputationLevels.map((level) => (
+              <span key={level.name}>{level.icon} {level.name}</span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Forum */}
+        {activeTab === 'forum' && (
+          <div className="space-y-3">
+            {forumPosts.map((post, i) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.08, ease: easeOut }}
+                className="bg-white rounded-2xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <img src={post.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm text-[#2C2E2F] mb-1">{post.title}</h3>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span className="font-medium text-[#003087]">{post.author}</span>
+                      <span className="px-2 py-0.5 bg-gray-100 rounded-full">{post.category}</span>
+                      <span>{post.replies} réponses</span>
+                      <span>{post.views} vues</span>
+                      <span className="text-gray-400">{post.lastActivity}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+            <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors">
+              + Nouveau sujet
+            </button>
+          </div>
+        )}
+
+        {/* Profiles */}
+        {activeTab === 'profiles' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { name: 'Kofi Mensah', role: 'Agent Immobilier', city: 'Cotonou', score: 580, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face', skills: ['Vente', 'Estimation', 'Négociation'] },
+              { name: 'Aminata Diallo', role: 'Agent Premium', city: 'Abidjan', score: 420, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face', skills: ['Luxe', 'Investissement', 'Expatriation'] },
+              { name: 'Fatou Diop', role: 'Architecte', city: 'Abidjan', score: 350, avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face', skills: ['Design', 'Construction', 'Durable'] },
+            ].map((profile, i) => {
+              const repLevel = reputationLevels.find(l => profile.score >= l.min && profile.score < l.max) || reputationLevels[0];
+              return (
+                <motion.div
+                  key={profile.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                  className="bg-white rounded-3xl p-6 shadow-sm border text-center"
+                >
+                  <img src={profile.avatar} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-[#D4AF37]" />
+                  <h3 className="font-semibold text-[#2C2E2F]">{profile.name}</h3>
+                  <p className="text-xs text-[#D4AF37] font-medium">{profile.role}</p>
+                  <p className="text-xs text-gray-500 mb-3">{profile.city}</p>
+                  <div className="flex items-center justify-center gap-1 mb-3">
+                    <span className="text-lg">{repLevel.icon}</span>
+                    <span className="text-xs font-semibold" style={{ color: repLevel.color }}>{repLevel.name}</span>
+                    <span className="text-xs text-gray-400">({profile.score} pts)</span>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-1.5 mb-4">
+                    {profile.skills.map((skill) => (
+                      <span key={skill} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-full">{skill}</span>
+                    ))}
+                  </div>
+                  <button className="px-6 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors">
+                    Voir le profil
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Events */}
+        {activeTab === 'events' && (
+          <div className="space-y-4">
+            {events.map((event, i) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.08, ease: easeOut }}
+                className="bg-white rounded-2xl p-5 shadow-sm border flex items-center gap-4"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#003087]/10 flex flex-col items-center justify-center shrink-0">
+                  <span className="text-lg font-bold text-[#003087]">{event.date.split(' ')[0]}</span>
+                  <span className="text-[10px] text-[#003087]/60">{event.date.split(' ')[1]}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-[#2C2E2F]">{event.title}</h3>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                    <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full font-medium">{event.type}</span>
+                    <span>{event.location}</span>
+                    <span>{event.attendees} participants</span>
+                  </div>
+                </div>
+                <button className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold shrink-0">
+                  S&apos;inscrire
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

@@ -1,0 +1,322 @@
+// AfriBayit — Prisma Schema
+// Plateforme Immobilière Pan-Africaine de Nouvelle Génération
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ USERS & AUTH ============
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phone         String?
+  name          String
+  avatar        String?
+  password      String?
+  role          String   @default("buyer") // buyer, seller, investor, tourist, artisan, agent, notary, geometer, admin
+  country       String?  // BJ, CI, BF, TG
+  city          String?
+  kycLevel      Int      @default(0) // 0=Anonyme, 1=Standard, 2=Avancé, 3=Pro
+  score         Int      @default(0) // 0-1000 reputation score
+  reputation    String   @default("Decouvreur") // Decouvreur, Acteur, Expert, Ambassadeur
+  bio           String?
+  specialties   String?  // JSON array
+  verified      Boolean  @default(false)
+  premiumTier   String?  // starter, essentiel, avance, elite
+  premiumExpiry DateTime?
+  walletBalance Float    @default(0)
+  escrowHeld    Float    @default(0)
+  pendingPayout Float    @default(0)
+  afriPoints    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  properties    Property[]
+  transactions  Transaction[]
+  listings      AgentListing[]
+  reviews       Review[]
+  courses       CourseEnrollment[]
+  posts         CommunityPost[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id           String @id @default(cuid())
+  provider     String // google, facebook, apple
+  providerId   String
+  userId       String
+  accessToken  String?
+  refreshToken String?
+  createdAt    DateTime @default(now())
+
+  @@unique([provider, providerId])
+  @@map("oauth_accounts")
+}
+
+// ============ PROPERTIES ============
+
+model Property {
+  id           String   @id @default(cuid())
+  title        String
+  type         String   // villa, appartement, terrain, bureau, commerce, chambre
+  transaction  String   // achat, location, investissement
+  price        Float
+  surface      Float
+  rooms        Int      @default(0)
+  bedrooms     Int      @default(0)
+  bathrooms    Int      @default(0)
+  city         String
+  country      String
+  quartier     String
+  description  String
+  features     String?  // JSON array
+  images       String?  // JSON array of URLs
+  lat          Float?
+  lng          Float?
+  verified     Boolean  @default(false)
+  geoTrust     Boolean  @default(false)
+  premium      Boolean  @default(false)
+  status       String   @default("draft") // draft, pending, published, sold, rented
+  views        Int      @default(0)
+  favorites    Int      @default(0)
+  agentId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  owner        User     @relation(fields: [agentId], references: [id])
+  transactionRecords Transaction[]
+
+  @@map("properties")
+}
+
+// ============ TRANSACTIONS & ESCROW ============
+
+model Transaction {
+  id              String   @id @default(cuid())
+  propertyId      String
+  buyerId         String
+  sellerId        String
+  amount          Float
+  commission      Float    @default(0)
+  currency        String   @default("XOF")
+  status          String   @default("CREATED") // CREATED, FUNDED, IN_PROGRESS, NOTARY_ASSIGNED, DEED_SIGNED, RELEASED, DISPUTED, REFUNDED, EXPIRED
+  escrowReference String?
+  paymentProvider String?
+  paymentRef      String?
+  conditions      String?  // JSON: release conditions config
+  notaryId        String?
+  geometerId      String?
+  disputeReason   String?
+  ledgerEntries   String?  // JSON array of ledger entry references
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  property        Property @relation(fields: [propertyId], references: [id])
+  buyer           User     @relation(fields: [buyerId], references: [id])
+
+  @@map("transactions")
+}
+
+// ============ AGENT LISTINGS ============
+
+model AgentListing {
+  id          String   @id @default(cuid())
+  agentId     String
+  propertyId  String
+  status      String   @default("active")
+  boostLevel  Float    @default(1.0) // 1.0, 1.5, 2.5, 4.0 based on premium tier
+  views       Int      @default(0)
+  contacts    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  agent       User     @relation(fields: [agentId], references: [id])
+
+  @@map("agent_listings")
+}
+
+// ============ REVIEWS ============
+
+model Review {
+  id          String   @id @default(cuid())
+  reviewerId  String
+  targetId    String
+  targetType  String   // agent, artisan, property, geometer
+  rating      Int      // 1-5
+  comment     String?
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  reviewer    User     @relation(fields: [reviewerId], references: [id])
+
+  @@map("reviews")
+}
+
+// ============ COURSES & ACADEMY ============
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  instructor  String
+  description String?
+  duration    String
+  price       Float    @default(0)
+  level       String   @default("debutant")
+  certificate Boolean  @default(false)
+  rating      Float    @default(0)
+  students    Int      @default(0)
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments CourseEnrollment[]
+
+  @@map("courses")
+}
+
+model CourseEnrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  progress    Float    @default(0)
+  completed   Boolean  @default(false)
+  certificate String?
+  enrolledAt  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  @@map("course_enrollments")
+}
+
+// ============ COMMUNITY ============
+
+model CommunityPost {
+  id          String   @id @default(cuid())
+  authorId    String
+  title       String
+  content     String?
+  category    String
+  country     String?
+  replies     Int      @default(0)
+  views       Int      @default(0)
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User     @relation(fields: [authorId], references: [id])
+
+  @@map("community_posts")
+}
+
+// ============ NOTIFICATIONS ============
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // transaction, message, alert, system, promotion, community
+  title       String
+  message     String
+  read        Boolean  @default(false)
+  actionUrl   String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+// ============ ARTISANS ============
+
+model Artisan {
+  id          String   @id @default(cuid())
+  userId      String
+  trade       String
+  specialties String?  // JSON array
+  certified   Boolean  @default(false)
+  available   Boolean  @default(true)
+  emergency   Boolean  @default(false)
+  priceRange  String?
+  portfolio   String?  // JSON array of images
+  rating      Float    @default(0)
+  reviews     Int      @default(0)
+  zone        String?
+  createdAt   DateTime @default(now())
+
+  @@map("artisans")
+}
+
+// ============ GEOTRUST ============
+
+model Geometer {
+  id              String   @id @default(cuid())
+  userId          String
+  licenseNumber   String
+  specialities    String?  // JSON array
+  certificationLevel String @default("standard") // standard, expert, elite
+  zone            String?
+  available       Boolean  @default(true)
+  rating          Float    @default(0)
+  missions        Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@map("geometers")
+}
+
+model GeoInspection {
+  id          String   @id @default(cuid())
+  propertyId  String
+  geometerId  String
+  serviceType String   // GEO_SURF, GEO_INSP, GEO_BORN, GEO_TOPO, GEO_DRON, GEO_CERT
+  status      String   @default("requested") // requested, scheduled, in_progress, completed
+  reportUrl   String?
+  result      String?  // VALIDATED, ALERT, REJECTED
+  price       Float
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@map("geo_inspections")
+}
+
+// ============ HOSPITALITY ============
+
+model Hotel {
+  id           String   @id @default(cuid())
+  name         String
+  city         String
+  country      String
+  stars        Int      @default(3)
+  rating       Float    @default(0)
+  pricePerNight Float
+  amenities    String?  // JSON array
+  images       String?  // JSON array
+  available    Boolean  @default(true)
+  connectionLevel Int   @default(1) // 1=OTA, 2=Hors-reseau, 3=Guesthouse
+  createdAt    DateTime @default(now())
+
+  @@map("hotels")
+}
+
+model HotelBooking {
+  id          String   @id @default(cuid())
+  hotelId     String
+  userId      String
+  checkIn     DateTime
+  checkOut    DateTime
+  guests      Int      @default(1)
+  totalPrice  Float
+  status      String   @default("pending") // pending, confirmed, checked_in, completed, cancelled
+  bookingRef  String?
+  createdAt   DateTime @default(now())
+
+  @@map("hotel_bookings")
+}
