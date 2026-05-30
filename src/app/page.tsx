@@ -2,7 +2,12 @@
 
 import HeroSection from '@/components/afribayit/HeroSection';
 import TrustSection from '@/components/afribayit/TrustSection';
+import HowItWorks from '@/components/afribayit/HowItWorks';
+import PaysCouverts from '@/components/afribayit/PaysCouverts';
 import FeaturedProperties from '@/components/afribayit/FeaturedProperties';
+import ModulesSection from '@/components/afribayit/ModulesSection';
+import TestimonialsSection from '@/components/afribayit/TestimonialsSection';
+import CTABanner from '@/components/afribayit/CTABanner';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import { useState } from 'react';
 import RebeccaChat from '@/components/afribayit/RebeccaChat';
@@ -19,10 +24,15 @@ export default function HomePage() {
         onOpenRebecca={() => setIsRebeccaOpen(true)}
       />
       <TrustSection />
+      <HowItWorks />
+      <PaysCouverts />
       <FeaturedProperties
         onSelectProperty={onSelectProperty}
         onNavigate={onNavigate}
       />
+      <ModulesSection />
+      <TestimonialsSection />
+      <CTABanner onNavigate={onNavigate} />
 
       {/* Rebecca Chat Widget */}
       <RebeccaChat isOpen={isRebeccaOpen} onClose={() => setIsRebeccaOpen(false)} />

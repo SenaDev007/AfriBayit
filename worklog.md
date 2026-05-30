@@ -341,3 +341,188 @@ Stage Summary:
 - Database seeded with comprehensive test data across 35+ tables
 - Auth guards on all mutating routes
 - Critical security fixes: KYC validation admin-only, escrow ledger participant check
+
+---
+Task ID: 1
+Agent: Landing Page Refactor Agent
+Task: Refactor AfriBayit Hero Section and Landing Page with new sections, stats API, and filter bar
+
+Work Log:
+
+## 1. Created Stats API Endpoint
+- Created `/home/z/my-project/src/app/api/stats/route.ts`
+- Queries 6 Prisma models in parallel: Property (published), Transaction (completed), User (agents/admins), Artisan (certified), Course (published), Review (positive)
+- Counts distinct countries from published properties
+- Computes satisfaction percentage from positive vs total reviews
+- Returns JSON: { properties, transactions, countries, agents, satisfaction, artisans, courses }
+- Falls back gracefully on database errors
+
+## 2. Refactored HeroSection
+- Added animated mesh gradient background with 3 floating gradient orbs (framer-motion)
+- Added 6 floating particle dots for depth
+- Added CSS-only animated mesh gradient overlay
+- Glassmorphism search bar with gradient border glow (animated pulse)
+- Added country selector dropdown (Pays) with COUNTRIES_CONFIG options
+- Added animated counters (AnimatedCounter component) for stats from /api/stats
+- Floating property cards now fetch real data from useProperties hook (2 premium properties)
+- Rebecca IA card enhanced with pulsing AI border and ping animation ring
+- Staggered reveal animations with blur-to-clear transitions
+- All text uses font-display, font-body, font-mono-data classes per CDC
+
+## 3. Created New Landing Page Sections
+- **HowItWorks.tsx**: 4-step visual process (Trouvez → Vérifiez → Sécurisez → Propriétaire) with numbered circles, icons, descriptions, staggered animations
+- **PaysCouverts.tsx**: 4 pilot countries (BJ, CI, BF, TG) with flag emojis, real listing counts from API, city tags, hover effects
+- **ModulesSection.tsx**: 6 platform modules (Immobilier, Guesthouses, Hôtellerie, Artisans BTP, Académie, Communauté) with icons, descriptions, hover arrows
+- **TestimonialsSection.tsx**: Fetches real reviews from /api/reviews API, displays with star ratings, fallback testimonials when DB empty
+- **CTABanner.tsx**: Full-width gradient banner with navy gradient, gold CTA button with glow, "Explorer les biens" + "Publier une annonce" buttons
+
+## 4. Updated Page.tsx
+- Added all new sections between TrustSection and FeaturedProperties:
+  HeroSection → TrustSection → HowItWorks → PaysCouverts → FeaturedProperties → ModulesSection → TestimonialsSection → CTABanner
+- Removed inline CTA from FeaturedProperties (now standalone CTABanner at bottom)
+- Kept RebeccaChat FAB button as-is
+
+## 5. Improved FeaturedProperties
+- Added filter bar with 5 tabs: Tout, Villas, Appartements, Terrains, Bureaux
+- Client-side filtering by property type using useMemo
+- Active tab styled with navy bg, inactive with white bg and border
+- Empty state message adapts to active filter
+- Increased limit from 6 to 12 to have more filterable data
+
+## 6. Build Verification
+- ESLint: 0 errors
+- Next.js build: ✓ Compiled successfully, all routes generated
+- Dev server: running on port 3000, serving pages correctly
+- New /api/stats route visible in build output
+
+Stage Summary:
+- 1 new API endpoint: /api/stats
+- 5 new section components: HowItWorks, PaysCouverts, ModulesSection, TestimonialsSection, CTABanner
+- 2 components fully refactored: HeroSection, FeaturedProperties
+- 1 component updated: page.tsx (new section order)
+- All data comes from database (no hardcoded stats or properties)
+- Follows CDC design system: colors, typography, glassmorphism, animations
+- Zero lint errors, successful production build
+
+---
+Task ID: 2
+Agent: CDC Gaps Implementation Agent
+Task: Implement Key CDC Gaps — Escrow State Machine, Rebecca AI Tools, Legal Docs, Onboarding, Property Publish Validation
+
+Work Log:
+
+## Gap 1: Escrow State Machine — Full CDC §5.0bis.4 Implementation
+
+### EscrowFlow.tsx (Complete Rewrite)
+- Replaced simplified 6-state timeline with full 12-state machine per CDC spec
+- Normal flow: CREATED → FUNDED → DOCS_VALIDATED → GEOTRUST_VALIDATED → NOTARY_ASSIGNED → NOTARY_IN_PROGRESS → DEED_SIGNED → ANDF_REGISTERED → RELEASED
+- Exception states: DISPUTED, REFUNDED, EXPIRED
+- Each state has: visual indicator (checkmark when complete, gold highlight for current, grayed for future), description text, timestamp display
+- Added state machine legend panel with all states and descriptions
+- Added interactive state selector for demo/testing
+- Added current state description banner with contextual colors (green for success, red for dispute, blue for normal)
+- Added exception states panel that shows when DISPUTED/REFUNDED/EXPIRED is active
+- Pulsing animation ring on current state indicator
+- Animated transitions between state changes
+
+### Escrow API Route (New File: /api/escrow/[id]/route.ts)
+- Created GET endpoint: fetches escrow transaction with property, buyer, escrow account, ledger, and timeline events
+- Created PATCH endpoint: transitions escrow state with full validation
+  - VALID_TRANSITIONS map defining allowed forward transitions from each state
+  - DISPUTED can be reached from any ACTIVE state (not just those in explicit transition list)
+  - Terminal states (RELEASED, REFUNDED, EXPIRED) block further transitions
+  - Returns 422 for invalid transitions with helpful error messages showing valid options
+  - Role-based authorization: specific transitions require specific actor types (notary, geometer, buyer, seller, admin)
+  - Automatic timestamp updates for state changes (escrowFundedAt, notaryAssignedAt, deedSignedAt, andfRegisteredAt, escrowReleasedAt)
+  - Creates TransactionTimeline entries for audit trail
+  - Human-readable transition descriptions in French
+  - Escrow account status updates on DISPUTED/REFUNDED transitions
+
+## Gap 2: Rebecca AI — Tool Calling / Function Calling (CDC §8.2.1)
+
+### RebeccaChat.tsx (Major Enhancement)
+- Added Quick Actions panel with 5 buttons matching CDC tools:
+  - "Rechercher un bien" → search_properties
+  - "Suivi escrow" → check_escrow_status
+  - "Contacter un agent" → contact_agent
+  - "Devis artisan" → request_geometer
+  - "Prix du marché" → get_market_prices
+- Each quick action pre-fills a detailed message in the chat
+- Added tool call indicator: shows which Rebecca tool was invoked (blue badge with gear icon)
+- Added Rebecca's 7 tool definitions (search_properties, get_property_details, check_escrow_status, book_hotel, request_geometer, contact_agent, get_market_prices)
+- Enhanced typing indicator: replaced static dots with animated bouncing dots using framer-motion
+- Added "Rebecca écrit..." label with avatar during typing
+- Added conversation history with proper message bubbles:
+  - User messages on right with navy background
+  - Rebecca messages on left with Rebecca avatar, name, and timestamp
+- Added show/hide toggle for quick actions panel
+- Bot replies now include tool call metadata and richer responses with escrow status details and market price data
+
+## Gap 3: Country-Specific Legal Document Requirements (CDC §10B)
+
+### New File: /src/lib/legal-docs.ts
+- LEGAL_DOCS_BY_COUNTRY: 4 countries × 5 property types = 20 configurations
+  - BJ (Bénin): terrain, villa, appartement, bureau, commerce
+  - CI (Côte d'Ivoire): terrain, villa, appartement, bureau, commerce
+  - BF (Burkina Faso): terrain, villa, appartement, bureau, commerce
+  - TG (Togo): terrain, villa, appartement, bureau, commerce
+- LEGAL_DOC_LABELS: 13 document types with French labels
+- LEGAL_DOC_DESCRIPTIONS: Detailed French descriptions for each document type
+- COUNTRY_NAMES: Code → display name mapping
+- COUNTRY_NAME_TO_CODE: Display name → code mapping
+- getRequiredDocs(country, propertyType): Returns required docs for a country+type combo, falls back to ['titre_foncier']
+- getDocLabel(docType): Returns display label for a doc type
+- getDocDescription(docType): Returns description for a doc type
+- normalizeCountryCode(country): Handles both codes and display names
+
+## Gap 4: Onboarding Flow (CDC §4.2)
+
+### New File: /src/components/afribayit/OnboardingFlow.tsx
+- 7-step onboarding flow per CDC spec:
+  1. Welcome & platform discovery (animated logo, feature grid, platform intro)
+  2. Profile type selection (Acheteur / Vendeur / Investisseur / Touriste / Artisan)
+  3. Geographic preferences (4 countries with flags, city selection per country)
+  4. Budget and personalized goals (min/max range, presets, 6 goal options)
+  5. Alert and notification configuration (3 frequencies, 4 channels)
+  6. Interactive tour of the interface (6 feature cards with staggered animations)
+  7. Activation of personal AI assistant (Rebecca toggle, capability grid, summary)
+- Full-page overlay with sticky progress bar (7 colored segments)
+- Smooth slide transitions (left/right) with AnimatePresence
+- Back/Next navigation with proper canProceed() validation per step
+- Budget presets: < 10M, 10M-50M, 50M-100M, > 100M FCFA
+- Step dots at bottom for quick navigation awareness
+- Saves all data to local OnboardingData state (ready for API submission)
+- Responsive design (mobile-first)
+
+## Gap 5: PropertyPublishModule — Legal Doc Validation (CDC §5.0.2)
+
+### PropertyPublishModule.tsx (Major Update)
+- Expanded from 5 to 7 publish steps per CDC §5.0.2:
+  Saisie → Description → Photos → Documents → Vérification IA → Validation → Publication
+- Step 4 (Documents) now uses getRequiredDocs() from legal-docs.ts:
+  - Dynamically shows required docs based on country + property type
+  - Each doc shows: label, description, required badge, upload zone
+  - "Documents en attente de vérification" status after upload
+  - Upload progress bar with count (e.g., "2/3 documents requis")
+  - Visual state: green when all uploaded, gold when pending
+  - Remove document option
+  - AI verification notice specific to the selected country
+- Step 5 (Vérification IA): Simulated AI document analysis with confidence scores
+- Step 6 (Validation): Enhanced review with legal docs detail, doc upload status per required doc
+- Step 7 (Publication): Confirmation screen with document readiness status
+- Step 1 now shows a preview of required docs when city + property type are selected
+- canProceed() for Step 4 requires all required docs to be uploaded
+- Cities now include countryCode for proper legal-docs lookup
+
+Stage Summary:
+- 1 new file: src/lib/legal-docs.ts (legal document configuration module)
+- 1 new file: src/app/api/escrow/[id]/route.ts (escrow state machine API with GET + PATCH)
+- 1 new file: src/components/afribayit/OnboardingFlow.tsx (7-step onboarding)
+- 3 files majorly updated: EscrowFlow.tsx, RebeccaChat.tsx, PropertyPublishModule.tsx
+- Full escrow state machine with 12 states, validated transitions, audit trail
+- Rebecca AI with 7 CDC tools, quick actions panel, animated typing indicator
+- Country-specific legal document validation for 4 countries × 5 property types
+- Complete onboarding flow with 7 steps and data collection
+- Property publishing enforces legal document uploads per country/type
+- ESLint: 0 errors
+- Next.js build: ✓ Compiled successfully

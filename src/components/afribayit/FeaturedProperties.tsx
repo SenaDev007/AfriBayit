@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,14 @@ interface FeaturedPropertiesProps {
   onSelectProperty: (id: string) => void;
   onNavigate: (section: string) => void;
 }
+
+const filterTabs = [
+  { key: 'all', label: 'Tout' },
+  { key: 'villa', label: 'Villas' },
+  { key: 'appartement', label: 'Appartements' },
+  { key: 'terrain', label: 'Terrains' },
+  { key: 'bureau', label: 'Bureaux' },
+];
 
 function PropertyCardSkeleton() {
   return (
@@ -38,17 +46,27 @@ function PropertyCardSkeleton() {
 }
 
 export default function FeaturedProperties({ onSelectProperty, onNavigate }: FeaturedPropertiesProps) {
-  const { data, isLoading, isError } = useProperties({ limit: 6 });
+  const [activeFilter, setActiveFilter] = useState('all');
+  const { data, isLoading, isError } = useProperties({ limit: 12 });
+
+  // Get all properties
+  const allProperties = data?.properties || [];
 
   // Filter for premium/verified properties from the API response
-  const featured = (data?.properties || [])
+  const featured = allProperties
     .filter(p => p.premium || p.verified)
-    .slice(0, 6);
+    .slice(0, 12);
 
-  // If no premium/verified, show the first 6 published properties
-  const displayProperties = featured.length > 0
+  // If no premium/verified, show the first published properties
+  const baseProperties = featured.length > 0
     ? featured
-    : (data?.properties || []).slice(0, 6);
+    : allProperties.slice(0, 12);
+
+  // Apply client-side type filter
+  const displayProperties = useMemo(() => {
+    if (activeFilter === 'all') return baseProperties.slice(0, 6);
+    return baseProperties.filter(p => p.type === activeFilter).slice(0, 6);
+  }, [baseProperties, activeFilter]);
 
   return (
     <section className="py-16 sm:py-24 bg-gray-50/50">
@@ -58,10 +76,10 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="flex flex-col sm:flex-row sm:items-end justify-between mb-10"
+          className="flex flex-col sm:flex-row sm:items-end justify-between mb-8"
         >
           <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
               Sélection Premium
             </span>
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
@@ -71,13 +89,36 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           <motion.button
             whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="mt-4 sm:mt-0 text-[#003087] text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+            className="mt-4 sm:mt-0 text-[#003087] text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all font-body"
           >
             Voir tous les biens
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
+        </motion.div>
+
+        {/* Filter Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1, ease: easeOut }}
+          className="flex flex-wrap gap-2 mb-8"
+        >
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveFilter(tab.key)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all font-body ${
+                activeFilter === tab.key
+                  ? 'bg-[#003087] text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#003087]/30 hover:text-[#003087]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </motion.div>
 
         {/* Loading State */}
@@ -98,7 +139,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               </svg>
             </div>
             <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Erreur de chargement</h3>
-            <p className="text-sm text-gray-400">Impossible de charger les biens en vedette. Veuillez réessayer.</p>
+            <p className="text-sm text-gray-400 font-body">Impossible de charger les biens en vedette. Veuillez réessayer.</p>
           </div>
         )}
 
@@ -111,7 +152,11 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               </svg>
             </div>
             <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Aucun bien en vedette</h3>
-            <p className="text-sm text-gray-400">Les biens premium apparaîtront ici prochainement.</p>
+            <p className="text-sm text-gray-400 font-body">
+              {activeFilter !== 'all'
+                ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
+                : 'Les biens premium apparaîtront ici prochainement.'}
+            </p>
           </div>
         )}
 
@@ -128,46 +173,6 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             ))}
           </div>
         )}
-
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: easeOut }}
-          className="mt-16 p-8 sm:p-12 rounded-3xl bg-navy-gradient noise-overlay relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/20 to-transparent pointer-events-none" />
-          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
-            <div className="flex-1 text-center lg:text-left">
-              <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">
-                Prêt à trouver votre bien idéal ?
-              </h3>
-              <p className="text-white/70 max-w-lg">
-                Rejoignez des milliers de propriétaires et acheteurs qui font confiance à AfriBayit
-                pour leurs transactions immobilières en Afrique de l&apos;Ouest.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => onNavigate('search')}
-                className="px-8 py-3.5 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full font-semibold text-sm shadow-lg gold-glow transition-colors"
-              >
-                Explorer les biens
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => onNavigate('academy')}
-                className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-semibold text-sm border border-white/20 transition-colors"
-              >
-                En savoir plus
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

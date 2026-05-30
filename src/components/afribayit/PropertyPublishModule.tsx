@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCreateProperty } from '@/hooks/useProperties';
+import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/legal-docs';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -27,14 +28,14 @@ const transactionTypes = [
   { value: 'investissement', label: 'Investissement', icon: '📈' },
 ];
 
-// Static config — cities
+// Static config — cities with country codes
 const cities = [
-  { value: 'cotonou', label: 'Cotonou', country: 'Bénin' },
-  { value: 'abidjan', label: 'Abidjan', country: "Côte d'Ivoire" },
-  { value: 'lome', label: 'Lomé', country: 'Togo' },
-  { value: 'ouagadougou', label: 'Ouagadougou', country: 'Burkina Faso' },
-  { value: 'porto-novo', label: 'Porto-Novo', country: 'Bénin' },
-  { value: 'yamoussoukro', label: 'Yamoussoukro', country: "Côte d'Ivoire" },
+  { value: 'cotonou', label: 'Cotonou', countryCode: 'BJ', country: 'Bénin' },
+  { value: 'abidjan', label: 'Abidjan', countryCode: 'CI', country: "Côte d'Ivoire" },
+  { value: 'lome', label: 'Lomé', countryCode: 'TG', country: 'Togo' },
+  { value: 'ouagadougou', label: 'Ouagadougou', countryCode: 'BF', country: 'Burkina Faso' },
+  { value: 'porto-novo', label: 'Porto-Novo', countryCode: 'BJ', country: 'Bénin' },
+  { value: 'yamoussoukro', label: 'Yamoussoukro', countryCode: 'CI', country: "Côte d'Ivoire" },
 ];
 
 // Static config — features list
@@ -44,48 +45,15 @@ const featuresList = [
   'Cuisine équipée', 'Terrasse', 'Balcon', 'Forage', 'Dépendance',
 ];
 
-// Static config — legal docs by country
-const legalDocsByCountry: Record<string, { value: string; label: string; required: boolean }[]> = {
-  'Bénin': [
-    { value: 'titre_foncier', label: 'Titre Foncier', required: true },
-    { value: 'acd', label: 'ACD (Arrêté de Concession Définitive)', required: false },
-    { value: 'permis_construire', label: 'Permis de Construire', required: false },
-    { value: 'certificat_urbanisme', label: "Certificat d'Urbanisme", required: false },
-  ],
-  "Côte d'Ivoire": [
-    { value: 'titre_foncier', label: 'Titre Foncier', required: true },
-    { value: 'jugement_hommologation', label: "Jugement d'Homologation", required: false },
-    { value: 'permis_construire', label: 'Permis de Construire', required: false },
-    { value: 'certificat_conformite', label: 'Certificat de Conformité', required: false },
-  ],
-  'Togo': [
-    { value: 'titre_foncier', label: 'Titre Foncier', required: true },
-    { value: 'convention_bail', label: 'Convention de Bail', required: false },
-    { value: 'permis_construire', label: 'Permis de Construire', required: false },
-  ],
-  'Burkina Faso': [
-    { value: 'titre_foncier', label: 'Titre Foncier', required: true },
-    { value: 'acf', label: 'ACF (Arrêté de Concession Foncière)', required: false },
-    { value: 'permis_construire', label: 'Permis de Construire', required: false },
-    { value: 'plan_parcellaire', label: 'Plan Parcellaire', required: false },
-  ],
-};
-
-// Static config — publish steps
+// Publish steps — CDC §5.0.2: Saisie → Upload Documents → Vérification IA → Validation → Publication
 const publishSteps = [
-  { step: 1, title: 'Informations', desc: 'Type, prix, surface, localisation', icon: '📋' },
+  { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: '📋' },
   { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: '✍️' },
   { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: '📸' },
-  { step: 4, title: 'Documents', desc: 'Titres et documents légaux', icon: '📄' },
-  { step: 5, title: 'Validation', desc: 'Révision et soumission', icon: '✅' },
-];
-
-// Static config — validation status
-const validationStatus = [
-  { step: 'Soumission', status: 'completed', date: '12 Mar 2025 14:30' },
-  { step: 'Vérification IA documents', status: 'in_progress', date: '' },
-  { step: 'Validation humaine', status: 'pending', date: '' },
-  { step: 'Publication', status: 'pending', date: '' },
+  { step: 4, title: 'Documents', desc: 'Upload documents légaux requis', icon: '📄' },
+  { step: 5, title: 'Vérification IA', desc: 'Validation automatique des documents', icon: '🤖' },
+  { step: 6, title: 'Validation', desc: 'Révision et soumission', icon: '✅' },
+  { step: 7, title: 'Publication', desc: 'Mise en ligne du bien', icon: '🎉' },
 ];
 
 interface FormData {
@@ -102,7 +70,7 @@ interface FormData {
   description: string;
   features: string[];
   photos: string[];
-  legalDocs: { type: string; file: string }[];
+  legalDocs: { type: string; file: string; status: string }[];
 }
 
 const initialFormData: FormData = {
@@ -131,8 +99,14 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
   const createPropertyMutation = useCreateProperty();
 
   const selectedCity = cities.find(c => c.value === formData.city);
-  const selectedCountry = selectedCity?.country || '';
-  const legalDocs = legalDocsByCountry[selectedCountry] || [];
+  const selectedCountryCode = selectedCity?.countryCode || '';
+  const selectedCountryName = selectedCity?.country || '';
+
+  // Use legal-docs.ts to get required docs based on country + property type
+  const requiredDocs = useMemo(() => {
+    if (!selectedCountryCode || !formData.propertyType) return [];
+    return getRequiredDocs(selectedCountryCode, formData.propertyType);
+  }, [selectedCountryCode, formData.propertyType]);
 
   const updateField = useCallback((field: keyof FormData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -160,17 +134,34 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
       ...prev,
       legalDocs: prev.legalDocs.find(d => d.type === docType)
         ? prev.legalDocs
-        : [...prev.legalDocs, { type: docType, file: 'uploaded' }],
+        : [...prev.legalDocs, { type: docType, file: 'uploaded', status: 'pending_verification' }],
     }));
   }, []);
+
+  const removeLegalDoc = useCallback((docType: string) => {
+    setFormData(prev => ({
+      ...prev,
+      legalDocs: prev.legalDocs.filter(d => d.type !== docType),
+    }));
+  }, []);
+
+  // Check if all required docs are uploaded
+  const allRequiredDocsUploaded = useMemo(() => {
+    if (requiredDocs.length === 0) return false;
+    return requiredDocs.every(docType =>
+      formData.legalDocs.some(d => d.type === docType)
+    );
+  }, [requiredDocs, formData.legalDocs]);
 
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 1: return !!(formData.propertyType && formData.transactionType && formData.price && formData.surface && formData.city);
       case 2: return !!(formData.title && formData.description);
       case 3: return formData.photos.length > 0;
-      case 4: return formData.legalDocs.length > 0;
-      case 5: return true;
+      case 4: return allRequiredDocsUploaded;
+      case 5: return true; // AI verification is automatic
+      case 6: return true; // Review step
+      case 7: return true; // Publication
       default: return false;
     }
   };
@@ -187,7 +178,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         bedrooms: Number(formData.bedrooms) || 0,
         bathrooms: Number(formData.bathrooms) || 0,
         city: selectedCity?.label || formData.city,
-        country: selectedCountry,
+        country: selectedCountryName,
         quartier: formData.quartier,
         title: formData.title,
         description: formData.description,
@@ -222,12 +213,17 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             </motion.div>
             <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">Annonce soumise !</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Votre bien est en cours de vérification. Vous serez notifié une fois publié.
+              Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.
             </p>
 
-            {/* Validation Timeline */}
+            {/* Publication Timeline */}
             <div className="text-left space-y-3 mb-6">
-              {validationStatus.map((vs, i) => (
+              {[
+                { step: 'Soumission', status: 'completed', icon: '📤' },
+                { step: 'Vérification IA documents', status: 'in_progress', icon: '🤖' },
+                { step: 'Validation humaine', status: 'pending', icon: '👤' },
+                { step: 'Publication', status: 'pending', icon: '🎉' },
+              ].map((vs, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
                     vs.status === 'completed' ? 'bg-[#00A651] text-white' :
@@ -237,8 +233,9 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     {vs.status === 'completed' ? '✓' : vs.status === 'in_progress' ? '⏳' : (i + 1)}
                   </div>
                   <div>
-                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#2C2E2F]'}`}>{vs.step}</p>
-                    {vs.date && <p className="text-[10px] text-gray-400">{vs.date}</p>}
+                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#2C2E2F]'}`}>
+                      {vs.icon} {vs.step}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -266,33 +263,33 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            📝 Publier un bien — CDC §5.0
+            📝 Publier un bien — CDC §5.0.2
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
             Nouvelle <span className="text-[#003087]">Annonce</span>
           </h1>
         </motion.div>
 
-        {/* Stepper */}
-        <div className="flex items-center gap-1 mb-8">
+        {/* Stepper — Updated with 7 steps per CDC §5.0.2 */}
+        <div className="flex items-center gap-0.5 mb-8 overflow-x-auto pb-2">
           {publishSteps.map((s, i) => (
-            <div key={s.step} className="flex items-center flex-1">
+            <div key={s.step} className="flex items-center flex-1 min-w-0">
               <div className="flex flex-col items-center flex-1">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                   currentStep > s.step ? 'bg-[#00A651] text-white' :
                   currentStep === s.step ? 'bg-[#003087] text-white' :
                   'bg-gray-100 text-gray-400'
                 }`}>
                   {currentStep > s.step ? '✓' : s.step}
                 </div>
-                <p className={`text-[9px] font-medium mt-1 text-center ${
+                <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
                   currentStep >= s.step ? 'text-[#003087]' : 'text-gray-400'
                 }`}>
                   {s.title}
                 </p>
               </div>
               {i < publishSteps.length - 1 && (
-                <div className={`h-0.5 flex-1 mx-1 rounded ${
+                <div className={`h-0.5 flex-1 mx-0.5 rounded ${
                   currentStep > s.step ? 'bg-[#00A651]' : 'bg-gray-200'
                 }`} />
               )}
@@ -403,6 +400,18 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder="Ex: Ganhi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                 </div>
+
+                {/* Legal doc preview */}
+                {selectedCountryCode && formData.propertyType && (
+                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
+                    <p className="text-xs font-semibold text-[#D4AF37] mb-1">📄 Documents requis détectés</p>
+                    <p className="text-[10px] text-gray-500">
+                      Pour {COUNTRY_NAMES[selectedCountryCode] || selectedCountryCode} — {propertyTypes.find(p => p.value === formData.propertyType)?.label} :
+                      {' '}{requiredDocs.map(d => getDocLabel(d)).join(', ')}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-1">Vous pourrez les télécharger à l&apos;étape 4</p>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -498,73 +507,190 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
               </motion.div>
             )}
 
-            {/* Step 4: Legal Documents */}
+            {/* Step 4: Legal Documents — Using legal-docs.ts */}
             {currentStep === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Documents légaux</h2>
+                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Documents légaux requis</h2>
                   <p className="text-xs text-gray-500">
-                    {selectedCountry
-                      ? `Documents requis pour ${selectedCountry}`
-                      : "Sélectionnez d'abord une ville pour voir les documents requis"}
+                    {selectedCountryCode && formData.propertyType
+                      ? `Documents requis pour ${COUNTRY_NAMES[selectedCountryCode] || selectedCountryName} — ${propertyTypes.find(p => p.value === formData.propertyType)?.label}`
+                      : "Sélectionnez d'abord une ville et un type de bien"}
                   </p>
                 </div>
 
-                {selectedCountry ? (
-                  <div className="space-y-3">
-                    {legalDocs.map(doc => {
-                      const isUploaded = formData.legalDocs.find(d => d.type === doc.value);
-                      return (
-                        <div key={doc.value} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              isUploaded ? 'bg-[#00A651]/10' : 'bg-gray-100'
-                            }`}>
-                              <span className="text-sm">{isUploaded ? '✅' : '📄'}</span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-[#2C2E2F]">{doc.label}</p>
-                              <p className="text-[10px] text-gray-400">
-                                {doc.required ? 'Obligatoire' : 'Recommandé'} · PDF, JPG, PNG (max 10 Mo)
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => addLegalDoc(doc.value)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                              isUploaded ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#003087] text-white hover:bg-[#0047b3]'
+                {selectedCountryCode && formData.propertyType ? (
+                  <>
+                    {/* Required docs list */}
+                    <div className="space-y-3">
+                      {requiredDocs.map((docType, i) => {
+                        const isUploaded = formData.legalDocs.find(d => d.type === docType);
+                        const docLabel = getDocLabel(docType);
+                        const docDesc = getDocDescription(docType);
+                        return (
+                          <motion.div
+                            key={docType}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className={`p-4 rounded-2xl border-2 transition-all ${
+                              isUploaded ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-gray-100'
                             }`}
                           >
-                            {isUploaded ? '✓ Ajouté' : 'Ajouter'}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                            <div className="flex items-start gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                                isUploaded ? 'bg-[#00A651]/10' : 'bg-gray-100'
+                              }`}>
+                                {isUploaded ? (
+                                  <svg className="w-5 h-5 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                ) : (
+                                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-semibold text-[#2C2E2F]">{docLabel}</p>
+                                  <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">REQUIS</span>
+                                </div>
+                                {docDesc && <p className="text-[10px] text-gray-400 mt-0.5">{docDesc}</p>}
+                                <p className="text-[10px] text-gray-400 mt-0.5">PDF, JPG, PNG — max 10 Mo</p>
+                                {/* Upload zone */}
+                                {!isUploaded ? (
+                                  <button
+                                    onClick={() => addLegalDoc(docType)}
+                                    className="mt-2 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+                                  >
+                                    📄 Télécharger le document
+                                  </button>
+                                ) : (
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <span className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-semibold rounded-full">
+                                      ⏳ Documents en attente de vérification
+                                    </span>
+                                    <button
+                                      onClick={() => removeLegalDoc(docType)}
+                                      className="text-[10px] text-[#D93025] hover:underline"
+                                    >
+                                      Supprimer
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Upload progress summary */}
+                    <div className={`p-4 rounded-2xl ${
+                      allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className={`text-sm font-semibold ${
+                          allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'
+                        }`}>
+                          {allRequiredDocsUploaded ? '✅ Tous les documents requis sont téléchargés' : '⏳ Documents en attente de vérification'}
+                        </p>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            allRequiredDocsUploaded ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
+                          }`}
+                          style={{ width: `${(formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length / Math.max(requiredDocs.length, 1)) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-1">
+                        {formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length} / {requiredDocs.length} documents requis
+                      </p>
+                    </div>
+
+                    {/* AI Verification Notice */}
+                    <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">🤖</span>
+                        <p className="text-sm font-semibold text-[#009CDE]">Vérification IA automatique</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Après soumission, nos algorithmes vérifieront automatiquement l&apos;authenticité
+                        et la conformité de vos documents selon les exigences légales de {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}.
+                      </p>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center p-8 bg-gray-50 rounded-2xl">
-                    <p className="text-sm text-gray-400">Veuillez d&apos;abord sélectionner une ville à l&apos;étape 1</p>
+                    <p className="text-sm text-gray-400">Veuillez d&apos;abord sélectionner une ville et un type de bien aux étapes précédentes</p>
+                    <button
+                      onClick={() => setCurrentStep(1)}
+                      className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold"
+                    >
+                      Retour à l&apos;étape 1
+                    </button>
                   </div>
                 )}
+              </motion.div>
+            )}
 
-                {/* AI Verification Status */}
-                <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">🤖</span>
-                    <p className="text-sm font-semibold text-[#009CDE]">Vérification IA automatique</p>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Nos algorithmes vérifieront automatiquement l&apos;authenticité de vos documents après soumission.
-                  </p>
+            {/* Step 5: AI Verification (auto) */}
+            {currentStep === 5 && (
+              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                <div>
+                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Vérification IA des documents</h2>
+                  <p className="text-xs text-gray-500">Nos algorithmes analysent vos documents en temps réel</p>
+                </div>
+
+                {/* Simulated AI verification */}
+                <div className="space-y-3">
+                  {requiredDocs.map((docType, i) => {
+                    const doc = formData.legalDocs.find(d => d.type === docType);
+                    const isVerified = doc?.status === 'ai_verified';
+                    // Simulate AI verification progress
+                    const simulatedScore = 70 + Math.floor(Math.random() * 28);
+                    return (
+                      <div key={docType} className="p-4 bg-gray-50 rounded-2xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-semibold text-[#2C2E2F]">{getDocLabel(docType)}</p>
+                          {doc ? (
+                            <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
+                              {isVerified ? '✓ Vérifié' : '⏳ En attente'}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">Manquant</span>
+                          )}
+                        </div>
+                        {doc && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className="h-1.5 rounded-full bg-[#009CDE] transition-all"
+                                style={{ width: `${simulatedScore}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-gray-500 font-mono">{simulatedScore}%</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-3 bg-[#009CDE]/5 rounded-xl text-xs text-[#009CDE]">
+                  💡 La vérification IA analyse l&apos;authenticité des documents, la cohérence des données,
+                  et la conformité avec les exigences légales locales. Une validation humaine suivra.
                 </div>
               </motion.div>
             )}
 
-            {/* Step 5: Review & Submit */}
-            {currentStep === 5 && (
-              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+            {/* Step 6: Validation / Review */}
+            {currentStep === 6 && (
+              <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Révision & Soumission</h2>
+                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Révision & Validation</h2>
                   <p className="text-xs text-gray-500">Vérifiez les informations avant de publier</p>
                 </div>
 
@@ -614,25 +740,81 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                       <p className="text-[10px] text-gray-400">Photos</p>
                       <p className="text-sm font-bold text-[#2C2E2F]">{formData.photos.length}/20</p>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-xl">
+                    <div className={`p-3 rounded-xl ${allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'}`}>
                       <p className="text-[10px] text-gray-400">Documents légaux</p>
-                      <p className="text-sm font-bold text-[#2C2E2F]">{formData.legalDocs.length} fichier(s)</p>
+                      <p className={`text-sm font-bold ${allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
+                        {formData.legalDocs.length} / {requiredDocs.length} requis
+                      </p>
                     </div>
                   </div>
+                  {/* Legal docs detail */}
+                  {selectedCountryCode && (
+                    <div className="p-3 bg-gray-50 rounded-xl">
+                      <p className="text-[10px] text-gray-400 mb-2">Documents légaux — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
+                      <div className="space-y-1.5">
+                        {requiredDocs.map(docType => {
+                          const isUploaded = formData.legalDocs.some(d => d.type === docType);
+                          return (
+                            <div key={docType} className="flex items-center gap-2 text-xs">
+                              <span className={isUploaded ? 'text-[#00A651]' : 'text-[#D93025]'}>
+                                {isUploaded ? '✓' : '✗'}
+                              </span>
+                              <span className={isUploaded ? 'text-[#2C2E2F]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Publication Timeline */}
                 <div className="p-4 bg-[#003087]/5 rounded-2xl">
                   <p className="text-xs font-semibold text-[#003087] mb-2">Processus après soumission</p>
                   <div className="space-y-2">
-                    {validationStatus.map((vs, i) => (
+                    {[
+                      { icon: '📤', text: 'Soumission de l\'annonce' },
+                      { icon: '🤖', text: 'Vérification IA documents' },
+                      { icon: '👤', text: 'Validation humaine' },
+                      { icon: '🎉', text: 'Publication' },
+                    ].map((item, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="text-xs">{vs.step === 'Vérification IA documents' ? '🤖' : vs.step === 'Validation humaine' ? '👤' : vs.step === 'Soumission' ? '📤' : '🎉'}</span>
-                        <span className="text-xs text-gray-600">{vs.step}</span>
+                        <span className="text-xs">{item.icon}</span>
+                        <span className="text-xs text-gray-600">{item.text}</span>
                       </div>
                     ))}
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {/* Step 7: Publication Confirmation */}
+            {currentStep === 7 && (
+              <motion.div key="step7" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="text-center py-6">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+                  className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4"
+                >
+                  <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                  </svg>
+                </motion.div>
+                <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Prêt à publier ?</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.
+                </p>
+                {allRequiredDocsUploaded ? (
+                  <div className="p-3 bg-[#00A651]/5 rounded-xl mb-4">
+                    <p className="text-xs text-[#00A651] font-semibold">✅ Tous les documents légaux requis sont fournis</p>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
+                    <p className="text-xs text-[#D4AF37] font-semibold">⚠️ Certains documents requis sont manquants</p>
+                    <p className="text-[10px] text-gray-500 mt-1">Vous pouvez quand même soumettre, mais la publication sera retardée</p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -651,7 +833,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => {
-                if (currentStep < 5) setCurrentStep(currentStep + 1);
+                if (currentStep < 7) setCurrentStep(currentStep + 1);
                 else handleSubmit();
               }}
               disabled={!canProceed() || createPropertyMutation.isPending}
@@ -659,7 +841,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             >
               {createPropertyMutation.isPending
                 ? 'Soumission en cours...'
-                : currentStep === 5 ? "Soumettre l'annonce" : 'Continuer'
+                : currentStep === 7 ? "Soumettre l'annonce" : 'Continuer'
               }
             </motion.button>
           </div>
