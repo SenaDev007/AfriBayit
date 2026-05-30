@@ -30,8 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (keep .env.example for documentation)
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # vercel
 .vercel
@@ -52,3 +55,15 @@ prompt
 server.log
 # Skills directory
 /skills/
+# Agent context
+/agent-ctx/
+# Upload directory (local only)
+/upload/
+# Download directory (local only)
+/download/
+# DB
+/db/
+# Examples
+/examples/
+# Caddy
+Caddyfile
