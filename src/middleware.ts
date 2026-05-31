@@ -11,18 +11,11 @@ export default withAuth({
 
       // Admin routes require admin role or accreditation
       if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
-        // Allow if user role is admin (legacy support)
         if (token?.role === 'admin') return true;
-
-        // Allow if user has SUPER_ADMIN or COUNTRY_ADMIN accreditation
-        // The accreditation check is done client-side and in API routes
-        // For middleware, we check the role stored in the token
         const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string;
         if (accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN') {
           return true;
         }
-
-        // Fallback: allow admin role
         return token?.role === 'admin';
       }
 
@@ -31,6 +24,19 @@ export default withAuth({
     },
   },
 });
+
+// Note: Security features (rate limiting, CORS, security headers, honeypot detection)
+// are applied in the following ways:
+// 1. Rate limiting — via withRateLimit() wrapper in individual API routes
+// 2. CORS — via getCorsHeaders() in API routes
+// 3. Security headers — via getSecurityHeaders() in API routes
+// 4. Honeypot detection — via checkHoneypot() in form-handling API routes
+// 5. RBAC — via requirePermission() in API routes
+// 6. Tenant guard — via addTenantFilter() in data-access API routes
+//
+// This approach is necessary because Next.js middleware with `withAuth`
+// runs before the request reaches the API route, and adding additional
+// response processing would conflict with the auth middleware.
 
 export const config = {
   matcher: [
@@ -50,6 +56,7 @@ export const config = {
     '/api/subscriptions/:path*',
     '/api/transactions/:path*',
     '/api/chat/:path*',
+    '/api/messages/:path*',
     '/api/favorites/:path*',
     '/api/kyc/:path*',
     '/api/notifications/:path*',

@@ -1,17 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { apiFetch, apiPost, apiPatch, apiDelete } from '@/lib/api';
 
-export function useNotifications(userId?: string, country?: string, page = 1, limit = 20) {
+export function useNotifications(userId?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
-  if (userId) params.set('userId', userId);
   params.set('page', String(page));
   params.set('limit', String(limit));
-  if (country) params.set('country', country);
 
   return useQuery({
-    queryKey: ['notifications', userId, country, page, limit],
-    queryFn: () => apiFetch<{ notifications: unknown[]; pagination: unknown }>(`/api/notifications?${params.toString()}`),
+    queryKey: ['notifications', userId, page, limit],
+    queryFn: () => apiFetch<{ notifications: unknown[]; unreadCount: number; pagination: unknown }>(`/api/notifications?${params.toString()}`),
     enabled: !!userId,
+    refetchInterval: 30000, // Poll every 30s for new notifications
   });
 }
 
@@ -22,6 +21,33 @@ export function useMarkNotificationRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+  });
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiDelete(`/api/notifications/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useMarkAllRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (category?: string) => apiPost('/api/notifications/mark-all-read', { category }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useNotificationPreferences() {
+  return useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: () => apiFetch<{ data: Record<string, unknown> }>('/api/notifications/preferences'),
   });
 }
 

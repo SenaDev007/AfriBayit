@@ -71,6 +71,10 @@ model User {
   hotelBookings    HotelBooking[]
   guesthouseBookings GuesthouseBooking[]
   accreditations   CountryAccreditation[]
+  quizAttempts     QuizAttempt[]
+  certificates     Certificate[]
+  afriPointTxns    AfriPointTransaction[]
+  ambassador       Ambassador?
 
   @@map("users")
 }
@@ -438,6 +442,8 @@ model Course {
   updatedAt     DateTime @updatedAt
 
   enrollments   CourseEnrollment[]
+  quizzes       Quiz[]
+  certificates_rel Certificate[]
 
   @@map("courses")
 }
@@ -1260,4 +1266,150 @@ model CountryAccreditation {
 
   @@unique([userId, country])
   @@map("country_accreditations")
+}
+
+// ============ SAVED SEARCHES & ALERTS ============
+
+model SavedSearch {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  filters       String   // JSON: SearchFilters object
+  lastCheckedAt DateTime?
+  newMatches    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("saved_searches")
+}
+
+model PriceAlert {
+  id              String   @id @default(cuid())
+  userId          String
+  filters         String   // JSON: SearchFilters object
+  notifyVia       String   @default("email") // email, push, sms, whatsapp
+  frequency       String   @default("daily") // instant, daily, weekly
+  active          Boolean  @default(true)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("price_alerts")
+}
+
+// ============ QUIZ & ASSESSMENTS ============
+
+model Quiz {
+  id            String   @id @default(cuid())
+  courseId      String
+  title         String
+  description   String?
+  timeLimit     Int      @default(30)
+  passingScore  Int      @default(70)
+  maxAttempts   Int      @default(3)
+  questions     Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course        Course      @relation(fields: [courseId], references: [id])
+  attempts      QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  quizId      String
+  userId      String
+  answers     Json
+  score       Int
+  maxScore    Int
+  percent     Int
+  passed      Boolean
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("quiz_attempts")
+}
+
+// ============ CERTIFICATES ============
+
+model Certificate {
+  id              String   @id @default(cuid())
+  certificateId   String   @unique
+  userId          String
+  courseId        String
+  enrollmentId    String?
+  type            String   @default("course_completion") // course_completion, workshop, masterclass
+  recipientName   String
+  courseName      String
+  instructorName  String
+  pdfUrl          String?
+  pdfBase64       String?
+  issuedAt        DateTime @default(now())
+  verified        Boolean  @default(true)
+
+  user            User     @relation(fields: [userId], references: [id])
+  course          Course   @relation(fields: [courseId], references: [id])
+
+  @@map("certificates")
+}
+
+// ============ AFRIPOINTS ============
+
+model AfriPointTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // earn, spend
+  action      String   // post_created, quiz_passed, course_completed, boost_listing_7d, etc.
+  points      Int
+  balanceAfter Int
+  metadata    String?  // JSON
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("afripoint_transactions")
+}
+
+// ============ AMBASSADOR PROGRAM ============
+
+model Ambassador {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  tier            String   @default("bronze") // bronze, silver, gold
+  referralCode    String   @unique
+  referralLink    String?
+  commissionRate  Float    @default(0.05)
+  totalReferrals  Int      @default(0)
+  totalEarnings   Float    @default(0)
+  status          String   @default("active") // active, pending, suspended
+  appliedAt       DateTime @default(now())
+  approvedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  commissions     AmbassadorCommission[]
+
+  @@map("ambassadors")
+}
+
+model AmbassadorCommission {
+  id              String   @id @default(cuid())
+  ambassadorId    String
+  referredUserId  String
+  transactionId   String?
+  amount          Float
+  commissionRate  Float
+  status          String   @default("pending") // pending, paid, cancelled
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+
+  ambassador      Ambassador @relation(fields: [ambassadorId], references: [id])
+
+  @@map("ambassador_commissions")
 }

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
+import { LocaleProvider } from "@/lib/i18n/context";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -35,6 +36,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
     title: "AfriBayit — La Plateforme Immobilière Africaine",
     description: "Où l'Afrique trouve sa maison. Où les rêves deviennent adresses.",
@@ -55,10 +57,12 @@ export default function RootLayout({
       >
         <NextAuthProvider>
           <ReactQueryProvider>
-            <AppShell>
-              {children}
-            </AppShell>
-            <Toaster />
+            <LocaleProvider>
+              <AppShell>
+                {children}
+              </AppShell>
+              <Toaster />
+            </LocaleProvider>
           </ReactQueryProvider>
         </NextAuthProvider>
       </body>

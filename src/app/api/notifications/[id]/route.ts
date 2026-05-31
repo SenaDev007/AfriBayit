@@ -2,36 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const auth = await authGuard();
-    if (!auth.success) return auth.response;
-
-    const { id } = await params;
-
-    const notification = await db.notification.findUnique({
-      where: { id },
-    });
-
-    if (!notification) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
-    }
-
-    // Users can only view their own notifications
-    if (notification.userId !== auth.userId && auth.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    return NextResponse.json({ data: notification });
-  } catch (error) {
-    console.error('Notification detail API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch notification' }, { status: 500 });
-  }
-}
-
+// PATCH /api/notifications/[id] — Mark notification as read
 export async function PATCH(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -47,7 +18,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
 
-    // Users can only mark their own notifications as read
     if (existing.userId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -64,6 +34,7 @@ export async function PATCH(
   }
 }
 
+// DELETE /api/notifications/[id] — Dismiss/delete notification
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -79,7 +50,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
 
-    // Users can only delete their own notifications
     if (existing.userId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

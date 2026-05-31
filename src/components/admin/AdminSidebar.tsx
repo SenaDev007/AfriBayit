@@ -19,6 +19,8 @@ import {
   Home,
   KeyRound,
   Settings,
+  DollarSign,
+  Cable,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -47,6 +49,7 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Tableau de bord', href: '/admin/dashboard', icon: LayoutDashboard },
       { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+      { label: 'Revenus', href: '/admin/revenue', icon: DollarSign },
     ],
   },
   {
@@ -54,6 +57,7 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
+      { label: 'OTA Config', href: '/admin/ota', icon: Cable },
     ],
   },
 ];

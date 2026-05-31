@@ -43,12 +43,38 @@ interface Event {
   attendees: number;
 }
 
-// Static config — reputation levels
+// Niveaux de gamification AfriPoints
+const afriPointLevels = [
+  { name: 'Bronze', min: 0, icon: '🥉', color: '#CD7F32' },
+  { name: 'Argent', min: 200, icon: '🥈', color: '#C0C0C0' },
+  { name: 'Or', min: 500, icon: '🥇', color: '#FFD700' },
+  { name: 'Platine', min: 1500, icon: '💎', color: '#E5E4E2' },
+  { name: 'Diamant', min: 5000, icon: '💠', color: '#B9F2FF' },
+];
+
+// Niveaux de réputation
 const reputationLevels = [
   { name: 'Découvreur', min: 0, max: 100, color: '#6b7280', icon: '🌱' },
   { name: 'Acteur', min: 100, max: 300, color: '#009CDE', icon: '⭐' },
   { name: 'Expert', min: 300, max: 600, color: '#00A651', icon: '🏆' },
   { name: 'Ambassadeur', min: 600, max: Infinity, color: '#D4AF37', icon: '👑' },
+];
+
+// Badges disponibles
+const badges = [
+  { id: 'first_post', name: 'Premier pas', icon: '✍️', description: 'Premier sujet publié', earned: true },
+  { id: 'helper', name: 'Bon samaritain', icon: '🤝', description: '5 réponses utiles', earned: false },
+  { id: 'reviewer', name: 'Critique immobilier', icon: '⭐', description: '3 avis publiés', earned: false },
+  { id: 'networker', name: 'Réseauteur', icon: '🌐', description: '10 connexions', earned: false },
+  { id: 'student', name: 'Étudiant', icon: '📚', description: '1 cours complété', earned: true },
+  { id: 'certified', name: 'Certifié', icon: '🏅', description: '1 certificat obtenu', earned: false },
+];
+
+// Tiers ambassadeur
+const ambassadorTiers = [
+  { tier: 'Bronze', commission: '5%', icon: '🥉', color: '#CD7F32', benefits: ['Lien de parrainage', 'Commission 5%', 'Dashboard ambassadeur'] },
+  { tier: 'Argent', commission: '10%', icon: '🥈', color: '#C0C0C0', benefits: ['Tous les avantages Bronze', 'Commission 10%', 'Page personnalisée', 'Support prioritaire'] },
+  { tier: 'Or', commission: '15%', icon: '🥇', color: '#FFD700', benefits: ['Tous les avantages Argent', 'Commission 15%', 'Événements co-brandés', 'Accès VIP formations'] },
 ];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -57,6 +83,8 @@ const tabs = [
   { key: 'forum', label: 'Forum' },
   { key: 'profiles', label: 'Profils Pro' },
   { key: 'events', label: 'Événements' },
+  { key: 'points', label: 'AfriPoints' },
+  { key: 'ambassador', label: 'Ambassadeur' },
 ];
 
 function PostSkeleton() {
@@ -123,11 +151,18 @@ export default function CommunityModule() {
   const groups: Group[] = (groupsData?.groups as Group[]) || [];
   const events: Event[] = (eventsData?.events as Event[]) || [];
 
-  // Derive user score from user data — fallback to 0 if not available
+  // Dérive le score utilisateur
   const currentUserScore = (user as Record<string, unknown> & { reputationScore?: number })?.reputationScore
     ? Number((user as Record<string, unknown> & { reputationScore?: number }).reputationScore)
     : 0;
   const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
+
+  // AfriPoints simulés (sera connecté à l'API)
+  const userAfriPoints = (user as Record<string, unknown> & { afriPoints?: number })?.afriPoints
+    ? Number((user as Record<string, unknown> & { afriPoints?: number }).afriPoints)
+    : 0;
+  const afriLevel = afriPointLevels.filter(l => userAfriPoints >= l.min).pop() || afriPointLevels[0];
+  const nextLevel = afriPointLevels.find(l => l.min > userAfriPoints);
 
   const handleCreatePost = () => {
     if (!user) {
@@ -202,48 +237,110 @@ export default function CommunityModule() {
           </span>
         </div>
 
-        {/* Reputation Bar */}
+        {/* Reputation + AfriPoints Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{userRepLevel.icon}</span>
-              <div>
-                <p className="text-sm font-semibold text-[#2C2E2F]">{userRepLevel.name}</p>
-                <p className="text-xs text-gray-500">{currentUserScore} points de réputation</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Réputation */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{userRepLevel.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-[#2C2E2F]">{userRepLevel.name}</p>
+                    <p className="text-xs text-gray-500">{currentUserScore} pts de réputation</p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>
+                  {userRepLevel.name}
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${Math.min((currentUserScore / 600) * 100, 100)}%`,
+                    backgroundColor: userRepLevel.color,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1 text-[9px] text-gray-400">
+                {reputationLevels.slice(0, 3).map((level) => (
+                  <span key={level.name}>{level.icon} {level.name}</span>
+                ))}
               </div>
             </div>
-            <span className="text-xs font-medium px-3 py-1 rounded-full" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>
-              {userRepLevel.name}
-            </span>
+
+            {/* AfriPoints */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{afriLevel.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-[#2C2E2F]">AfriPoints</p>
+                    <p className="text-xs text-gray-500">{userAfriPoints} points</p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>
+                  {afriLevel.name}
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all bg-gradient-to-r from-[#D4AF37] to-[#003087]"
+                  style={{
+                    width: nextLevel ? `${Math.min((userAfriPoints / nextLevel.min) * 100, 100)}%` : '100%',
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1 text-[9px] text-gray-400">
+                {afriPointLevels.slice(0, 4).map((level) => (
+                  <span key={level.name}>{level.icon} {level.name}</span>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${Math.min((currentUserScore / 600) * 100, 100)}%`,
-                backgroundColor: userRepLevel.color,
-              }}
-            />
-          </div>
-          <div className="flex justify-between mt-1.5 text-[10px] text-gray-400">
-            {reputationLevels.map((level) => (
-              <span key={level.name}>{level.icon} {level.name}</span>
+
+          {/* Badges */}
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {badges.filter(b => b.earned).map((badge) => (
+              <span
+                key={badge.id}
+                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]"
+                title={badge.description}
+              >
+                {badge.icon} {badge.name}
+              </span>
             ))}
+            {badges.filter(b => !b.earned).map((badge) => (
+              <span
+                key={badge.id}
+                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300"
+                title={badge.description}
+              >
+                🔒 {badge.name}
+              </span>
+            ))}
+          </div>
+
+          {/* AI Moderation notice */}
+          <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#009CDE]/5 rounded-xl">
+            <span className="text-xs">🤖</span>
+            <span className="text-[10px] text-[#009CDE] font-medium">Modéré par Rebecca IA — Contenu vérifié automatiquement</span>
           </div>
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -352,7 +449,7 @@ export default function CommunityModule() {
                     ))}
                   </div>
                   <button
-                    onClick={() => router.push(`/profile/${profile.userId || profile.id}`)}
+                    onClick={() => router.push(`/pro/${(profile.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`)}
                     className="px-6 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     Voir le profil
@@ -415,6 +512,154 @@ export default function CommunityModule() {
               </motion.div>
             ))}
           </div>
+        )}
+
+        {/* AfriPoints */}
+        {activeTab === 'points' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-5"
+          >
+            {/* Solde AfriPoints */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border text-center">
+              <span className="text-4xl block mb-2">{afriLevel.icon}</span>
+              <p className="font-mono text-3xl font-bold text-[#D4AF37]">{userAfriPoints}</p>
+              <p className="text-sm text-gray-500 mb-1">AfriPoints</p>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>
+                Niveau {afriLevel.name}
+              </span>
+              {nextLevel && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Plus que <span className="font-semibold text-[#003087]">{nextLevel.min - userAfriPoints} points</span> pour atteindre le niveau {nextLevel.name}
+                </p>
+              )}
+            </div>
+
+            {/* Gagner des points */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">💰 Gagner des AfriPoints</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { action: 'Profil complété', points: 50, icon: '👤' },
+                  { action: 'Sujet publié', points: 5, icon: '✍️' },
+                  { action: 'Avis publié', points: 10, icon: '⭐' },
+                  { action: 'Cours complété', points: 25, icon: '📚' },
+                  { action: 'Quiz réussi', points: 10, icon: '✅' },
+                  { action: 'Certificat obtenu', points: 15, icon: '🏅' },
+                  { action: 'Parrainage', points: 100, icon: '🤝' },
+                  { action: 'Événement participé', points: 15, icon: '🎉' },
+                ].map((item) => (
+                  <div key={item.action} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+                    <span className="text-xl">{item.icon}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-[#2C2E2F]">{item.action}</p>
+                      <p className="text-xs text-[#D4AF37] font-semibold">+{item.points} pts</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Dépenser des points */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">🛒 Dépenser des AfriPoints</h3>
+              <div className="space-y-3">
+                {[
+                  { item: 'Boost annonce 7 jours', cost: 200, icon: '🚀' },
+                  { item: 'Boost annonce 30 jours', cost: 500, icon: '🚀' },
+                  { item: 'Fonctionnalité premium', cost: 100, icon: '✨' },
+                  { item: 'Réduction cours 10%', cost: 150, icon: '📖' },
+                  { item: 'Réduction cours 25%', cost: 300, icon: '📖' },
+                ].map((item) => (
+                  <div key={item.item} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{item.icon}</span>
+                      <p className="text-sm font-medium text-[#2C2E2F]">{item.item}</p>
+                    </div>
+                    <span className="px-3 py-1 bg-[#003087]/10 text-[#003087] text-xs font-semibold rounded-full">
+                      {item.cost} pts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Ambassador Program */}
+        {activeTab === 'ambassador' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-5"
+          >
+            {/* Hero Ambassador */}
+            <div className="bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-3xl p-6 text-white text-center">
+              <span className="text-4xl block mb-2">👑</span>
+              <h3 className="font-display text-xl font-bold mb-2">Programme Ambassadeur</h3>
+              <p className="text-sm text-white/70 mb-4">
+                Représentez AfriBayit dans votre communauté et gagnez des commissions sur chaque filleul.
+              </p>
+              <button
+                onClick={() => {
+                  if (!user) {
+                    toast({ title: 'Connexion requise', description: 'Veuillez vous connecter pour devenir ambassadeur.' });
+                    return;
+                  }
+                  toast({ title: 'Candidature envoyée', description: 'Votre demande sera examinée sous 48h.' });
+                }}
+                className="px-6 py-2.5 bg-[#D4AF37] text-[#003087] rounded-full text-sm font-bold hover:bg-[#e5c349] transition-colors"
+              >
+                Devenir Ambassadeur
+              </button>
+            </div>
+
+            {/* Tiers */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {ambassadorTiers.map((tier, i) => (
+                <motion.div
+                  key={tier.tier}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1, ease: easeOut }}
+                  className="bg-white rounded-3xl p-5 shadow-sm border text-center"
+                >
+                  <span className="text-3xl block mb-2">{tier.icon}</span>
+                  <h4 className="font-bold text-[#2C2E2F] mb-1">{tier.tier}</h4>
+                  <p className="text-lg font-mono font-bold mb-3" style={{ color: tier.color }}>
+                    {tier.commission}
+                  </p>
+                  <div className="space-y-1.5">
+                    {tier.benefits.map((b) => (
+                      <p key={b} className="text-xs text-gray-500">✓ {b}</p>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Comment ça marche */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Comment ça marche ?</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { step: '1', title: 'Inscrivez-vous', desc: 'Remplissez le formulaire de candidature ambassadeur', icon: '📝' },
+                  { step: '2', title: 'Partagez votre lien', desc: 'Diffusez votre lien de parrainage unique', icon: '🔗' },
+                  { step: '3', title: 'Gagnez des commissions', desc: 'Recevez des commissions sur chaque filleul actif', icon: '💰' },
+                ].map((s) => (
+                  <div key={s.step} className="text-center p-4 bg-gray-50 rounded-2xl">
+                    <span className="text-2xl block mb-2">{s.icon}</span>
+                    <div className="w-8 h-8 rounded-full bg-[#003087] text-white text-sm font-bold flex items-center justify-center mx-auto mb-2">
+                      {s.step}
+                    </div>
+                    <p className="text-sm font-semibold text-[#2C2E2F] mb-1">{s.title}</p>
+                    <p className="text-xs text-gray-500">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {/* New Post Dialog */}

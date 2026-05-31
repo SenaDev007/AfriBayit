@@ -1,6 +1,6 @@
 'use client';
 
-import SearchResults from '@/components/afribayit/SearchResults';
+import EnhancedSearchResults from '@/components/afribayit/EnhancedSearchResults';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -12,7 +12,7 @@ function SearchContent() {
 
   return (
     <div className="pt-20 min-h-screen">
-      <SearchResults
+      <EnhancedSearchResults
         initialTab={tab}
         onSelectProperty={onSelectProperty}
       />

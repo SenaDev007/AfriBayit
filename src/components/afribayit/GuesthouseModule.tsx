@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGuesthouses, useGuesthouse, useGuesthouseBookings, useCreateBooking } from '@/hooks/useGuesthouses';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -251,6 +251,8 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const [bookingCheckOut, setBookingCheckOut] = useState('');
   const [bookingGuests, setBookingGuests] = useState(1);
   const [bookingBreakfast, setBookingBreakfast] = useState(false);
+  const [dynamicPrice, setDynamicPrice] = useState<number | null>(null);
+  const [cancellationPolicy, setCancellationPolicy] = useState<string>('Flexible — Annulation gratuite 24h avant');
 
   // List query
   const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses(undefined, selectedCountry);
@@ -322,6 +324,37 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
     setShowBookingDialog(true);
   };
 
+  // Calculate dynamic price when dates change
+  useEffect(() => {
+    let cancelled = false;
+    if (!bookingRoom || !bookingCheckIn || !bookingCheckOut) return;
+    (async () => {
+      try {
+        const resp = await fetch('/api/hotels/pricing/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            basePrice: bookingRoom.basePrice,
+            checkIn: bookingCheckIn,
+            checkOut: bookingCheckOut,
+            country: activeDetail?.country || 'BJ',
+            includeBreakdown: false,
+          }),
+        });
+        if (resp.ok && !cancelled) {
+          const data = await resp.json();
+          setDynamicPrice(data.dynamicPrice);
+          if (data.season === 'haute') setCancellationPolicy('Modérée — Annulation gratuite 5 jours avant');
+          else if (data.season === 'basse') setCancellationPolicy('Flexible — Annulation gratuite 24h avant');
+          else setCancellationPolicy('Flexible — Annulation gratuite 24h avant');
+        }
+      } catch {
+        // Fallback to base price
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [bookingRoom, bookingCheckIn, bookingCheckOut, activeDetail]);
+
   // Submit booking
   const handleSubmitBooking = () => {
     if (!bookingRoom || !bookingCheckIn || !bookingCheckOut || !effectiveGhId) return;
@@ -329,7 +362,8 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
     const checkIn = new Date(bookingCheckIn);
     const checkOut = new Date(bookingCheckOut);
     const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
-    const totalPrice = bookingRoom.basePrice * nights;
+    const pricePerNight = dynamicPrice || bookingRoom.basePrice;
+    const totalPrice = pricePerNight * nights;
 
     createBooking.mutate(
       {
@@ -340,6 +374,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         totalPrice,
         currency: 'XOF',
         breakfastIncluded: bookingBreakfast,
+        pricePerNight,
       },
       {
         onSuccess: () => {
@@ -837,9 +872,13 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
             className="bg-white rounded-3xl p-6 max-w-md w-full"
           >
             <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Réserver {bookingRoom.name}</h3>
-            <p className="text-xs text-gray-500 mb-4">
-              {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA / nuit · {bookingRoom.capacity} pers.
+            <p className="text-xs text-gray-500 mb-1">
+              {new Intl.NumberFormat('fr-FR').format(dynamicPrice || bookingRoom.basePrice)} FCFA / nuit · {bookingRoom.capacity} pers.
             </p>
+            {dynamicPrice && dynamicPrice !== bookingRoom.basePrice && (
+              <p className="text-[10px] text-[#D4AF37] mb-1">💰 Tarif dynamique appliqué (base: {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA)</p>
+            )}
+            <p className="text-[10px] text-gray-400 mb-4">📋 {cancellationPolicy}</p>
 
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-2 gap-3">

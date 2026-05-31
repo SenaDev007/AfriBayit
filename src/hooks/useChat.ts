@@ -4,26 +4,29 @@ import { apiFetch, apiPost } from '@/lib/api';
 export function useConversations(userId?: string) {
   return useQuery({
     queryKey: ['conversations', userId],
-    queryFn: () => apiFetch<{ conversations: unknown[] }>(`/api/chat/conversations?userId=${userId || ''}`),
+    queryFn: () => apiFetch<{ conversations: unknown[] }>(`/api/messages?search=`),
     enabled: !!userId,
+    refetchInterval: 10000, // Poll every 10s for new conversations
   });
 }
 
 export function useChatMessages(conversationId: string, page = 1, limit = 50) {
   return useQuery({
     queryKey: ['chat-messages', conversationId, page, limit],
-    queryFn: () => apiFetch<{ messages: unknown[]; pagination: unknown }>(`/api/chat/conversations/${conversationId}/messages?page=${page}&limit=${limit}`),
+    queryFn: () => apiFetch<{ messages: unknown[]; pagination: unknown }>(`/api/messages/${conversationId}?page=${page}&limit=${limit}`),
     enabled: !!conversationId,
+    refetchInterval: 5000, // Poll every 5s for new messages
   });
 }
 
 export function useSendMessage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ conversationId, ...data }: { conversationId: string; senderId: string; content: string; messageType?: string }) =>
-      apiPost(`/api/chat/conversations/${conversationId}/messages`, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', variables.conversationId] });
+    mutationFn: ({ conversationId, ...data }: { conversationId?: string; recipientId?: string; senderId?: string; content: string; messageType?: string }) =>
+      apiPost('/api/messages', { conversationId, ...data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }

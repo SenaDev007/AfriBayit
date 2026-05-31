@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { useCountry, type CountryCode } from '@/contexts/CountryContext';
+import { useLocale } from '@/lib/i18n/context';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface NavbarProps {
@@ -44,6 +45,7 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { selectedCountry, setSelectedCountry } = useCountry();
+  const { locale, setLocale } = useLocale();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -140,6 +142,20 @@ export default function Navbar({
                   ))}
                 </select>
               </div>
+
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
+                className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  scrolled
+                    ? 'bg-white border-gray-200 text-[#2C2E2F] hover:bg-gray-50'
+                    : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                }`}
+                title={locale === 'fr' ? 'Switch to English' : 'Passer en Français'}
+              >
+                <span>{locale === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                <span>{locale === 'fr' ? 'FR' : 'EN'}</span>
+              </button>
 
               {/* Notifications */}
               {isLoggedIn && (
@@ -322,6 +338,18 @@ export default function Navbar({
                       <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Mobile Language Switcher */}
+                <div className="pt-3 border-t mt-3">
+                  <button
+                    onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-medium text-[#2C2E2F] hover:bg-gray-50"
+                  >
+                    <span>{locale === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                    {locale === 'fr' ? 'Français' : 'English'}
+                    <span className="text-xs text-gray-400">→ {locale === 'fr' ? 'English' : 'Français'}</span>
+                  </button>
                 </div>
               </div>
             </motion.div>
