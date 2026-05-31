@@ -31,7 +31,8 @@ model User {
   reputation    String   @default("Decouvreur") // Decouvreur, Acteur, Expert, Ambassadeur
   bio           String?
   specialties   String?  // JSON array
-  verified      Boolean  @default(false)
+  verified           Boolean  @default(false)
+  verificationStatus String   @default("PENDING") // PENDING, APPROVED, REJECTED — agent certification status
   premiumTier   String?  // starter, essentiel, avance, elite
   premiumExpiry DateTime?
   walletBalance Float    @default(0)
@@ -75,6 +76,8 @@ model User {
   certificates     Certificate[]
   afriPointTxns    AfriPointTransaction[]
   ambassador       Ambassador?
+  following         Follower[]    @relation("Following")
+  followers         Follower[]    @relation("Followers")
 
   @@map("users")
 }
@@ -1427,4 +1430,21 @@ model AmbassadorCommission {
   ambassador      Ambassador @relation(fields: [ambassadorId], references: [id])
 
   @@map("ambassador_commissions")
+}
+
+// ============ FOLLOWERS ============
+
+model Follower {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  
+  follower    User     @relation("Following", fields: [followerId], references: [id])
+  following   User     @relation("Followers", fields: [followingId], references: [id])
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("followers")
 }

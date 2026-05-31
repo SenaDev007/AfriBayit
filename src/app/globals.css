@@ -89,6 +89,102 @@
   --sidebar-accent-foreground: #2C2E2F;
   --sidebar-border: #e2e8f0;
   --sidebar-ring: #003087;
+
+  /* ====== AfriBayit Design Tokens — CDC §2 ====== */
+
+  /* Color: Principal (Navy) */
+  --afri-color-principal-50: #e6eef9;
+  --afri-color-principal-100: #c4d8f3;
+  --afri-color-principal-200: #9ebfeb;
+  --afri-color-principal-300: #78a6e3;
+  --afri-color-principal-400: #5b8fdc;
+  --afri-color-principal-500: #003087;
+  --afri-color-principal-600: #002b78;
+  --afri-color-principal-700: #002468;
+  --afri-color-principal-800: #001f5c;
+  --afri-color-principal-900: #001440;
+
+  /* Color: Gold */
+  --afri-color-gold-50: #faf6e6;
+  --afri-color-gold-100: #f2e9be;
+  --afri-color-gold-200: #e6c65c;
+  --afri-color-gold-300: #FFD700;
+  --afri-color-gold-400: #D4AF37;
+  --afri-color-gold-500: #b8961f;
+  --afri-color-gold-600: #9c7d16;
+  --afri-color-gold-700: #80650f;
+  --afri-color-gold-800: #6b530d;
+  --afri-color-gold-900: #4a3808;
+
+  /* Color: Innovation (Blue) */
+  --afri-color-innovation-50: #e6f5fc;
+  --afri-color-innovation-100: #b3e3f6;
+  --afri-color-innovation-200: #80d1f0;
+  --afri-color-innovation-300: #4dbfea;
+  --afri-color-innovation-400: #26b3e4;
+  --afri-color-innovation-500: #009CDE;
+  --afri-color-innovation-600: #008bc5;
+  --afri-color-innovation-700: #007aab;
+  --afri-color-innovation-800: #006992;
+  --afri-color-innovation-900: #004a66;
+
+  /* Color: Validation (Green) */
+  --afri-color-validation-50: #e6f7ed;
+  --afri-color-validation-100: #b3ebcc;
+  --afri-color-validation-200: #80dfab;
+  --afri-color-validation-300: #4dd38a;
+  --afri-color-validation-400: #26ca73;
+  --afri-color-validation-500: #00A651;
+  --afri-color-validation-600: #009348;
+  --afri-color-validation-700: #00803e;
+  --afri-color-validation-800: #006d35;
+  --afri-color-validation-900: #004d24;
+
+  /* Color: Alert (Red) */
+  --afri-color-alert-50: #fde8e7;
+  --afri-color-alert-100: #f8c2bf;
+  --afri-color-alert-200: #f39c97;
+  --afri-color-alert-300: #ee756f;
+  --afri-color-alert-400: #ea5951;
+  --afri-color-alert-500: #D93025;
+  --afri-color-alert-600: #c2261c;
+  --afri-color-alert-700: #ab1d14;
+  --afri-color-alert-800: #94170e;
+  --afri-color-alert-900: #6b0f0a;
+
+  /* Color: Neutral */
+  --afri-color-neutral-50: #f5f7fa;
+  --afri-color-neutral-100: #f0f4f8;
+  --afri-color-neutral-200: #e2e8f0;
+  --afri-color-neutral-300: #cbd5e1;
+  --afri-color-neutral-400: #94a3b8;
+  --afri-color-neutral-500: #6b7280;
+  --afri-color-neutral-600: #4b5563;
+  --afri-color-neutral-700: #374151;
+  --afri-color-neutral-800: #2C2E2F;
+  --afri-color-neutral-900: #1a1d24;
+  --afri-color-neutral-950: #0f1117;
+
+  /* Spacing: Radius — CDC §2.3 */
+  --afri-radius-radiusSm: 4px;
+  --afri-radius-radiusMd: 8px;
+  --afri-radius-radiusLg: 16px;
+  --afri-radius-radiusXl: 24px;
+  --afri-radius-radius2xl: 32px;
+  --afri-radius-radiusFull: 9999px;
+
+  /* Animation — CDC §2.4 */
+  --afri-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --afri-duration-fast: 150ms;
+  --afri-duration-normal: 280ms;
+  --afri-duration-slow: 500ms;
+
+  /* Shadows — CDC §2.5 */
+  --afri-shadow-goldGlow: 0 0 20px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
+  --afri-shadow-cardShadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08);
+  --afri-shadow-navyShadow: 0 4px 24px rgba(0, 48, 135, 0.12), 0 1px 4px rgba(0, 48, 135, 0.06);
+  --afri-shadow-glassShadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
+  --afri-shadow-deepShadow: 0 16px 48px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .dark {

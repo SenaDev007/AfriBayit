@@ -1,11 +1,15 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
-
-const easeOut = [0.16, 1, 0.3, 1] as const;
+import { useRouter } from 'next/navigation';
 
 export default function Footer() {
+  const router = useRouter();
+
+  const navigateTo = (href: string) => {
+    router.push(href);
+  };
+
   return (
     <footer className="bg-[#001f5c] text-white pb-20 lg:pb-0">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
@@ -31,9 +35,20 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-4 text-[#D4AF37]">Acheter</h4>
             <ul className="space-y-2.5">
-              {['Villas', 'Appartements', 'Terrains', 'Bureaux', 'Commerces'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-white/50 hover:text-white text-sm transition-colors">{item}</a>
+              {[
+                { label: 'Villas', href: '/search?type=villa' },
+                { label: 'Appartements', href: '/search?type=appartement' },
+                { label: 'Terrains', href: '/search?type=terrain' },
+                { label: 'Bureaux', href: '/search?type=bureau' },
+                { label: 'Commerces', href: '/search?type=commerce' },
+              ].map((item) => (
+                <li key={item.label}>
+                  <button
+                    onClick={() => navigateTo(item.href)}
+                    className="text-white/50 hover:text-white text-sm transition-colors"
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -43,9 +58,20 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-4 text-[#D4AF37]">Services</h4>
             <ul className="space-y-2.5">
-              {['Escrow Sécurisé', 'GeoTrust', 'ProMatch Artisans', 'Rebecca IA', 'Académie'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-white/50 hover:text-white text-sm transition-colors">{item}</a>
+              {[
+                { label: 'Escrow Sécurisé', href: '/escrow' },
+                { label: 'GeoTrust', href: '/geotrust' },
+                { label: 'ProMatch Artisans', href: '/artisans' },
+                { label: 'Rebecca IA', href: '#' },
+                { label: 'Académie', href: '/academy' },
+              ].map((item) => (
+                <li key={item.label}>
+                  <button
+                    onClick={() => navigateTo(item.href)}
+                    className="text-white/50 hover:text-white text-sm transition-colors"
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -55,9 +81,20 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-4 text-[#D4AF37]">Entreprise</h4>
             <ul className="space-y-2.5">
-              {['À propos', 'Carrières', 'Presse', 'Partenaires', 'Contact'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-white/50 hover:text-white text-sm transition-colors">{item}</a>
+              {[
+                { label: 'Communauté', href: '/community' },
+                { label: 'Séjours', href: '/booking' },
+                { label: 'Hôtellerie', href: '/hospitality' },
+                { label: 'Notaires', href: '/notary' },
+                { label: 'Publier une annonce', href: '/publish' },
+              ].map((item) => (
+                <li key={item.label}>
+                  <button
+                    onClick={() => navigateTo(item.href)}
+                    className="text-white/50 hover:text-white text-sm transition-colors"
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>

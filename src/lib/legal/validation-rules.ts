@@ -19,6 +19,8 @@ export interface DocumentRequirement {
   maxAgeMonths?: number;
   issuingAuthority: string;
   notes?: string;
+  /** Alternative doc types that can satisfy this requirement (OR-logic). If any alternative is present, this doc is not mandatory. */
+  alternativeDocTypes?: string[];
 }
 
 export interface ReformRule {
@@ -74,17 +76,19 @@ const beninMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'certified_copy',
       maxAgeMonths: 120,
       issuingAuthority: 'ANDF (Agence Nationale du Domaine Foncier)',
-      notes: 'Obligatoire depuis la réforme foncière 2023 pour toutes les transactions immobilières',
+      notes: 'Obligatoire depuis la réforme foncière 2023 pour toutes les transactions immobilières. Accepté en alternative : ACD (post-réforme 2023).',
+      alternativeDocTypes: ['acd'],
     },
     {
       docType: 'acd',
       nameFr: 'Attestation de Détention Coutumière',
       nameEn: 'Customary Land Holding Certificate',
-      mandatory: false,
+      mandatory: true,
       format: 'original',
       maxAgeMonths: 60,
       issuingAuthority: 'Autorités coutumières reconnues',
-      notes: 'Seulement si le terrain n\'est pas encore titré (transition vers TF obligatoire)',
+      notes: 'Alternative au Titre Foncier pour les terrains non encore titrés (transition post-réforme 2023). TF ou ACD requis.',
+      alternativeDocTypes: ['titre_foncier'],
     },
     {
       docType: 'certificat_propriete_andf',
@@ -116,7 +120,8 @@ const beninMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'certified_copy',
       maxAgeMonths: 120,
       issuingAuthority: 'ANDF',
-      notes: 'Réforme 2023: TF obligatoire pour toute vente immobilière',
+      notes: 'Réforme 2023: TF obligatoire pour toute vente immobilière. Alternative : ACD (post-réforme 2023).',
+      alternativeDocTypes: ['acd'],
     },
     {
       docType: 'permis_construire',
@@ -358,6 +363,16 @@ const beninOptionalDocs: Record<PropertyType, DocumentRequirement[]> = {
 const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
   terrain: [
     {
+      docType: 'lettre_attribution',
+      nameFr: 'Lettre d\'Attribution',
+      nameEn: 'Letter of Attribution',
+      mandatory: true,
+      format: 'certified_copy',
+      issuingAuthority: 'DGI (Direction Générale des Impôts)',
+      notes: 'Lettre d\'Attribution ou ACD requis pour les terrains. Alternative : ACD.',
+      alternativeDocTypes: ['acd'],
+    },
+    {
       docType: 'acd',
       nameFr: 'Attestation de Coutume et de Détention',
       nameEn: 'Customary Attestation of Detention',
@@ -365,25 +380,17 @@ const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'original',
       maxAgeMonths: 36,
       issuingAuthority: 'Village Chief / Sous-préfet',
-      notes: 'Requis pour les terrains coutumiers en zone rurale',
-    },
-    {
-      docType: 'lettre_attribution',
-      nameFr: 'Lettre d\'Attribution',
-      nameEn: 'Letter of Attribution',
-      mandatory: false,
-      format: 'certified_copy',
-      issuingAuthority: 'DGI (Direction Générale des Impôts)',
-      notes: 'Pour les terrains domaniaux',
+      notes: 'ACD ou Lettre d\'Attribution requis pour les terrains. Alternative : Lettre d\'Attribution.',
+      alternativeDocTypes: ['lettre_attribution'],
     },
     {
       docType: 'arrete_concession',
-      nameFr: 'Arrêté de Concession',
-      nameEn: 'Concession Order',
-      mandatory: false,
+      nameFr: 'Arrêté de Concession Provisoire',
+      nameEn: 'Provisional Concession Order',
+      mandatory: true,
       format: 'certified_copy',
       issuingAuthority: 'Ministère de la Construction',
-      notes: 'Pour les concessions domaniales',
+      notes: 'Arrêté de concession provisoire obligatoire avec ACD ou Lettre d\'Attribution',
     },
     {
       docType: 'certificat_foncier',
@@ -423,6 +430,15 @@ const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'certified_copy',
       issuingAuthority: 'Mairie / Direction de la Construction',
     },
+    {
+      docType: 'attestation_villagioise',
+      nameFr: 'Attestation Villagioise',
+      nameEn: 'Village Attestation',
+      mandatory: false,
+      format: 'original',
+      issuingAuthority: 'Chef de village / Sous-préfet',
+      notes: 'Obligatoire pour les biens situés en zone villageoise ou rurale',
+    },
   ],
   appartement: [
     {
@@ -451,6 +467,15 @@ const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'certified_copy',
       issuingAuthority: 'Direction de la Construction',
     },
+    {
+      docType: 'attestation_villagioise',
+      nameFr: 'Attestation Villagioise',
+      nameEn: 'Village Attestation',
+      mandatory: false,
+      format: 'original',
+      issuingAuthority: 'Chef de village / Sous-préfet',
+      notes: 'Obligatoire pour les biens situés en zone villageoise ou rurale',
+    },
   ],
   bureau: [
     {
@@ -471,6 +496,15 @@ const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       maxAgeMonths: 60,
       issuingAuthority: 'DGI',
     },
+    {
+      docType: 'attestation_villagioise',
+      nameFr: 'Attestation Villagioise',
+      nameEn: 'Village Attestation',
+      mandatory: false,
+      format: 'original',
+      issuingAuthority: 'Chef de village / Sous-préfet',
+      notes: 'Obligatoire pour les biens situés en zone villageoise',
+    },
   ],
   commerce: [
     {
@@ -490,6 +524,15 @@ const coteIvoireMandatoryDocs: Record<PropertyType, DocumentRequirement[]> = {
       format: 'certified_copy',
       maxAgeMonths: 60,
       issuingAuthority: 'DGI',
+    },
+    {
+      docType: 'attestation_villagioise',
+      nameFr: 'Attestation Villagioise',
+      nameEn: 'Village Attestation',
+      mandatory: false,
+      format: 'original',
+      issuingAuthority: 'Chef de village / Sous-préfet',
+      notes: 'Obligatoire pour les biens situés en zone villageoise',
     },
   ],
   chateau: [
@@ -987,13 +1030,15 @@ const togoOptionalDocs: Record<PropertyType, DocumentRequirement[]> = {
 function makeBeninAutoRejectConditions(): AutoRejectCondition[] {
   return [
     {
-      id: 'BJ-TF-MISSING',
-      condition: 'Titre Foncier manquant pour vente immobilière',
+      id: 'BJ-TF-OR-ACD-MISSING',
+      condition: 'Titre Foncier ou ACD manquant pour vente immobilière',
       check: (docs: SubmittedDocument[]) => {
-        return !docs.some(d => d.docType === 'titre_foncier' && d.isValid !== false);
+        const hasTF = docs.some(d => d.docType === 'titre_foncier' && d.isValid !== false);
+        const hasACD = docs.some(d => d.docType === 'acd' && d.isValid !== false);
+        return !hasTF && !hasACD;
       },
-      reasonFr: 'Titre Foncier obligatoire pour toute transaction immobilière depuis la réforme 2023',
-      reasonEn: 'Land Title mandatory for all real estate transactions since 2023 reform',
+      reasonFr: 'Titre Foncier ou ACD obligatoire pour toute transaction immobilière depuis la réforme 2023',
+      reasonEn: 'Land Title or ACD mandatory for all real estate transactions since 2023 reform',
       severity: 'rejection',
     },
     {
@@ -1104,13 +1149,15 @@ function makeBurkinaAutoRejectConditions(): AutoRejectCondition[] {
 function makeTogoAutoRejectConditions(): AutoRejectCondition[] {
   return [
     {
-      id: 'TG-TF-MISSING',
-      condition: 'Titre Foncier manquant',
+      id: 'TG-TF-OR-CESSION-MISSING',
+      condition: 'Titre Foncier ou Acte de Cession manquant',
       check: (docs: SubmittedDocument[]) => {
-        return !docs.some(d => d.docType === 'titre_foncier' && d.isValid !== false);
+        const hasTF = docs.some(d => d.docType === 'titre_foncier' && d.isValid !== false);
+        const hasCession = docs.some(d => d.docType === 'acte_cession' && d.isValid !== false);
+        return !hasTF && !hasCession;
       },
-      reasonFr: 'Titre Foncier obligatoire selon le CFD 2018',
-      reasonEn: 'Land Title mandatory per CFD 2018',
+      reasonFr: 'Titre Foncier ou Acte de Cession obligatoire selon le CFD 2018 / DCCF 2025',
+      reasonEn: 'Land Title or Deed of Transfer mandatory per CFD 2018 / DCCF 2025',
       severity: 'rejection',
     },
     {

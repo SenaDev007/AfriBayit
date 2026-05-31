@@ -121,6 +121,24 @@ export async function POST(request: Request) {
     const auth = await authGuard({ requiredRoles: ['agent', 'admin'] });
     if (!auth.success) return auth.response;
 
+    // Agent certification enforcement: only agents with verificationStatus = 'APPROVED' can publish
+    if (auth.role === 'agent') {
+      const user = await db.user.findUnique({
+        where: { id: auth.userId },
+        select: { verified: true, verificationStatus: true },
+      });
+      if (!user?.verified || user.verificationStatus !== 'APPROVED') {
+        return NextResponse.json(
+          {
+            error: 'Compte agent non certifié. Seuls les agents avec le statut APPROVED peuvent publier des biens.',
+            code: 'AGENT_NOT_CERTIFIED',
+            verificationStatus: user?.verificationStatus || 'PENDING',
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await request.json();
 
     // Validate with Zod schema

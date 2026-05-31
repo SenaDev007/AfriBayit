@@ -37,6 +37,7 @@ export interface CompletenessResult {
   missingDocs: DocumentRequirement[];
   expiredDocs: DocumentCheckResult[];
   invalidDocs: DocumentCheckResult[];
+  verificationBadge: VerificationBadge | null;
   summary: {
     totalMandatory: number;
     validMandatory: number;
@@ -46,6 +47,15 @@ export interface CompletenessResult {
     expiredCount: number;
     invalidCount: number;
   };
+}
+
+export interface VerificationBadge {
+  label: string;
+  verified: boolean;
+  verifiedAt: string | null;
+  country: string;
+  propertyType: string;
+  completenessPercentage: number;
 }
 
 // ============ Core Functions ============
@@ -152,9 +162,25 @@ export function checkCompleteness(
     ? mandatoryReqs.filter(r => r.docType === 'titre_foncier' || r.docType === 'certificat_propriete' || r.docType === 'certificat_propriete_andf' || r.docType === 'certificat_foncier')
     : mandatoryReqs;
 
-  // Check mandatory documents
+  // Check mandatory documents — with OR-logic for alternativeDocTypes
   const mandatoryResults: DocumentCheckResult[] = effectiveMandatoryReqs.map((req) => {
     const submitted = submittedDocs.find(d => d.docType === req.docType);
+
+    // Check if an alternative doc type is present (OR-logic)
+    if (!submitted && req.alternativeDocTypes && req.alternativeDocTypes.length > 0) {
+      const hasAlternative = req.alternativeDocTypes.some(altType =>
+        submittedDocs.some(d => d.docType === altType && d.isValid !== false)
+      );
+      if (hasAlternative) {
+        return {
+          docType: req.docType,
+          nameFr: req.nameFr,
+          status: 'valid' as DocStatus,
+          issues: [`Satisfait par document alternatif: ${req.alternativeDocTypes.join(', ')}`],
+          requirement: req,
+        };
+      }
+    }
 
     if (!submitted) {
       return {
@@ -220,17 +246,42 @@ export function checkCompleteness(
     ? Math.round((validMandatory / totalMandatory) * 100)
     : 0;
 
+  const overallComplete = validMandatory === totalMandatory && totalMandatory > 0;
+
+  // Auto-reject: any property without a valid legal document is automatically rejected
+  const hasAnyValidLegalDoc = mandatoryResults.some(r => r.status === 'valid');
+
+  // Generate verification badge
+  const verificationBadge: VerificationBadge | null = overallComplete && hasAnyValidLegalDoc
+    ? {
+        label: 'Documents vérifiés AfriBayit',
+        verified: true,
+        verifiedAt: new Date().toISOString(),
+        country,
+        propertyType,
+        completenessPercentage,
+      }
+    : {
+        label: 'Documents vérifiés AfriBayit',
+        verified: false,
+        verifiedAt: null,
+        country,
+        propertyType,
+        completenessPercentage,
+      };
+
   return {
     country,
     propertyType,
     transaction,
-    overallComplete: validMandatory === totalMandatory && totalMandatory > 0,
+    overallComplete: overallComplete && hasAnyValidLegalDoc,
     completenessPercentage,
     mandatoryResults,
     optionalResults,
     missingDocs,
     expiredDocs,
     invalidDocs,
+    verificationBadge,
     summary: {
       totalMandatory,
       validMandatory,

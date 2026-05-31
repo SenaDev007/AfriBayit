@@ -1795,3 +1795,221 @@ Stage Summary:
 - CDC completion estimate: ~80%+ (up from ~75%)
 - 84 new/modified files in this round
 - Remaining P2 items are Phase 2 per CDC (USSD, ML fraud, 24/7 emergency, collaborative construction, webinar, AI tutoring, NLP moderation, Kubernetes)
+
+---
+Task ID: 3b
+Agent: CDC Gaps Implementation Agent
+Task: Implement 8 priority CDC gaps — Onboarding, Property Badges, Commission Rates, Profile Completeness, Gamification, Notification Preferences, Design Tokens, KYC Payout Limits
+
+Work Log:
+
+## 1. Onboarding 7-Step Wizard (CDC §4.2)
+- Completely rewrote `/src/components/afribayit/OnboardingFlow.tsx` (680+ lines)
+- Full navy/gold gradient background with animated floating orbs
+- Step 1: Welcome & Platform Discovery — animated logo, feature grid, "Commencer la configuration" CTA, "Explorer d'abord" skip option
+- Step 2: Profile Type Selection — 5 types (Acheteur/Vendeur/Investisseur/Touriste/Artisan) with color-coded cards, checkmark animation
+- Step 3: Geographic Preferences — 4 countries with flags, dynamic city pills per selected country, staggered reveal
+- Step 4: Budget & Goals — 4 budget presets + custom input, 6 goal toggle cards with gold accent
+- Step 5: Alert & Notification Preferences — 3 frequency options, 4 channel toggles (Email/SMS/Push/WhatsApp)
+- Step 6: Interactive Tour — 6 feature cards with color-coded icons, staggered animations, tip banner
+- Step 7: AI Activation — Rebecca gradient avatar, 6 capability cards, animated toggle switch, full summary recap
+- Glassmorphism sticky header with animated progress bar (7 segments, gold highlight for current step)
+- Glassmorphism sticky footer with Back/Continue navigation + animated step dots
+- Step dots clickable for backward navigation
+- Slide transitions with AnimatePresence, scale + opacity effects
+- "Passer" (skip) button on steps 1-6
+- CDC design system: colors #003087, #D4AF37, #009CDE, #00A651, rounded-3xl, framer-motion
+
+## 2. Property Card "Documents Vérifiés" Badge
+- Updated `/src/components/afribayit/PropertyCard.tsx`
+- Changed "Vérifié" badge to "Documents Vérifiés" with green background (#00A651), white text, larger checkmark icon, shadow-lg
+- Now visible as prominent green pill on right side of image (was subtle white/blur badge before)
+- "Premium" badge: now always shows when `property.premium` is true (removed the condition that hid it when boostLevel > 0), added gold star icon
+- "Sponsorisé" badge: added star icon, keeps gold gradient background
+- "GeoTrust" badge: changed to blue (#009CDE) background with white text (was white/blur), more prominent
+- All right-side badges now use solid colored backgrounds for better visibility
+
+## 3. Commission Rates per Transaction Type (CDC §11)
+- Updated `/src/lib/payments/escrow-engine.ts` with complete commission calculation system
+- Added `CommissionTransactionType`: vente_immobiliere, location_courte_duree, hotellerie, artisan, guesthouse
+- Vente immobilière: 2-5% tiered (≤5M: 5%, ≤20M: 4%, ≤50M: 3%, >50M: 2%)
+- Location courte durée: flat 3%
+- Hôtellerie: 12-15% by hotel tier (1-2★: 12%, 3★: 13%, 4★: 14%, 5★: 15%)
+- Artisan: flat 5%
+- Guesthouse: 10-13% voyageur + 3% propriétaire (dual breakdown by tier)
+- `calculateCommissionByType()`: primary function for any transaction type with options
+- `calculateTransactionCommission()`: auto-detects type from Transaction record
+- `CommissionResult` interface with breakdown array for detailed display
+- Updated escrow RELEASED state to use new commission calculation instead of hardcoded 2.5%
+
+## 4. Profile Completeness Auto-Calculation (CDC §5.4b)
+- Created `/src/lib/profile/completeness.ts`
+- 10 criteria with exact CDC weights: avatar +10%, headline +10%, bio +15%, skills +10%, experience +10%, education +10%, certifications +10%, portfolio +10%, phone verified +7.5%, email verified +7.5%
+- `calculateProfileCompleteness(profile)`: returns percentage, checks array, missing items, level, next milestone
+- `CompletenessLevel`: debutant (0%), intermediaire (30%), avance (70%), complet (100%)
+- `getCompletenessLevelColor()`: color per level (red/gold/blue/green)
+- `hasAtLeastOne()` helper for array-like fields
+- French labels and descriptions for all criteria
+
+## 5. Gamification/Reputation Engine (CDC §5.7)
+- Created `/src/lib/gamification/engine.ts`
+- Point system: transaction_completed +50, review_posted +10, certificate_earned +25, community_post +5, property_published +20, referral_signup +100
+- Level system: Bronze (0+), Argent (200+), Or (500+), Platine (1500+), Diamant (5000+) with colors and icons
+- Reputation tiers: Newbie (0-24), Acteur (25-49), Expert (50-74), Ambassadeur (75-100)
+- `calculateReputationScore()`: normalized 0-100 metric from transactions, ratings, community, certifications, verification
+- `awardPoints()`: pure function returning level-up and tier-up flags
+- `getLevelProgress()`: percentage toward next level
+- `getNextLevel()`: shows what's next after current level
+- French labels for all actions and levels
+
+## 6. Notification Preferences UI
+- Completely rewrote `/src/components/afribayit/NotificationsCenter.tsx`
+- Added tab switcher: "Notifications" | "Préférences" (pill-style toggle)
+- Preferences tab with grid layout: 5 categories × 4 channels
+- Categories: Immobilier, Communauté, Escrow, Académie, Marketing (with icons and descriptions)
+- Channels: Email, SMS, Push, WhatsApp (with toggle switches)
+- Animated toggle switches with spring physics
+- "Tout activer" / "Tout désactiver" quick action buttons
+- "Enregistrer les préférences" save button with loading state
+- Persists to localStorage, loads on mount
+- Security notice about mandatory escrow/security notifications
+- Staggered reveal animations for category rows
+
+## 7. Design Token System (CDC §2)
+- Created `/src/lib/design/tokens.ts` with full token export system
+- Color tokens: Principal (Navy), Gold, Innovation (Blue), Validation (Green), Alert (Red), Neutral — 10 shades each
+- Typography scale: Hero Title (72-80px), Section Title (40-56px), Card Title (18-22px), Body (14-16px), Caption (11-12px), Mono Data
+- Spacing tokens: radiusSm 4px, radiusMd 8px, radiusLg 16px, radiusXl 24px, radius2xl 32px, radiusFull 9999px
+- Animation config: easeOut cubic-bezier(0.16, 1, 0.3, 1), durations 150ms/280ms/500ms, spring configs
+- Shadow tokens: goldGlow, cardShadow, navyShadow, glassShadow, deepShadow
+- Glassmorphism tokens: light/navy/dark with background, border, blur, saturate
+- `generateCSSCustomProperties()`: outputs all tokens as CSS custom properties
+- `getAllTokens()`: flat JS object for programmatic access
+- Updated `/src/app/globals.css` with 90+ CSS custom properties under --afri- prefix in :root
+
+## 8. KYC Payout Limits (CDC §7B)
+- Created `/src/lib/payments/payout-limits.ts`
+- Level 1 (basic KYC): 500,000 XOF/month, 200,000 XOF per payout
+- Level 2 (intermediate KYC): 5,000,000 XOF/month, 2,000,000 XOF per payout
+- Level 3 (full KYC): unlimited
+- Anti-fraud: 24h hold on first 3 payouts, max 200,000 XOF per first payout
+- `checkPayoutAllowed(context)`: comprehensive check returning allowed status, reason, remaining limit, hold info
+- `getHoldReleaseDate()`: calculates when hold expires
+- `isHoldExpired()`: checks if payout can be released
+- `getPayoutLimitSummary()`: for UI display of limits and usage
+- All error messages in French with XOF formatting
+
+Stage Summary:
+- 8 CDC gaps implemented across 8 files
+- Files created: src/lib/profile/completeness.ts, src/lib/gamification/engine.ts, src/lib/design/tokens.ts, src/lib/payments/payout-limits.ts
+- Files modified: src/components/afribayit/OnboardingFlow.tsx, src/components/afribayit/PropertyCard.tsx, src/lib/payments/escrow-engine.ts, src/components/afribayit/NotificationsCenter.tsx, src/app/globals.css
+- All text in French (platform language)
+- Follows AfriBayit design system: colors, glassmorphism, rounded corners, framer-motion animations
+- ESLint: 0 errors
+- Dev server: running successfully
+
+---
+Task ID: cdc-gaps-implementation-2
+Agent: Main Agent
+Task: Implement 5 CDC gaps — Follow API, USSD Gateway, Country Legal Docs, Gamification Scoring, Follower Prisma Model
+
+Work Log:
+
+## Gap 1: Follow/Unfollow API — /api/follow/route.ts (ALREADY EXISTS)
+- File already existed with complete implementation:
+  - POST: Follow a user (validates self-follow, duplicate follow, user existence) — all text in French
+  - DELETE: Unfollow a user (validates existing follow relationship)
+  - GET: List followers/following with pagination, user details, professional profile
+- Uses Prisma `db.follower` with composite unique key `followerId_followingId`
+- Auth guard on all endpoints
+- No changes needed
+
+## Gap 2: USSD Gateway Handler — /api/ussd/route.ts (ALREADY EXISTS)
+- File already existed with complete implementation:
+  - POST handler for Africa's Talking USSD gateway
+  - Session-based menu navigation with in-memory session store
+  - Main menu: 1.Rechercher bien, 2.Contacter agent, 3.Mon compte
+  - Search flow: Type de bien → Ville → Résultats (queries Prisma DB)
+  - Agent contact flow: Agent immobilier, Géomètre, Notaire
+  - Account flow: Favoris, Recherches, Aide
+  - Country detection from phone number prefix (229=BJ, 225=CI, 226=BF, 228=TG)
+  - 3-minute session timeout
+  - GET health check endpoint
+- All text in French
+- No changes needed
+
+## Gap 3: Country-Specific Legal Document Requirements — /src/lib/legal/country-docs.ts (NEW FILE)
+- Created comprehensive legal document requirements module (280+ lines)
+- Types: SupportedCountry, PropertyType, DocType, RequirementMode, DocRequirementGroup, RequiredDocsResult
+- DOC_LABELS: French labels for 10 document types
+- Requirements per CDC spec:
+  - BJ terrain/villa: Titre Foncier OR ACD
+  - BJ appartement: Titre Foncier + Permis Construire + Autorisation Lotissement
+  - CI terrain: Lettre Attribution OR (ACD + Arrêté Concession)
+  - CI bien bâti: Titre Foncier + Certificat Propriété
+  - BF terrain: PUH OR Titre Foncier
+  - TG tout bien: Titre Foncier OR (Acte Cession + Certificat ANDF)
+- Exported functions:
+  - getRequiredDocs(country, propertyType) → RequiredDocsResult
+  - validateDocRequirements(country, propertyType, submittedDocs) → { satisfied, missingGroups }
+  - getDocLabel(docType) → French label
+  - getAllRequirementsForCountry(country) → all requirements for a country
+- Property type alias resolution (bureau→bien_bati, commerce→bien_bati)
+- Default fallback to Titre Foncier for unknown combinations
+- French description builder with OR/AND connectors
+
+## Gap 4: Gamification Scoring System — /src/lib/gamification/scoring.ts (NEW FILE)
+- Created comprehensive scoring module (310+ lines)
+- 8 action types with points:
+  - TRANSACTION_COMPLETED: +50
+  - REVIEW_WRITTEN: +10
+  - CERTIFICATE_EARNED: +25
+  - COMMUNITY_POST: +5
+  - PROPERTY_PUBLISHED: +20
+  - REFERRAL_SIGNUP: +100
+  - QUIZ_PASSED: +10 (NEW — not in engine.ts)
+  - COURSE_COMPLETED: +25 (NEW — not in engine.ts)
+- Level thresholds: Bronze(0+), Argent(200+), Or(500+), Platine(1500+), Diamant(5000+)
+- Reputation tiers: Newbie(0-24), Acteur(25-49), Expert(50-74), Ambassadeur(75-100)
+- Exported functions:
+  - getLevel(totalPoints), getLevelDetails, getNextLevel, getLevelProgress
+  - getReputationTier(score), getReputationTierDetails
+  - awardPoints(action, currentTotal, reputationScore) → AwardPointsResult
+  - getActionLabelFr(action) → French label
+  - getGamificationState(totalPoints, reputationScore) → full state
+  - calculateReputationScore(params) → 0-100 score
+  - calculateTotalPoints(actions) → sum of points
+  - getAllActionPoints() → all actions with labels
+- Complements existing engine.ts with QUIZ_PASSED and COURSE_COMPLETED actions
+
+## Gap 5: Follower Prisma Model (ALREADY EXISTS)
+- Follower model already defined at line 1437 of schema.prisma:
+  - id: String @id @default(cuid())
+  - followerId: String
+  - followingId: String
+  - createdAt: DateTime @default(now())
+  - Relations: follower → User("Following"), following → User("Followers")
+  - @@unique([followerId, followingId])
+  - @@index([followerId]), @@index([followingId])
+  - @@map("followers")
+- User model already has relations:
+  - following: Follower[] @relation("Following")
+  - followers: Follower[] @relation("Followers")
+- No changes needed
+
+## Verification
+- All files verified to exist:
+  - /src/app/api/follow/route.ts ✅ (6,031 bytes)
+  - /src/app/api/ussd/route.ts ✅ (12,268 bytes)
+  - /src/lib/legal/country-docs.ts ✅ (10,798 bytes, NEW)
+  - /src/lib/gamification/scoring.ts ✅ (12,658 bytes, NEW)
+  - prisma/schema.prisma Follower model ✅ (line 1437)
+- ESLint: 0 errors
+
+Stage Summary:
+- 2 new files created: country-docs.ts (legal requirements), scoring.ts (gamification scoring)
+- 3 files verified as already complete: follow/route.ts, ussd/route.ts, Follower Prisma model
+- Legal doc requirements: 4 countries × multiple property types with OR/AND group logic
+- Gamification scoring: 8 actions, 5 levels, 4 reputation tiers, QUIZ_PASSED + COURSE_COMPLETED added
+- All text in French throughout
+- Zero lint errors

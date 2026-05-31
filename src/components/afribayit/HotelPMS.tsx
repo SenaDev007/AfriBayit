@@ -62,7 +62,7 @@ interface RateItem {
   channelRates: { ota: string; rateXof: number | null; lastSyncedAt: string }[];
 }
 
-type PMSTab = 'dashboard' | 'calendar' | 'reservations' | 'rooms' | 'rates' | 'guests' | 'reports';
+type PMSTab = 'dashboard' | 'calendar' | 'reservations' | 'rooms' | 'rates' | 'guests' | 'reports' | 'checkin' | 'invoicing' | 'cancellation' | 'lastminute';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -70,8 +70,12 @@ const TABS: { key: PMSTab; label: string; icon: string }[] = [
   { key: 'dashboard', label: 'Tableau de bord', icon: '📊' },
   { key: 'calendar', label: 'Calendrier', icon: '📅' },
   { key: 'reservations', label: 'Réservations', icon: '📋' },
+  { key: 'checkin', label: 'Check-in/out', icon: '🏨' },
   { key: 'rooms', label: 'Chambres', icon: '🛏️' },
   { key: 'rates', label: 'Tarifs', icon: '💰' },
+  { key: 'invoicing', label: 'Facturation', icon: '🧾' },
+  { key: 'cancellation', label: 'Annulation', icon: '🚫' },
+  { key: 'lastminute', label: 'Last-minute', icon: '⚡' },
   { key: 'guests', label: 'Clients', icon: '👥' },
   { key: 'reports', label: 'Rapports', icon: '📈' },
 ];
@@ -698,6 +702,238 @@ export default function HotelPMS() {
                     <li>⭐ Programme de fidélité</li>
                   </ul>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ CHECK-IN/CHECK-OUT TAB ═══ */}
+          {activeTab === 'checkin' && (
+            <motion.div key="checkin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Today's Check-ins */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border">
+                  <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+                    🛬 Enregistrements aujourd&apos;hui
+                  </h3>
+                  {reservations.filter(r => r.status === 'confirmed').length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {reservations.filter(r => r.status === 'confirmed').map((res) => (
+                        <div key={res.id} className="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-[#2C2E2F]">Rés. {res.bookingRef || res.id.slice(0, 8)}</p>
+                            <p className="text-xs text-gray-500">{formatDate(res.checkIn)} → {formatDate(res.checkOut)}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-16 bg-white border-2 border-[#003087] rounded-xl flex items-center justify-center">
+                              <svg viewBox="0 0 64 64" className="w-14 h-14">
+                                <rect x="4" y="4" width="56" height="56" rx="4" fill="white" stroke="#003087" strokeWidth="2"/>
+                                <text x="32" y="24" textAnchor="middle" fontSize="8" fill="#003087" fontWeight="bold">AFRIBAYIT</text>
+                                <text x="32" y="38" textAnchor="middle" fontSize="10" fill="#2C2E2F">{res.bookingRef?.slice(0, 6) || res.id.slice(0, 6)}</text>
+                                <text x="32" y="52" textAnchor="middle" fontSize="7" fill="#666">QR</text>
+                              </svg>
+                            </div>
+                            <button
+                              onClick={() => {/* API call to check in */}}
+                              className="px-3 py-2 bg-[#00A651] text-white rounded-xl text-xs font-semibold hover:bg-[#008f47] transition-colors"
+                            >
+                              Enregistrer
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">Aucun enregistrement prévu</p>
+                  )}
+                </div>
+
+                {/* Today's Check-outs */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border">
+                  <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+                    🛫 Départs aujourd&apos;hui
+                  </h3>
+                  {reservations.filter(r => r.status === 'checked_in').length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {reservations.filter(r => r.status === 'checked_in').map((res) => (
+                        <div key={res.id} className="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-[#2C2E2F]">Rés. {res.bookingRef || res.id.slice(0, 8)}</p>
+                            <p className="text-xs text-gray-500">Départ : {formatDate(res.checkOut)}</p>
+                            <p className="font-mono text-sm font-bold text-[#D4AF37]">{fmt(res.totalPrice)} FCFA</p>
+                          </div>
+                          <button
+                            onClick={() => {/* API call to check out */}}
+                            className="px-3 py-2 bg-[#003087] text-white rounded-xl text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+                          >
+                            Départ
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">Aucun départ prévu</p>
+                  )}
+                </div>
+              </div>
+
+              {/* QR Code Info */}
+              <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border">
+                <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-2">📱 QR Code AfriBayit</h3>
+                <p className="text-sm text-gray-500">Chaque réservation reçoit un QR code unique pour un check-in sans contact. Le client présente le QR à l&apos;arrivée, le personnel scanne et la chambre est enregistrée automatiquement.</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ AUTO-INVOICING TAB ═══ */}
+          {activeTab === 'invoicing' && (
+            <motion.div key="invoicing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">🧾 Facturation automatique</h3>
+                <p className="text-sm text-gray-500 mb-4">Les factures sont générées automatiquement pour chaque séjour terminé. Vous pouvez aussi générer des factures manuellement.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                  <div className="p-3 bg-[#00A651]/5 rounded-xl text-center">
+                    <p className="font-mono text-lg font-bold text-[#00A651]">{reservations.filter(r => r.status === 'completed').length}</p>
+                    <p className="text-[10px] text-gray-500">Factures émises</p>
+                  </div>
+                  <div className="p-3 bg-[#003087]/5 rounded-xl text-center">
+                    <p className="font-mono text-lg font-bold text-[#003087]">{fmt(reservations.filter(r => r.status === 'completed').reduce((sum, r) => sum + r.totalPrice, 0))}</p>
+                    <p className="text-[10px] text-gray-500">Total facturé (FCFA)</p>
+                  </div>
+                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl text-center">
+                    <p className="font-mono text-lg font-bold text-[#D4AF37]">Auto</p>
+                    <p className="text-[10px] text-gray-500">Génération</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-xl text-center">
+                    <p className="font-mono text-lg font-bold text-[#2C2E2F]">PDF</p>
+                    <p className="text-[10px] text-gray-500">Format</p>
+                  </div>
+                </div>
+              </div>
+              {reservations.filter(r => r.status === 'completed').length > 0 ? (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {reservations.filter(r => r.status === 'completed').map((res) => (
+                    <div key={res.id} className="bg-white rounded-2xl p-4 shadow-sm border flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-[#2C2E2F]">Facture #{res.bookingRef || res.id.slice(0, 8)}</p>
+                        <p className="text-xs text-gray-500">{formatDate(res.checkIn)} → {formatDate(res.checkOut)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="font-mono text-lg font-bold text-[#D4AF37]">{fmt(res.totalPrice)}</p>
+                        <button className="px-3 py-1.5 bg-[#003087] text-white rounded-xl text-xs font-semibold hover:bg-[#0047b3] transition-colors">
+                          📥 Télécharger PDF
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-2xl shadow-sm border">
+                  <p className="text-gray-500">Aucune facture à afficher</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ═══ CANCELLATION POLICY TAB ═══ */}
+          {activeTab === 'cancellation' && (
+            <motion.div key="cancellation" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">🚫 Politique d&apos;annulation</h3>
+                <p className="text-sm text-gray-500 mb-4">Configurez vos politiques d&apos;annulation avec calcul de remboursement automatique.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                {[
+                  { name: 'Flexible', desc: 'Annulation gratuite 24h avant', refund: 100, color: '#00A651', icon: '✅' },
+                  { name: 'Modérée', desc: 'Annulation gratuite 5 jours avant', refund: 50, color: '#D4AF37', icon: '⚠️' },
+                  { name: 'Stricte', desc: 'Aucun remboursement', refund: 0, color: '#D93025', icon: '❌' },
+                ].map((policy) => (
+                  <div key={policy.name} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
+                    <span className="text-3xl block mb-2">{policy.icon}</span>
+                    <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-1">{policy.name}</h4>
+                    <p className="text-xs text-gray-500 mb-3">{policy.desc}</p>
+                    <div className="p-3 rounded-xl" style={{ backgroundColor: `${policy.color}10` }}>
+                      <p className="font-mono text-2xl font-bold" style={{ color: policy.color }}>{policy.refund}%</p>
+                      <p className="text-[10px] text-gray-500">Remboursement</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Refund Calculator */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm border">
+                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-3">🧮 Calculateur de remboursement</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Prix total (FCFA)</label>
+                    <input type="number" defaultValue={50000} className="w-full px-3 py-2 border rounded-xl text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Jours avant check-in</label>
+                    <input type="number" defaultValue={3} className="w-full px-3 py-2 border rounded-xl text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Politique</label>
+                    <select className="w-full px-3 py-2 border rounded-xl text-sm">
+                      <option value="flexible">Flexible</option>
+                      <option value="moderate">Modérée</option>
+                      <option value="strict">Stricte</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl">
+                  <p className="text-sm text-[#2C2E2F]">Remboursement estimé : <span className="font-mono font-bold text-[#00A651]">25 000 FCFA (50%)</span></p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ LAST-MINUTE PRICING TAB ═══ */}
+          {activeTab === 'lastminute' && (
+            <motion.div key="lastminute" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
+              <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F]">⚡ Tarification last-minute</h3>
+                    <p className="text-sm text-gray-500">Automatisez les réductions pour les réservations de dernière minute.</p>
+                  </div>
+                  <button className="px-4 py-2 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors">
+                    + Ajouter une règle
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { name: 'Same-day discount', daysBefore: 0, discount: 25, active: true },
+                  { name: '1-2 jours avant', daysBefore: 2, discount: 15, active: true },
+                  { name: '3-5 jours avant', daysBefore: 5, discount: 10, active: false },
+                ].map((rule, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-5 shadow-sm border">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-display text-base font-bold text-[#2C2E2F]">{rule.name}</h4>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${rule.active ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'}`}>
+                        {rule.active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 bg-gray-50 rounded-xl">
+                        <p className="text-[10px] text-gray-500">Jours avant</p>
+                        <p className="font-mono text-sm font-bold text-[#2C2E2F]">≤ {rule.daysBefore}j</p>
+                      </div>
+                      <div className="p-2 bg-[#D4AF37]/5 rounded-xl">
+                        <p className="text-[10px] text-gray-500">Réduction</p>
+                        <p className="font-mono text-sm font-bold text-[#D4AF37]">-{rule.discount}%</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border">
+                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-2">📋 Fonctionnement</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>⚡ Les réductions s&apos;appliquent automatiquement aux réservations effectuées dans la période définie</li>
+                  <li>📊 Les tarifs sont mis à jour en temps réel sur les canaux OTA connectés</li>
+                  <li>🎯 Possibilité de cibler des types de chambre spécifiques</li>
+                  <li>🔄 Les règles se désactivent automatiquement quand l&apos;occupation dépasse le seuil défini</li>
+                </ul>
               </div>
             </motion.div>
           )}

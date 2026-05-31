@@ -1,6 +1,7 @@
 // AfriBayit — Escrow State Machine Engine
 // Implements the full transaction lifecycle with SHA-256 hash chaining
 // CDC §5.0bis.4 — Escrow sécurisé
+// CDC §11 — Commission rates per transaction type
 //
 // State Machine:
 // CREATED → FUNDED → NOTARY_ASSIGNED → GEO_VERIFIED → DEED_SIGNED → ANDF_REGISTERED → RELEASED
@@ -8,6 +9,212 @@
 
 import { db } from '@/lib/db';
 import type { TransactionState, ReleaseConditions, EscrowTransitionEvent, EscrowEntryType } from './types';
+
+// ============ CDC §11 — Commission Rates per Transaction Type ============
+
+/** Transaction types for commission calculation */
+export type CommissionTransactionType =
+  | 'vente_immobiliere'    // Vente immobilière
+  | 'location_courte_duree' // Location courte durée
+  | 'hotellerie'           // Hôtellerie
+  | 'artisan'              // Artisan
+  | 'guesthouse';          // Guesthouse
+
+/** Hotel tier for tiered commission */
+export type HotelTier = 1 | 2 | 3 | 4 | 5;
+
+/** Commission calculation result */
+export interface CommissionResult {
+  transactionType: CommissionTransactionType;
+  rate: number;
+  commission: number;
+  sellerPayout: number;
+  breakdown: {
+    label: string;
+    rate: number;
+    amount: number;
+  }[];
+}
+
+/**
+ * Calculate commission for a vente immobilière (2–5% based on property value).
+ * - ≤ 5M XOF: 5%
+ * - 5M–20M XOF: 4%
+ * - 20M–50M XOF: 3%
+ * - > 50M XOF: 2%
+ */
+function calculateVenteImmobiliereCommission(amount: number): { rate: number; commission: number } {
+  if (amount <= 5_000_000) return { rate: 0.05, commission: Math.round(amount * 0.05) };
+  if (amount <= 20_000_000) return { rate: 0.04, commission: Math.round(amount * 0.04) };
+  if (amount <= 50_000_000) return { rate: 0.03, commission: Math.round(amount * 0.03) };
+  return { rate: 0.02, commission: Math.round(amount * 0.02) };
+}
+
+/**
+ * Calculate commission for location courte durée (3%).
+ */
+function calculateLocationCourteDureeCommission(amount: number): { rate: number; commission: number } {
+  return { rate: 0.03, commission: Math.round(amount * 0.03) };
+}
+
+/**
+ * Calculate commission for hôtellerie (12–15% based on hotel tier).
+ * - 1–2 stars: 12%
+ * - 3 stars: 13%
+ * - 4 stars: 14%
+ * - 5 stars: 15%
+ */
+function calculateHotellerieCommission(amount: number, tier: HotelTier): { rate: number; commission: number } {
+  const rateByTier: Record<HotelTier, number> = {
+    1: 0.12, 2: 0.12, 3: 0.13, 4: 0.14, 5: 0.15,
+  };
+  const rate = rateByTier[tier];
+  return { rate, commission: Math.round(amount * rate) };
+}
+
+/**
+ * Calculate commission for artisan services (5%).
+ */
+function calculateArtisanCommission(amount: number): { rate: number; commission: number } {
+  return { rate: 0.05, commission: Math.round(amount * 0.05) };
+}
+
+/**
+ * Calculate commission for guesthouse (10–13% voyageur + 3% propriétaire).
+ * Returns a result with dual breakdown.
+ */
+function calculateGuesthouseCommission(amount: number, guesthouseTier: 1 | 2 | 3 = 2): {
+  rate: number;
+  commission: number;
+  voyageurRate: number;
+  voyageurCommission: number;
+  proprietaireRate: number;
+  proprietaireCommission: number;
+} {
+  const voyageurRateByTier: Record<number, number> = { 1: 0.10, 2: 0.12, 3: 0.13 };
+  const voyageurRate = voyageurRateByTier[guesthouseTier] || 0.12;
+  const proprietaireRate = 0.03;
+  const voyageurCommission = Math.round(amount * voyageurRate);
+  const proprietaireCommission = Math.round(amount * proprietaireRate);
+  return {
+    rate: voyageurRate + proprietaireRate,
+    commission: voyageurCommission + proprietaireCommission,
+    voyageurRate,
+    voyageurCommission,
+    proprietaireRate,
+    proprietaireCommission,
+  };
+}
+
+/**
+ * Calculate the commission for any transaction type based on CDC §11 rates.
+ * This is the primary function to use for commission calculation.
+ */
+export function calculateCommissionByType(
+  transactionType: CommissionTransactionType,
+  amount: number,
+  options?: { hotelTier?: HotelTier; guesthouseTier?: 1 | 2 | 3 }
+): CommissionResult {
+  const result: CommissionResult = {
+    transactionType,
+    rate: 0,
+    commission: 0,
+    sellerPayout: 0,
+    breakdown: [],
+  };
+
+  switch (transactionType) {
+    case 'vente_immobiliere': {
+      const calc = calculateVenteImmobiliereCommission(amount);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.commission;
+      result.breakdown = [{
+        label: 'Commission vente immobilière',
+        rate: calc.rate,
+        amount: calc.commission,
+      }];
+      break;
+    }
+    case 'location_courte_duree': {
+      const calc = calculateLocationCourteDureeCommission(amount);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.commission;
+      result.breakdown = [{
+        label: 'Commission location courte durée',
+        rate: calc.rate,
+        amount: calc.commission,
+      }];
+      break;
+    }
+    case 'hotellerie': {
+      const tier = options?.hotelTier || 3;
+      const calc = calculateHotellerieCommission(amount, tier);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.commission;
+      result.breakdown = [{
+        label: `Commission hôtellerie (${tier} étoile${tier > 1 ? 's' : ''})`,
+        rate: calc.rate,
+        amount: calc.commission,
+      }];
+      break;
+    }
+    case 'artisan': {
+      const calc = calculateArtisanCommission(amount);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.commission;
+      result.breakdown = [{
+        label: 'Commission artisan',
+        rate: calc.rate,
+        amount: calc.commission,
+      }];
+      break;
+    }
+    case 'guesthouse': {
+      const gTier = options?.guesthouseTier || 2;
+      const calc = calculateGuesthouseCommission(amount, gTier);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.commission;
+      result.breakdown = [
+        { label: `Commission voyageur (guesthouse ${gTier} étoile${gTier > 1 ? 's' : ''})`, rate: calc.voyageurRate, amount: calc.voyageurCommission },
+        { label: 'Commission propriétaire (guesthouse)', rate: calc.proprietaireRate, amount: calc.proprietaireCommission },
+      ];
+      break;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Auto-detect transaction type from a Transaction record and calculate commission.
+ * Falls back to vente_immobiliere for achat/investissement transactions.
+ */
+export function calculateTransactionCommission(
+  transaction: { amount: number; type?: string; propertyType?: string },
+  options?: { hotelTier?: HotelTier; guesthouseTier?: 1 | 2 | 3 }
+): CommissionResult {
+  const txType = transaction.type || 'achat';
+  const propType = transaction.propertyType || '';
+
+  let commissionType: CommissionTransactionType = 'vente_immobiliere';
+
+  if (txType === 'location' || txType === 'location_courte_duree') {
+    commissionType = 'location_courte_duree';
+  } else if (propType === 'hotel' || txType === 'hotel' || txType === 'hotellerie') {
+    commissionType = 'hotellerie';
+  } else if (propType === 'guesthouse' || txType === 'guesthouse') {
+    commissionType = 'guesthouse';
+  } else if (txType === 'artisan' || propType === 'artisan_service') {
+    commissionType = 'artisan';
+  }
+
+  return calculateCommissionByType(commissionType, transaction.amount, options);
+}
 
 // ============ State Machine Configuration ============
 
@@ -244,9 +451,12 @@ export async function transition(
       }
 
       if (newState === 'RELEASED') {
-        // Release funds: debit escrow, account for commission
-        const commissionRate = transaction.commissionRate || 0.025;
-        const commission = Math.round(transaction.amount * commissionRate);
+        // Release funds: debit escrow, account for commission using CDC §11 rates
+        const commissionCalc = calculateTransactionCommission({
+          amount: transaction.amount,
+          type: transaction.type || undefined,
+        });
+        const commission = commissionCalc.commission;
         const sellerPayout = transaction.amount - commission;
         const currentBalance = escrowAccount.balance;
 
