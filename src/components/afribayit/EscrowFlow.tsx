@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEscrowList, useCreateEscrow } from '@/hooks/useEscrow';
+import { useEscrowList, useCreateEscrow, useTransitionEscrow } from '@/hooks/useEscrow';
 import { useCountry } from '@/contexts/CountryContext';
 import { toast } from 'sonner';
 
@@ -51,15 +51,31 @@ const exceptionStatesConfig: EscrowStateConfig[] = [
 
 const normalFlowOrder: EscrowState[] = ['CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED', 'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED'];
 
+// Valid forward transitions per state — mirrors the server-side VALID_TRANSITIONS
+const NEXT_STATE_ACTIONS: Record<string, { target: EscrowState; label: string; icon: string; actorType: string }[]> = {
+  CREATED: [{ target: 'FUNDED', label: 'Financer l\'escrow', icon: '💰', actorType: 'buyer' }],
+  FUNDED: [{ target: 'DOCS_VALIDATED', label: 'Valider les documents', icon: '📄', actorType: 'system' }],
+  DOCS_VALIDATED: [{ target: 'GEOTRUST_VALIDATED', label: 'Valider GeoTrust', icon: '🌍', actorType: 'system' }],
+  GEOTRUST_VALIDATED: [{ target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: '⚖️', actorType: 'admin' }],
+  NOTARY_ASSIGNED: [{ target: 'NOTARY_IN_PROGRESS', label: 'Démarrer la procédure', icon: '🔨', actorType: 'notary' }],
+  NOTARY_IN_PROGRESS: [{ target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: '📝', actorType: 'notary' }],
+  DEED_SIGNED: [{ target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: '🏛️', actorType: 'notary' }],
+  ANDF_REGISTERED: [{ target: 'RELEASED', label: 'Libérer les fonds', icon: '✅', actorType: 'notary' }],
+  DISPUTED: [
+    { target: 'FUNDED', label: 'Résoudre → Financé', icon: '↩️', actorType: 'admin' },
+    { target: 'NOTARY_IN_PROGRESS', label: 'Résoudre → Notaire', icon: '⚖️', actorType: 'admin' },
+    { target: 'REFUNDED', label: 'Rembourser', icon: '↩️', actorType: 'admin' },
+  ],
+};
+
 export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
-  const [step, setStep] = useState(0);
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [currentEscrowState, setCurrentEscrowState] = useState<EscrowState>('FUNDED');
+  const [selectedProvider, setSelectedProvider] = React.useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = React.useState(false);
 
   const { selectedCountry } = useCountry();
   const { data, isLoading } = useEscrowList(1, 20, selectedCountry);
   const createEscrow = useCreateEscrow();
+  const transitionEscrow = useTransitionEscrow();
 
   // Get the first escrow account for transaction details (or use selected one)
   const escrowAccounts = (data?.escrowAccounts as Array<{
@@ -76,12 +92,18 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
 
   const selectedEscrow = escrowAccounts[0];
 
+  // Derive the current escrow state from the API response, not local state
+  const currentEscrowState = (selectedEscrow?.transaction?.status || selectedEscrow?.status || 'CREATED') as EscrowState;
+
   // Derive property name and amount from API data
   const propertyName = selectedEscrow?.property || selectedEscrow?.transaction?.propertyId || 'Propriété';
   const amount = selectedEscrow?.amount || selectedEscrow?.transaction?.amount || 0;
   const currency = selectedEscrow?.currency || selectedEscrow?.transaction?.currency || 'XOF';
   const escrowFee = Math.round(amount * 0.015);
   const totalAmount = amount + escrowFee;
+
+  // Get the escrow transaction ID for PATCH calls
+  const escrowTransactionId = selectedEscrow?.transaction?.id || selectedEscrow?.id || '';
 
   // Build completed timestamps from actual API data
   const completedTimestamps = useMemo<Record<EscrowState, string | null>>(() => {
@@ -98,12 +120,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
     }
     return ts;
   }, [selectedEscrow, currentEscrowState]);
-
-  const steps = [
-    { title: 'Choisir le moyen de paiement', desc: 'Sélectionnez votre fournisseur de paiement' },
-    { title: 'Montant et détails', desc: 'Vérifiez les informations de la transaction' },
-    { title: 'Confirmation', desc: 'Confirmez le paiement en escrow' },
-  ];
 
   const handleConfirm = () => {
     if (!selectedEscrow?.transaction?.id && !selectedEscrow?.id) {
@@ -128,6 +144,51 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
     );
   };
 
+  const handleTransition = (targetStatus: EscrowState, actorType: string) => {
+    if (!escrowTransactionId) {
+      toast.error('Aucune transaction sélectionnée');
+      return;
+    }
+    transitionEscrow.mutate(
+      {
+        id: escrowTransactionId,
+        targetStatus,
+        actorType,
+      },
+      {
+        onSuccess: () => {
+          toast.success(`Transition vers ${targetStatus} réussie !`);
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur de transition', { description: error.message });
+        },
+      }
+    );
+  };
+
+  const handleDispute = () => {
+    if (!escrowTransactionId) {
+      toast.error('Aucune transaction sélectionnée');
+      return;
+    }
+    transitionEscrow.mutate(
+      {
+        id: escrowTransactionId,
+        targetStatus: 'DISPUTED',
+        actorType: 'buyer',
+        reason: 'Litige signalé par l\'acheteur',
+      },
+      {
+        onSuccess: () => {
+          toast.error('Litige signalé — Médiation en cours');
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors du signalement', { description: error.message });
+        },
+      }
+    );
+  };
+
   // Determine the state of each step in the timeline
   const getStateStatus = (stateKey: EscrowState): 'completed' | 'current' | 'upcoming' | 'exception' => {
     if (exceptionStatesConfig.some(s => s.key === stateKey)) {
@@ -147,6 +208,11 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   };
 
   const isExceptionActive = ['DISPUTED', 'REFUNDED', 'EXPIRED'].includes(currentEscrowState);
+  const isTerminalState = ['RELEASED', 'REFUNDED', 'EXPIRED'].includes(currentEscrowState);
+
+  // Available actions for the current state
+  const availableActions = NEXT_STATE_ACTIONS[currentEscrowState] || [];
+  const canDispute = !isTerminalState && currentEscrowState !== 'DISPUTED';
 
   const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
@@ -176,19 +242,11 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Cycle de vie Escrow</h3>
-            <select
-              value={currentEscrowState}
-              onChange={(e) => setCurrentEscrowState(e.target.value as EscrowState)}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-600 focus:outline-none focus:border-[#003087]"
-              aria-label="Simuler l'état escrow"
-            >
-              {normalFlowOrder.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-              {exceptionStatesConfig.map(s => (
-                <option key={s.key} value={s.key}>{s.key} (exception)</option>
-              ))}
-            </select>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-[#003087]/5 text-[#003087]">
+              {escrowStatesConfig.find(s => s.key === currentEscrowState)?.label ||
+               exceptionStatesConfig.find(s => s.key === currentEscrowState)?.label ||
+               currentEscrowState}
+            </span>
           </div>
 
           {isLoading ? (
@@ -320,6 +378,48 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           )}
         </motion.div>
 
+        {/* Action Buttons — Based on Current State */}
+        {!isLoading && (availableActions.length > 0 || canDispute) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12, ease: easeOut }}
+            className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
+          >
+            <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3">Actions disponibles</h4>
+            <div className="flex flex-wrap gap-3">
+              {availableActions.map((action) => (
+                <motion.button
+                  key={action.target}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleTransition(action.target, action.actorType)}
+                  disabled={transitionEscrow.isPending}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>{action.icon}</span>
+                  <span>{action.label}</span>
+                </motion.button>
+              ))}
+              {canDispute && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDispute}
+                  disabled={transitionEscrow.isPending}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#D93025]/10 text-[#D93025] text-sm font-semibold rounded-xl hover:bg-[#D93025]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>⚠️</span>
+                  <span>Signaler un litige</span>
+                </motion.button>
+              )}
+            </div>
+            {transitionEscrow.isPending && (
+              <p className="mt-2 text-xs text-gray-400 animate-pulse">Transition en cours...</p>
+            )}
+          </motion.div>
+        )}
+
         {/* State Machine Legend */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -376,119 +476,20 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           </div>
         </motion.div>
 
-        {/* Payment Steps */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
-          className="bg-white rounded-3xl p-6 shadow-sm border"
-        >
-          {/* Progress */}
-          <div className="flex items-center gap-2 mb-6">
-            {steps.map((s, i) => (
-              <div key={i} className="flex items-center flex-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
-                  i <= step ? 'bg-[#003087] text-white' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {i + 1}
-                </div>
-                {i < steps.length - 1 && (
-                  <div className={`flex-1 h-0.5 mx-2 rounded ${i < step ? 'bg-[#003087]' : 'bg-gray-200'}`} />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">{steps[step].title}</h2>
-          <p className="text-sm text-gray-500 mb-6">{steps[step].desc}</p>
-
-          {/* Step 1: Payment Provider */}
-          {step === 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {paymentProviders.map((provider) => (
-                <motion.button
-                  key={provider.key}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedProvider(provider.key)}
-                  className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                    selectedProvider === provider.key
-                      ? 'border-[#003087] bg-[#003087]/5'
-                      : 'border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  <span className="text-2xl block mb-2">{provider.icon}</span>
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{provider.name}</p>
-                </motion.button>
-              ))}
-            </div>
-          )}
-
-          {/* Step 2: Amount & Details */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-2xl">
-                <p className="text-xs text-gray-500 mb-1">Bien</p>
-                <p className="text-sm font-semibold text-[#2C2E2F]">{propertyName}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-2xl">
-                <p className="text-xs text-gray-500 mb-1">Montant</p>
-                <p className="font-mono-data text-2xl font-bold text-[#D4AF37]">{amount > 0 ? formatFCFA(amount) : '—'}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-2xl">
-                <p className="text-xs text-gray-500 mb-1">Frais escrow (1.5%)</p>
-                <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
-              </div>
-              <div className="p-4 bg-[#00A651]/5 rounded-2xl">
-                <p className="text-xs text-[#00A651] mb-1">Total à payer</p>
-                <p className="font-mono-data text-2xl font-bold text-[#00A651]">{amount > 0 ? formatFCFA(totalAmount) : '—'}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Confirmation */}
-          {step === 2 && (
-            <div className="text-center py-6">
-              <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-              </div>
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Confirmer le paiement</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                En confirmant, vous acceptez de placer les fonds en escrow jusqu&apos;à la signature notariale.
-              </p>
-            </div>
-          )}
-
-          {/* Navigation */}
-          <div className="flex gap-3 mt-6">
-            {step > 0 && (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="flex-1 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                Retour
-              </button>
-            )}
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => {
-                if (step < steps.length - 1) setStep(step + 1);
-                else handleConfirm();
-              }}
-              disabled={(step === 0 && !selectedProvider) || createEscrow.isPending}
-              className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {createEscrow.isPending
-                ? 'Traitement en cours...'
-                : step === steps.length - 1
-                  ? 'Confirmer le paiement'
-                  : 'Continuer'}
-            </motion.button>
-          </div>
-        </motion.div>
+        {/* Payment Steps (only shown for CREATED state when user needs to fund) */}
+        {currentEscrowState === 'CREATED' && (
+          <PaymentSteps
+            selectedProvider={selectedProvider}
+            setSelectedProvider={setSelectedProvider}
+            propertyName={propertyName}
+            amount={amount}
+            escrowFee={escrowFee}
+            totalAmount={totalAmount}
+            formatFCFA={formatFCFA}
+            onConfirm={handleConfirm}
+            isPending={createEscrow.isPending}
+          />
+        )}
 
         {/* Success Overlay */}
         {showSuccess && (
@@ -523,5 +524,151 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
         )}
       </div>
     </section>
+  );
+}
+
+// Extracted Payment Steps component
+function PaymentSteps({
+  selectedProvider,
+  setSelectedProvider,
+  propertyName,
+  amount,
+  escrowFee,
+  totalAmount,
+  formatFCFA,
+  onConfirm,
+  isPending,
+}: {
+  selectedProvider: string | null;
+  setSelectedProvider: (v: string | null) => void;
+  propertyName: string;
+  amount: number;
+  escrowFee: number;
+  totalAmount: number;
+  formatFCFA: (n: number) => string;
+  onConfirm: () => void;
+  isPending: boolean;
+}) {
+  const [step, setStep] = React.useState(0);
+
+  const steps = [
+    { title: 'Choisir le moyen de paiement', desc: 'Sélectionnez votre fournisseur de paiement' },
+    { title: 'Montant et détails', desc: 'Vérifiez les informations de la transaction' },
+    { title: 'Confirmation', desc: 'Confirmez le paiement en escrow' },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
+      className="bg-white rounded-3xl p-6 shadow-sm border"
+    >
+      {/* Progress */}
+      <div className="flex items-center gap-2 mb-6">
+        {steps.map((s, i) => (
+          <div key={i} className="flex items-center flex-1">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+              i <= step ? 'bg-[#003087] text-white' : 'bg-gray-100 text-gray-400'
+            }`}>
+              {i + 1}
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-2 rounded ${i < step ? 'bg-[#003087]' : 'bg-gray-200'}`} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">{steps[step].title}</h2>
+      <p className="text-sm text-gray-500 mb-6">{steps[step].desc}</p>
+
+      {/* Step 1: Payment Provider */}
+      {step === 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {paymentProviders.map((provider) => (
+            <motion.button
+              key={provider.key}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setSelectedProvider(provider.key)}
+              className={`p-4 rounded-2xl border-2 text-left transition-all ${
+                selectedProvider === provider.key
+                  ? 'border-[#003087] bg-[#003087]/5'
+                  : 'border-gray-100 hover:border-gray-200'
+              }`}
+            >
+              <span className="text-2xl block mb-2">{provider.icon}</span>
+              <p className="text-sm font-semibold text-[#2C2E2F]">{provider.name}</p>
+            </motion.button>
+          ))}
+        </div>
+      )}
+
+      {/* Step 2: Amount & Details */}
+      {step === 1 && (
+        <div className="space-y-4">
+          <div className="p-4 bg-gray-50 rounded-2xl">
+            <p className="text-xs text-gray-500 mb-1">Bien</p>
+            <p className="text-sm font-semibold text-[#2C2E2F]">{propertyName}</p>
+          </div>
+          <div className="p-4 bg-gray-50 rounded-2xl">
+            <p className="text-xs text-gray-500 mb-1">Montant</p>
+            <p className="font-mono-data text-2xl font-bold text-[#D4AF37]">{amount > 0 ? formatFCFA(amount) : '—'}</p>
+          </div>
+          <div className="p-4 bg-gray-50 rounded-2xl">
+            <p className="text-xs text-gray-500 mb-1">Frais escrow (1.5%)</p>
+            <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
+          </div>
+          <div className="p-4 bg-[#00A651]/5 rounded-2xl">
+            <p className="text-xs text-[#00A651] mb-1">Total à payer</p>
+            <p className="font-mono-data text-2xl font-bold text-[#00A651]">{amount > 0 ? formatFCFA(totalAmount) : '—'}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Confirmation */}
+      {step === 2 && (
+        <div className="text-center py-6">
+          <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+          </div>
+          <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Confirmer le paiement</h3>
+          <p className="text-sm text-gray-500 mb-6">
+            En confirmant, vous acceptez de placer les fonds en escrow jusqu&apos;à la signature notariale.
+          </p>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <div className="flex gap-3 mt-6">
+        {step > 0 && (
+          <button
+            onClick={() => setStep(step - 1)}
+            className="flex-1 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Retour
+          </button>
+        )}
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => {
+            if (step < steps.length - 1) setStep(step + 1);
+            else onConfirm();
+          }}
+          disabled={(step === 0 && !selectedProvider) || isPending}
+          className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending
+            ? 'Traitement en cours...'
+            : step === steps.length - 1
+              ? 'Confirmer le paiement'
+              : 'Continuer'}
+        </motion.button>
+      </div>
+    </motion.div>
   );
 }

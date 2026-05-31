@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -481,8 +481,21 @@ model CommunityPost {
 
   author      User            @relation(fields: [authorId], references: [id])
   replies_rel CommunityReply[]
+  likes_rel   PostLike[]
 
   @@map("community_posts")
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
 }
 
 model CommunityReply {
@@ -551,7 +564,21 @@ model CommunityEvent {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  registrations EventRegistration[]
+
   @@map("community_events")
+}
+
+model EventRegistration {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  event     CommunityEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_registrations")
 }
 
 // ============ NOTIFICATIONS ============
@@ -691,8 +718,8 @@ model GeometerMission {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  geometer        Geometer         @relation(fields: [geometerId], references: [id], map: "fk_mission_geometer")
-  geometerUser    User             @relation("GeometerUser", fields: [geometerId], references: [id], map: "fk_mission_geometer_user")
+  geometer        Geometer         @relation(fields: [geometerId], references: [id])
+  geometerUser    User             @relation("GeometerUser", fields: [geometerId], references: [id])
   property        Property         @relation("PropertyMissions", fields: [propertyId], references: [id])
   propertyGeom    PropertyGeometry?
   waypoints       GpsWaypoint[]

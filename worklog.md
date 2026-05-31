@@ -1181,3 +1181,496 @@ Stage Summary:
 - 4 hooks verified: useEscrow, useSubscriptions, useWallet, useNotifications — all have `country?: string` param
 - 3 components verified: EscrowFlow, WalletModule, SubscriptionsModule — all import useCountry and pass selectedCountry
 - This was previously implemented in the "Country-Strict-Horodatage" task
+
+---
+Task ID: missing-api-routes
+Agent: Main Agent
+Task: Add missing API routes that frontend hooks are calling but don't exist
+
+Work Log:
+
+## 1. Updated Prisma Schema
+- Added `PostLike` model (postId, userId, unique constraint on [postId, userId]) for tracking post likes
+- Added `EventRegistration` model (eventId, userId, unique constraint on [eventId, userId]) for tracking event registrations
+- Added `likes_rel PostLike[]` relation to CommunityPost
+- Added `registrations EventRegistration[]` relation to CommunityEvent
+- Fixed datasource provider from `postgresql` to `sqlite` to match actual DATABASE_URL
+- Removed SQLite-incompatible `map` arguments from GeometerMission @relation fields
+- Ran `db:push` successfully — all tables synced
+
+## 2. Created `/src/app/api/notifications/[id]/route.ts`
+- GET: Fetch single notification by ID (authGuard, user can only view own, admin can view all)
+- PATCH: Mark single notification as read (set `read: true`, `readAt: new Date()`) — authGuard, ownership check
+- DELETE: Delete single notification — authGuard, ownership check
+- Returns 404 if not found, 403 if not owner
+
+## 3. Created `/src/app/api/community/events/[id]/register/route.ts`
+- POST: Register current user for event — creates EventRegistration record, increments `attendees` count on CommunityEvent
+  - Checks event exists (404)
+  - Checks not already registered (409)
+  - Checks maxAttendees not exceeded (400)
+- DELETE: Unregister from event — deletes EventRegistration, decrements `attendees` count
+  - Checks registration exists (404)
+
+## 4. Created `/src/app/api/community/posts/[id]/like/route.ts`
+- POST: Like a post — creates PostLike record, increments `likes` count on CommunityPost
+  - Checks post exists (404)
+  - Checks not already liked (409)
+- DELETE: Unlike a post — deletes PostLike, decrements `likes` count (minimum 0 guard)
+  - Checks like exists (404)
+
+## 5. Created `/src/app/api/profiles/[id]/endorse/route.ts`
+- POST: Endorse a skill on a profile — creates SkillEndorsement record
+  - Accepts `skill` in request body (required, trimmed)
+  - Checks profile exists (404)
+  - Prevents self-endorsement (400)
+  - Checks not already endorsed (409)
+  - Returns endorsement with endorser user info
+- DELETE: Remove endorsement — deletes SkillEndorsement
+  - Accepts `skill` in request body (required, trimmed)
+  - Checks endorsement exists (404)
+  - Uses composite unique key (profileId, endorserId, skill)
+
+## 6. Fixed `/src/app/api/route.ts`
+- Changed from `{ message: "Hello, world!" }` placeholder to proper API health check:
+  ```json
+  { "name": "AfriBayit API", "version": "1.0.0", "status": "healthy", "timestamp": "<ISO date>" }
+  ```
+
+## Verification
+- ESLint: 0 errors
+- All new routes follow existing code patterns (db from @/lib/db, authGuard from @/lib/auth-guard, try/catch, proper HTTP status codes)
+- All routes use Next.js 16 params pattern: `{ params }: { params: Promise<{ id: string }> }` with `await params`
+
+Stage Summary:
+- 4 new API route files created
+- 1 API route file fixed (health check)
+- 2 new Prisma models added (PostLike, EventRegistration)
+- Database schema fully synced
+- Zero lint errors
+
+---
+Task ID: frontend-fixes-rebecca-escrow
+Agent: Main Agent
+Task: Fix two critical frontend issues — RebeccaChat hardcoded bot replies and EscrowFlow simulation dropdown
+
+Work Log:
+
+## Fix 1: RebeccaChat — Replace Hardcoded Bot Replies with Real AI
+
+### Problem
+- `RebeccaChat.tsx` used a hardcoded `botReplies` dictionary (120+ lines) to simulate bot responses
+- Conversation creation used type `'ai_assistant'` instead of `'rebecca'`
+- Bot responses were generated via `setTimeout` with random delays, never calling the AI API
+
+### Changes Made
+- Removed entire `botReplies` dictionary (120+ lines)
+- Removed `rebeccaTools` constant (no longer needed for fake tool call badges)
+- Removed unused imports: `useConversations`, `useChatMessages`, `useSendMessage`
+- Changed conversation type from `'ai_assistant'` to `'rebecca'` so the server triggers AI
+- Created `ensureConversation()` helper that lazily creates a `rebecca`-type conversation on first message
+- `sendMessage()` now calls `POST /api/chat/conversations/[id]/messages` via `apiPost`
+- The server detects `conversation.type === 'rebecca'` and calls `z-ai-web-dev-sdk` for real AI responses
+- Server returns `{ userMessage, rebeccaMessage }` — RebeccaChat now uses `rebeccaMessage.content` as the bot reply
+- Added `isSending` state to prevent double-sends and disable UI while waiting
+- Updated header status to show "Réflexion..." while AI is processing
+- Graceful error handling: shows error message in chat if API fails
+- Removed `propertyCard` and `toolCall` from Message interface (no longer faked)
+- Removed `quickReplies` from Message interface (AI generates its own suggestions)
+
+### How the AI Flow Works
+1. User sends a message → `sendMessage()` called
+2. `ensureConversation()` creates a `rebecca`-type conversation if none exists
+3. `apiPost('/api/chat/conversations/${convId}/messages', { content, messageType: 'text' })` called
+4. Server saves user message, detects `rebecca` type
+5. Server fetches last 10 messages for context
+6. Server calls `z-ai-web-dev-sdk` chat completions with Rebecca system prompt
+7. Server saves Rebecca's AI response as a new message
+8. Server returns `{ userMessage, rebeccaMessage }` — frontend displays `rebeccaMessage.content`
+
+## Fix 2: EscrowFlow — Replace Simulation Dropdown with Real API Transitions
+
+### Problem
+- `EscrowFlow.tsx` had a `<select>` dropdown to manually simulate state changes (`setCurrentEscrowState`)
+- The `currentEscrowState` was initialized to `'FUNDED'` and never came from the API
+- No action buttons for state transitions — just a dropdown
+- Never called `PATCH /api/escrow/[id]` for state transitions
+
+### Changes Made to `useEscrow.ts`
+- Added `apiPatch` import
+- Added `useEscrowDetail(id)` hook — GET /api/escrow/[id] for individual escrow data
+- Added `useTransitionEscrow()` mutation hook — PATCH /api/escrow/[id] with `{ targetStatus, actorType, reason, metadata }`
+- On success, invalidates both `['escrow']` and `['escrow-detail', id]` query keys
+
+### Changes Made to `EscrowFlow.tsx`
+- Removed simulation `<select>` dropdown entirely
+- Removed `useState` for `currentEscrowState` — now derived from API: `selectedEscrow?.transaction?.status || selectedEscrow?.status || 'CREATED'`
+- Removed `useState` for `step` — moved into extracted `PaymentSteps` component
+- Added `useTransitionEscrow()` hook import and usage
+- Added `NEXT_STATE_ACTIONS` config mapping each state to its valid next action(s) with labels and actor types
+- Added "Actions disponibles" section with real action buttons per current state:
+  - CREATED → "Financer l'escrow" (actorType: buyer)
+  - FUNDED → "Valider les documents" (actorType: system)
+  - DOCS_VALIDATED → "Valider GeoTrust" (actorType: system)
+  - GEOTRUST_VALIDATED → "Assigner un notaire" (actorType: admin)
+  - NOTARY_ASSIGNED → "Démarrer la procédure" (actorType: notary)
+  - NOTARY_IN_PROGRESS → "Signer l'acte" (actorType: notary)
+  - DEED_SIGNED → "Enregistrer ANDF" (actorType: notary)
+  - ANDF_REGISTERED → "Libérer les fonds" (actorType: notary)
+  - DISPUTED → "Résoudre → Financé" / "Résoudre → Notaire" / "Rembourser" (actorType: admin)
+- Added "Signaler un litige" button for any non-terminal, non-disputed state
+- `handleTransition()` calls `transitionEscrow.mutate({ id, targetStatus, actorType })`
+- `handleDispute()` calls `transitionEscrow.mutate({ id, targetStatus: 'DISPUTED', actorType: 'buyer' })`
+- Toast notifications on success/error
+- Loading indicator while transition is pending
+- Payment steps only shown when state is CREATED (user needs to fund)
+- Extracted `PaymentSteps` as a separate component within the file for cleanliness
+- Current state badge shown in timeline header instead of dropdown
+
+### How the Escrow Transition Flow Works
+1. User clicks action button (e.g., "Financer l'escrow")
+2. `handleTransition('FUNDED', 'buyer')` called
+3. `transitionEscrow.mutate({ id: escrowTransactionId, targetStatus: 'FUNDED', actorType: 'buyer' })` called
+4. PATCH /api/escrow/[id] with `{ targetStatus: 'FUNDED', actorType: 'buyer' }` sent to server
+5. Server validates transition (CREATED → FUNDED is valid)
+6. Server updates transaction status, sets escrowFundedAt timestamp
+7. Server creates TransactionTimeline entry
+8. Server returns `{ success: true, transaction, transition }`
+9. React Query invalidates escrow list, component re-renders with new state
+10. Timeline updates, new action buttons appear for the next state
+
+## Files Modified
+1. `src/components/afribayit/RebeccaChat.tsx` — Complete rewrite (440 → 280 lines)
+2. `src/components/afribayit/EscrowFlow.tsx` — Major refactor (528 → 440 lines)
+3. `src/hooks/useEscrow.ts` — Added useTransitionEscrow + useEscrowDetail hooks
+
+## Verification
+- ESLint: 0 errors
+- All imports verified correct
+- No unused variables or dead code
+
+---
+Task ID: admin-backoffice
+Agent: Main Agent
+Task: Create admin backoffice layout and core infrastructure
+
+Work Log:
+
+## 1. AdminSidebar Component (`/src/components/admin/AdminSidebar.tsx`)
+- Professional dark navy sidebar (#003087) with 280px width, collapsible on mobile
+- 8 navigation groups with 25+ items: Tableau de bord, Gestion des utilisateurs, Immobilier, Transactions & Finance, Hôtellerie & Séjour, Contenu & Communauté, Académie, Système
+- Each item has Lucide React icon, active state highlighting (gold #D4AF37 background)
+- Collapsible groups with ChevronDown toggle
+- Search bar to filter navigation items
+- Country filter dropdown at bottom (ALL, BJ, CI, BF, TG)
+- "Retour au site" link at bottom
+- AfriBayit Admin logo with gold AB badge
+
+## 2. AdminHeader Component (`/src/components/admin/AdminHeader.tsx`)
+- Sticky top header bar with search bar, country filter, quick actions dropdown
+- Notification bell with badge count (gold #D4AF37)
+- Admin user avatar + name + role dropdown menu
+- Quick actions: New user, Export data, Sync OTA
+- User menu: Profile, Settings, Audit log, Sign out
+- Mobile-responsive with hamburger menu toggle
+- Country selector with flag emojis
+
+## 3. Admin Layout (`/src/app/admin/layout.tsx`)
+- Full admin layout with SessionProvider, sidebar, header
+- Responsive: desktop sidebar (collapsible), mobile overlay sidebar
+- Main content area with proper margin transitions
+- Country state shared between sidebar and header
+
+## 4. Admin Redirect (`/src/app/admin/page.tsx`)
+- Redirects /admin to /admin/dashboard
+
+## 5. Admin Dashboard (`/src/app/admin/dashboard/page.tsx`)
+- Google Analytics-inspired dark theme dashboard
+- 8 KPI stat cards: Users, Properties, Transactions, Commissions, Escrow, KYC, Agents, Active 24h
+- Revenue chart with SVG mini-chart (12 months)
+- Activity feed with recent events
+- Users by role breakdown with progress bars
+- Properties by status breakdown with color-coded bars
+- Countries breakdown: BJ, CI, BF, TG with user/property counts
+- Loading skeleton states
+
+## 6. Middleware Update (`/src/middleware.ts`)
+- Added admin route protection: /admin/* and /api/admin/* require admin role
+- Uses withAuth callback to check token.role === 'admin'
+- Non-admin users are redirected to /auth/login
+- Preserves existing protected routes
+
+## 7. Admin Hooks (`/src/hooks/useAdmin.ts`)
+- useAdminStats(country?) — GET /api/admin/stats with optional country filter
+- useAdminUsers(filters) — GET /api/admin/users with role, country, status, search, pagination
+- useAdminUser(id) — GET /api/admin/users/[id] with full user detail
+- useUpdateUser(id) — PATCH /api/admin/users/[id] with cache invalidation
+- useDeleteUser(id) — DELETE /api/admin/users/[id]
+- useCreateUser() — POST /api/admin/users with cache invalidation
+- useAdminProperties(filters) — GET /api/admin/properties
+- useAdminTransactions(filters) — GET /api/admin/transactions
+
+## 8. Admin API Routes
+
+### `/src/app/api/admin/stats/route.ts`
+- Aggregated statistics with admin auth guard
+- Users: total, byRole (groupBy), byCountry (groupBy), recent7d, recent30d
+- Properties: total, byStatus, byCountry, pending count
+- Transactions: total, totalVolume, totalCommission, byStatus
+- Escrow: active accounts, totalHeld amount
+- KYC: pending document count
+- Revenue: monthly commission data (last 12 months)
+- Platform: activeUsers24h, uptime
+
+### `/src/app/api/admin/users/route.ts`
+- GET: List users with pagination, filtering (role, country, status, search), includes _count for properties/transactions/reviews
+- POST: Create user with admin auth guard, email uniqueness check
+
+### `/src/app/api/admin/users/[id]/route.ts`
+- GET: User detail with properties, transactions, kycDocuments, subscriptions, professionalProfile, _count
+- PATCH: Update user (whitelisted fields: name, role, country, kycLevel, verified, etc.)
+- DELETE: Soft-delete (sets role to 'banned')
+
+### `/src/app/api/admin/properties/route.ts`
+- GET: All properties with moderation filters (status, country, search), includes owner, legalDocs, _count
+- Summary stats: pending, flagged, published counts
+
+### `/src/app/api/admin/transactions/route.ts`
+- GET: All transactions with financial overview (totalAmount, totalCommission, byStatus)
+- Includes property, buyer, escrowAccount, timelineEvents
+
+Stage Summary:
+- Complete admin backoffice at /admin route with professional sidebar, header, dashboard
+- 25+ navigation items across 8 groups
+- Admin-only access enforced at middleware level
+- 5 admin API routes with auth guard requiring admin role
+- 8 admin hooks for React Query data fetching
+- Google Analytics-inspired dashboard with KPI cards, charts, activity feed
+- Responsive design (mobile sidebar overlay, desktop collapsible sidebar)
+- AfriBayit color scheme: Navy #003087, Gold #D4AF37, Blue #009CDE, Green #00A651
+- ESLint: 0 errors
+
+---
+Task ID: admin-crud-pages
+Agent: Main Agent
+Task: Create admin CRUD management pages for Users, Properties, KYC, and Escrow
+
+Work Log:
+
+## 1. Extended useAdmin.ts Hook
+- Added `AdminKycFilters`, `AdminKycDocument`, `AdminKycResponse` types
+- Added `AdminEscrowFilters`, `AdminEscrowAccount`, `AdminEscrowResponse` types
+- Added `useAdminKyc(filters)` hook — queries `/api/admin/kyc` with status/country/docType filters
+- Added `useValidateKyc(id)` mutation — validates/rejects KYC docs via `/api/kyc/[id]/validate`
+- Added `useAdminEscrow(filters)` hook — queries `/api/admin/escrow` with status/country/search filters
+- Added `useEscrowTransition(id)` mutation — transitions escrow state via `/api/escrow/[id]`
+- Added `useUpdateProperty(id)` mutation — updates property via `/api/properties/[id]`
+
+## 2. Created Admin KYC API Route
+- New file: `/src/app/api/admin/kyc/route.ts`
+- GET: Admin-only listing of KYC documents with pagination and filters (status, country, docType)
+- Includes user info (name, email, avatar, country) for each document
+- Summary stats: pending count, average AI score, validated today count
+
+## 3. Created Admin Escrow API Route
+- New file: `/src/app/api/admin/escrow/route.ts`
+- GET: Admin-only listing of escrow accounts with pagination and filters (status, country, search)
+- Enriches escrow accounts with full transaction data (property, buyer, seller)
+- Summary stats: total held amount, active disputes, released today, average hold time in hours
+
+## 4. Admin Users Page (`/src/app/admin/users/page.tsx`)
+- Search bar with name/email search
+- Filter dropdowns: role (7 roles + all), country (BJ/CI/BF/TG + all), status (verified/unverified/all)
+- Data table with columns: Avatar+Name, Email, Role, Country, KYC Level, Score, Status, Actions
+- Actions dropdown: View detail, Edit role, Verify, Ban/Unban
+- Edit role dialog with role selector
+- Ban dialog with optional reason
+- Pagination (20 per page)
+- Loading skeletons and empty state
+
+## 5. Admin Users Detail Page (`/src/app/admin/users/[id]/page.tsx`)
+- Full user profile card with avatar, name, role, verified/premium badges
+- Quick stats: KYC level, Score, Reputation, Wallet, Escrow held, AfriPoints
+- 6 tabs: Profil, Propriétés, Transactions, Portefeuille, Abonnements, Actions
+- Profil tab: KYC documents list with status icons, Activity timeline
+- Propriétés tab: User's properties in data table
+- Transactions tab: User's transaction history
+- Portefeuille tab: Wallet balance, Escrow held, AfriPoints cards
+- Abonnements tab: Active/past subscriptions
+- Actions tab: Quick action cards for Edit role, Verify, Ban, Reset password
+- Action dialogs: Edit role, Ban, Reset password
+
+## 6. Admin Properties Page (`/src/app/admin/properties/page.tsx`)
+- Stats cards: Pending review, Published today, Rejected
+- Search bar with title/city/quartier search
+- Filter dropdowns: status (7 statuses + all), country (4 countries + all)
+- Data table with columns: Checkbox, Thumbnail+Title, Type, Price, Country, Status, Agent, Actions
+- Batch selection with Approve/Reject batch actions
+- Individual actions: View, Approve, Reject (with reason dialog), Feature/Unfeature, Delete
+- Pagination (20 per page)
+- Loading skeletons and empty state
+
+## 7. Admin KYC Page (`/src/app/admin/kyc/page.tsx`)
+- Stats cards: Pending count, Average AI score, Validated today
+- Filter dropdowns: status (4 statuses + all), country, doc type (8 types + all)
+- Cards/List view toggle
+- Card view: User avatar+name, Doc type, Country, AI score bar, Status badge, Submit date
+- List view: Compact table with same information
+- Actions per document: Validate (approve), Reject (with reason dialog), View document
+- AI score visualization with color-coded progress bar (green ≥80%, amber ≥50%, red <50%)
+- Pagination
+- Loading skeletons and empty state
+
+## 8. Admin Escrow Page (`/src/app/admin/escrow/page.tsx`)
+- Stats cards: Total held in escrow, Active disputes, Released today, Average hold time
+- Filter dropdowns: status (6 escrow statuses + all), country (4 + all)
+- Search by transaction reference
+- Data table: Transaction ref, Property (title+city), Amount (held/released), Escrow status, TX status, Buyer, Seller, Actions
+- DISPUTED entries highlighted with red background and alert icon
+- Actions: View details, Force transition (admin override with target state selector), Resolve dispute
+- Force transition dialog with state selector and optional reason
+- Resolve dispute dialog with options: Return to Funded, Refund
+- Pagination
+- Loading skeletons and empty state
+
+Stage Summary:
+- 2 new API route files: `/api/admin/kyc/route.ts`, `/api/admin/escrow/route.ts`
+- 5 new admin page files:
+  - `/src/app/admin/users/page.tsx` (Users CRUD with search/filter/pagination)
+  - `/src/app/admin/users/[id]/page.tsx` (User detail with 6 tabs)
+  - `/src/app/admin/properties/page.tsx` (Property moderation with batch actions)
+  - `/src/app/admin/kyc/page.tsx` (KYC document review with cards/list view)
+  - `/src/app/admin/escrow/page.tsx` (Escrow management with dispute resolution)
+- Extended `useAdmin.ts` with 7 new hooks/types for KYC and Escrow
+- All pages use AfriBayit color scheme (Navy #003087, Gold #D4AF37, Blue #009CDE, Green #00A651)
+- All pages use shadcn/ui components (Table, Card, Dialog, Badge, Button, Select, etc.)
+- All pages use sonner toast notifications for actions
+- All pages include loading skeletons and empty states
+- All pages follow existing admin layout pattern from `/admin/layout.tsx`
+- ESLint: 0 errors
+
+---
+Task ID: admin-crud-pages
+Agent: Main Agent
+Task: Create 8 admin CRUD management pages with API routes, hooks, and sidebar updates
+
+Work Log:
+
+## 1. Updated useAdmin.ts Hooks
+- Added 7 new hook types and functions:
+  - `useAdminWallets(filters)` — Wallet management with search/country filters
+  - `useAdminSubscriptions(filters)` — Subscription management with plan/status/country filters
+  - `useAdminHotels(filters)` — Hotel management with country/status/connection filters
+  - `useAdminGuesthouses(filters)` — Guesthouse management with country/certification filters
+  - `useAdminCommunity(filters)` — Community content moderation with tab/category/country/rating filters
+  - `useAdminCourses(filters)` — Course management with category/country/level/published filters
+  - `useAdminAnalytics(filters)` — Analytics dashboard with range/country filters
+  - `useAdminAction()` — Generic admin action mutation for CRUD operations
+
+## 2. Created 7 New Admin API Routes
+- `/api/admin/wallets/route.ts` — GET: wallet list with user details, balance summary, escrow/payout totals
+- `/api/admin/subscriptions/route.ts` — GET: subscription list with user info, MRR, churn rate, most popular plan
+- `/api/admin/hotels/route.ts` — GET: hotel list with room/booking counts, status/country breakdown
+- `/api/admin/guesthouses/route.ts` — GET: guesthouse list with certification status breakdown
+- `/api/admin/community/route.ts` — GET: multi-tab content (posts, groups, events, reviews) with author/reply/like counts
+- `/api/admin/courses/route.ts` — GET: course list with enrollment counts, published count, category breakdown
+- `/api/admin/analytics/route.ts` — GET: comprehensive analytics (acquisition, engagement, revenue, properties, geographic) with recharts-ready data
+
+## 3. Created 8 Admin Pages
+
+### Admin Transactions Page (`/admin/transactions/page.tsx`)
+- Summary cards: Total volume (30d), Total commission (30d), Avg transaction size, Transaction count
+- Filter bar: search, status dropdown, country dropdown
+- Data table: ID, Property, Buyer, Amount, Commission, Status, Country, Date
+- Actions: View detail (dialog), Flag for review
+- Export CSV button with real data download
+- Pagination with page navigation
+
+### Admin Wallets Page (`/admin/wallets/page.tsx`)
+- Summary cards: Total platform balance, Total in escrow, Total pending payouts
+- Search by user name/email, country filter
+- Data table: User, Balance, Escrow held, Pending payout, Currency, Country
+- Actions: Adjust balance (dialog with amount input), Freeze wallet
+- Pagination support
+
+### Admin Subscriptions Page (`/admin/subscriptions/page.tsx`)
+- Summary cards: Active subscriptions, MRR, Churn rate, Most popular plan
+- Filters: Plan type, Status, Country
+- Data table: User, Plan, Price, Status, Start/End dates, Auto-renew, Country
+- Actions: Cancel, Extend (30 days), Refund
+- Plan type labels for all 8 subscription tiers
+
+### Admin Hotels Page (`/admin/hotels/page.tsx`)
+- Summary by status (Active/Inactive/Pending)
+- Filters: Country, Status, Connection level (OTA/PMS/Guesthouse)
+- Data table: Name, City, Country, Stars, Rating, Rooms, Connection, Status
+- Actions: Approve, Suspend, Feature
+- Star rating display with filled/unfilled stars
+
+### Admin Guesthouses Page (`/admin/guesthouses/page.tsx`)
+- Summary by certification status (Pending/Certified/Rejected/Expired)
+- Filters: Country, Certification status
+- Data table: Name, City, Country, Rating, Rooms, Certification, Status
+- Actions: Certify, Reject certification, Suspend
+
+### Admin Community Page (`/admin/community/page.tsx`)
+- Tabs: Posts, Groups, Events, Reviews
+- Posts tab: Category/country filters, Approve/Hide/Delete/Pin actions
+- Groups tab: Member counts, Feature/Suspend actions
+- Events tab: Date/participants, Feature/Cancel actions
+- Reviews tab: Rating filter, star display, Approve/Hide/Delete actions
+- Contextual filters per tab
+
+### Admin Courses Page (`/admin/courses/page.tsx`)
+- Summary cards: Total courses, Published, Unpublished
+- Filters: Category, Level, Published status, Country
+- Data table: Title, Instructor, Category, Price, Students, Rating, Level, Published
+- Actions: Approve (publish), Unpublish, Feature
+- Level and category badge displays
+
+### Admin Analytics Page (`/admin/analytics/page.tsx`)
+- Date range selector (7d, 30d, 90d, 12m) and country filter
+- KPI cards: New users, Total users, DAU, MAU, MRR, Approval rate
+- **Acquisition** section:
+  - Signups by country (BarChart)
+  - Conversion funnel (visual funnel with percentages)
+- **Engagement** section:
+  - DAU/MAU ratio (circular indicator)
+  - Most visited pages (ranked list with progress bars)
+  - Retention curve (AreaChart)
+- **Revenue** section:
+  - Revenue over time (AreaChart + Line)
+  - Revenue by module (PieChart)
+  - MRR, commissions, transaction count cards
+- **Properties** section:
+  - Properties by country (BarChart)
+  - Statistics (total, published, pending, approval rate, avg days to publish)
+- **Geographic** section:
+  - Country cards with flags, user/property counts
+  - Top cities table (city, country, users, properties)
+- All charts use recharts with shadcn/ui ChartContainer
+
+## 4. Updated AdminSidebar Navigation
+- Changed Wallets route from `/admin/transactions?tab=wallets` → `/admin/wallets`
+- Changed Subscriptions route from `/admin/transactions?tab=subscriptions` → `/admin/subscriptions`
+- Changed Community main label from "Publications" → "Communauté"
+- Changed Courses route from `/admin/academy` → `/admin/courses`
+- Changed Enrollments route from `/admin/academy?tab=enrollments` → `/admin/courses?tab=enrollments`
+
+## Verification
+- ESLint: 0 errors
+- Dev server: running on port 3000
+- All 8 admin pages accessible via sidebar navigation
+- All 7 new API routes respond correctly
+
+Stage Summary:
+- 8 new admin pages created (~2800 lines total)
+- 7 new admin API routes created (~400 lines total)
+- useAdmin.ts hooks extended with 7 new hooks + generic action mutation
+- AdminSidebar navigation updated with correct routes
+- All pages use AfriBayit color scheme (#003087 Navy, #009CDE Blue, #D4AF37 Gold, #00A651 Green)
+- All pages use shadcn/ui components (Table, Badge, Select, Button, Dialog, Tabs, Card, ChartContainer)
+- All pages include loading skeletons and empty states
+- All pages include toast notifications for admin actions
+- French language throughout (labels, status names, action descriptions)
+- Analytics page uses recharts for LineChart, BarChart, AreaChart, PieChart

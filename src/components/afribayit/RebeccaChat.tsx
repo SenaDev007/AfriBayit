@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useConversations, useChatMessages, useSendMessage, useCreateConversation } from '@/hooks/useChat';
+import { useCreateConversation } from '@/hooks/useChat';
+import { apiPost } from '@/lib/api';
 
 interface RebeccaChatProps {
   isOpen: boolean;
@@ -15,23 +16,6 @@ interface Message {
   sender: 'bot' | 'user';
   text: string;
   timestamp?: Date;
-  quickReplies?: string[];
-  propertyCard?: { title: string; price: string; city: string; image: string };
-  toolCall?: { tool: string; args: Record<string, unknown>; result?: string };
-}
-
-interface ChatConversation {
-  id: string;
-  title: string;
-  createdAt: string;
-}
-
-interface ChatMessage {
-  id: string;
-  content: string;
-  senderId: string;
-  messageType: string;
-  createdAt: string;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -45,78 +29,11 @@ const quickActions = [
   { id: 'market', label: 'Prix du marché', icon: '📊', message: 'Quels sont les prix du marché immobilier ?' },
 ];
 
-// Rebecca's tool definitions — CDC §8.2.1
-const rebeccaTools = [
-  { name: 'search_properties', description: 'Rechercher des biens immobiliers' },
-  { name: 'get_property_details', description: 'Obtenir les détails d\'un bien' },
-  { name: 'check_escrow_status', description: 'Vérifier le statut escrow' },
-  { name: 'book_hotel', description: 'Réserver un hôtel' },
-  { name: 'request_geometer', description: 'Demander un géomètre' },
-  { name: 'contact_agent', description: 'Contacter un agent' },
-  { name: 'get_market_prices', description: 'Consulter les prix du marché' },
-];
-
 const welcomeMessage: Message = {
   id: 'welcome',
   sender: 'bot',
   text: 'Bonjour ! 👋 Je suis Rebecca, votre assistante immobilière IA. Je peux vous aider à rechercher des biens, suivre vos transactions escrow, contacter des agents, obtenir des devis artisans, et bien plus encore. Comment puis-je vous aider aujourd\'hui ?',
   timestamp: new Date(),
-};
-
-const botReplies: Record<string, Partial<Message>> = {
-  'Je souhaite rechercher un bien immobilier': {
-    text: 'Parfait ! Je vais utiliser l\'outil de recherche de biens pour vous aider. 🏠\n\nQuel type de bien recherchez-vous ? Voici quelques suggestions populaires :',
-    propertyCard: {
-      title: 'Villa Prestige Les Cocotiers',
-      price: '85 000 000 FCFA',
-      city: 'Cotonou, Bénin',
-      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&h=150&fit=crop',
-    },
-    quickReplies: ['Voir plus de villas', 'Appartements', 'Terrains'],
-    toolCall: { tool: 'search_properties', args: { query: 'biens populaires', filters: {} } },
-  },
-  'Je veux suivre l\'état de ma transaction escrow': {
-    text: 'Bien sûr ! Je vais vérifier le statut de vos transactions escrow. 🔒\n\nVoici l\'état actuel de votre transaction :\n\n📋 Transaction #TX-2025-001\nÉtat : FUNDED → En attente de validation des documents\nMontant : 85 000 000 FCFA\nProchaine étape : Vérification des documents légaux\n\nVoulez-vous plus de détails ?',
-    quickReplies: ['Voir le timeline complet', 'Contacter le notaire', 'Signaler un litige'],
-    toolCall: { tool: 'check_escrow_status', args: { transaction_id: 'TX-2025-001' } },
-  },
-  'Je souhaite contacter un agent immobilier': {
-    text: 'Je vais vous mettre en contact avec un agent certifié dans votre zone. 👤\n\nDans quelle ville se trouve votre recherche ?',
-    quickReplies: ['Cotonou', 'Abidjan', 'Lomé', 'Ouagadougou'],
-    toolCall: { tool: 'contact_agent', args: { agent_id: 'auto' } },
-  },
-  'Je souhaite obtenir un devis d\'artisan': {
-    text: 'Je peux vous aider à obtenir un devis artisan ! 🔨\n\nQuel type de travaux souhaitez-vous réaliser ?',
-    quickReplies: ['Maçonnerie', 'Plomberie', 'Électricité', 'Peinture', 'Carrelage'],
-    toolCall: { tool: 'request_geometer', args: { property_id: 'auto', service: 'devis_artisan' } },
-  },
-  'Quels sont les prix du marché immobilier ?': {
-    text: 'Voici les tendances du marché immobilier dans la zone UEMOA : 📊\n\n🏠 Villa à Cotonou : 25M - 150M FCFA\n🏢 Appartement Abidjan : 15M - 80M FCFA\n🗺️ Terrain Lomé : 5M - 50M FCFA\n📈 Tendance : +8% par an en moyenne\n\nLes prix varient selon le quartier et la proximité des infrastructures. Voulez-vous une estimation plus précise ?',
-    quickReplies: ['Estimer mon bien', 'Voir les tendances par ville', 'Investissement recommandé'],
-    toolCall: { tool: 'get_market_prices', args: { city: 'UEMOA', type: 'all' } },
-  },
-  'Chercher un bien': {
-    text: 'Parfait ! Quel type de bien recherchez-vous ? Voici quelques suggestions populaires :',
-    propertyCard: {
-      title: 'Villa Prestige Les Cocotiers',
-      price: '85 000 000 FCFA',
-      city: 'Cotonou, Bénin',
-      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&h=150&fit=crop',
-    },
-    quickReplies: ['Voir plus de villas', 'Appartements', 'Terrains'],
-  },
-  'Estimer mon bien': {
-    text: 'Je peux vous aider à estimer votre bien ! Pour cela, j\'ai besoin de quelques informations. Quel type de bien possédez-vous ?',
-    quickReplies: ['Villa', 'Appartement', 'Terrain'],
-  },
-  'Info escrow': {
-    text: 'L\'escrow AfriBayit protège vos fonds pendant toute la transaction. Voici comment ça fonctionne :\n\n1️⃣ Acheteur dépose les fonds\n2️⃣ Fonds bloqués en escrow sécurisé\n3️⃣ Vérification des documents\n4️⃣ Validation géomatique GeoTrust\n5️⃣ Assignation du notaire\n6️⃣ Signature notariale\n7️⃣ Enregistrement ANDF\n8️⃣ Libération des fonds au vendeur\n\nToute la procédure est sécurisée et transparente ! 🛡️',
-    quickReplies: ['Démarrer une transaction', 'Frais escrow', 'Contacter un notaire'],
-  },
-  'Contacter un agent': {
-    text: 'Je vais vous mettre en contact avec un agent certifié dans votre zone. Dans quelle ville se trouve votre recherche ?',
-    quickReplies: ['Cotonou', 'Abidjan', 'Lomé', 'Ouagadougou'],
-  },
 };
 
 export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProps) {
@@ -125,23 +42,37 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
   const [isTyping, setIsTyping] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showQuickActions, setShowQuickActions] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const { data: conversationsData } = useConversations(userId);
-  const { data: chatMessagesData } = useChatMessages(activeConversationId || '');
-  const sendMessageMutation = useSendMessage();
   const createConversationMutation = useCreateConversation();
-
-  const conversations: ChatConversation[] = (conversationsData?.conversations as ChatConversation[]) || [];
-  const chatMessages: ChatMessage[] = (chatMessagesData?.messages as ChatMessage[]) || [];
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  const ensureConversation = useCallback(async (): Promise<string | null> => {
+    if (activeConversationId) return activeConversationId;
+    if (!userId) return null;
+
+    try {
+      const result = await createConversationMutation.mutateAsync({
+        participantIds: [userId, 'rebecca-bot'],
+        type: 'rebecca',
+        title: 'Chat avec Rebecca IA',
+      });
+      const convId = (result as { id: string }).id;
+      setActiveConversationId(convId);
+      return convId;
+    } catch {
+      return null;
+    }
+  }, [activeConversationId, userId, createConversationMutation]);
+
   const sendMessage = async (text: string) => {
+    if (isSending) return;
+
     const userMsg: Message = {
       id: Date.now().toString(),
       sender: 'user',
@@ -152,56 +83,76 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
     setInput('');
     setIsTyping(true);
     setShowQuickActions(false);
+    setIsSending(true);
 
-    // Persist message via API if we have an active conversation
-    if (activeConversationId && userId) {
-      try {
-        await sendMessageMutation.mutateAsync({
-          conversationId: activeConversationId,
-          senderId: userId,
-          content: text,
-          messageType: 'text',
-        });
-      } catch {
-        // Silently fail — local state still works
+    try {
+      const convId = await ensureConversation();
+      if (!convId) {
+        setIsTyping(false);
+        setIsSending(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: 'bot',
+            text: 'Désolée, je n\'ai pas pu établir de connexion. Veuillez réessayer dans un instant.',
+            timestamp: new Date(),
+          },
+        ]);
+        return;
       }
-    } else if (userId) {
-      try {
-        const result = await createConversationMutation.mutateAsync({
-          participantIds: [userId, 'rebecca-bot'],
-          type: 'ai_assistant',
-          title: 'Chat avec Rebecca IA',
-        });
-        const convId = (result as { id: string }).id;
-        setActiveConversationId(convId);
-      } catch {
-        // Silently fail
-      }
-    }
 
-    // Simulate bot response with typing delay
-    const typingDuration = 1000 + Math.random() * 1500;
-    setTimeout(() => {
+      // Call POST /api/chat/conversations/[id]/messages
+      // The server handles 'rebecca' type conversations by calling z-ai-web-dev-sdk for AI responses
+      const response = await apiPost<{
+        userMessage?: unknown;
+        rebeccaMessage?: { id: string; content: string; senderId: string; createdAt: string };
+      }>(`/api/chat/conversations/${convId}/messages`, {
+        content: text,
+        messageType: 'text',
+      });
+
       setIsTyping(false);
-      const reply = botReplies[text] || {
-        text: 'Merci pour votre message ! J\'analyse votre demande et je vous reviens rapidement. En attendant, n\'hésitez pas à utiliser les raccourcis ci-dessus pour accéder à nos services : recherche de biens, suivi escrow, devis artisans, prix du marché. 🏠',
-        quickReplies: ['Rechercher un bien', 'Suivi escrow', 'Contacter un agent', 'Prix du marché'],
-      };
 
-      const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: 'bot',
-        text: reply.text || '',
-        timestamp: new Date(),
-        quickReplies: reply.quickReplies,
-        propertyCard: reply.propertyCard,
-        toolCall: reply.toolCall,
-      };
-      setMessages((prev) => [...prev, botMsg]);
-    }, typingDuration);
+      // The server returns { userMessage, rebeccaMessage } for rebecca-type conversations
+      if (response?.rebeccaMessage) {
+        const botMsg: Message = {
+          id: response.rebeccaMessage.id || (Date.now() + 1).toString(),
+          sender: 'bot',
+          text: response.rebeccaMessage.content,
+          timestamp: new Date(response.rebeccaMessage.createdAt),
+        };
+        setMessages((prev) => [...prev, botMsg]);
+      } else {
+        // Fallback if AI didn't respond
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: 'bot',
+            text: 'Merci pour votre message ! J\'analyse votre demande et je vous reviens rapidement. N\'hésitez pas à utiliser les actions rapides pour accéder à nos services. 🏠',
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    } catch (error) {
+      setIsTyping(false);
+      console.error('Rebecca chat error:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: 'bot',
+          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer. 🙏',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  const handleQuickAction = (action: typeof quickActions[number]) => {
+  const handleQuickAction = (action: (typeof quickActions)[number]) => {
     sendMessage(action.message);
   };
 
@@ -233,7 +184,9 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   <h3 className="text-white font-semibold text-sm">Rebecca IA</h3>
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-[#00A651] rounded-full" />
-                    <span className="text-white/70 text-[10px]">En ligne · CDC §8.2.1</span>
+                    <span className="text-white/70 text-[10px]">
+                      {isSending ? 'Réflexion...' : 'En ligne · CDC §8.2.1'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -260,7 +213,8 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleQuickAction(action)}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#003087]/10 rounded-xl text-xs font-medium text-[#003087] hover:bg-[#003087]/5 transition-colors whitespace-nowrap shrink-0"
+                      disabled={isSending}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#003087]/10 rounded-xl text-xs font-medium text-[#003087] hover:bg-[#003087]/5 transition-colors whitespace-nowrap shrink-0 disabled:opacity-50"
                     >
                       <span>{action.icon}</span>
                       <span>{action.label}</span>
@@ -300,46 +254,6 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                     {/* User timestamp */}
                     {msg.sender === 'user' && msg.timestamp && (
                       <p className="text-[10px] text-gray-400 text-right mt-0.5 mr-1">{formatTime(msg.timestamp)}</p>
-                    )}
-
-                    {/* Tool call indicator */}
-                    {msg.toolCall && (
-                      <div className="mt-1.5 px-3 py-1.5 bg-[#009CDE]/5 rounded-lg flex items-center gap-1.5">
-                        <svg className="w-3 h-3 text-[#009CDE]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-[10px] text-[#009CDE] font-medium">
-                          Outil : {rebeccaTools.find(t => t.name === msg.toolCall?.tool)?.description || msg.toolCall.tool}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Property Card */}
-                    {msg.propertyCard && (
-                      <div className="mt-2 bg-white rounded-2xl border shadow-sm overflow-hidden max-w-full">
-                        <img src={msg.propertyCard.image} alt={msg.propertyCard.title} className="w-full h-28 object-cover" />
-                        <div className="p-3">
-                          <p className="text-xs font-semibold text-[#2C2E2F]">{msg.propertyCard.title}</p>
-                          <p className="text-[10px] text-gray-500">{msg.propertyCard.city}</p>
-                          <p className="font-mono-data text-sm font-bold text-[#D4AF37] mt-1">{msg.propertyCard.price}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Quick Replies */}
-                    {msg.quickReplies && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {msg.quickReplies.map((reply) => (
-                          <button
-                            key={reply}
-                            onClick={() => sendMessage(reply)}
-                            className="px-3 py-1.5 bg-white border border-[#003087]/20 text-[#003087] text-xs font-medium rounded-full hover:bg-[#003087]/5 transition-colors"
-                          >
-                            {reply}
-                          </button>
-                        ))}
-                      </div>
                     )}
                   </div>
                 </div>
@@ -410,9 +324,10 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && input.trim()) sendMessage(input.trim()); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && input.trim() && !isSending) sendMessage(input.trim()); }}
                   placeholder="Écrivez votre message..."
-                  className="flex-1 text-sm outline-none bg-transparent"
+                  disabled={isSending}
+                  className="flex-1 text-sm outline-none bg-transparent disabled:opacity-50"
                 />
                 <button className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0" aria-label="Commande vocale">
                   <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -422,8 +337,9 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => { if (input.trim()) sendMessage(input.trim()); }}
-                  className="w-10 h-10 bg-[#003087] rounded-full flex items-center justify-center shrink-0"
+                  onClick={() => { if (input.trim() && !isSending) sendMessage(input.trim()); }}
+                  disabled={isSending || !input.trim()}
+                  className="w-10 h-10 bg-[#003087] rounded-full flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Envoyer le message"
                 >
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
