@@ -526,3 +526,86 @@ Stage Summary:
 - Property publishing enforces legal document uploads per country/type
 - ESLint: 0 errors
 - Next.js build: ✓ Compiled successfully
+
+---
+Task ID: Country-Strict-Horodatage
+Agent: Main Agent
+Task: Re-lire CDC, implémenter filtrage pays STRICT sur toute la plateforme, horodatage complet, push GitHub
+
+Work Log:
+
+## 1. Analyse complète des gaps CDC
+- Analysé tous les 57 modèles Prisma, 55 routes API, 26 composants, 17 hooks
+- Identifié 6 modèles manquant le champ `country` : Notary, Transaction, Course, Review, Subscription, ProfessionalProfile
+- Identifié 12+ modèles manquant `updatedAt` : Review, CommunityReply, CommunityEvent, Notification, CourseEnrollment, ChatMessage, ArtisanService, HotelReview
+- Identifié 8 routes API sans filtrage country : artisans, notaries, courses, geotrust, profiles, stats, reviews, transactions
+- Identifié 10 composants UI sans filtre pays ni affichage timestamps
+
+## 2. Schema Prisma — Ajout country + updatedAt
+- Notary: ajout `country String @default("BJ")`
+- Transaction: ajout `country String @default("BJ")`
+- Course: ajout `country String @default("BJ")`
+- Review: ajout `country String?` + `updatedAt DateTime @updatedAt`
+- Subscription: ajout `country String?`
+- ProfessionalProfile: ajout `country String?`
+- Notification: ajout `country String?` + `updatedAt DateTime @updatedAt`
+- CommunityReply: ajout `updatedAt DateTime @updatedAt`
+- CommunityEvent: ajout `updatedAt DateTime @updatedAt`
+- CourseEnrollment: ajout `createdAt DateTime @default(now())` + `updatedAt DateTime @updatedAt`
+- ArtisanService: ajout `updatedAt DateTime @updatedAt`
+- HotelReview: ajout `updatedAt DateTime @updatedAt`
+
+## 3. Base de données synchronisée et re-seedée
+- Force-reset de la BDD Neon avec `prisma db push --force-reset`
+- Seed mis à jour avec les nouveaux champs country sur toutes les entités
+- Seed exécuté avec succès
+
+## 4. CountryContext global
+- Créé `src/contexts/CountryContext.tsx` avec :
+  - `CountryProvider` persistant en localStorage
+  - `useCountry()` hook retournant `selectedCountry` + `setSelectedCountry`
+  - Hydration-safe avec `useSyncExternalStore`
+- Mis à jour `Navbar.tsx` pour utiliser `useCountry()` au lieu du state local
+- Mis à jour `AppShell.tsx` pour wrapper avec `CountryProvider`
+
+## 5. Routes API — Filtrage country
+- `/api/artisans` : ajout `?country=` + pagination complète
+- `/api/notaries` : ajout `?country=`
+- `/api/courses` : ajout `?country=` + pagination
+- `/api/geotrust` : vérifié, fonctionne déjà
+- `/api/profiles` : ajout `?country=`
+- `/api/stats` : ajout `?country=` pour stats par pays
+- `/api/reviews` : ajout `?country=`
+- `/api/transactions` : ajout `?country=` + pagination
+
+## 6. Hooks React Query — Support country
+- useArtisans : ajout param `country?`
+- useNotaries : ajout param `country?`
+- useCourses : ajout param `country?`
+- useGeometers : vérifié, fonctionne déjà
+- useProfiles : ajout param `country?`
+- useTransactions : ajout param `country?`
+
+## 7. Composants UI — Filtre pays + Timestamps
+- 10 composants mis à jour avec `useCountry()` et badge pays :
+  ArtisansMarketplace, HospitalityModule, GuesthouseModule, AcademyModule,
+  CommunityModule, NotaryModule, GeoTrustModule, AnalyticsDashboard,
+  FeaturedProperties, TestimonialsSection
+- 7 composants mis à jour avec affichage timestamps :
+  PropertyCard, ArtisansMarketplace, CommunityModule, AcademyModule,
+  HospitalityModule, NotaryModule, GeoTrustModule
+- Ajout fonctions utilitaires : formatDate, formatDateTime, timeAgo
+
+## 8. Build + Push GitHub
+- Next.js build : ✅ compilé avec succès, 0 erreurs
+- Push sur https://github.com/SenaDev007/AfriBayit.git : ✅ commit 09329ea
+
+Stage Summary:
+- Toute la plateforme est maintenant tenue par pays STRICT
+- Le sélecteur de pays dans le Navbar filtre automatiquement tous les modules
+- Tous les modèles critiques ont un champ `country`
+- Tous les modèles critiques ont `updatedAt` pour horodatage complet
+- 8 routes API supportent le filtrage par pays
+- 10 composants UI affichent le badge pays et filtrent automatiquement
+- 7 composants affichent les timestamps (createdAt, certifiedAt)
+- Build Next.js passe, push GitHub effectué
