@@ -241,7 +241,7 @@ export default function AdminOtaPage() {
                       <TableCell className="text-sm">{log.action}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-[10px]', log.status === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200')}>
-                          {log.status === 'success' ? '<Check className="w-4 h-4" /> Succès' : '<X className="w-4 h-4" /> Erreur'}
+                          {log.status === 'success' ? <><Check className="w-4 h-4" /> Succès</> : <><X className="w-4 h-4" /> Erreur</>}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-right">{log.rooms}</TableCell>

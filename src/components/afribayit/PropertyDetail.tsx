@@ -555,11 +555,11 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 <h3 className="text-sm font-semibold text-[#2C2E2F] mb-3">Garanties AfriBayit</h3>
                 <div className="space-y-2.5">
                   {[
-                    { icon: '<Check className="w-4 h-4" />', text: 'Documents vérifiés', active: property.verified },
-                    { icon: '<Map className="w-4 h-4" />', text: 'GeoTrust certifié', active: property.geoTrust },
-                    { icon: '<Eye className="w-4 h-4" />', text: 'Visite VR disponible', active: hasVR },
-                    { icon: '<Lock className="w-4 h-4" />', text: 'Escrow sécurisé', active: true },
-                    { icon: '<ClipboardList className="w-4 h-4" />', text: 'Assistance notariale', active: true },
+                    { icon: <Check className="w-4 h-4" />, text: 'Documents vérifiés', active: property.verified },
+                    { icon: <Map className="w-4 h-4" />, text: 'GeoTrust certifié', active: property.geoTrust },
+                    { icon: <Eye className="w-4 h-4" />, text: 'Visite VR disponible', active: hasVR },
+                    { icon: <Lock className="w-4 h-4" />, text: 'Escrow sécurisé', active: true },
+                    { icon: <ClipboardList className="w-4 h-4" />, text: 'Assistance notariale', active: true },
                   ].map((badge) => (
                     <div key={badge.text} className="flex items-center gap-2">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${

@@ -21,7 +21,7 @@ import { CreditCard, Lock, Smartphone, Waves } from 'lucide-react';
 interface PaymentMethodOption {
   key: PaymentMethod;
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   provider: PaymentProvider;
   color: string;
   description: string;
@@ -32,7 +32,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_mtn',
     name: 'MTN Mobile Money',
-    icon: '<Smartphone className="w-4 h-4" />',
+    icon: <Smartphone className="w-4 h-4" />,
     provider: 'fedapay',
     color: '#FFC300',
     description: 'Paiement via MTN MoMo',
@@ -41,7 +41,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_moov',
     name: 'Moov Money',
-    icon: '',
+    icon: <Smartphone className="w-4 h-4" />,
     provider: 'fedapay',
     color: '#0066CC',
     description: 'Paiement via Moov Money',
@@ -50,7 +50,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_orange',
     name: 'Orange Money',
-    icon: '',
+    icon: <Smartphone className="w-4 h-4" />,
     provider: 'fedapay',
     color: '#FF6600',
     description: 'Paiement via Orange Money',
@@ -59,7 +59,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_wave',
     name: 'Wave',
-    icon: '<Waves className="w-4 h-4" />',
+    icon: <Waves className="w-4 h-4" />,
     provider: 'fedapay',
     color: '#1DC7EA',
     description: 'Paiement via Wave',
@@ -68,7 +68,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'card_visa',
     name: 'Visa',
-    icon: '<CreditCard className="w-4 h-4" />',
+    icon: <CreditCard className="w-4 h-4" />,
     provider: 'stripe',
     color: '#1A1F71',
     description: 'Carte Visa internationale',
@@ -77,7 +77,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'card_mastercard',
     name: 'Mastercard',
-    icon: '<CreditCard className="w-4 h-4" />',
+    icon: <CreditCard className="w-4 h-4" />,
     provider: 'fedapay',
     color: '#EB001B',
     description: 'Carte Mastercard',

@@ -38,22 +38,22 @@ const initialOnboardingData: OnboardingData = {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const onboardingSteps = [
-  { step: 1, title: 'Bienvenue', icon: '' },
-  { step: 2, title: 'Profil', icon: '<User className="w-4 h-4" />' },
-  { step: 3, title: 'Localisation', icon: '<Globe className="w-4 h-4" />' },
-  { step: 4, title: 'Budget', icon: '<Coins className="w-4 h-4" />' },
-  { step: 5, title: 'Alertes', icon: '<Bell className="w-4 h-4" />' },
-  { step: 6, title: 'Découverte', icon: '<Map className="w-4 h-4" />' },
-  { step: 7, title: 'Rebecca IA', icon: '<Bot className="w-4 h-4" />' },
+  { step: 1, title: 'Bienvenue', icon: <Home className="w-4 h-4" /> },
+  { step: 2, title: 'Profil', icon: <User className="w-4 h-4" /> },
+  { step: 3, title: 'Localisation', icon: <Globe className="w-4 h-4" /> },
+  { step: 4, title: 'Budget', icon: <Coins className="w-4 h-4" /> },
+  { step: 5, title: 'Alertes', icon: <Bell className="w-4 h-4" /> },
+  { step: 6, title: 'Découverte', icon: <Map className="w-4 h-4" /> },
+  { step: 7, title: 'Rebecca IA', icon: <Bot className="w-4 h-4" /> },
 ];
 
 // Profile types — CDC §4.2
 const profileTypes = [
-  { value: 'acheteur', label: 'Acheteur', icon: '<Home className="w-4 h-4" />', desc: 'Je cherche à acheter un bien immobilier', color: '#003087' },
-  { value: 'vendeur', label: 'Vendeur', icon: '<Tag className="w-4 h-4" />', desc: 'Je souhaite vendre ou louer un bien', color: '#D4AF37' },
-  { value: 'investisseur', label: 'Investisseur', icon: '<TrendingUp className="w-4 h-4" />', desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
-  { value: 'touriste', label: 'Touriste', icon: '<Plane className="w-4 h-4" />', desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
-  { value: 'artisan', label: 'Artisan', icon: '<Hammer className="w-4 h-4" />', desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
+  { value: 'acheteur', label: 'Acheteur', icon: <Home className="w-4 h-4" />, desc: 'Je cherche à acheter un bien immobilier', color: '#003087' },
+  { value: 'vendeur', label: 'Vendeur', icon: <Tag className="w-4 h-4" />, desc: 'Je souhaite vendre ou louer un bien', color: '#D4AF37' },
+  { value: 'investisseur', label: 'Investisseur', icon: <TrendingUp className="w-4 h-4" />, desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
+  { value: 'touriste', label: 'Touriste', icon: <Plane className="w-4 h-4" />, desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
+  { value: 'artisan', label: 'Artisan', icon: <Hammer className="w-4 h-4" />, desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
 ];
 
 // Countries — AfriBayit pilot zone
@@ -96,12 +96,12 @@ const citiesByCountry: Record<string, { value: string; label: string }[]> = {
 
 // Goals
 const goalOptions = [
-  { value: 'residence', label: 'Résidence principale', icon: '<Home className="w-4 h-4" />' },
-  { value: 'investissement', label: 'Investissement locatif', icon: '<TrendingUp className="w-4 h-4" />' },
-  { value: 'vacances', label: 'Résidence secondaire / vacances', icon: '<Umbrella className="w-4 h-4" />' },
-  { value: 'commercial', label: 'Local commercial', icon: '<Store className="w-4 h-4" />' },
-  { value: 'terrain', label: 'Terrain constructible', icon: '<Map className="w-4 h-4" />' },
-  { value: 'neuf', label: 'Programme neuf', icon: '<HardHat className="w-4 h-4" />' },
+  { value: 'residence', label: 'Résidence principale', icon: <Home className="w-4 h-4" /> },
+  { value: 'investissement', label: 'Investissement locatif', icon: <TrendingUp className="w-4 h-4" /> },
+  { value: 'vacances', label: 'Résidence secondaire / vacances', icon: <Umbrella className="w-4 h-4" /> },
+  { value: 'commercial', label: 'Local commercial', icon: <Store className="w-4 h-4" /> },
+  { value: 'terrain', label: 'Terrain constructible', icon: <Map className="w-4 h-4" /> },
+  { value: 'neuf', label: 'Programme neuf', icon: <HardHat className="w-4 h-4" /> },
 ];
 
 // Budget presets (FCFA)
@@ -121,30 +121,30 @@ const alertFrequencies = [
 
 // Notification channels — CDC §4.2
 const notificationChannels = [
-  { value: 'email', label: 'Email', icon: '<Mail className="w-4 h-4" />', desc: 'Recevez les alertes par courriel' },
-  { value: 'sms', label: 'SMS', icon: '<MessageCircle className="w-4 h-4" />', desc: 'Notifications par texto' },
-  { value: 'push', label: 'Notifications push', icon: '<Smartphone className="w-4 h-4" />', desc: 'Alertes sur votre appareil' },
-  { value: 'whatsapp', label: 'WhatsApp', icon: '<Smartphone className="w-4 h-4" />', desc: 'Messages via WhatsApp' },
+  { value: 'email', label: 'Email', icon: <Mail className="w-4 h-4" />, desc: 'Recevez les alertes par courriel' },
+  { value: 'sms', label: 'SMS', icon: <MessageCircle className="w-4 h-4" />, desc: 'Notifications par texto' },
+  { value: 'push', label: 'Notifications push', icon: <Smartphone className="w-4 h-4" />, desc: 'Alertes sur votre appareil' },
+  { value: 'whatsapp', label: 'WhatsApp', icon: <Smartphone className="w-4 h-4" />, desc: 'Messages via WhatsApp' },
 ];
 
 // Interactive tour items — CDC §4.2
 const tourItems = [
-  { icon: '<Search className="w-4 h-4" />', title: 'Recherche intelligente', desc: 'Trouvez des biens filtrés par pays, ville, budget et plus', color: '#003087' },
-  { icon: '<Lock className="w-4 h-4" />', title: 'Escrow sécurisé', desc: 'Vos fonds sont protégés pendant toute la transaction', color: '#00A651' },
-  { icon: '<Globe className="w-4 h-4" />', title: 'GeoTrust', desc: 'Validation géomatique et vérification des limites de propriété', color: '#009CDE' },
-  { icon: '<Hammer className="w-4 h-4" />', title: 'Marché artisans', desc: 'Trouvez des artisans certifiés pour vos travaux', color: '#D4AF37' },
-  { icon: '', title: 'Académie', desc: 'Formations en droit foncier, investissement et construction', color: '#2C2E2F' },
-  { icon: '<Bot className="w-4 h-4" />', title: 'Rebecca IA', desc: 'Votre assistante IA disponible 24/7 pour vous guider', color: '#9333ea' },
+  { icon: <Search className="w-4 h-4" />, title: 'Recherche intelligente', desc: 'Trouvez des biens filtrés par pays, ville, budget et plus', color: '#003087' },
+  { icon: <Lock className="w-4 h-4" />, title: 'Escrow sécurisé', desc: 'Vos fonds sont protégés pendant toute la transaction', color: '#00A651' },
+  { icon: <Globe className="w-4 h-4" />, title: 'GeoTrust', desc: 'Validation géomatique et vérification des limites de propriété', color: '#009CDE' },
+  { icon: <Hammer className="w-4 h-4" />, title: 'Marché artisans', desc: 'Trouvez des artisans certifiés pour vos travaux', color: '#D4AF37' },
+  { icon: null, title: 'Académie', desc: 'Formations en droit foncier, investissement et construction', color: '#2C2E2F' },
+  { icon: <Bot className="w-4 h-4" />, title: 'Rebecca IA', desc: 'Votre assistante IA disponible 24/7 pour vous guider', color: '#9333ea' },
 ];
 
 // Rebecca capabilities
 const rebeccaCapabilities = [
-  { icon: '<Search className="w-4 h-4" />', label: 'Recherche de biens' },
-  { icon: '<Lock className="w-4 h-4" />', label: 'Suivi escrow' },
-  { icon: '<User className="w-4 h-4" />', label: 'Contacter agents' },
-  { icon: '<Hammer className="w-4 h-4" />', label: 'Devis artisans' },
-  { icon: '<BarChart3 className="w-4 h-4" />', label: 'Prix du marché' },
-  { icon: '<Globe className="w-4 h-4" />', label: 'GeoTrust' },
+  { icon: <Search className="w-4 h-4" />, label: 'Recherche de biens' },
+  { icon: <Lock className="w-4 h-4" />, label: 'Suivi escrow' },
+  { icon: <User className="w-4 h-4" />, label: 'Contacter agents' },
+  { icon: <Hammer className="w-4 h-4" />, label: 'Devis artisans' },
+  { icon: <BarChart3 className="w-4 h-4" />, label: 'Prix du marché' },
+  { icon: <Globe className="w-4 h-4" />, label: 'GeoTrust' },
 ];
 
 export default function OnboardingFlow({ isOpen, onClose, onComplete }: OnboardingFlowProps) {
@@ -343,12 +343,12 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                     className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md mx-auto mb-10"
                   >
                     {[
-                      { icon: '<Lock className="w-4 h-4" />', label: 'Escrow', desc: 'Paiement sécurisé' },
-                      { icon: '<Globe className="w-4 h-4" />', label: 'GeoTrust', desc: 'Vérification foncière' },
-                      { icon: '<Scale className="w-4 h-4" />', label: 'Notaires', desc: 'Actes certifiés' },
-                      { icon: '<Hammer className="w-4 h-4" />', label: 'Artisans', desc: 'BTP certifiés' },
-                      { icon: '', label: 'Académie', desc: 'Formations' },
-                      { icon: '<Bot className="w-4 h-4" />', label: 'Rebecca IA', desc: 'Assistante 24/7' },
+                      { icon: <Lock className="w-4 h-4" />, label: 'Escrow', desc: 'Paiement sécurisé' },
+                      { icon: <Globe className="w-4 h-4" />, label: 'GeoTrust', desc: 'Vérification foncière' },
+                      { icon: <Scale className="w-4 h-4" />, label: 'Notaires', desc: 'Actes certifiés' },
+                      { icon: <Hammer className="w-4 h-4" />, label: 'Artisans', desc: 'BTP certifiés' },
+                      { icon: null, label: 'Académie', desc: 'Formations' },
+                      { icon: <Bot className="w-4 h-4" />, label: 'Rebecca IA', desc: 'Assistante 24/7' },
                     ].map((feature, i) => (
                       <motion.div
                         key={feature.label}
@@ -550,7 +550,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                                   : 'bg-white/10 text-white/70 hover:bg-white/15'
                               }`}
                             >
-                              {data.cities.includes(city.value) && '<Check className="w-4 h-4" /> '}
+                              {data.cities.includes(city.value) && <><Check className="w-4 h-4" /> </>}
                               {city.label}
                             </motion.button>
                           ))
@@ -981,7 +981,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       <div className="flex justify-between items-center">
                         <span className="text-white/50">Rebecca IA</span>
                         <span className={`font-semibold ${data.rebeccaEnabled ? 'text-[#00A651]' : 'text-white/30'}`}>
-                          {data.rebeccaEnabled ? '<Check className="w-4 h-4" /> Activée' : 'Désactivée'}
+                          {data.rebeccaEnabled ? <><Check className="w-4 h-4" /> Activée</> : 'Désactivée'}
                         </span>
                       </div>
                     </div>

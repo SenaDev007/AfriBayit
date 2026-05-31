@@ -154,13 +154,13 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   {
     label: 'Vérifié',
     category: 'Qualité',
-    getValue: (p) => p.verified ? '<CheckCircle className="w-4 h-4" /> Oui' : '<XCircle className="w-4 h-4" /> Non',
+    getValue: (p) => p.verified ? <><CheckCircle className="w-4 h-4" /> Oui</> : <><XCircle className="w-4 h-4" /> Non</>,
     getHighlight: (p) => p.verified,
   },
   {
     label: 'GeoTrust',
     category: 'Qualité',
-    getValue: (p) => p.geoTrust ? '<CheckCircle className="w-4 h-4" /> Oui' : '<XCircle className="w-4 h-4" /> Non',
+    getValue: (p) => p.geoTrust ? <><CheckCircle className="w-4 h-4" /> Oui</> : <><XCircle className="w-4 h-4" /> Non</>,
     getHighlight: (p) => p.geoTrust,
   },
   {

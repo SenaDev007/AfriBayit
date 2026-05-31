@@ -36,12 +36,12 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — geometer service catalog (not DB data)
 const geometerServices = [
-  { id: 'geo-1', name: 'Vérification superficie', code: 'verification_superficie', price: 50000, priceLabel: '50 000 FCFA', icon: '<Ruler className="w-4 h-4" />', description: 'Mesure précise de la superficie réelle du terrain' },
-  { id: 'geo-2', name: 'Inspection terrain', code: 'inspection_terrain', price: 75000, priceLabel: '75 000 FCFA', icon: '<Search className="w-4 h-4" />', description: 'Inspection complète : limites, servitudes, risques' },
-  { id: 'geo-3', name: 'Bornage', code: 'bornage', price: 120000, priceLabel: '120 000 FCFA', icon: '<MapPin className="w-4 h-4" />', description: 'Bornage officiel avec pose de bornes' },
-  { id: 'geo-4', name: 'Drone mapping', code: 'drone_mapping', price: 200000, priceLabel: '200 000 FCFA', icon: '<Drone className="w-4 h-4" />', description: 'Cartographie aérienne haute résolution' },
-  { id: 'geo-5', name: 'Certificat GeoTrust', code: 'certificat_geotrust', price: 30000, priceLabel: '30 000 FCFA', icon: '<CheckCircle className="w-4 h-4" />', description: 'Certificat de conformité géométrique' },
-  { id: 'geo-6', name: 'Topographie complète', code: 'topographie_complete', price: 350000, priceLabel: '350 000 FCFA', icon: '<Map className="w-4 h-4" />', description: 'Étude topographique complète avec plan' },
+  { id: 'geo-1', name: 'Vérification superficie', code: 'verification_superficie', price: 50000, priceLabel: '50 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain' },
+  { id: 'geo-2', name: 'Inspection terrain', code: 'inspection_terrain', price: 75000, priceLabel: '75 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques' },
+  { id: 'geo-3', name: 'Bornage', code: 'bornage', price: 120000, priceLabel: '120 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes' },
+  { id: 'geo-4', name: 'Drone mapping', code: 'drone_mapping', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution' },
+  { id: 'geo-5', name: 'Certificat GeoTrust', code: 'certificat_geotrust', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique' },
+  { id: 'geo-6', name: 'Topographie complète', code: 'topographie_complete', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan' },
 ];
 
 function GeometerSkeleton() {
@@ -261,10 +261,10 @@ export default function GeoTrustModule() {
           <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Workflow de Mission</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             {[
-              { step: '1', title: 'Demande', desc: 'Décrivez votre besoin', icon: '<ClipboardList className="w-4 h-4" />' },
-              { step: '2', title: 'Devis', desc: 'Recevez un devis détaillé', icon: '<Coins className="w-4 h-4" />' },
-              { step: '3', title: 'Mission', desc: 'Le géomètre intervient', icon: '<MapPin className="w-4 h-4" />' },
-              { step: '4', title: 'Rapport', desc: 'Recevez le certificat GeoTrust', icon: '<CheckCircle className="w-4 h-4" />' },
+              { step: '1', title: 'Demande', desc: 'Décrivez votre besoin', icon: <ClipboardList className="w-4 h-4" /> },
+              { step: '2', title: 'Devis', desc: 'Recevez un devis détaillé', icon: <Coins className="w-4 h-4" /> },
+              { step: '3', title: 'Mission', desc: 'Le géomètre intervient', icon: <MapPin className="w-4 h-4" /> },
+              { step: '4', title: 'Rapport', desc: 'Recevez le certificat GeoTrust', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 flex-1">
                 <div className="w-10 h-10 rounded-full bg-[#009CDE]/10 flex items-center justify-center text-lg shrink-0">
@@ -313,7 +313,7 @@ export default function GeoTrustModule() {
                     <option value="">Sélectionnez un service</option>
                     {geometerServices.map((service) => (
                       <option key={service.code} value={service.code}>
-                        {service.icon} {service.name} — {service.priceLabel}
+                        {service.name} — {service.priceLabel}
                       </option>
                     ))}
                   </select>

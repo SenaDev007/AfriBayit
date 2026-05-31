@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useHotels, useGuesthouses } from '@/hooks/useHotels';
+import { useHotels } from '@/hooks/useHotels';
 import { useGuesthouses as useGh } from '@/hooks/useGuesthouses';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';

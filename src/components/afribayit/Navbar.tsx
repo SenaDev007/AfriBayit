@@ -54,6 +54,9 @@ const NAV_GROUPS = [
       { key: 'notaire', label: 'Notaires', href: '/notary', icon: Landmark },
       { key: 'geotrust', label: 'GeoTrust', href: '/geotrust', icon: ShieldCheck },
       { key: 'academie', label: 'Académie', href: '/academy', icon: GraduationCap },
+      { key: 'escrow', label: 'Escrow sécurisé', href: '/escrow', icon: Shield },
+      { key: 'wallet', label: 'Portefeuille', href: '/wallet', icon: Wallet },
+      { key: 'subscriptions', label: 'Abonnements', href: '/subscriptions', icon: CreditCard },
     ],
   },
   {
@@ -63,6 +66,7 @@ const NAV_GROUPS = [
     items: [
       { key: 'forum', label: 'Forum & Groupes', href: '/community', icon: MessageCircle },
       { key: 'profils', label: 'Profils professionnels', href: '/profile', icon: Briefcase },
+      { key: 'analytics', label: 'Analytics', href: '/analytics', icon: BarChart3 },
     ],
   },
 ] as const;
@@ -151,14 +155,14 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
     if (pathname.startsWith('/notary') && !pathname.includes('notary-dashboard')) return 'notaire';
     if (pathname.startsWith('/geotrust')) return 'geotrust';
     if (pathname.startsWith('/academy')) return 'academie';
+    if (pathname.startsWith('/escrow')) return 'escrow';
+    if (pathname.startsWith('/wallet')) return 'wallet';
+    if (pathname.startsWith('/subscriptions')) return 'subscriptions';
     if (pathname.startsWith('/community')) return 'forum';
     if (pathname.startsWith('/profile') || pathname.startsWith('/pro/')) return 'profils';
+    if (pathname.startsWith('/analytics')) return 'analytics';
     if (pathname.startsWith('/dashboard')) return 'dashboard';
     if (pathname.startsWith('/agent-dashboard')) return 'dashboard';
-    if (pathname.startsWith('/wallet')) return 'dashboard';
-    if (pathname.startsWith('/escrow')) return 'dashboard';
-    if (pathname.startsWith('/subscriptions')) return 'dashboard';
-    if (pathname.startsWith('/analytics')) return 'dashboard';
     if (pathname.startsWith('/notary-dashboard')) return 'dashboard';
     if (pathname.startsWith('/admin')) return 'admin';
     return '';

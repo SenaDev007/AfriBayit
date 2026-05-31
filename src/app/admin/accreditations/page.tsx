@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const PILOT_COUNTRIES = [
-  { code: 'ALL', name: 'Tous les pays (SUPER_ADMIN)', flag: '<Globe className="w-4 h-4" />' },
+  { code: 'ALL', name: 'Tous les pays (SUPER_ADMIN)', flag: '🌐' },
   { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
   { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
   { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
@@ -59,7 +59,7 @@ const roleLabels: Record<string, { label: string; color: string; description: st
 };
 
 const countryNameMap: Record<string, string> = {
-  ALL: '<Globe className="w-4 h-4" /> Global (tous les pays)',
+  ALL: '🌐 Global (tous les pays)',
   BJ: '🇧🇯 Bénin',
   CI: "🇨🇮 Côte d'Ivoire",
   BF: '🇧🇫 Burkina Faso',

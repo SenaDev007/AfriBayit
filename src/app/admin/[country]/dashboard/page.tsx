@@ -186,7 +186,7 @@ export default function CountryDashboard() {
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const countryName = COUNTRY_NAMES[country] || country;
-  const countryFlag = COUNTRY_FLAGS[country] || '<Globe className="w-4 h-4" />';
+  const countryFlag = COUNTRY_FLAGS[country] || '🌐';
 
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ['admin-stats', country],

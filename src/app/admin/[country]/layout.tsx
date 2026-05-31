@@ -72,7 +72,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
   const params = useParams();
   const pathname = usePathname();
   const country = (params.country as string) || 'BJ';
-  const config = COUNTRY_CONFIG[country] || { name: country, flag: '<Globe className="w-4 h-4" />' };
+  const config = COUNTRY_CONFIG[country] || { name: country, flag: '🌐' };
   const navGroups = getNavGroups(country);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

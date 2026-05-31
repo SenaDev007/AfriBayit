@@ -8,7 +8,7 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 interface NeighborhoodData {
   walkScore: { score: number; level: string; details: { category: string; distance: number; contribution: number }[] };
-  amenities: { totalScore: number; amenityCount: number; varietyScore: number; categories: { category: string; categoryFr: string; icon: string; count: number; nearestDistance: number; score: number }[] };
+  amenities: { totalScore: number; amenityCount: number; varietyScore: number; categories: { category: string; categoryFr: string; icon: React.ReactNode; count: number; nearestDistance: number; score: number }[] };
   transport: { score: number; level: string; options: { type: string; name: string; distance: number; accessible: boolean }[] };
   safety: { score: number; level: string; note: string };
   overallScore: number;
@@ -42,7 +42,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
       // Use fallback data
       setData({
         walkScore: { score: 72, level: 'Bon', details: [{ category: 'school', distance: 350, contribution: 12 }, { category: 'hospital', distance: 800, contribution: 10 }, { category: 'market', distance: 200, contribution: 11 }] },
-        amenities: { totalScore: 68, amenityCount: 15, varietyScore: 75, categories: [{ category: 'school', categoryFr: 'Écoles', icon: '', count: 3, nearestDistance: 350, score: 45 }, { category: 'hospital', categoryFr: 'Hôpitaux', icon: '', count: 1, nearestDistance: 800, score: 35 }, { category: 'market', categoryFr: 'Marchés', icon: '<Store className="w-4 h-4" />', count: 2, nearestDistance: 200, score: 50 }] },
+        amenities: { totalScore: 68, amenityCount: 15, varietyScore: 75, categories: [{ category: 'school', categoryFr: 'Écoles', icon: null, count: 3, nearestDistance: 350, score: 45 }, { category: 'hospital', categoryFr: 'Hôpitaux', icon: null, count: 1, nearestDistance: 800, score: 35 }, { category: 'market', categoryFr: 'Marchés', icon: <Store className="w-4 h-4" />, count: 2, nearestDistance: 200, score: 50 }] },
         transport: { score: 65, level: 'Bon', options: [{ type: 'road', name: 'Route principale', distance: 400, accessible: true }, { type: 'transit', name: 'Transport en commun', distance: 700, accessible: true }, { type: 'taxi', name: 'Station taxi', distance: 500, accessible: true }, { type: 'airport', name: 'Aéroport', distance: 12000, accessible: true }] },
         safety: { score: 70, level: 'Bon', note: 'Données estimées' },
         overallScore: 68,
@@ -151,7 +151,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
             return (
               <div key={opt.type} className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${opt.accessible ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'}`}>
-                  {opt.type === 'road' ? '<Route className="w-4 h-4" />' : opt.type === 'transit' ? '<Bus className="w-4 h-4" />' : opt.type === 'taxi' ? '<Car className="w-4 h-4" />' : '<Plane className="w-4 h-4" />'}
+                  {opt.type === 'road' ? <Route className="w-4 h-4" /> : opt.type === 'transit' ? <Bus className="w-4 h-4" /> : opt.type === 'taxi' ? <Car className="w-4 h-4" /> : <Plane className="w-4 h-4" />}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-[#2C2E2F]">{opt.name}</p>
@@ -172,12 +172,12 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
           <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Données environnementales</h3>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: 'Température moy.', value: `${data.environmental.avgTemp}°C`, icon: '<Thermometer className="w-4 h-4" />' },
-              { label: 'Pluviométrie', value: `${data.environmental.avgRainfall} mm/an`, icon: '<CloudRain className="w-4 h-4" />' },
-              { label: 'Humidité', value: `${data.environmental.humidity}%`, icon: '<Droplets className="w-4 h-4" />' },
-              { label: 'Qualité de l\'air', value: `${data.environmental.airQuality.index} (${data.environmental.airQuality.level})`, icon: '<Wind className="w-4 h-4" />' },
-              { label: 'Indice UV', value: `${data.environmental.uvIndex}/11`, icon: '<Sun className="w-4 h-4" />' },
-              { label: 'Climat', value: data.environmental.climate, icon: '<Globe className="w-4 h-4" />' },
+              { label: 'Température moy.', value: `${data.environmental.avgTemp}°C`, icon: <Thermometer className="w-4 h-4" /> },
+              { label: 'Pluviométrie', value: `${data.environmental.avgRainfall} mm/an`, icon: <CloudRain className="w-4 h-4" /> },
+              { label: 'Humidité', value: `${data.environmental.humidity}%`, icon: <Droplets className="w-4 h-4" /> },
+              { label: 'Qualité de l\'air', value: `${data.environmental.airQuality.index} (${data.environmental.airQuality.level})`, icon: <Wind className="w-4 h-4" /> },
+              { label: 'Indice UV', value: `${data.environmental.uvIndex}/11`, icon: <Sun className="w-4 h-4" /> },
+              { label: 'Climat', value: data.environmental.climate, icon: <Globe className="w-4 h-4" /> },
             ].map(item => (
               <div key={item.label} className="p-3 rounded-xl bg-gray-50">
                 <span className="text-sm">{item.icon}</span>

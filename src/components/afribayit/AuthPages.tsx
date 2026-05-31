@@ -15,9 +15,9 @@ interface AuthPagesProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const registerSteps = [
-  { key: 'email', label: 'Email', icon: '<Mail className="w-4 h-4" />' },
-  { key: 'profile', label: 'Profil', icon: '<User className="w-4 h-4" />' },
-  { key: 'role', label: 'Rôle', icon: '<Drama className="w-4 h-4" />' },
+  { key: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
+  { key: 'profile', label: 'Profil', icon: <User className="w-4 h-4" /> },
+  { key: 'role', label: 'Rôle', icon: <Drama className="w-4 h-4" /> },
 ];
 
 const COUNTRIES = [
@@ -454,7 +454,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                               : 'bg-gray-100 text-gray-400'
                           }`}
                         >
-                          {i < registerStep ? '<Check className="w-4 h-4" />' : step.icon}
+                          {i < registerStep ? <Check className="w-4 h-4" /> : step.icon}
                         </div>
                         {i < registerSteps.length - 1 && (
                           <div

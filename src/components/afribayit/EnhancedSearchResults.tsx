@@ -388,7 +388,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                           }`}
                           title="Ajouter à la comparaison"
                         >
-                          {compareIds.includes(property.id) ? '<Check className="w-4 h-4" />' : '+'}
+                          {compareIds.includes(property.id) ? <Check className="w-4 h-4" /> : '+'}
                         </button>
                         {/* Financing button */}
                         <button

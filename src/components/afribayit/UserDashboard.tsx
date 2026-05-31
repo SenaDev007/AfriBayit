@@ -143,10 +143,10 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                 </div>
               ) : (
                 [
-                  { label: 'Annonces actives', value: '—', icon: '<Home className="w-4 h-4" />', color: '#003087' },
-                  { label: 'Transactions', value: String(transactions.length), icon: '<BarChart3 className="w-4 h-4" />', color: '#00A651' },
-                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: '<Coins className="w-4 h-4" />', color: '#D4AF37' },
-                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: '', color: '#009CDE' },
+                  { label: 'Annonces actives', value: '—', icon: <Home className="w-4 h-4" />, color: '#003087' },
+                  { label: 'Transactions', value: String(transactions.length), icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
+                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
+                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: null, color: '#009CDE' },
                 ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
@@ -265,7 +265,7 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                       <div key={String(txn.id)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10` }}>
                           <span className="text-lg">
-                            {status === 'RELEASED' ? '<CheckCircle className="w-4 h-4" />' : status === 'FUNDED' ? '<Coins className="w-4 h-4" />' : status === 'IN_PROGRESS' ? '<RefreshCw className="w-4 h-4" />' : '<ClipboardList className="w-4 h-4" />'}
+                            {status === 'RELEASED' ? <CheckCircle className="w-4 h-4" /> : status === 'FUNDED' ? <Coins className="w-4 h-4" /> : status === 'IN_PROGRESS' ? <RefreshCw className="w-4 h-4" /> : <ClipboardList className="w-4 h-4" />}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">

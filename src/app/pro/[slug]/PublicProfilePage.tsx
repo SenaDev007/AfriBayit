@@ -96,12 +96,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
     }
   };
 
-  const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'about', label: 'À propos', icon: '<User className="w-4 h-4" />' },
-    { key: 'experience', label: 'Parcours', icon: '' },
-    { key: 'portfolio', label: 'Portfolio', icon: '<Camera className="w-4 h-4" />' },
-    { key: 'reviews', label: 'Avis', icon: '<MessageCircle className="w-4 h-4" />' },
-    { key: 'stats', label: 'Crédibilité', icon: '<BarChart3 className="w-4 h-4" />' },
+  const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
+    { key: 'about', label: 'À propos', icon: <User className="w-4 h-4" /> },
+    { key: 'experience', label: 'Parcours', icon: null },
+    { key: 'portfolio', label: 'Portfolio', icon: <Camera className="w-4 h-4" /> },
+    { key: 'reviews', label: 'Avis', icon: <MessageCircle className="w-4 h-4" /> },
+    { key: 'stats', label: 'Crédibilité', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   if (isLoading) {
@@ -135,7 +135,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
       <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
           <div className="text-center py-20">
-            <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
+            <span className="text-4xl block mb-3"><AlertTriangle className="w-10 h-10" /></span>
             <p className="text-gray-600 font-semibold mb-1">Profil introuvable</p>
             <p className="text-sm text-gray-400">{error || 'Ce profil n\'existe pas ou n\'est pas public.'}</p>
           </div>
@@ -352,7 +352,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {profile.portfolio.length === 0 ? (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3"><Camera className="w-4 h-4" /></span>
+                <span className="text-4xl block mb-3"><Camera className="w-10 h-10" /></span>
                 <p className="text-gray-600 font-semibold mb-1">Aucun projet dans le portfolio</p>
               </div>
             ) : (
@@ -385,7 +385,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             {reviews.length === 0 ? (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3"><MessageCircle className="w-4 h-4" /></span>
+                <span className="text-4xl block mb-3"><MessageCircle className="w-10 h-10" /></span>
                 <p className="text-gray-600 font-semibold mb-1">Aucun avis pour le moment</p>
               </div>
             ) : (
@@ -424,10 +424,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="grid grid-cols-2 gap-4 mb-5">
               {[
-                { label: 'Score crédibilité', value: profile.credibilityScore, icon: '', color: '#D4AF37', suffix: '/100' },
-                { label: 'AfriPoints', value: user.afriPoints, icon: '<Coins className="w-4 h-4" />', color: '#003087' },
-                { label: 'Avis reçus', value: reviews.length, icon: '<MessageCircle className="w-4 h-4" />', color: '#009CDE' },
-                { label: 'Complétude', value: profile.completenessPct, icon: '<BarChart3 className="w-4 h-4" />', color: '#00A651', suffix: '%' },
+                { label: 'Score crédibilité', value: profile.credibilityScore, icon: null, color: '#D4AF37', suffix: '/100' },
+                { label: 'AfriPoints', value: user.afriPoints, icon: <Coins className="w-4 h-4" />, color: '#003087' },
+                { label: 'Avis reçus', value: reviews.length, icon: <MessageCircle className="w-4 h-4" />, color: '#009CDE' },
+                { label: 'Complétude', value: profile.completenessPct, icon: <BarChart3 className="w-4 h-4" />, color: '#00A651', suffix: '%' },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
