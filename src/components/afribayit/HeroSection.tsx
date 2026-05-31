@@ -330,7 +330,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     <ImageWithFallback
                       src={premiumProperties[0].images[0]}
                       alt={premiumProperties[0].title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full"
                       fallbackType="property"
                     />
                   ) : (
@@ -378,7 +378,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     <ImageWithFallback
                       src={premiumProperties[1].images[0]}
                       alt={premiumProperties[1].title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full"
                       fallbackType="property"
                     />
                   ) : (

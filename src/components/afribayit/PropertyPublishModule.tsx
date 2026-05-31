@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { useCreateProperty } from '@/hooks/useProperties';
 import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/legal-docs';
 
@@ -492,7 +493,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {formData.photos.map((photo, i) => (
                       <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
-                        <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                        <ImageWithFallback src={photo} alt={`Photo ${i + 1}`} className="w-full h-full" fallbackType="property" />
                         {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">Principale</span>}
                         <button
                           onClick={() => setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, idx) => idx !== i) }))}

@@ -71,14 +71,11 @@ export default function Navbar({
               whileHover={{ scale: 1.02 }}
               onClick={() => onNavigate('home')}
             >
-              <div className="w-9 h-9 rounded-xl bg-[#003087] flex items-center justify-center">
-                <span className="text-white font-bold text-lg font-display">A</span>
-              </div>
-              <div>
-                <span className={`font-display text-xl font-bold ${scrolled ? 'text-[#003087]' : 'text-white'}`}>
-                  Afri<span className="text-[#D4AF37]">Bayit</span>
-                </span>
-              </div>
+              <img
+                src="/logo.png"
+                alt="AfriBayit"
+                className={`h-9 w-auto object-contain transition-all duration-300 ${!scrolled ? 'brightness-0 invert drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]' : ''}`}
+              />
             </motion.div>
 
             {/* Desktop Navigation */}
@@ -207,7 +204,7 @@ export default function Navbar({
                   <ImageWithFallback
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
                     alt="Profile"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full"
                     fallbackType="avatar"
                   />
                 </motion.button>
@@ -264,9 +261,7 @@ export default function Navbar({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-8">
-                <span className="font-display text-xl font-bold text-[#003087]">
-                  Afri<span className="text-[#D4AF37]">Bayit</span>
-                </span>
+                <img src="/logo.png" alt="AfriBayit" className="h-8 w-auto object-contain" />
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2">
                   <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

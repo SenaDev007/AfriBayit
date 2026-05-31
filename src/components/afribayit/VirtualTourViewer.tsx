@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 // Types for virtual tour data
 export interface VirtualTourData {
@@ -582,7 +583,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
                 aria-label={`Voir ${scene.label}`}
               >
                 <div className="w-20 h-14 sm:w-24 sm:h-16 bg-gray-800">
-                  {scene.url && <img src={scene.url} alt={scene.label} className="w-full h-full object-cover" loading="lazy" />}
+                  {scene.url && <ImageWithFallback src={scene.url} alt={scene.label} className="w-full h-full" fallbackType="generic" />}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 py-0.5">
                   <span className="text-[9px] sm:text-[10px] text-white font-medium truncate block">{scene.label}</span>

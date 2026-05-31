@@ -211,7 +211,7 @@ export default function GeoTrustModule() {
                   className="bg-white rounded-3xl p-6 shadow-sm border"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <ImageWithFallback src={geo.avatar} alt={geo.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#009CDE]" fallbackType="avatar" />
+                    <ImageWithFallback src={geo.avatar} alt={geo.name} className="w-14 h-14 rounded-full border-2 border-[#009CDE]" fallbackType="avatar" />
                     <div>
                       <h3 className="font-semibold text-[#2C2E2F]">{geo.name}</h3>
                       <p className="text-xs text-gray-500">{geo.city}, {geo.country}</p>

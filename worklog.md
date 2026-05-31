@@ -1694,3 +1694,21 @@ Stage Summary:
 - Fallback mechanism ensures broken images show appropriate placeholders instead of browser broken-image icons
 - 20 properties, 6 hotels, 4 guesthouses, 6 courses all have working images
 - Database fully re-seeded with 17 users, 20 properties, 7 transactions, etc.
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix images not displaying and integrate AfriBayit logo
+
+Work Log:
+- Copied Logo_AfriBayit.png from /upload/ to /public/logo.png
+- Rewrote ImageWithFallback component: added loading skeleton, two-level fallback (Unsplash → SVG data URI), empty src handling, crossOrigin, width/height props
+- Updated 12 consumer components to remove redundant object-cover from className (now internal to ImageWithFallback)
+- Replaced 3 raw <img> tags with ImageWithFallback (admin properties, VirtualTourViewer, PropertyPublishModule)
+- Integrated logo.png in Navbar (desktop + mobile), Footer, AdminSidebar
+- Updated layout.tsx: favicon → /logo.png, added openGraph image
+- Build verified successfully
+
+Stage Summary:
+- Image display fixed with improved ImageWithFallback component (loading state, fallback chain, CORS)
+- Logo integrated across entire platform (Navbar, Footer, Admin sidebar, favicon, og:image)
+- All images now have graceful degradation: skeleton → primary image → Unsplash fallback → SVG fallback

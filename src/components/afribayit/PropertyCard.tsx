@@ -36,7 +36,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         <ImageWithFallback
           src={primaryImage}
           alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
           fallbackType="property"
         />
         {/* Badges */}

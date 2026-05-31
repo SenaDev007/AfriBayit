@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Search,
   Filter,
@@ -488,7 +489,7 @@ function PropertyRow({
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
               {imageUrls.length > 0 ? (
-                <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                <ImageWithFallback src={imageUrls[0]} alt="" className="w-full h-full" fallbackType="property" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-gray-400" />

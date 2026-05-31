@@ -336,7 +336,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="relative">
-                          <ImageWithFallback src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl object-cover" fallbackType="avatar" />
+                          <ImageWithFallback src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl" fallbackType="avatar" />
                           <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
                         </div>
                         <div className="flex-1 min-w-0">

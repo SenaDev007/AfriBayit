@@ -482,7 +482,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                       >
                         <div className="relative aspect-[16/10]">
                           {image ? (
-                            <ImageWithFallback src={image} alt={gh.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fallbackType="guesthouse" />
+                            <ImageWithFallback src={image} alt={gh.name} className="w-full h-full group-hover:scale-105 transition-transform duration-500" fallbackType="guesthouse" />
                           ) : (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                               <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

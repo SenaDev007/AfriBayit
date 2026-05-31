@@ -33,12 +33,13 @@ export const metadata: Metadata = {
   keywords: ["AfriBayit", "immobilier", "Afrique", "Bénin", "Côte d'Ivoire", "Burkina Faso", "Togo", "villa", "appartement", "terrain"],
   authors: [{ name: "AfriBayit" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.png",
   },
   openGraph: {
     title: "AfriBayit — La Plateforme Immobilière Africaine",
     description: "Où l'Afrique trouve sa maison. Où les rêves deviennent adresses.",
     type: "website",
+    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "AfriBayit" }],
   },
 };
 

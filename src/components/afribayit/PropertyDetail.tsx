@@ -142,7 +142,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 <ImageWithFallback
                   src={images[activeImage]}
                   alt={property.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full"
                   fallbackType="property"
                 />
                 {/* Badges */}
@@ -221,7 +221,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                         i === activeImage ? 'border-[#003087]' : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <ImageWithFallback src={img} alt="" className="w-full h-full object-cover" fallbackType="property" />
+                      <ImageWithFallback src={img} alt="" className="w-full h-full" fallbackType="property" />
                     </button>
                   ))}
                 </div>
@@ -478,7 +478,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                     <ImageWithFallback
                       src={agent.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
                       alt={agent.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-[#D4AF37]"
+                      className="w-12 h-12 rounded-full border-2 border-[#D4AF37]"
                       fallbackType="avatar"
                     />
                     <div>
