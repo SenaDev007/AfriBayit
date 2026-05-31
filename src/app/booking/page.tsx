@@ -55,6 +55,11 @@ interface GuesthouseData {
   _count?: { bookings?: number };
 }
 
+function safeJsonParse<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw || typeof raw !== 'string') return fallback;
+  try { const parsed = JSON.parse(raw); return (Array.isArray(parsed) ? parsed : fallback) as T; } catch { return fallback; }
+}
+
 const COUNTRY_FLAGS: Record<string, string> = {
   BJ: '🇧🇯',
   CI: '🇨🇮',
@@ -110,8 +115,8 @@ export default function BookingPage() {
       reviewCount: h._count?.reviews_hotel || 0,
       price: h.pricePerNight,
       currency: h.currency || 'XOF',
-      amenities: h.amenities ? (typeof h.amenities === 'string' ? JSON.parse(h.amenities) : h.amenities) : [],
-      image: h.images ? (typeof h.images === 'string' ? (JSON.parse(h.images) as string[])[0] : null) : null,
+      amenities: h.amenities ? (typeof h.amenities === 'string' ? safeJsonParse<string[]>(h.amenities, []) : h.amenities) : [],
+      image: h.images ? (typeof h.images === 'string' ? (safeJsonParse<string[]>(h.images, []))[0] : null) : null,
       slug: h.slug,
     }));
 
@@ -126,8 +131,8 @@ export default function BookingPage() {
       reviewCount: g.reviewCount || 0,
       price: g.rooms?.[0]?.basePrice || 0,
       currency: g.rooms?.[0]?.currency || 'XOF',
-      amenities: g.amenities ? (typeof g.amenities === 'string' ? JSON.parse(g.amenities) : g.amenities) : [],
-      image: g.images ? (typeof g.images === 'string' ? (JSON.parse(g.images) as string[])[0] : null) : null,
+      amenities: g.amenities ? (typeof g.amenities === 'string' ? safeJsonParse<string[]>(g.amenities, []) : g.amenities) : [],
+      image: g.images ? (typeof g.images === 'string' ? (safeJsonParse<string[]>(g.images, []))[0] : null) : null,
       slug: g.slug,
     }));
 

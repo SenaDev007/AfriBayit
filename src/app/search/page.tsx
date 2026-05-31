@@ -11,7 +11,7 @@ function SearchContent() {
   const tab = searchParams.get('tab') || 'achat';
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
       <EnhancedSearchResults
         initialTab={tab}
         onSelectProperty={onSelectProperty}

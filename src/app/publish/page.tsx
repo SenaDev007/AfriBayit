@@ -12,11 +12,11 @@ export default function PublishPage() {
   const { user, isAuthenticated } = useAuthStore();
 
   const showNotice = useMemo(() => {
-    return !!(isAuthenticated && user?.role === 'agent' && (user as Record<string, unknown>).verificationStatus !== 'APPROVED');
+    return !!(isAuthenticated && user?.role === 'agent' && (user as unknown as Record<string, unknown>).verificationStatus !== 'APPROVED');
   }, [isAuthenticated, user]);
 
   const noticeMessage = useMemo(() => {
-    const status = (user as Record<string, unknown>)?.verificationStatus as string | undefined;
+    const status = (user as unknown as Record<string, unknown>)?.verificationStatus as string | undefined;
     if (status === 'REJECTED') {
       return {
         title: 'Certification rejetée',
@@ -32,7 +32,7 @@ export default function PublishPage() {
   }, [user]);
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
       <AnimatePresence>
         {showNotice && (
           <motion.div

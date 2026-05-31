@@ -12,7 +12,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
       <UserDashboard onNavigate={onNavigate} onLogout={handleLogout} />
     </div>
   );

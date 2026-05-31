@@ -57,6 +57,11 @@ const AMENITY_ICONS: Record<string, React.ElementType> = {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
+function safeJsonParse<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw || typeof raw !== 'string') return fallback;
+  try { const parsed = JSON.parse(raw); return (Array.isArray(parsed) ? parsed : fallback) as T; } catch { return fallback; }
+}
+
 export default function BookingDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -162,13 +167,13 @@ export default function BookingDetailPage() {
   const imagesRaw = hotel?.images || guesthouse?.images || null;
   const images: string[] = imagesRaw
     ? typeof imagesRaw === 'string'
-      ? (JSON.parse(imagesRaw) as string[])
+      ? safeJsonParse<string[]>(imagesRaw, [])
       : []
     : [];
   const amenitiesRaw = hotel?.amenities || guesthouse?.amenities || null;
   const amenities: string[] = amenitiesRaw
     ? typeof amenitiesRaw === 'string'
-      ? (JSON.parse(amenitiesRaw) as string[])
+      ? safeJsonParse<string[]>(amenitiesRaw, [])
       : Array.isArray(amenitiesRaw)
         ? amenitiesRaw
         : []

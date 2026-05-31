@@ -448,18 +448,23 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   title="Recherche vocale"
                   onClick={() => {
                     // Trigger voice search
-                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                      const SpeechRecognition = (window as unknown as Record<string, unknown>).SpeechRecognition || (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
-                      const recognition = new (SpeechRecognition as new () => SpeechRecognition)();
-                      recognition.lang = 'fr-FR';
-                      recognition.continuous = false;
-                      recognition.interimResults = false;
-                      recognition.onresult = (event: SpeechRecognitionEvent) => {
-                        const transcript = event.results[0][0].transcript;
-                        setInput(transcript);
-                        if (transcript.trim()) sendMessage(transcript.trim());
-                      };
-                      recognition.start();
+                    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const SpeechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      if (SpeechRecognitionCtor) {
+                        const recognition = new SpeechRecognitionCtor();
+                        recognition.lang = 'fr-FR';
+                        recognition.continuous = false;
+                        recognition.interimResults = false;
+                        recognition.onresult = (event: any) => {
+                          const transcript = event.results?.[0]?.[0]?.transcript;
+                          if (transcript) {
+                            setInput(transcript);
+                            if (transcript.trim()) sendMessage(transcript.trim());
+                          }
+                        };
+                        recognition.start();
+                      }
                     }
                   }}
                 >

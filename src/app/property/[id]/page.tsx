@@ -10,7 +10,7 @@ export default function PropertyDetailPage() {
   const id = params.id as string;
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
       <PropertyDetail
         propertyId={id}
         onBack={onBack}

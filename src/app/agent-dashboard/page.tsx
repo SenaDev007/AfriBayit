@@ -9,7 +9,7 @@ export default function AgentDashboardPage() {
   };
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
       <AgentDashboard onLogout={handleLogout} />
     </div>
   );

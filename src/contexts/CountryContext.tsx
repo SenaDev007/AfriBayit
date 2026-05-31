@@ -52,18 +52,15 @@ function useStoredCountry() {
 
 export function CountryProvider({ children }: { children: React.ReactNode }) {
   const storedCountry = useStoredCountry();
-  const [selectedCountry, setSelectedCountryState] = useState<CountryCode>(storedCountry);
+  const [selectedCountry, setSelectedCountryState] = useState<CountryCode>('BJ');
 
-  // Sync with localStorage changes on mount
-  const [mounted, setMounted] = useState(false);
-  // Using useSyncExternalStore already handles this, we just need a mount flag for hydration
+  // Sync with localStorage after mount to avoid hydration mismatch
   React.useEffect(() => {
-    setMounted(true);
     const stored = readStoredCountry();
     if (stored !== selectedCountry) {
       setSelectedCountryState(stored);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setSelectedCountry = useCallback((country: CountryCode) => {
     setSelectedCountryState(country);
@@ -73,11 +70,6 @@ export function CountryProvider({ children }: { children: React.ReactNode }) {
       // localStorage may not be available
     }
   }, []);
-
-  // Avoid hydration mismatch by not rendering children until mounted
-  if (!mounted) {
-    return null;
-  }
 
   return (
     <CountryContext.Provider value={{ selectedCountry, setSelectedCountry }}>
