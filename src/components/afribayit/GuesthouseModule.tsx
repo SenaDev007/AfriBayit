@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGuesthouses, useGuesthouse } from '@/hooks/useGuesthouses';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -233,9 +235,10 @@ type TabKey = 'listings' | 'chambers' | 'booking' | 'meals' | 'staff' | 'pricing
 export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('listings');
   const [selectedGhId, setSelectedGhId] = useState<string | null>(null);
+  const { selectedCountry } = useCountry();
 
   // List query
-  const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses();
+  const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses(undefined, selectedCountry);
   const guesthousesList: GuesthouseListItem[] =
     (listData as { guesthouses: GuesthouseListItem[] } | undefined)?.guesthouses ?? [];
 
@@ -278,6 +281,14 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
             Gestion complète de votre guesthouse : chambres, réservations, repas et personnel
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Revenue Model Banner */}
         <motion.div

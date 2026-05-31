@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useHotels, useHotel } from '@/hooks/useHotels';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -22,6 +25,7 @@ interface HotelApiItem {
   images: string | null;
   available: boolean;
   rooms: unknown[];
+  createdAt?: string;
   _count?: { reviews_hotel?: number };
 }
 
@@ -80,8 +84,9 @@ function CalendarSkeleton() {
 // ── Main component ──────────────────────────────────────────────
 export default function HospitalityModule() {
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
+  const { selectedCountry } = useCountry();
 
-  const { data: hotelsData, isLoading, isError, error } = useHotels();
+  const { data: hotelsData, isLoading, isError, error } = useHotels(undefined, selectedCountry);
   const { data: hotelDetail } = useHotel(selectedHotelId || '');
 
   const hotels: HotelApiItem[] = (hotelsData as { hotels: HotelApiItem[] } | undefined)?.hotels ?? [];
@@ -104,6 +109,14 @@ export default function HospitalityModule() {
             Réservez votre hébergement en Afrique de l&apos;Ouest. Hôtels, résidences, et maisons d&apos;hôtes vérifiés.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Loading State */}
         {isLoading && (
@@ -185,6 +198,9 @@ export default function HospitalityModule() {
                       </svg>
                       {hotel.city}, {hotel.country}
                     </p>
+                    {hotel.createdAt && (
+                      <p className="text-[10px] text-gray-400 mb-3">Publié {timeAgo(hotel.createdAt)}</p>
+                    )}
 
                     {/* Amenities */}
                     <div className="flex flex-wrap gap-1.5 mb-4">

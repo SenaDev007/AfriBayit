@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { useProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -47,7 +49,8 @@ function PropertyCardSkeleton() {
 
 export default function FeaturedProperties({ onSelectProperty, onNavigate }: FeaturedPropertiesProps) {
   const [activeFilter, setActiveFilter] = useState('all');
-  const { data, isLoading, isError } = useProperties({ limit: 12 });
+  const { selectedCountry } = useCountry();
+  const { data, isLoading, isError } = useProperties({ country: selectedCountry, limit: 12 });
 
   // Get all properties
   const allProperties = data?.properties || [];
@@ -97,6 +100,14 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             </svg>
           </motion.button>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Filter Bar */}
         <motion.div

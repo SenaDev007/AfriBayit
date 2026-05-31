@@ -4,6 +4,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -72,9 +74,11 @@ const fallbackTestimonials = [
 ];
 
 export default function TestimonialsSection() {
+  const { selectedCountry } = useCountry();
+
   const { data: reviewsData } = useQuery<ReviewsResponse>({
-    queryKey: ['reviews-landing'],
-    queryFn: () => apiFetch<ReviewsResponse>('/api/reviews?limit=6&rating=4'),
+    queryKey: ['reviews-landing', selectedCountry],
+    queryFn: () => apiFetch<ReviewsResponse>(`/api/reviews?limit=6&rating=4&country=${selectedCountry}`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -114,6 +118,14 @@ export default function TestimonialsSection() {
             Des milliers d&apos;utilisateurs font confiance à AfriBayit pour leurs projets immobiliers.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

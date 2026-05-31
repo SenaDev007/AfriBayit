@@ -1,15 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, apiPost } from '@/lib/api';
+import type { CountryCode } from '@/contexts/CountryContext';
 
-export function useArtisans(trade?: string, city?: string, page = 1, limit = 12) {
+export function useArtisans(trade?: string, city?: string, country?: CountryCode, page = 1, limit = 12) {
   const params = new URLSearchParams();
   if (trade) params.set('trade', trade);
   if (city) params.set('city', city);
+  if (country) params.set('country', country);
   params.set('page', String(page));
   params.set('limit', String(limit));
 
   return useQuery({
-    queryKey: ['artisans', trade, city, page, limit],
+    queryKey: ['artisans', trade, city, country, page, limit],
     queryFn: () => apiFetch<{ artisans: unknown[]; pagination: unknown }>(`/api/artisans?${params.toString()}`),
   });
 }

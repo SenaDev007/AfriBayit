@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotaries } from '@/hooks/useNotaries';
 import { useEscrowList } from '@/hooks/useEscrow';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 interface Notary {
   id: string;
@@ -18,6 +21,8 @@ interface Notary {
   available: boolean;
   specialities: string[];
   subscription: string;
+  certifiedAt?: string;
+  createdAt?: string;
 }
 
 interface EscrowAccount {
@@ -107,10 +112,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const [selectedLevel, setSelectedLevel] = useState('Tous');
   const [activeTab, setActiveTab] = useState<'notaries' | 'dashboard' | 'certification' | 'revenue'>('notaries');
   const [certStep, setCertStep] = useState(0);
+  const { selectedCountry } = useCountry();
 
   const { data: notariesData, isLoading: notariesLoading, error: notariesError } = useNotaries(
     undefined,
-    selectedZone === 'Toutes' ? undefined : selectedZone
+    selectedZone === 'Toutes' ? undefined : selectedZone,
+    selectedCountry
   );
   const { data: escrowData, isLoading: escrowLoading } = useEscrowList();
 
@@ -143,6 +150,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             Notaires certifiés, processus de certification ANDF, et gestion des actes immobiliers
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
@@ -271,6 +286,11 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                         </span>
                         <span className="text-xs text-gray-500">📋 {notary.missions} missions</span>
                       </div>
+                      {(notary.certifiedAt || notary.createdAt) && (
+                        <p className="text-[10px] text-gray-400 mb-2">
+                          {notary.certifiedAt ? `Certifié ${timeAgo(notary.certifiedAt)}` : `Inscrit ${timeAgo(notary.createdAt!)}`}
+                        </p>
+                      )}
 
                       <div className="flex flex-wrap gap-1.5 mb-4">
                         {notary.specialities.map(s => (

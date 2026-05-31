@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
+import type { CountryCode } from '@/contexts/CountryContext';
 
-export function useProfiles(role?: string, page = 1, limit = 12) {
+export function useProfiles(role?: string, country?: CountryCode, page = 1, limit = 12) {
   const params = new URLSearchParams();
   if (role) params.set('role', role);
+  if (country) params.set('country', country);
   params.set('page', String(page));
   params.set('limit', String(limit));
 
   return useQuery({
-    queryKey: ['profiles', role, page, limit],
+    queryKey: ['profiles', role, country, page, limit],
     queryFn: () => apiFetch<{ profiles: unknown[]; pagination: unknown }>(`/api/profiles?${params.toString()}`),
   });
 }

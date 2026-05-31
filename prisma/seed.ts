@@ -327,6 +327,7 @@ async function main() {
       subscriptionExpiry: daysFromNow(300),
       conventionSigned: true,
       conventionUrl: 'https://afribayit.com/conventions/notary-bj-001.pdf',
+      country: 'BJ',
       certified: true,
       certifiedAt: daysAgo(180),
     },
@@ -344,6 +345,7 @@ async function main() {
       available: true,
       rating: 4.2,
       missions: 22,
+      country: 'BJ',
       subscriptionTier: 'gratuit',
       conventionSigned: false,
       certified: false,
@@ -1037,6 +1039,7 @@ async function main() {
   const txDefs = [
     {
       propertyId: propertyIds[0], // Villa Fidjrossè
+      country: 'BJ',
       buyerId: buyer1,
       sellerId: agentBJ,
       amount: 75000000,
@@ -1060,6 +1063,7 @@ async function main() {
     },
     {
       propertyId: propertyIds[2], // Terrain Akpakpa
+      country: 'BJ',
       buyerId: buyer2,
       sellerId: agentBJ,
       amount: 25000000,
@@ -1084,6 +1088,7 @@ async function main() {
     },
     {
       propertyId: propertyIds[4], // Terrain Godomey (sold)
+      country: 'BJ',
       buyerId: buyer1,
       sellerId: agentBJ,
       amount: 12000000,
@@ -1113,6 +1118,7 @@ async function main() {
     },
     {
       propertyId: propertyIds[5], // Appartement Cocody
+      country: 'CI',
       buyerId: buyer1,
       sellerId: agentCI,
       amount: 120000000,
@@ -1136,6 +1142,7 @@ async function main() {
     },
     {
       propertyId: propertyIds[10], // Villa Bord de Mer Lomé
+      country: 'TG',
       buyerId: buyer2,
       sellerId: agentTG,
       amount: 90000000,
@@ -1159,6 +1166,7 @@ async function main() {
         amount: txd.amount,
         commission: txd.commission,
         currency: 'XOF',
+        country: txd.country,
         status: txd.status,
         escrowReference: txd.escrowReference,
         paymentProvider: txd.paymentProvider,
@@ -1667,6 +1675,7 @@ async function main() {
       title: 'Investissement Immobilier en Afrique de l\'Ouest',
       slug: 'investissement-immobilier-afrique-ouest',
       category: 'investissement',
+      country: 'BJ',
       instructorId: admin1,
       instructor: 'Aminata Dossou',
       description: 'Apprenez les bases de l\'investissement immobilier au Bénin, Côte d\'Ivoire et Togo. Analyse de marché, rendement locatif, fiscalité.',
@@ -1683,6 +1692,7 @@ async function main() {
       title: 'Droit Foncier Béninois : Comprendre les Titres',
       slug: 'droit-foncier-benin-titres',
       category: 'droit_foncier',
+      country: 'BJ',
       instructorId: notaryUser,
       instructor: 'Me Florent Agboka',
       description: 'Maîtrisez le droit foncier béninois : titre foncier, ACD, certificat ANDF, actes de vente. Essentiel pour tout investisseur.',
@@ -1699,6 +1709,7 @@ async function main() {
       title: 'Construction Durable en Zone Tropicale',
       slug: 'construction-durable-zone-tropicale',
       category: 'construction',
+      country: 'BJ',
       instructorId: artisanUser,
       instructor: 'Issifou Saka',
       description: 'Techniques de construction adaptées au climat tropical : matériaux locaux, ventilation naturelle, gestion des eaux.',
@@ -1714,6 +1725,7 @@ async function main() {
       title: 'Finance Immobilière et Levée de Fonds',
       slug: 'finance-immobiliere-levee-fonds',
       category: 'finance',
+      country: 'CI',
       instructorId: admin2,
       instructor: 'Kouadio Yao',
       description: 'Comprendre le financement immobilier en Afrique : prêts bancaires, microfinance, investissement participatif.',
@@ -1729,6 +1741,7 @@ async function main() {
       title: 'Devenir Agent Immobilier Certifié',
       slug: 'devenir-agent-immobilier-certifie',
       category: 'certification',
+      country: 'TG',
       instructorId: agentBJ,
       instructor: 'Hervé Houénou',
       description: 'Formation complète pour obtenir la certification d\'agent immobilier sur la plateforme AfriBayit.',
@@ -1934,18 +1947,18 @@ async function main() {
   console.log('\n→ Creating notifications...');
 
   const notifDefs = [
-    { userId: buyer1, type: 'transaction', category: 'transactions', title: 'Transaction mise à jour', message: 'Votre transaction ESC-2025-001 a été mise à jour : fonds reçus en escrow.', actionUrl: '/transactions/ESC-2025-001', channels: '["push","email"]', sentVia: '["push"]' },
-    { userId: buyer1, type: 'community', category: 'community', title: 'Nouvelle réponse à votre post', message: 'Hervé Houénou a répondu à votre post "Mon premier investissement".', actorId: agentBJ, actorName: 'Hervé Houénou', channels: '["push"]' },
-    { userId: buyer2, type: 'alert', category: 'market_alerts', title: 'Nouveau bien correspondant', message: 'Un appartement T2 à Tokoin correspond à vos critères de recherche.', actionUrl: '/properties/appartement-t2-tokoin-lome', channels: '["push","email","whatsapp"]', sentVia: '["push","email"]' },
-    { userId: agentBJ, type: 'message', category: 'rebecca', title: 'Rebecca IA', message: 'Vous avez 3 nouvelles demandes de visite pour la Villa Fidjrossè.', channels: '["push"]', sentVia: '["push"]' },
-    { userId: agentBJ, type: 'system', category: 'annonces', title: 'Propriété approuvée', message: 'Votre propriété "Villa Moderne Fidjrossè" a été approuvée et publiée.', actionUrl: '/properties/villa-moderne-fidjrosse-cotonou' },
-    { userId: agentCI, type: 'transaction', category: 'transactions', title: 'Nouvelle transaction', message: 'Nouvelle transaction créée pour l\'appartement Standing Cocody.', actionUrl: '/transactions' },
-    { userId: artisanUser, type: 'certification', category: 'certification', title: 'Certification approuvée', message: 'Votre certification artisan Maçon a été validée. Félicitations !', channels: '["push","email","sms"]', sentVia: '["push","email"]' },
-    { userId: geometerUser, type: 'system', category: 'transactions', title: 'Nouvelle mission assignée', message: 'Une mission de bornage vous a été assignée pour le terrain d\'Akpakpa.', actionUrl: '/missions' },
-    { userId: buyer1, type: 'promotion', category: 'premium', title: 'Offre Premium', message: 'Passez au plan Elite et bénéficiez de 2 mois gratuits !', actionUrl: '/premium', channels: '["push","email"]' },
-    { userId: buyer2, type: 'security', category: 'security', title: 'Vérification KYC requise', message: 'Veuillez compléter votre vérification KYC pour débloquer toutes les fonctionnalités.', actionUrl: '/kyc', channels: '["push","email","sms"]' },
-    { userId: agentTG, type: 'community', category: 'community', title: 'Nouveau membre dans votre groupe', message: 'Pierre Agossou a rejoint le groupe "Investisseurs Lomé".', actorId: buyer1, actorName: 'Pierre Agossou' },
-    { userId: notaryUser, type: 'transaction', category: 'transactions', title: 'Acte à signer', message: 'L\'acte de vente pour la transaction ESC-2025-002 est prêt pour signature.', actionUrl: '/transactions/ESC-2025-002' },
+    { userId: buyer1, type: 'transaction', category: 'transactions', country: 'BJ', title: 'Transaction mise à jour', message: 'Votre transaction ESC-2025-001 a été mise à jour : fonds reçus en escrow.', actionUrl: '/transactions/ESC-2025-001', channels: '["push","email"]', sentVia: '["push"]' },
+    { userId: buyer1, type: 'community', category: 'community', country: 'BJ', title: 'Nouvelle réponse à votre post', message: 'Hervé Houénou a répondu à votre post "Mon premier investissement".', actorId: agentBJ, actorName: 'Hervé Houénou', channels: '["push"]' },
+    { userId: buyer2, type: 'alert', category: 'market_alerts', country: 'CI', title: 'Nouveau bien correspondant', message: 'Un appartement T2 à Tokoin correspond à vos critères de recherche.', actionUrl: '/properties/appartement-t2-tokoin-lome', channels: '["push","email","whatsapp"]', sentVia: '["push","email"]' },
+    { userId: agentBJ, type: 'message', category: 'rebecca', country: 'BJ', title: 'Rebecca IA', message: 'Vous avez 3 nouvelles demandes de visite pour la Villa Fidjrossè.', channels: '["push"]', sentVia: '["push"]' },
+    { userId: agentBJ, type: 'system', category: 'annonces', country: 'BJ', title: 'Propriété approuvée', message: 'Votre propriété "Villa Moderne Fidjrossè" a été approuvée et publiée.', actionUrl: '/properties/villa-moderne-fidjrosse-cotonou' },
+    { userId: agentCI, type: 'transaction', category: 'transactions', country: 'CI', title: 'Nouvelle transaction', message: 'Nouvelle transaction créée pour l\'appartement Standing Cocody.', actionUrl: '/transactions' },
+    { userId: artisanUser, type: 'certification', category: 'certification', country: 'BJ', title: 'Certification approuvée', message: 'Votre certification artisan Maçon a été validée. Félicitations !', channels: '["push","email","sms"]', sentVia: '["push","email"]' },
+    { userId: geometerUser, type: 'system', category: 'transactions', country: 'BJ', title: 'Nouvelle mission assignée', message: 'Une mission de bornage vous a été assignée pour le terrain d\'Akpakpa.', actionUrl: '/missions' },
+    { userId: buyer1, type: 'promotion', category: 'premium', country: 'BJ', title: 'Offre Premium', message: 'Passez au plan Elite et bénéficiez de 2 mois gratuits !', actionUrl: '/premium', channels: '["push","email"]' },
+    { userId: buyer2, type: 'security', category: 'security', country: 'CI', title: 'Vérification KYC requise', message: 'Veuillez compléter votre vérification KYC pour débloquer toutes les fonctionnalités.', actionUrl: '/kyc', channels: '["push","email","sms"]' },
+    { userId: agentTG, type: 'community', category: 'community', country: 'TG', title: 'Nouveau membre dans votre groupe', message: 'Pierre Agossou a rejoint le groupe "Investisseurs Lomé".', actorId: buyer1, actorName: 'Pierre Agossou' },
+    { userId: notaryUser, type: 'transaction', category: 'transactions', country: 'BJ', title: 'Acte à signer', message: 'L\'acte de vente pour la transaction ESC-2025-002 est prêt pour signature.', actionUrl: '/transactions/ESC-2025-002' },
   ];
 
   for (const nd of notifDefs) {
@@ -1959,17 +1972,17 @@ async function main() {
   console.log('\n→ Creating reviews...');
 
   const reviewDefs = [
-    { reviewerId: buyer1, targetId: agentBJ, targetType: 'agent', rating: 5, comment: 'Hervé est un agent exceptionnel. Professionnel, réactif et à l\'écoute. Je recommande vivement !', verified: true },
-    { reviewerId: buyer2, targetId: agentCI, targetType: 'agent', rating: 4, comment: 'Bonne agent, bien qu\'un peu lente à répondre parfois. Mais le résultat est au rendez-vous.', verified: true },
-    { reviewerId: buyer1, targetId: propertyIds[0], targetType: 'property', rating: 5, comment: 'Villa magnifique, conforme à la description. Le quartier est calme et sécurisé.', verified: true },
-    { reviewerId: buyer2, targetId: propertyIds[2], targetType: 'property', rating: 4, comment: 'Bon terrain, bien situé. Cependant, l\'accès pourrait être meilleur.', verified: true },
-    { reviewerId: buyer1, targetId: artisanIds[0], targetType: 'artisan', rating: 5, comment: 'Issifou est un maçon de talent. Travail soigné et dans les délais.', verified: true },
-    { reviewerId: buyer2, targetId: artisanIds[1], targetType: 'artisan', rating: 3, comment: 'Travail correct mais délais non respectés. Communication à améliorer.', verified: false },
-    { reviewerId: buyer1, targetId: geometer1.id, targetType: 'geometer', rating: 5, comment: 'Géomètre très professionnel. Rapport détaillé et rapide.', verified: true },
-    { reviewerId: buyer2, targetId: hotelIds[0], targetType: 'hotel', rating: 4, comment: 'Bon hôtel, personnel accueillant. La piscine est un plus.', verified: true, subRatings: '{"cleanliness":4,"comfort":4,"location":5,"value":3,"service":4}' },
-    { reviewerId: buyer1, targetId: hotelIds[2], targetType: 'hotel', rating: 5, comment: 'L\'Hôtel Ivoire est exceptionnel. Service irréprochable, vue magnifique.', verified: true, subRatings: '{"cleanliness":5,"comfort":5,"location":5,"value":4,"service":5}' },
-    { reviewerId: buyer2, targetId: courseIds[0], targetType: 'course', rating: 4, comment: 'Formation très instructive. J\'aurais aimé plus de cas pratiques cependant.', verified: true },
-    { reviewerId: buyer1, targetId: notary1.id, targetType: 'notary', rating: 5, comment: 'Me Agboka est un notaire exemplaire. Experte en droit foncier, disponible et rigoureux.', verified: true },
+    { reviewerId: buyer1, targetId: agentBJ, targetType: 'agent', country: 'BJ', rating: 5, comment: 'Hervé est un agent exceptionnel. Professionnel, réactif et à l\'écoute. Je recommande vivement !', verified: true },
+    { reviewerId: buyer2, targetId: agentCI, targetType: 'agent', country: 'CI', rating: 4, comment: 'Bonne agent, bien qu\'un peu lente à répondre parfois. Mais le résultat est au rendez-vous.', verified: true },
+    { reviewerId: buyer1, targetId: propertyIds[0], targetType: 'property', country: 'BJ', rating: 5, comment: 'Villa magnifique, conforme à la description. Le quartier est calme et sécurisé.', verified: true },
+    { reviewerId: buyer2, targetId: propertyIds[2], targetType: 'property', country: 'BJ', rating: 4, comment: 'Bon terrain, bien situé. Cependant, l\'accès pourrait être meilleur.', verified: true },
+    { reviewerId: buyer1, targetId: artisanIds[0], targetType: 'artisan', country: 'BJ', rating: 5, comment: 'Issifou est un maçon de talent. Travail soigné et dans les délais.', verified: true },
+    { reviewerId: buyer2, targetId: artisanIds[1], targetType: 'artisan', country: 'BJ', rating: 3, comment: 'Travail correct mais délais non respectés. Communication à améliorer.', verified: false },
+    { reviewerId: buyer1, targetId: geometer1.id, targetType: 'geometer', country: 'BJ', rating: 5, comment: 'Géomètre très professionnel. Rapport détaillé et rapide.', verified: true },
+    { reviewerId: buyer2, targetId: hotelIds[0], targetType: 'hotel', country: 'BJ', rating: 4, comment: 'Bon hôtel, personnel accueillant. La piscine est un plus.', verified: true, subRatings: '{"cleanliness":4,"comfort":4,"location":5,"value":3,"service":4}' },
+    { reviewerId: buyer1, targetId: hotelIds[2], targetType: 'hotel', country: 'CI', rating: 5, comment: 'L\'Hôtel Ivoire est exceptionnel. Service irréprochable, vue magnifique.', verified: true, subRatings: '{"cleanliness":5,"comfort":5,"location":5,"value":4,"service":5}' },
+    { reviewerId: buyer2, targetId: courseIds[0], targetType: 'course', country: 'BJ', rating: 4, comment: 'Formation très instructive. J\'aurais aimé plus de cas pratiques cependant.', verified: true },
+    { reviewerId: buyer1, targetId: notary1.id, targetType: 'notary', country: 'BJ', rating: 5, comment: 'Me Agboka est un notaire exemplaire. Experte en droit foncier, disponible et rigoureux.', verified: true },
   ];
 
   for (const rd of reviewDefs) {
@@ -1983,13 +1996,13 @@ async function main() {
   console.log('\n→ Creating subscriptions...');
 
   const subDefs = [
-    { userId: agentBJ, planType: 'agent_grow', priceXof: 15000, status: 'active', startDate: daysAgo(60), endDate: daysFromNow(305), autoRenew: true, paymentRef: 'PAY-SUB-001' },
-    { userId: agentCI, planType: 'agent_lead', priceXof: 35000, status: 'active', startDate: daysAgo(30), endDate: daysFromNow(335), autoRenew: true, paymentRef: 'PAY-SUB-002' },
-    { userId: agentTG, planType: 'agent_seed', priceXof: 5000, status: 'active', startDate: daysAgo(15), endDate: daysFromNow(350), autoRenew: false, paymentRef: 'PAY-SUB-003' },
-    { userId: artisanUser, planType: 'artisan_pro', priceXof: 10000, status: 'active', startDate: daysAgo(45), endDate: daysFromNow(320), autoRenew: true, paymentRef: 'PAY-SUB-004' },
-    { userId: geometerUser, planType: 'geometer_pro', priceXof: 12000, status: 'active', startDate: daysAgo(90), endDate: daysFromNow(275), autoRenew: true, paymentRef: 'PAY-SUB-005' },
-    { userId: buyer1, planType: 'academy_pro', priceXof: 20000, status: 'cancelled', startDate: daysAgo(180), endDate: daysAgo(5), autoRenew: false, paymentRef: 'PAY-SUB-006' },
-    { userId: notaryUser, planType: 'notary_pro', priceXof: 15000, status: 'active', startDate: daysAgo(30), endDate: daysFromNow(335), autoRenew: true, paymentRef: 'PAY-SUB-007' },
+    { userId: agentBJ, planType: 'agent_grow', priceXof: 15000, country: 'BJ', status: 'active', startDate: daysAgo(60), endDate: daysFromNow(305), autoRenew: true, paymentRef: 'PAY-SUB-001' },
+    { userId: agentCI, planType: 'agent_lead', priceXof: 35000, country: 'CI', status: 'active', startDate: daysAgo(30), endDate: daysFromNow(335), autoRenew: true, paymentRef: 'PAY-SUB-002' },
+    { userId: agentTG, planType: 'agent_seed', priceXof: 5000, country: 'TG', status: 'active', startDate: daysAgo(15), endDate: daysFromNow(350), autoRenew: false, paymentRef: 'PAY-SUB-003' },
+    { userId: artisanUser, planType: 'artisan_pro', priceXof: 10000, country: 'BJ', status: 'active', startDate: daysAgo(45), endDate: daysFromNow(320), autoRenew: true, paymentRef: 'PAY-SUB-004' },
+    { userId: geometerUser, planType: 'geometer_pro', priceXof: 12000, country: 'BJ', status: 'active', startDate: daysAgo(90), endDate: daysFromNow(275), autoRenew: true, paymentRef: 'PAY-SUB-005' },
+    { userId: buyer1, planType: 'academy_pro', priceXof: 20000, country: 'BJ', status: 'cancelled', startDate: daysAgo(180), endDate: daysAgo(5), autoRenew: false, paymentRef: 'PAY-SUB-006' },
+    { userId: notaryUser, planType: 'notary_pro', priceXof: 15000, country: 'BJ', status: 'active', startDate: daysAgo(30), endDate: daysFromNow(335), autoRenew: true, paymentRef: 'PAY-SUB-007' },
   ];
 
   for (const sd of subDefs) {
@@ -2006,6 +2019,7 @@ async function main() {
     {
       userId: agentBJ,
       headline: 'Agent Immobilier Certifié — Spécialiste Cotonou',
+      country: 'BJ',
       bio: 'Avec 8 ans d\'expérience dans l\'immobilier béninois, j\'accompagne mes clients dans tous leurs projets d\'acquisition et de vente.',
       specialities: '["Vente villa","Terrain","Appartement","Investissement"]',
       languages: '[{"lang":"Français","level":"Natif"},{"lang":"Fon","level":"Natif"},{"lang":"Anglais","level":"Intermédiaire"}]',
@@ -2023,6 +2037,7 @@ async function main() {
     {
       userId: agentCI,
       headline: 'Directrice — Agence Koné & Fils',
+      country: 'CI',
       bio: 'Héritière d\'une tradition familiale dans l\'immobilier ivoirien. Spécialiste des quartiers haut de gamme d\'Abidjan.',
       specialities: '["Appartement standing","Villa prestige","Bureau","Investissement"]',
       languages: '[{"lang":"Français","level":"Natif"},{"lang":"Dioula","level":"Courant"}]',
@@ -2038,6 +2053,7 @@ async function main() {
     {
       userId: artisanUser,
       headline: 'Maçon Qualifié — 12 ans d\'expérience',
+      country: 'BJ',
       bio: 'Spécialiste de la construction moderne au Bénin. Fondations, maçonnerie, dallage. Certifié AfriBayit.',
       specialities: '["Maçonnerie","Dallage","Fondation","Hourdis"]',
       languages: '[{"lang":"Français","level":"Courant"},{"lang":"Fon","level":"Natif"}]',
@@ -2053,6 +2069,7 @@ async function main() {
     {
       userId: geometerUser,
       headline: 'Géomètre Expert — Topographie & Certification Foncière',
+      country: 'BJ',
       bio: 'Géomètre expert avec 15 ans d\'expérience. Spécialiste du bornage, de la topographie et de la certification foncière au Bénin.',
       specialities: '["Topographie","Bornage","Certification foncière","GPS","Drone"]',
       languages: '[{"lang":"Français","level":"Natif"},{"lang":"Fon","level":"Natif"},{"lang":"Anglais","level":"Technique"}]',
@@ -2068,6 +2085,7 @@ async function main() {
     {
       userId: notaryUser,
       headline: 'Notaire — Spécialiste Droit Foncier',
+      country: 'BJ',
       bio: 'Notaire de profession avec expertise en droit foncier et successions. Membre de la Chambre Nationale des Notaires du Bénin.',
       specialities: '["Droit foncier","Succession","Baux","Actes de vente"]',
       languages: '[{"lang":"Français","level":"Natif"},{"lang":"Fon","level":"Courant"}]',

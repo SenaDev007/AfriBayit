@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCommunityPosts, useCommunityGroups, useCommunityEvents } from '@/hooks/useCommunity';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 interface Post {
   id: string;
@@ -13,6 +16,7 @@ interface Post {
   views: number;
   category: string;
   lastActivity: string;
+  createdAt?: string;
 }
 
 interface Group {
@@ -96,10 +100,11 @@ function EventSkeleton() {
 
 export default function CommunityModule() {
   const [activeTab, setActiveTab] = useState('forum');
+  const { selectedCountry } = useCountry();
 
-  const { data: postsData, isLoading: postsLoading, error: postsError } = useCommunityPosts();
-  const { data: groupsData, isLoading: groupsLoading } = useCommunityGroups();
-  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCommunityEvents();
+  const { data: postsData, isLoading: postsLoading, error: postsError } = useCommunityPosts(undefined, selectedCountry);
+  const { data: groupsData, isLoading: groupsLoading } = useCommunityGroups(undefined, selectedCountry);
+  const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCommunityEvents(selectedCountry);
 
   const posts: Post[] = (postsData?.posts as Post[]) || [];
   const groups: Group[] = (groupsData?.groups as Group[]) || [];
@@ -127,6 +132,14 @@ export default function CommunityModule() {
             Connectez-vous avec des professionnels de l&apos;immobilier, partagez vos expériences, et développez votre réseau.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Reputation Bar */}
         <motion.div
@@ -217,7 +230,7 @@ export default function CommunityModule() {
                       <span className="px-2 py-0.5 bg-gray-100 rounded-full">{post.category}</span>
                       <span>{post.replies} réponses</span>
                       <span>{post.views} vues</span>
-                      <span className="text-gray-400">{post.lastActivity}</span>
+                      <span className="text-gray-400">{post.createdAt ? timeAgo(post.createdAt) : post.lastActivity}</span>
                     </div>
                   </div>
                 </div>

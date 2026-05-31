@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -16,10 +18,11 @@ function formatPrice(price: number): string {
 export default function AnalyticsDashboard() {
   const [period, setPeriod] = useState('12m');
   const { user } = useAuthStore();
+  const { selectedCountry } = useCountry();
   const userId = user?.id;
 
-  const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId, 1, 100);
-  const { data: propsData, isLoading: propsLoading, isError: propsError } = useProperties({ limit: 100 });
+  const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId, selectedCountry, 1, 100);
+  const { data: propsData, isLoading: propsLoading, isError: propsError } = useProperties({ country: selectedCountry, limit: 100 });
 
   const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
   const properties = (propsData?.properties ?? []) as Record<string, unknown>[];
@@ -103,7 +106,14 @@ export default function AnalyticsDashboard() {
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">Analytique</h1>
             <p className="text-sm text-gray-500 mt-1">Vue d&apos;ensemble de vos performances</p>
           </div>
-          <div className="flex gap-1.5 bg-gray-100 rounded-full p-0.5">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 font-medium">Pays:</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+                {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+              </span>
+            </div>
+            <div className="flex gap-1.5 bg-gray-100 rounded-full p-0.5">
             {[
               { key: '7d', label: '7 jours' },
               { key: '30d', label: '30 jours' },
@@ -119,6 +129,7 @@ export default function AnalyticsDashboard() {
                 {p.label}
               </button>
             ))}
+            </div>
           </div>
         </div>
 

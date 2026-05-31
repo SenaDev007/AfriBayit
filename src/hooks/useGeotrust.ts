@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
+import type { CountryCode } from '@/contexts/CountryContext';
 
-export function useGeometers(city?: string, country?: string, page = 1, limit = 12) {
+export function useGeometers(city?: string, country?: CountryCode, page = 1, limit = 12) {
   const params = new URLSearchParams();
   if (city) params.set('city', city);
   if (country) params.set('country', country);

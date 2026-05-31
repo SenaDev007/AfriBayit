@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const specialities = searchParams.get('specialities');
     const city = searchParams.get('city');
     const availability = searchParams.get('availability');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
     }
     if (city) where.zone = city;
     if (availability) where.availability = availability;
+    if (country) where.country = country;
 
     const [profiles, total] = await Promise.all([
       db.professionalProfile.findMany({
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
         education: body.education ? JSON.stringify(body.education) : null,
         certifications: body.certifications ? JSON.stringify(body.certifications) : null,
         portfolio: body.portfolio ? JSON.stringify(body.portfolio) : null,
+        country: body.country || null,
         zone: body.zone,
         agencyName: body.agencyName,
       },

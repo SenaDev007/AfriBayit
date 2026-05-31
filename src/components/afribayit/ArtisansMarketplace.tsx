@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useArtisans } from '@/hooks/useArtisans';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 interface Artisan {
   id: string;
@@ -18,6 +21,7 @@ interface Artisan {
   available: boolean;
   emergency: boolean;
   priceRange: string;
+  createdAt?: string;
 }
 
 interface ArtisansMarketplaceProps {
@@ -59,8 +63,12 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const [emergencyMode, setEmergencyMode] = useState(false);
   const [showDevis, setShowDevis] = useState(false);
 
+  const { selectedCountry } = useCountry();
+
   const { data, isLoading, error } = useArtisans(
-    selectedTrade === 'Tous' ? undefined : selectedTrade
+    selectedTrade === 'Tous' ? undefined : selectedTrade,
+    undefined,
+    selectedCountry
   );
 
   const artisans: Artisan[] = (data?.artisans as Artisan[]) || [];
@@ -88,6 +96,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
             Trouvez les meilleurs artisans pour vos projets immobiliers. Vérifiés, notés, et disponibles.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Emergency Button */}
         <motion.div
@@ -182,6 +198,9 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                     </div>
                     <p className="text-xs font-medium text-[#D4AF37]">{artisan.trade}</p>
                     <p className="text-xs text-gray-500">{artisan.city}, {artisan.country}</p>
+                    {artisan.createdAt && (
+                      <p className="text-[10px] text-gray-400 mt-0.5">Publié {timeAgo(artisan.createdAt)}</p>
+                    )}
                   </div>
                   <div className={`px-2 py-1 rounded-full text-[10px] font-semibold ${
                     artisan.available ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'

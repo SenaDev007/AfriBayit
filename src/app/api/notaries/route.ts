@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const zone = searchParams.get('zone');
     const certificationLevel = searchParams.get('certificationLevel');
     const available = searchParams.get('available');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
     if (zone) where.zone = zone;
     if (certificationLevel) where.certificationLevel = certificationLevel;
     if (available === 'true') where.available = true;
+    if (country) where.country = country;
 
     const [notaries, total] = await Promise.all([
       db.notary.findMany({
@@ -51,6 +53,7 @@ export async function POST(request: Request) {
         chamberName: body.chamberName,
         specialty: body.specialty,
         certificationLevel: body.certificationLevel || 'standard',
+        country: body.country || 'BJ',
         zone: body.zone,
         available: body.available ?? true,
         subscriptionTier: body.subscriptionTier,

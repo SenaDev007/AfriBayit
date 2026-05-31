@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const targetId = searchParams.get('targetId');
     const targetType = searchParams.get('targetType');
     const rating = searchParams.get('rating');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
     if (targetId) where.targetId = targetId;
     if (targetType) where.targetType = targetType;
     if (rating) where.rating = parseInt(rating);
+    if (country) where.country = country;
 
     const [reviews, total] = await Promise.all([
       db.review.findMany({
@@ -54,6 +56,7 @@ export async function POST(request: Request) {
         reviewerId: auth.userId,
         targetId: body.targetId,
         targetType: body.targetType,
+        country: body.country || null,
         rating: body.rating,
         subRatings: body.subRatings ? JSON.stringify(body.subRatings) : null,
         comment: body.comment,

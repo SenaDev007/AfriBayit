@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
+import { useCountry, type CountryCode } from '@/contexts/CountryContext';
 
 interface NavbarProps {
   activeSection: string;
@@ -40,7 +41,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState('Bénin');
+  const { selectedCountry, setSelectedCountry } = useCountry();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -107,7 +108,7 @@ export default function Navbar({
               <div className="hidden sm:block relative">
                 <select
                   value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}
                   className={`appearance-none text-xs font-medium pl-3 pr-7 py-1.5 rounded-full border cursor-pointer ${
                     scrolled
                       ? 'bg-white border-gray-200 text-[#2C2E2F]'
@@ -115,7 +116,7 @@ export default function Navbar({
                   }`}
                 >
                   {COUNTRIES_CONFIG.map((c) => (
-                    <option key={c.code} value={c.name}>{c.name}</option>
+                    <option key={c.code} value={c.code}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -295,11 +296,11 @@ export default function Navbar({
                 <div className="pt-4 border-t mt-4">
                   <select
                     value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
+                    onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}
                     className="w-full appearance-none text-sm font-medium px-4 py-2.5 rounded-full border border-gray-200 bg-white text-[#2C2E2F]"
                   >
                     {COUNTRIES_CONFIG.map((c) => (
-                      <option key={c.code} value={c.name}>{c.name}</option>
+                      <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
                   </select>
                 </div>

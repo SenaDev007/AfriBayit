@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import RebeccaChat from '@/components/afribayit/RebeccaChat';
 import { motion } from 'framer-motion';
+import { CountryProvider } from '@/contexts/CountryContext';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { onNavigate, getActiveSection } = useAfriBayitNav();
@@ -28,6 +29,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <CountryProvider>
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar
         activeSection={activeSection}
@@ -75,5 +77,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onClose={() => setIsNotificationsOpen(false)}
       />
     </div>
+    </CountryProvider>
   );
 }

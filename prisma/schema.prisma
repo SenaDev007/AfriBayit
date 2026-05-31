@@ -246,6 +246,7 @@ model Notary {
   chamberName     String?  // Chambre Nationale des Notaires
   specialty       String?  // droit_foncier, succession, baux, etc.
   certificationLevel String @default("standard") // standard, expert, elite
+  country         String   @default("BJ") // BJ, CI, BF, TG — pays d'exercice
   zone            String?  // zone d'intervention
   available       Boolean  @default(true)
   rating          Float    @default(0)
@@ -272,6 +273,7 @@ model Transaction {
   amount          Float
   commission      Float    @default(0)
   currency        String   @default("XOF")
+  country         String   @default("BJ") // BJ, CI, BF, TG — pays de la transaction
   status          String   @default("CREATED") // CREATED, FUNDED, DOCS_VALIDATED, GEOTRUST_VALIDATED, NOTARY_ASSIGNED, NOTARY_IN_PROGRESS, DEED_SIGNED, ANDF_REGISTERED, RELEASED, DISPUTED, REFUNDED, EXPIRED
   escrowReference String?
   paymentProvider String?
@@ -394,6 +396,7 @@ model Review {
   reviewerId  String
   targetId    String
   targetType  String   // agent, artisan, property, geometer, notary, hotel, course
+  country     String?  // BJ, CI, BF, TG
   rating      Int      // 1-5
   subRatings  String?  // JSON: {cleanliness, comfort, location, value, service} for hotels
   comment     String?
@@ -401,6 +404,7 @@ model Review {
   response    String?  // owner response
   respondedAt DateTime?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   reviewer    User     @relation(fields: [reviewerId], references: [id])
 
@@ -414,6 +418,7 @@ model Course {
   title         String
   slug          String?  @unique
   category      String   // immobilier, droit_foncier, investissement, construction, finance, certification
+  country       String   @default("BJ") // BJ, CI, BF, TG — marché cible
   instructorId  String
   instructor    String
   description   String?
@@ -447,6 +452,8 @@ model CourseEnrollment {
   certificateUrl String?
   enrolledAt    DateTime @default(now())
   completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -485,6 +492,7 @@ model CommunityReply {
   content     String
   likes       Int      @default(0)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   post        CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -530,7 +538,7 @@ model CommunityEvent {
   organizerId String
   groupId     String?
   eventType   String   // meetup, webinar, formation, visite
-  country     String?
+  country     String?  // BJ, CI, BF, TG
   city        String?
   venue       String?
   eventDate   DateTime
@@ -541,6 +549,7 @@ model CommunityEvent {
   attendees   Int      @default(0)
   image       String?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("community_events")
 }
@@ -552,6 +561,7 @@ model Notification {
   userId      String
   type        String   // transaction, message, alert, system, promotion, community, rebecca, certification, profile, premium, security
   category    String   // profile, annonces, transactions, market_alerts, rebecca, community, formations, certification, premium, security
+  country     String?  // BJ, CI, BF, TG — pays concerné
   title       String
   message     String
   read        Boolean  @default(false)
@@ -562,6 +572,7 @@ model Notification {
   channels    String?  // JSON array: push, email, sms, whatsapp
   sentVia     String?  // JSON array of channels already sent
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   readAt      DateTime?
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -609,6 +620,7 @@ model ArtisanService {
   unit        String?  // m2, hour, day, forfait
   category    String?  // gros_oeuvre, second_oeuvre, finition, genie_technique, exterieur, renovation, numerique
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   artisan     Artisan  @relation(fields: [artisanId], references: [id], onDelete: Cascade)
 
@@ -894,6 +906,7 @@ model HotelReview {
   respondedAt DateTime?
   status      String   @default("published") // pending_moderation, published, hidden
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   booking     HotelBooking @relation(fields: [bookingId], references: [id])
   hotel       Hotel        @relation(fields: [hotelId], references: [id])
@@ -1080,6 +1093,7 @@ model ProfessionalProfile {
   education       String?  // JSON array of education objects
   certifications  String?  // JSON array of badge/cert objects
   portfolio       String?  // JSON array of project objects
+  country         String?  // BJ, CI, BF, TG — pays d'activité
   zone            String?  // zone d'intervention
   agencyName      String?  // for agents
   createdAt       DateTime @default(now())
@@ -1141,6 +1155,7 @@ model Subscription {
   planType    String   // agent_seed, agent_grow, agent_lead, agent_network, pms_starter, pms_pro, pms_enterprise, artisan_pro, geometer_pro, notary_pro, academy_basic, academy_pro
   priceXof    Float
   currency    String   @default("XOF")
+  country     String?  // BJ, CI, BF, TG — marché
   status      String   @default("active") // active, cancelled, expired, past_due
   startDate   DateTime
   endDate     DateTime?

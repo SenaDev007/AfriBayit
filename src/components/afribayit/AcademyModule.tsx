@@ -3,6 +3,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCourses } from '@/hooks/useCourses';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 interface Course {
   id: string;
@@ -16,6 +19,7 @@ interface Course {
   image: string;
   level: string;
   certificate: boolean;
+  createdAt?: string;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -45,9 +49,12 @@ function CourseSkeleton() {
 
 export default function AcademyModule() {
   const [selectedCategory, setSelectedCategory] = React.useState('Tous');
+  const { selectedCountry } = useCountry();
 
   const { data, isLoading, error } = useCourses(
-    selectedCategory === 'Tous' ? undefined : selectedCategory
+    selectedCategory === 'Tous' ? undefined : selectedCategory,
+    undefined,
+    selectedCountry
   );
 
   const courses: Course[] = (data?.courses as Course[]) || [];
@@ -74,6 +81,14 @@ export default function AcademyModule() {
             Montez en compétences avec nos formations certifiantes. Investissement, droit foncier, négociation, et plus encore.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Categories */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-8">
@@ -150,6 +165,9 @@ export default function AcademyModule() {
                     {course.title}
                   </h3>
                   <p className="text-xs text-gray-500 mb-3">Par {course.instructor}</p>
+                  {course.createdAt && (
+                    <p className="text-[10px] text-gray-400 mb-2">Publié {timeAgo(course.createdAt)}</p>
+                  )}
 
                   <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
                     <span className="flex items-center gap-1">

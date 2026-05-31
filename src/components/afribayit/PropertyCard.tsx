@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel } from '@/lib/afribayit-utils';
+import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel, timeAgo } from '@/lib/afribayit-utils';
 
 interface PropertyCardProps {
   property: PropertyData;
@@ -97,6 +97,12 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
             </svg>
             {property.views}
           </span>
+          {property.createdAt && (
+            <>
+              <span className="text-[10px] text-gray-400">•</span>
+              <span className="text-[10px] text-gray-400">Publié {timeAgo(property.createdAt)}</span>
+            </>
+          )}
         </div>
 
         <h3 className={`font-display font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors ${compact ? 'text-base' : 'text-lg'}`}>

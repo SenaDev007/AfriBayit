@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const certificationLevel = searchParams.get('certificationLevel');
     const zone = searchParams.get('zone');
     const available = searchParams.get('available');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
@@ -19,6 +20,7 @@ export async function GET(request: Request) {
     if (certificationLevel) where.certificationLevel = certificationLevel;
     if (zone) where.zone = zone;
     if (available === 'true') where.available = true;
+    if (country) where.country = country;
 
     const [geometers, total] = await Promise.all([
       db.geometer.findMany({

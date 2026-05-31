@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const country = searchParams.get('country');
+
+    const countryFilter = country ? { country } : {};
+
     const [
       propertiesCount,
       transactionsCount,
@@ -11,14 +16,14 @@ export async function GET() {
       coursesCount,
       reviewsCount,
     ] = await Promise.all([
-      db.property.count({ where: { status: 'published' } }),
+      db.property.count({ where: { status: 'published', ...countryFilter } }),
       db.transaction.count({
-        where: { status: { in: ['DEED_SIGNED', 'RELEASED', 'ANDF_REGISTERED'] } },
+        where: { status: { in: ['DEED_SIGNED', 'RELEASED', 'ANDF_REGISTERED'] }, ...countryFilter },
       }),
-      db.user.count({ where: { role: { in: ['agent', 'admin'] }, verified: true } }),
-      db.artisan.count({ where: { certified: true } }),
-      db.course.count({ where: { published: true } }),
-      db.review.count({ where: { rating: { gte: 4 } } }),
+      db.user.count({ where: { role: { in: ['agent', 'admin'] }, verified: true, ...countryFilter } }),
+      db.artisan.count({ where: { certified: true, ...countryFilter } }),
+      db.course.count({ where: { published: true, ...countryFilter } }),
+      db.review.count({ where: { rating: { gte: 4 }, ...countryFilter } }),
     ]);
 
     // Count distinct countries with published properties
@@ -30,7 +35,7 @@ export async function GET() {
     const countriesCount = countriesRaw.length || 4; // fallback to 4 pilot countries
 
     // Compute satisfaction from total reviews vs positive reviews
-    const totalReviews = await db.review.count();
+    const totalReviews = await db.review.count({ where: countryFilter });
     const satisfaction = totalReviews > 0
       ? Math.round((reviewsCount / totalReviews) * 100)
       : 98; // fallback

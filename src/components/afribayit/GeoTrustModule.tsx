@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGeometers, useGeometerMissions } from '@/hooks/useGeotrust';
+import { useCountry } from '@/contexts/CountryContext';
+import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { timeAgo } from '@/lib/afribayit-utils';
 
 interface Geometer {
   id: string;
@@ -14,6 +17,8 @@ interface Geometer {
   reviews: number;
   certifications: string[];
   missions: number;
+  certifiedAt?: string;
+  createdAt?: string;
 }
 
 interface Mission {
@@ -57,8 +62,9 @@ function GeometerSkeleton() {
 
 export default function GeoTrustModule() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const { selectedCountry } = useCountry();
 
-  const { data: geometersData, isLoading: geometersLoading, error: geometersError } = useGeometers();
+  const { data: geometersData, isLoading: geometersLoading, error: geometersError } = useGeometers(undefined, selectedCountry);
   const { data: missionsData, isLoading: missionsLoading } = useGeometerMissions();
 
   const geometers: Geometer[] = (geometersData?.geometers as Geometer[]) || [];
@@ -83,6 +89,14 @@ export default function GeoTrustModule() {
             Faites vérifier votre terrain par des géomètres professionnels certifiés GeoTrust. Superficie, bornage, et certification garantis.
           </p>
         </motion.div>
+
+        {/* Country Filter Badge */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+          </span>
+        </div>
 
         {/* Service Catalog */}
         <div className="mb-10">
@@ -167,6 +181,11 @@ export default function GeoTrustModule() {
                     </span>
                     <span>{geo.missions} missions</span>
                   </div>
+                  {(geo.certifiedAt || geo.createdAt) && (
+                    <p className="text-[10px] text-gray-400 mb-3">
+                      {geo.certifiedAt ? `Certifié ${timeAgo(geo.certifiedAt)}` : `Inscrit ${timeAgo(geo.createdAt!)}`}
+                    </p>
+                  )}
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {geo.certifications.map((cert) => (
                       <span key={cert} className="px-2.5 py-1 bg-[#009CDE]/5 text-[#009CDE] text-[10px] font-medium rounded-full">
