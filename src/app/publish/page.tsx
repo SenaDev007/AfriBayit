@@ -1,11 +1,25 @@
 'use client';
 
 import { useMemo } from 'react';
-import PropertyPublishModule from '@/components/afribayit/PropertyPublishModule';
+import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import { useAuthStore } from '@/stores/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Ban } from 'lucide-react';
+import SafeModule from '@/components/safe/SafeModule';
+
+const PropertyPublishModule = dynamic(() => import('@/components/afribayit/PropertyPublishModule'), {
+  loading: () => (
+    <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-10 w-48 bg-gray-200 rounded" />
+          <div className="h-96 bg-gray-100 rounded-3xl" />
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 export default function PublishPage() {
   const { onNavigate } = useAfriBayitNav();
@@ -64,7 +78,9 @@ export default function PublishPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <PropertyPublishModule onNavigate={onNavigate} />
+      <SafeModule>
+        <PropertyPublishModule onNavigate={onNavigate} />
+      </SafeModule>
     </div>
   );
 }

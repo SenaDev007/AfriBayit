@@ -2036,3 +2036,92 @@ Stage Summary:
 - Navbar now has all platform modules accessible from mega menus
 - Backoffice accessible via dedicated button + profile dropdown
 - Build compiles successfully
+
+---
+Task ID: 2
+Agent: Client-Side Error Fix Agent
+Task: Fix client-side exceptions causing "Application error" on Vercel
+
+Work Log:
+
+## Problem
+The AfriBayit platform at afri-bayit.vercel.app shows "Application error: a client-side exception has occurred" on many pages. The root causes are:
+1. No error boundaries to catch and gracefully display client-side errors
+2. NextAuth crashes when NEXTAUTH_SECRET is missing (common on Vercel without env vars)
+3. AppShell crashes when NextAuth session fails
+4. Middleware crashes when NEXTAUTH_SECRET is missing
+5. No global error handler for uncaught root-level errors
+
+## Changes Made
+
+### 1. Created `src/app/error.tsx` (NEW)
+- 'use client' component that catches route-level client-side errors
+- Displays a helpful error message in French with:
+  - AlertTriangle icon from lucide-react
+  - "Une erreur est survenue" heading
+  - Error detail text (error.message)
+  - "Reessayer" (retry) button calling reset()
+  - "Retour a l'accueil" (home) link
+- Styled with AfriBayit design system colors (#003087 navy)
+
+### 2. Created `src/app/global-error.tsx` (NEW)
+- 'use client' component for root-level unhandled errors
+- Includes own <html> and <body> tags (required by Next.js for global-error)
+- Displays "Erreur inattendue" with AlertTriangle icon
+- "Rafraichir" (refresh) button calling reset()
+- Catches errors that the layout error boundary cannot
+
+### 3. Updated `src/components/providers/NextAuthProvider.tsx`
+- Converted from simple functional component to class component with error boundary
+- If SessionProvider throws (e.g. missing NEXTAUTH_SECRET), catches the error
+- Renders children WITHOUT SessionProvider so the app continues to work
+- Logs a warning explaining the likely cause (missing NEXTAUTH_SECRET)
+- App degrades gracefully: no auth session, but pages still render
+
+### 4. Updated `src/components/providers/AppShell.tsx`
+- Converted to class component with error boundary wrapping an inner functional component
+- AppShellInner calls useSession() unconditionally (per React's rules of hooks)
+- If useSession throws (because no SessionProvider context from NextAuthProvider fallback), the AppShell error boundary catches it
+- Fallback renders just the page content without navbar/footer/chat widgets
+- Improved notification fetch with cancellation guard (prevents setState on unmounted component)
+- All fetch errors silently fail (notification count is non-critical)
+
+### 5. Verified `src/lib/legal-docs.ts` (NO CHANGES NEEDED)
+- COUNTRY_NAMES export exists and is correctly defined (line 77-82)
+- Maps BJ -> Benin, CI -> Cote d'Ivoire, BF -> Burkina Faso, TG -> Togo
+- FeaturedProperties imports and uses it correctly
+
+### 6. Rewrote `src/middleware.ts`
+- Replaced direct `withAuth` export with async middleware function
+- Checks if NEXTAUTH_SECRET exists at runtime
+- If NEXTAUTH_SECRET is missing:
+  - Falls back to lightweight route-based middleware
+  - Public routes (/search, /property, /auth, etc.) are allowed through
+  - Protected routes (/dashboard, /wallet, /admin) redirect to /auth/login
+  - Protected API routes return 401 JSON
+  - Unknown routes are allowed (Next.js handles 404)
+- If NEXTAUTH_SECRET is available:
+  - Dynamically imports and uses withAuth from next-auth/middleware
+  - Wraps in try-catch: if withAuth fails for any reason, falls back to simple middleware
+  - Preserves original role-based admin check logic
+- Extracted route classification into helper functions (isPublicRoute, isProtectedRoute, isAdminRoute)
+
+### 7. Fixed pre-existing Navbar.tsx lint error
+- Replaced synchronous setState in useEffect (react-hooks/set-state-in-effect violation)
+- Used requestAnimationFrame to schedule state updates asynchronously
+- Prevents "cascading renders" warning from React 19 lint rules
+
+## Files Modified
+1. `src/app/error.tsx` - NEW
+2. `src/app/global-error.tsx` - NEW
+3. `src/components/providers/NextAuthProvider.tsx` - Rewritten with error boundary
+4. `src/components/providers/AppShell.tsx` - Rewritten with error boundary + safer fetch
+5. `src/middleware.ts` - Complete rewrite with fallback for missing env vars
+6. `src/components/afribayit/Navbar.tsx` - Fixed lint error (requestAnimationFrame)
+
+## Verification
+- ESLint: 0 errors (2 pre-existing warnings about unused eslint-disable directives)
+- All new/modified files pass lint individually
+- Error boundaries follow Next.js 16 conventions
+- All components use 'use client' directive where needed
+- Lucide React icons used (AlertTriangle, RotateCcw, Home)

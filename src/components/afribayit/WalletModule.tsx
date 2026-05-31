@@ -124,6 +124,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
 
   const { user } = useAuthStore();
   const userId = user?.id;
+  const isLoggedIn = !!userId;
   const { selectedCountry } = useCountry();
 
   const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId, selectedCountry);
@@ -208,9 +209,21 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
             Mon <span className="text-[#D4AF37]">Portefeuille</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Gerez vos fonds, escrows et AfriPoints en toute securite
+            {isLoggedIn ? 'Gerez vos fonds, escrows et AfriPoints en toute securite' : 'Connectez-vous pour gerer vos fonds et AfriPoints'}
           </p>
         </motion.div>
+
+        {/* Guest mode notice */}
+        {!isLoggedIn && (
+          <div className="bg-[#003087]/5 border border-[#003087]/10 rounded-2xl p-6 text-center mb-6">
+            <Shield className="w-10 h-10 text-[#003087] mx-auto mb-3" />
+            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-2">Connexion requise</h3>
+            <p className="text-sm text-gray-600 mb-4">Pour acceder a votre portefeuille, veuillez vous connecter.</p>
+            <a href="/auth/login" className="px-5 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors inline-block">
+              Se connecter
+            </a>
+          </div>
+        )}
 
         {/* Currency Toggle */}
         <div className="flex justify-center gap-2 mb-6">

@@ -11,7 +11,7 @@ import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Home, Search, Building2, Key, CalendarDays, Shield, LogOut,
   CreditCard, BarChart3, User, Coins, TrendingUp, Wrench,
-  GraduationCap, Users, MapPin, Hotel, BedDouble, Notary,
+  GraduationCap, Users, MapPin, Hotel, BedDouble,
   FileCheck, Wallet, Bell, Plus, Languages, ChevronDown,
   LayoutDashboard, Briefcase, ShieldCheck, Star, Landmark,
   MessageCircle, Eye, Settings, ChevronRight, Menu, X
@@ -123,9 +123,12 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
 
   /* Close menus on route change */
   useEffect(() => {
-    setMobileMenuOpen(false);
-    setProfileMenuOpen(false);
-    setOpenGroup(null);
+    const raf = requestAnimationFrame(() => {
+      setMobileMenuOpen(false);
+      setProfileMenuOpen(false);
+      setOpenGroup(null);
+    });
+    return () => cancelAnimationFrame(raf);
   }, [pathname]);
 
   /* Close mega-menu on outside click */

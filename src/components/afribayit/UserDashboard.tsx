@@ -48,10 +48,11 @@ function formatPrice(price: number): string {
   return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
 }
 
-export default function UserDashboard({ onLogout }: UserDashboardProps) {
+export default function UserDashboard({ onNavigate, onLogout }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const { user } = useAuthStore();
   const userId = user?.id;
+  const isLoggedIn = !!userId;
 
   const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
   const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId);
@@ -67,6 +68,41 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
   const walletBalance = summary?.balance ?? 0;
   const escrowHeld = summary?.escrowHeld ?? 0;
   const pendingPayout = summary?.pendingPayout ?? 0;
+
+  // Guest mode banner when not logged in
+  if (!isLoggedIn) {
+    return (
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-6">
+              <Home className="w-10 h-10 text-[#003087]" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-3">
+              Bienvenue sur AfriBayit
+            </h2>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Connectez-vous pour acceder a votre tableau de bord, gerer vos transactions et suivre vos activites immobilieres.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href="/auth/login"
+                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
+              >
+                Se connecter
+              </a>
+              <a
+                href="/auth/register"
+                className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-full text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
+              >
+                Creer un compte
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">

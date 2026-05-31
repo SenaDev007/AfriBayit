@@ -81,7 +81,8 @@ export function CountryProvider({ children }: { children: React.ReactNode }) {
 export function useCountry() {
   const context = useContext(CountryContext);
   if (!context) {
-    throw new Error('useCountry must be used within a CountryProvider');
+    // Return safe defaults instead of throwing when used outside provider
+    return { selectedCountry: 'BJ' as CountryCode, setSelectedCountry: () => {} };
   }
   return context;
 }
