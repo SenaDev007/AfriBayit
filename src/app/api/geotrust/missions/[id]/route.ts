@@ -105,3 +105,41 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update mission' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const { id } = await params;
+
+    const existing = await db.geometerMission.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
+    }
+
+    // Only the assigned geometer, the property owner, or admin can cancel
+    const isGeometer = existing.geometerId === auth.userId;
+    const property = await db.property.findUnique({ where: { id: existing.propertyId } });
+    const isPropertyOwner = property?.agentId === auth.userId;
+    const isAdmin = auth.role === 'admin';
+
+    if (!isGeometer && !isPropertyOwner && !isAdmin) {
+      return NextResponse.json({ error: 'Forbidden: not authorized to cancel this mission' }, { status: 403 });
+    }
+
+    // Cancel the mission (soft-delete via status)
+    const updated = await db.geometerMission.update({
+      where: { id },
+      data: { status: 'cancelled' },
+    });
+
+    return NextResponse.json({ message: 'Mission cancelled', data: updated });
+  } catch (error) {
+    console.error('Geometer mission delete error:', error);
+    return NextResponse.json({ error: 'Failed to cancel mission' }, { status: 500 });
+  }
+}

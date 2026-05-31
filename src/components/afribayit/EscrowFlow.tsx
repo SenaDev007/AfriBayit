@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEscrowList } from '@/hooks/useEscrow';
+import { useEscrowList, useCreateEscrow } from '@/hooks/useEscrow';
+import { useCountry } from '@/contexts/CountryContext';
+import { toast } from 'sonner';
 
 interface EscrowFlowProps {
   onNavigate: (section: string) => void;
@@ -19,8 +21,6 @@ const paymentProviders = [
 ];
 
 // Full escrow state machine — CDC §5.0bis.4
-// Normal flow: CREATED → FUNDED → DOCS_VALIDATED → GEOTRUST_VALIDATED → NOTARY_ASSIGNED → NOTARY_IN_PROGRESS → DEED_SIGNED → ANDF_REGISTERED → RELEASED
-// Exception states: DISPUTED, REFUNDED, EXPIRED
 type EscrowState = 'CREATED' | 'FUNDED' | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED' | 'NOTARY_ASSIGNED' | 'NOTARY_IN_PROGRESS' | 'DEED_SIGNED' | 'ANDF_REGISTERED' | 'RELEASED' | 'DISPUTED' | 'REFUNDED' | 'EXPIRED';
 
 interface EscrowStateConfig {
@@ -49,32 +49,55 @@ const exceptionStatesConfig: EscrowStateConfig[] = [
   { key: 'EXPIRED', label: 'Expiré', icon: '⏰', description: 'Transaction expirée sans aboutir', category: 'exception' },
 ];
 
-// The normal flow order for determining progress
 const normalFlowOrder: EscrowState[] = ['CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED', 'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED'];
 
 export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   const [step, setStep] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  // Simulated current escrow state for demo — in production this comes from API
   const [currentEscrowState, setCurrentEscrowState] = useState<EscrowState>('FUNDED');
-  // Simulated timestamps for completed states
-  const [completedTimestamps, setCompletedTimestamps] = useState<Record<EscrowState, string | null>>({
-    CREATED: '10 Mar 2025 09:15',
-    FUNDED: '10 Mar 2025 10:42',
-    DOCS_VALIDATED: null,
-    GEOTRUST_VALIDATED: null,
-    NOTARY_ASSIGNED: null,
-    NOTARY_IN_PROGRESS: null,
-    DEED_SIGNED: null,
-    ANDF_REGISTERED: null,
-    RELEASED: null,
-    DISPUTED: null,
-    REFUNDED: null,
-    EXPIRED: null,
-  });
 
-  const { data, isLoading } = useEscrowList();
+  const { selectedCountry } = useCountry();
+  const { data, isLoading } = useEscrowList(1, 20, selectedCountry);
+  const createEscrow = useCreateEscrow();
+
+  // Get the first escrow account for transaction details (or use selected one)
+  const escrowAccounts = (data?.escrowAccounts as Array<{
+    id: string;
+    property?: string;
+    buyer?: string;
+    amount?: number;
+    status: string;
+    currency?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    transaction?: { id: string; propertyId: string; buyerId: string; status: string; amount: number; currency: string };
+  }>) || [];
+
+  const selectedEscrow = escrowAccounts[0];
+
+  // Derive property name and amount from API data
+  const propertyName = selectedEscrow?.property || selectedEscrow?.transaction?.propertyId || 'Propriété';
+  const amount = selectedEscrow?.amount || selectedEscrow?.transaction?.amount || 0;
+  const currency = selectedEscrow?.currency || selectedEscrow?.transaction?.currency || 'XOF';
+  const escrowFee = Math.round(amount * 0.015);
+  const totalAmount = amount + escrowFee;
+
+  // Build completed timestamps from actual API data
+  const completedTimestamps = useMemo<Record<EscrowState, string | null>>(() => {
+    const ts: Record<EscrowState, string | null> = {
+      CREATED: null, FUNDED: null, DOCS_VALIDATED: null, GEOTRUST_VALIDATED: null,
+      NOTARY_ASSIGNED: null, NOTARY_IN_PROGRESS: null, DEED_SIGNED: null,
+      ANDF_REGISTERED: null, RELEASED: null, DISPUTED: null, REFUNDED: null, EXPIRED: null,
+    };
+    if (selectedEscrow?.createdAt) {
+      ts.CREATED = new Date(selectedEscrow.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    if (selectedEscrow?.updatedAt && currentEscrowState !== 'CREATED') {
+      ts[currentEscrowState] = new Date(selectedEscrow.updatedAt).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    return ts;
+  }, [selectedEscrow, currentEscrowState]);
 
   const steps = [
     { title: 'Choisir le moyen de paiement', desc: 'Sélectionnez votre fournisseur de paiement' },
@@ -83,12 +106,26 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   ];
 
   const handleConfirm = () => {
-    setShowSuccess(true);
-    setCompletedTimestamps(prev => ({
-      ...prev,
-      FUNDED: new Date().toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-    }));
-    setTimeout(() => setShowSuccess(false), 3000);
+    if (!selectedEscrow?.transaction?.id && !selectedEscrow?.id) {
+      toast.error('Aucune transaction sélectionnée');
+      return;
+    }
+    createEscrow.mutate(
+      {
+        transactionId: selectedEscrow?.transaction?.id || selectedEscrow?.id,
+        currency,
+        provider: selectedProvider,
+      },
+      {
+        onSuccess: () => {
+          setShowSuccess(true);
+          toast.success('Paiement escrow confirmé !');
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de la confirmation', { description: error.message });
+        },
+      }
+    );
   };
 
   // Determine the state of each step in the timeline
@@ -101,7 +138,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
     }
     const currentIndex = normalFlowOrder.indexOf(currentEscrowState);
     const stateIndex = normalFlowOrder.indexOf(stateKey);
-    // If we're in an exception state, all normal states are either completed or not
     if (currentEscrowState === 'DISPUTED' || currentEscrowState === 'REFUNDED' || currentEscrowState === 'EXPIRED') {
       return stateIndex < currentIndex ? 'completed' : 'upcoming';
     }
@@ -111,6 +147,8 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   };
 
   const isExceptionActive = ['DISPUTED', 'REFUNDED', 'EXPIRED'].includes(currentEscrowState);
+
+  const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -138,7 +176,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Cycle de vie Escrow</h3>
-            {/* Demo: state selector */}
             <select
               value={currentEscrowState}
               onChange={(e) => setCurrentEscrowState(e.target.value as EscrowState)}
@@ -195,7 +232,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                           ) : (
                             <span className={status === 'current' ? '' : 'opacity-40'}>{state.icon}</span>
                           )}
-                          {/* Pulse ring for current state */}
                           {status === 'current' && (
                             <motion.div
                               className="absolute inset-0 rounded-full border-2 border-[#D4AF37]"
@@ -211,7 +247,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                         }`}>
                           {state.label}
                         </p>
-                        {/* Timestamp for completed states */}
                         {status === 'completed' && completedTimestamps[state.key] && (
                           <p className="text-[8px] text-gray-400 text-center mt-0.5">
                             {completedTimestamps[state.key]}
@@ -322,7 +357,6 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
               );
             })}
           </div>
-          {/* Exception states legend */}
           <div className="mt-4 pt-3 border-t">
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">États exceptionnels (accessibles depuis tout état actif)</p>
             <div className="flex flex-wrap gap-2">
@@ -395,19 +429,19 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
             <div className="space-y-4">
               <div className="p-4 bg-gray-50 rounded-2xl">
                 <p className="text-xs text-gray-500 mb-1">Bien</p>
-                <p className="text-sm font-semibold text-[#2C2E2F]">Villa Prestige Les Cocotiers</p>
+                <p className="text-sm font-semibold text-[#2C2E2F]">{propertyName}</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-2xl">
                 <p className="text-xs text-gray-500 mb-1">Montant</p>
-                <p className="font-mono-data text-2xl font-bold text-[#D4AF37]">85 000 000 FCFA</p>
+                <p className="font-mono-data text-2xl font-bold text-[#D4AF37]">{amount > 0 ? formatFCFA(amount) : '—'}</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-2xl">
                 <p className="text-xs text-gray-500 mb-1">Frais escrow (1.5%)</p>
-                <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">1 275 000 FCFA</p>
+                <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
               </div>
               <div className="p-4 bg-[#00A651]/5 rounded-2xl">
                 <p className="text-xs text-[#00A651] mb-1">Total à payer</p>
-                <p className="font-mono-data text-2xl font-bold text-[#00A651]">86 275 000 FCFA</p>
+                <p className="font-mono-data text-2xl font-bold text-[#00A651]">{amount > 0 ? formatFCFA(totalAmount) : '—'}</p>
               </div>
             </div>
           )}
@@ -444,10 +478,14 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                 if (step < steps.length - 1) setStep(step + 1);
                 else handleConfirm();
               }}
-              disabled={step === 0 && !selectedProvider}
+              disabled={(step === 0 && !selectedProvider) || createEscrow.isPending}
               className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {step === steps.length - 1 ? 'Confirmer le paiement' : 'Continuer'}
+              {createEscrow.isPending
+                ? 'Traitement en cours...'
+                : step === steps.length - 1
+                  ? 'Confirmer le paiement'
+                  : 'Continuer'}
             </motion.button>
           </div>
         </motion.div>

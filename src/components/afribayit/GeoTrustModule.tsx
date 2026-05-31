@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGeometers, useGeometerMissions } from '@/hooks/useGeotrust';
+import { useGeometers, useGeometerMissions, useCreateGeotrustMission } from '@/hooks/useGeotrust';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { toast } from '@/hooks/use-toast';
 
 interface Geometer {
   id: string;
@@ -33,12 +34,12 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — geometer service catalog (not DB data)
 const geometerServices = [
-  { id: 'geo-1', name: 'Vérification superficie', price: '50 000 FCFA', icon: '📐', description: 'Mesure précise de la superficie réelle du terrain' },
-  { id: 'geo-2', name: 'Inspection terrain', price: '75 000 FCFA', icon: '🔍', description: 'Inspection complète : limites, servitudes, risques' },
-  { id: 'geo-3', name: 'Bornage', price: '120 000 FCFA', icon: '📍', description: 'Bornage officiel avec pose de bornes' },
-  { id: 'geo-4', name: 'Drone mapping', price: '200 000 FCFA', icon: '🚁', description: 'Cartographie aérienne haute résolution' },
-  { id: 'geo-5', name: 'Certificat GeoTrust', price: '30 000 FCFA', icon: '✅', description: 'Certificat de conformité géométrique' },
-  { id: 'geo-6', name: 'Topographie complète', price: '350 000 FCFA', icon: '🗺️', description: 'Étude topographique complète avec plan' },
+  { id: 'geo-1', name: 'Vérification superficie', code: 'verification_superficie', price: 50000, priceLabel: '50 000 FCFA', icon: '📐', description: 'Mesure précise de la superficie réelle du terrain' },
+  { id: 'geo-2', name: 'Inspection terrain', code: 'inspection_terrain', price: 75000, priceLabel: '75 000 FCFA', icon: '🔍', description: 'Inspection complète : limites, servitudes, risques' },
+  { id: 'geo-3', name: 'Bornage', code: 'bornage', price: 120000, priceLabel: '120 000 FCFA', icon: '📍', description: 'Bornage officiel avec pose de bornes' },
+  { id: 'geo-4', name: 'Drone mapping', code: 'drone_mapping', price: 200000, priceLabel: '200 000 FCFA', icon: '🚁', description: 'Cartographie aérienne haute résolution' },
+  { id: 'geo-5', name: 'Certificat GeoTrust', code: 'certificat_geotrust', price: 30000, priceLabel: '30 000 FCFA', icon: '✅', description: 'Certificat de conformité géométrique' },
+  { id: 'geo-6', name: 'Topographie complète', code: 'topographie_complete', price: 350000, priceLabel: '350 000 FCFA', icon: '🗺️', description: 'Étude topographique complète avec plan' },
 ];
 
 function GeometerSkeleton() {
@@ -62,13 +63,56 @@ function GeometerSkeleton() {
 
 export default function GeoTrustModule() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [showMissionDialog, setShowMissionDialog] = useState(false);
+  const [selectedGeometer, setSelectedGeometer] = useState<Geometer | null>(null);
+  const [missionForm, setMissionForm] = useState({ serviceCode: '', propertyId: '', notes: '', price: 0 });
   const { selectedCountry } = useCountry();
 
   const { data: geometersData, isLoading: geometersLoading, error: geometersError } = useGeometers(undefined, selectedCountry);
   const { data: missionsData, isLoading: missionsLoading } = useGeometerMissions();
 
+  const createMission = useCreateGeotrustMission();
+
   const geometers: Geometer[] = (geometersData?.geometers as Geometer[]) || [];
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
+
+  const handleOpenMissionDialog = (geometer: Geometer) => {
+    setSelectedGeometer(geometer);
+    const service = selectedService
+      ? geometerServices.find(s => s.id === selectedService)
+      : null;
+    setMissionForm({
+      serviceCode: service?.code || '',
+      propertyId: '',
+      notes: '',
+      price: service?.price || 0,
+    });
+    setShowMissionDialog(true);
+  };
+
+  const handleSubmitMission = () => {
+    if (!selectedGeometer) return;
+    createMission.mutate(
+      {
+        geometerId: selectedGeometer.id,
+        serviceCode: missionForm.serviceCode,
+        propertyId: missionForm.propertyId || undefined,
+        notes: missionForm.notes || undefined,
+        price: missionForm.price || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: 'Mission créée', description: `Votre demande de mission a été envoyée à ${selectedGeometer.name}.` });
+          setShowMissionDialog(false);
+          setSelectedGeometer(null);
+          setMissionForm({ serviceCode: '', propertyId: '', notes: '', price: 0 });
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de créer la mission.', variant: 'destructive' });
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -117,7 +161,7 @@ export default function GeoTrustModule() {
                 <span className="text-3xl block mb-3">{service.icon}</span>
                 <h3 className="font-semibold text-[#2C2E2F] mb-1">{service.name}</h3>
                 <p className="text-xs text-gray-500 mb-3">{service.description}</p>
-                <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.price}</p>
+                <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.priceLabel}</p>
               </motion.div>
             ))}
           </div>
@@ -193,7 +237,10 @@ export default function GeoTrustModule() {
                       </span>
                     ))}
                   </div>
-                  <button className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
+                  <button
+                    onClick={() => handleOpenMissionDialog(geo)}
+                    className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                  >
                     Demander un devis
                   </button>
                 </motion.div>
@@ -229,6 +276,85 @@ export default function GeoTrustModule() {
             ))}
           </div>
         </motion.div>
+
+        {/* Mission Request Dialog */}
+        {showMissionDialog && selectedGeometer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setShowMissionDialog(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">Demander un devis</h3>
+              <p className="text-xs text-gray-500 mb-4">À {selectedGeometer.name} — {selectedGeometer.city}</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Service</label>
+                  <select
+                    value={missionForm.serviceCode}
+                    onChange={(e) => {
+                      const service = geometerServices.find(s => s.code === e.target.value);
+                      setMissionForm(prev => ({
+                        ...prev,
+                        serviceCode: e.target.value,
+                        price: service?.price || 0,
+                      }));
+                    }}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
+                  >
+                    <option value="">Sélectionnez un service</option>
+                    {geometerServices.map((service) => (
+                      <option key={service.code} value={service.code}>
+                        {service.icon} {service.name} — {service.priceLabel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">ID du bien (optionnel)</label>
+                  <input
+                    type="text"
+                    value={missionForm.propertyId}
+                    onChange={(e) => setMissionForm(prev => ({ ...prev, propertyId: e.target.value }))}
+                    placeholder="ex: prop-abc123"
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Notes</label>
+                  <textarea
+                    rows={3}
+                    value={missionForm.notes}
+                    onChange={(e) => setMissionForm(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Détails supplémentaires..."
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#009CDE] transition-colors"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowMissionDialog(false)}
+                    className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleSubmitMission}
+                    disabled={createMission.isPending || !missionForm.serviceCode}
+                    className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                  >
+                    {createMission.isPending ? 'Envoi...' : 'Envoyer'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

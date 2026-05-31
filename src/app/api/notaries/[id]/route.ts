@@ -69,3 +69,35 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update notary' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const { id } = await params;
+
+    const existingNotary = await db.notary.findUnique({ where: { id } });
+    if (!existingNotary) {
+      return NextResponse.json({ error: 'Notary not found' }, { status: 404 });
+    }
+
+    if (existingNotary.userId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
+
+    // Soft-delete: set available to false and status implied by unavailability
+    const notary = await db.notary.update({
+      where: { id },
+      data: { available: false },
+    });
+
+    return NextResponse.json({ message: 'Notary deactivated', notary });
+  } catch (error) {
+    console.error('Notary delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete notary' }, { status: 500 });
+  }
+}

@@ -5,11 +5,18 @@ import bcrypt from 'bcryptjs';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, name, phone, country, role } = body;
+    const { email, password, name, phone, country, city, role } = body;
 
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: 'Email, mot de passe et nom sont requis' },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Le mot de passe doit contenir au moins 8 caractères' },
         { status: 400 }
       );
     }
@@ -37,6 +44,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         phone: phone || null,
         country: country || null,
+        city: city || null,
         role: role || 'buyer',
         kycLevel: 0,
         verified: false,

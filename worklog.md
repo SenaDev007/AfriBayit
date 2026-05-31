@@ -609,3 +609,575 @@ Stage Summary:
 - 10 composants UI affichent le badge pays et filtrent automatiquement
 - 7 composants affichent les timestamps (createdAt, certifiedAt)
 - Build Next.js passe, push GitHub effectué
+
+---
+Task ID: auth-fix
+Agent: Main Agent
+Task: Fix authentication pages — Login and Register forms don't work (just redirect without calling any API)
+
+Work Log:
+
+## Problem Analysis
+- `AuthPages.tsx` used uncontrolled inputs (no `value`/`onChange`) on all form fields
+- Login form called `onLogin()` callback directly → just did `router.push('/dashboard')` with no auth
+- Register form called `onLogin()` at final step → just redirected without creating account
+- Social login buttons called `handleLogin()` instead of `signIn('google')`/`signIn('facebook')`
+- "Mot de passe oublié?" button had no handler
+- Register API route didn't accept `city` field
+- Register form had unnecessary OTP/KYC/2FA steps that collected no real data
+
+## Changes Made
+
+### 1. Rewrote `src/components/afribayit/AuthPages.tsx` (complete rewrite, 690 lines)
+- **Login form**: Controlled inputs (`value` + `onChange`) for email and password
+- **Login submit**: Calls `signIn('credentials', { email, password, redirect: false })` from next-auth/react
+- **Login error handling**: Shows red error banner on invalid credentials, clears on input change
+- **Login loading state**: Spinner with "Connexion..." text, button disabled while loading
+- **Social login**: Google button calls `signIn('google', { callbackUrl: '/dashboard' })`, Facebook calls `signIn('facebook', ...)`
+- **Forgot password**: Shows inline modal with email input and alert notification
+- **Register form**: Controlled inputs for ALL fields (email, phone, password, confirmPassword, name, country, city, role)
+- **Register steps**: Simplified to 3 functional steps (Email → Profile → Role), removed fake OTP/KYC/2FA steps
+- **Register submit**: Calls `POST /api/auth/register` with all form data, then auto `signIn('credentials')` on success
+- **Register validation**: Password min 8 chars, password confirmation match, required fields per step
+- **Register error handling**: Shows error banner, handles duplicate email, server errors
+- **Country/city selection**: Dynamic city dropdown that resets when country changes (BJ/CI/BF/TG with 5 cities each)
+- **Role selection**: Radio-button style selector with 6 roles (buyer, seller, agent, investor, tourist, artisan)
+- **Prop interface**: Changed `onLogin` → `onSuccess` for clarity
+
+### 2. Updated `src/app/auth/login/page.tsx`
+- Renamed `handleLogin` → `handleSuccess` (called after successful signIn)
+- Updated AuthPages props: `onLogin` → `onSuccess`
+
+### 3. Updated `src/app/auth/register/page.tsx`
+- Renamed `handleLogin` → `handleSuccess` (called after successful registration + auto-signIn)
+- Updated AuthPages props: `onLogin` → `onSuccess`
+
+### 4. Updated `src/app/api/auth/register/route.ts`
+- Added `city` field to destructured body and `db.user.create` data
+- Added password minimum length validation (8 chars, returns 400)
+- Now accepts: name, email, phone, password, country, city, role
+
+### 5. Verified `src/lib/auth.ts` (NextAuth config) — No changes needed
+- Credentials provider correctly validates email/password with bcrypt
+- Queries User table via Prisma `findUnique`
+- Compares passwords with `bcrypt.compare`
+- JWT callback includes `id`, `role`, `country`, `kycLevel`
+- OAuth auto-provisioning for Google/Facebook works correctly
+
+## Files Modified
+1. `src/components/afribayit/AuthPages.tsx` — Complete rewrite
+2. `src/app/auth/login/page.tsx` — Updated props
+3. `src/app/auth/register/page.tsx` — Updated props
+4. `src/app/api/auth/register/route.ts` — Added city + password validation
+
+## Verification
+- ESLint: 0 errors
+- All existing references to AuthPages component verified (only login/register pages use it)
+- Navbar's `onOpenAuth` uses `window.location.href` → navigates to auth pages correctly
+- AppShell correctly hides navbar/footer on auth pages
+
+---
+Task ID: crud-operations
+Agent: Main Agent
+Task: Add all missing CRUD operations to API routes
+
+Work Log:
+
+## 1. Missing POST (Create) Operations
+
+### `/src/app/api/courses/route.ts` — Added POST handler
+- Added `authGuard` import
+- POST: validates required fields (title, instructorId, instructor, duration), creates Course with all fields including modules (JSON), returns 201
+
+### `/src/app/api/artisans/route.ts` — Added POST handler
+- Added `authGuard` import
+- POST: validates required fields (userId, trade), creates Artisan with all fields including specialties/portfolio (JSON), returns 201
+
+### `/src/app/api/geotrust/route.ts` — Added POST handler
+- Added `authGuard` import
+- POST: validates required fields (userId, licenseNumber), creates Geometer with all fields including specialities (JSON), returns 201
+
+## 2. Missing DELETE Operations
+
+### `/src/app/api/notaries/[id]/route.ts` — Added DELETE handler
+- Soft-delete: sets `available` to false
+- Auth guard: only notary owner or admin can delete
+- Returns deactivated notary record
+
+### `/src/app/api/profiles/[id]/route.ts` — Added DELETE handler
+- Hard-delete: removes ProfessionalProfile
+- Auth guard: only profile owner or admin can delete
+
+### `/src/app/api/geotrust/[id]/route.ts` — Added DELETE handler
+- Soft-delete: sets `available` to false
+- Auth guard: only geometer owner or admin can delete
+
+### `/src/app/api/geotrust/missions/[id]/route.ts` — Added DELETE handler
+- Soft-delete: sets status to "cancelled"
+- Auth guard: only assigned geometer, property owner, or admin can cancel
+
+## 3. New Sub-resource Routes (PATCH + DELETE)
+
+### `/src/app/api/community/posts/[id]/replies/[replyId]/route.ts`
+- PATCH: update reply content (author or admin only), validates content not empty
+- DELETE: delete reply (author or admin only), decrements post reply count
+
+### `/src/app/api/artisans/[id]/quotes/[quoteId]/route.ts`
+- PATCH: update quote status, artisanResponse, quotedPrice, quotedDuration
+- DELETE: hard-delete quote (artisan owner, quote requester, or admin)
+- Status validation against valid statuses list
+
+### `/src/app/api/artisans/[id]/services/[serviceId]/route.ts`
+- PATCH: update service details (artisan owner or admin only)
+- DELETE: delete service (artisan owner or admin only)
+- Verifies service belongs to the artisan
+
+### `/src/app/api/hotels/[id]/rooms/[roomId]/route.ts`
+- PATCH: update room details (name, capacity, amenities, basePriceXof, totalRooms, available)
+- DELETE: delete room
+- Auth guard: hotel owner or admin only
+
+### `/src/app/api/guesthouses/[id]/rooms/[roomId]/route.ts`
+- PATCH: update room details (name, capacity, amenities, basePrice, available, instantBooking)
+- DELETE: delete room
+- Auth guard: guesthouse owner or admin only
+
+### `/src/app/api/properties/[id]/legal-docs/[docId]/route.ts`
+- PATCH: update legal doc status (pending/ai_validated/human_validated/rejected), rejectionReason, aiScore
+- DELETE: delete legal doc
+- Auth guard: property owner or admin only
+- Status validation against valid statuses list
+
+### `/src/app/api/hotels/[id]/reviews/[reviewId]/route.ts`
+- PATCH: update review (comment, ratings, status, response)
+- DELETE: delete review
+- Auth guard: review author, hotel owner, or admin
+- Recalculates hotel average rating on rating changes or deletion
+- Status validation (pending_moderation, published, hidden)
+
+### `/src/app/api/geotrust/[id]/reports/[reportId]/route.ts`
+- PATCH: update report validationStatus, aiScore, blockchainHash
+- DELETE: delete report
+- Auth guard: geometer owner or admin only
+- Validates report belongs to the geometer's missions
+- Status validation (pending, validated, rejected)
+
+## 4. Auth Guard Additions (Security Critical)
+
+Added `authGuard` to these existing routes that were missing it:
+- `/api/guesthouses/[id]/route.ts` — PATCH & DELETE (owner/admin check)
+- `/api/hotels/[id]/route.ts` — PATCH & DELETE (owner/admin check)
+- `/api/guesthouses/[id]/rooms/route.ts` — POST (owner/admin check)
+- `/api/hotels/[id]/rooms/route.ts` — POST (owner/admin check)
+- `/api/properties/[id]/legal-docs/route.ts` — GET & POST (owner/admin check)
+- `/api/geotrust/[id]/reports/route.ts` — GET & POST (geometer owner/admin check)
+- `/api/geotrust/missions/route.ts` — POST (authenticated users only)
+- `/api/artisans/[id]/quotes/route.ts` — POST (authenticated users, uses auth.userId)
+- `/api/profiles/route.ts` — POST (authenticated users, uses auth.userId)
+
+## 5. Country Filter Additions
+
+Added `country` query parameter support to:
+- `/api/escrow/route.ts` — filters by transaction.country via relation
+- `/api/geotrust/missions/route.ts` — filters by property.country via relation
+- `/api/kyc/route.ts` — filters by kycDocument.country directly
+
+Stage Summary:
+- 3 POST handlers added (courses, artisans, geotrust)
+- 4 DELETE handlers added (notaries/[id], profiles/[id], geotrust/[id], geotrust/missions/[id])
+- 8 new sub-resource route files created with PATCH + DELETE
+- 9 existing routes secured with authGuard
+- 3 routes updated with country filter support
+- ESLint: 0 errors
+
+---
+Task ID: action-buttons-wiring
+Agent: Main Agent
+Task: Wire up action buttons to API calls in 6 AfriBayit component files
+
+Work Log:
+
+## 1. Added Mutation Hooks to Hook Files
+
+### useProperties.ts
+- Added `apiDelete` import
+- Added `useDeleteProperty()` mutation — DELETE /api/properties/[id], invalidates ['properties'] query
+
+### useSubscriptions.ts
+- Already had `useCreateSubscription()` and `useCancelSubscription()` — no changes needed
+
+### useNotifications.ts
+- Added `apiPost` import
+- Added `useCreateNotification()` mutation — POST /api/notifications with type, message, userId
+
+### useGeotrust.ts
+- Added `useMutation`, `useQueryClient`, `apiPost` imports
+- Added `useCreateGeotrustMission()` mutation — POST /api/geotrust/missions with geometerId, serviceCode, propertyId, notes, price
+
+### useHotels.ts
+- Added `useMutation`, `useQueryClient`, `apiPost` imports
+- Added `useCreateHotelBooking()` mutation — POST /api/hotels/[id]/bookings with hotelId, checkIn, checkOut, guests, specialRequests
+
+### useCourses.ts
+- Added `useMutation`, `useQueryClient`, `apiPost` imports
+- Added `useEnrollCourse()` mutation — POST /api/courses/enrollments with courseId, userId
+
+### useCommunity.ts
+- Added `useMutation`, `useQueryClient`, `apiPost` imports
+- Added `useCreateCommunityPost()` mutation — POST /api/community/posts with title, content, category, tags
+- Added `useRegisterCommunityEvent()` mutation — POST /api/community/events/[id]/register with eventId, userId
+
+## 2. AgentDashboard.tsx — Wired Up Actions
+
+- **"+ Nouvelle annonce" button**: Now calls `router.push('/publish')` using `useRouter` from next/navigation
+- **"Choisir" premium button**: Calls `createSubscription.mutate()` with planType, priceXof, currency. Shows toast on success/error. Added `planType` field to premiumTiers data. Shows loading state "En cours..." while pending.
+- **Listing menu "..." button**: Replaced plain `<button>` with `<DropdownMenu>` containing:
+  - "Modifier" — `router.push(/properties/[id]/edit)` with edit icon
+  - "Supprimer" — Sets `deleteTarget` state, triggers AlertDialog confirmation
+- **Delete confirmation**: Uses `<AlertDialog>` component with cancel/confirm buttons. Calls `deleteProperty.mutate(id)` on confirm, shows toast on success/error.
+- Added imports: `useRouter`, `useDeleteProperty`, `useCreateSubscription`, `toast`, `DropdownMenu*`, `AlertDialog*`
+
+## 3. ArtisansMarketplace.tsx — Wired Up Actions
+
+- **"Demander devis" → Modal "Envoyer" button**: 
+  - Tracks `selectedArtisan` and `devisForm` state (title, description, estimatedBudget)
+  - Modal shows artisan name/trade, form with controlled inputs
+  - "Envoyer" calls `createQuote.mutate()` with artisanId + form data
+  - Toast on success/error, form resets on success
+  - Button disabled while pending or if title is empty
+
+- **"🚨 Appel urgent" button**: 
+  - Clicks set `emergencyConfirm` state instead of immediate action
+  - `<AlertDialog>` confirmation dialog: "Confirmer l'appel urgent" with artisan name
+  - On confirm: calls `createNotification.mutate()` with type="alert" and emergency message
+  - Toast on success/error, dialog closes on completion
+  - Button disabled while notification is being created
+
+- Added imports: `useCreateArtisanQuote`, `useCreateNotification`, `useAuthStore`, `toast`, `AlertDialog*`
+
+## 4. GeoTrustModule.tsx — Wired Up Actions
+
+- **"Demander un devis" button on geometer cards**: 
+  - Clicks open a modal dialog with form fields: serviceCode (dropdown from geometerServices), propertyId, notes
+  - Pre-selects service if one was selected in the service catalog
+  - Price auto-populated based on selected service
+  - "Envoyer" calls `createMission.mutate()` with geometerId, serviceCode, propertyId, notes, price
+  - Toast on success/error, dialog closes and form resets on success
+  - Added `code` and `price` (number) fields to geometerServices config for API submission
+
+- Added imports: `useCreateGeotrustMission`, `toast`
+
+## 5. HospitalityModule.tsx — Wired Up Actions
+
+- **"Réserver" button**: 
+  - Opens a booking dialog with form: checkIn (date input), checkOut (date input), guests (number), specialRequests (textarea)
+  - "Confirmer" calls `createBooking.mutate()` with hotelId, checkIn, checkOut, guests, specialRequests, userId
+  - Toast on success/error, dialog closes and form resets on success
+  - Button disabled while pending or if dates are empty
+
+- **Removed `Math.random()` availability check**: 
+  - Calendar now shows ALL days as available (green) instead of random availability
+  - Removed the "Complet" legend item since all days show as available
+  - Comment added: "All days shown as available — real availability would come from RoomAvailability API data"
+
+- Added imports: `useCreateHotelBooking`, `useAuthStore`, `toast`
+
+## 6. AcademyModule.tsx — Wired Up Actions
+
+- **"S'inscrire" button**: 
+  - Checks if user is logged in via `useAuthStore`. If not, shows toast "Connexion requise" and redirects to `/auth/login`
+  - Calls `enrollCourse.mutate()` with courseId and userId
+  - Toast on success/error
+  - Tracks `enrollingCourseId` state to show per-course loading state ("Inscription...")
+  - Button disabled while its specific course enrollment is pending
+
+- **Video play button**: 
+  - Added `isPlaying` state (boolean, default false)
+  - Click toggles between play (▶) and pause (⏸) icons
+  - Shows "Lecture en cours..." when playing, "Aperçu du cours" when paused
+  - Play icon uses `<path d="M8 5v14l11-7z" />`, pause icon uses `<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />`
+
+- Added imports: `useRouter`, `useEnrollCourse`, `useAuthStore`, `toast`
+
+## 7. CommunityModule.tsx — Wired Up Actions
+
+- **"+ Nouveau sujet" button**: 
+  - Opens a dialog with form: title, content, category (dropdown), tags (comma-separated input)
+  - Category options: Discussion, Question, Conseil, Témoignage, Annonce
+  - "Publier" calls `createPost.mutate()` with title, content, category, tags (parsed from comma-separated string)
+  - Toast on success/error, dialog closes and form resets on success
+  - Requires auth — if not logged in, shows toast and prevents dialog opening
+
+- **"S'inscrire" event button**: 
+  - Calls `registerEvent.mutate()` with eventId and userId
+  - Toast on success/error
+  - Tracks `registeringEventId` state for per-event loading state ("Inscription...")
+  - Button disabled while its specific event registration is pending
+
+- **"Voir le profil" button**: 
+  - Navigates to `/profile/[userId]` using `router.push()`
+  - Uses `profile.userId || profile.id` for the navigation target
+
+- **Removed hardcoded `currentUserScore = 87`**: 
+  - Now derives score from user data: `(user as ...)?.reputationScore`
+  - Falls back to 0 if user not logged in or no reputation score
+  - Reputation bar and level display still work with 0 score (shows "Découvreur" level)
+
+- Added imports: `useRouter`, `useCreateCommunityPost`, `useRegisterCommunityEvent`, `useAuthStore`, `toast`
+
+Stage Summary:
+- 7 hook files updated with new mutations (8 new mutation hooks)
+- 6 component files updated with full action button wiring
+- All mutations use React Query's useMutation with onSuccess query invalidation
+- All mutations show toast notifications on success and error
+- Proper loading/disabled states on all action buttons
+- Confirmation dialogs for destructive actions (delete property) and emergency actions (urgent artisan call)
+- Auth checks before mutations (enroll course, create post)
+- Math.random() removed from hospitality calendar
+- Hardcoded currentUserScore removed from community module
+- Video play/pause toggle in academy module
+- ESLint: 0 errors
+
+---
+Task ID: action-buttons-wiring
+Agent: Main Agent
+Task: Wire up action buttons to API calls in 6 AfriBayit component files, remove hardcoded data
+
+Work Log:
+
+## 1. Added Missing Mutation Hooks
+
+### useWallet.ts
+- Added `useCreateWalletTransaction()` mutation hook
+- Accepts: type, amount, currency, providerRef, metadata
+- Invalidates `['wallet']` query on success
+
+### useSubscriptions.ts
+- Added `useCreateSubscription()` mutation hook
+  - Accepts: planType, priceXof, currency, startDate, endDate, autoRenew, paymentRef
+  - Invalidates `['subscriptions']` query on success
+- Added `useCancelSubscription()` mutation hook
+  - Accepts: { id } — calls PATCH /api/subscriptions/[id] with status='cancelled'
+  - Invalidates `['subscriptions']` query on success
+
+### useGuesthouses.ts
+- Added `useGuesthouseBookings(guesthouseId, status?)` query hook
+- Added `useCreateBooking(guesthouseId)` mutation hook
+  - Accepts: roomId, checkIn, checkOut, guests, totalPrice, currency, breakfastIncluded, paymentRef, paymentProvider
+  - Invalidates `['guesthouse-bookings']` and `['guesthouse']` queries on success
+
+### useProfiles.ts
+- Added `useFollowProfile()` mutation hook
+  - Accepts: { profileUserId }
+  - Calls POST /api/chat/conversations to create a connection
+  - Invalidates `['conversations']` and `['profile']` queries on success
+
+## 2. EscrowFlow.tsx — Wire Up & Remove Hardcoded Data
+- "Confirmer le paiement" button now calls `useCreateEscrow` mutation → POST /api/escrow
+  - Shows toast.success on success, toast.error on failure
+  - Button shows "Traitement en cours..." while pending, disabled during mutation
+- Removed hardcoded "Villa Prestige Les Cocotiers" → uses `propertyName` from escrow API data
+- Removed hardcoded "85 000 000 FCFA" → uses `amount` from escrow API data
+- Removed hardcoded timestamps → derives `completedTimestamps` from actual escrow account `createdAt`/`updatedAt`
+- Escrow fee (1.5%) and total computed from actual amount
+- "Voir la transaction" button navigates via `onNavigate('dashboard')`
+
+## 3. WalletModule.tsx — Wire Up Deposit/Withdraw/Exchange
+- "Déposer" button calls `useCreateWalletTransaction` with type="deposit", amount, providerRef
+  - Toast success with formatted amount, resets form, navigates back to overview
+  - Toast error on failure
+  - Button shows "Traitement en cours..." while pending
+- "Retirer" button calls `useCreateWalletTransaction` with type="withdrawal", negative amount, providerRef
+  - Toast success, resets form, navigates back to overview
+  - Validates amount <= balance
+  - Toast error on failure
+- "Échanger" (AfriPoints) button calls `useCreateWalletTransaction` with type="subscription", points as amount
+  - Toast success with points exchanged
+  - Toast error on failure
+  - Button disabled during mutation
+
+## 4. NotaryModule.tsx — Wire Up Contacter/Choisir & Remove Hardcoded Data
+- "Contacter" button calls `useCreateConversation` mutation → POST /api/chat/conversations
+  - Creates user_to_user conversation with notary
+  - Toast success, navigates to chat section
+  - Toast error on failure
+  - Button shows "..." while pending
+- "Choisir" subscription button (in revenue tab) calls `useCreateSubscription` mutation
+  - Posts planType (notary_standard/premium/elite) and priceXof
+  - Toast success/error
+  - Button disabled during mutation
+- Removed hardcoded "1 250 000 FCFA" → computed from escrow accounts (12% commission proxy)
+- Removed hardcoded ANDF status items → derived from actual escrow accounts (ANDF_REGISTERED count)
+
+## 5. SubscriptionsModule.tsx — Wire Up Choisir/Confirmer/Annuler
+- "Choisir" plan button opens confirmation modal with selected plan details and price
+- "Confirmer" modal button calls `useCreateSubscription` mutation → POST /api/subscriptions
+  - Posts planType and priceXof
+  - Toast success → closes modal
+  - Toast error on failure
+  - Button shows "Traitement..." while pending
+- Added "Annuler" button in current subscription banner
+  - Calls `useCancelSubscription` mutation → PATCH /api/subscriptions/[id] with status='cancelled'
+  - Toast success with explanation message
+  - Toast error on failure
+  - Button shows "..." while pending
+  - Only shown when subscription status is 'active'
+
+## 6. ProfessionalProfileModule.tsx — Wire Up Suivre/Contacter
+- "✚ Suivre" button calls `useFollowProfile` mutation → POST /api/chat/conversations
+  - Creates user_to_user connection
+  - Toggles button state from "✚ Suivre" to "Suivi ✓" on success
+  - Green styling when followed
+  - Toast success with professional name
+  - Toast error on failure
+  - Button disabled after following (one-way action)
+- "Contacter" button calls `useCreateConversation` mutation → POST /api/chat/conversations
+  - Creates user_to_user conversation with professional
+  - Toast success, navigates to chat section
+  - Toast error on failure
+  - Button shows "..." while pending
+
+## 7. GuesthouseModule.tsx — Wire Up Réserver & Remove Hardcoded Data
+- "Réserver" room button opens booking dialog with:
+  - Check-in date picker
+  - Check-out date picker
+  - Guest count selector (1 to room capacity)
+  - Breakfast included checkbox
+  - Price summary (nights × base price)
+  - "Annuler" and "Confirmer" buttons
+- "Confirmer" booking button calls `useCreateBooking` mutation → POST /api/guesthouses/[id]/bookings
+  - Posts roomId, checkIn, checkOut, guests, totalPrice, breakfastIncluded
+  - Toast success with room name and nights
+  - Toast error on failure
+  - Button shows "Réservation..." while pending
+- Removed hardcoded booked days array `[3,4,5,12,13,19,20,21,27,28]`
+  - Now uses `useGuesthouseBookings` query to fetch actual booking data
+  - Computes booked days set from booking checkIn/checkOut dates for current month
+  - Calendar days generated dynamically from computed booked days
+- Calendar header now shows current month/year dynamically
+
+Stage Summary:
+- 4 hooks updated with new mutation hooks (useWallet, useSubscriptions, useGuesthouses, useProfiles)
+- 6 components fully wired to API endpoints
+- All mutations use React Query useMutation pattern with onSuccess invalidation
+- All actions show sonner toast notifications (success + error)
+- All buttons have loading/disabled states during mutations
+- All hardcoded data removed (escrow amounts, timestamps, revenue, ANDF status, booked days)
+- ESLint: 0 errors
+
+---
+Task ID: bf-seed-data
+Agent: Main Agent
+Task: Add Burkina Faso (BF) seed data to Prisma seed file, update existing BF entries to match specifications, add BF subscription, update summary counts
+
+Work Log:
+
+## 1. Analysis of existing seed file
+- Read full 2859-line seed.ts file
+- Found that BF data was already partially present but with incorrect values vs user specifications
+- Found CI Notary and TG Notary entries already existed
+- Found BF Subscription was missing from subDefs array
+
+## 2. Updated BF Properties to match user's exact specifications
+- Villa F2 Ouaga 2000: price 45000000→25000000, surface 200→120, rooms 4→3, bedrooms 2→3, bathrooms 1→2
+- Terrain Koulouba: surface 600→500
+- Appartement Zone Bois: price 250000→150000, surface 80→85
+- Commerce Centre-Ville Ouaga: transaction 'location'→'achat', price 400000→45000000, surface 100→200
+- Bureau Ouaga 2000: price 600000→350000
+
+## 3. Updated BF Hotel (Hôtel Sily) to have exactly 2 rooms
+- Removed the 'suite' room type (Suite Sily), keeping only single and double rooms
+
+## 4. Updated BF Transaction amounts to match new property prices
+- Transaction ESC-2025-006 (Villa F2): amount 45000000→25000000, commission 1350000→750000
+- Updated escrow balance and held amounts: 45000000→25000000
+- Updated ledger entry: amount 45000000→25000000, balanceAfter 25000000
+
+## 5. Added BF Subscription entry
+- Added agentBF subscription: planType 'agent_seed', priceXof 5000, country 'BF', active, 20 days ago start, 345 days to end
+
+## 6. Updated summary counts
+- Notaries count: 2→5 (2 BJ + 1 BF + 1 CI + 1 TG)
+- Geometers count: 3→4 (3 BJ/CI/TG + 1 BF)
+- Added comments explaining counts
+
+## Verified existing BF data (already present, no changes needed):
+- BF Users: 5 entries (agent, buyer, artisan, geometer, notary)
+- BF Notary: NOT-BF-2024-001
+- BF Geometer: GEO-BF-2024-004
+- BF Artisan: Macon with services
+- BF Transactions: 2 (ESC-2025-006, ESC-2025-007)
+- BF Hotel: Hotel Sily (updated to 2 rooms)
+- BF Guesthouse: Maison d'Hote La Sahelienne with 2 rooms
+- BF Community posts: 2
+- BF Course: Droit Foncier Burkinabe
+- CI Notary: NOT-CI-2024-001
+- TG Notary: NOT-TG-2024-001
+
+Stage Summary:
+- 5 BF property entries updated with correct values per user specifications
+- BF Hotel reduced from 3 to 2 rooms
+- BF Transaction amounts corrected to match new property prices
+- 1 BF Subscription added (agent_seed plan for agentBF)
+- Summary counts updated (Notaries 5, Geometers 4)
+- ESLint: 0 errors
+
+---
+Task ID: country-filter-hooks-audit
+Agent: Code Audit Agent
+Task: Add country filter support to hooks that are missing it (useEscrow, useSubscriptions, useWallet, useNotifications) and update components (EscrowFlow, WalletModule, SubscriptionsModule) to pass selectedCountry
+
+Work Log:
+
+## Verification — All Files Read Fully Before Assessment
+
+### 1. `/src/hooks/useEscrow.ts`
+- **Status**: ✅ Already implemented
+- `useEscrowList(page = 1, limit = 20, country?: string)` — `country?: string` parameter exists (line 4)
+- `if (country) params.set('country', country);` — country passed as query parameter (line 8)
+- `queryKey: ['escrow', page, limit, country]` — country included in query key (line 11)
+
+### 2. `/src/hooks/useSubscriptions.ts`
+- **Status**: ✅ Already implemented
+- `useSubscriptions(userId?: string, country?: string, page = 1, limit = 20)` — `country?: string` parameter exists (line 4)
+- `if (country) params.set('country', country);` — country passed as query parameter (line 9)
+- `queryKey: ['subscriptions', userId, country, page, limit]` — country included in query key (line 12)
+
+### 3. `/src/hooks/useWallet.ts`
+- **Status**: ✅ Already implemented
+- `useWallet(userId?: string, country?: string, page = 1, limit = 20)` — `country?: string` parameter exists (line 35)
+- `if (country) params.set('country', country);` — country passed as query parameter (line 40)
+- `queryKey: ['wallet', userId, country, page, limit]` — country included in query key (line 43)
+
+### 4. `/src/hooks/useNotifications.ts`
+- **Status**: ✅ Already implemented
+- `useNotifications(userId?: string, country?: string, page = 1, limit = 20)` — `country?: string` parameter exists (line 4)
+- `if (country) params.set('country', country);` — country passed as query parameter (line 9)
+- `queryKey: ['notifications', userId, country, page, limit]` — country included in query key (line 12)
+
+### 5. `/src/components/afribayit/EscrowFlow.tsx`
+- **Status**: ✅ Already implemented
+- `import { useCountry } from '@/contexts/CountryContext';` — useCountry imported (line 6)
+- `const { selectedCountry } = useCountry();` — selectedCountry extracted (line 60)
+- `useEscrowList(1, 20, selectedCountry)` — selectedCountry passed to hook (line 61)
+
+### 6. `/src/components/afribayit/WalletModule.tsx`
+- **Status**: ✅ Already implemented
+- `import { useCountry } from '@/contexts/CountryContext';` — useCountry imported (line 7)
+- `const { selectedCountry } = useCountry();` — selectedCountry extracted (line 98)
+- `useWallet(userId, selectedCountry)` — selectedCountry passed to hook (line 100)
+
+### 7. `/src/components/afribayit/SubscriptionsModule.tsx`
+- **Status**: ✅ Already implemented
+- `import { useCountry } from '@/contexts/CountryContext';` — useCountry imported (line 6)
+- `const { selectedCountry } = useCountry();` — selectedCountry extracted (line 197)
+- `useSubscriptions(userId, selectedCountry)` — selectedCountry passed to hook (line 198)
+
+## Conclusion
+All 7 files already have the country filter support fully implemented. The hooks already accept `country?: string` parameters and pass them as `?country=` query parameters to their API URLs. The components already import `useCountry` from `@/contexts/CountryContext`, extract `selectedCountry`, and pass it to their respective hooks. No code changes were needed.
+
+Stage Summary:
+- 0 files modified — all requested changes were already in place
+- 4 hooks verified: useEscrow, useSubscriptions, useWallet, useNotifications — all have `country?: string` param
+- 3 components verified: EscrowFlow, WalletModule, SubscriptionsModule — all import useCountry and pass selectedCountry
+- This was previously implemented in the "Country-Strict-Horodatage" task

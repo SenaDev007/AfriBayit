@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { useWallet, type WalletTransaction } from '@/hooks/useWallet';
+import { useWallet, useCreateWalletTransaction, type WalletTransaction } from '@/hooks/useWallet';
+import { useCountry } from '@/contexts/CountryContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -25,10 +27,10 @@ const filterTypes: { key: TransactionType | 'all'; label: string; icon: string }
 ];
 
 const afriPointsRedemption = [
-  { points: 500, reward: '500 FCFA de crédit wallet', available: true },
-  { points: 1000, reward: '1 000 FCFA de crédit wallet', available: true },
-  { points: 2500, reward: 'Réduction 10% sur abonnement', available: true },
-  { points: 5000, reward: 'Visite gratuite GeoTrust', available: false },
+  { points: 500, reward: '500 FCFA de crédit wallet', type: 'subscription', available: true },
+  { points: 1000, reward: '1 000 FCFA de crédit wallet', type: 'subscription', available: true },
+  { points: 2500, reward: 'Réduction 10% sur abonnement', type: 'subscription', available: true },
+  { points: 5000, reward: 'Visite gratuite GeoTrust', type: 'subscription', available: false },
 ];
 
 const currencyRates = {
@@ -93,8 +95,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
 
   const { user } = useAuthStore();
   const userId = user?.id;
+  const { selectedCountry } = useCountry();
 
-  const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
+  const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId, selectedCountry);
+  const createWalletTx = useCreateWalletTransaction();
 
   const summary = walletData?.summary;
   const transactions = walletData?.transactions ?? [];
@@ -107,6 +111,73 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
   const filteredTransactions = filterType === 'all'
     ? transactions
     : transactions.filter((t: WalletTransaction) => t.type === filterType);
+
+  // Deposit handler
+  const handleDeposit = () => {
+    if (!addAmount || !addProvider) return;
+    createWalletTx.mutate(
+      {
+        type: 'deposit',
+        amount: Number(addAmount),
+        providerRef: addProvider,
+        metadata: { provider: addProvider, action: 'deposit' },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Dépôt effectué', { description: `${formatFCFA(Number(addAmount))} ajoutés à votre portefeuille` });
+          setAddAmount('');
+          setAddProvider(null);
+          setActiveTab('overview');
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors du dépôt', { description: error.message });
+        },
+      }
+    );
+  };
+
+  // Withdraw handler
+  const handleWithdraw = () => {
+    if (!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance) return;
+    createWalletTx.mutate(
+      {
+        type: 'withdrawal',
+        amount: -Number(withdrawAmount),
+        providerRef: withdrawProvider,
+        metadata: { provider: withdrawProvider, action: 'withdrawal' },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Retrait initié', { description: `${formatFCFA(Number(withdrawAmount))} en cours de traitement` });
+          setWithdrawAmount('');
+          setWithdrawProvider(null);
+          setActiveTab('overview');
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors du retrait', { description: error.message });
+        },
+      }
+    );
+  };
+
+  // AfriPoints exchange handler
+  const handleExchange = (points: number, type: string) => {
+    createWalletTx.mutate(
+      {
+        type,
+        amount: points,
+        metadata: { points, action: 'afripoints_redemption' },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Échange effectué', { description: `${points} AfriPoints échangés avec succès` });
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de l\'échange', { description: error.message });
+        },
+      }
+    );
+  };
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'overview', label: 'Aperçu', icon: '💳' },
@@ -392,10 +463,11 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 <button
-                  disabled={!addAmount || !addProvider}
+                  onClick={handleDeposit}
+                  disabled={!addAmount || !addProvider || createWalletTx.isPending}
                   className="w-full py-3 bg-[#00A651] text-white rounded-full font-semibold text-sm hover:bg-[#008f46] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Déposer {addAmount ? formatFCFA(Number(addAmount)) : ''}
+                  {createWalletTx.isPending ? 'Traitement en cours...' : `Déposer ${addAmount ? formatFCFA(Number(addAmount)) : ''}`}
                 </button>
               </div>
             </motion.div>
@@ -445,10 +517,11 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 <button
-                  disabled={!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance}
+                  onClick={handleWithdraw}
+                  disabled={!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance || createWalletTx.isPending}
                   className="w-full py-3 bg-[#D93025] text-white rounded-full font-semibold text-sm hover:bg-[#b3261e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Retirer {withdrawAmount ? formatFCFA(Number(withdrawAmount)) : ''}
+                  {createWalletTx.isPending ? 'Traitement en cours...' : `Retirer ${withdrawAmount ? formatFCFA(Number(withdrawAmount)) : ''}`}
                 </button>
               </div>
             </motion.div>
@@ -491,14 +564,15 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         <p className="text-sm text-[#2C2E2F] font-medium">{item.reward}</p>
                       </div>
                       <button
-                        disabled={!item.available || afriPoints < item.points}
+                        onClick={() => handleExchange(item.points, item.type)}
+                        disabled={!item.available || afriPoints < item.points || createWalletTx.isPending}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                           item.available && afriPoints >= item.points
                             ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
                       >
-                        Échanger
+                        {createWalletTx.isPending ? '...' : 'Échanger'}
                       </button>
                     </motion.div>
                   ))}

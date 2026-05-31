@@ -10,12 +10,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const status = searchParams.get('status');
+    const country = searchParams.get('country');
 
     // Users can only see their own KYC docs; admins can see all
     const filterUserId = auth.role === 'admin' ? (userId || auth.userId) : auth.userId;
 
     const where: Record<string, unknown> = { userId: filterUserId };
     if (status) where.status = status;
+    if (country) where.country = country;
 
     const documents = await db.kycDocument.findMany({
       where,

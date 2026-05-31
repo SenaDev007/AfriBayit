@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
 
     const legalDocs = await db.propertyLegalDoc.findMany({
@@ -25,8 +29,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership: property owner or admin
+    const property = await db.property.findUnique({ where: { id } });
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+    if (property.agentId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the property owner' }, { status: 403 });
+    }
 
     const legalDoc = await db.propertyLegalDoc.create({
       data: {

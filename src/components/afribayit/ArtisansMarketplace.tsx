@@ -2,10 +2,23 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useArtisans } from '@/hooks/useArtisans';
+import { useArtisans, useCreateArtisanQuote } from '@/hooks/useArtisans';
+import { useCreateNotification } from '@/hooks/useNotifications';
+import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { toast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 interface Artisan {
   id: string;
@@ -62,7 +75,11 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const [selectedTrade, setSelectedTrade] = useState('Tous');
   const [emergencyMode, setEmergencyMode] = useState(false);
   const [showDevis, setShowDevis] = useState(false);
+  const [selectedArtisan, setSelectedArtisan] = useState<Artisan | null>(null);
+  const [emergencyConfirm, setEmergencyConfirm] = useState<Artisan | null>(null);
+  const [devisForm, setDevisForm] = useState({ title: '', description: '', estimatedBudget: '' });
 
+  const { user } = useAuthStore();
   const { selectedCountry } = useCountry();
 
   const { data, isLoading, error } = useArtisans(
@@ -71,11 +88,68 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
     selectedCountry
   );
 
+  const createQuote = useCreateArtisanQuote();
+  const createNotification = useCreateNotification();
+
   const artisans: Artisan[] = (data?.artisans as Artisan[]) || [];
 
   const filtered = selectedTrade === 'Tous'
     ? artisans
     : artisans.filter(a => a.trade === selectedTrade);
+
+  const handleOpenDevis = (artisan: Artisan) => {
+    setSelectedArtisan(artisan);
+    setDevisForm({ title: '', description: '', estimatedBudget: '' });
+    setShowDevis(true);
+  };
+
+  const handleSubmitDevis = () => {
+    if (!selectedArtisan) return;
+    createQuote.mutate(
+      {
+        artisanId: selectedArtisan.id,
+        title: devisForm.title,
+        description: devisForm.description,
+        estimatedBudget: devisForm.estimatedBudget,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: 'Devis envoyé', description: `Votre demande de devis a été envoyée à ${selectedArtisan.name}.` });
+          setShowDevis(false);
+          setSelectedArtisan(null);
+          setDevisForm({ title: '', description: '', estimatedBudget: '' });
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible d\'envoyer la demande de devis.', variant: 'destructive' });
+        },
+      }
+    );
+  };
+
+  const handleEmergencyCall = (artisan: Artisan) => {
+    setEmergencyConfirm(artisan);
+  };
+
+  const confirmEmergencyCall = () => {
+    if (!emergencyConfirm) return;
+    createNotification.mutate(
+      {
+        type: 'alert',
+        message: `Demande d'artisan urgent : ${emergencyConfirm.name} (${emergencyConfirm.trade}) — Intervention d'urgence requise.`,
+        userId: user?.id,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: 'Appel urgent envoyé', description: `${emergencyConfirm.name} a été notifié de votre urgence.` });
+          setEmergencyConfirm(null);
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible d\'envoyer l\'appel urgent.', variant: 'destructive' });
+          setEmergencyConfirm(null);
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -233,12 +307,15 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 {/* Actions */}
                 <div className="flex gap-2">
                   {artisan.emergency && emergencyMode && (
-                    <button className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold animate-pulse">
+                    <button
+                      onClick={() => handleEmergencyCall(artisan)}
+                      className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors"
+                    >
                       🚨 Appel urgent
                     </button>
                   )}
                   <button
-                    onClick={() => setShowDevis(true)}
+                    onClick={() => handleOpenDevis(artisan)}
                     className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     Demander devis
@@ -250,7 +327,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         )}
 
         {/* Devis Request Modal */}
-        {showDevis && (
+        {showDevis && selectedArtisan && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -263,33 +340,81 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
               className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Demander un devis</h3>
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">Demander un devis</h3>
+              <p className="text-xs text-gray-500 mb-4">À {selectedArtisan.name} — {selectedArtisan.trade}</p>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Type de travaux</label>
-                  <select className="w-full px-4 py-3 rounded-2xl border text-sm outline-none">
-                    <option>Réparation</option>
-                    <option>Installation</option>
-                    <option>Rénovation</option>
-                    <option>Construction neuve</option>
-                  </select>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Titre du projet</label>
+                  <input
+                    type="text"
+                    value={devisForm.title}
+                    onChange={(e) => setDevisForm(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="ex: Rénovation salle de bain"
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1.5 block">Description</label>
-                  <textarea rows={3} placeholder="Décrivez vos besoins..." className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none" />
+                  <textarea
+                    rows={3}
+                    value={devisForm.description}
+                    onChange={(e) => setDevisForm(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Décrivez vos besoins..."
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#003087] transition-colors"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1.5 block">Budget estimé</label>
-                  <input type="text" placeholder="ex: 500 000 FCFA" className="w-full px-4 py-3 rounded-2xl border text-sm outline-none" />
+                  <input
+                    type="text"
+                    value={devisForm.estimatedBudget}
+                    onChange={(e) => setDevisForm(prev => ({ ...prev, estimatedBudget: e.target.value }))}
+                    placeholder="ex: 500 000 FCFA"
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+                  />
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setShowDevis(false)} className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600">Annuler</button>
-                  <button onClick={() => setShowDevis(false)} className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold">Envoyer</button>
+                  <button
+                    onClick={() => setShowDevis(false)}
+                    className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleSubmitDevis}
+                    disabled={createQuote.isPending || !devisForm.title}
+                    className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                  >
+                    {createQuote.isPending ? 'Envoi...' : 'Envoyer'}
+                  </button>
                 </div>
               </div>
             </motion.div>
           </motion.div>
         )}
+
+        {/* Emergency Confirmation Dialog */}
+        <AlertDialog open={!!emergencyConfirm} onOpenChange={(open) => !open && setEmergencyConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer l&apos;appel urgent</AlertDialogTitle>
+              <AlertDialogDescription>
+                Vous êtes sur le point d&apos;envoyer un appel urgent à {emergencyConfirm?.name} ({emergencyConfirm?.trade}).
+                L&apos;artisan sera notifié immédiatement.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setEmergencyConfirm(null)}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmEmergencyCall}
+                disabled={createNotification.isPending}
+                className="bg-[#D93025] text-white hover:bg-[#b5251f]"
+              >
+                {createNotification.isPending ? 'Envoi...' : 'Confirmer l\'appel'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </section>
   );

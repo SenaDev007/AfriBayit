@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useProfile } from '@/hooks/useProfiles';
+import { useProfile, useFollowProfile } from '@/hooks/useProfiles';
+import { useCreateConversation } from '@/hooks/useChat';
+import { toast } from 'sonner';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -30,6 +32,7 @@ interface ProfileData {
     credibilityScore: number;
   };
   profileCompleteness: number;
+  userId?: string;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -60,9 +63,56 @@ function ProfileSkeleton() {
 
 export default function ProfessionalProfileModule({ onNavigate, userId }: ModuleProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('about');
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isContacting, setIsContacting] = useState(false);
 
   const { data: profileDataRaw, isLoading, error } = useProfile(userId || 'demo-user');
   const profileData = profileDataRaw as ProfileData | undefined;
+
+  const followProfile = useFollowProfile();
+  const createConversation = useCreateConversation();
+
+  // Handle "Suivre" button — creates a connection/conversation and toggles state
+  const handleFollow = () => {
+    if (isFollowing) return;
+    const profileUserId = profileData?.userId || userId || '';
+    followProfile.mutate(
+      { profileUserId },
+      {
+        onSuccess: () => {
+          setIsFollowing(true);
+          toast.success('Vous suivez ce professionnel', { description: `Vous êtes maintenant connecté avec ${profileData?.name}` });
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de l\'abonnement', { description: error.message });
+        },
+      }
+    );
+  };
+
+  // Handle "Contacter" button — creates chat conversation and navigates
+  const handleContact = () => {
+    const profileUserId = profileData?.userId || userId || '';
+    setIsContacting(true);
+    createConversation.mutate(
+      {
+        type: 'user_to_user',
+        participantIds: [profileUserId],
+        metadata: { context: 'professional_contact', profileName: profileData?.name },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Conversation créée', { description: `Vous pouvez maintenant contacter ${profileData?.name}` });
+          setIsContacting(false);
+          if (onNavigate) onNavigate('chat');
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de la création de la conversation', { description: error.message });
+          setIsContacting(false);
+        },
+      }
+    );
+  };
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'about', label: 'À propos', icon: '👤' },
@@ -138,11 +188,23 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
               <p className="text-xs text-gray-400">{profileData.location} · <span className="text-[#00A651]">● Disponible</span></p>
             </div>
             <div className="flex gap-2">
-              <button className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
-                Contacter
+              <button
+                onClick={handleContact}
+                disabled={isContacting || createConversation.isPending}
+                className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isContacting || createConversation.isPending ? '...' : 'Contacter'}
               </button>
-              <button className="px-4 py-2 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                ✚ Suivre
+              <button
+                onClick={handleFollow}
+                disabled={isFollowing || followProfile.isPending}
+                className={`px-4 py-2 border rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed ${
+                  isFollowing
+                    ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50'
+                }`}
+              >
+                {followProfile.isPending ? '...' : isFollowing ? 'Suivi ✓' : '✚ Suivre'}
               </button>
             </div>
           </div>

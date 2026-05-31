@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -39,5 +40,42 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Geotrust geometers API error:', error);
     return NextResponse.json({ error: 'Failed to fetch geometers' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const body = await request.json();
+
+    if (!body.userId || !body.licenseNumber) {
+      return NextResponse.json(
+        { error: 'userId and licenseNumber are required' },
+        { status: 400 }
+      );
+    }
+
+    const geometer = await db.geometer.create({
+      data: {
+        userId: body.userId,
+        licenseNumber: body.licenseNumber,
+        specialities: body.specialities ? JSON.stringify(body.specialities) : null,
+        certificationLevel: body.certificationLevel || 'standard',
+        zone: body.zone,
+        city: body.city,
+        country: body.country,
+        available: body.available ?? true,
+        lat: body.lat,
+        lng: body.lng,
+        subscriptionTier: body.subscriptionTier,
+      },
+    });
+
+    return NextResponse.json(geometer, { status: 201 });
+  } catch (error) {
+    console.error('Geometer creation error:', error);
+    return NextResponse.json({ error: 'Failed to create geometer' }, { status: 500 });
   }
 }

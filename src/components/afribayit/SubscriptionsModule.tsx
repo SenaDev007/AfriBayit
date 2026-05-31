@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useSubscriptions, useCreateSubscription, useCancelSubscription } from '@/hooks/useSubscriptions';
+import { useCountry } from '@/contexts/CountryContext';
+import { toast } from 'sonner';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -26,6 +28,7 @@ const agentTiers = [
   {
     id: 'helm-seed',
     name: 'HELM SEED',
+    planType: 'agent_seed',
     price: 15000,
     priceLabel: '15 000 FCFA/mois',
     desc: 'Pour les agents qui démarrent',
@@ -43,6 +46,7 @@ const agentTiers = [
   {
     id: 'helm-grow',
     name: 'HELM GROW',
+    planType: 'agent_grow',
     price: 35000,
     priceLabel: '35 000 FCFA/mois',
     desc: 'Pour les agents en croissance',
@@ -63,6 +67,7 @@ const agentTiers = [
   {
     id: 'helm-lead',
     name: 'HELM LEAD',
+    planType: 'agent_lead',
     price: 75000,
     priceLabel: '75 000 FCFA/mois',
     desc: 'Pour les leaders du marché',
@@ -86,6 +91,7 @@ const hotelTiers = [
   {
     id: 'pms-starter',
     name: 'STARTER',
+    planType: 'hotel_starter',
     price: 9900,
     priceLabel: '9 900 FCFA/mois',
     desc: 'Pour les petites guesthouses',
@@ -101,6 +107,7 @@ const hotelTiers = [
   {
     id: 'pms-pro',
     name: 'PRO',
+    planType: 'hotel_pro',
     price: 24900,
     priceLabel: '24 900 FCFA/mois',
     desc: 'Pour les hôtels professionnels',
@@ -120,6 +127,7 @@ const hotelTiers = [
   {
     id: 'pms-enterprise',
     name: 'ENTERPRISE',
+    planType: 'hotel_enterprise',
     price: 0,
     priceLabel: 'Sur devis',
     desc: 'Pour les chaînes hôtelières',
@@ -140,6 +148,7 @@ const hotelTiers = [
 const artisanPlan = {
   id: 'artisan-pro',
   name: 'Artisan Pro',
+  planType: 'artisan_pro',
   price: 8900,
   priceLabel: '8 900 FCFA/mois',
   desc: 'Pour les artisans certifiés',
@@ -183,8 +192,13 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
   const [showComparison, setShowComparison] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedPlanPrice, setSelectedPlanPrice] = useState<number>(0);
 
-  const { data: subscriptionsData, isLoading: subsLoading } = useSubscriptions(userId);
+  const { selectedCountry } = useCountry();
+  const { data: subscriptionsData, isLoading: subsLoading } = useSubscriptions(userId, selectedCountry);
+  const createSubscription = useCreateSubscription();
+  const cancelSubscription = useCancelSubscription();
+
   const subscriptions: Subscription[] = (subscriptionsData?.subscriptions as Subscription[]) || [];
   const currentSubscription = subscriptions[0] || null;
 
@@ -198,6 +212,51 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
     if (activeCategory === 'agent') return agentTiers;
     if (activeCategory === 'hotel') return hotelTiers;
     return [artisanPlan];
+  };
+
+  // Handle "Choisir" plan button — opens confirmation modal
+  const handleChoosePlan = (tierId: string, tierPrice: number) => {
+    setSelectedPlan(tierId);
+    setSelectedPlanPrice(tierPrice);
+    setShowUpgrade(true);
+  };
+
+  // Handle "Confirmer" upgrade modal button — calls POST /api/subscriptions
+  const handleConfirmUpgrade = () => {
+    if (!selectedPlan) return;
+    createSubscription.mutate(
+      {
+        planType: selectedPlan,
+        priceXof: selectedPlanPrice,
+        currency: 'XOF',
+        autoRenew: true,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Abonnement activé', { description: 'Votre nouveau plan est maintenant actif' });
+          setShowUpgrade(false);
+          setSelectedPlan(null);
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de l\'activation', { description: error.message });
+        },
+      }
+    );
+  };
+
+  // Handle "Annuler" subscription button — calls PATCH /api/subscriptions/[id]
+  const handleCancelSubscription = (subId: string) => {
+    cancelSubscription.mutate(
+      { id: subId },
+      {
+        onSuccess: () => {
+          toast.success('Abonnement annulé', { description: 'Votre abonnement a été annulé. Il restera actif jusqu\'à la fin de la période en cours.' });
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de l\'annulation', { description: error.message });
+        },
+      }
+    );
   };
 
   return (
@@ -239,7 +298,9 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                 <p className="text-xs text-white/60 mb-1">Abonnement actuel</p>
                 <div className="flex items-center gap-2">
                   <h3 className="font-display text-xl font-bold">{currentSubscription.plan}</h3>
-                  <span className="px-2 py-0.5 bg-[#00A651] text-white text-[10px] font-bold rounded-full">
+                  <span className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${
+                    currentSubscription.status === 'active' ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
+                  }`}>
                     {currentSubscription.status === 'active' ? 'Actif' : currentSubscription.status}
                   </span>
                 </div>
@@ -247,9 +308,20 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                   Prochaine facturation : {currentSubscription.nextBilling} · {currentSubscription.paymentMethod}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-mono text-2xl font-bold">{new Intl.NumberFormat('fr-FR').format(currentSubscription.price)} FCFA</p>
-                <p className="text-xs text-white/60">/mois</p>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="font-mono text-2xl font-bold">{new Intl.NumberFormat('fr-FR').format(currentSubscription.price)} FCFA</p>
+                  <p className="text-xs text-white/60">/mois</p>
+                </div>
+                {currentSubscription.status === 'active' && (
+                  <button
+                    onClick={() => handleCancelSubscription(currentSubscription.id)}
+                    disabled={cancelSubscription.isPending}
+                    className="px-4 py-2 border border-white/30 rounded-full text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                  >
+                    {cancelSubscription.isPending ? '...' : 'Annuler'}
+                  </button>
+                )}
               </div>
             </div>
           ) : (
@@ -319,7 +391,8 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                   </div>
 
                   <button
-                    onClick={() => { setSelectedPlan(tier.id); setShowUpgrade(true); }}
+                    onClick={() => handleChoosePlan(tier.planType, tier.price)}
+                    disabled={currentSubscription?.plan === tier.name}
                     className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
                       currentSubscription?.plan === tier.name
                         ? 'bg-gray-100 text-gray-500 cursor-default'
@@ -437,7 +510,10 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
               </p>
               <div className="p-3 bg-gray-50 rounded-2xl mb-4">
                 <p className="text-xs text-gray-500">Nouveau plan</p>
-                <p className="text-sm font-bold text-[#2C2E2F]">{selectedPlan.replace('-', ' ').toUpperCase()}</p>
+                <p className="text-sm font-bold text-[#2C2E2F]">{selectedPlan.replace(/_/g, ' ').toUpperCase()}</p>
+                {selectedPlanPrice > 0 && (
+                  <p className="font-mono text-lg font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(selectedPlanPrice)} FCFA/mois</p>
+                )}
               </div>
               <div className="flex gap-3">
                 <button
@@ -447,10 +523,11 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                   Annuler
                 </button>
                 <button
-                  onClick={() => setShowUpgrade(false)}
-                  className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3]"
+                  onClick={handleConfirmUpgrade}
+                  disabled={createSubscription.isPending}
+                  className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50"
                 >
-                  Confirmer
+                  {createSubscription.isPending ? 'Traitement...' : 'Confirmer'}
                 </button>
               </div>
             </motion.div>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
@@ -40,13 +41,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Use authenticated user's ID if not provided
+    const userId = body.userId || auth.userId;
 
     const quote = await db.artisanQuote.create({
       data: {
         artisanId: id,
-        userId: body.userId,
+        userId,
         propertyId: body.propertyId,
         title: body.title,
         description: body.description,

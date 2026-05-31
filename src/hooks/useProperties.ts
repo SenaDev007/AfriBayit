@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { apiFetch, apiPost, apiDelete } from '@/lib/api';
 import type { PropertyData, PropertiesResponse, PropertyDetailResponse } from '@/lib/afribayit-utils';
 
 export interface PropertyFilters {
@@ -50,6 +50,16 @@ export function useCreateProperty() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: Record<string, unknown>) => apiPost('/api/properties', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['properties'] });
+    },
+  });
+}
+
+export function useDeleteProperty() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiDelete(`/api/properties/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['properties'] });
     },

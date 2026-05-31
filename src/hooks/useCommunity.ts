@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, apiPost } from '@/lib/api';
 
 export function useCommunityPosts(category?: string, country?: string, page = 1, limit = 12) {
   const params = new URLSearchParams();
@@ -33,5 +33,27 @@ export function useCommunityEvents(country?: string, city?: string) {
   return useQuery({
     queryKey: ['community-events', country, city],
     queryFn: () => apiFetch<{ events: unknown[] }>(`/api/community/events?${params.toString()}`),
+  });
+}
+
+export function useCreateCommunityPost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { title: string; content: string; category?: string; tags?: string[]; [key: string]: unknown }) =>
+      apiPost('/api/community/posts', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+    },
+  });
+}
+
+export function useRegisterCommunityEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { eventId: string; userId?: string }) =>
+      apiPost(`/api/community/events/${data.eventId}/register`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['community-events'] });
+    },
   });
 }

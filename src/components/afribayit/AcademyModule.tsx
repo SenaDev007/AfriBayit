@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useCourses } from '@/hooks/useCourses';
+import { useCourses, useEnrollCourse } from '@/hooks/useCourses';
+import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { toast } from '@/hooks/use-toast';
 
 interface Course {
   id: string;
@@ -48,7 +51,11 @@ function CourseSkeleton() {
 }
 
 export default function AcademyModule() {
-  const [selectedCategory, setSelectedCategory] = React.useState('Tous');
+  const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+  const { user } = useAuthStore();
+  const router = useRouter();
   const { selectedCountry } = useCountry();
 
   const { data, isLoading, error } = useCourses(
@@ -57,11 +64,35 @@ export default function AcademyModule() {
     selectedCountry
   );
 
+  const enrollCourse = useEnrollCourse();
+
   const courses: Course[] = (data?.courses as Course[]) || [];
 
   const filtered = selectedCategory === 'Tous'
     ? courses
     : courses.filter(c => c.category === selectedCategory);
+
+  const handleEnroll = (courseId: string) => {
+    if (!user) {
+      toast({ title: 'Connexion requise', description: 'Veuillez vous connecter pour vous inscrire à une formation.' });
+      router.push('/auth/login');
+      return;
+    }
+    setEnrollingCourseId(courseId);
+    enrollCourse.mutate(
+      { courseId, userId: user.id },
+      {
+        onSuccess: () => {
+          toast({ title: 'Inscription réussie', description: 'Vous êtes maintenant inscrit à cette formation.' });
+          setEnrollingCourseId(null);
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de s\'inscrire à la formation.', variant: 'destructive' });
+          setEnrollingCourseId(null);
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -183,8 +214,12 @@ export default function AcademyModule() {
                     <p className="font-mono-data text-lg font-bold text-[#D4AF37]">
                       {new Intl.NumberFormat('fr-FR').format(course.price)} FCFA
                     </p>
-                    <button className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors">
-                      S&apos;inscrire
+                    <button
+                      onClick={() => handleEnroll(course.id)}
+                      disabled={enrollingCourseId === course.id && enrollCourse.isPending}
+                      className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
+                    >
+                      {enrollingCourseId === course.id && enrollCourse.isPending ? 'Inscription...' : 'S\'inscrire'}
                     </button>
                   </div>
                 </div>
@@ -193,7 +228,7 @@ export default function AcademyModule() {
           </div>
         )}
 
-        {/* Video Player Placeholder */}
+        {/* Video Player */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -202,12 +237,21 @@ export default function AcademyModule() {
         >
           <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 cursor-pointer hover:bg-white/30 transition-colors">
-                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+              <div
+                className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 cursor-pointer hover:bg-white/30 transition-colors"
+                onClick={() => setIsPlaying(!isPlaying)}
+              >
+                {isPlaying ? (
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
               </div>
-              <p className="text-white/60 text-sm">Aperçu du cours</p>
+              <p className="text-white/60 text-sm">{isPlaying ? 'Lecture en cours...' : 'Aperçu du cours'}</p>
             </div>
           </div>
         </motion.div>

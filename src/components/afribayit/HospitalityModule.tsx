@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useHotels, useHotel } from '@/hooks/useHotels';
+import { useHotels, useHotel, useCreateHotelBooking } from '@/hooks/useHotels';
+import { useAuthStore } from '@/stores/authStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { toast } from '@/hooks/use-toast';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -84,12 +86,54 @@ function CalendarSkeleton() {
 // ── Main component ──────────────────────────────────────────────
 export default function HospitalityModule() {
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [bookingHotelId, setBookingHotelId] = useState<string | null>(null);
+  const [bookingForm, setBookingForm] = useState({
+    checkIn: '',
+    checkOut: '',
+    guests: 1,
+    specialRequests: '',
+  });
+  const { user } = useAuthStore();
   const { selectedCountry } = useCountry();
 
   const { data: hotelsData, isLoading, isError, error } = useHotels(undefined, selectedCountry);
   const { data: hotelDetail } = useHotel(selectedHotelId || '');
 
+  const createBooking = useCreateHotelBooking();
+
   const hotels: HotelApiItem[] = (hotelsData as { hotels: HotelApiItem[] } | undefined)?.hotels ?? [];
+
+  const handleOpenBooking = (hotelId: string) => {
+    setBookingHotelId(hotelId);
+    setBookingForm({ checkIn: '', checkOut: '', guests: 1, specialRequests: '' });
+    setShowBookingDialog(true);
+  };
+
+  const handleSubmitBooking = () => {
+    if (!bookingHotelId) return;
+    createBooking.mutate(
+      {
+        hotelId: bookingHotelId,
+        checkIn: bookingForm.checkIn,
+        checkOut: bookingForm.checkOut,
+        guests: bookingForm.guests,
+        specialRequests: bookingForm.specialRequests || undefined,
+        userId: user?.id,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: 'Réservation confirmée', description: 'Votre réservation a été enregistrée avec succès.' });
+          setShowBookingDialog(false);
+          setBookingHotelId(null);
+          setBookingForm({ checkIn: '', checkOut: '', guests: 1, specialRequests: '' });
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de créer la réservation.', variant: 'destructive' });
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -233,7 +277,7 @@ export default function HospitalityModule() {
 
                     {hotel.available && (
                       <button
-                        onClick={() => setSelectedHotelId(hotel.id)}
+                        onClick={() => handleOpenBooking(hotel.id)}
                         className="w-full mt-4 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                       >
                         Réserver
@@ -262,15 +306,11 @@ export default function HospitalityModule() {
               <div className="grid grid-cols-7 gap-2">
                 {Array.from({ length: 28 }).map((_, i) => {
                   const day = i + 1;
-                  const available = Math.random() > 0.3;
+                  // All days shown as available — real availability would come from RoomAvailability API data
                   return (
                     <div
                       key={i}
-                      className={`aspect-square rounded-xl flex items-center justify-center text-xs font-medium cursor-pointer transition-colors ${
-                        available
-                          ? 'bg-[#00A651]/10 text-[#00A651] hover:bg-[#00A651]/20'
-                          : 'bg-gray-100 text-gray-300 line-through'
-                      }`}
+                      className="aspect-square rounded-xl flex items-center justify-center text-xs font-medium cursor-pointer transition-colors bg-[#00A651]/10 text-[#00A651] hover:bg-[#00A651]/20"
                     >
                       {day}
                     </div>
@@ -279,10 +319,84 @@ export default function HospitalityModule() {
               </div>
               <div className="flex items-center gap-4 mt-4 text-xs">
                 <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#00A651]/10 rounded" /> Disponible</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 bg-gray-100 rounded" /> Complet</span>
               </div>
             </motion.div>
           )
+        )}
+
+        {/* Booking Dialog */}
+        {showBookingDialog && bookingHotelId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setShowBookingDialog(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Réserver</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Date d&apos;arrivée</label>
+                  <input
+                    type="date"
+                    value={bookingForm.checkIn}
+                    onChange={(e) => setBookingForm(prev => ({ ...prev, checkIn: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#D4AF37] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Date de départ</label>
+                  <input
+                    type="date"
+                    value={bookingForm.checkOut}
+                    onChange={(e) => setBookingForm(prev => ({ ...prev, checkOut: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#D4AF37] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Nombre de guests</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={bookingForm.guests}
+                    onChange={(e) => setBookingForm(prev => ({ ...prev, guests: Number(e.target.value) || 1 }))}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#D4AF37] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Demandes spéciales</label>
+                  <textarea
+                    rows={2}
+                    value={bookingForm.specialRequests}
+                    onChange={(e) => setBookingForm(prev => ({ ...prev, specialRequests: e.target.value }))}
+                    placeholder="Ex: chambre avec vue, lit bébé..."
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#D4AF37] transition-colors"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowBookingDialog(false)}
+                    className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleSubmitBooking}
+                    disabled={createBooking.isPending || !bookingForm.checkIn || !bookingForm.checkOut}
+                    className="flex-1 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                  >
+                    {createBooking.isPending ? 'Réservation...' : 'Confirmer'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </section>

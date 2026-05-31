@@ -95,3 +95,32 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const { id } = await params;
+
+    const existing = await db.professionalProfile.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    // Only the profile owner or admin can delete
+    if (existing.userId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the profile owner' }, { status: 403 });
+    }
+
+    await db.professionalProfile.delete({ where: { id } });
+
+    return NextResponse.json({ message: 'Profile deleted' });
+  } catch (error) {
+    console.error('Profile delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete profile' }, { status: 500 });
+  }
+}

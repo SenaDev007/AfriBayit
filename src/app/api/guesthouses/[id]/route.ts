@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
@@ -35,8 +36,20 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership: guesthouse owner or admin
+    const existing = await db.guesthouse.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Guesthouse not found' }, { status: 404 });
+    }
+    if (existing.ownerId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the guesthouse owner' }, { status: 403 });
+    }
 
     const guesthouse = await db.guesthouse.update({
       where: { id },
@@ -73,7 +86,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
+
+    // Verify ownership: guesthouse owner or admin
+    const existing = await db.guesthouse.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Guesthouse not found' }, { status: 404 });
+    }
+    if (existing.ownerId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the guesthouse owner' }, { status: 403 });
+    }
 
     const guesthouse = await db.guesthouse.update({
       where: { id },

@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useCommunityPosts, useCommunityGroups, useCommunityEvents } from '@/hooks/useCommunity';
+import { useCommunityPosts, useCommunityGroups, useCommunityEvents, useCreateCommunityPost, useRegisterCommunityEvent } from '@/hooks/useCommunity';
+import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { toast } from '@/hooks/use-toast';
 
 interface Post {
   id: string;
@@ -27,6 +30,7 @@ interface Group {
   score: number;
   avatar: string;
   skills: string[];
+  userId?: string;
 }
 
 interface Event {
@@ -100,19 +104,75 @@ function EventSkeleton() {
 
 export default function CommunityModule() {
   const [activeTab, setActiveTab] = useState('forum');
+  const [showNewPostDialog, setShowNewPostDialog] = useState(false);
+  const [newPostForm, setNewPostForm] = useState({ title: '', content: '', category: '', tags: '' });
+  const [registeringEventId, setRegisteringEventId] = useState<string | null>(null);
+  const { user } = useAuthStore();
+  const router = useRouter();
   const { selectedCountry } = useCountry();
 
   const { data: postsData, isLoading: postsLoading, error: postsError } = useCommunityPosts(undefined, selectedCountry);
   const { data: groupsData, isLoading: groupsLoading } = useCommunityGroups(undefined, selectedCountry);
   const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCommunityEvents(selectedCountry);
 
+  const createPost = useCreateCommunityPost();
+  const registerEvent = useRegisterCommunityEvent();
+
   const posts: Post[] = (postsData?.posts as Post[]) || [];
   const groups: Group[] = (groupsData?.groups as Group[]) || [];
   const events: Event[] = (eventsData?.events as Event[]) || [];
 
-  // Use a default user score for reputation display
-  const currentUserScore = 87;
+  // Derive user score from user data — fallback to 0 if not available
+  const currentUserScore = (user as Record<string, unknown> & { reputationScore?: number })?.reputationScore
+    ? Number((user as Record<string, unknown> & { reputationScore?: number }).reputationScore)
+    : 0;
   const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
+
+  const handleCreatePost = () => {
+    if (!user) {
+      toast({ title: 'Connexion requise', description: 'Veuillez vous connecter pour créer un sujet.' });
+      return;
+    }
+    const tags = newPostForm.tags
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+    createPost.mutate(
+      {
+        title: newPostForm.title,
+        content: newPostForm.content,
+        category: newPostForm.category || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: 'Sujet créé', description: 'Votre sujet a été publié avec succès.' });
+          setShowNewPostDialog(false);
+          setNewPostForm({ title: '', content: '', category: '', tags: '' });
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de créer le sujet.', variant: 'destructive' });
+        },
+      }
+    );
+  };
+
+  const handleRegisterEvent = (eventId: string) => {
+    setRegisteringEventId(eventId);
+    registerEvent.mutate(
+      { eventId, userId: user?.id },
+      {
+        onSuccess: () => {
+          toast({ title: 'Inscription confirmée', description: 'Vous êtes inscrit à cet événement.' });
+          setRegisteringEventId(null);
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de s\'inscrire à l\'événement.', variant: 'destructive' });
+          setRegisteringEventId(null);
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -236,7 +296,16 @@ export default function CommunityModule() {
                 </div>
               </motion.div>
             ))}
-            <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors">
+            <button
+              onClick={() => {
+                if (!user) {
+                  toast({ title: 'Connexion requise', description: 'Veuillez vous connecter pour créer un sujet.' });
+                  return;
+                }
+                setShowNewPostDialog(true);
+              }}
+              className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors"
+            >
               + Nouveau sujet
             </button>
           </div>
@@ -281,7 +350,10 @@ export default function CommunityModule() {
                       <span key={skill} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-full">{skill}</span>
                     ))}
                   </div>
-                  <button className="px-6 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors">
+                  <button
+                    onClick={() => router.push(`/profile/${profile.userId || profile.id}`)}
+                    className="px-6 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+                  >
                     Voir le profil
                   </button>
                 </motion.div>
@@ -332,12 +404,97 @@ export default function CommunityModule() {
                     <span>{event.attendees} participants</span>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold shrink-0">
-                  S&apos;inscrire
+                <button
+                  onClick={() => handleRegisterEvent(event.id)}
+                  disabled={registeringEventId === event.id && registerEvent.isPending}
+                  className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold shrink-0 disabled:opacity-60"
+                >
+                  {registeringEventId === event.id && registerEvent.isPending ? 'Inscription...' : 'S\'inscrire'}
                 </button>
               </motion.div>
             ))}
           </div>
+        )}
+
+        {/* New Post Dialog */}
+        {showNewPostDialog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setShowNewPostDialog(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Nouveau sujet</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Titre</label>
+                  <input
+                    type="text"
+                    value={newPostForm.title}
+                    onChange={(e) => setNewPostForm(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Sujet de discussion"
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Contenu</label>
+                  <textarea
+                    rows={4}
+                    value={newPostForm.content}
+                    onChange={(e) => setNewPostForm(prev => ({ ...prev, content: e.target.value }))}
+                    placeholder="Décrivez votre sujet..."
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#003087] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Catégorie</label>
+                  <select
+                    value={newPostForm.category}
+                    onChange={(e) => setNewPostForm(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+                  >
+                    <option value="">Sélectionnez une catégorie</option>
+                    <option value="discussion">Discussion</option>
+                    <option value="question">Question</option>
+                    <option value="conseil">Conseil</option>
+                    <option value="temoignage">Témoignage</option>
+                    <option value="annonce">Annonce</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Tags (séparés par des virgules)</label>
+                  <input
+                    type="text"
+                    value={newPostForm.tags}
+                    onChange={(e) => setNewPostForm(prev => ({ ...prev, tags: e.target.value }))}
+                    placeholder="ex: investissement, Côte d'Ivoire"
+                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowNewPostDialog(false)}
+                    className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleCreatePost}
+                    disabled={createPost.isPending || !newPostForm.title || !newPostForm.content}
+                    className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                  >
+                    {createPost.isPending ? 'Publication...' : 'Publier'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </section>

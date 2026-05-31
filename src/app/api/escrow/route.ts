@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const transactionId = searchParams.get('transactionId');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -18,6 +19,9 @@ export async function GET(request: Request) {
 
     if (status) where.status = status;
     if (transactionId) where.transactionId = transactionId;
+    if (country) {
+      where.transaction = { country };
+    }
 
     const [accounts, total] = await Promise.all([
       db.escrowAccount.findMany({

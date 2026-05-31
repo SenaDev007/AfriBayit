@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, apiPost } from '@/lib/api';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useGeometers(city?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -30,5 +30,16 @@ export function useGeometerReports(geometerId: string) {
     queryKey: ['geotrust-reports', geometerId],
     queryFn: () => apiFetch<{ reports: unknown[] }>(`/api/geotrust/${geometerId}/reports`),
     enabled: !!geometerId,
+  });
+}
+
+export function useCreateGeotrustMission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { geometerId: string; serviceCode: string; propertyId?: string; notes?: string; price?: number; [key: string]: unknown }) =>
+      apiPost('/api/geotrust/missions', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['geotrust-missions'] });
+    },
   });
 }

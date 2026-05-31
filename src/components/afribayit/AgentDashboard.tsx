@@ -1,11 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { useProperties } from '@/hooks/useProperties';
-import { useSubscriptions } from '@/hooks/useSubscriptions';
+import { useProperties, useDeleteProperty } from '@/hooks/useProperties';
+import { useSubscriptions, useCreateSubscription } from '@/hooks/useSubscriptions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 interface AgentDashboardProps {
   onLogout: () => void;
@@ -18,6 +38,7 @@ const premiumTiers = [
     name: "Starter",
     price: 0,
     priceLabel: "Gratuit",
+    planType: "starter",
     features: ["3 annonces actives", "Photos limitées (5)", "Support email", "Profil basique"],
     highlighted: false
   },
@@ -25,6 +46,7 @@ const premiumTiers = [
     name: "Pro Essentiel",
     price: 15000,
     priceLabel: "15 000 FCFA/mois",
+    planType: "pro_essentiel",
     features: ["15 annonces actives", "Photos illimitées", "Badge Pro", "Statistiques", "Support prioritaire", "Rebecca IA basique"],
     highlighted: true
   },
@@ -32,6 +54,7 @@ const premiumTiers = [
     name: "Pro Avancé",
     price: 35000,
     priceLabel: "35 000 FCFA/mois",
+    planType: "pro_avance",
     features: ["50 annonces actives", "Photos illimitées + Vidéo", "Badge Premium Or", "CRM intégré", "Rebecca IA avancée", "Mise en avant", "Rapports hebdomadaires"],
     highlighted: false
   },
@@ -39,6 +62,7 @@ const premiumTiers = [
     name: "Pro Elite",
     price: 75000,
     priceLabel: "75 000 FCFA/mois",
+    planType: "pro_elite",
     features: ["Annonces illimitées", "Tout Pro Avancé +", "Badge Elite Diamant", "Rebecca IA complète", "API Access", "Compte dédié", "Formation mensuelle", "Partenariats exclusifs"],
     highlighted: false
   },
@@ -49,12 +73,17 @@ function formatPrice(price: number): string {
 }
 
 export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
 
   const { data: propertiesData, isLoading: propertiesLoading, isError: propertiesError } = useProperties({ limit: 50 });
   const { data: subscriptionsData, isLoading: subsLoading, isError: subsError } = useSubscriptions(userId);
+
+  const createSubscription = useCreateSubscription();
+  const deleteProperty = useDeleteProperty();
 
   const properties = (propertiesData?.properties ?? []) as Record<string, unknown>[];
   const subscriptions = (Array.isArray(subscriptionsData) ? subscriptionsData : (subscriptionsData as Record<string, unknown>)?.subscriptions ?? []) as Record<string, unknown>[];
@@ -81,6 +110,33 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
 
   const currentPlan = subscriptions.find((s: Record<string, unknown>) => s.status === 'active');
 
+  const handleSubscribe = (tier: typeof premiumTiers[number]) => {
+    createSubscription.mutate(
+      { planType: tier.planType, priceXof: tier.price, currency: 'XOF' },
+      {
+        onSuccess: () => {
+          toast({ title: 'Abonnement activé', description: `Vous êtes maintenant inscrit au plan ${tier.name}.` });
+        },
+        onError: (err) => {
+          toast({ title: 'Erreur', description: err.message || 'Impossible de souscrire au plan.', variant: 'destructive' });
+        },
+      }
+    );
+  };
+
+  const handleDeleteProperty = (id: string) => {
+    deleteProperty.mutate(id, {
+      onSuccess: () => {
+        toast({ title: 'Annonce supprimée', description: 'L\'annonce a été supprimée avec succès.' });
+        setDeleteTarget(null);
+      },
+      onError: (err) => {
+        toast({ title: 'Erreur', description: err.message || 'Impossible de supprimer l\'annonce.', variant: 'destructive' });
+        setDeleteTarget(null);
+      },
+    });
+  };
+
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,7 +147,10 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             <p className="text-sm text-gray-500 mt-1">Bienvenue, {user?.name || 'Agent'} • Agent certifié</p>
           </div>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-sm font-semibold shadow-lg">
+            <button
+              onClick={() => router.push('/publish')}
+              className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-sm font-semibold shadow-lg"
+            >
               + Nouvelle annonce
             </button>
             <button onClick={onLogout} className="px-4 py-2 bg-white border rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50">
@@ -201,7 +260,12 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
           <div className="bg-white rounded-3xl shadow-sm border overflow-hidden">
             <div className="p-5 border-b flex items-center justify-between">
               <h3 className="font-semibold text-[#2C2E2F]">Mes annonces ({properties.length})</h3>
-              <button className="text-sm text-[#003087] font-medium hover:underline">+ Ajouter</button>
+              <button
+                onClick={() => router.push('/publish')}
+                className="text-sm text-[#003087] font-medium hover:underline"
+              >
+                + Ajouter
+              </button>
             </div>
             {propertiesLoading ? (
               <div className="divide-y">
@@ -253,11 +317,33 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                         </div>
                       </div>
                       <p className="font-mono-data text-sm font-bold text-[#D4AF37] shrink-0">{priceLabel}</p>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                        </svg>
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                            </svg>
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => router.push(`/properties/${String(listing.id)}/edit`)}>
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                            </svg>
+                            Modifier
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDeleteTarget({ id: String(listing.id), title: String(listing.title ?? 'Sans titre') })}
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                            Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   );
                 })}
@@ -319,7 +405,8 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {premiumTiers.map((tier) => {
-                  const isCurrentPlan = currentPlan?.planType === tier.name.toLowerCase().replace(/ /g, '_');
+                  const isCurrentPlan = currentPlan?.planType === tier.planType;
+                  const isFreeOrCurrent = isCurrentPlan || tier.price === 0;
                   return (
                     <motion.div
                       key={tier.name}
@@ -347,14 +434,22 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                           </li>
                         ))}
                       </ul>
-                      <button className={`w-full py-3 rounded-full text-sm font-semibold transition-colors ${
-                        isCurrentPlan
-                          ? 'bg-[#00A651] text-white'
-                          : tier.highlighted
-                            ? 'bg-[#D4AF37] text-white hover:bg-[#b8961f]'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}>
-                        {isCurrentPlan ? 'Plan actuel' : tier.price === 0 ? 'Plan actuel' : 'Choisir'}
+                      <button
+                        onClick={() => !isFreeOrCurrent && handleSubscribe(tier)}
+                        disabled={isFreeOrCurrent || createSubscription.isPending}
+                        className={`w-full py-3 rounded-full text-sm font-semibold transition-colors ${
+                          isCurrentPlan
+                            ? 'bg-[#00A651] text-white'
+                            : tier.price === 0
+                              ? 'bg-gray-200 text-gray-500 cursor-default'
+                              : createSubscription.isPending
+                                ? 'bg-[#D4AF37]/60 text-white cursor-wait'
+                                : tier.highlighted
+                                  ? 'bg-[#D4AF37] text-white hover:bg-[#b8961f]'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {isCurrentPlan ? 'Plan actuel' : tier.price === 0 ? 'Plan actuel' : createSubscription.isPending ? 'En cours...' : 'Choisir'}
                       </button>
                     </motion.div>
                   );
@@ -363,6 +458,28 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             )}
           </>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer l&apos;annonce</AlertDialogTitle>
+              <AlertDialogDescription>
+                Êtes-vous sûr de vouloir supprimer &laquo; {deleteTarget?.title} &raquo; ? Cette action est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteTarget && handleDeleteProperty(deleteTarget.id)}
+                disabled={deleteProperty.isPending}
+                className="bg-[#D93025] text-white hover:bg-[#b5251f]"
+              >
+                {deleteProperty.isPending ? 'Suppression...' : 'Supprimer'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </section>
   );

@@ -272,6 +272,190 @@ const USERS = [
     preferredLanguage: 'fr',
     currency: 'XOF',
   },
+
+  // ── BF Agent ──
+  {
+    email: 'ousmane.ouedraogo@afribayit.bf',
+    phone: '+226 70 00 00 10',
+    name: 'Ousmane Ouédraogo',
+    firstName: 'Ousmane',
+    lastName: 'Ouédraogo',
+    role: 'agent',
+    country: 'BF',
+    city: 'Ouagadougou',
+    kycLevel: 2,
+    score: 620,
+    reputation: 'Acteur',
+    bio: 'Agent immobilier à Ouagadougou, spécialiste des villas et terrains.',
+    specialties: '["villa","terrain","appartement"]',
+    verified: true,
+    premiumTier: 'essentiel',
+    premiumExpiry: daysFromNow(90),
+    walletBalance: 120000,
+    escrowHeld: 800000,
+    pendingPayout: 30000,
+    afriPoints: 1200,
+    credibilityScore: 70,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── BF Buyer ──
+  {
+    email: 'aline.kabore@afribayit.bf',
+    phone: '+226 70 00 00 20',
+    name: 'Aline Kaboré',
+    firstName: 'Aline',
+    lastName: 'Kaboré',
+    role: 'buyer',
+    country: 'BF',
+    city: 'Ouagadougou',
+    kycLevel: 1,
+    score: 200,
+    reputation: 'Decouvreur',
+    bio: 'Investisseuse cherchant des opportunités immobilières à Ouagadougou.',
+    verified: true,
+    walletBalance: 3000000,
+    afriPoints: 300,
+    credibilityScore: 40,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── BF Artisan ──
+  {
+    email: 'moussa.sawadogo@afribayit.bf',
+    phone: '+226 70 00 00 30',
+    name: 'Moussa Sawadogo',
+    firstName: 'Moussa',
+    lastName: 'Sawadogo',
+    role: 'artisan',
+    country: 'BF',
+    city: 'Ouagadougou',
+    kycLevel: 2,
+    score: 380,
+    reputation: 'Acteur',
+    bio: 'Maçon qualifié avec 10 ans d\'expérience en construction à Ouagadougou.',
+    specialties: '["maçonnerie","dallage","fondation"]',
+    verified: true,
+    premiumTier: 'starter',
+    walletBalance: 60000,
+    afriPoints: 600,
+    credibilityScore: 58,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── BF Geometer ──
+  {
+    email: 'pascal.zoungrana@afribayit.bf',
+    phone: '+226 70 00 00 40',
+    name: 'Pascal Zoungrana',
+    firstName: 'Pascal',
+    lastName: 'Zoungrana',
+    role: 'geometer',
+    country: 'BF',
+    city: 'Ouagadougou',
+    kycLevel: 3,
+    score: 590,
+    reputation: 'Expert',
+    bio: 'Géomètre expert certifié — topographie, bornage, certification foncière au Burkina Faso.',
+    specialties: '["GEO_SURF","GEO_INSP","GEO_BORN","GEO_TOPO","GEO_CERT"]',
+    verified: true,
+    premiumTier: 'essentiel',
+    premiumExpiry: daysFromNow(180),
+    walletBalance: 250000,
+    afriPoints: 1400,
+    credibilityScore: 80,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── BF Notary ──
+  {
+    email: 'mariam.ouedraogo@afribayit.bf',
+    phone: '+226 70 00 00 50',
+    name: 'Mariam Ouedraogo',
+    firstName: 'Mariam',
+    lastName: 'Ouedraogo',
+    role: 'notary',
+    country: 'BF',
+    city: 'Ouagadougou',
+    kycLevel: 3,
+    score: 720,
+    reputation: 'Expert',
+    bio: 'Notaire de profession — spécialiste droit foncier et successions au Burkina Faso.',
+    verified: true,
+    premiumTier: 'avance',
+    premiumExpiry: daysFromNow(200),
+    walletBalance: 120000,
+    afriPoints: 1800,
+    credibilityScore: 88,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── CI Notary ──
+  {
+    email: 'notaire.ci@afribayit.com',
+    phone: '+225 07 00 00 50',
+    name: 'Me Aimée Diallo',
+    firstName: 'Aimée',
+    lastName: 'Diallo',
+    role: 'notary',
+    country: 'CI',
+    city: 'Abidjan',
+    kycLevel: 3,
+    score: 780,
+    reputation: 'Expert',
+    bio: 'Notaire — spécialiste droit foncier et transactions immobilières en Côte d\'Ivoire.',
+    verified: true,
+    premiumTier: 'avance',
+    premiumExpiry: daysFromNow(250),
+    walletBalance: 200000,
+    afriPoints: 2000,
+    credibilityScore: 90,
+    isOnline: true,
+    lastSeenAt: daysAgo(0),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
+
+  // ── TG Notary ──
+  {
+    email: 'notaire.tg@afribayit.com',
+    phone: '+228 90 00 00 50',
+    name: 'Me Kodjo Agbéko',
+    firstName: 'Kodjo',
+    lastName: 'Agbéko',
+    role: 'notary',
+    country: 'TG',
+    city: 'Lomé',
+    kycLevel: 3,
+    score: 680,
+    reputation: 'Acteur',
+    bio: 'Notaire — spécialiste droit foncier au Togo. Expérience en transactions immobilières.',
+    verified: true,
+    premiumTier: 'essentiel',
+    premiumExpiry: daysFromNow(150),
+    walletBalance: 100000,
+    afriPoints: 1200,
+    credibilityScore: 78,
+    isOnline: false,
+    lastSeenAt: daysAgo(1),
+    preferredLanguage: 'fr',
+    currency: 'XOF',
+  },
 ];
 
 async function main() {
@@ -306,6 +490,15 @@ async function main() {
   const artisanUser = userIds['artisan1'];
   const geometerUser = userIds['geometer1'];
   const notaryUser = userIds['notaire1'];
+  // BF shortcuts
+  const agentBF = userIds['ousmane_ouedraogo'];
+  const buyerBF = userIds['aline_kabore'];
+  const artisanBFUser = userIds['moussa_sawadogo'];
+  const geometerBFUser = userIds['pascal_zoungrana'];
+  const notaryBFUser = userIds['mariam_ouedraogo'];
+  // CI/TG notary shortcuts
+  const notaryCIUser = userIds['notaire_ci'];
+  const notaryTGUser = userIds['notaire_tg'];
 
   // ═══════════════════════════════════════════════════════════════════════
   // 2. NOTARIES
@@ -352,6 +545,75 @@ async function main() {
     },
   });
   console.log(`  ✓ Notary: ${notary2.licenseNumber}`);
+
+  // ── BF Notary ──
+  const notaryBF = await prisma.notary.create({
+    data: {
+      userId: notaryBFUser,
+      licenseNumber: 'NOT-BF-2024-001',
+      chamberName: 'Ordre des Notaires du Burkina Faso',
+      specialty: 'droit_foncier',
+      certificationLevel: 'expert',
+      zone: 'Ouagadougou et Centre',
+      available: true,
+      rating: 4.5,
+      missions: 30,
+      subscriptionTier: 'pro',
+      subscriptionExpiry: daysFromNow(200),
+      conventionSigned: true,
+      conventionUrl: 'https://afribayit.com/conventions/notary-bf-001.pdf',
+      country: 'BF',
+      certified: true,
+      certifiedAt: daysAgo(120),
+    },
+  });
+  console.log(`  ✓ Notary: ${notaryBF.licenseNumber}`);
+
+  // ── CI Notary ──
+  const notaryCI = await prisma.notary.create({
+    data: {
+      userId: notaryCIUser,
+      licenseNumber: 'NOT-CI-2024-001',
+      chamberName: 'Chambre des Notaires de Côte d\'Ivoire',
+      specialty: 'droit_foncier',
+      certificationLevel: 'expert',
+      zone: 'Abidjan et environs',
+      available: true,
+      rating: 4.6,
+      missions: 38,
+      subscriptionTier: 'pro',
+      subscriptionExpiry: daysFromNow(250),
+      conventionSigned: true,
+      conventionUrl: 'https://afribayit.com/conventions/notary-ci-001.pdf',
+      country: 'CI',
+      certified: true,
+      certifiedAt: daysAgo(150),
+    },
+  });
+  console.log(`  ✓ Notary: ${notaryCI.licenseNumber}`);
+
+  // ── TG Notary ──
+  const notaryTG = await prisma.notary.create({
+    data: {
+      userId: notaryTGUser,
+      licenseNumber: 'NOT-TG-2024-001',
+      chamberName: 'Ordre des Notaires du Togo',
+      specialty: 'droit_foncier',
+      certificationLevel: 'standard',
+      zone: 'Lomé et Maritime',
+      available: true,
+      rating: 4.0,
+      missions: 18,
+      subscriptionTier: 'essentiel',
+      subscriptionExpiry: daysFromNow(150),
+      conventionSigned: true,
+      conventionUrl: 'https://afribayit.com/conventions/notary-tg-001.pdf',
+      country: 'TG',
+      certified: true,
+      certifiedAt: daysAgo(90),
+    },
+  });
+  console.log(`  ✓ Notary: ${notaryTG.licenseNumber}`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 3. GEOMETERS
@@ -422,6 +684,29 @@ async function main() {
     },
   });
   console.log(`  ✓ Geometer: ${geometer3.licenseNumber}`);
+
+  // ── BF Geometer ──
+  const geometerBF = await prisma.geometer.create({
+    data: {
+      id: geometerBFUser, // Must match userId for GeometerMission FK compatibility
+      userId: geometerBFUser,
+      licenseNumber: 'GEO-BF-2024-004',
+      specialities: '["GEO_SURF","GEO_INSP","GEO_BORN","GEO_TOPO","GEO_CERT"]',
+      certificationLevel: 'expert',
+      zone: 'Ouagadougou et Centre',
+      city: 'Ouagadougou',
+      country: 'BF',
+      available: true,
+      rating: 4.4,
+      missions: 35,
+      lat: 12.3714,
+      lng: -1.5197,
+      subscriptionTier: 'pro',
+      certified: true,
+      certifiedAt: daysAgo(120),
+    },
+  });
+  console.log(`  ✓ Geometer: ${geometerBF.licenseNumber}`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 4. ARTISANS
@@ -523,6 +808,26 @@ async function main() {
       subscriptionTier: 'gratuit',
       responseTime: 90,
       completedMissions: 12,
+    },
+    // ── BF Artisan ──
+    {
+      userKey: artisanBFUser,
+      trade: 'Maçon',
+      specialties: '["maçonnerie","dallage","fondation","hourdis"]',
+      certified: true,
+      kybValid: true,
+      available: true,
+      emergency: true,
+      priceRange: '12000-30000',
+      dailyRate: 20000,
+      rating: 4.2,
+      reviews: 10,
+      zone: 'Ouagadougou',
+      city: 'Ouagadougou',
+      country: 'BF',
+      subscriptionTier: 'pro',
+      responseTime: 35,
+      completedMissions: 28,
     },
   ];
 
@@ -1022,6 +1327,157 @@ async function main() {
       agentId: agentTG,
       publishedAt: daysAgo(90),
     },
+
+    // ── Ouagadougou (BF) — Agent BF ──
+    {
+      title: 'Villa F2 Ouaga 2000',
+      slug: 'villa-f2-ouaga-2000-ouagadougou',
+      type: 'villa',
+      transaction: 'achat',
+      price: 25000000,
+      surface: 120,
+      rooms: 3,
+      bedrooms: 3,
+      bathrooms: 2,
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Ouaga 2000',
+      address: 'Rue 28.15, Ouaga 2000',
+      description: 'Villa F2 moderne dans le quartier résidentiel Ouaga 2000. Jardin, garage, finitions soignées.',
+      features: '["jardin","garage","climatisation","forage"]',
+      images: '["https://afribayit.com/img/prop/villa-ouaga2000-1.jpg","https://afribayit.com/img/prop/villa-ouaga2000-2.jpg"]',
+      lat: 12.3518,
+      lng: -1.4950,
+      verified: true,
+      geoTrust: true,
+      geoTrustLevel: 'standard',
+      premium: false,
+      status: 'published',
+      views: 320,
+      favorites: 14,
+      agentId: agentBF,
+      investmentScore: 70,
+      walkScore: 60,
+      publishedAt: daysAgo(20),
+    },
+    {
+      title: 'Terrain Koulouba',
+      slug: 'terrain-koulouba-ouagadougou',
+      type: 'terrain',
+      transaction: 'achat',
+      price: 15000000,
+      surface: 500,
+      rooms: 0,
+      bedrooms: 0,
+      bathrooms: 0,
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Koulouba',
+      address: 'Parcelle A8, Koulouba',
+      description: 'Terrain viabilisé de 600m² avec titre foncier à Koulouba. Zone calme et résidentielle.',
+      features: '["viabilisé","titre foncier","clôturé","accès goudron"]',
+      images: '["https://afribayit.com/img/prop/terrain-koulouba-1.jpg"]',
+      lat: 12.3600,
+      lng: -1.5100,
+      verified: true,
+      geoTrust: true,
+      geoTrustLevel: 'standard',
+      premium: false,
+      status: 'published',
+      views: 180,
+      favorites: 8,
+      agentId: agentBF,
+      investmentScore: 78,
+      walkScore: 50,
+      publishedAt: daysAgo(35),
+    },
+    {
+      title: 'Appartement Zone Bois',
+      slug: 'appartement-zone-bois-ouagadougou',
+      type: 'appartement',
+      transaction: 'location',
+      price: 150000,
+      surface: 85,
+      rooms: 3,
+      bedrooms: 2,
+      bathrooms: 1,
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Zone Bois',
+      address: 'Immeuble Palmyre, Zone Bois',
+      description: 'Appartement T2 climatisé dans la Zone Bois. Proche ambassades et commodités.',
+      features: '["climatisation","parking","gardien","eau courante"]',
+      images: '["https://afribayit.com/img/prop/apt-zonebois-1.jpg"]',
+      lat: 12.3700,
+      lng: -1.5200,
+      verified: true,
+      geoTrust: false,
+      premium: false,
+      status: 'published',
+      views: 150,
+      favorites: 6,
+      agentId: agentBF,
+      investmentScore: 55,
+      walkScore: 70,
+      publishedAt: daysAgo(10),
+    },
+    {
+      title: 'Commerce Centre-Ville Ouaga',
+      slug: 'commerce-centre-ville-ouagadougou',
+      type: 'commerce',
+      transaction: 'achat',
+      price: 45000000,
+      surface: 200,
+      rooms: 2,
+      bedrooms: 0,
+      bathrooms: 1,
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Centre-Ville',
+      address: 'Avenue Kwame Nkrumah, Centre-Ville',
+      description: 'Local commercial en plein centre-ville de Ouagadougou. Vitrine, réserve, haut potentiel.',
+      features: '["vitrine","réserve","accès livraison","proche gare"]',
+      images: '["https://afribayit.com/img/prop/commerce-ouaga-1.jpg"]',
+      lat: 12.3728,
+      lng: -1.5271,
+      verified: false,
+      geoTrust: false,
+      premium: false,
+      status: 'draft',
+      views: 0,
+      favorites: 0,
+      agentId: agentBF,
+    },
+    {
+      title: 'Bureau Ouaga 2000',
+      slug: 'bureau-ouaga-2000-ouagadougou',
+      type: 'bureau',
+      transaction: 'location',
+      price: 350000,
+      surface: 150,
+      rooms: 3,
+      bedrooms: 0,
+      bathrooms: 2,
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Ouaga 2000',
+      address: 'Immeuble Affaires, Ouaga 2000',
+      description: 'Bureau moderne dans Ouaga 2000. Salle de réunion, fibre optique, climatisation.',
+      features: '["fibre optique","climatisation","salle réunion","parking"]',
+      images: '["https://afribayit.com/img/prop/bureau-ouaga-1.jpg"]',
+      lat: 12.3500,
+      lng: -1.4900,
+      verified: true,
+      geoTrust: false,
+      premium: false,
+      status: 'published',
+      views: 90,
+      favorites: 4,
+      agentId: agentBF,
+      investmentScore: 62,
+      walkScore: 65,
+      publishedAt: daysAgo(5),
+    },
   ];
 
   const propertyIds: string[] = [];
@@ -1150,6 +1606,46 @@ async function main() {
       status: 'CREATED',
       escrowReference: 'ESC-2025-005',
       commissionRate: 2.0,
+      escrowStatus: 'EMPTY',
+      escrowBalance: 0,
+      escrowHeld: 0,
+      ledgerEntries: [],
+    },
+    // ── BF Transactions (2) ──
+    {
+      propertyId: propertyIds[15], // Villa F2 Ouaga 2000
+      country: 'BF',
+      buyerId: buyerBF,
+      sellerId: agentBF,
+      amount: 25000000,
+      commission: 750000,
+      status: 'FUNDED',
+      escrowReference: 'ESC-2025-006',
+      paymentProvider: 'mobile_money',
+      paymentRef: 'MM-BF-556677',
+      notaryId: notaryBF.id,
+      geometerId: geometerBF.id,
+      escrowFundedAt: daysAgo(4),
+      notaryAssignedAt: daysAgo(2),
+      commissionRate: 3.0,
+      escrowStatus: 'FUNDED',
+      escrowBalance: 25000000,
+      escrowHeld: 25000000,
+      escrowFundedAtDate: daysAgo(4),
+      ledgerEntries: [
+        { entryType: 'CREDIT', amount: 25000000, balanceAfter: 25000000, reference: 'FUND-006', providerRef: 'MM-BF-556677' },
+      ],
+    },
+    {
+      propertyId: propertyIds[16], // Terrain Koulouba
+      country: 'BF',
+      buyerId: buyer1,
+      sellerId: agentBF,
+      amount: 15000000,
+      commission: 600000,
+      status: 'CREATED',
+      escrowReference: 'ESC-2025-007',
+      commissionRate: 4.0,
       escrowStatus: 'EMPTY',
       escrowBalance: 0,
       escrowHeld: 0,
@@ -1361,6 +1857,29 @@ async function main() {
         { type: 'suite', name: 'Suite Océane', capacity: 3, basePriceXof: 85000, totalRooms: 8, amenities: '["wifi","climatisation","tv","salon","vue mer","minibar"]' },
       ],
     },
+    // ── BF Hotel ──
+    {
+      name: 'Hôtel Sily',
+      slug: 'hotel-sily-ouagadougou',
+      city: 'Ouagadougou',
+      country: 'BF',
+      stars: 3,
+      rating: 3.9,
+      pricePerNight: 35000,
+      amenities: '["piscine","restaurant","wifi","parking","salle conférence"]',
+      images: '["https://afribayit.com/img/hotel/sily-1.jpg"]',
+      policies: '{"checkin":"14:00","checkout":"12:00","cancellation":"24h avant"}',
+      available: true,
+      connectionLevel: 1,
+      lat: 12.3714,
+      lng: -1.5197,
+      status: 'active',
+      subscriptionTier: 'starter',
+      rooms: [
+        { type: 'single', name: 'Chambre Standard', capacity: 1, basePriceXof: 25000, totalRooms: 15, amenities: '["wifi","climatisation","tv"]' },
+        { type: 'double', name: 'Chambre Confort', capacity: 2, basePriceXof: 35000, totalRooms: 20, amenities: '["wifi","climatisation","tv","minibar"]' },
+      ],
+    },
   ];
 
   const hotelIds: string[] = [];
@@ -1487,6 +2006,37 @@ async function main() {
         { name: 'Fêtes', period: 'holiday', multiplier: 1.5, startDate: daysFromNow(50), endDate: daysFromNow(58), event_name: 'Noël et Nouvel An' },
       ],
     },
+    // ── BF Guesthouse ──
+    {
+      ownerId: agentBF,
+      name: 'Maison d\'Hôte La Sahélienne',
+      slug: 'maison-hote-la-sahelienne-ouagadougou',
+      description: 'Maison d\'hôte chaleureuse à Ouagadougou avec jardin et petit-déjeuner burkinabè.',
+      city: 'Ouagadougou',
+      country: 'BF',
+      quartier: 'Koulouba',
+      address: 'Rue 28.42, Koulouba, Ouagadougou',
+      lat: 12.3620,
+      lng: -1.5120,
+      images: '["https://afribayit.com/img/gh/sahelienne-1.jpg"]',
+      amenities: '["wifi","jardin","parking","cuisine partagée"]',
+      rules: '{"noSmoking":true,"noParties":true,"quietHours":"22:00-06:00","petsAllowed":false}',
+      certificationStatus: 'pending',
+      overallRating: 0,
+      reviewCount: 0,
+      breakfastAvailable: true,
+      breakfastPrice: 4000,
+      hasStaff: false,
+      rooms: [
+        { name: 'Chambre Karité', capacity: 2, basePrice: 18000, amenities: '["climatisation","wifi","moustiquaire"]' },
+        { name: 'Chambre Baobab', capacity: 2, basePrice: 22000, amenities: '["climatisation","wifi","moustiquaire","salle bain privée"]' },
+      ],
+      meals: [
+        { mealType: 'breakfast', price: 4000, includedInPrice: true, description: 'Petit-déjeuner burkinabè avec thé, pain, beurre, confiture' },
+      ],
+      staff: [],
+      pricingRules: [],
+    },
   ];
 
   const ghIds: string[] = [];
@@ -1549,6 +2099,12 @@ async function main() {
     { artisanIdx: 4, services: [
       { serviceName: 'Peinture intérieure', description: 'Peinture murs et plafonds', basePrice: 2500, unit: 'm2', category: 'finition' },
       { serviceName: 'Peinture extérieure', description: 'Peinture façade et murs extérieurs', basePrice: 3500, unit: 'm2', category: 'exterieur' },
+    ]},
+    // ── BF Artisan services ──
+    { artisanIdx: 5, services: [
+      { serviceName: 'Maçonnerie gros œuvre', description: 'Construction murs, fondations, poteaux', basePrice: 7000, unit: 'm2', category: 'gros_oeuvre' },
+      { serviceName: 'Dallage', description: 'Pose de carrelage et dallage intérieur/extérieur', basePrice: 4500, unit: 'm2', category: 'finition' },
+      { serviceName: 'Fondation', description: 'Fouilles, semelles, radier', basePrice: 12000, unit: 'm2', category: 'gros_oeuvre' },
     ]},
   ];
 
@@ -1754,6 +2310,24 @@ async function main() {
       published: true,
       modules: '[{"title":"Cadre juridique","duration":"4h"},{"title":"Techniques de vente","duration":"4h"},{"title":"Outils numériques","duration":"4h"},{"title":"Éthique et déontologie","duration":"4h"},{"title":"Examen final","duration":"4h"}]',
     },
+    // ── BF Course ──
+    {
+      title: 'Droit Foncier Burkinabè : Titres et Certification',
+      slug: 'droit-foncier-burkina-titres-certification',
+      category: 'droit_foncier',
+      country: 'BF',
+      instructorId: notaryBFUser,
+      instructor: 'Mariam Ouedraogo',
+      description: 'Maîtrisez le droit foncier burkinabè : titre foncier, acte de vente, certificat de propriété, régime foncier rural. Essentiel pour tout investisseur au Burkina Faso.',
+      duration: '10 heures',
+      price: 30000,
+      level: 'intermediaire',
+      certificate: true,
+      rating: 4.5,
+      students: 34,
+      published: true,
+      modules: '[{"title":"Types de titres fonciers au Burkina","duration":"2h"},{"title":"Procédure d\'obtention","duration":"2h"},{"title":"Régime foncier rural","duration":"2h"},{"title":"Contentieux foncier","duration":"2h"},{"title":"Cas pratiques","duration":"2h"}]',
+    },
   ];
 
   const courseIds: string[] = [];
@@ -1849,6 +2423,9 @@ async function main() {
     { authorId: admin1, title: 'Bienvenue sur la communauté AfriBayit !', content: 'Cet espace est dédié à l\'entraide et au partage de connaissances immobilières en Afrique de l\'Ouest...', category: 'discussion', replies: 3, views: 1500, likes: 120, pinned: true, tags: '["bienvenue","communauté"]' },
     { authorId: agentBJ, title: 'Visite virtuelle 3D : révolution dans la vente immobilière', content: 'Les visites virtuelles changent la donne. Voici comment les intégrer dans votre stratégie...', category: 'discussion', country: 'BJ', replies: 5, views: 190, likes: 12, tags: '["visite virtuelle","3D","technologie"]' },
     { authorId: buyer2, title: 'Financement immobilier : quelles solutions en CI ?', content: 'Banques, microfinance, investissement participatif... Quelles sont les meilleures options ?', category: 'investment', country: 'CI', replies: 11, views: 430, likes: 28, tags: '["financement","investissement","côte ivoire"]' },
+    // ── BF Community posts ──
+    { authorId: buyerBF, title: 'Investir à Ouagadougou : mon retour d\'expérience', content: 'Après plusieurs mois de recherche, j\'ai acquis un terrain à Koulouba. Voici ce que j\'ai appris sur le marché immobilier burkinabè...', category: 'success_story', country: 'BF', replies: 5, views: 180, likes: 12, tags: '["investissement","ouagadougou","terrain","burkina"]' },
+    { authorId: agentBF, title: 'Marché immobilier Ouagadougou 2025 : analyse et tendances', content: 'Ouaga 2000 reste le quartier le plus recherché. Les prix au m² ont augmenté de 8% cette année. Koulouba gagne en popularité...', category: 'market_analysis', country: 'BF', replies: 6, views: 220, likes: 18, tags: '["marché","ouagadougou","analyse","burkina","prix"]' },
   ];
 
   const postIds: string[] = [];
@@ -2003,6 +2580,8 @@ async function main() {
     { userId: geometerUser, planType: 'geometer_pro', priceXof: 12000, country: 'BJ', status: 'active', startDate: daysAgo(90), endDate: daysFromNow(275), autoRenew: true, paymentRef: 'PAY-SUB-005' },
     { userId: buyer1, planType: 'academy_pro', priceXof: 20000, country: 'BJ', status: 'cancelled', startDate: daysAgo(180), endDate: daysAgo(5), autoRenew: false, paymentRef: 'PAY-SUB-006' },
     { userId: notaryUser, planType: 'notary_pro', priceXof: 15000, country: 'BJ', status: 'active', startDate: daysAgo(30), endDate: daysFromNow(335), autoRenew: true, paymentRef: 'PAY-SUB-007' },
+    // ── BF Subscription ──
+    { userId: agentBF, planType: 'agent_seed', priceXof: 5000, country: 'BF', status: 'active', startDate: daysAgo(20), endDate: daysFromNow(345), autoRenew: false, paymentRef: 'PAY-SUB-008' },
   ];
 
   for (const sd of subDefs) {
@@ -2249,8 +2828,8 @@ async function main() {
   console.log('\n✅ Seed completed successfully!');
   console.log('\n📊 Summary:');
   console.log(`  Users:          ${USERS.length}`);
-  console.log(`  Notaries:       2`);
-  console.log(`  Geometers:      3`);
+  console.log(`  Notaries:       5`); // 2 BJ + 1 BF + 1 CI + 1 TG
+  console.log(`  Geometers:      4`); // 3 (BJ, CI, TG) + 1 BF
   console.log(`  Artisans:       ${artisanIds.length}`);
   console.log(`  Properties:     ${propertyIds.length}`);
   console.log(`  Transactions:   ${txDefs.length}`);

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -8,6 +9,7 @@ export async function GET(request: Request) {
     const geometerId = searchParams.get('geometerId');
     const status = searchParams.get('status');
     const serviceCode = searchParams.get('serviceCode');
+    const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
@@ -17,6 +19,9 @@ export async function GET(request: Request) {
     if (geometerId) where.geometerId = geometerId;
     if (status) where.status = status;
     if (serviceCode) where.serviceCode = serviceCode;
+    if (country) {
+      where.property = { country };
+    }
 
     const [missions, total] = await Promise.all([
       db.geometerMission.findMany({
@@ -45,6 +50,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
 
     const mission = await db.geometerMission.create({

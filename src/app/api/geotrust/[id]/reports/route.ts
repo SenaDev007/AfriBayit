@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
 
     // id here is the geometerId — get reports for all missions of this geometer
@@ -39,8 +43,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership: geometer owner or admin
+    const geometer = await db.geometer.findUnique({ where: { id } });
+    if (!geometer) {
+      return NextResponse.json({ error: 'Geometer not found' }, { status: 404 });
+    }
+    if (geometer.userId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the geometer profile owner' }, { status: 403 });
+    }
 
     const report = await db.geometerReport.create({
       data: {

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function RegisterPage() {
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleSuccess = () => {
     router.push('/dashboard');
   };
 
@@ -37,7 +37,7 @@ export default function RegisterPage() {
           mode="register"
           onClose={handleClose}
           onSwitch={handleSwitch}
-          onLogin={handleLogin}
+          onSuccess={handleSuccess}
         />
       </div>
     </div>

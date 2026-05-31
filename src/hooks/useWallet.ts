@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, apiPost } from '@/lib/api';
 
 export interface WalletSummary {
   balance: number;
@@ -32,15 +32,31 @@ export interface WalletData {
   pagination: { page: number; limit: number; total: number; pages: number };
 }
 
-export function useWallet(userId?: string, page = 1, limit = 20) {
+export function useWallet(userId?: string, country?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
   if (userId) params.set('userId', userId);
   params.set('page', String(page));
   params.set('limit', String(limit));
+  if (country) params.set('country', country);
 
   return useQuery({
-    queryKey: ['wallet', userId, page, limit],
+    queryKey: ['wallet', userId, country, page, limit],
     queryFn: () => apiFetch<WalletData>(`/api/wallet?${params.toString()}`),
     enabled: !!userId,
+  });
+}
+
+export function useCreateWalletTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { type: string; amount: number; currency?: string; providerRef?: string; metadata?: Record<string, unknown> }) =>
+      apiPost('/api/wallet', {
+        ...data,
+        balanceAfter: 0, // will be computed server-side
+        status: data.type === 'deposit' ? 'completed' : 'pending',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    },
   });
 }

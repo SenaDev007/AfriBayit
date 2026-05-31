@@ -84,3 +84,36 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update geometer profile' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const { id } = await params;
+
+    const existing = await db.geometer.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Geometer not found' }, { status: 404 });
+    }
+
+    // Only the geometer owner or admin can delete
+    if (existing.userId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the geometer profile owner' }, { status: 403 });
+    }
+
+    // Soft-delete: set available to false
+    const geometer = await db.geometer.update({
+      where: { id },
+      data: { available: false },
+    });
+
+    return NextResponse.json({ message: 'Geometer deactivated', data: geometer });
+  } catch (error) {
+    console.error('Geometer delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete geometer' }, { status: 500 });
+  }
+}

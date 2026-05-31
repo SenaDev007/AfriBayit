@@ -1,10 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, apiPost } from '@/lib/api';
 
-export function useEscrowList(page = 1, limit = 20) {
+export function useEscrowList(page = 1, limit = 20, country?: string) {
+  const params = new URLSearchParams();
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  if (country) params.set('country', country);
+
   return useQuery({
-    queryKey: ['escrow', page, limit],
-    queryFn: () => apiFetch<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?page=${page}&limit=${limit}`),
+    queryKey: ['escrow', page, limit, country],
+    queryFn: () => apiFetch<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
   });
 }
 

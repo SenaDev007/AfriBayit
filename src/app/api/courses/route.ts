@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -33,5 +34,45 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Courses API error:', error);
     return NextResponse.json({ error: 'Failed to fetch courses' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
+    const body = await request.json();
+
+    if (!body.title || !body.instructorId || !body.instructor || !body.duration) {
+      return NextResponse.json(
+        { error: 'title, instructorId, instructor, and duration are required' },
+        { status: 400 }
+      );
+    }
+
+    const course = await db.course.create({
+      data: {
+        title: body.title,
+        slug: body.slug,
+        category: body.category,
+        country: body.country || 'BJ',
+        instructorId: body.instructorId,
+        instructor: body.instructor,
+        description: body.description,
+        duration: body.duration,
+        price: body.price ?? 0,
+        currency: body.currency || 'XOF',
+        level: body.level || 'debutant',
+        certificate: body.certificate ?? false,
+        videoUrl: body.videoUrl,
+        modules: body.modules ? JSON.stringify(body.modules) : null,
+      },
+    });
+
+    return NextResponse.json(course, { status: 201 });
+  } catch (error) {
+    console.error('Course creation error:', error);
+    return NextResponse.json({ error: 'Failed to create course' }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, apiPost } from '@/lib/api';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useProfiles(role?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -20,5 +20,21 @@ export function useProfile(userId: string) {
     queryKey: ['profile', userId],
     queryFn: () => apiFetch<unknown>(`/api/profiles?userId=${userId}`),
     enabled: !!userId,
+  });
+}
+
+export function useFollowProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { profileUserId: string }) =>
+      apiPost('/api/chat/conversations', {
+        type: 'user_to_user',
+        participantIds: [data.profileUserId],
+        metadata: { action: 'follow' },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
   });
 }

@@ -2,16 +2,11 @@
 
 import AuthPages from '@/components/afribayit/AuthPages';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-    // The AuthPages component handles the form internally
-    // After successful login, redirect to dashboard
+  const handleSuccess = () => {
     router.push('/dashboard');
   };
 
@@ -42,7 +37,7 @@ export default function LoginPage() {
           mode="login"
           onClose={handleClose}
           onSwitch={handleSwitch}
-          onLogin={handleLogin}
+          onSuccess={handleSuccess}
         />
       </div>
     </div>

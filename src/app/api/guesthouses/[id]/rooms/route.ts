@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
   request: Request,
@@ -25,8 +26,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership: guesthouse owner or admin
+    const guesthouse = await db.guesthouse.findUnique({ where: { id } });
+    if (!guesthouse) {
+      return NextResponse.json({ error: 'Guesthouse not found' }, { status: 404 });
+    }
+    if (guesthouse.ownerId !== auth.userId && auth.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: not the guesthouse owner' }, { status: 403 });
+    }
 
     const room = await db.guesthouseRoom.create({
       data: {

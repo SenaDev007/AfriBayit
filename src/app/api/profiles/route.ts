@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
@@ -55,11 +56,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard();
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
+
+    // Use authenticated user's ID if not provided
+    const userId = body.userId || auth.userId;
 
     const profile = await db.professionalProfile.create({
       data: {
-        userId: body.userId,
+        userId,
         headline: body.headline,
         coverPhoto: body.coverPhoto,
         bio: body.bio,

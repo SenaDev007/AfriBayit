@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGuesthouses, useGuesthouse } from '@/hooks/useGuesthouses';
+import { useGuesthouses, useGuesthouse, useGuesthouseBookings, useCreateBooking } from '@/hooks/useGuesthouses';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { toast } from 'sonner';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -15,11 +16,6 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // ── Static UI config (NOT database data) ────────────────────────
 const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const calendarDays = Array.from({ length: 35 }, (_, i) => {
-  const day = (i % 31) + 1;
-  const booked = [3, 4, 5, 12, 13, 19, 20, 21, 27, 28].includes(day);
-  return { day, booked };
-});
 
 const certificationProcessSteps = [
   { step: 1, title: 'Demande', desc: 'Soumission du dossier de certification', icon: '📋' },
@@ -99,6 +95,17 @@ interface GuesthousePricingRuleItem {
   event_name: string | null;
 }
 
+interface BookingItem {
+  id: string;
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  totalPrice: number;
+  status: string;
+  breakfastIncluded: boolean;
+}
+
 // ── Helpers ─────────────────────────────────────────────────────
 function parseJsonArray(raw: string | null | undefined): string[] {
   if (!raw) return [];
@@ -121,7 +128,6 @@ function parseSchedule(raw: string | null | undefined): string {
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'string') return parsed;
     if (parsed && typeof parsed === 'object') {
-      // Could be { start: '7h', end: '15h' } or similar
       if (parsed.start && parsed.end) return `${parsed.start}-${parsed.end}`;
       if (parsed.hours) return parsed.hours;
     }
@@ -237,6 +243,14 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const [selectedGhId, setSelectedGhId] = useState<string | null>(null);
   const { selectedCountry } = useCountry();
 
+  // Booking dialog state
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [bookingRoom, setBookingRoom] = useState<GuesthouseRoomItem | null>(null);
+  const [bookingCheckIn, setBookingCheckIn] = useState('');
+  const [bookingCheckOut, setBookingCheckOut] = useState('');
+  const [bookingGuests, setBookingGuests] = useState(1);
+  const [bookingBreakfast, setBookingBreakfast] = useState(false);
+
   // List query
   const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses(undefined, selectedCountry);
   const guesthousesList: GuesthouseListItem[] =
@@ -252,6 +266,41 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const activeDetail = (selectedGhId ? selectedGhDetail : (fallbackDetail as GuesthouseDetail | undefined)) ?? undefined;
   const detailLoadingState = selectedGhId ? detailLoading : fallbackLoading;
 
+  // Bookings query for the calendar
+  const { data: bookingsData } = useGuesthouseBookings(effectiveGhId || '');
+  const bookings: BookingItem[] = (bookingsData as { bookings: BookingItem[] } | undefined)?.bookings ?? [];
+
+  // Compute booked days from actual booking data
+  const bookedDays = useMemo(() => {
+    const days = new Set<number>();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    bookings.forEach(booking => {
+      const checkIn = new Date(booking.checkIn);
+      const checkOut = new Date(booking.checkOut);
+      // Only include bookings in the current month
+      const start = new Date(Math.max(checkIn.getTime(), new Date(currentYear, currentMonth, 1).getTime()));
+      const end = new Date(Math.min(checkOut.getTime(), new Date(currentYear, currentMonth + 1, 0).getTime()));
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        days.add(d.getDate());
+      }
+    });
+    return days;
+  }, [bookings]);
+
+  // Generate calendar days from actual booking data
+  const calendarDays = useMemo(() => {
+    return Array.from({ length: 35 }, (_, i) => {
+      const day = (i % 31) + 1;
+      return { day, booked: bookedDays.has(day) };
+    });
+  }, [bookedDays]);
+
+  // Create booking mutation
+  const createBooking = useCreateBooking(effectiveGhId || '');
+
   const tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'listings', label: 'Listings', icon: '🏠' },
     { key: 'chambers', label: 'Chambres', icon: '🛏️' },
@@ -261,6 +310,48 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
     { key: 'pricing', label: 'Tarifs saisonniers', icon: '💹' },
     { key: 'certification', label: 'Certification', icon: '🏅' },
   ];
+
+  // Open booking dialog for a room
+  const handleOpenBooking = (room: GuesthouseRoomItem) => {
+    setBookingRoom(room);
+    setBookingCheckIn('');
+    setBookingCheckOut('');
+    setBookingGuests(1);
+    setBookingBreakfast(false);
+    setShowBookingDialog(true);
+  };
+
+  // Submit booking
+  const handleSubmitBooking = () => {
+    if (!bookingRoom || !bookingCheckIn || !bookingCheckOut || !effectiveGhId) return;
+
+    const checkIn = new Date(bookingCheckIn);
+    const checkOut = new Date(bookingCheckOut);
+    const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+    const totalPrice = bookingRoom.basePrice * nights;
+
+    createBooking.mutate(
+      {
+        roomId: bookingRoom.id,
+        checkIn: bookingCheckIn,
+        checkOut: bookingCheckOut,
+        guests: bookingGuests,
+        totalPrice,
+        currency: 'XOF',
+        breakfastIncluded: bookingBreakfast,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Réservation confirmée', { description: `${bookingRoom.name} réservée pour ${nights} nuit(s)` });
+          setShowBookingDialog(false);
+          setBookingRoom(null);
+        },
+        onError: (error: Error) => {
+          toast.error('Erreur lors de la réservation', { description: error.message });
+        },
+      }
+    );
+  };
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -482,6 +573,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                           ))}
                         </div>
                         <button
+                          onClick={() => handleOpenBooking(ch)}
                           disabled={!ch.available}
                           className={`w-full py-2.5 rounded-full text-sm font-semibold transition-colors ${
                             ch.available ? 'bg-[#003087] text-white hover:bg-[#0047b3]' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -506,7 +598,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
             <motion.div key="booking" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-2xl mx-auto">
               <div className="bg-white rounded-3xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Calendrier — Mars 2025</h3>
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Calendrier — {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h3>
                   <div className="flex gap-2">
                     <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#00A651]/20" /> Disponible</span>
                     <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#D93025]/20" /> Réservé</span>
@@ -730,6 +822,107 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Booking Dialog */}
+      {showBookingDialog && bookingRoom && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-3xl p-6 max-w-md w-full"
+          >
+            <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Réserver {bookingRoom.name}</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA / nuit · {bookingRoom.capacity} pers.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Date d&apos;arrivée</label>
+                  <input
+                    type="date"
+                    value={bookingCheckIn}
+                    onChange={e => setBookingCheckIn(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Date de départ</label>
+                  <input
+                    type="date"
+                    value={bookingCheckOut}
+                    onChange={e => setBookingCheckOut(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Nombre de voyageurs</label>
+                <select
+                  value={bookingGuests}
+                  onChange={e => setBookingGuests(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                >
+                  {Array.from({ length: bookingRoom.capacity }, (_, i) => i + 1).map(n => (
+                    <option key={n} value={n}>{n} voyageur{n > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <input
+                  type="checkbox"
+                  id="breakfast"
+                  checked={bookingBreakfast}
+                  onChange={e => setBookingBreakfast(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-[#003087] focus:ring-[#003087]"
+                />
+                <label htmlFor="breakfast" className="text-sm text-gray-700">
+                  Inclure le petit-déjeuner
+                </label>
+              </div>
+
+              {/* Price summary */}
+              {bookingCheckIn && bookingCheckOut && (
+                <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
+                  {(() => {
+                    const nights = Math.max(1, Math.ceil((new Date(bookingCheckOut).getTime() - new Date(bookingCheckIn).getTime()) / (1000 * 60 * 60 * 24)));
+                    const total = bookingRoom.basePrice * nights;
+                    return (
+                      <>
+                        <p className="text-xs text-gray-500">{nights} nuit(s) × {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA</p>
+                        <p className="font-mono text-lg font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(total)} FCFA</p>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBookingDialog(false)}
+                className="flex-1 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSubmitBooking}
+                disabled={!bookingCheckIn || !bookingCheckOut || createBooking.isPending}
+                className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50"
+              >
+                {createBooking.isPending ? 'Réservation...' : 'Confirmer'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </section>
   );
 }
