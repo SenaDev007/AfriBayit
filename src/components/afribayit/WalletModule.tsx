@@ -7,6 +7,7 @@ import { useWallet, useCreateWalletTransaction, type WalletTransaction } from '@
 import { useCountry } from '@/contexts/CountryContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ClipboardList, Download, Upload, Lock, Unlock, Coins, RefreshCw, CreditCard, Star, Smartphone, Mail, MessageCircle, CheckCircle, Hourglass, XCircle } from 'lucide-react';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -16,14 +17,14 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 type TransactionType = 'deposit' | 'withdrawal' | 'escrow_fund' | 'escrow_release' | 'commission' | 'subscription';
 
-const filterTypes: { key: TransactionType | 'all'; label: string; icon: string }[] = [
-  { key: 'all', label: 'Tous', icon: '📋' },
-  { key: 'deposit', label: 'Dépôts', icon: '📥' },
-  { key: 'withdrawal', label: 'Retraits', icon: '📤' },
-  { key: 'escrow_fund', label: 'Escrow (financement)', icon: '🔒' },
-  { key: 'escrow_release', label: 'Escrow (libération)', icon: '🔓' },
-  { key: 'commission', label: 'Commissions', icon: '💰' },
-  { key: 'subscription', label: 'Abonnements', icon: '🔄' },
+const filterTypes: { key: TransactionType | 'all'; label: string; icon: React.ReactNode }[] = [
+  { key: 'all', label: 'Tous', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+  { key: 'deposit', label: 'Dépôts', icon: <Download className="w-3.5 h-3.5" /> },
+  { key: 'withdrawal', label: 'Retraits', icon: <Upload className="w-3.5 h-3.5" /> },
+  { key: 'escrow_fund', label: 'Escrow (financement)', icon: <Lock className="w-3.5 h-3.5" /> },
+  { key: 'escrow_release', label: 'Escrow (libération)', icon: <Unlock className="w-3.5 h-3.5" /> },
+  { key: 'commission', label: 'Commissions', icon: <Coins className="w-3.5 h-3.5" /> },
+  { key: 'subscription', label: 'Abonnements', icon: <RefreshCw className="w-3.5 h-3.5" /> },
 ];
 
 const afriPointsRedemption = [
@@ -40,11 +41,11 @@ const currencyRates = {
 };
 
 const paymentProviders = [
-  { key: 'mtn', name: 'MTN Mobile Money', icon: '📱', color: '#FFC300' },
-  { key: 'orange', name: 'Orange Money', icon: '🍊', color: '#FF6600' },
-  { key: 'moov', name: 'Moov Money', icon: '🔵', color: '#0066CC' },
-  { key: 'fedapay', name: 'FedaPay', icon: '💳', color: '#003087' },
-  { key: 'stripe', name: 'Stripe', icon: '💜', color: '#635bff' },
+  { key: 'mtn', name: 'MTN Mobile Money', icon: <Smartphone className="w-5 h-5" style={{ color: '#FFC300' }} />, color: '#FFC300' },
+  { key: 'orange', name: 'Orange Money', icon: <Smartphone className="w-5 h-5 text-orange-500" />, color: '#FF6600' },
+  { key: 'moov', name: 'Moov Money', icon: <Smartphone className="w-5 h-5 text-blue-600" />, color: '#0066CC' },
+  { key: 'fedapay', name: 'FedaPay', icon: <CreditCard className="w-5 h-5" />, color: '#003087' },
+  { key: 'stripe', name: 'Stripe', icon: <CreditCard className="w-5 h-5 text-purple-500" />, color: '#635bff' },
 ];
 
 function getTypeColor(type: string): string {
@@ -59,15 +60,15 @@ function getTypeColor(type: string): string {
   }
 }
 
-function getTypeIcon(type: string): string {
+function getTypeIcon(type: string): React.ReactNode {
   switch (type) {
-    case 'deposit': return '📥';
-    case 'withdrawal': return '📤';
-    case 'escrow_fund': return '🔒';
-    case 'escrow_release': return '🔓';
-    case 'commission': return '💰';
-    case 'subscription': return '🔄';
-    default: return '📋';
+    case 'deposit': return <Download className="w-4 h-4" />;
+    case 'withdrawal': return <Upload className="w-4 h-4" />;
+    case 'escrow_fund': return <Lock className="w-4 h-4" />;
+    case 'escrow_release': return <Unlock className="w-4 h-4" />;
+    case 'commission': return <Coins className="w-4 h-4" />;
+    case 'subscription': return <RefreshCw className="w-4 h-4" />;
+    default: return <ClipboardList className="w-4 h-4" />;
   }
 }
 
@@ -179,12 +180,12 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
     );
   };
 
-  const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'overview', label: 'Aperçu', icon: '💳' },
-    { key: 'history', label: 'Historique', icon: '📋' },
-    { key: 'add', label: 'Ajouter fonds', icon: '📥' },
-    { key: 'withdraw', label: 'Retirer', icon: '📤' },
-    { key: 'points', label: 'AfriPoints', icon: '⭐' },
+  const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
+    { key: 'overview', label: 'Aperçu', icon: <CreditCard className="w-4 h-4" /> },
+    { key: 'history', label: 'Historique', icon: <ClipboardList className="w-4 h-4" /> },
+    { key: 'add', label: 'Ajouter fonds', icon: <Download className="w-4 h-4" /> },
+    { key: 'withdraw', label: 'Retirer', icon: <Upload className="w-4 h-4" /> },
+    { key: 'points', label: 'AfriPoints', icon: <Star className="w-4 h-4 text-yellow-500" /> },
   ];
 
   return (
@@ -197,7 +198,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            💳 Portefeuille AfriBayit
+            <CreditCard className="w-4 h-4" /> Portefeuille AfriBayit
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Mon <span className="text-[#D4AF37]">Portefeuille</span>
@@ -228,7 +229,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -275,7 +276,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
                       <p className="text-[10px] text-white/60">AfriPoints</p>
-                      <p className="font-mono text-sm font-bold text-[#D4AF37]">⭐ {afriPoints}</p>
+                      <p className="font-mono text-sm font-bold text-[#D4AF37] flex items-center gap-1"><Star className="w-3.5 h-3.5" /> {afriPoints}</p>
                     </div>
                   </div>
                 </div>
@@ -284,10 +285,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               {/* Quick Actions */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Ajouter fonds', icon: '📥', action: () => setActiveTab('add') },
-                  { label: 'Retirer', icon: '📤', action: () => setActiveTab('withdraw') },
-                  { label: 'Historique', icon: '📋', action: () => setActiveTab('history') },
-                  { label: 'AfriPoints', icon: '⭐', action: () => setActiveTab('points') },
+                  { label: 'Ajouter fonds', icon: <Download className="w-5 h-5" />, action: () => setActiveTab('add') },
+                  { label: 'Retirer', icon: <Upload className="w-5 h-5" />, action: () => setActiveTab('withdraw') },
+                  { label: 'Historique', icon: <ClipboardList className="w-5 h-5" />, action: () => setActiveTab('history') },
+                  { label: 'AfriPoints', icon: <Star className="w-5 h-5 text-yellow-500" />, action: () => setActiveTab('points') },
                 ].map(btn => (
                   <motion.button
                     key={btn.label}
@@ -296,7 +297,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                     onClick={btn.action}
                     className="bg-white rounded-2xl p-4 shadow-sm border text-center hover:border-[#003087]/20 transition-all"
                   >
-                    <span className="text-2xl block mb-1">{btn.icon}</span>
+                    <span className="flex items-center justify-center mb-1 text-gray-600">{btn.icon}</span>
                     <p className="text-xs font-semibold text-[#2C2E2F]">{btn.label}</p>
                   </motion.button>
                 ))}
@@ -329,7 +330,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   <div className="space-y-3">
                     {transactions.slice(0, 4).map((txn: WalletTransaction) => (
                       <div key={txn.id} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
                           {getTypeIcon(txn.type)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -356,7 +357,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   <button
                     key={ft.key}
                     onClick={() => setFilterType(ft.key)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                       filterType === ft.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
                     }`}
                   >
@@ -396,7 +397,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         transition={{ delay: i * 0.05, ease: easeOut }}
                         className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl"
                       >
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${getTypeColor(txn.type)}10` }}>
                           {getTypeIcon(txn.type)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -407,10 +408,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                           <p className={`font-mono text-sm font-bold ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
                             {txn.amount > 0 ? '+' : ''}{formatFCFA(txn.amount)}
                           </p>
-                          <span className={`text-[10px] font-semibold ${
+                          <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${
                             txn.status === 'completed' ? 'text-[#00A651]' : txn.status === 'pending' ? 'text-[#D4AF37]' : 'text-[#D93025]'
                           }`}>
-                            {txn.status === 'completed' ? '✅ Validé' : txn.status === 'pending' ? '⏳ En attente' : '❌ Échoué'}
+                            {txn.status === 'completed' ? <><CheckCircle className="w-3 h-3" /> Validé</> : txn.status === 'pending' ? <><Hourglass className="w-3 h-3" /> En attente</> : <><XCircle className="w-3 h-3" /> Échoué</>}
                           </span>
                         </div>
                       </motion.div>
@@ -456,7 +457,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         addProvider === p.key ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
                       }`}
                     >
-                      <span className="text-xl block mb-1">{p.icon}</span>
+                      <span className="flex items-center justify-center mb-1">{p.icon}</span>
                       <p className="text-[10px] font-semibold text-[#2C2E2F]">{p.name}</p>
                     </motion.button>
                   ))}
@@ -510,7 +511,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         withdrawProvider === p.key ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
                       }`}
                     >
-                      <span className="text-xl block mb-1">{p.icon}</span>
+                      <span className="flex items-center justify-center mb-1">{p.icon}</span>
                       <p className="text-[10px] font-semibold text-[#2C2E2F]">{p.name}</p>
                     </motion.button>
                   ))}
@@ -540,7 +541,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               ) : (
                 <div className="bg-gradient-to-br from-[#D4AF37] to-[#a08820] rounded-3xl p-6 text-white text-center">
                   <p className="text-sm text-white/60 mb-1">Vos AfriPoints</p>
-                  <p className="font-mono text-4xl font-bold mb-2">⭐ {afriPoints}</p>
+                  <p className="font-mono text-4xl font-bold mb-2 flex items-center justify-center gap-2"><Star className="w-6 h-6" /> {afriPoints}</p>
                   <p className="text-xs text-white/70">1 point = 1 FCFA de crédit</p>
                 </div>
               )}

@@ -13,6 +13,7 @@ import AdvancedFilterSidebar from './AdvancedFilterSidebar';
 import PropertyComparator from './PropertyComparator';
 import FinancingSimulator from './FinancingSimulator';
 import type { PropertyData } from '@/lib/afribayit-utils';
+import { Check, Coins } from 'lucide-react';
 
 interface EnhancedSearchResultsProps {
   initialTab?: string;
@@ -387,14 +388,14 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                           }`}
                           title="Ajouter à la comparaison"
                         >
-                          {compareIds.includes(property.id) ? '✓' : '+'}
+                          {compareIds.includes(property.id) ? '<Check className="w-4 h-4" />' : '+'}
                         </button>
                         {/* Financing button */}
                         <button
                           onClick={(e) => { e.stopPropagation(); openFinancing(property.price); }}
                           className="absolute bottom-4 right-4 z-10 px-2 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-medium text-[#003087] hover:bg-white transition-colors shadow-sm border"
                         >
-                          💰 Simuler
+                          <Coins className="w-4 h-4" /> Simuler
                         </button>
                       </div>
                     ))}

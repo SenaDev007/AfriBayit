@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import dynamic from 'next/dynamic';
+import { Check, ClipboardList, Eye, Lock, Map } from 'lucide-react';
 
 // Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
 const VirtualTourViewer = dynamic(
@@ -180,7 +181,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                     </motion.button>
                   ) : (
                     <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-gray-700 flex items-center gap-1.5">
-                      <span className="text-lg">🥽</span> VR 360°
+                      <span className="text-lg"><Eye className="w-4 h-4" /></span> VR 360°
                     </span>
                   )}
                 </div>
@@ -518,11 +519,11 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 <h3 className="text-sm font-semibold text-[#2C2E2F] mb-3">Garanties AfriBayit</h3>
                 <div className="space-y-2.5">
                   {[
-                    { icon: '✓', text: 'Documents vérifiés', active: property.verified },
-                    { icon: '🗺️', text: 'GeoTrust certifié', active: property.geoTrust },
-                    { icon: '🥽', text: 'Visite VR disponible', active: hasVR },
-                    { icon: '🔒', text: 'Escrow sécurisé', active: true },
-                    { icon: '📋', text: 'Assistance notariale', active: true },
+                    { icon: '<Check className="w-4 h-4" />', text: 'Documents vérifiés', active: property.verified },
+                    { icon: '<Map className="w-4 h-4" />', text: 'GeoTrust certifié', active: property.geoTrust },
+                    { icon: '<Eye className="w-4 h-4" />', text: 'Visite VR disponible', active: hasVR },
+                    { icon: '<Lock className="w-4 h-4" />', text: 'Escrow sécurisé', active: true },
+                    { icon: '<ClipboardList className="w-4 h-4" />', text: 'Assistance notariale', active: true },
                   ].map((badge) => (
                     <div key={badge.text} className="flex items-center gap-2">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${

@@ -1,4 +1,5 @@
 // AfriBayit Certificate PDF Generator — pdfkit + QR code
+// CDC §5.6.4 — Enhanced with proper branding, QR verification, and downloadable PDF
 
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
@@ -15,6 +16,18 @@ export interface CertificateData {
   verificationUrl: string;
 }
 
+// AfriBayit brand colors — CDC
+const BRAND = {
+  navy: '#003087',
+  gold: '#D4AF37',
+  blue: '#009CDE',
+  green: '#00A651',
+  white: '#FFFFFF',
+  lightGray: '#F5F5F5',
+  midGray: '#888888',
+  darkText: '#2C2E2F',
+} as const;
+
 /**
  * Génère un PDF de certificat et retourne le buffer
  */
@@ -25,11 +38,11 @@ export async function generateCertificatePDF(
 
   return new Promise(async (resolve, reject) => {
     try {
-      // Générer le QR code
+      // Générer le QR code contenant l'URL de vérification
       const qrDataUrl = await QRCode.toDataURL(data.verificationUrl, {
-        width: 120,
+        width: 150,
         margin: 1,
-        color: { dark: template.primaryColor, light: '#ffffff' },
+        color: { dark: BRAND.navy, light: BRAND.white },
       });
       const qrBase64 = qrDataUrl.split(',')[1];
       const qrBuffer = Buffer.from(qrBase64, 'base64');
@@ -38,6 +51,13 @@ export async function generateCertificatePDF(
         size: 'A4',
         layout: 'landscape',
         margins: { top: 40, bottom: 40, left: 60, right: 60 },
+        info: {
+          Title: `Certificat AfriBayit — ${data.courseName}`,
+          Author: 'AfriBayit Academy',
+          Subject: `Certificat de réussite pour ${data.recipientName}`,
+          Keywords: 'afribayit, certificat, academy, immobilier',
+          Creator: 'AfriBayit Certificate Engine v2',
+        },
       });
 
       const chunks: Buffer[] = [];
@@ -47,174 +67,235 @@ export async function generateCertificatePDF(
 
       const pageWidth = doc.page.width;
       const pageHeight = doc.page.height;
-
-      // ---- Bordure décorative ----
-      // Bordure extérieure
-      doc
-        .lineWidth(3)
-        .strokeColor(template.primaryColor)
-        .rect(20, 20, pageWidth - 40, pageHeight - 40)
-        .stroke();
-
-      // Bordure intérieure dorée
-      doc
-        .lineWidth(1)
-        .strokeColor(template.secondaryColor)
-        .rect(28, 28, pageWidth - 56, pageHeight - 56)
-        .stroke();
-
-      // Coins décoratifs
-      drawCorner(doc, 30, 30, 15, template.secondaryColor);
-      drawCorner(doc, pageWidth - 30, 30, 15, template.secondaryColor, true);
-      drawCorner(doc, 30, pageHeight - 30, 15, template.secondaryColor, false, true);
-      drawCorner(doc, pageWidth - 30, pageHeight - 30, 15, template.secondaryColor, true, true);
-
-      // ---- En-tête ----
       const centerX = pageWidth / 2;
 
-      // Logo placeholder (texte)
-      doc
-        .fontSize(14)
-        .fillColor(template.primaryColor)
-        .font('Helvetica-Bold')
-        .text('AFRIBAYIT', centerX, 55, { align: 'center' });
+      // ═══════════════════════════════════════════
+      // BACKGROUND — Subtle gradient overlay
+      // ═══════════════════════════════════════════
+      doc.rect(0, 0, pageWidth, pageHeight).fill('#FAFBFD');
 
+      // ═══════════════════════════════════════════
+      // OUTER BORDER — Navy thick border
+      // ═══════════════════════════════════════════
       doc
-        .fontSize(8)
-        .fillColor(template.secondaryColor)
-        .font('Helvetica')
-        .text('ACADEMY', centerX, 72, { align: 'center' });
-
-      // Ligne décorative sous le logo
-      doc
-        .moveTo(centerX - 80, 85)
-        .lineTo(centerX + 80, 85)
-        .lineWidth(1)
-        .strokeColor(template.secondaryColor)
+        .lineWidth(4)
+        .strokeColor(BRAND.navy)
+        .rect(18, 18, pageWidth - 36, pageHeight - 36)
         .stroke();
 
-      // ---- Titre du certificat ----
+      // ═══════════════════════════════════════════
+      // INNER BORDER — Gold elegant border
+      // ═══════════════════════════════════════════
+      doc
+        .lineWidth(1.5)
+        .strokeColor(BRAND.gold)
+        .rect(26, 26, pageWidth - 52, pageHeight - 52)
+        .stroke();
+
+      // ═══════════════════════════════════════════
+      // DECORATIVE CORNERS — Gold accent corners
+      // ═══════════════════════════════════════════
+      drawCorner(doc, 30, 30, 20, BRAND.gold);
+      drawCorner(doc, pageWidth - 30, 30, 20, BRAND.gold, true);
+      drawCorner(doc, 30, pageHeight - 30, 20, BRAND.gold, false, true);
+      drawCorner(doc, pageWidth - 30, pageHeight - 30, 20, BRAND.gold, true, true);
+
+      // ═══════════════════════════════════════════
+      // TOP ACCENT LINE — Gold horizontal line
+      // ═══════════════════════════════════════════
+      doc
+        .moveTo(centerX - 200, 50)
+        .lineTo(centerX + 200, 50)
+        .lineWidth(2)
+        .strokeColor(BRAND.gold)
+        .stroke();
+
+      // ═══════════════════════════════════════════
+      // HEADER — AfriBayit branding
+      // ═══════════════════════════════════════════
+      doc
+        .fontSize(18)
+        .fillColor(BRAND.navy)
+        .font('Helvetica-Bold')
+        .text('AFRIBAYIT', centerX, 58, { align: 'center' });
+
+      doc
+        .fontSize(10)
+        .fillColor(BRAND.gold)
+        .font('Helvetica')
+        .text('ACADEMY', centerX, 78, { align: 'center' });
+
+      doc
+        .fontSize(7)
+        .fillColor(BRAND.midGray)
+        .font('Helvetica')
+        .text('Plateforme Immobilière Pan-Africaine', centerX, 92, { align: 'center' });
+
+      // Decorative line under header
+      doc
+        .moveTo(centerX - 100, 105)
+        .lineTo(centerX + 100, 105)
+        .lineWidth(0.5)
+        .strokeColor(BRAND.gold)
+        .stroke();
+
+      // ═══════════════════════════════════════════
+      // CERTIFICATE TITLE
+      // ═══════════════════════════════════════════
       const titleFr = template.titleFr;
       const titleEn = template.titleEn;
 
       doc
-        .fontSize(26)
-        .fillColor(template.primaryColor)
+        .fontSize(28)
+        .fillColor(BRAND.navy)
         .font('Helvetica-Bold')
-        .text(titleFr, centerX, 100, { align: 'center' });
+        .text(titleFr, centerX, 118, { align: 'center' });
 
       doc
         .fontSize(11)
-        .fillColor('#666666')
+        .fillColor(BRAND.midGray)
         .font('Helvetica')
-        .text(titleEn, centerX, 130, { align: 'center' });
+        .text(titleEn, centerX, 150, { align: 'center' });
 
-      // ---- Texte principal ----
-      const contentY = 165;
+      // ═══════════════════════════════════════════
+      // MAIN CONTENT
+      // ═══════════════════════════════════════════
+      const contentY = 178;
 
-      // Sous-titre
+      // "Ce certificat atteste que"
       doc
         .fontSize(10)
-        .fillColor('#888888')
+        .fillColor(BRAND.midGray)
         .font('Helvetica')
         .text('Ce certificat atteste que / This certifies that', centerX, contentY, { align: 'center' });
 
-      // Nom du récipiendaire
+      // Recipient name — prominent display
       doc
-        .fontSize(28)
-        .fillColor(template.primaryColor)
+        .fontSize(30)
+        .fillColor(BRAND.navy)
         .font('Helvetica-Bold')
         .text(data.recipientName, centerX, contentY + 22, { align: 'center' });
 
-      // Ligne sous le nom
-      const nameWidth = doc.widthOfString(data.recipientName, { fontSize: 28 });
+      // Gold underline under name
+      const nameWidth = doc.widthOfString(data.recipientName);
+      const lineHalf = Math.min(nameWidth / 2, 180);
       doc
-        .moveTo(centerX - Math.min(nameWidth / 2, 150), contentY + 56)
-        .lineTo(centerX + Math.min(nameWidth / 2, 150), contentY + 56)
-        .lineWidth(1)
-        .strokeColor(template.secondaryColor)
+        .moveTo(centerX - lineHalf, contentY + 58)
+        .lineTo(centerX + lineHalf, contentY + 58)
+        .lineWidth(1.5)
+        .strokeColor(BRAND.gold)
         .stroke();
 
-      // Texte "a réussi avec succès"
+      // "a réussi avec succès"
       doc
         .fontSize(10)
-        .fillColor('#888888')
+        .fillColor(BRAND.midGray)
         .font('Helvetica')
-        .text('a réussi avec succès le cours / has successfully completed the course', centerX, contentY + 65, { align: 'center' });
+        .text('a réussi avec succès le cours / has successfully completed the course', centerX, contentY + 68, { align: 'center' });
 
-      // Nom du cours
+      // Course name — italic display
       doc
-        .fontSize(18)
-        .fillColor(template.secondaryColor)
+        .fontSize(20)
+        .fillColor(BRAND.gold)
         .font('Helvetica-BoldOblique')
-        .text(`"${data.courseName}"`, centerX, contentY + 85, { align: 'center' });
+        .text(`« ${data.courseName} »`, centerX, contentY + 88, { align: 'center' });
 
-      // Sous le cours — "Sous la direction de"
+      // "Sous la direction de"
       doc
         .fontSize(10)
-        .fillColor('#888888')
+        .fillColor(BRAND.midGray)
         .font('Helvetica')
-        .text(`Sous la direction de / Under the instruction of`, centerX, contentY + 115, { align: 'center' });
+        .text('Sous la direction de / Under the instruction of', centerX, contentY + 118, { align: 'center' });
 
+      // Instructor name
       doc
-        .fontSize(13)
-        .fillColor(template.primaryColor)
+        .fontSize(14)
+        .fillColor(BRAND.navy)
         .font('Helvetica-Bold')
-        .text(data.instructorName, centerX, contentY + 132, { align: 'center' });
+        .text(data.instructorName, centerX, contentY + 135, { align: 'center' });
 
-      // ---- Date et ID ----
-      const footerY = pageHeight - 90;
+      // ═══════════════════════════════════════════
+      // FOOTER AREA
+      // ═══════════════════════════════════════════
+      const footerY = pageHeight - 100;
 
+      // Date and ID — left side
       doc
         .fontSize(9)
-        .fillColor('#888888')
+        .fillColor(BRAND.midGray)
         .font('Helvetica')
-        .text(`Délivré le / Issued on: ${data.date}`, 80, footerY);
+        .text(`Délivré le / Issued on: ${data.date}`, 70, footerY);
 
       doc
         .fontSize(8)
         .fillColor('#aaaaaa')
         .font('Helvetica')
-        .text(`ID: ${data.certificateId}`, 80, footerY + 16);
-
-      // ---- QR Code ----
-      doc.image(qrBuffer, pageWidth - 140, footerY - 15, { width: 60, height: 60 });
+        .text(`ID: ${data.certificateId}`, 70, footerY + 16);
 
       doc
         .fontSize(7)
         .fillColor('#aaaaaa')
         .font('Helvetica')
-        .text('Vérifiez ce certificat /', pageWidth - 145, footerY + 50)
-        .text('Verify this certificate', pageWidth - 145, footerY + 60);
+        .text(`Vérifiez: ${data.verificationUrl}`, 70, footerY + 30);
 
-      // ---- Sceau AfriBayit ----
+      // ═══════════════════════════════════════════
+      // QR CODE — Right side
+      // ═══════════════════════════════════════════
+      doc.image(qrBuffer, pageWidth - 140, footerY - 20, { width: 65, height: 65 });
+
+      doc
+        .fontSize(7)
+        .fillColor(BRAND.midGray)
+        .font('Helvetica')
+        .text('Scannez pour vérifier /', pageWidth - 148, footerY + 50)
+        .text('Scan to verify', pageWidth - 148, footerY + 60);
+
+      // ═══════════════════════════════════════════
+      // SEAL — AfriBayit official seal
+      // ═══════════════════════════════════════════
       const sealX = centerX;
       const sealY = footerY - 5;
 
-      // Cercle du sceau
+      // Outer circle
       doc
-        .circle(sealX, sealY + 15, 22)
-        .lineWidth(1.5)
-        .strokeColor(template.secondaryColor)
+        .circle(sealX, sealY + 15, 26)
+        .lineWidth(2)
+        .strokeColor(BRAND.gold)
         .stroke();
 
+      // Inner circle
       doc
-        .fontSize(8)
-        .fillColor(template.primaryColor)
-        .font('Helvetica-Bold')
-        .text('AFRI', sealX, sealY + 6, { align: 'center', width: 44 });
-      doc
-        .fontSize(6)
-        .fillColor(template.secondaryColor)
-        .font('Helvetica')
-        .text('BAYIT', sealX, sealY + 17, { align: 'center', width: 44 });
+        .circle(sealX, sealY + 15, 20)
+        .lineWidth(0.5)
+        .strokeColor(BRAND.navy)
+        .stroke();
 
-      // ---- Footer ----
+      // Seal text
+      doc
+        .fontSize(10)
+        .fillColor(BRAND.navy)
+        .font('Helvetica-Bold')
+        .text('AFRI', sealX, sealY + 4, { align: 'center', width: 52 });
       doc
         .fontSize(7)
+        .fillColor(BRAND.gold)
+        .font('Helvetica-Bold')
+        .text('BAYIT', sealX, sealY + 16, { align: 'center', width: 52 });
+
+      // ═══════════════════════════════════════════
+      // BOTTOM FOOTER — Legal text
+      // ═══════════════════════════════════════════
+      doc
+        .fontSize(6.5)
+        .fillColor('#bbbbbb')
+        .font('Helvetica')
+        .text('Délivré par AfriBayit Academy — Plateforme Immobilière Pan-Africaine', centerX, pageHeight - 38, { align: 'center' });
+
+      doc
+        .fontSize(6)
         .fillColor('#cccccc')
         .font('Helvetica')
-        .text('Délivré par AfriBayit Academy — Plateforme Immobilière Pan-Africaine', centerX, pageHeight - 35, { align: 'center' });
+        .text(`Ce certificat est vérifiable en ligne à l'adresse ${data.verificationUrl}`, centerX, pageHeight - 30, { align: 'center' });
 
       doc.end();
     } catch (err) {
@@ -224,10 +305,10 @@ export async function generateCertificatePDF(
 }
 
 /**
- * Dessine un coin décoratif
+ * Dessine un coin décoratif élégant
  */
 function drawCorner(
-  doc: PDFDocument,
+  doc: InstanceType<typeof PDFDocument>,
   x: number,
   y: number,
   size: number,
@@ -238,13 +319,20 @@ function drawCorner(
   const dx = flipX ? -1 : 1;
   const dy = flipY ? 1 : -1;
 
+  // Outer corner line
   doc
-    .lineWidth(1.5)
+    .lineWidth(2)
     .strokeColor(color)
     .moveTo(x, y + dy * size)
     .lineTo(x, y)
     .lineTo(x + dx * size, y)
     .stroke();
+
+  // Inner decorative dot
+  doc
+    .circle(x + dx * 3, y + dy * 3, 1.5)
+    .fillColor(color)
+    .fill();
 }
 
 /**
@@ -255,4 +343,11 @@ export async function generateCertificateBase64(
 ): Promise<string> {
   const buffer = await generateCertificatePDF(data);
   return buffer.toString('base64');
+}
+
+/**
+ * Génère l'URL de vérification AfriBayit pour un certificat
+ */
+export function buildVerificationUrl(certificateId: string): string {
+  return `https://afribayit.com/certificates/verify/${certificateId}`;
 }

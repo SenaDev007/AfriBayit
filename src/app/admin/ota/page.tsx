@@ -1,25 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Globe2,
-  Cable,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  RefreshCw,
-  Settings,
-  ExternalLink,
-  Upload,
-  Download,
-  Shield,
-  Hotel,
-  Calendar,
-  TrendingUp,
-  AlertCircle,
-  Zap,
-} from 'lucide-react';
+import { AlertCircle, AlertTriangle, Cable, Calendar, Check, CheckCircle2, Clock, Download, ExternalLink, Globe2, Hotel, RefreshCw, Settings, Shield, TrendingUp, Upload, X, XCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,11 +22,11 @@ import { motion } from 'framer-motion';
 // ============ Mock Data ============
 
 const otaProviders = [
-  { id: 'booking', name: 'Booking.com', status: 'connected', lastSync: '2025-12-15T10:30:00', hotelsMapped: 12, syncErrors: 0, logo: '🅱️' },
-  { id: 'expedia', name: 'Expedia Group', status: 'connected', lastSync: '2025-12-15T09:15:00', hotelsMapped: 8, syncErrors: 2, logo: '🅴' },
-  { id: 'airbnb', name: 'Airbnb', status: 'partial', lastSync: '2025-12-14T22:00:00', hotelsMapped: 5, syncErrors: 1, logo: '🅰️' },
-  { id: 'hotelscom', name: 'Hotels.com', status: 'disconnected', lastSync: null, hotelsMapped: 0, syncErrors: 0, logo: '🅷' },
-  { id: 'jumia', name: 'Jumia Travel', status: 'connected', lastSync: '2025-12-15T08:00:00', hotelsMapped: 15, syncErrors: 0, logo: '🅹' },
+  { id: 'booking', name: 'Booking.com', status: 'connected', lastSync: '2025-12-15T10:30:00', hotelsMapped: 12, syncErrors: 0, logo: '' },
+  { id: 'expedia', name: 'Expedia Group', status: 'connected', lastSync: '2025-12-15T09:15:00', hotelsMapped: 8, syncErrors: 2, logo: '' },
+  { id: 'airbnb', name: 'Airbnb', status: 'partial', lastSync: '2025-12-14T22:00:00', hotelsMapped: 5, syncErrors: 1, logo: '' },
+  { id: 'hotelscom', name: 'Hotels.com', status: 'disconnected', lastSync: null, hotelsMapped: 0, syncErrors: 0, logo: '' },
+  { id: 'jumia', name: 'Jumia Travel', status: 'connected', lastSync: '2025-12-15T08:00:00', hotelsMapped: 15, syncErrors: 0, logo: '' },
 ];
 
 const syncLogs = [
@@ -259,7 +241,7 @@ export default function AdminOtaPage() {
                       <TableCell className="text-sm">{log.action}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-[10px]', log.status === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200')}>
-                          {log.status === 'success' ? '✓ Succès' : '✕ Erreur'}
+                          {log.status === 'success' ? '<Check className="w-4 h-4" /> Succès' : '<X className="w-4 h-4" /> Erreur'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-right">{log.rooms}</TableCell>

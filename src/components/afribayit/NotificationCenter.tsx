@@ -10,8 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import {
-  Dialog,
+import { Bell, Bot, CheckCircle, ClipboardList, Coins, Crown, Gift, Home, Lock, Mail, MessageCircle, Smartphone, User, Users } from 'lucide-react';
+
+import {  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -25,25 +26,25 @@ interface NotificationCenterProps {
 type FilterTab = 'all' | 'unread' | 'transaction' | 'property' | 'community';
 
 const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
-  { key: 'all', label: 'Tout', icon: '📋' },
-  { key: 'unread', label: 'Non lu', icon: '🔵' },
-  { key: 'transaction', label: 'Transactions', icon: '💰' },
-  { key: 'property', label: 'Propriétés', icon: '🏠' },
-  { key: 'community', label: 'Communauté', icon: '👥' },
+  { key: 'all', label: 'Tout', icon: '<ClipboardList className="w-4 h-4" />' },
+  { key: 'unread', label: 'Non lu', icon: '' },
+  { key: 'transaction', label: 'Transactions', icon: '<Coins className="w-4 h-4" />' },
+  { key: 'property', label: 'Propriétés', icon: '<Home className="w-4 h-4" />' },
+  { key: 'community', label: 'Communauté', icon: '<Users className="w-4 h-4" />' },
 ];
 
 const typeIcons: Record<string, string> = {
-  transaction: '💰',
-  message: '💬',
-  alert: '🔔',
-  system: '⚙️',
-  promotion: '🎁',
-  community: '👥',
-  rebecca: '🤖',
-  certification: '✅',
-  profile: '👤',
-  premium: '👑',
-  security: '🔒',
+  transaction: '<Coins className="w-4 h-4" />',
+  message: '<MessageCircle className="w-4 h-4" />',
+  alert: '<Bell className="w-4 h-4" />',
+  system: '',
+  promotion: '<Gift className="w-4 h-4" />',
+  community: '<Users className="w-4 h-4" />',
+  rebecca: '<Bot className="w-4 h-4" />',
+  certification: '<CheckCircle className="w-4 h-4" />',
+  profile: '<User className="w-4 h-4" />',
+  premium: '<Crown className="w-4 h-4" />',
+  security: '<Lock className="w-4 h-4" />',
 };
 
 const typeColors: Record<string, string> = {
@@ -248,7 +249,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
 
                 {!isLoading && !isError && filtered.length === 0 && (
                   <div className="p-8 text-center">
-                    <span className="text-4xl block mb-3">🔔</span>
+                    <span className="text-4xl block mb-3"><Bell className="w-4 h-4" /></span>
                     <p className="text-sm text-gray-500 font-medium">Aucune notification</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {activeTab === 'unread' ? 'Toutes vos notifications sont lues' : 'Les notifications importantes apparaîtront ici'}
@@ -287,7 +288,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                               style={{ backgroundColor: `${typeColors[notifType] || '#6b7280'}15` }}
                             >
-                              <span className="text-lg">{typeIcons[notifType] || '📋'}</span>
+                              <span className="text-lg">{typeIcons[notifType] || '<ClipboardList className="w-4 h-4" />'}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -305,7 +306,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                                   <div className="flex gap-1">
                                     {(JSON.parse(String(notif.channels) || '[]') as string[]).slice(0, 3).map((ch) => (
                                       <span key={ch} className="text-[9px] text-gray-300">
-                                        {ch === 'email' ? '📧' : ch === 'sms' ? '📱' : ch === 'push' ? '🔔' : ch === 'whatsapp' ? '💬' : ''}
+                                        {ch === 'email' ? '<Mail className="w-4 h-4" />' : ch === 'sms' ? '<Smartphone className="w-4 h-4" />' : ch === 'push' ? '<Bell className="w-4 h-4" />' : ch === 'whatsapp' ? '<MessageCircle className="w-4 h-4" />' : ''}
                                       </span>
                                     ))}
                                   </div>

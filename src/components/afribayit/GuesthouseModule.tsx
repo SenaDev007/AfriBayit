@@ -8,6 +8,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { Award, BarChart3, Bed, Calendar, CheckCircle, ClipboardList, Coins, Croissant, Home, Key, PartyPopper, Search, Shield, TrendingDown, TrendingUp, User, Users, Wrench, X, XCircle } from 'lucide-react';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -15,40 +16,40 @@ interface ModuleProps {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-// ── Static UI config (NOT database data) ────────────────────────
+//  Static UI config (NOT database data) 
 const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 const certificationProcessSteps = [
-  { step: 1, title: 'Demande', desc: 'Soumission du dossier de certification', icon: '📋' },
-  { step: 2, title: 'Inspection', desc: 'Visite de contrôle qualité AfriBayit', icon: '🔍' },
-  { step: 3, title: 'Conformité', desc: 'Vérification sécurité, hygiène, confort', icon: '✅' },
-  { step: 4, title: 'Certification', desc: 'Badge Guesthouse Certifié délivré', icon: '🏅' },
+  { step: 1, title: 'Demande', desc: 'Soumission du dossier de certification', icon: '<ClipboardList className="w-4 h-4" />' },
+  { step: 2, title: 'Inspection', desc: 'Visite de contrôle qualité AfriBayit', icon: '<Search className="w-4 h-4" />' },
+  { step: 3, title: 'Conformité', desc: 'Vérification sécurité, hygiène, confort', icon: '<CheckCircle className="w-4 h-4" />' },
+  { step: 4, title: 'Certification', desc: 'Badge Guesthouse Certifié délivré', icon: '<Award className="w-4 h-4" />' },
 ];
 
 const mealTypeConfig = [
-  { key: 'breakfast', label: 'Petit-déjeuner', icon: '🥐', color: '#D4AF37' },
-  { key: 'lunch', label: 'Déjeuner', icon: '🍲', color: '#00A651' },
-  { key: 'dinner', label: 'Dîner', icon: '🍷', color: '#003087' },
+  { key: 'breakfast', label: 'Petit-déjeuner', icon: '<Croissant className="w-4 h-4" />', color: '#D4AF37' },
+  { key: 'lunch', label: 'Déjeuner', icon: '', color: '#00A651' },
+  { key: 'dinner', label: 'Dîner', icon: '', color: '#003087' },
 ];
 
 const roleIconMap: Record<string, string> = {
-  receptionist: '🛎️',
-  housekeeping: '🧹',
-  cook: '👨‍🍳',
-  security: '🛡️',
-  manager: '👔',
-  maintenance: '🔧',
-  concierge: '🔑',
+  receptionist: '',
+  housekeeping: '',
+  cook: '',
+  security: '<Shield className="w-4 h-4" />',
+  manager: '',
+  maintenance: '<Wrench className="w-4 h-4" />',
+  concierge: '<Key className="w-4 h-4" />',
 };
 
 const staffRoleOptions = [
-  { value: 'receptionist', label: '🛎️ Réceptionniste' },
-  { value: 'housekeeping', label: '🧹 Femme de ménage' },
-  { value: 'cook', label: '👨‍🍳 Cuisinier(e)' },
-  { value: 'security', label: '🛡️ Sécurité' },
-  { value: 'manager', label: '👔 Gérant(e)' },
-  { value: 'maintenance', label: '🔧 Maintenance' },
-  { value: 'concierge', label: '🔑 Concierge' },
+  { value: 'receptionist', label: ' Réceptionniste' },
+  { value: 'housekeeping', label: ' Femme de ménage' },
+  { value: 'cook', label: ' Cuisinier(e)' },
+  { value: 'security', label: '<Shield className="w-4 h-4" /> Sécurité' },
+  { value: 'manager', label: ' Gérant(e)' },
+  { value: 'maintenance', label: '<Wrench className="w-4 h-4" /> Maintenance' },
+  { value: 'concierge', label: '<Key className="w-4 h-4" /> Concierge' },
 ];
 
 const staffSchedulePresets = [
@@ -63,14 +64,14 @@ const staffSchedulePresets = [
 ];
 
 const pricingPeriodOptions = [
-  { value: 'low_season', label: '📉 Basse saison', color: '#009CDE' },
-  { value: 'high_season', label: '📈 Haute saison', color: '#D4AF37' },
-  { value: 'event', label: '🎉 Événementiel', color: '#D93025' },
-  { value: 'holiday', label: '🎄 Fêtes', color: '#D4AF37' },
-  { value: 'custom', label: '📊 Personnalisé', color: '#6b7280' },
+  { value: 'low_season', label: '<TrendingDown className="w-4 h-4" /> Basse saison', color: '#009CDE' },
+  { value: 'high_season', label: '<TrendingUp className="w-4 h-4" /> Haute saison', color: '#D4AF37' },
+  { value: 'event', label: '<PartyPopper className="w-4 h-4" /> Événementiel', color: '#D93025' },
+  { value: 'holiday', label: ' Fêtes', color: '#D4AF37' },
+  { value: 'custom', label: '<BarChart3 className="w-4 h-4" /> Personnalisé', color: '#6b7280' },
 ];
 
-// ── API response types ──────────────────────────────────────────
+//  API response types 
 interface GuesthouseListItem {
   id: string;
   name: string;
@@ -139,7 +140,7 @@ interface BookingItem {
   breakfastIncluded: boolean;
 }
 
-// ── Helpers ─────────────────────────────────────────────────────
+//  Helpers 
 function parseJsonArray(raw: string | null | undefined): string[] {
   if (!raw) return [];
   try {
@@ -198,7 +199,7 @@ function periodLabel(period: string): string {
   return map[period] || period;
 }
 
-// ── Skeleton loaders ────────────────────────────────────────────
+//  Skeleton loaders 
 function ListingCardSkeleton() {
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
@@ -268,7 +269,7 @@ function PricingCardSkeleton() {
   );
 }
 
-// ── Main component ──────────────────────────────────────────────
+//  Main component 
 type TabKey = 'listings' | 'chambers' | 'booking' | 'meals' | 'staff' | 'pricing' | 'certification';
 
 export default function GuesthouseModule({ onNavigate }: ModuleProps) {
@@ -345,13 +346,13 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const createBooking = useCreateBooking(effectiveGhId || '');
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'listings', label: 'Listings', icon: '🏠' },
-    { key: 'chambers', label: 'Chambres', icon: '🛏️' },
-    { key: 'booking', label: 'Réservations', icon: '📅' },
-    { key: 'meals', label: 'Repas', icon: '🍽️' },
-    { key: 'staff', label: 'Personnel', icon: '👥' },
-    { key: 'pricing', label: 'Tarifs saisonniers', icon: '💹' },
-    { key: 'certification', label: 'Certification', icon: '🏅' },
+    { key: 'listings', label: 'Listings', icon: '<Home className="w-4 h-4" />' },
+    { key: 'chambers', label: 'Chambres', icon: '<Bed className="w-4 h-4" />' },
+    { key: 'booking', label: 'Réservations', icon: '<Calendar className="w-4 h-4" />' },
+    { key: 'meals', label: 'Repas', icon: '' },
+    { key: 'staff', label: 'Personnel', icon: '<Users className="w-4 h-4" />' },
+    { key: 'pricing', label: 'Tarifs saisonniers', icon: '<TrendingUp className="w-4 h-4" />' },
+    { key: 'certification', label: 'Certification', icon: '<Award className="w-4 h-4" />' },
   ];
 
   // Open booking dialog for a room
@@ -439,7 +440,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            🏡 PMS Hôtelier — CDC §5.3
+            <Home className="w-4 h-4" /> PMS Hôtelier — CDC §5.3
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Maisons <span className="text-[#00A651]">d&apos;Hôtes</span>
@@ -465,7 +466,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           className="bg-gradient-to-r from-[#003087]/5 to-[#00A651]/5 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3">
-            <span className="text-2xl">💰</span>
+            <span className="text-2xl"><Coins className="w-4 h-4" /></span>
             <div>
               <p className="text-sm font-semibold text-[#2C2E2F]">Modèle de revenus</p>
               <p className="text-xs text-gray-500">Commission voyageur : 10-13% · Commission propriétaire : 3%</p>
@@ -569,7 +570,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                             <span className={`px-3 py-1 text-[10px] font-bold rounded-full text-white ${
                               isCertified ? 'bg-[#00A651]' : isInProgress ? 'bg-[#D4AF37]' : 'bg-gray-500'
                             }`}>
-                              {isCertified ? '✅ Certifié' : isInProgress ? '⏳ En cours' : '❌ Non certifié'}
+                              {isCertified ? '<CheckCircle className="w-4 h-4" /> Certifié' : isInProgress ? '⏳ En cours' : '<XCircle className="w-4 h-4" /> Non certifié'}
                             </span>
                           </div>
                           <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-mono">
@@ -742,7 +743,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                               {new Intl.NumberFormat('fr-FR').format(meal.price)} FCFA
                             </p>
                             <span className="inline-flex mt-2 px-2 py-0.5 bg-[#00A651]/10 text-[#00A651] text-[10px] font-semibold rounded-full">
-                              ✅ Disponible
+                              <CheckCircle className="w-4 h-4" /> Disponible
                             </span>
                           </>
                         ) : (
@@ -870,7 +871,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 <div className="space-y-3">
                   {activeDetail.staff.map((s, i) => {
                     const schedule = parseSchedule(s.schedule);
-                    const icon = roleIconMap[s.role] || '👤';
+                    const icon = roleIconMap[s.role] || '<User className="w-4 h-4" />';
                     const roleLabel: Record<string, string> = {
                       receptionist: 'Réceptionniste',
                       housekeeping: 'Femme de ménage',
@@ -897,7 +898,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                         </div>
                         <div className="flex items-center gap-2">
                           {schedule && (
-                            <span className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600">🕐 {schedule}</span>
+                            <span className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600"> {schedule}</span>
                           )}
                           <button
                             onClick={async () => {
@@ -1070,7 +1071,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                     const isHigh = pr.period === 'high_season';
                     const isEvent = pr.period === 'event' || pr.period === 'holiday';
                     const color = isLow ? '#009CDE' : isHigh ? '#D4AF37' : isEvent ? '#D93025' : '#6b7280';
-                    const icon = isLow ? '📉' : isHigh ? '📈' : isEvent ? '🎉' : '📊';
+                    const icon = isLow ? '<TrendingDown className="w-4 h-4" />' : isHigh ? '<TrendingUp className="w-4 h-4" />' : isEvent ? '<PartyPopper className="w-4 h-4" />' : '<BarChart3 className="w-4 h-4" />';
                     return (
                       <motion.div
                         key={pr.id}
@@ -1096,7 +1097,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover/pricing:opacity-100 transition-all"
                           title="Supprimer cette règle"
                         >
-                          ✕
+                          <X className="w-4 h-4" />
                         </button>
                         <span className="text-3xl block mb-2">{icon}</span>
                         <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-0.5">{pr.name}</h4>
@@ -1164,9 +1165,9 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
               {new Intl.NumberFormat('fr-FR').format(dynamicPrice || bookingRoom.basePrice)} FCFA / nuit · {bookingRoom.capacity} pers.
             </p>
             {dynamicPrice && dynamicPrice !== bookingRoom.basePrice && (
-              <p className="text-[10px] text-[#D4AF37] mb-1">💰 Tarif dynamique appliqué (base: {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA)</p>
+              <p className="text-[10px] text-[#D4AF37] mb-1"><Coins className="w-4 h-4" /> Tarif dynamique appliqué (base: {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA)</p>
             )}
-            <p className="text-[10px] text-gray-400 mb-4">📋 {cancellationPolicy}</p>
+            <p className="text-[10px] text-gray-400 mb-4"><ClipboardList className="w-4 h-4" /> {cancellationPolicy}</p>
 
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-2 gap-3">

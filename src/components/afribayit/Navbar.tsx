@@ -8,6 +8,7 @@ import { useLocale } from '@/lib/i18n/context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { BarChart3, Coins, Home, User, KeyRound, CalendarDays, Shield, LogOut, CreditCard, LayoutDashboard, FileText } from 'lucide-react';
 
 interface NavbarProps {
   onOpenNotifications: () => void;
@@ -18,6 +19,7 @@ interface NavbarProps {
 const NAV_LINKS = [
   { key: 'acheter', label: 'Acheter', href: '/search?tab=achat' },
   { key: 'louer', label: 'Louer', href: '/search?tab=location' },
+  { key: 'location_courte_duree', label: 'Location courte durée', href: '/short-term' },
   { key: 'reservation', label: 'Réservation', href: '/booking', gold: true },
   { key: 'investir', label: 'Investir', href: '/search?tab=investissement' },
   { key: 'artisans', label: 'Artisans', href: '/artisans' },
@@ -57,6 +59,7 @@ export default function Navbar({
   const getActiveKey = () => {
     if (pathname === '/') return 'home';
     if (pathname.startsWith('/search')) return pathname.includes('location') ? 'louer' : pathname.includes('investissement') ? 'investir' : 'acheter';
+    if (pathname.startsWith('/short-term')) return 'location_courte_duree';
     if (pathname.startsWith('/booking')) return 'reservation';
     if (pathname.startsWith('/artisans')) return 'artisans';
     if (pathname.startsWith('/academy')) return 'academie';
@@ -198,7 +201,7 @@ export default function Navbar({
                         : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  {isAdmin ? '⚙️ Backoffice' : 'Dashboard'}
+                  {isAdmin ? ' Backoffice' : 'Dashboard'}
                 </motion.button>
               )}
 
@@ -251,22 +254,25 @@ export default function Navbar({
                         {/* Menu items */}
                         <div className="py-1">
                           {[
-                            { label: 'Mon profil', href: '/profile', icon: '👤' },
-                            { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-                            { label: 'Mes annonces', href: '/agent-dashboard', icon: '🏠' },
-                            { label: 'Mon portefeuille', href: '/wallet', icon: '💰' },
-                            { label: 'Mes abonnements', href: '/subscriptions', icon: '⭐' },
-                            ...(isAdmin ? [{ label: 'Backoffice Admin', href: '/admin', icon: '⚙️' }] : []),
-                          ].map((item) => (
-                            <button
-                              key={item.href}
-                              onClick={() => navigate(item.href)}
-                              className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
-                            >
-                              <span>{item.icon}</span>
-                              {item.label}
-                            </button>
-                          ))}
+                            { label: 'Mon profil', href: '/profile', icon: User },
+                            { label: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+                            { label: 'Mes annonces', href: '/agent-dashboard', icon: Home },
+                            { label: 'Mon portefeuille', href: '/wallet', icon: Coins },
+                            { label: 'Mes abonnements', href: '/subscriptions', icon: CreditCard },
+                            ...(isAdmin ? [{ label: 'Backoffice Admin', href: '/admin', icon: Shield }] : []),
+                          ].map((item) => {
+                            const IconComp = item.icon;
+                            return (
+                              <button
+                                key={item.href}
+                                onClick={() => navigate(item.href)}
+                                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors"
+                              >
+                                <IconComp className="w-4 h-4 text-gray-400" />
+                                {item.label}
+                              </button>
+                            );
+                          })}
                         </div>
 
                         <div className="border-t border-gray-100 py-1">
@@ -274,7 +280,7 @@ export default function Navbar({
                             onClick={() => { navigate('/auth/login'); }}
                             className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                           >
-                            <span>🚪</span>
+                            <LogOut className="w-4 h-4" />
                             Déconnexion
                           </button>
                         </div>
@@ -363,16 +369,16 @@ export default function Navbar({
                     <>
                       <button
                         onClick={() => navigate('/dashboard')}
-                        className="w-full text-left px-4 py-3 rounded-2xl text-sm font-medium text-[#2C2E2F] hover:bg-gray-100"
+                        className="w-full text-left px-4 py-3 rounded-2xl text-sm font-medium text-[#2C2E2F] hover:bg-gray-100 flex items-center gap-2"
                       >
-                        📊 Dashboard
+                        <BarChart3 className="w-4 h-4" /> Dashboard
                       </button>
                       {isAdmin && (
                         <button
                           onClick={() => navigate('/admin')}
-                          className="w-full text-left px-4 py-3 rounded-2xl text-sm font-medium text-[#003087] hover:bg-blue-50"
+                          className="w-full text-left px-4 py-3 rounded-2xl text-sm font-medium text-[#003087] hover:bg-blue-50 flex items-center gap-2"
                         >
-                          ⚙️ Backoffice Admin
+                          <Shield className="w-4 h-4" /> Backoffice Admin
                         </button>
                       )}
                       <button

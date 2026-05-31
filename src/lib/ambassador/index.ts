@@ -3,6 +3,25 @@
 import { db } from '@/lib/db';
 import { AMBASSADOR_TIERS, generateReferralCode } from './tiers';
 
+// Re-export commission engine (CDC §5.7.5)
+export {
+  calculateCommission,
+  recordReferralCommission,
+  evaluateTierUpgrade,
+  autoUpgradeAmbassadorTier,
+  generateMonthlyReport,
+  scheduleCommissionPayouts,
+  processCommissionPayout,
+  COMMISSION_TIERS,
+} from './commission-engine';
+export type {
+  CommissionTierConfig,
+  CommissionCalculation,
+  TierUpgradeEvaluation,
+  MonthlyCommissionReport,
+  CommissionPayout,
+} from './commission-engine';
+
 export interface AmbassadorStatus {
   isAmbassador: boolean;
   tier: string;

@@ -15,8 +15,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
+import { Coins, Home, Phone, TrendingUp, Trophy } from 'lucide-react';
+
+import {  AlertDialog,
   AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
@@ -92,12 +93,12 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
   const totalViews = properties.reduce((sum, p) => sum + (Number(p.views) || 0), 0);
 
   const kpiData = [
-    { label: 'Annonces actives', value: String(activeListings), change: '—', icon: '🏠', color: '#003087' },
-    { label: 'Vues ce mois', value: new Intl.NumberFormat('fr-FR').format(totalViews), change: '—', icon: '👁️', color: '#009CDE' },
-    { label: 'Contacts reçus', value: '—', change: '—', icon: '📞', color: '#00A651' },
-    { label: 'Taux conversion', value: '—', change: '—', icon: '📈', color: '#D4AF37' },
-    { label: 'Revenus', value: '—', change: '—', icon: '💰', color: '#D4AF37' },
-    { label: 'Position locale', value: '—', change: '—', icon: '🏆', color: '#003087' },
+    { label: 'Annonces actives', value: String(activeListings), change: '—', icon: '<Home className="w-4 h-4" />', color: '#003087' },
+    { label: 'Vues ce mois', value: new Intl.NumberFormat('fr-FR').format(totalViews), change: '—', icon: '', color: '#009CDE' },
+    { label: 'Contacts reçus', value: '—', change: '—', icon: '<Phone className="w-4 h-4" />', color: '#00A651' },
+    { label: 'Taux conversion', value: '—', change: '—', icon: '<TrendingUp className="w-4 h-4" />', color: '#D4AF37' },
+    { label: 'Revenus', value: '—', change: '—', icon: '<Coins className="w-4 h-4" />', color: '#D4AF37' },
+    { label: 'Position locale', value: '—', change: '—', icon: '<Trophy className="w-4 h-4" />', color: '#003087' },
   ];
 
   const kanbanColumns = [

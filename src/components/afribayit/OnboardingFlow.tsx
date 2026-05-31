@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart3, Bell, Bot, Check, Coins, Globe, Hammer, HardHat, Home, Lightbulb, Lock, Mail, Map, MessageCircle, Plane, Scale, Search, Smartphone, Store, Tag, TrendingUp, Umbrella, User } from 'lucide-react';
 
 interface OnboardingFlowProps {
   isOpen: boolean;
@@ -37,22 +38,22 @@ const initialOnboardingData: OnboardingData = {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const onboardingSteps = [
-  { step: 1, title: 'Bienvenue', icon: '👋' },
-  { step: 2, title: 'Profil', icon: '👤' },
-  { step: 3, title: 'Localisation', icon: '🌍' },
-  { step: 4, title: 'Budget', icon: '💰' },
-  { step: 5, title: 'Alertes', icon: '🔔' },
-  { step: 6, title: 'Découverte', icon: '🗺️' },
-  { step: 7, title: 'Rebecca IA', icon: '🤖' },
+  { step: 1, title: 'Bienvenue', icon: '' },
+  { step: 2, title: 'Profil', icon: '<User className="w-4 h-4" />' },
+  { step: 3, title: 'Localisation', icon: '<Globe className="w-4 h-4" />' },
+  { step: 4, title: 'Budget', icon: '<Coins className="w-4 h-4" />' },
+  { step: 5, title: 'Alertes', icon: '<Bell className="w-4 h-4" />' },
+  { step: 6, title: 'Découverte', icon: '<Map className="w-4 h-4" />' },
+  { step: 7, title: 'Rebecca IA', icon: '<Bot className="w-4 h-4" />' },
 ];
 
 // Profile types — CDC §4.2
 const profileTypes = [
-  { value: 'acheteur', label: 'Acheteur', icon: '🏠', desc: 'Je cherche à acheter un bien immobilier', color: '#003087' },
-  { value: 'vendeur', label: 'Vendeur', icon: '🏷️', desc: 'Je souhaite vendre ou louer un bien', color: '#D4AF37' },
-  { value: 'investisseur', label: 'Investisseur', icon: '📈', desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
-  { value: 'touriste', label: 'Touriste', icon: '✈️', desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
-  { value: 'artisan', label: 'Artisan', icon: '🔨', desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
+  { value: 'acheteur', label: 'Acheteur', icon: '<Home className="w-4 h-4" />', desc: 'Je cherche à acheter un bien immobilier', color: '#003087' },
+  { value: 'vendeur', label: 'Vendeur', icon: '<Tag className="w-4 h-4" />', desc: 'Je souhaite vendre ou louer un bien', color: '#D4AF37' },
+  { value: 'investisseur', label: 'Investisseur', icon: '<TrendingUp className="w-4 h-4" />', desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
+  { value: 'touriste', label: 'Touriste', icon: '<Plane className="w-4 h-4" />', desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
+  { value: 'artisan', label: 'Artisan', icon: '<Hammer className="w-4 h-4" />', desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
 ];
 
 // Countries — AfriBayit pilot zone
@@ -95,12 +96,12 @@ const citiesByCountry: Record<string, { value: string; label: string }[]> = {
 
 // Goals
 const goalOptions = [
-  { value: 'residence', label: 'Résidence principale', icon: '🏠' },
-  { value: 'investissement', label: 'Investissement locatif', icon: '📈' },
-  { value: 'vacances', label: 'Résidence secondaire / vacances', icon: '🏖️' },
-  { value: 'commercial', label: 'Local commercial', icon: '🏪' },
-  { value: 'terrain', label: 'Terrain constructible', icon: '🗺️' },
-  { value: 'neuf', label: 'Programme neuf', icon: '🏗️' },
+  { value: 'residence', label: 'Résidence principale', icon: '<Home className="w-4 h-4" />' },
+  { value: 'investissement', label: 'Investissement locatif', icon: '<TrendingUp className="w-4 h-4" />' },
+  { value: 'vacances', label: 'Résidence secondaire / vacances', icon: '<Umbrella className="w-4 h-4" />' },
+  { value: 'commercial', label: 'Local commercial', icon: '<Store className="w-4 h-4" />' },
+  { value: 'terrain', label: 'Terrain constructible', icon: '<Map className="w-4 h-4" />' },
+  { value: 'neuf', label: 'Programme neuf', icon: '<HardHat className="w-4 h-4" />' },
 ];
 
 // Budget presets (FCFA)
@@ -120,30 +121,30 @@ const alertFrequencies = [
 
 // Notification channels — CDC §4.2
 const notificationChannels = [
-  { value: 'email', label: 'Email', icon: '📧', desc: 'Recevez les alertes par courriel' },
-  { value: 'sms', label: 'SMS', icon: '💬', desc: 'Notifications par texto' },
-  { value: 'push', label: 'Notifications push', icon: '📱', desc: 'Alertes sur votre appareil' },
-  { value: 'whatsapp', label: 'WhatsApp', icon: '📲', desc: 'Messages via WhatsApp' },
+  { value: 'email', label: 'Email', icon: '<Mail className="w-4 h-4" />', desc: 'Recevez les alertes par courriel' },
+  { value: 'sms', label: 'SMS', icon: '<MessageCircle className="w-4 h-4" />', desc: 'Notifications par texto' },
+  { value: 'push', label: 'Notifications push', icon: '<Smartphone className="w-4 h-4" />', desc: 'Alertes sur votre appareil' },
+  { value: 'whatsapp', label: 'WhatsApp', icon: '<Smartphone className="w-4 h-4" />', desc: 'Messages via WhatsApp' },
 ];
 
 // Interactive tour items — CDC §4.2
 const tourItems = [
-  { icon: '🔍', title: 'Recherche intelligente', desc: 'Trouvez des biens filtrés par pays, ville, budget et plus', color: '#003087' },
-  { icon: '🔒', title: 'Escrow sécurisé', desc: 'Vos fonds sont protégés pendant toute la transaction', color: '#00A651' },
-  { icon: '🌍', title: 'GeoTrust', desc: 'Validation géomatique et vérification des limites de propriété', color: '#009CDE' },
-  { icon: '🔨', title: 'Marché artisans', desc: 'Trouvez des artisans certifiés pour vos travaux', color: '#D4AF37' },
-  { icon: '📚', title: 'Académie', desc: 'Formations en droit foncier, investissement et construction', color: '#2C2E2F' },
-  { icon: '🤖', title: 'Rebecca IA', desc: 'Votre assistante IA disponible 24/7 pour vous guider', color: '#9333ea' },
+  { icon: '<Search className="w-4 h-4" />', title: 'Recherche intelligente', desc: 'Trouvez des biens filtrés par pays, ville, budget et plus', color: '#003087' },
+  { icon: '<Lock className="w-4 h-4" />', title: 'Escrow sécurisé', desc: 'Vos fonds sont protégés pendant toute la transaction', color: '#00A651' },
+  { icon: '<Globe className="w-4 h-4" />', title: 'GeoTrust', desc: 'Validation géomatique et vérification des limites de propriété', color: '#009CDE' },
+  { icon: '<Hammer className="w-4 h-4" />', title: 'Marché artisans', desc: 'Trouvez des artisans certifiés pour vos travaux', color: '#D4AF37' },
+  { icon: '', title: 'Académie', desc: 'Formations en droit foncier, investissement et construction', color: '#2C2E2F' },
+  { icon: '<Bot className="w-4 h-4" />', title: 'Rebecca IA', desc: 'Votre assistante IA disponible 24/7 pour vous guider', color: '#9333ea' },
 ];
 
 // Rebecca capabilities
 const rebeccaCapabilities = [
-  { icon: '🔍', label: 'Recherche de biens' },
-  { icon: '🔒', label: 'Suivi escrow' },
-  { icon: '👤', label: 'Contacter agents' },
-  { icon: '🔨', label: 'Devis artisans' },
-  { icon: '📊', label: 'Prix du marché' },
-  { icon: '🌍', label: 'GeoTrust' },
+  { icon: '<Search className="w-4 h-4" />', label: 'Recherche de biens' },
+  { icon: '<Lock className="w-4 h-4" />', label: 'Suivi escrow' },
+  { icon: '<User className="w-4 h-4" />', label: 'Contacter agents' },
+  { icon: '<Hammer className="w-4 h-4" />', label: 'Devis artisans' },
+  { icon: '<BarChart3 className="w-4 h-4" />', label: 'Prix du marché' },
+  { icon: '<Globe className="w-4 h-4" />', label: 'GeoTrust' },
 ];
 
 export default function OnboardingFlow({ isOpen, onClose, onComplete }: OnboardingFlowProps) {
@@ -310,7 +311,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                     transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
                     className="w-28 h-28 rounded-full bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#D4AF37] flex items-center justify-center mx-auto mb-8 gold-glow"
                   >
-                    <span className="text-5xl">🏠</span>
+                    <span className="text-5xl"><Home className="w-4 h-4" /></span>
                   </motion.div>
 
                   <motion.h1
@@ -342,12 +343,12 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                     className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md mx-auto mb-10"
                   >
                     {[
-                      { icon: '🔒', label: 'Escrow', desc: 'Paiement sécurisé' },
-                      { icon: '🌍', label: 'GeoTrust', desc: 'Vérification foncière' },
-                      { icon: '⚖️', label: 'Notaires', desc: 'Actes certifiés' },
-                      { icon: '🔨', label: 'Artisans', desc: 'BTP certifiés' },
-                      { icon: '📚', label: 'Académie', desc: 'Formations' },
-                      { icon: '🤖', label: 'Rebecca IA', desc: 'Assistante 24/7' },
+                      { icon: '<Lock className="w-4 h-4" />', label: 'Escrow', desc: 'Paiement sécurisé' },
+                      { icon: '<Globe className="w-4 h-4" />', label: 'GeoTrust', desc: 'Vérification foncière' },
+                      { icon: '<Scale className="w-4 h-4" />', label: 'Notaires', desc: 'Actes certifiés' },
+                      { icon: '<Hammer className="w-4 h-4" />', label: 'Artisans', desc: 'BTP certifiés' },
+                      { icon: '', label: 'Académie', desc: 'Formations' },
+                      { icon: '<Bot className="w-4 h-4" />', label: 'Rebecca IA', desc: 'Assistante 24/7' },
                     ].map((feature, i) => (
                       <motion.div
                         key={feature.label}
@@ -375,7 +376,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       onClick={() => goToStep(2)}
                       className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-full font-bold text-base hover:shadow-lg gold-glow transition-shadow"
                     >
-                      Commencer la configuration 🚀
+                      Commencer la configuration 
                     </motion.button>
                     <button
                       onClick={handleSkip}
@@ -406,7 +407,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       transition={{ type: 'spring', stiffness: 200 }}
                       className="text-4xl mb-3 block"
                     >
-                      👤
+                      <User className="w-4 h-4" />
                     </motion.span>
                     <h2 className="font-display text-3xl font-bold text-white mb-2">
                       Quel est votre profil ?
@@ -477,7 +478,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       transition={{ type: 'spring', stiffness: 200 }}
                       className="text-4xl mb-3 block"
                     >
-                      🌍
+                      <Globe className="w-4 h-4" />
                     </motion.span>
                     <h2 className="font-display text-3xl font-bold text-white mb-2">
                       Vos préférences géographiques
@@ -549,7 +550,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                                   : 'bg-white/10 text-white/70 hover:bg-white/15'
                               }`}
                             >
-                              {data.cities.includes(city.value) && '✓ '}
+                              {data.cities.includes(city.value) && '<Check className="w-4 h-4" /> '}
                               {city.label}
                             </motion.button>
                           ))
@@ -582,7 +583,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       transition={{ type: 'spring', stiffness: 200 }}
                       className="text-4xl mb-3 block"
                     >
-                      💰
+                      <Coins className="w-4 h-4" />
                     </motion.span>
                     <h2 className="font-display text-3xl font-bold text-white mb-2">
                       Votre budget et objectifs
@@ -689,7 +690,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       transition={{ type: 'spring', stiffness: 200 }}
                       className="text-4xl mb-3 block"
                     >
-                      🔔
+                      <Bell className="w-4 h-4" />
                     </motion.span>
                     <h2 className="font-display text-3xl font-bold text-white mb-2">
                       Alertes & Notifications
@@ -791,7 +792,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       transition={{ type: 'spring', stiffness: 200 }}
                       className="text-4xl mb-3 block"
                     >
-                      🗺️
+                      <Map className="w-4 h-4" />
                     </motion.span>
                     <h2 className="font-display text-3xl font-bold text-white mb-2">
                       Découvrez la plateforme
@@ -828,7 +829,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                     className="mt-6 p-4 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20"
                   >
                     <p className="text-xs text-[#D4AF37] text-center">
-                      💡 Astuce : Vous pouvez accéder à toutes ces fonctionnalités depuis le menu principal à tout moment.
+                      <Lightbulb className="w-4 h-4" /> Astuce : Vous pouvez accéder à toutes ces fonctionnalités depuis le menu principal à tout moment.
                     </p>
                   </motion.div>
                 </motion.div>
@@ -980,7 +981,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       <div className="flex justify-between items-center">
                         <span className="text-white/50">Rebecca IA</span>
                         <span className={`font-semibold ${data.rebeccaEnabled ? 'text-[#00A651]' : 'text-white/30'}`}>
-                          {data.rebeccaEnabled ? '✓ Activée' : 'Désactivée'}
+                          {data.rebeccaEnabled ? '<Check className="w-4 h-4" /> Activée' : 'Désactivée'}
                         </span>
                       </div>
                     </div>
@@ -1014,7 +1015,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
               disabled={!canProceed()}
               className="flex-1 py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-full font-bold text-sm hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              {currentStep === 7 ? '🚀 Commencer !' : 'Continuer'}
+              {currentStep === 7 ? ' Commencer !' : 'Continuer'}
             </motion.button>
           </div>
           {/* Step dots */}

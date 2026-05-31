@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice, getPropertyTypeLabel, getTransactionLabel } from '@/lib/afribayit-utils';
 import { getInvestmentScoreLabel } from '@/lib/investment-score';
 import ImageWithFallback from './ImageWithFallback';
+import { CheckCircle, Star, X, XCircle } from 'lucide-react';
 
 interface CompareProperty {
   id: string;
@@ -153,19 +154,19 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   {
     label: 'Vérifié',
     category: 'Qualité',
-    getValue: (p) => p.verified ? '✅ Oui' : '❌ Non',
+    getValue: (p) => p.verified ? '<CheckCircle className="w-4 h-4" /> Oui' : '<XCircle className="w-4 h-4" /> Non',
     getHighlight: (p) => p.verified,
   },
   {
     label: 'GeoTrust',
     category: 'Qualité',
-    getValue: (p) => p.geoTrust ? '✅ Oui' : '❌ Non',
+    getValue: (p) => p.geoTrust ? '<CheckCircle className="w-4 h-4" /> Oui' : '<XCircle className="w-4 h-4" /> Non',
     getHighlight: (p) => p.geoTrust,
   },
   {
     label: 'Premium',
     category: 'Qualité',
-    getValue: (p) => p.premium ? '⭐ Oui' : '—',
+    getValue: (p) => p.premium ? ' Oui' : '—',
     getHighlight: (p) => p.premium,
   },
   {
@@ -239,7 +240,7 @@ export default function PropertyComparator({
                       onClick={() => onRemoveProperty?.(p.id)}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors text-xs"
                     >
-                      ✕
+                      <X className="w-4 h-4" />
                     </button>
                   </th>
                 ))}
@@ -273,7 +274,7 @@ export default function PropertyComparator({
                               <div className="flex items-center justify-center">
                                 {row.getValue(p)}
                                 {isHighlight && (
-                                  <span className="ml-1 text-[#00A651] text-xs">★</span>
+                                  <span className="ml-1 text-[#00A651] text-xs"><Star className="w-4 h-4" /></span>
                                 )}
                               </div>
                             </td>

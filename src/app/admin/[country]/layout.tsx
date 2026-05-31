@@ -4,25 +4,7 @@ import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { SessionProvider } from 'next-auth/react';
-import {
-  LayoutDashboard,
-  BarChart3,
-  Users,
-  Building2,
-  ArrowLeftRight,
-  Hotel,
-  Home,
-  ShieldCheck,
-  ChevronDown,
-  ChevronRight,
-  ArrowLeft,
-  Search,
-  Settings,
-  Globe,
-  Bell,
-  User,
-  LogOut,
-} from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, BarChart3, Bell, Building2, ChevronDown, ChevronRight, Globe, Home, Hotel, LayoutDashboard, LogOut, Search, Settings, ShieldCheck, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -90,7 +72,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
   const params = useParams();
   const pathname = usePathname();
   const country = (params.country as string) || 'BJ';
-  const config = COUNTRY_CONFIG[country] || { name: country, flag: '🌍' };
+  const config = COUNTRY_CONFIG[country] || { name: country, flag: '<Globe className="w-4 h-4" />' };
   const navGroups = getNavGroups(country);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

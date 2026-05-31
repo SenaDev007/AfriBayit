@@ -127,7 +127,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
     sceneSwitchRef.current = handleSceneSwitch;
   }, [handleSceneSwitch]);
 
-  // ── Three.js initialization (runs once) ──────────────────────────────────
+  //  Three.js initialization (runs once) 
   useEffect(() => {
     if (!containerRef.current) return;
     let disposed = false;
@@ -354,7 +354,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
     };
   }, []);
 
-  // ── Load new panorama when scene index changes ───────────────────────────
+  //  Load new panorama when scene index changes 
   const prevSceneIndexRef = useRef(0);
   useEffect(() => {
     // Skip the first render (initial load is handled in initScene)

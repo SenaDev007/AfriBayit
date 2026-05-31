@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
-import { Loader2 } from 'lucide-react';
+import { Check, Drama, Key, Loader2, Mail, User } from 'lucide-react';
 
 interface AuthPagesProps {
   mode: 'login' | 'register';
@@ -15,9 +15,9 @@ interface AuthPagesProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const registerSteps = [
-  { key: 'email', label: 'Email', icon: '📧' },
-  { key: 'profile', label: 'Profil', icon: '👤' },
-  { key: 'role', label: 'Rôle', icon: '🎭' },
+  { key: 'email', label: 'Email', icon: '<Mail className="w-4 h-4" />' },
+  { key: 'profile', label: 'Profil', icon: '<User className="w-4 h-4" />' },
+  { key: 'role', label: 'Rôle', icon: '<Drama className="w-4 h-4" />' },
 ];
 
 const COUNTRIES = [
@@ -44,14 +44,14 @@ const ROLES = [
 ];
 
 export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPagesProps) {
-  // ─── Login state ───
+  //  Login state 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  // ─── Register state ───
+  //  Register state 
   const [registerStep, setRegisterStep] = useState(0);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState('');
@@ -75,7 +75,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     }
   };
 
-  // ─── Login handler ───
+  //  Login handler 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -107,7 +107,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     }
   };
 
-  // ─── Social login handlers ───
+  //  Social login handlers 
   const handleGoogleLogin = () => {
     signIn('google', { callbackUrl: '/dashboard' });
   };
@@ -116,7 +116,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     signIn('facebook', { callbackUrl: '/dashboard' });
   };
 
-  // ─── Register step validation ───
+  //  Register step validation 
   const canGoNext = (): boolean => {
     if (registerStep === 0) {
       return (
@@ -131,7 +131,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     return true;
   };
 
-  // ─── Register final submit ───
+  //  Register final submit 
   const handleRegisterSubmit = async () => {
     setRegisterError('');
 
@@ -198,7 +198,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     }
   };
 
-  // ─── Forgot password handler ───
+  //  Forgot password handler 
   const handleForgotPassword = () => {
     setShowForgotPassword(true);
   };
@@ -243,7 +243,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                 </button>
               </div>
               <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🔑</span>
+                <span className="text-3xl"><Key className="w-4 h-4" /></span>
               </div>
               <p className="text-sm text-gray-600 text-center mb-4">
                 Entrez votre email pour recevoir un lien de réinitialisation
@@ -309,7 +309,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
 
               {mode === 'login' ? (
                 <>
-                  {/* ═══════ LOGIN FORM ═══════ */}
+                  {/*  LOGIN FORM  */}
                   <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
                     Bon retour !
                   </h2>
@@ -442,7 +442,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                 </>
               ) : (
                 <>
-                  {/* ═══════ REGISTER FORM ═══════ */}
+                  {/*  REGISTER FORM  */}
                   {/* Stepper */}
                   <div className="flex items-center gap-1 mb-6">
                     {registerSteps.map((step, i) => (
@@ -454,7 +454,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                               : 'bg-gray-100 text-gray-400'
                           }`}
                         >
-                          {i < registerStep ? '✓' : step.icon}
+                          {i < registerStep ? '<Check className="w-4 h-4" />' : step.icon}
                         </div>
                         {i < registerSteps.length - 1 && (
                           <div

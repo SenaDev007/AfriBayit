@@ -10,6 +10,7 @@ import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { Medal, Diamond, Gem, Sprout, Star, Trophy, Crown, PenTool, Handshake, Globe, BookOpen, Award, HandshakeIcon, Lock, Bot, AlertTriangle, MessageCircle, User, Calendar, Coins, CheckCircle, PartyPopper, ShoppingCart, Rocket, Sparkles, FileText, Link } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -45,36 +46,36 @@ interface Event {
 
 // Niveaux de gamification AfriPoints
 const afriPointLevels = [
-  { name: 'Bronze', min: 0, icon: '🥉', color: '#CD7F32' },
-  { name: 'Argent', min: 200, icon: '🥈', color: '#C0C0C0' },
-  { name: 'Or', min: 500, icon: '🥇', color: '#FFD700' },
-  { name: 'Platine', min: 1500, icon: '💎', color: '#E5E4E2' },
-  { name: 'Diamant', min: 5000, icon: '💠', color: '#B9F2FF' },
+  { name: 'Bronze', min: 0, icon: <Medal className="w-4 h-4" style={{ color: '#CD7F32' }} />, color: '#CD7F32' },
+  { name: 'Argent', min: 200, icon: <Medal className="w-4 h-4" style={{ color: '#C0C0C0' }} />, color: '#C0C0C0' },
+  { name: 'Or', min: 500, icon: <Medal className="w-4 h-4" style={{ color: '#FFD700' }} />, color: '#FFD700' },
+  { name: 'Platine', min: 1500, icon: <Diamond className="w-4 h-4" style={{ color: '#E5E4E2' }} />, color: '#E5E4E2' },
+  { name: 'Diamant', min: 5000, icon: <Gem className="w-4 h-4" style={{ color: '#B9F2FF' }} />, color: '#B9F2FF' },
 ];
 
 // Niveaux de réputation
 const reputationLevels = [
-  { name: 'Découvreur', min: 0, max: 100, color: '#6b7280', icon: '🌱' },
-  { name: 'Acteur', min: 100, max: 300, color: '#009CDE', icon: '⭐' },
-  { name: 'Expert', min: 300, max: 600, color: '#00A651', icon: '🏆' },
-  { name: 'Ambassadeur', min: 600, max: Infinity, color: '#D4AF37', icon: '👑' },
+  { name: 'Découvreur', min: 0, max: 100, color: '#6b7280', icon: <Sprout className="w-4 h-4" /> },
+  { name: 'Acteur', min: 100, max: 300, color: '#009CDE', icon: <Star className="w-4 h-4" /> },
+  { name: 'Expert', min: 300, max: 600, color: '#00A651', icon: <Trophy className="w-4 h-4" /> },
+  { name: 'Ambassadeur', min: 600, max: Infinity, color: '#D4AF37', icon: <Crown className="w-4 h-4" /> },
 ];
 
 // Badges disponibles
 const badges = [
-  { id: 'first_post', name: 'Premier pas', icon: '✍️', description: 'Premier sujet publié', earned: true },
-  { id: 'helper', name: 'Bon samaritain', icon: '🤝', description: '5 réponses utiles', earned: false },
-  { id: 'reviewer', name: 'Critique immobilier', icon: '⭐', description: '3 avis publiés', earned: false },
-  { id: 'networker', name: 'Réseauteur', icon: '🌐', description: '10 connexions', earned: false },
-  { id: 'student', name: 'Étudiant', icon: '📚', description: '1 cours complété', earned: true },
-  { id: 'certified', name: 'Certifié', icon: '🏅', description: '1 certificat obtenu', earned: false },
+  { id: 'first_post', name: 'Premier pas', icon: <PenTool className="w-3.5 h-3.5" />, description: 'Premier sujet publié', earned: true },
+  { id: 'helper', name: 'Bon samaritain', icon: <Handshake className="w-3.5 h-3.5" />, description: '5 réponses utiles', earned: false },
+  { id: 'reviewer', name: 'Critique immobilier', icon: <Star className="w-3.5 h-3.5" />, description: '3 avis publiés', earned: false },
+  { id: 'networker', name: 'Réseauteur', icon: <Globe className="w-3.5 h-3.5" />, description: '10 connexions', earned: false },
+  { id: 'student', name: 'Étudiant', icon: <BookOpen className="w-3.5 h-3.5" />, description: '1 cours complété', earned: true },
+  { id: 'certified', name: 'Certifié', icon: <Award className="w-3.5 h-3.5" />, description: '1 certificat obtenu', earned: false },
 ];
 
 // Tiers ambassadeur
 const ambassadorTiers = [
-  { tier: 'Bronze', commission: '5%', icon: '🥉', color: '#CD7F32', benefits: ['Lien de parrainage', 'Commission 5%', 'Dashboard ambassadeur'] },
-  { tier: 'Argent', commission: '10%', icon: '🥈', color: '#C0C0C0', benefits: ['Tous les avantages Bronze', 'Commission 10%', 'Page personnalisée', 'Support prioritaire'] },
-  { tier: 'Or', commission: '15%', icon: '🥇', color: '#FFD700', benefits: ['Tous les avantages Argent', 'Commission 15%', 'Événements co-brandés', 'Accès VIP formations'] },
+  { tier: 'Bronze', commission: '5%', icon: <Medal className="w-5 h-5" style={{ color: '#CD7F32' }} />, color: '#CD7F32', benefits: ['Lien de parrainage', 'Commission 5%', 'Dashboard ambassadeur'] },
+  { tier: 'Argent', commission: '10%', icon: <Medal className="w-5 h-5" style={{ color: '#C0C0C0' }} />, color: '#C0C0C0', benefits: ['Tous les avantages Bronze', 'Commission 10%', 'Page personnalisée', 'Support prioritaire'] },
+  { tier: 'Or', commission: '15%', icon: <Medal className="w-5 h-5" style={{ color: '#FFD700' }} />, color: '#FFD700', benefits: ['Tous les avantages Argent', 'Commission 15%', 'Événements co-brandés', 'Accès VIP formations'] },
 ];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -219,7 +220,7 @@ export default function CommunityModule() {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            🤝 AfriBayit Connect
+            <Handshake className="w-4 h-4" /> AfriBayit Connect
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Communauté <span className="text-[#00A651]">Africaine</span>
@@ -270,7 +271,7 @@ export default function CommunityModule() {
               </div>
               <div className="flex justify-between mt-1 text-[9px] text-gray-400">
                 {reputationLevels.slice(0, 3).map((level) => (
-                  <span key={level.name}>{level.icon} {level.name}</span>
+                  <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>
                 ))}
               </div>
             </div>
@@ -299,7 +300,7 @@ export default function CommunityModule() {
               </div>
               <div className="flex justify-between mt-1 text-[9px] text-gray-400">
                 {afriPointLevels.slice(0, 4).map((level) => (
-                  <span key={level.name}>{level.icon} {level.name}</span>
+                  <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>
                 ))}
               </div>
             </div>
@@ -310,7 +311,7 @@ export default function CommunityModule() {
             {badges.filter(b => b.earned).map((badge) => (
               <span
                 key={badge.id}
-                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]"
                 title={badge.description}
               >
                 {badge.icon} {badge.name}
@@ -319,17 +320,17 @@ export default function CommunityModule() {
             {badges.filter(b => !b.earned).map((badge) => (
               <span
                 key={badge.id}
-                className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300"
                 title={badge.description}
               >
-                🔒 {badge.name}
+                <Lock className="w-3 h-3" /> {badge.name}
               </span>
             ))}
           </div>
 
           {/* AI Moderation notice */}
           <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#009CDE]/5 rounded-xl">
-            <span className="text-xs">🤖</span>
+            <Bot className="w-3.5 h-3.5 text-[#009CDE] shrink-0" />
             <span className="text-[10px] text-[#009CDE] font-medium">Modéré par Rebecca IA — Contenu vérifié automatiquement</span>
           </div>
         </motion.div>
@@ -359,14 +360,14 @@ export default function CommunityModule() {
             )}
             {postsError && (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">⚠️</span>
+                <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-semibold mb-1">Impossible de charger les posts</p>
                 <p className="text-sm text-gray-400">{postsError.message}</p>
               </div>
             )}
             {!postsLoading && !postsError && posts.length === 0 && (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">💬</span>
+                <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-semibold mb-1">Aucun sujet de discussion</p>
                 <p className="text-sm text-gray-400">Soyez le premier à lancer un débat !</p>
               </div>
@@ -419,7 +420,7 @@ export default function CommunityModule() {
             )}
             {!groupsLoading && groups.length === 0 && (
               <div className="col-span-full text-center py-12">
-                <span className="text-4xl block mb-3">👤</span>
+                <User className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-semibold mb-1">Aucun profil trouvé</p>
                 <p className="text-sm text-gray-400">Revenez plus tard</p>
               </div>
@@ -470,14 +471,14 @@ export default function CommunityModule() {
             )}
             {eventsError && (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">⚠️</span>
+                <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-semibold mb-1">Impossible de charger les événements</p>
                 <p className="text-sm text-gray-400">{eventsError.message}</p>
               </div>
             )}
             {!eventsLoading && !eventsError && events.length === 0 && (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">📅</span>
+                <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-semibold mb-1">Aucun événement à venir</p>
                 <p className="text-sm text-gray-400">Revenez bientôt pour de nouveaux événements</p>
               </div>
@@ -523,7 +524,7 @@ export default function CommunityModule() {
           >
             {/* Solde AfriPoints */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border text-center">
-              <span className="text-4xl block mb-2">{afriLevel.icon}</span>
+              <span className="inline-flex items-center justify-center mb-2">{afriLevel.icon}</span>
               <p className="font-mono text-3xl font-bold text-[#D4AF37]">{userAfriPoints}</p>
               <p className="text-sm text-gray-500 mb-1">AfriPoints</p>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>
@@ -538,20 +539,20 @@ export default function CommunityModule() {
 
             {/* Gagner des points */}
             <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">💰 Gagner des AfriPoints</h3>
+              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Coins className="w-5 h-5" /> Gagner des AfriPoints</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { action: 'Profil complété', points: 50, icon: '👤' },
-                  { action: 'Sujet publié', points: 5, icon: '✍️' },
-                  { action: 'Avis publié', points: 10, icon: '⭐' },
-                  { action: 'Cours complété', points: 25, icon: '📚' },
-                  { action: 'Quiz réussi', points: 10, icon: '✅' },
-                  { action: 'Certificat obtenu', points: 15, icon: '🏅' },
-                  { action: 'Parrainage', points: 100, icon: '🤝' },
-                  { action: 'Événement participé', points: 15, icon: '🎉' },
+                  { action: 'Profil complété', points: 50, icon: <User className="w-5 h-5" /> },
+                  { action: 'Sujet publié', points: 5, icon: <PenTool className="w-5 h-5" /> },
+                  { action: 'Avis publié', points: 10, icon: <Star className="w-5 h-5" /> },
+                  { action: 'Cours complété', points: 25, icon: <BookOpen className="w-5 h-5" /> },
+                  { action: 'Quiz réussi', points: 10, icon: <CheckCircle className="w-5 h-5" /> },
+                  { action: 'Certificat obtenu', points: 15, icon: <Award className="w-5 h-5" /> },
+                  { action: 'Parrainage', points: 100, icon: <Handshake className="w-5 h-5" /> },
+                  { action: 'Événement participé', points: 15, icon: <PartyPopper className="w-5 h-5" /> },
                 ].map((item) => (
                   <div key={item.action} className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-gray-500">{item.icon}</span>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[#2C2E2F]">{item.action}</p>
                       <p className="text-xs text-[#D4AF37] font-semibold">+{item.points} pts</p>
@@ -563,18 +564,18 @@ export default function CommunityModule() {
 
             {/* Dépenser des points */}
             <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">🛒 Dépenser des AfriPoints</h3>
+              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><ShoppingCart className="w-5 h-5" /> Dépenser des AfriPoints</h3>
               <div className="space-y-3">
                 {[
-                  { item: 'Boost annonce 7 jours', cost: 200, icon: '🚀' },
-                  { item: 'Boost annonce 30 jours', cost: 500, icon: '🚀' },
-                  { item: 'Fonctionnalité premium', cost: 100, icon: '✨' },
-                  { item: 'Réduction cours 10%', cost: 150, icon: '📖' },
-                  { item: 'Réduction cours 25%', cost: 300, icon: '📖' },
+                  { item: 'Boost annonce 7 jours', cost: 200, icon: <Rocket className="w-5 h-5" /> },
+                  { item: 'Boost annonce 30 jours', cost: 500, icon: <Rocket className="w-5 h-5" /> },
+                  { item: 'Fonctionnalité premium', cost: 100, icon: <Sparkles className="w-5 h-5" /> },
+                  { item: 'Réduction cours 10%', cost: 150, icon: <BookOpen className="w-5 h-5" /> },
+                  { item: 'Réduction cours 25%', cost: 300, icon: <BookOpen className="w-5 h-5" /> },
                 ].map((item) => (
                   <div key={item.item} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{item.icon}</span>
+                      <span className="text-gray-500">{item.icon}</span>
                       <p className="text-sm font-medium text-[#2C2E2F]">{item.item}</p>
                     </div>
                     <span className="px-3 py-1 bg-[#003087]/10 text-[#003087] text-xs font-semibold rounded-full">
@@ -596,7 +597,7 @@ export default function CommunityModule() {
           >
             {/* Hero Ambassador */}
             <div className="bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-3xl p-6 text-white text-center">
-              <span className="text-4xl block mb-2">👑</span>
+              <Crown className="w-10 h-10 mx-auto mb-2 text-[#D4AF37]" />
               <h3 className="font-display text-xl font-bold mb-2">Programme Ambassadeur</h3>
               <p className="text-sm text-white/70 mb-4">
                 Représentez AfriBayit dans votre communauté et gagnez des commissions sur chaque filleul.
@@ -625,14 +626,14 @@ export default function CommunityModule() {
                   transition={{ delay: i * 0.1, ease: easeOut }}
                   className="bg-white rounded-3xl p-5 shadow-sm border text-center"
                 >
-                  <span className="text-3xl block mb-2">{tier.icon}</span>
+                  <span className="flex items-center justify-center mb-2">{tier.icon}</span>
                   <h4 className="font-bold text-[#2C2E2F] mb-1">{tier.tier}</h4>
                   <p className="text-lg font-mono font-bold mb-3" style={{ color: tier.color }}>
                     {tier.commission}
                   </p>
                   <div className="space-y-1.5">
                     {tier.benefits.map((b) => (
-                      <p key={b} className="text-xs text-gray-500">✓ {b}</p>
+                      <p key={b} className="text-xs text-gray-500 flex items-center gap-1 justify-center"><CheckCircle className="w-3 h-3 text-[#00A651]" /> {b}</p>
                     ))}
                   </div>
                 </motion.div>
@@ -644,12 +645,12 @@ export default function CommunityModule() {
               <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Comment ça marche ?</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { step: '1', title: 'Inscrivez-vous', desc: 'Remplissez le formulaire de candidature ambassadeur', icon: '📝' },
-                  { step: '2', title: 'Partagez votre lien', desc: 'Diffusez votre lien de parrainage unique', icon: '🔗' },
-                  { step: '3', title: 'Gagnez des commissions', desc: 'Recevez des commissions sur chaque filleul actif', icon: '💰' },
+                  { step: '1', title: 'Inscrivez-vous', desc: 'Remplissez le formulaire de candidature ambassadeur', icon: <FileText className="w-6 h-6" /> },
+                  { step: '2', title: 'Partagez votre lien', desc: 'Diffusez votre lien de parrainage unique', icon: <Link className="w-6 h-6" /> },
+                  { step: '3', title: 'Gagnez des commissions', desc: 'Recevez des commissions sur chaque filleul actif', icon: <Coins className="w-6 h-6" /> },
                 ].map((s) => (
                   <div key={s.step} className="text-center p-4 bg-gray-50 rounded-2xl">
-                    <span className="text-2xl block mb-2">{s.icon}</span>
+                    <span className="flex items-center justify-center mb-2 text-[#003087]">{s.icon}</span>
                     <div className="w-8 h-8 rounded-full bg-[#003087] text-white text-sm font-bold flex items-center justify-center mx-auto mb-2">
                       {s.step}
                     </div>

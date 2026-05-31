@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { Bot, MessageCircle } from 'lucide-react';
 
 interface MessagingModuleProps {
   isOpen: boolean;
@@ -248,7 +249,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
             <ScrollArea className="flex-1">
               {conversations.length === 0 ? (
                 <div className="p-6 text-center">
-                  <span className="text-3xl block mb-2">💬</span>
+                  <span className="text-3xl block mb-2"><MessageCircle className="w-4 h-4" /></span>
                   <p className="text-sm text-gray-500">Aucune conversation</p>
                 </div>
               ) : (
@@ -266,7 +267,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                       <div className="relative">
                         {conv.type === 'rebecca' ? (
                           <div className="w-10 h-10 rounded-full bg-[#9333ea]/10 flex items-center justify-center">
-                            <span className="text-lg">🤖</span>
+                            <span className="text-lg"><Bot className="w-4 h-4" /></span>
                           </div>
                         ) : (
                           <ImageWithFallback
@@ -317,7 +318,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                       <>
                         {selectedConversation.type === 'rebecca' ? (
                           <div className="w-8 h-8 rounded-full bg-[#9333ea]/10 flex items-center justify-center">
-                            <span className="text-sm">🤖</span>
+                            <span className="text-sm"><Bot className="w-4 h-4" /></span>
                           </div>
                         ) : (
                           <ImageWithFallback
@@ -405,7 +406,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <span className="text-5xl block mb-4">💬</span>
+                  <span className="text-5xl block mb-4"><MessageCircle className="w-4 h-4" /></span>
                   <h3 className="text-lg font-semibold text-[#2C2E2F]">Vos messages</h3>
                   <p className="text-sm text-gray-500 mt-1 max-w-xs">
                     Sélectionnez une conversation ou contactez un agent immobilier pour commencer.

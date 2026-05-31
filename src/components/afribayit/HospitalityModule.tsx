@@ -10,10 +10,11 @@ import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { Hotel, Star } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-// ── API response types ──────────────────────────────────────────
+//  API response types 
 interface HotelApiItem {
   id: string;
   name: string;
@@ -32,7 +33,7 @@ interface HotelApiItem {
   _count?: { reviews_hotel?: number };
 }
 
-// ── Helpers ─────────────────────────────────────────────────────
+//  Helpers 
 function parseJsonArray(raw: string | null | undefined): string[] {
   if (!raw) return [];
   try {
@@ -48,7 +49,7 @@ function getFirstImage(images: string | null | undefined): string {
   return arr[0] || '';
 }
 
-// ── Skeleton loaders ────────────────────────────────────────────
+//  Skeleton loaders 
 function HotelCardSkeleton() {
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
@@ -84,7 +85,7 @@ function CalendarSkeleton() {
   );
 }
 
-// ── Main component ──────────────────────────────────────────────
+//  Main component 
 export default function HospitalityModule() {
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
@@ -145,7 +146,7 @@ export default function HospitalityModule() {
           className="text-center mb-10"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            🏨 AfriBayit Hospitality
+            <Hotel className="w-4 h-4" /> AfriBayit Hospitality
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Hôtels & <span className="text-[#D4AF37]">Séjours</span>
@@ -225,7 +226,7 @@ export default function HospitalityModule() {
                     )}
                     <div className="absolute top-3 left-3 flex gap-1">
                       {Array.from({ length: hotel.stars }).map((_, j) => (
-                        <span key={j} className="text-[#D4AF37] text-sm">★</span>
+                        <span key={j} className="text-[#D4AF37] text-sm"><Star className="w-4 h-4" /></span>
                       ))}
                     </div>
                     <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold ${

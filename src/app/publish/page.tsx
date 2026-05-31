@@ -5,6 +5,7 @@ import PropertyPublishModule from '@/components/afribayit/PropertyPublishModule'
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import { useAuthStore } from '@/stores/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, Ban } from 'lucide-react';
 
 export default function PublishPage() {
   const { onNavigate } = useAfriBayitNav();
@@ -45,7 +46,7 @@ export default function PublishPage() {
                 ? 'bg-red-50 border-red-300'
                 : 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
             }`}>
-              <span className="text-2xl shrink-0">{noticeMessage.variant === 'error' ? '🚫' : '⚠️'}</span>
+              <span className="text-2xl shrink-0">{noticeMessage.variant === 'error' ? '<Ban className="w-4 h-4" />' : '<AlertTriangle className="w-4 h-4" />'}</span>
               <div className="flex-1">
                 <h3 className={`font-display text-base font-bold mb-1 ${
                   noticeMessage.variant === 'error' ? 'text-red-700' : 'text-[#2C2E2F]'

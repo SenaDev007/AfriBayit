@@ -9,8 +9,9 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
+import { AlertTriangle, Search, Siren, Wrench } from 'lucide-react';
+
+import {  AlertDialog,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -161,7 +162,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
           className="mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            🔧 ProMatch
+            <Wrench className="w-4 h-4" /> ProMatch
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Artisans <span className="text-[#D4AF37]">Certifiés</span>
@@ -194,7 +195,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 : 'bg-white border-2 border-[#D93025] text-[#D93025] hover:bg-[#D93025]/5'
             }`}
           >
-            <span className="text-xl">🚨</span>
+            <span className="text-xl"><Siren className="w-4 h-4" /></span>
             {emergencyMode ? 'Mode Urgence Activé - Artisans < 10km' : 'Urgence ? Trouvez un artisan près de vous'}
           </button>
         </motion.div>
@@ -228,7 +229,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         {/* Error State */}
         {error && (
           <div className="text-center py-12">
-            <span className="text-4xl block mb-3">⚠️</span>
+            <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
             <p className="text-gray-600 font-semibold mb-1">Impossible de charger les artisans</p>
             <p className="text-sm text-gray-400">{error.message}</p>
           </div>
@@ -237,7 +238,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         {/* Empty State */}
         {!isLoading && !error && filtered.length === 0 && (
           <div className="text-center py-12">
-            <span className="text-4xl block mb-3">🔍</span>
+            <span className="text-4xl block mb-3"><Search className="w-4 h-4" /></span>
             <p className="text-gray-600 font-semibold mb-1">Aucun artisan trouvé</p>
             <p className="text-sm text-gray-400">Essayez un autre filtre ou revenez plus tard</p>
           </div>
@@ -311,7 +312,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                       onClick={() => handleEmergencyCall(artisan)}
                       className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors"
                     >
-                      🚨 Appel urgent
+                      <Siren className="w-4 h-4" /> Appel urgent
                     </button>
                   )}
                   <button

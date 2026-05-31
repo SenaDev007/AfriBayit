@@ -5,26 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import {
-  Users,
-  Building2,
-  ArrowLeftRight,
-  Wallet,
-  ShieldCheck,
-  FileCheck,
-  DollarSign,
-  Activity,
-  Eye,
-  ArrowUpRight,
-  ArrowDownRight,
-  UserPlus,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  TrendingUp,
-  Hotel,
-  Home,
-} from 'lucide-react';
+import { Activity, AlertTriangle, ArrowDownRight, ArrowLeftRight, ArrowUpRight, Building2, CheckCircle2, Clock, DollarSign, Eye, FileCheck, Globe, Home, Hotel, ShieldCheck, TrendingUp, UserPlus, Users, Wallet } from 'lucide-react';
 
 const COUNTRY_NAMES: Record<string, string> = {
   BJ: 'Bénin',
@@ -205,7 +186,7 @@ export default function CountryDashboard() {
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const countryName = COUNTRY_NAMES[country] || country;
-  const countryFlag = COUNTRY_FLAGS[country] || '🌍';
+  const countryFlag = COUNTRY_FLAGS[country] || '<Globe className="w-4 h-4" />';
 
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ['admin-stats', country],

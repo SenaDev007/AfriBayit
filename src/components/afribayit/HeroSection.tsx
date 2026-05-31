@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/api';
 import { formatPrice, COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { Check } from 'lucide-react';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -344,7 +345,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     Premium
                   </div>
                   <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur text-[10px] font-medium rounded-full flex items-center gap-1">
-                    <span className="text-[#00A651]">✓</span> Vérifié
+                    <span className="text-[#00A651]"><Check className="w-4 h-4" /></span> Vérifié
                   </div>
                 </div>
                 <div className="p-4">
@@ -389,7 +390,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     </div>
                   )}
                   <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur text-[10px] font-medium rounded-full flex items-center gap-1">
-                    <span className="text-[#00A651]">✓</span> Vérifié
+                    <span className="text-[#00A651]"><Check className="w-4 h-4" /></span> Vérifié
                   </div>
                 </div>
                 <div className="p-3">

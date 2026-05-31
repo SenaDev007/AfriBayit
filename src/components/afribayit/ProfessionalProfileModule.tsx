@@ -6,6 +6,7 @@ import { useProfile, useFollowProfile } from '@/hooks/useProfiles';
 import { useCreateConversation } from '@/hooks/useChat';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { AlertTriangle, Award, BarChart3, Camera, Check, Circle, GraduationCap, Handshake, MessageCircle, PlusCircle, Search, User } from 'lucide-react';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -116,11 +117,11 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
   };
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'about', label: 'À propos', icon: '👤' },
-    { key: 'experience', label: 'Parcours', icon: '💼' },
-    { key: 'portfolio', label: 'Portfolio', icon: '📸' },
-    { key: 'recommendations', label: 'Recommandations', icon: '💬' },
-    { key: 'stats', label: 'Statistiques', icon: '📊' },
+    { key: 'about', label: 'À propos', icon: '<User className="w-4 h-4" />' },
+    { key: 'experience', label: 'Parcours', icon: '' },
+    { key: 'portfolio', label: 'Portfolio', icon: '<Camera className="w-4 h-4" />' },
+    { key: 'recommendations', label: 'Recommandations', icon: '<MessageCircle className="w-4 h-4" />' },
+    { key: 'stats', label: 'Statistiques', icon: '<BarChart3 className="w-4 h-4" />' },
   ];
 
   if (isLoading) {
@@ -138,7 +139,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
       <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
           <div className="text-center py-20">
-            <span className="text-4xl block mb-3">⚠️</span>
+            <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
             <p className="text-gray-600 font-semibold mb-1">Impossible de charger le profil</p>
             <p className="text-sm text-gray-400">{error?.message || 'Profil non trouvé'}</p>
           </div>
@@ -184,10 +185,10 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F]">{profileData.name}</h1>
-                <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full">🏅 Certifié</span>
+                <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full"><Award className="w-4 h-4" /> Certifié</span>
               </div>
               <p className="text-sm text-gray-600 mb-1">{profileData.headline}</p>
-              <p className="text-xs text-gray-400">{profileData.location} · <span className="text-[#00A651]">● Disponible</span></p>
+              <p className="text-xs text-gray-400">{profileData.location} · <span className="text-[#00A651]"><Circle className="w-4 h-4" /> Disponible</span></p>
             </div>
             <div className="flex gap-2">
               <button
@@ -206,7 +207,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                     : 'border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50'
                 }`}
               >
-                {followProfile.isPending ? '...' : isFollowing ? 'Suivi ✓' : '✚ Suivre'}
+                {followProfile.isPending ? '...' : isFollowing ? 'Suivi <Check className="w-4 h-4" />' : '<PlusCircle className="w-4 h-4" /> Suivre'}
               </button>
             </div>
           </div>
@@ -296,7 +297,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                   {profileData.education.map(edu => (
                     <div key={edu.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl">
                       <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
-                        <span className="text-lg">🎓</span>
+                        <span className="text-lg"><GraduationCap className="w-4 h-4" /></span>
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#2C2E2F]">{edu.degree}</p>
@@ -348,7 +349,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <motion.div key="portfolio" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               {profileData.portfolio.length === 0 ? (
                 <div className="text-center py-12">
-                  <span className="text-4xl block mb-3">📸</span>
+                  <span className="text-4xl block mb-3"><Camera className="w-4 h-4" /></span>
                   <p className="text-gray-600 font-semibold mb-1">Aucun projet dans le portfolio</p>
                   <p className="text-sm text-gray-400">Les projets apparaîtront ici</p>
                 </div>
@@ -384,7 +385,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <motion.div key="recommendations" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="space-y-4">
               {profileData.recommendations.length === 0 ? (
                 <div className="text-center py-12">
-                  <span className="text-4xl block mb-3">💬</span>
+                  <span className="text-4xl block mb-3"><MessageCircle className="w-4 h-4" /></span>
                   <p className="text-gray-600 font-semibold mb-1">Aucune recommandation</p>
                   <p className="text-sm text-gray-400">Les recommandations apparaîtront ici</p>
                 </div>
@@ -422,10 +423,10 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <motion.div key="stats" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Vues du profil', value: profileData.stats.profileViews, icon: '👁️', color: '#003087' },
-                  { label: 'Apparitions recherche', value: profileData.stats.searchAppearances, icon: '🔍', color: '#009CDE' },
-                  { label: 'Connexions', value: profileData.stats.connections, icon: '🤝', color: '#00A651' },
-                  { label: 'Score crédibilité', value: profileData.stats.credibilityScore, icon: '⭐', color: '#D4AF37', suffix: '/100' },
+                  { label: 'Vues du profil', value: profileData.stats.profileViews, icon: '', color: '#003087' },
+                  { label: 'Apparitions recherche', value: profileData.stats.searchAppearances, icon: '<Search className="w-4 h-4" />', color: '#009CDE' },
+                  { label: 'Connexions', value: profileData.stats.connections, icon: '<Handshake className="w-4 h-4" />', color: '#00A651' },
+                  { label: 'Score crédibilité', value: profileData.stats.credibilityScore, icon: '', color: '#D4AF37', suffix: '/100' },
                 ].map((stat, i) => (
                   <motion.div
                     key={stat.label}

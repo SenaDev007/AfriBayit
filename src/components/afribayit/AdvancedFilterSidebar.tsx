@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
-import {
-  SearchFilters,
+import { X } from 'lucide-react';
+
+import {  SearchFilters,
   PROPERTY_TYPE_OPTIONS,
   TRANSACTION_TYPE_OPTIONS,
   countActiveFilters,
@@ -123,7 +124,7 @@ export default function AdvancedFilterSidebar({
                 onClick={onToggle}
                 className="lg:hidden w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>

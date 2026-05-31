@@ -11,6 +11,7 @@ import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { AlertTriangle, Award, BarChart3, Bot, Check, CheckCircle, Circle, ClipboardList, Coins, FileText, Home, Scale, User } from 'lucide-react';
 
 interface Notary {
   id: string;
@@ -46,19 +47,19 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — escrow notary state machine
 const escrowNotaryStates = [
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '⚖️', color: '#009CDE' },
-  { key: 'NOTARY_IN_PROGRESS', label: 'En cours notaire', icon: '📋', color: '#D4AF37' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', icon: '📝', color: '#00A651' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: '✅', color: '#003087' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '<Scale className="w-4 h-4" />', color: '#009CDE' },
+  { key: 'NOTARY_IN_PROGRESS', label: 'En cours notaire', icon: '<ClipboardList className="w-4 h-4" />', color: '#D4AF37' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', icon: '<FileText className="w-4 h-4" />', color: '#00A651' },
+  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: '<CheckCircle className="w-4 h-4" />', color: '#003087' },
 ];
 
 // Static config — certification steps
 const certificationSteps = [
-  { step: 1, title: 'Inscription', desc: 'Création du compte notaire sur AfriBayit', icon: '📋' },
-  { step: 2, title: 'Documents KYC', desc: 'Carte ANDF, diplôme, extrait casier judiciaire', icon: '📄' },
-  { step: 3, title: 'Vérification IA', desc: 'Analyse automatique des documents et antécédents', icon: '🤖' },
-  { step: 4, title: 'Validation humaine', desc: 'Revue par un comité de notaires certifiés', icon: '👤' },
-  { step: 5, title: 'Certification', desc: 'Badge Notaire Certifié AfriBayit délivré', icon: '🏅' },
+  { step: 1, title: 'Inscription', desc: 'Création du compte notaire sur AfriBayit', icon: '<ClipboardList className="w-4 h-4" />' },
+  { step: 2, title: 'Documents KYC', desc: 'Carte ANDF, diplôme, extrait casier judiciaire', icon: '<FileText className="w-4 h-4" />' },
+  { step: 3, title: 'Vérification IA', desc: 'Analyse automatique des documents et antécédents', icon: '<Bot className="w-4 h-4" />' },
+  { step: 4, title: 'Validation humaine', desc: 'Revue par un comité de notaires certifiés', icon: '<User className="w-4 h-4" />' },
+  { step: 5, title: 'Certification', desc: 'Badge Notaire Certifié AfriBayit délivré', icon: '<Award className="w-4 h-4" />' },
 ];
 
 // Static config — subscription tiers
@@ -217,7 +218,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            ⚖️ Notaire Certifié — CDC §5.0bis
+            <Scale className="w-4 h-4" /> Notaire Certifié — CDC §5.0bis
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Espace <span className="text-[#003087]">Notarial</span>
@@ -238,10 +239,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {[
-            { key: 'notaries' as const, label: 'Répertoire Notaires', icon: '⚖️' },
-            { key: 'dashboard' as const, label: 'Tableau de bord', icon: '📊' },
-            { key: 'certification' as const, label: 'Certification', icon: '🏅' },
-            { key: 'revenue' as const, label: 'Modèle revenus', icon: '💰' },
+            { key: 'notaries' as const, label: 'Répertoire Notaires', icon: '<Scale className="w-4 h-4" />' },
+            { key: 'dashboard' as const, label: 'Tableau de bord', icon: '<BarChart3 className="w-4 h-4" />' },
+            { key: 'certification' as const, label: 'Certification', icon: '<Award className="w-4 h-4" />' },
+            { key: 'revenue' as const, label: 'Modèle revenus', icon: '<Coins className="w-4 h-4" />' },
           ].map(tab => (
             <button
               key={tab.key}
@@ -284,14 +285,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   onChange={e => setSelectedZone(e.target.value)}
                   className="px-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
-                  {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? '🏘️ Toutes les zones' : z}</option>)}
+                  {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? '<Home className="w-4 h-4" /> Toutes les zones' : z}</option>)}
                 </select>
                 <select
                   value={selectedLevel}
                   onChange={e => setSelectedLevel(e.target.value)}
                   className="px-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
-                  {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? '🏅 Tous niveaux' : l}</option>)}
+                  {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? '<Award className="w-4 h-4" /> Tous niveaux' : l}</option>)}
                 </select>
               </div>
 
@@ -307,7 +308,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Error */}
               {notariesError && (
                 <div className="text-center py-12">
-                  <span className="text-4xl block mb-3">⚠️</span>
+                  <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
                   <p className="text-gray-600 font-semibold mb-1">Impossible de charger les notaires</p>
                   <p className="text-sm text-gray-400">{notariesError.message}</p>
                 </div>
@@ -316,7 +317,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Empty */}
               {!notariesLoading && !notariesError && filteredNotaries.length === 0 && (
                 <div className="text-center py-12">
-                  <span className="text-4xl block mb-3">⚖️</span>
+                  <span className="text-4xl block mb-3"><Scale className="w-4 h-4" /></span>
                   <p className="text-gray-600 font-semibold mb-1">Aucun notaire trouvé</p>
                   <p className="text-sm text-gray-400">Modifiez vos critères de recherche</p>
                 </div>
@@ -360,7 +361,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                           </svg>
                           {notary.rating}
                         </span>
-                        <span className="text-xs text-gray-500">📋 {notary.missions} missions</span>
+                        <span className="text-xs text-gray-500"><ClipboardList className="w-4 h-4" /> {notary.missions} missions</span>
                       </div>
                       {(notary.certifiedAt || notary.createdAt) && (
                         <p className="text-[10px] text-gray-400 mb-2">
@@ -376,7 +377,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
                       <div className="flex items-center justify-between pt-3 border-t">
                         <span className={`text-xs font-medium ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
-                          {notary.available ? '● Disponible' : '○ Indisponible'}
+                          {notary.available ? '<Circle className="w-4 h-4" /> Disponible' : '<Circle className="w-4 h-4" /> Indisponible'}
                         </span>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleContactNotary(notary); }}
@@ -406,10 +407,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Transactions assignées', value: String(escrowAccounts.length), icon: '📋', color: '#009CDE' },
-                  { label: 'Actes en cours', value: String(escrowAccounts.filter(e => e.status === 'NOTARY_IN_PROGRESS').length), icon: '📝', color: '#D4AF37' },
-                  { label: 'ANDF enregistrés', value: String(escrowAccounts.filter(e => e.status === 'ANDF_REGISTERED').length), icon: '✅', color: '#00A651' },
-                  { label: 'Revenus ce mois', value: formatFCFA(computedRevenue), icon: '💰', color: '#003087' },
+                  { label: 'Transactions assignées', value: String(escrowAccounts.length), icon: '<ClipboardList className="w-4 h-4" />', color: '#009CDE' },
+                  { label: 'Actes en cours', value: String(escrowAccounts.filter(e => e.status === 'NOTARY_IN_PROGRESS').length), icon: '<FileText className="w-4 h-4" />', color: '#D4AF37' },
+                  { label: 'ANDF enregistrés', value: String(escrowAccounts.filter(e => e.status === 'ANDF_REGISTERED').length), icon: '<CheckCircle className="w-4 h-4" />', color: '#00A651' },
+                  { label: 'Revenus ce mois', value: formatFCFA(computedRevenue), icon: '<Coins className="w-4 h-4" />', color: '#003087' },
                 ].map((stat, i) => (
                   <motion.div
                     key={stat.label}
@@ -490,7 +491,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                       <span className="text-sm text-[#2C2E2F]">{item.label}</span>
                       <span className={`text-xs font-semibold ${item.done ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
-                        {item.done ? '✅' : '⏳'} {item.status}
+                        {item.done ? '<CheckCircle className="w-4 h-4" />' : '⏳'} {item.status}
                       </span>
                     </div>
                   ))}
@@ -523,7 +524,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${
                           i <= certStep ? 'bg-[#003087] text-white shadow-lg' : 'bg-gray-100'
                         }`}>
-                          {i < certStep ? '✓' : s.icon}
+                          {i < certStep ? '<Check className="w-4 h-4" />' : s.icon}
                         </div>
                         <p className={`text-[10px] font-medium mt-1 text-center w-16 ${
                           i <= certStep ? 'text-[#003087]' : 'text-gray-400'
@@ -562,7 +563,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <div className="mt-4 space-y-2">
                         {['Carte ANDF en cours de validité', 'Diplôme de notaire', 'Extrait casier judiciaire (< 3 mois)', 'Justificatif de domicile professionnel', 'Photo d\'identité'].map((doc, idx) => (
                           <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-xl">
-                            <span className="text-sm">{idx < 3 ? '✅' : '⏳'}</span>
+                            <span className="text-sm">{idx < 3 ? '<CheckCircle className="w-4 h-4" />' : '⏳'}</span>
                             <span className="text-xs text-gray-700">{doc}</span>
                           </div>
                         ))}
@@ -630,7 +631,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <div className="space-y-2">
                       {tier.features.map(f => (
                         <div key={f} className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="text-[#00A651]">✓</span>{f}
+                          <span className="text-[#00A651]"><Check className="w-4 h-4" /></span>{f}
                         </div>
                       ))}
                     </div>

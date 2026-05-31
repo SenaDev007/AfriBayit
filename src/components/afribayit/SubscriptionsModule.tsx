@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscriptions, useCreateSubscription, useCancelSubscription } from '@/hooks/useSubscriptions';
 import { useCountry } from '@/contexts/CountryContext';
 import { toast } from 'sonner';
+import { Building2, Check, Crown, Home, Hotel, RefreshCw, Ruler, Scale, Sprout, Wrench } from 'lucide-react';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -32,7 +33,7 @@ const agentTiers = [
     price: 15000,
     priceLabel: '15 000 FCFA/mois',
     desc: 'Pour les agents qui démarrent',
-    icon: '🌱',
+    icon: '<Sprout className="w-4 h-4" />',
     color: '#00A651',
     features: [
       '15 annonces actives',
@@ -50,7 +51,7 @@ const agentTiers = [
     price: 35000,
     priceLabel: '35 000 FCFA/mois',
     desc: 'Pour les agents en croissance',
-    icon: '🚀',
+    icon: '',
     color: '#009CDE',
     popular: true,
     features: [
@@ -71,7 +72,7 @@ const agentTiers = [
     price: 75000,
     priceLabel: '75 000 FCFA/mois',
     desc: 'Pour les leaders du marché',
-    icon: '👑',
+    icon: '<Crown className="w-4 h-4" />',
     color: '#D4AF37',
     features: [
       'Annonces illimitées',
@@ -95,7 +96,7 @@ const hotelTiers = [
     price: 9900,
     priceLabel: '9 900 FCFA/mois',
     desc: 'Pour les petites guesthouses',
-    icon: '🏠',
+    icon: '<Home className="w-4 h-4" />',
     color: '#00A651',
     features: [
       '5 chambres',
@@ -111,7 +112,7 @@ const hotelTiers = [
     price: 24900,
     priceLabel: '24 900 FCFA/mois',
     desc: 'Pour les hôtels professionnels',
-    icon: '🏨',
+    icon: '<Hotel className="w-4 h-4" />',
     color: '#009CDE',
     popular: true,
     features: [
@@ -131,7 +132,7 @@ const hotelTiers = [
     price: 0,
     priceLabel: 'Sur devis',
     desc: 'Pour les chaînes hôtelières',
-    icon: '🏢',
+    icon: '<Building2 className="w-4 h-4" />',
     color: '#D4AF37',
     features: [
       'Tout PMS PRO +',
@@ -152,7 +153,7 @@ const artisanPlan = {
   price: 8900,
   priceLabel: '8 900 FCFA/mois',
   desc: 'Pour les artisans certifiés',
-  icon: '🔧',
+  icon: '<Wrench className="w-4 h-4" />',
   color: '#D4AF37',
   features: [
     'Profil premium artisan',
@@ -203,9 +204,9 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
   const currentSubscription = subscriptions[0] || null;
 
   const categories: { key: CategoryKey; label: string; icon: string }[] = [
-    { key: 'agent', label: 'Agent', icon: '💼' },
-    { key: 'hotel', label: 'PMS Hôtelier', icon: '🏨' },
-    { key: 'artisan', label: 'Artisan', icon: '🔧' },
+    { key: 'agent', label: 'Agent', icon: '' },
+    { key: 'hotel', label: 'PMS Hôtelier', icon: '<Hotel className="w-4 h-4" />' },
+    { key: 'artisan', label: 'Artisan', icon: '<Wrench className="w-4 h-4" />' },
   ];
 
   const getTiers = () => {
@@ -269,7 +270,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            🔄 Abonnements Premium — CDC §11
+            <RefreshCw className="w-4 h-4" /> Abonnements Premium — CDC §11
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Plans <span className="text-[#003087]">Premium</span>
@@ -385,7 +386,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                   <div className="space-y-2 flex-1 mb-5">
                     {tier.features.map(f => (
                       <div key={f} className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="text-[#00A651]">✓</span>{f}
+                        <span className="text-[#00A651]"><Check className="w-4 h-4" /></span>{f}
                       </div>
                     ))}
                   </div>
@@ -441,17 +442,17 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                                 <td className="py-3 pr-4 text-gray-700">{feat.name}</td>
                                 <td className="text-center py-3 px-2">
                                   {typeof feat.seed === 'boolean' ? (
-                                    feat.seed ? <span className="text-[#00A651]">✓</span> : <span className="text-gray-300">—</span>
+                                    feat.seed ? <span className="text-[#00A651]"><Check className="w-4 h-4" /></span> : <span className="text-gray-300">—</span>
                                   ) : <span className="font-mono text-xs">{feat.seed}</span>}
                                 </td>
                                 <td className="text-center py-3 px-2">
                                   {typeof feat.grow === 'boolean' ? (
-                                    feat.grow ? <span className="text-[#00A651]">✓</span> : <span className="text-gray-300">—</span>
+                                    feat.grow ? <span className="text-[#00A651]"><Check className="w-4 h-4" /></span> : <span className="text-gray-300">—</span>
                                   ) : <span className="font-mono text-xs">{feat.grow}</span>}
                                 </td>
                                 <td className="text-center py-3 px-2">
                                   {typeof feat.lead === 'boolean' ? (
-                                    feat.lead ? <span className="text-[#00A651]">✓</span> : <span className="text-gray-300">—</span>
+                                    feat.lead ? <span className="text-[#00A651]"><Check className="w-4 h-4" /></span> : <span className="text-gray-300">—</span>
                                   ) : <span className="font-mono text-xs">{feat.lead}</span>}
                                 </td>
                               </tr>
@@ -474,14 +475,14 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                 className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
               >
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
-                  <span className="text-2xl">📐</span>
+                  <span className="text-2xl"><Ruler className="w-4 h-4" /></span>
                   <div>
                     <p className="text-sm font-semibold text-[#2C2E2F]">Géomètre</p>
                     <p className="text-xs text-gray-500">Plans sur mesure — Contactez-nous</p>
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
-                  <span className="text-2xl">⚖️</span>
+                  <span className="text-2xl"><Scale className="w-4 h-4" /></span>
                   <div>
                     <p className="text-sm font-semibold text-[#2C2E2F]">Notaire</p>
                     <p className="text-xs text-gray-500">Plans Standard / Premium / Elite</p>

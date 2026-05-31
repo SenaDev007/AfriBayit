@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { applyGuardrails } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman } from '@/lib/rebecca/handoff';
+import { RefreshCw } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
           });
 
           if (handoffResult.shouldHandoff) {
-            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... 🔄');
+            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... <RefreshCw className="w-4 h-4" />');
             // TODO: Create handoff ticket in DB and notify support team
             continue;
           }

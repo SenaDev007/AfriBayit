@@ -7,8 +7,9 @@ import { processQuery, REBECCA_SYSTEM_PROMPT } from '@/lib/rag';
 import { executeRebeccaFunction, REBECCA_FUNCTIONS } from '../functions/route';
 import { applyGuardrails, validateRebeccaResponse } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman, buildHandoffMessage } from '@/lib/rebecca/handoff';
-import {
-  getConversationMemory,
+import { checkPromptInjection, validateOutputSecurity, buildProtectedSystemPrompt } from '@/lib/rebecca/prompt-injection-guard';
+
+import {  getConversationMemory,
   storeConversationMemory,
   getUserContext,
   getOrCreateRebeccaSession,
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Step 0: Apply guardrails ──
+    //  Step 0: Apply guardrails 
     const guardResult = applyGuardrails(lastUserMessage.content);
     if (!guardResult.allowed) {
       return NextResponse.json({
@@ -62,9 +63,32 @@ export async function POST(request: Request) {
       });
     }
 
-    const sanitizedMessage = guardResult.sanitized || lastUserMessage.content;
+    const guardSanitized = guardResult.sanitized || lastUserMessage.content;
 
-    // ── Step 0.5: Check for human handoff ──
+    //  Step 0.1: Prompt injection detection (CDC §10.6)
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || undefined;
+    const injectionCheck = checkPromptInjection(guardSanitized, {
+      userId,
+      sessionId,
+      ip: clientIp,
+    });
+
+    if (!injectionCheck.isSafe) {
+      return NextResponse.json({
+        message: 'Je suis désolée, je ne peux pas traiter cette demande. Si vous avez une question immobilière, je suis là pour vous aider.',
+        blocked: true,
+        reason: injectionCheck.blockedReason,
+        injectionConfidence: injectionCheck.confidence,
+        auditId: injectionCheck.auditId,
+        sessionId,
+      });
+    }
+
+    const sanitizedMessage = injectionCheck.sanitizedInput;
+
+    //  Step 0.5: Check for human handoff 
     const effectiveSessionId = sessionId || (userId ? await getOrCreateRebeccaSession(userId) : undefined);
     const consecutiveFailures = failureTracker.get(effectiveSessionId || 'default') || 0;
 
@@ -86,7 +110,7 @@ export async function POST(request: Request) {
       });
 
       return NextResponse.json({
-        message: 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... 🔄\n\nUn agent va prendre le relais pour mieux vous accompagner.',
+        message: 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp...\n\nUn agent va prendre le relais pour mieux vous accompagner.',
         handoff: true,
         handoffReason: handoffResult.reason,
         handoffPriority: handoffResult.priority,
@@ -95,7 +119,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── Step 1: Load conversation memory ──
+    //  Step 1: Load conversation memory 
     let memoryMessages: ChatMessage[] = [];
     if (effectiveSessionId) {
       const memory = await getConversationMemory(effectiveSessionId);
@@ -105,20 +129,21 @@ export async function POST(request: Request) {
       }));
     }
 
-    // ── Step 2: Build user context ──
+    //  Step 2: Build user context 
     let userContext = '';
     if (userId) {
       userContext = await getUserContext(userId);
     }
 
-    // ── Step 3: Run RAG pipeline to get context-augmented response ──
+    //  Step 3: Run RAG pipeline to get context-augmented response 
     const ragResult = await processQuery(sanitizedMessage, { country, city, sessionId: effectiveSessionId });
 
-    // ── Step 4: Build conversation with history for LLM ──
+    //  Step 4: Build conversation with history for LLM 
     const contextPrefix = userContext ? `\n\nContexte utilisateur: ${userContext}` : '';
+    const protectedSystemPrompt = buildProtectedSystemPrompt(REBECCA_SYSTEM_PROMPT);
 
     const conversationMessages = [
-      { role: 'system' as const, content: REBECCA_SYSTEM_PROMPT + contextPrefix },
+      { role: 'system' as const, content: protectedSystemPrompt + contextPrefix },
       ...memoryMessages.slice(-10),
       ...messages.slice(-5).map((m) => ({
         role: m.role as 'user' | 'assistant',
@@ -126,7 +151,7 @@ export async function POST(request: Request) {
       })),
     ];
 
-    // ── Step 5: Call LLM with function calling support ──
+    //  Step 5: Call LLM with function calling support 
     let aiResponse = ragResult.answer;
     let functionResults: Array<{ name: string; result: unknown }> = [];
 
@@ -182,6 +207,13 @@ export async function POST(request: Request) {
         aiResponse = 'Je suis désolée, je ne peux pas fournir cette information. Pourriez-vous reformuler votre question ?';
       }
 
+      // Step 5.5: Output security validation (CDC §10.6)
+      const outputSecurity = validateOutputSecurity(aiResponse);
+      if (!outputSecurity.isSafe) {
+        console.warn('[REBECCA-SECURITY] Output blocked:', outputSecurity.details);
+        aiResponse = 'Je suis désolée, je ne peux pas fournir cette information. Pourriez-vous reformuler votre question ?';
+      }
+
       // Reset failure tracker on success
       if (effectiveSessionId) {
         failureTracker.delete(effectiveSessionId);
@@ -198,7 +230,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Step 6: Save conversation to DB ──
+    //  Step 6: Save conversation to DB 
     if (effectiveSessionId && userId) {
       try {
         // Find or create Rebecca user
@@ -262,7 +294,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Step 7: Return response ──
+    //  Step 7: Return response 
     return NextResponse.json({
       message: aiResponse,
       sources: ragResult.sources.map((s) => ({

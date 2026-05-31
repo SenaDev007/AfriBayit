@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiPost } from '@/lib/api';
+import { BarChart3, Bot, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, MessageCircle, HandHeart, Scale, Search, Zap } from 'lucide-react';
 
 interface RebeccaChatProps {
   isOpen: boolean;
@@ -30,20 +31,20 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Quick actions — enhanced with more options
 const quickActions = [
-  { id: 'search', label: 'Rechercher un bien', icon: '🔍', message: 'Je souhaite rechercher un bien immobilier' },
-  { id: 'escrow', label: 'Suivi escrow', icon: '🔒', message: 'Je veux suivre l\'état de ma transaction escrow' },
-  { id: 'avm', label: 'Estimer valeur', icon: '💰', message: 'Je souhaite estimer la valeur d\'un bien immobilier' },
-  { id: 'artisan', label: 'Trouver artisan', icon: '🔨', message: 'Je cherche un artisan certifié pour des travaux' },
-  { id: 'market', label: 'Prix du marché', icon: '📊', message: 'Quels sont les prix du marché immobilier ?' },
-  { id: 'legal', label: 'Conseil légal', icon: '⚖️', message: 'Quels documents sont nécessaires pour une transaction ?' },
-  { id: 'finance', label: 'Financement', icon: '🏦', message: 'Je souhaite simuler un financement immobilier' },
-  { id: 'docs', label: 'Analyser doc', icon: '📄', message: 'Je veux analyser un document immobilier' },
+  { id: 'search', label: 'Rechercher un bien', icon: <Search className="w-3.5 h-3.5" />, message: 'Je souhaite rechercher un bien immobilier' },
+  { id: 'escrow', label: 'Suivi escrow', icon: <Lock className="w-3.5 h-3.5" />, message: 'Je veux suivre l\'état de ma transaction escrow' },
+  { id: 'avm', label: 'Estimer valeur', icon: <Coins className="w-3.5 h-3.5" />, message: 'Je souhaite estimer la valeur d\'un bien immobilier' },
+  { id: 'artisan', label: 'Trouver artisan', icon: <Hammer className="w-3.5 h-3.5" />, message: 'Je cherche un artisan certifié pour des travaux' },
+  { id: 'market', label: 'Prix du marché', icon: <BarChart3 className="w-3.5 h-3.5" />, message: 'Quels sont les prix du marché immobilier ?' },
+  { id: 'legal', label: 'Conseil légal', icon: <Scale className="w-3.5 h-3.5" />, message: 'Quels documents sont nécessaires pour une transaction ?' },
+  { id: 'finance', label: 'Financement', icon: <Landmark className="w-3.5 h-3.5" />, message: 'Je souhaite simuler un financement immobilier' },
+  { id: 'docs', label: 'Analyser doc', icon: <FileText className="w-3.5 h-3.5" />, message: 'Je veux analyser un document immobilier' },
 ];
 
 const welcomeMessage: Message = {
   id: 'welcome',
   sender: 'bot',
-  text: 'Bonjour ! 👋 Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n🔍 Rechercher des biens immobiliers\n🔒 Suivre vos transactions escrow\n💰 Estimer la valeur d\'un bien\n🔨 Trouver des artisans certifiés\n📊 Analyser le marché immobilier\n⚖️ Conseils sur les procédures légales\n🏦 Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?',
+  text: 'Bonjour ! Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n<Search className="w-4 h-4" /> Rechercher des biens immobiliers\n<Lock className="w-4 h-4" /> Suivre vos transactions escrow\n<Coins className="w-4 h-4" /> Estimer la valeur d\'un bien\n<Hammer className="w-4 h-4" /> Trouver des artisans certifiés\n<BarChart3 className="w-4 h-4" /> Analyser le marché immobilier\n<Scale className="w-4 h-4" /> Conseils sur les procédures légales\n Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?',
   timestamp: new Date(),
 };
 
@@ -157,7 +158,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
         {
           id: (Date.now() + 1).toString(),
           sender: 'bot',
-          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer. 🙏',
+          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer. <HandHeart className="w-4 h-4" />',
           timestamp: new Date(),
         },
       ]);
@@ -199,14 +200,14 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
   };
 
   const getSourceIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      property: '🏠',
-      legal_doc: '📄',
-      faq: '❓',
-      market_data: '📊',
-      artisan: '🔨',
+    const icons: Record<string, React.ReactNode> = {
+      property: <Home className="w-3 h-3" />,
+      legal_doc: <FileText className="w-3 h-3" />,
+      faq: <HelpCircle className="w-3 h-3" />,
+      market_data: <BarChart3 className="w-3 h-3" />,
+      artisan: <Hammer className="w-3 h-3" />,
     };
-    return icons[type] || '📋';
+    return icons[type] || <ClipboardList className="w-3 h-3" />;
   };
 
   const getFunctionLabel = (fn: string) => {
@@ -293,7 +294,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                         disabled={isSending}
                         className="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-[#003087]/10 rounded-xl text-[11px] font-medium text-[#003087] hover:bg-[#003087]/5 transition-colors disabled:opacity-50 text-left"
                       >
-                        <span className="text-sm">{action.icon}</span>
+                        {action.icon}
                         <span className="truncate">{action.label}</span>
                       </motion.button>
                     ))}
@@ -360,7 +361,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                             >
                               {msg.sources.map((source, idx) => (
                                 <div key={idx} className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-lg text-[10px]">
-                                  <span>{getSourceIcon(source.type)}</span>
+                                  {getSourceIcon(source.type)}
                                   <span className="text-gray-600 truncate">{source.source}</span>
                                   <span className="text-gray-400 ml-auto shrink-0">{Math.round(source.score * 100)}%</span>
                                 </div>
@@ -484,9 +485,9 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                 {!showQuickActions && (
                   <button
                     onClick={() => setShowQuickActions(true)}
-                    className="text-[9px] text-[#003087] font-medium hover:underline"
+                    className="text-[9px] text-[#003087] font-medium hover:underline flex items-center gap-0.5"
                   >
-                    ⚡ Actions
+                    <Zap className="w-2.5 h-2.5" /> Actions
                   </button>
                 )}
               </div>

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
+import { Globe } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -80,7 +81,7 @@ export default function PaysCouverts() {
               >
                 {/* Flag */}
                 <div className="text-5xl sm:text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                  {meta?.flag || '🌍'}
+                  {meta?.flag || '<Globe className="w-4 h-4" />'}
                 </div>
 
                 {/* Country Name */}

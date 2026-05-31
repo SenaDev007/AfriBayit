@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { AlertTriangle, Award, BarChart3, Camera, Circle, Coins, GraduationCap, MessageCircle, User } from 'lucide-react';
 
 interface ProfileData {
   profile: {
@@ -96,11 +97,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
   };
 
   const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'about', label: 'À propos', icon: '👤' },
-    { key: 'experience', label: 'Parcours', icon: '💼' },
-    { key: 'portfolio', label: 'Portfolio', icon: '📸' },
-    { key: 'reviews', label: 'Avis', icon: '💬' },
-    { key: 'stats', label: 'Crédibilité', icon: '📊' },
+    { key: 'about', label: 'À propos', icon: '<User className="w-4 h-4" />' },
+    { key: 'experience', label: 'Parcours', icon: '' },
+    { key: 'portfolio', label: 'Portfolio', icon: '<Camera className="w-4 h-4" />' },
+    { key: 'reviews', label: 'Avis', icon: '<MessageCircle className="w-4 h-4" />' },
+    { key: 'stats', label: 'Crédibilité', icon: '<BarChart3 className="w-4 h-4" />' },
   ];
 
   if (isLoading) {
@@ -134,7 +135,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
       <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
           <div className="text-center py-20">
-            <span className="text-4xl block mb-3">⚠️</span>
+            <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
             <p className="text-gray-600 font-semibold mb-1">Profil introuvable</p>
             <p className="text-sm text-gray-400">{error || 'Ce profil n\'existe pas ou n\'est pas public.'}</p>
           </div>
@@ -179,13 +180,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F]">{user.name}</h1>
                 {user.verified && (
-                  <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full">🏅 Vérifié</span>
+                  <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full"><Award className="w-4 h-4" /> Vérifié</span>
                 )}
               </div>
               <p className="text-sm text-gray-600 mb-1">{profile.headline || user.role}</p>
               <p className="text-xs text-gray-400">
                 {[user.city, user.country].filter(Boolean).join(' · ')}
-                {profile.availability === 'available' && <span className="text-[#00A651] ml-2">● Disponible</span>}
+                {profile.availability === 'available' && <span className="text-[#00A651] ml-2"><Circle className="w-4 h-4" /> Disponible</span>}
               </p>
             </div>
             <div className="flex gap-2">
@@ -298,7 +299,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                   {profile.education.map(edu => (
                     <div key={edu.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl">
                       <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
-                        <span className="text-lg">🎓</span>
+                        <span className="text-lg"><GraduationCap className="w-4 h-4" /></span>
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#2C2E2F]">{edu.degree}</p>
@@ -351,7 +352,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {profile.portfolio.length === 0 ? (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">📸</span>
+                <span className="text-4xl block mb-3"><Camera className="w-4 h-4" /></span>
                 <p className="text-gray-600 font-semibold mb-1">Aucun projet dans le portfolio</p>
               </div>
             ) : (
@@ -384,7 +385,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             {reviews.length === 0 ? (
               <div className="text-center py-12">
-                <span className="text-4xl block mb-3">💬</span>
+                <span className="text-4xl block mb-3"><MessageCircle className="w-4 h-4" /></span>
                 <p className="text-gray-600 font-semibold mb-1">Aucun avis pour le moment</p>
               </div>
             ) : (
@@ -423,10 +424,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="grid grid-cols-2 gap-4 mb-5">
               {[
-                { label: 'Score crédibilité', value: profile.credibilityScore, icon: '⭐', color: '#D4AF37', suffix: '/100' },
-                { label: 'AfriPoints', value: user.afriPoints, icon: '💰', color: '#003087' },
-                { label: 'Avis reçus', value: reviews.length, icon: '💬', color: '#009CDE' },
-                { label: 'Complétude', value: profile.completenessPct, icon: '📊', color: '#00A651', suffix: '%' },
+                { label: 'Score crédibilité', value: profile.credibilityScore, icon: '', color: '#D4AF37', suffix: '/100' },
+                { label: 'AfriPoints', value: user.afriPoints, icon: '<Coins className="w-4 h-4" />', color: '#003087' },
+                { label: 'Avis reçus', value: reviews.length, icon: '<MessageCircle className="w-4 h-4" />', color: '#009CDE' },
+                { label: 'Complétude', value: profile.completenessPct, icon: '<BarChart3 className="w-4 h-4" />', color: '#00A651', suffix: '%' },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}

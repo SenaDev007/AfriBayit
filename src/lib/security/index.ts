@@ -19,3 +19,33 @@ export {
   sanitizeSearchQuery,
   validatePagination,
 } from './input-validation';
+export {
+  detectHeadlessBrowser,
+  validateHoneypotFields,
+  analyzeRequestPattern,
+  checkEndpointRateLimit,
+  shouldTriggerCaptcha,
+  recordFailedAttempt,
+  clearFailedAttempts,
+  comprehensiveScrapingCheck,
+  DEFAULT_HONEYPOT_FIELDS,
+  ENDPOINT_RATE_LIMITS,
+} from './anti-scraping';
+export {
+  generateTokenPair,
+  verifyAccessToken,
+  verifyRefreshToken,
+  rotateRefreshToken,
+  blacklistToken,
+  revokeAllUserTokens,
+  isTokenBlacklisted,
+  generateDeviceFingerprint,
+  compareDeviceFingerprints,
+  getTokenJti,
+  getTokenStats,
+  decodeJWTPayload,
+  type JWTPayload,
+  type TokenPair,
+  type TokenVerificationResult,
+  type DeviceFingerprint,
+} from './jwt-security';

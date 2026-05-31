@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Phone } from 'lucide-react';
 
 /**
  * AfriBayit — USSD Handler for Africa's Talking
@@ -329,7 +330,7 @@ export async function POST(request: Request) {
           case '1':
             return new NextResponse(`END Agent Immobilier
 Contactez-nous :
-📞 +229 90 00 00 00
+<Phone className="w-4 h-4" /> +229 90 00 00 00
 WhatsApp : +229 90 00 00 00
 Web : afribayit.com/agents`, {
               headers: { 'Content-Type': 'text/plain' },
@@ -337,14 +338,14 @@ Web : afribayit.com/agents`, {
           case '2':
             return new NextResponse(`END Géomètre AfriBayit
 GeoTrust - Certification foncière
-📞 +229 90 00 00 01
+<Phone className="w-4 h-4" /> +229 90 00 00 01
 Web : afribayit.com/geotrust`, {
               headers: { 'Content-Type': 'text/plain' },
             });
           case '3':
             return new NextResponse(`END Notaire AfriBayit
 Service juridique immobilier
-📞 +229 90 00 00 02
+<Phone className="w-4 h-4" /> +229 90 00 00 02
 Web : afribayit.com/notaires`, {
               headers: { 'Content-Type': 'text/plain' },
             });
@@ -368,13 +369,13 @@ Web : afribayit.com/notaires`, {
           case '1':
             return new NextResponse(`END Vos favoris
 Connectez-vous sur afribayit.com pour voir vos biens favoris.
-📞 +229 90 00 00 00`, {
+<Phone className="w-4 h-4" /> +229 90 00 00 00`, {
               headers: { 'Content-Type': 'text/plain' },
             });
           case '2':
             return new NextResponse(`END Vos recherches
 Retrouvez l'historique sur afribayit.com
-📞 +229 90 00 00 00`, {
+<Phone className="w-4 h-4" /> +229 90 00 00 00`, {
               headers: { 'Content-Type': 'text/plain' },
             });
           case '3':

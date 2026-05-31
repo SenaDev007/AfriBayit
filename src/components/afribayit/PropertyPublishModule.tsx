@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { useCreateProperty } from '@/hooks/useProperties';
+import { Home, Building2, Map, Landmark, Store, BedDouble, Coins, Key, TrendingUp, ClipboardList, PenTool, Camera, FileText, Bot, CheckCircle, PartyPopper, Send, User, Hourglass, Check, X, Lightbulb, AlertTriangle } from 'lucide-react';
 import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/legal-docs';
 
 interface ModuleProps {
@@ -14,19 +15,19 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — property types
 const propertyTypes = [
-  { value: 'villa', label: 'Villa', icon: '🏡' },
-  { value: 'appartement', label: 'Appartement', icon: '🏢' },
-  { value: 'terrain', label: 'Terrain', icon: '🗺️' },
-  { value: 'bureau', label: 'Bureau', icon: '🏛️' },
-  { value: 'commerce', label: 'Commerce', icon: '🏪' },
-  { value: 'chambre', label: 'Studio/Chambre', icon: '🛏️' },
+  { value: 'villa', label: 'Villa', icon: <Home className="w-5 h-5" /> },
+  { value: 'appartement', label: 'Appartement', icon: <Building2 className="w-5 h-5" /> },
+  { value: 'terrain', label: 'Terrain', icon: <Map className="w-5 h-5" /> },
+  { value: 'bureau', label: 'Bureau', icon: <Landmark className="w-5 h-5" /> },
+  { value: 'commerce', label: 'Commerce', icon: <Store className="w-5 h-5" /> },
+  { value: 'chambre', label: 'Studio/Chambre', icon: <BedDouble className="w-5 h-5" /> },
 ];
 
 // Static config — transaction types
 const transactionTypes = [
-  { value: 'achat', label: 'À vendre', icon: '💰' },
-  { value: 'location', label: 'À louer', icon: '🔑' },
-  { value: 'investissement', label: 'Investissement', icon: '📈' },
+  { value: 'achat', label: 'À vendre', icon: <Coins className="w-5 h-5" /> },
+  { value: 'location', label: 'À louer', icon: <Key className="w-5 h-5" /> },
+  { value: 'investissement', label: 'Investissement', icon: <TrendingUp className="w-5 h-5" /> },
 ];
 
 // Static config — cities with country codes
@@ -48,13 +49,13 @@ const featuresList = [
 
 // Publish steps — CDC §5.0.2: Saisie → Upload Documents → Vérification IA → Validation → Publication
 const publishSteps = [
-  { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: '📋' },
-  { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: '✍️' },
-  { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: '📸' },
-  { step: 4, title: 'Documents', desc: 'Upload documents légaux requis', icon: '📄' },
-  { step: 5, title: 'Vérification IA', desc: 'Validation automatique des documents', icon: '🤖' },
-  { step: 6, title: 'Validation', desc: 'Révision et soumission', icon: '✅' },
-  { step: 7, title: 'Publication', desc: 'Mise en ligne du bien', icon: '🎉' },
+  { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: <ClipboardList className="w-4 h-4" /> },
+  { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: <PenTool className="w-4 h-4" /> },
+  { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: <Camera className="w-4 h-4" /> },
+  { step: 4, title: 'Documents', desc: 'Upload documents légaux requis', icon: <FileText className="w-4 h-4" /> },
+  { step: 5, title: 'Vérification IA', desc: 'Validation automatique des documents', icon: <Bot className="w-4 h-4" /> },
+  { step: 6, title: 'Validation', desc: 'Révision et soumission', icon: <CheckCircle className="w-4 h-4" /> },
+  { step: 7, title: 'Publication', desc: 'Mise en ligne du bien', icon: <PartyPopper className="w-4 h-4" /> },
 ];
 
 interface FormData {
@@ -220,10 +221,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {/* Publication Timeline */}
             <div className="text-left space-y-3 mb-6">
               {[
-                { step: 'Soumission', status: 'completed', icon: '📤' },
-                { step: 'Vérification IA documents', status: 'in_progress', icon: '🤖' },
-                { step: 'Validation humaine', status: 'pending', icon: '👤' },
-                { step: 'Publication', status: 'pending', icon: '🎉' },
+                { step: 'Soumission', status: 'completed', icon: <Send className="w-4 h-4" /> },
+                { step: 'Vérification IA documents', status: 'in_progress', icon: <Bot className="w-4 h-4" /> },
+                { step: 'Validation humaine', status: 'pending', icon: <User className="w-4 h-4" /> },
+                { step: 'Publication', status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
               ].map((vs, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
@@ -231,7 +232,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     vs.status === 'in_progress' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' :
                     'bg-gray-100 text-gray-400'
                   }`}>
-                    {vs.status === 'completed' ? '✓' : vs.status === 'in_progress' ? '⏳' : (i + 1)}
+                    {vs.status === 'completed' ? <Check className="w-3 h-3" /> : vs.status === 'in_progress' ? <Hourglass className="w-3 h-3" /> : (i + 1)}
                   </div>
                   <div>
                     <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#2C2E2F]'}`}>
@@ -264,7 +265,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            📝 Publier un bien — CDC §5.0.2
+            <PenTool className="w-4 h-4" /> Publier un bien — CDC §5.0.2
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
             Nouvelle <span className="text-[#003087]">Annonce</span>
@@ -281,7 +282,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   currentStep === s.step ? 'bg-[#003087] text-white' :
                   'bg-gray-100 text-gray-400'
                 }`}>
-                  {currentStep > s.step ? '✓' : s.step}
+                  {currentStep > s.step ? <Check className="w-3 h-3" /> : s.step}
                 </div>
                 <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
                   currentStep >= s.step ? 'text-[#003087]' : 'text-gray-400'
@@ -321,7 +322,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           formData.propertyType === pt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
                         }`}
                       >
-                        <span className="text-xl block mb-1">{pt.icon}</span>
+                        <span className="flex items-center justify-center mb-1">{pt.icon}</span>
                         <span className="text-[10px] font-medium">{pt.label}</span>
                       </button>
                     ))}
@@ -340,7 +341,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           formData.transactionType === tt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
                         }`}
                       >
-                        <span className="text-lg block mb-1">{tt.icon}</span>
+                        <span className="flex items-center justify-center mb-1">{tt.icon}</span>
                         <span className="text-xs font-medium">{tt.label}</span>
                       </button>
                     ))}
@@ -405,7 +406,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Legal doc preview */}
                 {selectedCountryCode && formData.propertyType && (
                   <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
-                    <p className="text-xs font-semibold text-[#D4AF37] mb-1">📄 Documents requis détectés</p>
+                    <p className="text-xs font-semibold text-[#D4AF37] mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Documents requis détectés</p>
                     <p className="text-[10px] text-gray-500">
                       Pour {COUNTRY_NAMES[selectedCountryCode] || selectedCountryCode} — {propertyTypes.find(p => p.value === formData.propertyType)?.label} :
                       {' '}{requiredDocs.map(d => getDocLabel(d)).join(', ')}
@@ -565,12 +566,12 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                                     onClick={() => addLegalDoc(docType)}
                                     className="mt-2 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
                                   >
-                                    📄 Télécharger le document
+                                    <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Télécharger le document</span>
                                   </button>
                                 ) : (
                                   <div className="mt-2 flex items-center gap-2">
                                     <span className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-semibold rounded-full">
-                                      ⏳ Documents en attente de vérification
+                                      <span className="flex items-center gap-1"><Hourglass className="w-3 h-3" /> Documents en attente de vérification</span>
                                     </span>
                                     <button
                                       onClick={() => removeLegalDoc(docType)}
@@ -595,7 +596,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         <p className={`text-sm font-semibold ${
                           allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'
                         }`}>
-                          {allRequiredDocsUploaded ? '✅ Tous les documents requis sont téléchargés' : '⏳ Documents en attente de vérification'}
+                          {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents requis sont téléchargés</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> Documents en attente de vérification</span>}
                         </p>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -614,7 +615,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     {/* AI Verification Notice */}
                     <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">🤖</span>
+                        <Bot className="w-5 h-5 text-[#009CDE]" />
                         <p className="text-sm font-semibold text-[#009CDE]">Vérification IA automatique</p>
                       </div>
                       <p className="text-xs text-gray-500">
@@ -658,7 +659,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           <p className="text-sm font-semibold text-[#2C2E2F]">{getDocLabel(docType)}</p>
                           {doc ? (
                             <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
-                              {isVerified ? '✓ Vérifié' : '⏳ En attente'}
+                              {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> Vérifié</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> En attente</span>}
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">Manquant</span>
@@ -681,7 +682,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 <div className="p-3 bg-[#009CDE]/5 rounded-xl text-xs text-[#009CDE]">
-                  💡 La vérification IA analyse l&apos;authenticité des documents, la cohérence des données,
+                  <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> La vérification IA analyse l&apos;authenticité des documents, la cohérence des données,</span>
                   et la conformité avec les exigences légales locales. Une validation humaine suivra.
                 </div>
               </motion.div>
@@ -698,7 +699,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Error */}
                 {submitError && (
                   <div className="p-3 bg-[#D93025]/5 rounded-2xl flex items-center gap-2">
-                    <span className="text-sm">⚠️</span>
+                    <AlertTriangle className="w-4 h-4 text-[#D93025]" />
                     <p className="text-xs text-[#D93025]">{submitError}</p>
                   </div>
                 )}
@@ -758,7 +759,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           return (
                             <div key={docType} className="flex items-center gap-2 text-xs">
                               <span className={isUploaded ? 'text-[#00A651]' : 'text-[#D93025]'}>
-                                {isUploaded ? '✓' : '✗'}
+                                {isUploaded ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                               </span>
                               <span className={isUploaded ? 'text-[#2C2E2F]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
                             </div>
@@ -774,10 +775,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <p className="text-xs font-semibold text-[#003087] mb-2">Processus après soumission</p>
                   <div className="space-y-2">
                     {[
-                      { icon: '📤', text: 'Soumission de l\'annonce' },
-                      { icon: '🤖', text: 'Vérification IA documents' },
-                      { icon: '👤', text: 'Validation humaine' },
-                      { icon: '🎉', text: 'Publication' },
+                      { icon: <Send className="w-4 h-4" />, text: 'Soumission de l\'annonce' },
+                      { icon: <Bot className="w-4 h-4" />, text: 'Vérification IA documents' },
+                      { icon: <User className="w-4 h-4" />, text: 'Validation humaine' },
+                      { icon: <PartyPopper className="w-4 h-4" />, text: 'Publication' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-xs">{item.icon}</span>
@@ -808,11 +809,11 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 </p>
                 {allRequiredDocsUploaded ? (
                   <div className="p-3 bg-[#00A651]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#00A651] font-semibold">✅ Tous les documents légaux requis sont fournis</p>
+                    <p className="text-xs text-[#00A651] font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents légaux requis sont fournis</p>
                   </div>
                 ) : (
                   <div className="p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#D4AF37] font-semibold">⚠️ Certains documents requis sont manquants</p>
+                    <p className="text-xs text-[#D4AF37] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Certains documents requis sont manquants</p>
                     <p className="text-[10px] text-gray-500 mt-1">Vous pouvez quand même soumettre, mais la publication sera retardée</p>
                   </div>
                 )}

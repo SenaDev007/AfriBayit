@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ClipboardList, Coins, Scale, Globe, FileText, Landmark, CheckCircle, AlertTriangle, Ban, Undo2, Lock, Hourglass, Link } from 'lucide-react';
 import type { TransactionState, ReleaseConditions } from '@/lib/payments/types';
 
 // ============ Types ============
@@ -28,25 +29,25 @@ interface EscrowDashboardProps {
 interface StateConfig {
   key: EscrowState;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   description: string;
   category: 'normal' | 'success' | 'exception';
 }
 
 const NORMAL_STATES: StateConfig[] = [
-  { key: 'CREATED', label: 'Créé', icon: '📋', description: 'Transaction initiée', category: 'normal' },
-  { key: 'FUNDED', label: 'Financé', icon: '💰', description: 'Fonds déposés en escrow', category: 'normal' },
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '⚖️', description: 'Notaire désigné', category: 'normal' },
-  { key: 'GEO_VERIFIED', label: 'GeoTrust validé', icon: '🌍', description: 'Validation géomatique', category: 'normal' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', icon: '📝', description: 'Acte de vente signé', category: 'normal' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: '🏛️', description: 'Enregistrement ANDF', category: 'normal' },
-  { key: 'RELEASED', label: 'Libéré', icon: '✅', description: 'Fonds libérés — Transaction terminée', category: 'success' },
+  { key: 'CREATED', label: 'Créé', icon: <ClipboardList className="w-4 h-4" />, description: 'Transaction initiée', category: 'normal' },
+  { key: 'FUNDED', label: 'Financé', icon: <Coins className="w-4 h-4" />, description: 'Fonds déposés en escrow', category: 'normal' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, description: 'Notaire désigné', category: 'normal' },
+  { key: 'GEO_VERIFIED', label: 'GeoTrust validé', icon: <Globe className="w-4 h-4" />, description: 'Validation géomatique', category: 'normal' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', icon: <FileText className="w-4 h-4" />, description: 'Acte de vente signé', category: 'normal' },
+  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, description: 'Enregistrement ANDF', category: 'normal' },
+  { key: 'RELEASED', label: 'Libéré', icon: <CheckCircle className="w-4 h-4 text-green-500" />, description: 'Fonds libérés — Transaction terminée', category: 'success' },
 ];
 
 const EXCEPTION_STATES: StateConfig[] = [
-  { key: 'DISPUTED', label: 'Litige', icon: '⚠️', description: 'Litige signalé — Médiation en cours', category: 'exception' },
-  { key: 'CANCELLED', label: 'Annulé', icon: '🚫', description: 'Transaction annulée', category: 'exception' },
-  { key: 'REFUNDED', label: 'Remboursé', icon: '↩️', description: 'Fonds remboursés', category: 'exception' },
+  { key: 'DISPUTED', label: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, description: 'Litige signalé — Médiation en cours', category: 'exception' },
+  { key: 'CANCELLED', label: 'Annulé', icon: <Ban className="w-4 h-4" />, description: 'Transaction annulée', category: 'exception' },
+  { key: 'REFUNDED', label: 'Remboursé', icon: <Undo2 className="w-4 h-4" />, description: 'Fonds remboursés', category: 'exception' },
 ];
 
 const NORMAL_FLOW_ORDER: EscrowState[] = [
@@ -58,33 +59,33 @@ const NORMAL_FLOW_ORDER: EscrowState[] = [
 interface ActionConfig {
   target: EscrowState;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   actorType: string;
   variant: 'default' | 'destructive' | 'outline';
 }
 
 const STATE_ACTIONS: Record<string, ActionConfig[]> = {
   CREATED: [
-    { target: 'FUNDED', label: 'Financer l\'escrow', icon: '💰', actorType: 'buyer', variant: 'default' },
+    { target: 'FUNDED', label: 'Financer l\'escrow', icon: <Coins className="w-4 h-4" />, actorType: 'buyer', variant: 'default' },
   ],
   FUNDED: [
-    { target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: '⚖️', actorType: 'admin', variant: 'default' },
+    { target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
   ],
   NOTARY_ASSIGNED: [
-    { target: 'GEO_VERIFIED', label: 'Valider GeoTrust', icon: '🌍', actorType: 'geometer', variant: 'default' },
+    { target: 'GEO_VERIFIED', label: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'geometer', variant: 'default' },
   ],
   GEO_VERIFIED: [
-    { target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: '📝', actorType: 'notary', variant: 'default' },
+    { target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   DEED_SIGNED: [
-    { target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: '🏛️', actorType: 'notary', variant: 'default' },
+    { target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: <Landmark className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   ANDF_REGISTERED: [
-    { target: 'RELEASED', label: 'Libérer les fonds', icon: '✅', actorType: 'admin', variant: 'default' },
+    { target: 'RELEASED', label: 'Libérer les fonds', icon: <CheckCircle className="w-4 h-4 text-green-500" />, actorType: 'admin', variant: 'default' },
   ],
   DISPUTED: [
-    { target: 'FUNDED', label: 'Résoudre → Financé', icon: '↩️', actorType: 'admin', variant: 'outline' },
-    { target: 'REFUNDED', label: 'Rembourser', icon: '↩️', actorType: 'admin', variant: 'destructive' },
+    { target: 'FUNDED', label: 'Résoudre → Financé', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'outline' },
+    { target: 'REFUNDED', label: 'Rembourser', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'destructive' },
   ],
 };
 
@@ -215,7 +216,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         className="text-center"
       >
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-          🔒 Escrow Sécurisé
+          <Lock className="w-4 h-4" /> Escrow Sécurisé
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
           Tableau de Bord Escrow
@@ -273,7 +274,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       <motion.div
                         initial={false}
                         animate={{ scale: status === 'current' ? 1.15 : 1 }}
-                        className={`relative w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all duration-300 ${
+                        className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                           status === 'completed'
                             ? 'bg-[#00A651]/10 ring-2 ring-[#00A651]/30'
                             : status === 'current'
@@ -282,9 +283,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         }`}
                       >
                         {status === 'completed' ? (
-                          <svg className="w-5 h-5 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
+                          <CheckCircle className="w-5 h-5 text-[#00A651]" />
                         ) : (
                           <span className={status === 'current' ? '' : 'opacity-40'}>{state.icon}</span>
                         )}
@@ -352,7 +351,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                           : 'bg-gray-50 text-gray-400'
                       }`}
                     >
-                      <span>{state.icon}</span>
+                      {state.icon}
                       <span className="font-medium">{state.label}</span>
                     </div>
                   );
@@ -386,11 +385,11 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
           <div className="space-y-3">
             {[
-              { key: 'docsValidated' as const, label: 'Documents légaux validés', icon: '📄' },
-              { key: 'geoTrustValidated' as const, label: 'Validation GeoTrust', icon: '🌍' },
-              { key: 'notaryAssigned' as const, label: 'Notaire assigné', icon: '⚖️' },
-              { key: 'deedSigned' as const, label: 'Acte de vente signé', icon: '📝' },
-              { key: 'andfRegistered' as const, label: 'Enregistrement ANDF', icon: '🏛️' },
+              { key: 'docsValidated' as const, label: 'Documents légaux validés', icon: <FileText className="w-3 h-3" /> },
+              { key: 'geoTrustValidated' as const, label: 'Validation GeoTrust', icon: <Globe className="w-3 h-3" /> },
+              { key: 'notaryAssigned' as const, label: 'Notaire assigné', icon: <Scale className="w-3 h-3" /> },
+              { key: 'deedSigned' as const, label: 'Acte de vente signé', icon: <FileText className="w-3 h-3" /> },
+              { key: 'andfRegistered' as const, label: 'Enregistrement ANDF', icon: <Landmark className="w-3 h-3" /> },
             ].map((condition) => (
               <div
                 key={condition.key}
@@ -410,7 +409,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <span className="text-[10px]">{condition.icon}</span>
+                    condition.icon
                   )}
                 </div>
                 <span className={`text-xs font-medium ${
@@ -447,7 +446,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
             {/* Commission */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-500 flex items-center gap-1">
-                💰 Commission ({(commissionRate * 100).toFixed(1)}%)
+                <Coins className="w-4 h-4" /> Commission ({(commissionRate * 100).toFixed(1)}%)
               </span>
               <span className="font-mono font-bold text-[#D4AF37]">{formatFCFA(commission)}</span>
             </div>
@@ -496,7 +495,8 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   onClick={() => setShowDisputeInput(!showDisputeInput)}
                   className="border-[#D93025]/20 text-[#D93025] hover:bg-[#D93025]/5"
                 >
-                  ⚠️ Signaler un litige
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Signaler un litige
                 </Button>
               </motion.div>
             )}
@@ -555,7 +555,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-[#2C2E2F]">Grand Livre Escrow</h3>
           <Badge variant="secondary" className="text-[10px]">
-            🔗 SHA-256 chaîné
+            <Link className="w-3 h-3 mr-1" /> SHA-256 chaîné
           </Badge>
         </div>
 
@@ -640,7 +640,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       {/* Hash verification */}
                       {reference && (
                         <p className="text-[8px] font-mono text-gray-300 mt-0.5 truncate" title={reference}>
-                          🔗 {reference.slice(0, 16)}...
+                          <Link className="w-2.5 h-2.5 inline" /> {reference.slice(0, 16)}...
                         </p>
                       )}
                     </div>

@@ -2,23 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Calculator,
-  Globe2,
-  Home,
-  Building2,
-  MapPin,
-  DollarSign,
-  ChevronDown,
-  ChevronRight,
-  Download,
-  ArrowLeftRight,
-  PieChart as PieChartIcon,
-  BarChart3,
-  FileText,
-  TrendingUp,
-  Check,
-} from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Building2, Calculator, Check, ChevronDown, ChevronRight, DollarSign, Download, FileText, Globe2, Home, MapPin, PieChart as PieChartIcon, TrendingUp, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -198,7 +182,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
           </div>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400">
-              ✕
+              <X className="w-4 h-4" />
             </Button>
           )}
         </div>

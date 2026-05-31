@@ -71,6 +71,7 @@ model User {
   connectedTo      UserConnection[]    @relation("Target")
   hotelBookings    HotelBooking[]
   guesthouseBookings GuesthouseBooking[]
+  shortTermRentalBookings ShortTermRentalBooking[]
   accreditations   CountryAccreditation[]
   quizAttempts     QuizAttempt[]
   certificates     Certificate[]
@@ -1447,4 +1448,146 @@ model Follower {
   @@index([followerId])
   @@index([followingId])
   @@map("followers")
+}
+
+// ============ SHORT-TERM RENTALS (Location Courte Durée — Airbnb Model) ============
+
+model ShortTermRental {
+  id              String   @id @default(cuid())
+  hostId          String
+  title           String
+  slug            String?  @unique
+  description     String?
+  propertyType    String   // appartement, villa, studio, chambre, maison, loft, bungalow
+  city            String
+  country         String
+  quartier        String?
+  address         String?
+  lat             Float?
+  lng             Float?
+  images          String?  // JSON array of URLs
+  pricePerNight   Float
+  weeklyPrice     Float?
+  monthlyPrice    Float?
+  currency        String   @default("XOF")
+  maxGuests       Int      @default(2)
+  bedrooms        Int      @default(1)
+  bathrooms       Int      @default(1)
+  beds           Int      @default(1)
+  amenities       String?  // JSON array: wifi, ac, pool, kitchen, parking, etc.
+  houseRules      String?  // JSON: check-in time, check-out time, no smoking, no pets, etc.
+  instantBooking  Boolean  @default(false)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  views           Int      @default(0)
+  otaRefs         String?  // JSON: {airbnb_id, booking_com_id, ...}
+  otaSyncStatus   String?  // JSON: {airbnb: "synced", booking_com: "pending", ...}
+  hostVerified    Boolean  @default(false)
+  hostIdentityVerified Boolean @default(false)
+  status          String   @default("active") // active, inactive, pending_review, suspended
+  minStayNights   Int      @default(1)
+  maxStayNights   Int?
+  cancellationPolicy String @default("flexible") // flexible, moderate, strict
+  cleaningFee     Float    @default(0)
+  securityDeposit Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  bookings        ShortTermRentalBooking[]
+  availability    ShortTermRentalAvailability[]
+  pricingRules    ShortTermRentalPricingRule[]
+  reviews_str     ShortTermRentalReview[]
+
+  @@map("short_term_rentals")
+}
+
+model ShortTermRentalAvailability {
+  id            String   @id @default(cuid())
+  rentalId      String
+  date          DateTime
+  status        String   @default("AVAILABLE") // AVAILABLE, BOOKED, BLOCKED, MAINTENANCE
+  priceOverride Float?
+  currency      String   @default("XOF")
+  source        String   @default("manual") // manual, ota_booking, airbnb, booking_com
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rental        ShortTermRental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@unique([rentalId, date])
+  @@map("short_term_rental_availability")
+}
+
+model ShortTermRentalPricingRule {
+  id              String   @id @default(cuid())
+  rentalId        String
+  name            String
+  period          String   // low_season, high_season, event, holiday, weekend, custom
+  multiplier      Float    @default(1.0)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime @default(now())
+
+  rental          ShortTermRental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@map("short_term_rental_pricing_rules")
+}
+
+model ShortTermRentalBooking {
+  id              String   @id @default(cuid())
+  bookingRef      String?  @unique
+  rentalId        String
+  userId          String
+  checkIn         DateTime
+  checkOut        DateTime
+  guests          Int      @default(1)
+  nights          Int
+  pricePerNight   Float
+  cleaningFee     Float    @default(0)
+  securityDeposit Float    @default(0)
+  totalPrice      Float
+  serviceFee      Float    @default(0)
+  currency        String   @default("XOF")
+  bookingType     String   @default("instant") // instant, request
+  sourceChannel   String   @default("direct") // direct, airbnb, booking_com
+  status          String   @default("pending") // pending, confirmed, checked_in, completed, cancelled, declined
+  paymentRef      String?
+  paymentProvider String?  // fedapay, stripe
+  specialRequests String?
+  hostResponse    String?
+  cancelledAt     DateTime?
+  cancellationReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rental          ShortTermRental @relation(fields: [rentalId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
+  review          ShortTermRentalReview?
+
+  @@map("short_term_rental_bookings")
+}
+
+model ShortTermRentalReview {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  rentalId    String
+  userId      String
+  cleanliness Int?     // 1-5
+  accuracy    Int?     // 1-5
+  communication Int?   // 1-5
+  location    Int?     // 1-5
+  checkIn     Int?     // 1-5
+  value       Int?     // 1-5
+  overall     Int      // 1-5
+  comment     String?
+  hostResponse String?
+  respondedAt DateTime?
+  status      String   @default("published") // pending_moderation, published, hidden
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  booking     ShortTermRentalBooking @relation(fields: [bookingId], references: [id])
+  rental      ShortTermRental        @relation(fields: [rentalId], references: [id])
+
+  @@map("short_term_rental_reviews")
 }

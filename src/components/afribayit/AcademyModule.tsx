@@ -10,6 +10,7 @@ import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { AlertTriangle, Award } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -104,7 +105,7 @@ export default function AcademyModule() {
           className="text-center mb-10"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            📚 AfriBayit Academy
+             AfriBayit Academy
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Formations <span className="text-[#003087]">Immobilières</span>
@@ -149,7 +150,7 @@ export default function AcademyModule() {
         {/* Error */}
         {error && (
           <div className="text-center py-12">
-            <span className="text-4xl block mb-3">⚠️</span>
+            <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
             <p className="text-gray-600 font-semibold mb-1">Impossible de charger les formations</p>
             <p className="text-sm text-gray-400">{error.message}</p>
           </div>
@@ -158,7 +159,7 @@ export default function AcademyModule() {
         {/* Empty */}
         {!isLoading && !error && filtered.length === 0 && (
           <div className="text-center py-12">
-            <span className="text-4xl block mb-3">📚</span>
+            <span className="text-4xl block mb-3"></span>
             <p className="text-gray-600 font-semibold mb-1">Aucune formation trouvée</p>
             <p className="text-sm text-gray-400">Essayez une autre catégorie</p>
           </div>
@@ -184,7 +185,7 @@ export default function AcademyModule() {
                     </span>
                     {course.certificate && (
                       <span className="px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">
-                        🏅 Certifiant
+                        <Award className="w-4 h-4" /> Certifiant
                       </span>
                     )}
                   </div>

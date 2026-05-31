@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallet } from '@/hooks/useWallet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge, BarChart3, CheckCircle, ClipboardList, Coins, Crown, Home, RefreshCw, User } from 'lucide-react';
 
 interface UserDashboardProps {
   onNavigate: (section: string) => void;
@@ -37,10 +38,10 @@ const statusLabels: Record<string, string> = {
 };
 
 const kycLevels = [
-  { level: 0, name: "Anonyme", color: "#6b7280", maxActions: "Consultation uniquement", icon: "👤" },
-  { level: 1, name: "Standard", color: "#009CDE", maxActions: "Contacts limités, pas de transaction", icon: "🆔" },
-  { level: 2, name: "Avancé", color: "#00A651", maxActions: "Transactions, escrow, publications", icon: "✅" },
-  { level: 3, name: "Pro", color: "#D4AF37", maxActions: "Accès complet, API, outils pro", icon: "👑" },
+  { level: 0, name: "Anonyme", color: "#6b7280", maxActions: "Consultation uniquement", Icon: User },
+  { level: 1, name: "Standard", color: "#009CDE", maxActions: "Contacts limités, pas de transaction", Icon: Badge },
+  { level: 2, name: "Avancé", color: "#00A651", maxActions: "Transactions, escrow, publications", Icon: CheckCircle },
+  { level: 3, name: "Pro", color: "#D4AF37", maxActions: "Accès complet, API, outils pro", Icon: Crown },
 ];
 
 function formatPrice(price: number): string {
@@ -142,10 +143,10 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                 </div>
               ) : (
                 [
-                  { label: 'Annonces actives', value: '—', icon: '🏠', color: '#003087' },
-                  { label: 'Transactions', value: String(transactions.length), icon: '📊', color: '#00A651' },
-                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: '💰', color: '#D4AF37' },
-                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: '⭐', color: '#009CDE' },
+                  { label: 'Annonces actives', value: '—', icon: '<Home className="w-4 h-4" />', color: '#003087' },
+                  { label: 'Transactions', value: String(transactions.length), icon: '<BarChart3 className="w-4 h-4" />', color: '#00A651' },
+                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: '<Coins className="w-4 h-4" />', color: '#D4AF37' },
+                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: '', color: '#009CDE' },
                 ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
@@ -264,7 +265,7 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                       <div key={String(txn.id)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10` }}>
                           <span className="text-lg">
-                            {status === 'RELEASED' ? '✅' : status === 'FUNDED' ? '💰' : status === 'IN_PROGRESS' ? '🔄' : '📋'}
+                            {status === 'RELEASED' ? '<CheckCircle className="w-4 h-4" />' : status === 'FUNDED' ? '<Coins className="w-4 h-4" />' : status === 'IN_PROGRESS' ? '<RefreshCw className="w-4 h-4" />' : '<ClipboardList className="w-4 h-4" />'}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -300,7 +301,7 @@ export default function UserDashboard({ onLogout }: UserDashboardProps) {
                       userKycLevel >= level.level ? 'border-[#00A651] bg-[#00A651]/5' : 'border-gray-100 bg-gray-50'
                     }`}
                   >
-                    <span className="text-2xl block mb-1">{level.icon}</span>
+                    <level.Icon className="w-6 h-6 mx-auto mb-1" />
                     <p className="text-xs font-semibold" style={{ color: userKycLevel >= level.level ? '#00A651' : '#9ca3af' }}>
                       {level.name}
                     </p>

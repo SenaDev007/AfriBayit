@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { apiFetch, apiPost, apiPatch } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCountry } from '@/contexts/CountryContext';
+import { AlertTriangle, Ban, Banknote, BarChart3, BedDouble, Calculator, Calendar, CheckCircle, ClipboardList, Coins, FileText, Hotel, Inbox, Info, MessageCircle, Plane, PlaneLanding, PlaneTakeoff, Radio, Receipt, RefreshCw, Siren, Smartphone, Star, Target, TrendingUp, Users, Wrench, XCircle, Zap } from 'lucide-react';
 
-// ── Types ──────────────────────────────────────────────────────
+//  Types 
 
 interface PMSDashboardData {
   hotel: { id: string; name: string; stars: number; country: string; city: string };
@@ -66,18 +67,18 @@ type PMSTab = 'dashboard' | 'calendar' | 'reservations' | 'rooms' | 'rates' | 'g
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const TABS: { key: PMSTab; label: string; icon: string }[] = [
-  { key: 'dashboard', label: 'Tableau de bord', icon: '📊' },
-  { key: 'calendar', label: 'Calendrier', icon: '📅' },
-  { key: 'reservations', label: 'Réservations', icon: '📋' },
-  { key: 'checkin', label: 'Check-in/out', icon: '🏨' },
-  { key: 'rooms', label: 'Chambres', icon: '🛏️' },
-  { key: 'rates', label: 'Tarifs', icon: '💰' },
-  { key: 'invoicing', label: 'Facturation', icon: '🧾' },
-  { key: 'cancellation', label: 'Annulation', icon: '🚫' },
-  { key: 'lastminute', label: 'Last-minute', icon: '⚡' },
-  { key: 'guests', label: 'Clients', icon: '👥' },
-  { key: 'reports', label: 'Rapports', icon: '📈' },
+const TABS: { key: PMSTab; label: string; icon: React.ReactNode }[] = [
+  { key: 'dashboard', label: 'Tableau de bord', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+  { key: 'calendar', label: 'Calendrier', icon: <Calendar className="w-3.5 h-3.5" /> },
+  { key: 'reservations', label: 'Réservations', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+  { key: 'checkin', label: 'Check-in/out', icon: <Hotel className="w-3.5 h-3.5" /> },
+  { key: 'rooms', label: 'Chambres', icon: <BedDouble className="w-3.5 h-3.5" /> },
+  { key: 'rates', label: 'Tarifs', icon: <Coins className="w-3.5 h-3.5" /> },
+  { key: 'invoicing', label: 'Facturation', icon: <Receipt className="w-3.5 h-3.5" /> },
+  { key: 'cancellation', label: 'Annulation', icon: <Ban className="w-3.5 h-3.5" /> },
+  { key: 'lastminute', label: 'Last-minute', icon: <Zap className="w-3.5 h-3.5" /> },
+  { key: 'guests', label: 'Clients', icon: <Users className="w-3.5 h-3.5" /> },
+  { key: 'reports', label: 'Rapports', icon: <TrendingUp className="w-3.5 h-3.5" /> },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -117,7 +118,7 @@ const ROOM_STATUS_LABELS: Record<string, string> = {
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MONTH_NAMES = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juil', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
-// ── Helpers ────────────────────────────────────────────────────
+//  Helpers 
 
 function fmt(amount: number): string {
   return new Intl.NumberFormat('fr-FR').format(amount);
@@ -132,7 +133,7 @@ function channelLabel(ch: string): string {
   return map[ch] || ch;
 }
 
-// ── Skeletons ──────────────────────────────────────────────────
+//  Skeletons 
 
 function DashboardSkeleton() {
   return (
@@ -153,7 +154,7 @@ function DashboardSkeleton() {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────
+//  Main Component 
 
 export default function HotelPMS() {
   const [activeTab, setActiveTab] = useState<PMSTab>('dashboard');
@@ -277,7 +278,7 @@ export default function HotelPMS() {
     }
   };
 
-  // ── Render ─────────────────────────────────────────────────
+  //  Render 
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -285,7 +286,7 @@ export default function HotelPMS() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            🏨 PMS Hôtelier — AfriBayit
+            <Hotel className="w-4 h-4" /> PMS Hôtelier — AfriBayit
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Gestion <span className="text-[#003087]">Hôtelière</span>
@@ -311,7 +312,7 @@ export default function HotelPMS() {
             onClick={handleSyncOTA}
             className="px-4 py-2.5 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-2"
           >
-            🔄 Synchroniser OTA
+            <RefreshCw className="w-4 h-4" /> Synchroniser OTA
           </button>
         </div>
 
@@ -331,7 +332,7 @@ export default function HotelPMS() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* ═══ DASHBOARD TAB ═══ */}
+          {/*  DASHBOARD TAB  */}
           {activeTab === 'dashboard' && (
             <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               {loading ? <DashboardSkeleton /> : dashboardData ? (
@@ -339,14 +340,14 @@ export default function HotelPMS() {
                   {/* KPI Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {[
-                      { label: 'Arrivées', value: dashboardData.today.arrivalCount, icon: '🛬', color: '#00A651' },
-                      { label: 'Départs', value: dashboardData.today.departureCount, icon: '🛫', color: '#003087' },
-                      { label: 'Occupation', value: `${dashboardData.occupancy.occupancyRate}%`, icon: '📊', color: '#D4AF37' },
-                      { label: 'Revenu mois', value: `${fmt(dashboardData.revenue.thisMonth)}`, icon: '💰', color: '#00A651' },
+                      { label: 'Arrivées', value: dashboardData.today.arrivalCount, icon: <PlaneLanding className="w-5 h-5" />, color: '#00A651' },
+                      { label: 'Départs', value: dashboardData.today.departureCount, icon: <PlaneTakeoff className="w-5 h-5" />, color: '#003087' },
+                      { label: 'Occupation', value: `${dashboardData.occupancy.occupancyRate}%`, icon: <BarChart3 className="w-5 h-5" />, color: '#D4AF37' },
+                      { label: 'Revenu mois', value: `${fmt(dashboardData.revenue.thisMonth)}`, icon: <Coins className="w-5 h-5" />, color: '#00A651' },
                     ].map((kpi) => (
                       <motion.div key={kpi.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-4 shadow-sm border">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{kpi.icon}</span>
+                          <span className="text-gray-500">{kpi.icon}</span>
                           <span className="text-xs text-gray-500 font-medium">{kpi.label}</span>
                         </div>
                         <p className="font-mono text-xl font-bold" style={{ color: kpi.color }}>{kpi.value}</p>
@@ -363,7 +364,7 @@ export default function HotelPMS() {
                           alert.severity === 'warning' ? 'bg-[#D4AF37]/10 text-[#b8961f]' :
                           'bg-blue-50 text-blue-700'
                         }`}>
-                          <span>{alert.severity === 'error' ? '🚨' : alert.severity === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                          <span className="flex items-center">{alert.severity === 'error' ? <Siren className="w-4 h-4" /> : alert.severity === 'warning' ? <AlertTriangle className="w-4 h-4" /> : <Info className="w-4 h-4" />}</span>
                           {alert.message}
                         </div>
                       ))}
@@ -373,7 +374,7 @@ export default function HotelPMS() {
                   {/* Revenue & Channels */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-2xl p-5 shadow-sm border">
-                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">💰 Revenus</h3>
+                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Coins className="w-5 h-5" /> Revenus</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-500">Aujourd&apos;hui</span>
@@ -397,7 +398,7 @@ export default function HotelPMS() {
                     </div>
 
                     <div className="bg-white rounded-2xl p-5 shadow-sm border">
-                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">📡 Canaux</h3>
+                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Radio className="w-5 h-5" /> Canaux</h3>
                       <div className="space-y-3">
                         {Object.entries(dashboardData.channels).map(([channel, stats]) => (
                           <div key={channel} className="flex justify-between items-center">
@@ -418,7 +419,7 @@ export default function HotelPMS() {
                   {/* Today Arrivals & Departures */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-2xl p-5 shadow-sm border">
-                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">🛬 Arrivées aujourd&apos;hui</h3>
+                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneLanding className="w-5 h-5" /> Arrivées aujourd&apos;hui</h3>
                       {dashboardData.today.arrivals.length > 0 ? (
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {dashboardData.today.arrivals.map((a) => (
@@ -439,7 +440,7 @@ export default function HotelPMS() {
                     </div>
 
                     <div className="bg-white rounded-2xl p-5 shadow-sm border">
-                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">🛫 Départs aujourd&apos;hui</h3>
+                      <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneTakeoff className="w-5 h-5" /> Départs aujourd&apos;hui</h3>
                       {dashboardData.today.departures.length > 0 ? (
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {dashboardData.today.departures.map((d) => (
@@ -468,7 +469,7 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ CALENDAR TAB ═══ */}
+          {/*  CALENDAR TAB  */}
           {activeTab === 'calendar' && (
             <motion.div key="calendar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-2xl p-5 shadow-sm border max-w-3xl mx-auto">
@@ -509,7 +510,7 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ RESERVATIONS TAB ═══ */}
+          {/*  RESERVATIONS TAB  */}
           {activeTab === 'reservations' && (
             <motion.div key="reservations" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               {/* Filters */}
@@ -560,7 +561,7 @@ export default function HotelPMS() {
                           </p>
                           <div className="flex items-center gap-3 mt-1">
                             <span className="text-xs text-gray-500">{channelLabel(res.sourceChannel)}</span>
-                            {res.specialRequests && <span className="text-xs text-[#D4AF37]">📝 Demande spéciale</span>}
+                            {res.specialRequests && <span className="text-xs text-[#D4AF37] flex items-center gap-1"><FileText className="w-3 h-3" /> Demande spéciale</span>}
                           </div>
                         </div>
                         <div className="text-right">
@@ -579,7 +580,7 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ ROOMS TAB ═══ */}
+          {/*  ROOMS TAB  */}
           {activeTab === 'rooms' && (
             <motion.div key="rooms" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               {rooms.length > 0 ? (
@@ -625,9 +626,9 @@ export default function HotelPMS() {
                         onChange={(e) => handleRoomStatusChange(room.id, e.target.value)}
                         className="w-full px-3 py-2 rounded-xl border text-xs bg-white"
                       >
-                        <option value="AVAILABLE">✅ Disponible</option>
-                        <option value="MAINTENANCE">🔧 Maintenance</option>
-                        <option value="BLOCKED">🚫 Bloqué</option>
+                        <option value="AVAILABLE">Disponible</option>
+                        <option value="MAINTENANCE">Maintenance</option>
+                        <option value="BLOCKED">Bloqué</option>
                       </select>
                     </div>
                   ))}
@@ -640,7 +641,7 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ RATES TAB ═══ */}
+          {/*  RATES TAB  */}
           {activeTab === 'rates' && (
             <motion.div key="rates" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               {rates.length > 0 ? (
@@ -684,11 +685,11 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ GUESTS TAB ═══ */}
+          {/*  GUESTS TAB  */}
           {activeTab === 'guests' && (
             <motion.div key="guests" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-2xl p-6 shadow-sm border max-w-2xl mx-auto text-center">
-                <span className="text-4xl block mb-3">👥</span>
+                <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Annuaire Clients</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   Historique des communications, préférences et séjours passés de vos clients.
@@ -696,24 +697,24 @@ export default function HotelPMS() {
                 <div className="p-4 bg-gray-50 rounded-2xl text-left">
                   <p className="text-xs text-gray-400 mb-2">Fonctionnalités à venir :</p>
                   <ul className="text-sm text-gray-600 space-y-1">
-                    <li>📋 Répertoire des clients avec historique</li>
-                    <li>💬 Historique des communications</li>
-                    <li>🎯 Préférences et notes client</li>
-                    <li>⭐ Programme de fidélité</li>
+                    <li className="flex items-center gap-2"><ClipboardList className="w-4 h-4 text-gray-400" /> Répertoire des clients avec historique</li>
+                    <li className="flex items-center gap-2"><MessageCircle className="w-4 h-4 text-gray-400" /> Historique des communications</li>
+                    <li className="flex items-center gap-2"><Target className="w-4 h-4 text-gray-400" /> Préférences et notes client</li>
+                    <li className="flex items-center gap-2"><Star className="w-4 h-4 text-gray-400" /> Programme de fidélité</li>
                   </ul>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ═══ CHECK-IN/CHECK-OUT TAB ═══ */}
+          {/*  CHECK-IN/CHECK-OUT TAB  */}
           {activeTab === 'checkin' && (
             <motion.div key="checkin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Today's Check-ins */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border">
                   <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
-                    🛬 Enregistrements aujourd&apos;hui
+                    <PlaneLanding className="w-5 h-5" /> Enregistrements aujourd&apos;hui
                   </h3>
                   {reservations.filter(r => r.status === 'confirmed').length > 0 ? (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -750,7 +751,7 @@ export default function HotelPMS() {
                 {/* Today's Check-outs */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border">
                   <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
-                    🛫 Départs aujourd&apos;hui
+                    <PlaneTakeoff className="w-5 h-5" /> Départs aujourd&apos;hui
                   </h3>
                   {reservations.filter(r => r.status === 'checked_in').length > 0 ? (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -778,17 +779,17 @@ export default function HotelPMS() {
 
               {/* QR Code Info */}
               <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-2">📱 QR Code AfriBayit</h3>
+                <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-2 flex items-center gap-2"><Smartphone className="w-5 h-5" /> QR Code AfriBayit</h3>
                 <p className="text-sm text-gray-500">Chaque réservation reçoit un QR code unique pour un check-in sans contact. Le client présente le QR à l&apos;arrivée, le personnel scanne et la chambre est enregistrée automatiquement.</p>
               </div>
             </motion.div>
           )}
 
-          {/* ═══ AUTO-INVOICING TAB ═══ */}
+          {/*  AUTO-INVOICING TAB  */}
           {activeTab === 'invoicing' && (
             <motion.div key="invoicing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">🧾 Facturation automatique</h3>
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Receipt className="w-5 h-5" /> Facturation automatique</h3>
                 <p className="text-sm text-gray-500 mb-4">Les factures sont générées automatiquement pour chaque séjour terminé. Vous pouvez aussi générer des factures manuellement.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                   <div className="p-3 bg-[#00A651]/5 rounded-xl text-center">
@@ -820,7 +821,7 @@ export default function HotelPMS() {
                       <div className="flex items-center gap-3">
                         <p className="font-mono text-lg font-bold text-[#D4AF37]">{fmt(res.totalPrice)}</p>
                         <button className="px-3 py-1.5 bg-[#003087] text-white rounded-xl text-xs font-semibold hover:bg-[#0047b3] transition-colors">
-                          📥 Télécharger PDF
+                          <Inbox className="w-4 h-4" /> Télécharger PDF
                         </button>
                       </div>
                     </div>
@@ -834,18 +835,18 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ CANCELLATION POLICY TAB ═══ */}
+          {/*  CANCELLATION POLICY TAB  */}
           {activeTab === 'cancellation' && (
             <motion.div key="cancellation" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">🚫 Politique d&apos;annulation</h3>
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Ban className="w-5 h-5" /> Politique d&apos;annulation</h3>
                 <p className="text-sm text-gray-500 mb-4">Configurez vos politiques d&apos;annulation avec calcul de remboursement automatique.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 {[
-                  { name: 'Flexible', desc: 'Annulation gratuite 24h avant', refund: 100, color: '#00A651', icon: '✅' },
-                  { name: 'Modérée', desc: 'Annulation gratuite 5 jours avant', refund: 50, color: '#D4AF37', icon: '⚠️' },
-                  { name: 'Stricte', desc: 'Aucun remboursement', refund: 0, color: '#D93025', icon: '❌' },
+                  { name: 'Flexible', desc: 'Annulation gratuite 24h avant', refund: 100, color: '#00A651', icon: <CheckCircle className="w-4 h-4" /> },
+                  { name: 'Modérée', desc: 'Annulation gratuite 5 jours avant', refund: 50, color: '#D4AF37', icon: <AlertTriangle className="w-4 h-4" /> },
+                  { name: 'Stricte', desc: 'Aucun remboursement', refund: 0, color: '#D93025', icon: <XCircle className="w-4 h-4" /> },
                 ].map((policy) => (
                   <div key={policy.name} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
                     <span className="text-3xl block mb-2">{policy.icon}</span>
@@ -860,7 +861,7 @@ export default function HotelPMS() {
               </div>
               {/* Refund Calculator */}
               <div className="bg-white rounded-2xl p-5 shadow-sm border">
-                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-3">🧮 Calculateur de remboursement</h4>
+                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-3"><Calculator className="w-4 h-4" /> Calculateur de remboursement</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Prix total (FCFA)</label>
@@ -886,13 +887,13 @@ export default function HotelPMS() {
             </motion.div>
           )}
 
-          {/* ═══ LAST-MINUTE PRICING TAB ═══ */}
+          {/*  LAST-MINUTE PRICING TAB  */}
           {activeTab === 'lastminute' && (
             <motion.div key="lastminute" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-2xl p-5 shadow-sm border mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F]">⚡ Tarification last-minute</h3>
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] flex items-center gap-2"><Zap className="w-5 h-5" /> Tarification last-minute</h3>
                     <p className="text-sm text-gray-500">Automatisez les réductions pour les réservations de dernière minute.</p>
                   </div>
                   <button className="px-4 py-2 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors">
@@ -927,29 +928,29 @@ export default function HotelPMS() {
                 ))}
               </div>
               <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border">
-                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-2">📋 Fonctionnement</h4>
+                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-2 flex items-center gap-2"><ClipboardList className="w-5 h-5" /> Fonctionnement</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>⚡ Les réductions s&apos;appliquent automatiquement aux réservations effectuées dans la période définie</li>
-                  <li>📊 Les tarifs sont mis à jour en temps réel sur les canaux OTA connectés</li>
-                  <li>🎯 Possibilité de cibler des types de chambre spécifiques</li>
-                  <li>🔄 Les règles se désactivent automatiquement quand l&apos;occupation dépasse le seuil défini</li>
+                  <li className="flex items-center gap-2"><Zap className="w-4 h-4 text-gray-400" /> Les réductions s&apos;appliquent automatiquement aux réservations effectuées dans la période définie</li>
+                  <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-gray-400" /> Les tarifs sont mis à jour en temps réel sur les canaux OTA connectés</li>
+                  <li className="flex items-center gap-2"><Target className="w-4 h-4 text-gray-400" /> Possibilité de cibler des types de chambre spécifiques</li>
+                  <li className="flex items-center gap-2"><RefreshCw className="w-4 h-4 text-gray-400" /> Les règles se désactivent automatiquement quand l&apos;occupation dépasse le seuil défini</li>
                 </ul>
               </div>
             </motion.div>
           )}
 
-          {/* ═══ REPORTS TAB ═══ */}
+          {/*  REPORTS TAB  */}
           {activeTab === 'reports' && (
             <motion.div key="reports" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {dashboardData ? [
-                  { label: 'Taux d\'occupation', value: `${dashboardData.occupancy.occupancyRate}%`, icon: '📊', desc: 'Chambres occupées / Total' },
-                  { label: 'RevPAR', value: `${fmt(dashboardData.revenue.revPAR)} FCFA`, icon: '📈', desc: 'Revenu par chambre disponible' },
-                  { label: 'ADR', value: `${fmt(dashboardData.revenue.adr)} FCFA`, icon: '💰', desc: 'Tarif journalier moyen' },
-                  { label: 'Revenu mensuel', value: `${fmt(dashboardData.revenue.thisMonth)} FCFA`, icon: '💵', desc: 'Total des revenus ce mois' },
+                  { label: 'Taux d\'occupation', value: `${dashboardData.occupancy.occupancyRate}%`, icon: <BarChart3 className="w-6 h-6" />, desc: 'Chambres occupées / Total' },
+                  { label: 'RevPAR', value: `${fmt(dashboardData.revenue.revPAR)} FCFA`, icon: <TrendingUp className="w-6 h-6" />, desc: 'Revenu par chambre disponible' },
+                  { label: 'ADR', value: `${fmt(dashboardData.revenue.adr)} FCFA`, icon: <Coins className="w-6 h-6" />, desc: 'Tarif journalier moyen' },
+                  { label: 'Revenu mensuel', value: `${fmt(dashboardData.revenue.thisMonth)} FCFA`, icon: <Banknote className="w-6 h-6" />, desc: 'Total des revenus ce mois' },
                 ].map((metric) => (
                   <div key={metric.label} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
-                    <span className="text-2xl block mb-2">{metric.icon}</span>
+                    <span className="flex items-center justify-center mb-2 text-gray-400">{metric.icon}</span>
                     <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-1">{metric.label}</h4>
                     <p className="font-mono text-xl font-bold text-[#D4AF37] mb-1">{metric.value}</p>
                     <p className="text-[10px] text-gray-400">{metric.desc}</p>

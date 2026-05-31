@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import type { PaymentMethod, PaymentProvider } from '@/lib/payments/types';
+import { CreditCard, Lock, Smartphone, Waves } from 'lucide-react';
 
 // ============ Payment Method Config ============
 
@@ -31,7 +32,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_mtn',
     name: 'MTN Mobile Money',
-    icon: '📱',
+    icon: '<Smartphone className="w-4 h-4" />',
     provider: 'fedapay',
     color: '#FFC300',
     description: 'Paiement via MTN MoMo',
@@ -40,7 +41,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_moov',
     name: 'Moov Money',
-    icon: '🔵',
+    icon: '',
     provider: 'fedapay',
     color: '#0066CC',
     description: 'Paiement via Moov Money',
@@ -49,7 +50,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_orange',
     name: 'Orange Money',
-    icon: '🍊',
+    icon: '',
     provider: 'fedapay',
     color: '#FF6600',
     description: 'Paiement via Orange Money',
@@ -58,7 +59,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_wave',
     name: 'Wave',
-    icon: '🌊',
+    icon: '<Waves className="w-4 h-4" />',
     provider: 'fedapay',
     color: '#1DC7EA',
     description: 'Paiement via Wave',
@@ -67,7 +68,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'card_visa',
     name: 'Visa',
-    icon: '💳',
+    icon: '<CreditCard className="w-4 h-4" />',
     provider: 'stripe',
     color: '#1A1F71',
     description: 'Carte Visa internationale',
@@ -76,7 +77,7 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'card_mastercard',
     name: 'Mastercard',
-    icon: '💳',
+    icon: '<CreditCard className="w-4 h-4" />',
     provider: 'fedapay',
     color: '#EB001B',
     description: 'Carte Mastercard',
@@ -227,7 +228,7 @@ export default function PaymentFlow({
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#003087]/5 text-[#003087] text-xs font-semibold mb-3">
-              🔒 Paiement Sécurisé
+              <Lock className="w-4 h-4" /> Paiement Sécurisé
             </div>
             <h2 className="text-xl font-bold text-[#2C2E2F] mb-1">
               {propertyTitle || 'Transaction Escrow'}
@@ -336,7 +337,7 @@ export default function PaymentFlow({
                 </div>
 
                 <div className="bg-[#D4AF37]/5 rounded-xl p-3 mb-4 text-xs text-[#D4AF37]">
-                  <span className="font-semibold">🔒 Garantie Escrow :</span>{' '}
+                  <span className="font-semibold"><Lock className="w-4 h-4" /> Garantie Escrow :</span>{' '}
                   Vos fonds seront bloqués en escrow sécurisé jusqu&apos;à la signature notariale.
                   En cas de litige, vous serez remboursé intégralement.
                 </div>

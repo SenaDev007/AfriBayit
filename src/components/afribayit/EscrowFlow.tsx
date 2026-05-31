@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEscrowList, useCreateEscrow, useTransitionEscrow } from '@/hooks/useEscrow';
 import { useCountry } from '@/contexts/CountryContext';
 import { toast } from 'sonner';
+import { Smartphone, CreditCard, ClipboardList, Coins, FileText, Globe, Scale, Hammer, PenSquare, Landmark, CheckCircle, AlertTriangle, RotateCcw, Clock, Lock } from 'lucide-react';
 
 interface EscrowFlowProps {
   onNavigate: (section: string) => void;
@@ -14,10 +15,10 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — payment providers
 const paymentProviders = [
-  { key: 'mtn', name: 'MTN Mobile Money', icon: '📱', color: '#FFC300' },
-  { key: 'orange', name: 'Orange Money', icon: '🍊', color: '#FF6600' },
-  { key: 'moov', name: 'Moov Money', icon: '🔵', color: '#0066CC' },
-  { key: 'carte', name: 'Carte bancaire', icon: '💳', color: '#003087' },
+  { key: 'mtn', name: 'MTN Mobile Money', icon: <Smartphone className="w-5 h-5" style={{ color: '#FFC300' }} />, color: '#FFC300' },
+  { key: 'orange', name: 'Orange Money', icon: <Smartphone className="w-5 h-5 text-orange-500" />, color: '#FF6600' },
+  { key: 'moov', name: 'Moov Money', icon: <Smartphone className="w-5 h-5 text-blue-600" />, color: '#0066CC' },
+  { key: 'carte', name: 'Carte bancaire', icon: <CreditCard className="w-5 h-5" />, color: '#003087' },
 ];
 
 // Full escrow state machine — CDC §5.0bis.4
@@ -26,45 +27,45 @@ type EscrowState = 'CREATED' | 'FUNDED' | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED
 interface EscrowStateConfig {
   key: EscrowState;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   description: string;
   category: 'normal' | 'success' | 'exception';
 }
 
 const escrowStatesConfig: EscrowStateConfig[] = [
-  { key: 'CREATED', label: 'Créé', icon: '📋', description: 'Transaction initiée par l\'acheteur', category: 'normal' },
-  { key: 'FUNDED', label: 'Financé', icon: '💰', description: 'Fonds déposés en escrow sécurisé', category: 'normal' },
-  { key: 'DOCS_VALIDATED', label: 'Docs validés', icon: '📄', description: 'Documents légaux vérifiés par l\'IA', category: 'normal' },
-  { key: 'GEOTRUST_VALIDATED', label: 'GeoTrust', icon: '🌍', description: 'Validation géomatique du bien', category: 'normal' },
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: '⚖️', description: 'Un notaire est désigné pour la transaction', category: 'normal' },
-  { key: 'NOTARY_IN_PROGRESS', label: 'Notaire en cours', icon: '🔨', description: 'Le notaire prépare l\'acte de vente', category: 'normal' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', icon: '📝', description: 'L\'acte de vente est signé par les parties', category: 'normal' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: '🏛️', description: 'Enregistrement à l\'ANDF confirmé', category: 'normal' },
-  { key: 'RELEASED', label: 'Libéré', icon: '✅', description: 'Fonds libérés au vendeur — Transaction terminée', category: 'success' },
+  { key: 'CREATED', label: 'Créé', icon: <ClipboardList className="w-4 h-4" />, description: 'Transaction initiée par l\'acheteur', category: 'normal' },
+  { key: 'FUNDED', label: 'Financé', icon: <Coins className="w-4 h-4" />, description: 'Fonds déposés en escrow sécurisé', category: 'normal' },
+  { key: 'DOCS_VALIDATED', label: 'Docs validés', icon: <FileText className="w-4 h-4" />, description: 'Documents légaux vérifiés par l\'IA', category: 'normal' },
+  { key: 'GEOTRUST_VALIDATED', label: 'GeoTrust', icon: <Globe className="w-4 h-4" />, description: 'Validation géomatique du bien', category: 'normal' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, description: 'Un notaire est désigné pour la transaction', category: 'normal' },
+  { key: 'NOTARY_IN_PROGRESS', label: 'Notaire en cours', icon: <Hammer className="w-4 h-4" />, description: 'Le notaire prépare l\'acte de vente', category: 'normal' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', icon: <PenSquare className="w-4 h-4" />, description: 'L\'acte de vente est signé par les parties', category: 'normal' },
+  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, description: 'Enregistrement à l\'ANDF confirmé', category: 'normal' },
+  { key: 'RELEASED', label: 'Libéré', icon: <CheckCircle className="w-4 h-4 text-green-500" />, description: 'Fonds libérés au vendeur — Transaction terminée', category: 'success' },
 ];
 
 const exceptionStatesConfig: EscrowStateConfig[] = [
-  { key: 'DISPUTED', label: 'Litige', icon: '⚠️', description: 'Un litige a été signalé — Médiation en cours', category: 'exception' },
-  { key: 'REFUNDED', label: 'Remboursé', icon: '↩️', description: 'Fonds remboursés à l\'acheteur', category: 'exception' },
-  { key: 'EXPIRED', label: 'Expiré', icon: '⏰', description: 'Transaction expirée sans aboutir', category: 'exception' },
+  { key: 'DISPUTED', label: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, description: 'Un litige a été signalé — Médiation en cours', category: 'exception' },
+  { key: 'REFUNDED', label: 'Remboursé', icon: <RotateCcw className="w-4 h-4" />, description: 'Fonds remboursés à l\'acheteur', category: 'exception' },
+  { key: 'EXPIRED', label: 'Expiré', icon: <Clock className="w-4 h-4" />, description: 'Transaction expirée sans aboutir', category: 'exception' },
 ];
 
 const normalFlowOrder: EscrowState[] = ['CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED', 'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED'];
 
 // Valid forward transitions per state — mirrors the server-side VALID_TRANSITIONS
-const NEXT_STATE_ACTIONS: Record<string, { target: EscrowState; label: string; icon: string; actorType: string }[]> = {
-  CREATED: [{ target: 'FUNDED', label: 'Financer l\'escrow', icon: '💰', actorType: 'buyer' }],
-  FUNDED: [{ target: 'DOCS_VALIDATED', label: 'Valider les documents', icon: '📄', actorType: 'system' }],
-  DOCS_VALIDATED: [{ target: 'GEOTRUST_VALIDATED', label: 'Valider GeoTrust', icon: '🌍', actorType: 'system' }],
-  GEOTRUST_VALIDATED: [{ target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: '⚖️', actorType: 'admin' }],
-  NOTARY_ASSIGNED: [{ target: 'NOTARY_IN_PROGRESS', label: 'Démarrer la procédure', icon: '🔨', actorType: 'notary' }],
-  NOTARY_IN_PROGRESS: [{ target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: '📝', actorType: 'notary' }],
-  DEED_SIGNED: [{ target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: '🏛️', actorType: 'notary' }],
-  ANDF_REGISTERED: [{ target: 'RELEASED', label: 'Libérer les fonds', icon: '✅', actorType: 'notary' }],
+const NEXT_STATE_ACTIONS: Record<string, { target: EscrowState; label: string; icon: React.ReactNode; actorType: string }[]> = {
+  CREATED: [{ target: 'FUNDED', label: 'Financer l\'escrow', icon: <Coins className="w-4 h-4" />, actorType: 'buyer' }],
+  FUNDED: [{ target: 'DOCS_VALIDATED', label: 'Valider les documents', icon: <FileText className="w-4 h-4" />, actorType: 'system' }],
+  DOCS_VALIDATED: [{ target: 'GEOTRUST_VALIDATED', label: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'system' }],
+  GEOTRUST_VALIDATED: [{ target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin' }],
+  NOTARY_ASSIGNED: [{ target: 'NOTARY_IN_PROGRESS', label: 'Démarrer la procédure', icon: <Hammer className="w-4 h-4" />, actorType: 'notary' }],
+  NOTARY_IN_PROGRESS: [{ target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: <PenSquare className="w-4 h-4" />, actorType: 'notary' }],
+  DEED_SIGNED: [{ target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: <Landmark className="w-4 h-4" />, actorType: 'notary' }],
+  ANDF_REGISTERED: [{ target: 'RELEASED', label: 'Libérer les fonds', icon: <CheckCircle className="w-4 h-4 text-green-500" />, actorType: 'notary' }],
   DISPUTED: [
-    { target: 'FUNDED', label: 'Résoudre → Financé', icon: '↩️', actorType: 'admin' },
-    { target: 'NOTARY_IN_PROGRESS', label: 'Résoudre → Notaire', icon: '⚖️', actorType: 'admin' },
-    { target: 'REFUNDED', label: 'Rembourser', icon: '↩️', actorType: 'admin' },
+    { target: 'FUNDED', label: 'Résoudre → Financé', icon: <RotateCcw className="w-4 h-4" />, actorType: 'admin' },
+    { target: 'NOTARY_IN_PROGRESS', label: 'Résoudre → Notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin' },
+    { target: 'REFUNDED', label: 'Rembourser', icon: <RotateCcw className="w-4 h-4" />, actorType: 'admin' },
   ],
 };
 
@@ -225,7 +226,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            🔒 Escrow Sécurisé — CDC §5.0bis.4
+            <Lock className="w-4 h-4" /> Escrow Sécurisé — CDC §5.0bis.4
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
             Transaction Escrow
@@ -275,7 +276,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                           animate={{
                             scale: status === 'current' ? 1.15 : 1,
                           }}
-                          className={`relative w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all duration-300 ${
+                          className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                             status === 'completed'
                               ? 'bg-[#00A651]/10 ring-2 ring-[#00A651]/30'
                               : status === 'current'
@@ -284,9 +285,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                           }`}
                         >
                           {status === 'completed' ? (
-                            <svg className="w-5 h-5 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
+                            <CheckCircle className="w-5 h-5 text-[#00A651]" />
                           ) : (
                             <span className={status === 'current' ? '' : 'opacity-40'}>{state.icon}</span>
                           )}
@@ -366,7 +365,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                               : 'bg-gray-50 text-gray-400'
                           }`}
                         >
-                          <span>{state.icon}</span>
+                          {state.icon}
                           <span className="font-medium">{state.label}</span>
                         </div>
                       );
@@ -397,7 +396,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                   disabled={transitionEscrow.isPending}
                   className="flex items-center gap-2 px-4 py-2.5 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>{action.icon}</span>
+                  {action.icon}
                   <span>{action.label}</span>
                 </motion.button>
               ))}
@@ -409,7 +408,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                   disabled={transitionEscrow.isPending}
                   className="flex items-center gap-2 px-4 py-2.5 bg-[#D93025]/10 text-[#D93025] text-sm font-semibold rounded-xl hover:bg-[#D93025]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>⚠️</span>
+                  <AlertTriangle className="w-4 h-4" />
                   <span>Signaler un litige</span>
                 </motion.button>
               )}
@@ -438,7 +437,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                     status === 'current' ? 'bg-[#D4AF37]/10' :
                     'bg-gray-100'
                   }`}>
-                    <span className="text-xs">{state.icon}</span>
+                    {state.icon}
                   </div>
                   <div>
                     <p className={`font-semibold ${
@@ -505,9 +504,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
                 className="w-20 h-20 rounded-full bg-[#00A651] flex items-center justify-center mx-auto mb-4"
               >
-                <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckCircle className="w-10 h-10 text-white" />
               </motion.div>
               <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">Paiement Confirmé !</h3>
               <p className="text-sm text-gray-500 mb-4">
@@ -598,7 +595,7 @@ function PaymentSteps({
                   : 'border-gray-100 hover:border-gray-200'
               }`}
             >
-              <span className="text-2xl block mb-2">{provider.icon}</span>
+              <span className="flex items-center justify-center mb-2">{provider.icon}</span>
               <p className="text-sm font-semibold text-[#2C2E2F]">{provider.name}</p>
             </motion.button>
           ))}
@@ -631,9 +628,7 @@ function PaymentSteps({
       {step === 2 && (
         <div className="text-center py-6">
           <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
+            <Lock className="w-10 h-10 text-[#003087]" />
           </div>
           <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Confirmer le paiement</h3>
           <p className="text-sm text-gray-500 mb-6">

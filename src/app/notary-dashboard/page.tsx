@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart3, Bot, Calendar, Check, ClipboardList, Coins, FileText, Folder, Home, PenTool, ScrollText } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-// ─── Types ────────────────────────────────────────────────
+//  Types 
 interface Transaction {
   id: string;
   propertyTitle: string;
@@ -46,7 +47,7 @@ interface Appointment {
   status: 'upcoming' | 'completed' | 'cancelled';
 }
 
-// ─── Demo Data ────────────────────────────────────────────
+//  Demo Data 
 const DEMO_TRANSACTIONS: Transaction[] = [
   { id: 'txn-001', propertyTitle: 'Villa 4ch Cotonou', buyer: 'Adama Diallo', seller: 'Kofi Mensah', amount: 35000000, status: 'NOTARY_ASSIGNED', country: 'BJ', createdAt: '2025-01-15' },
   { id: 'txn-002', propertyTitle: 'Terrain Akpakpa', buyer: 'Fatou Ouédraogo', seller: 'Yao Koffi', amount: 12000000, status: 'NOTARY_IN_PROGRESS', country: 'BJ', createdAt: '2025-01-10' },
@@ -79,12 +80,12 @@ const DEMO_CONVENTIONS = [
 ];
 
 const TABS = [
-  { key: 'dashboard', label: 'Tableau de bord', icon: '📊' },
-  { key: 'deeds', label: 'Actes', icon: '📜' },
-  { key: 'signatures', label: 'Signatures', icon: '✍️' },
-  { key: 'conventions', label: 'Conventions', icon: '📄' },
-  { key: 'calendar', label: 'Calendrier', icon: '📅' },
-  { key: 'documents', label: 'Documents', icon: '📁' },
+  { key: 'dashboard', label: 'Tableau de bord', icon: '<BarChart3 className="w-4 h-4" />' },
+  { key: 'deeds', label: 'Actes', icon: '<ScrollText className="w-4 h-4" />' },
+  { key: 'signatures', label: 'Signatures', icon: '<PenTool className="w-4 h-4" />' },
+  { key: 'conventions', label: 'Conventions', icon: '<FileText className="w-4 h-4" />' },
+  { key: 'calendar', label: 'Calendrier', icon: '<Calendar className="w-4 h-4" />' },
+  { key: 'documents', label: 'Documents', icon: '<Folder className="w-4 h-4" />' },
 ] as const;
 
 type TabKey = typeof TABS[number]['key'];
@@ -129,7 +130,7 @@ function getStatusLabel(status: string): string {
   return labels[status] || status;
 }
 
-// ─── Main Component ───────────────────────────────────────
+//  Main Component 
 export default function NotaryDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
   const [generating, setGenerating] = useState(false);
@@ -191,16 +192,16 @@ export default function NotaryDashboardPage() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* ════════ DASHBOARD TAB ════════ */}
+          {/*  DASHBOARD TAB  */}
           {activeTab === 'dashboard' && (
             <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               {/* KPIs */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                  { label: 'Revenus notariaux', value: formatPrice(totalRevenue), icon: '💰', color: '#D4AF37' },
-                  { label: 'Transactions actives', value: String(activeTransactions), icon: '📋', color: '#003087' },
-                  { label: 'Actes en attente', value: String(pendingDeeds), icon: '📜', color: '#009CDE' },
-                  { label: 'Signatures en attente', value: String(pendingSignatures), icon: '✍️', color: '#00A651' },
+                  { label: 'Revenus notariaux', value: formatPrice(totalRevenue), icon: '<Coins className="w-4 h-4" />', color: '#D4AF37' },
+                  { label: 'Transactions actives', value: String(activeTransactions), icon: '<ClipboardList className="w-4 h-4" />', color: '#003087' },
+                  { label: 'Actes en attente', value: String(pendingDeeds), icon: '<ScrollText className="w-4 h-4" />', color: '#009CDE' },
+                  { label: 'Signatures en attente', value: String(pendingSignatures), icon: '<PenTool className="w-4 h-4" />', color: '#00A651' },
                 ].map((kpi, i) => (
                   <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className="bg-white rounded-2xl p-4 shadow-sm border">
                     <span className="text-xl">{kpi.icon}</span>
@@ -251,7 +252,7 @@ export default function NotaryDashboardPage() {
             </motion.div>
           )}
 
-          {/* ════════ DEEDS TAB ════════ */}
+          {/*  DEEDS TAB  */}
           {activeTab === 'deeds' && (
             <motion.div key="deeds" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               {/* Deed Generator */}
@@ -308,7 +309,7 @@ export default function NotaryDashboardPage() {
                   {generating ? (
                     <><span className="animate-spin">⏳</span> Génération en cours...</>
                   ) : (
-                    <><span>🤖</span> Générer l&apos;acte</>
+                    <><span><Bot className="w-4 h-4" /></span> Générer l&apos;acte</>
                   )}
                 </button>
               </div>
@@ -344,7 +345,7 @@ export default function NotaryDashboardPage() {
             </motion.div>
           )}
 
-          {/* ════════ SIGNATURES TAB ════════ */}
+          {/*  SIGNATURES TAB  */}
           {activeTab === 'signatures' && (
             <motion.div key="signatures" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="space-y-4">
@@ -372,7 +373,7 @@ export default function NotaryDashboardPage() {
                         {sig.signers.map((s, i) => (
                           <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-gray-50">
                             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${s.status === 'signed' ? 'bg-[#00A651]' : 'bg-gray-300'}`}>
-                              {s.status === 'signed' ? '✓' : (i + 1)}
+                              {s.status === 'signed' ? '<Check className="w-4 h-4" />' : (i + 1)}
                             </div>
                             <span className="text-sm text-[#2C2E2F]">{s.name}</span>
                             <span className="text-xs text-gray-400 ml-auto">{s.role}</span>
@@ -389,7 +390,7 @@ export default function NotaryDashboardPage() {
             </motion.div>
           )}
 
-          {/* ════════ CONVENTIONS TAB ════════ */}
+          {/*  CONVENTIONS TAB  */}
           {activeTab === 'conventions' && (
             <motion.div key="conventions" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="space-y-4">
@@ -421,7 +422,7 @@ export default function NotaryDashboardPage() {
             </motion.div>
           )}
 
-          {/* ════════ CALENDAR TAB ════════ */}
+          {/*  CALENDAR TAB  */}
           {activeTab === 'calendar' && (
             <motion.div key="calendar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
@@ -433,7 +434,7 @@ export default function NotaryDashboardPage() {
                 </div>
                 <div className="space-y-3">
                   {DEMO_APPOINTMENTS.map(apt => {
-                    const typeIcons: Record<string, string> = { visit: '🏠', signing: '✍️', consultation: '💼' };
+                    const typeIcons: Record<string, string> = { visit: '<Home className="w-4 h-4" />', signing: '<PenTool className="w-4 h-4" />', consultation: '' };
                     const typeLabels: Record<string, string> = { visit: 'Visite', signing: 'Signature', consultation: 'Consultation' };
                     return (
                       <div key={apt.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
@@ -456,7 +457,7 @@ export default function NotaryDashboardPage() {
             </motion.div>
           )}
 
-          {/* ════════ DOCUMENTS TAB ════════ */}
+          {/*  DOCUMENTS TAB  */}
           {activeTab === 'documents' && (
             <motion.div key="documents" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               <div className="bg-white rounded-3xl p-6 shadow-sm border">

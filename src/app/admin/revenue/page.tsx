@@ -1,19 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  DollarSign,
-  TrendingUp,
-  Users,
-  CreditCard,
-  GraduationCap,
-  Hotel,
-  Download,
-  Globe2,
-  ArrowUpRight,
-  ArrowDownRight,
-  BarChart3,
-} from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, BarChart3, CreditCard, DollarSign, Download, Globe2, GraduationCap, Hotel, Star, TrendingUp, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -303,7 +291,7 @@ export default function AdminRevenuePage() {
                       <TableCell className="text-sm">{COUNTRY_FLAGS[agent.country]} {agent.country}</TableCell>
                       <TableCell className="text-sm text-right font-mono font-bold">{formatXOF(agent.revenue)}</TableCell>
                       <TableCell className="text-sm text-right">{agent.transactions}</TableCell>
-                      <TableCell className="text-sm text-right"><span className="text-[#D4AF37]">★</span> {agent.rating}</TableCell>
+                      <TableCell className="text-sm text-right"><span className="text-[#D4AF37]"><Star className="w-4 h-4" /></span> {agent.rating}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
