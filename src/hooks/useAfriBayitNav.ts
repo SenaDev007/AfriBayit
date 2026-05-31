@@ -33,6 +33,7 @@ export function useAfriBayitNav() {
       'profile': '/profile',
       'subscriptions': '/subscriptions',
       'publish': '/publish',
+      'booking': '/booking',
     };
 
     const path = routeMap[section] || '/';
@@ -62,6 +63,7 @@ export function useAfriBayitNav() {
     if (pathname.startsWith('/community')) return 'community';
     if (pathname.startsWith('/analytics')) return 'analytics';
     if (pathname.startsWith('/notary')) return 'notary';
+    if (pathname.startsWith('/booking')) return 'booking';
     if (pathname.startsWith('/guesthouse')) return 'guesthouse';
     if (pathname.startsWith('/wallet')) return 'wallet';
     if (pathname.startsWith('/profile')) return 'profile';

@@ -20,10 +20,10 @@ export async function GET(
             certificationLevel: true,
             rating: true,
             certified: true,
+            user: {
+              select: { id: true, name: true, avatar: true, phone: true },
+            },
           },
-        },
-        geometerUser: {
-          select: { id: true, name: true, avatar: true, phone: true },
         },
         property: {
           select: {

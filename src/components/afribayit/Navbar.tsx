@@ -18,6 +18,7 @@ interface NavbarProps {
 const NAV_LINKS = [
   { key: 'acheter', label: 'Acheter', section: 'search' },
   { key: 'louer', label: 'Louer', section: 'search-rent' },
+  { key: 'reservation', label: 'Réservation', section: 'booking', href: '/booking', gold: true },
   { key: 'investir', label: 'Investir', section: 'search-invest' },
   { key: 'artisans', label: 'Artisans', section: 'artisans' },
   { key: 'academie', label: 'Académie', section: 'academy' },
@@ -81,25 +82,46 @@ export default function Navbar({
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <motion.button
-                  key={link.key}
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => onNavigate(link.section)}
-                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                    activeSection === link.section
-                      ? scrolled
-                        ? 'bg-[#003087] text-white'
-                        : 'bg-white/20 text-white'
-                      : scrolled
-                        ? 'text-[#2C2E2F] hover:bg-gray-100'
-                        : 'text-white/90 hover:bg-white/10'
-                  }`}
-                >
-                  {link.label}
-                </motion.button>
-              ))}
+              {NAV_LINKS.map((link) => {
+                const isGold = 'gold' in link && link.gold;
+                return link.href ? (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                      isGold
+                        ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20'
+                        : activeSection === link.section
+                          ? scrolled
+                            ? 'bg-[#D4AF37] text-white'
+                            : 'bg-[#D4AF37] text-white'
+                          : scrolled
+                            ? 'text-[#2C2E2F] hover:bg-gray-100'
+                            : 'text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <motion.button
+                    key={link.key}
+                    whileHover={{ y: -1 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onNavigate(link.section)}
+                    className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                      activeSection === link.section
+                        ? scrolled
+                          ? 'bg-[#003087] text-white'
+                          : 'bg-white/20 text-white'
+                        : scrolled
+                          ? 'text-[#2C2E2F] hover:bg-gray-100'
+                          : 'text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    {link.label}
+                  </motion.button>
+                );
+              })}
             </div>
 
             {/* Right side */}

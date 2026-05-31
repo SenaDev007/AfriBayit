@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -70,7 +70,7 @@ model User {
   connectedTo      UserConnection[]    @relation("Target")
   hotelBookings    HotelBooking[]
   guesthouseBookings GuesthouseBooking[]
-  geoMissions      GeometerMission[]   @relation("GeometerUser")
+  accreditations   CountryAccreditation[]
 
   @@map("users")
 }
@@ -719,7 +719,6 @@ model GeometerMission {
   updatedAt       DateTime @updatedAt
 
   geometer        Geometer         @relation(fields: [geometerId], references: [id])
-  geometerUser    User             @relation("GeometerUser", fields: [geometerId], references: [id])
   property        Property         @relation("PropertyMissions", fields: [propertyId], references: [id])
   propertyGeom    PropertyGeometry?
   waypoints       GpsWaypoint[]
@@ -1241,4 +1240,24 @@ model ChatMessage {
   sender         User         @relation("SentMessages", fields: [senderId], references: [id])
 
   @@map("chat_messages")
+}
+
+// ============ COUNTRY ACCREDITATIONS ============
+
+model CountryAccreditation {
+  id          String   @id @default(cuid())
+  userId      String
+  country     String   // BJ, CI, BF, TG
+  role        String   @default("admin") // admin, editor, viewer
+  grantedBy   String   // userId of global admin who granted
+  grantedAt   DateTime @default(now())
+  expiresAt   DateTime?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, country])
+  @@map("country_accreditations")
 }

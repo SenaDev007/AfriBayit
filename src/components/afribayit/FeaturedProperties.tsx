@@ -21,6 +21,7 @@ const filterTabs = [
   { key: 'appartement', label: 'Appartements' },
   { key: 'terrain', label: 'Terrains' },
   { key: 'bureau', label: 'Bureaux' },
+  { key: 'sejour', label: 'Séjours' },
 ];
 
 function PropertyCardSkeleton() {
@@ -68,6 +69,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   // Apply client-side type filter
   const displayProperties = useMemo(() => {
     if (activeFilter === 'all') return baseProperties.slice(0, 6);
+    if (activeFilter === 'sejour') return []; // Séjours use a different model, show CTA instead
     return baseProperties.filter(p => p.type === activeFilter).slice(0, 6);
   }, [baseProperties, activeFilter]);
 
@@ -162,12 +164,32 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Aucun bien en vedette</h3>
-            <p className="text-sm text-gray-400 font-body">
-              {activeFilter !== 'all'
-                ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
-                : 'Les biens premium apparaîtront ici prochainement.'}
-            </p>
+            {activeFilter === 'sejour' ? (
+              <>
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Explorez nos hôtels et guesthouses</h3>
+                <p className="text-sm text-gray-400 font-body mb-4 max-w-md mx-auto">
+                  Découvrez notre sélection d&apos;hébergements en Afrique de l&apos;Ouest — hôtels, maisons d&apos;hôtes et séjours certifiés.
+                </p>
+                <a
+                  href="/booking"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full text-sm font-semibold transition-colors"
+                >
+                  Voir les séjours
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </>
+            ) : (
+              <>
+                <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Aucun bien en vedette</h3>
+                <p className="text-sm text-gray-400 font-body">
+                  {activeFilter !== 'all'
+                    ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
+                    : 'Les biens premium apparaîtront ici prochainement.'}
+                </p>
+              </>
+            )}
           </div>
         )}
 

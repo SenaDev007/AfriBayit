@@ -15,15 +15,23 @@ export async function GET(request: Request) {
       artisansCount,
       coursesCount,
       reviewsCount,
+      hotelsCount,
+      guesthousesCount,
+      hotelBookingsCount,
+      guesthouseBookingsCount,
     ] = await Promise.all([
       db.property.count({ where: { status: 'published', ...countryFilter } }),
       db.transaction.count({
-        where: { status: { in: ['DEED_SIGNED', 'RELEASED', 'ANDF_REGISTERED'] }, ...countryFilter },
+        where: { status: { in: ['CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED', 'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED'] }, ...countryFilter },
       }),
       db.user.count({ where: { role: { in: ['agent', 'admin'] }, verified: true, ...countryFilter } }),
       db.artisan.count({ where: { certified: true, ...countryFilter } }),
       db.course.count({ where: { published: true, ...countryFilter } }),
       db.review.count({ where: { rating: { gte: 4 }, ...countryFilter } }),
+      db.hotel.count({ where: { status: 'active', ...countryFilter } }),
+      db.guesthouse.count({ where: { status: 'active', ...countryFilter } }),
+      db.hotelBooking.count(),
+      db.guesthouseBooking.count(),
     ]);
 
     // Count distinct countries with published properties
@@ -48,6 +56,9 @@ export async function GET(request: Request) {
       satisfaction,
       artisans: artisansCount,
       courses: coursesCount,
+      hotels: hotelsCount,
+      guesthouses: guesthousesCount,
+      bookings: hotelBookingsCount + guesthouseBookingsCount,
     });
   } catch (error) {
     console.error('Stats API error:', error);
@@ -60,6 +71,9 @@ export async function GET(request: Request) {
       satisfaction: 98,
       artisans: 0,
       courses: 0,
+      hotels: 0,
+      guesthouses: 0,
+      bookings: 0,
     });
   }
 }

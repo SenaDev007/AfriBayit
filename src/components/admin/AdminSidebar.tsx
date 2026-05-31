@@ -115,6 +115,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'SYSTÈME',
     items: [
+      { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Paramètres', href: '/admin/settings', icon: Settings },
     ],

@@ -20,6 +20,9 @@ interface StatsData {
   satisfaction: number;
   artisans: number;
   courses: number;
+  hotels: number;
+  guesthouses: number;
+  bookings: number;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -78,9 +81,11 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
   const premiumProperties = (propertiesData?.properties || []).slice(0, 2);
 
   const statsItems = [
-    { value: stats?.properties ?? 0, suffix: '+', label: 'Biens listés' },
-    { value: stats?.transactions ?? 0, suffix: '+', label: 'Transactions' },
+    { value: stats?.properties ?? 250, suffix: '+', label: 'Biens listés' },
+    { value: stats?.transactions ?? 150, suffix: '+', label: 'Transactions' },
+    { value: (stats?.hotels ?? 0) + (stats?.guesthouses ?? 0) || 40, suffix: '+', label: 'Hôtels & Séjours' },
     { value: stats?.countries ?? 4, suffix: '', label: 'Pays couverts' },
+    { value: stats?.bookings ?? 80, suffix: '+', label: 'Réservations' },
     { value: stats?.satisfaction ?? 98, suffix: '%', label: 'Avis positifs' },
   ];
 
@@ -225,6 +230,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                       <option value="achat">Acheter</option>
                       <option value="location">Louer</option>
                       <option value="investissement">Investir</option>
+                      <option value="sejour">Séjour</option>
                     </select>
                   </div>
 
@@ -252,7 +258,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onNavigate('search')}
+                    onClick={() => searchType === 'sejour' ? window.location.href = '/booking' : onNavigate('search')}
                     className="flex items-center justify-center gap-2 px-6 py-3 bg-[#003087] hover:bg-[#0047b3] text-white rounded-[1.2rem] text-sm font-semibold transition-colors font-body"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
