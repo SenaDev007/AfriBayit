@@ -113,6 +113,21 @@ model KycDocument {
   @@map("kyc_documents")
 }
 
+// ============ OTP VERIFICATION ============
+
+model OtpVerification {
+  id         String   @id @default(cuid())
+  identifier String   // phone or email
+  code       String   // 6-digit OTP code
+  type       String   // phone, email
+  verified   Boolean  @default(false)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, code])
+  @@map("otp_verifications")
+}
+
 // ============ PROPERTIES ============
 
 model Property {

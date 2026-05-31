@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import { db } from '@/lib/db';
-import bcrypt from 'bcryptjs';
+import argon2 from 'argon2';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -34,10 +34,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Identifiants invalides');
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const isValid = await argon2.verify(user.password, credentials.password);
 
         if (!isValid) {
           throw new Error('Identifiants invalides');
+        }
+
+        // Check if user has 2FA enabled — handled in separate 2FA verify flow
+        if (user.twoFactorEnabled) {
+          // Return partial auth to trigger 2FA verification
+          throw new Error('2FA_REQUIRED');
         }
 
         return {
@@ -130,3 +136,23 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+/**
+ * Hash a password using Argon2id
+ * Industry-standard KDF with resistance against GPU/ASIC attacks
+ */
+export async function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, {
+    type: argon2.argon2id,
+    memoryCost: 65536,  // 64 MB
+    timeCost: 3,        // 3 iterations
+    parallelism: 4,     // 4 threads
+  });
+}
+
+/**
+ * Verify a password against an Argon2 hash
+ */
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return argon2.verify(hash, password);
+}

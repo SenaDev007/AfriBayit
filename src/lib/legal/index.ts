@@ -27,9 +27,13 @@ export {
   getCriticalUpdates,
   getReformRules,
   isUpdateActive,
+  checkForUpdates,
+  applyUpdate,
+  getUpdateHistory,
+  isReviewDue,
   REGULATORY_UPDATES,
 } from './regulatory-update';
-export type { RegulatoryUpdate } from './regulatory-update';
+export type { RegulatoryUpdate, UpdateHistoryEntry } from './regulatory-update';
 
 import { checkCompleteness } from './document-checker';
 import { checkAutoReject } from './auto-reject';

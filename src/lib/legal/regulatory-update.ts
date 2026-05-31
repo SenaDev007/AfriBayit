@@ -59,12 +59,12 @@ export const REGULATORY_UPDATES: RegulatoryUpdate[] = [
     countryCode: 'BF',
     countryName: 'Burkina Faso',
     title: 'RAF 2025 — Réforme Agraire et Foncière (214 articles)',
-    description: 'Réforme majeure avec 214 articles. Introduction des types PUH (Permis Urbain d\'Habiter) et APFR (Attestation de Possession Foncière Rurale). Nouveau cadastre numérique en cours de déploiement.',
+    description: 'Réforme majeure avec 214 articles. Introduction des types PUH (Permis Urbain d\'Habiter, art. 45-52) et APFR (Attestation de Possession Foncière Rurale, art. 85-98). Cadastre numérique obligatoire (art. 15-20). Conversion APFR → TF sous 5 ans (art. 142). Certificat de conformité obligatoire (art. 135).',
     effectiveDate: '2025-01-01',
     source: 'Gouvernement du Burkina Faso — Ministère de l\'Urbanisme',
     impactLevel: 'critical',
     affectedPropertyTypes: ['terrain', 'villa', 'appartement', 'bureau', 'commerce'],
-    newRequirements: ['puh', 'apfr'],
+    newRequirements: ['puh', 'apfr', 'plan_cadastral_numerique', 'certificat_conformite', 'certificat_conformite_urbanisme'],
     removedRequirements: [],
     status: 'active',
   },
@@ -86,13 +86,13 @@ export const REGULATORY_UPDATES: RegulatoryUpdate[] = [
     id: 'TG-2025-DCCF',
     countryCode: 'TG',
     countryName: 'Togo',
-    title: 'Décret d\'Application du Code de la Construction et de l\'Habitat 2025',
-    description: 'DCCF 2025: Enregistrement obligatoire de tous les actes de cession. Nouveaux délais de traitement. Procédure simplifiée pour les mutations.',
+    title: 'DCCF 2025 — Décret d\'Application du Code de la Construction et de l\'Habitat',
+    description: 'DCCF 2025: Enregistrement obligatoire de tous les actes de cession dans les 30 jours (art. 15, pénalité 10% en cas de retard). CFD (Certificat Foncier de Droit) comme titre intermédiaire (art. 8). Certificat ANDF obligatoire pour toute mutation (art. 22). Procédure simplifiée pour les mutations. Mandatory registration enforcement.',
     effectiveDate: '2025-01-01',
     source: 'Gouvernement du Togo — Ministère de l\'Urbanisme',
-    impactLevel: 'major',
+    impactLevel: 'critical',
     affectedPropertyTypes: ['terrain', 'villa', 'appartement', 'bureau', 'commerce'],
-    newRequirements: ['acte_cession'],
+    newRequirements: ['acte_cession', 'certificat_foncier_droit', 'certificat_propriete_andf'],
     removedRequirements: [],
     status: 'active',
   },
@@ -156,4 +156,119 @@ export function isUpdateActive(updateId: string): boolean {
   if (!update) return false;
   if (update.status !== 'active') return false;
   return new Date(update.effectiveDate) <= new Date();
+}
+
+// ============ Update Mechanism ============
+
+export interface UpdateHistoryEntry {
+  id: string;
+  countryCode: string;
+  updateType: 'add' | 'modify' | 'remove';
+  description: string;
+  appliedAt: string;
+  appliedBy: string;
+  previousValue?: string;
+  newValue?: string;
+}
+
+const updateHistory: UpdateHistoryEntry[] = [];
+
+// Semi-annual review dates (June 1 and December 1)
+const REVIEW_MONTHS = [5, 11]; // 0-indexed: June = 5, December = 11
+
+/**
+ * Check if legal rules for a country need updating
+ * Reviews are semi-annual (June and December)
+ */
+export function checkForUpdates(countryCode: string): {
+  needsUpdate: boolean;
+  nextReviewDate: string;
+  lastReviewDate: string | null;
+  pendingUpdates: RegulatoryUpdate[];
+} {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+
+  // Find next review date
+  let nextReviewMonth = REVIEW_MONTHS.find(m => m > currentMonth);
+  let nextReviewYear = now.getFullYear();
+  if (nextReviewMonth === undefined) {
+    nextReviewMonth = REVIEW_MONTHS[0];
+    nextReviewYear++;
+  }
+
+  const nextReviewDate = new Date(nextReviewYear, nextReviewMonth, 1).toISOString();
+
+  // Find last review date
+  let lastReviewMonth = [...REVIEW_MONTHS].reverse().find(m => m < currentMonth);
+  let lastReviewYear = now.getFullYear();
+  if (lastReviewMonth === undefined) {
+    lastReviewMonth = REVIEW_MONTHS[REVIEW_MONTHS.length - 1];
+    lastReviewYear--;
+  }
+
+  const lastReviewDate = new Date(lastReviewYear, lastReviewMonth, 1).toISOString();
+
+  // Check for upcoming/active updates that haven't been applied yet
+  const pendingUpdates = REGULATORY_UPDATES.filter(
+    u => u.countryCode === countryCode && (u.status === 'upcoming' || u.status === 'active')
+  );
+
+  // Check if any updates were added since last review
+  const updatesSinceLastReview = pendingUpdates.filter(
+    u => new Date(u.effectiveDate) >= new Date(lastReviewDate)
+  );
+
+  return {
+    needsUpdate: updatesSinceLastReview.length > 0,
+    nextReviewDate,
+    lastReviewDate,
+    pendingUpdates: updatesSinceLastReview,
+  };
+}
+
+/**
+ * Apply a regulatory update to the system
+ */
+export function applyUpdate(
+  countryCode: string,
+  updateData: {
+    updateType: 'add' | 'modify' | 'remove';
+    description: string;
+    appliedBy: string;
+    previousValue?: string;
+    newValue?: string;
+  }
+): UpdateHistoryEntry {
+  const entry: UpdateHistoryEntry = {
+    id: `update-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+    countryCode,
+    updateType: updateData.updateType,
+    description: updateData.description,
+    appliedAt: new Date().toISOString(),
+    appliedBy: updateData.appliedBy,
+    previousValue: updateData.previousValue,
+    newValue: updateData.newValue,
+  };
+
+  updateHistory.push(entry);
+  return entry;
+}
+
+/**
+ * Get the history of regulatory changes for a country
+ */
+export function getUpdateHistory(countryCode: string): UpdateHistoryEntry[] {
+  return updateHistory.filter(e => e.countryCode === countryCode);
+}
+
+/**
+ * Check if a semi-annual review is due
+ */
+export function isReviewDue(): boolean {
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.getMonth();
+  // Review is due in the first 7 days of review months
+  return REVIEW_MONTHS.includes(month) && day <= 7;
 }

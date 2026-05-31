@@ -6,7 +6,7 @@ import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel, t
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface PropertyCardProps {
-  property: PropertyData;
+  property: PropertyData & { boostLevel?: number };
   index?: number;
   onSelect: (id: string) => void;
   compact?: boolean;
@@ -41,7 +41,12 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-          {property.premium && (
+          {(property.boostLevel && property.boostLevel > 0) && (
+            <span className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-[10px] font-bold rounded-full shadow-lg">
+              Sponsorisé
+            </span>
+          )}
+          {property.premium && !(property.boostLevel && property.boostLevel > 0) && (
             <span className="px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full shadow-lg">
               Premium
             </span>

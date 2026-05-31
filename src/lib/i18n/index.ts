@@ -5,15 +5,20 @@
 
 import { fr } from './locales/fr';
 import { en } from './locales/en';
+import { wo } from './locales/wo';
+import { fon } from './locales/fon';
 
-export type Locale = 'fr' | 'en';
+export type Locale = 'fr' | 'en' | 'wo' | 'fon';
 
 export const LOCALES: Record<Locale, { label: string; flag: string }> = {
   fr: { label: 'Français', flag: '🇫🇷' },
   en: { label: 'English', flag: '🇬🇧' },
+  wo: { label: 'Wolof', flag: '🇸🇳' },
+  fon: { label: 'Fon', flag: '🇧🇯' },
 };
 
-export const translations: Record<Locale, typeof fr> = { fr, en };
+// Primary translations use the full FR type; local languages may have fewer keys
+export const translations: Record<string, Record<string, any>> = { fr, en, wo, fon };
 
 /**
  * Get translations for a specific locale.
@@ -37,6 +42,10 @@ export function translate(locale: Locale, key: string): string {
     if (result && typeof result === 'object' && k in result) {
       result = (result as Record<string, unknown>)[k];
     } else {
+      // Fallback: try French
+      if (locale !== 'fr') {
+        return translate('fr', key);
+      }
       return key; // Fallback to key
     }
   }
@@ -45,5 +54,7 @@ export function translate(locale: Locale, key: string): string {
 }
 
 export { fr, en } from './locales/fr';
+export { wo } from './locales/wo';
+export { fon } from './locales/fon';
 export { local } from './locales/local';
 export type { Translations } from './locales/fr';

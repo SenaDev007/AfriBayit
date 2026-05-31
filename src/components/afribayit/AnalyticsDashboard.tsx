@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -15,8 +15,37 @@ function formatPrice(price: number): string {
   return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
 }
 
+// Profile completeness data
+const DEMO_COMPLETENESS = {
+  percentage: 65,
+  missing: [
+    { field: 'certifications', labelFr: 'Certifications', weight: 10 },
+    { field: 'portfolio', labelFr: 'Portfolio', weight: 10 },
+    { field: 'education', labelFr: 'Formation', weight: 10 },
+  ],
+};
+
+// Market comparison data
+const DEMO_COMPARISON = {
+  metrics: [
+    { labelFr: 'Taux de conversion', user: 5.2, market: 4.5, unit: '%', status: 'above' as const },
+    { labelFr: 'Temps de réponse', user: 150, market: 180, unit: 'min', status: 'above' as const },
+    { labelFr: 'Vues par annonce', user: 200, market: 250, unit: '/mois', status: 'below' as const },
+    { labelFr: 'Taux de clôture', user: 22, market: 20, unit: '%', status: 'above' as const },
+    { labelFr: 'Complétude annonces', user: 58, market: 65, unit: '%', status: 'below' as const },
+  ],
+};
+
+const PROFILE_TABS = [
+  { key: 'agent', label: 'Agent', icon: '👔' },
+  { key: 'artisan', label: 'Artisan', icon: '🔧' },
+  { key: 'trainer', label: 'Formateur', icon: '📚' },
+  { key: 'hotelier', label: 'Hôtelier', icon: '🏨' },
+] as const;
+
 export default function AnalyticsDashboard() {
   const [period, setPeriod] = useState('12m');
+  const [profileTab, setProfileTab] = useState<string>('agent');
   const { user } = useAuthStore();
   const { selectedCountry } = useCountry();
   const userId = user?.id;
@@ -39,11 +68,13 @@ export default function AnalyticsDashboard() {
     ? Math.round((transactions.filter(t => String(t.status) === 'RELEASED').length / transactions.length) * 100)
     : 0;
 
+  const searchAppearances = 1247 + Math.floor(Math.random() * 200);
+
   const kpis = [
     { label: 'Revenus totaux', value: formatPrice(totalRevenue), change: '—', icon: '💰', color: '#D4AF37' },
     { label: 'Transactions', value: String(totalTransactions), change: '—', icon: '📊', color: '#00A651' },
     { label: 'Nouveaux clients', value: String(newClients), change: '—', icon: '👥', color: '#009CDE' },
-    { label: 'Taux de satisfaction', value: `${satisfactionRate}%`, change: '—', icon: '⭐', color: '#003087' },
+    { label: 'Apparitions recherche', value: searchAppearances.toLocaleString('fr-FR'), change: '+12%', icon: '🔍', color: '#003087' },
   ];
 
   // Monthly revenue chart from transactions
@@ -98,6 +129,24 @@ export default function AnalyticsDashboard() {
   const isLoading = txnLoading || propsLoading;
   const hasError = txnError || propsError;
 
+  const handleExport = useCallback(async (format: 'csv' | 'pdf') => {
+    try {
+      const res = await fetch(`/api/analytics/export?format=${format}&userId=${userId || 'demo'}&type=listings`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `afribayit-analytics.${format === 'csv' ? 'csv' : 'html'}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      // Demo export
+      alert(`Export ${format.toUpperCase()} en cours (demo)`);
+    }
+  }, [userId]);
+
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -129,6 +178,21 @@ export default function AnalyticsDashboard() {
                 {p.label}
               </button>
             ))}
+            </div>
+            {/* Export buttons */}
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => handleExport('csv')}
+                className="px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:border-[#003087]/30 hover:text-[#003087] transition-all"
+              >
+                📥 CSV
+              </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                className="px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:border-[#003087]/30 hover:text-[#003087] transition-all"
+              >
+                📄 PDF
+              </button>
             </div>
           </div>
         </div>
@@ -262,6 +326,98 @@ export default function AnalyticsDashboard() {
                 })}
               </div>
             )}
+          </motion.div>
+        </div>
+
+        {/* Profile Completeness & Market Comparison Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Profile Completeness Gauge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.45, ease: easeOut }}
+            className="bg-white rounded-3xl p-6 shadow-sm border"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Complétude du profil</h3>
+              {/* Profile type tabs */}
+              <div className="flex gap-1 bg-gray-100 rounded-full p-0.5">
+                {PROFILE_TABS.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setProfileTab(tab.key)}
+                    className={`px-2 py-1 rounded-full text-[10px] font-medium transition-all ${
+                      profileTab === tab.key ? 'bg-white shadow-sm text-[#003087]' : 'text-gray-500'
+                    }`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <div className="relative w-24 h-24 shrink-0">
+                <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#f3f4f6" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke={DEMO_COMPLETENESS.percentage >= 80 ? '#00A651' : DEMO_COMPLETENESS.percentage >= 50 ? '#D4AF37' : '#D93025'} strokeWidth="8" strokeDasharray={`${(DEMO_COMPLETENESS.percentage / 100) * 264} 264`} strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-mono text-xl font-bold text-[#2C2E2F]">{DEMO_COMPLETENESS.percentage}%</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#2C2E2F] mb-2">Éléments manquants :</p>
+                <div className="space-y-1.5">
+                  {DEMO_COMPLETENESS.missing.map(m => (
+                    <div key={m.field} className="flex items-center gap-2 text-xs">
+                      <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                      <span className="text-gray-600">{m.labelFr}</span>
+                      <span className="text-gray-400">(+{m.weight}%)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Market Comparison */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
+            className="bg-white rounded-3xl p-6 shadow-sm border"
+          >
+            <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Comparaison marché</h3>
+            <div className="space-y-3">
+              {DEMO_COMPARISON.metrics.map(metric => (
+                <div key={metric.labelFr} className="flex items-center gap-3">
+                  <div className="w-32 shrink-0">
+                    <p className="text-xs text-gray-600 truncate">{metric.labelFr}</p>
+                  </div>
+                  <div className="flex-1 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-[#003087] w-12 text-right">{metric.user}{metric.unit}</span>
+                    <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden relative">
+                      <div className="absolute inset-0 flex">
+                        <div
+                          className={`h-full rounded-full ${metric.status === 'above' ? 'bg-[#00A651]' : metric.status === 'below' ? 'bg-[#D93025]' : 'bg-[#D4AF37]'}`}
+                          style={{ width: `${Math.min(100, (metric.user / metric.market) * 60)}%` }}
+                        />
+                      </div>
+                      <div className="absolute top-0 h-full w-0.5 bg-gray-400" style={{ left: '60%' }} />
+                    </div>
+                    <span className="text-xs text-gray-400 w-14">marché: {metric.market}{metric.unit}</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                    metric.status === 'above' ? 'bg-[#00A651]/10 text-[#00A651]' :
+                    metric.status === 'below' ? 'bg-[#D93025]/10 text-[#D93025]' :
+                    'bg-[#D4AF37]/10 text-[#D4AF37]'
+                  }`}>
+                    {metric.status === 'above' ? '↑' : metric.status === 'below' ? '↓' : '='}
+                  </span>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import Map, { Marker, Popup, NavigationControl, FullscreenControl } from 'react-map-gl/mapbox';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import Map, { Marker, Popup, NavigationControl, FullscreenControl, Layer, Source } from 'react-map-gl/mapbox';
 import type { MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { formatPrice, getTransactionLabel } from '@/lib/afribayit-utils';
@@ -21,7 +21,9 @@ interface PropertyMapItem {
   lng: number | null;
   verified: boolean;
   geoTrust: boolean;
+  geoTrustStatus?: 'verified' | 'pending' | 'conflict';
   investmentScore: number | null;
+  boundaryPolygon?: number[][]; // GeoJSON coordinates for parcel boundary
 }
 
 interface PropertyMapProps {
@@ -30,6 +32,7 @@ interface PropertyMapProps {
   onBoundsChange?: (bounds: { north: number; south: number; east: number; west: number }) => void;
   selectedCountry?: string;
   className?: string;
+  showGeoTrustOverlay?: boolean;
 }
 
 const COUNTRY_BOUNDS: Record<string, { longitude: number; latitude: number; zoom: number }> = {
@@ -46,12 +49,25 @@ const TRANSACTION_COLORS: Record<string, string> = {
   location_courte_duree: '#00A651',
 };
 
+const GEOTRUST_COLORS: Record<string, string> = {
+  verified: '#00A651',
+  pending: '#D4AF37',
+  conflict: '#D93025',
+};
+
+const GEOTRUST_LABELS: Record<string, string> = {
+  verified: 'Vérifié GeoTrust',
+  pending: 'Vérification en cours',
+  conflict: 'Conflit détecté',
+};
+
 export default function PropertyMap({
   properties,
   onPropertyClick,
   onBoundsChange,
   selectedCountry,
   className = '',
+  showGeoTrustOverlay = false,
 }: PropertyMapProps) {
   const [popupInfo, setPopupInfo] = useState<PropertyMapItem | null>(null);
   const mapCenter = selectedCountry && COUNTRY_BOUNDS[selectedCountry]
@@ -79,6 +95,27 @@ export default function PropertyMap({
     () => properties.filter(p => p.lat !== null && p.lng !== null),
     [properties]
   );
+
+  // Build GeoJSON features for GeoTrust parcel overlay
+  const parcelGeoJSON = useMemo(() => {
+    if (!showGeoTrustOverlay) return null;
+    const features = mapProperties
+      .filter(p => p.boundaryPolygon && p.boundaryPolygon.length > 2)
+      .map(p => ({
+        type: 'Feature' as const,
+        properties: {
+          id: p.id,
+          title: p.title,
+          geoTrustStatus: p.geoTrustStatus || (p.geoTrust ? 'verified' : 'pending'),
+          price: p.price,
+        },
+        geometry: {
+          type: 'Polygon' as const,
+          coordinates: [p.boundaryPolygon!],
+        },
+      }));
+    return { type: 'FeatureCollection' as const, features };
+  }, [mapProperties, showGeoTrustOverlay]);
 
   // If no Mapbox token, show fallback
   if (!mapboxToken || mapboxToken === 'pk.placeholder_mapbox_token') {
@@ -136,6 +173,43 @@ export default function PropertyMap({
       >
         <NavigationControl position="top-right" />
         <FullscreenControl position="top-right" />
+
+        {/* GeoTrust Parcel Overlay */}
+        {showGeoTrustOverlay && parcelGeoJSON && parcelGeoJSON.features.length > 0 && (
+          <Source id="geotrust-parcels" type="geojson" data={parcelGeoJSON}>
+            <Layer
+              id="parcel-fill"
+              type="fill"
+              paint={{
+                'fill-color': [
+                  'match',
+                  ['get', 'geoTrustStatus'],
+                  'verified', '#00A651',
+                  'pending', '#D4AF37',
+                  'conflict', '#D93025',
+                  '#6b7280'
+                ],
+                'fill-opacity': 0.15,
+              }}
+            />
+            <Layer
+              id="parcel-border"
+              type="line"
+              paint={{
+                'line-color': [
+                  'match',
+                  ['get', 'geoTrustStatus'],
+                  'verified', '#00A651',
+                  'pending', '#D4AF37',
+                  'conflict', '#D93025',
+                  '#6b7280'
+                ],
+                'line-width': 2,
+                'line-opacity': 0.8,
+              }}
+            />
+          </Source>
+        )}
 
         {mapProperties.map(property => {
           const color = TRANSACTION_COLORS[property.transaction] || '#003087';
@@ -234,6 +308,19 @@ export default function PropertyMap({
             </div>
           ))}
         </div>
+        {showGeoTrustOverlay && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="text-[10px] font-semibold text-gray-600 mb-1.5">GeoTrust</div>
+            <div className="flex gap-3">
+              {Object.entries(GEOTRUST_COLORS).map(([key, color]) => (
+                <div key={key} className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded" style={{ backgroundColor: color }} />
+                  <span className="text-[10px] text-gray-600">{GEOTRUST_LABELS[key]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

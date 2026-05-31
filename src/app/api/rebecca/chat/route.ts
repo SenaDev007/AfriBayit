@@ -1,10 +1,18 @@
 // AfriBayit — Rebecca AI Chat Endpoint
-// POST /api/rebecca/chat — Main chat endpoint with RAG + function calling
+// POST /api/rebecca/chat — Main chat endpoint with RAG + function calling + guardrails + handoff + memory
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { processQuery, REBECCA_SYSTEM_PROMPT } from '@/lib/rag';
 import { executeRebeccaFunction, REBECCA_FUNCTIONS } from '../functions/route';
+import { applyGuardrails, validateRebeccaResponse } from '@/lib/rebecca/guardrails';
+import { shouldHandoffToHuman, buildHandoffMessage } from '@/lib/rebecca/handoff';
+import {
+  getConversationMemory,
+  storeConversationMemory,
+  getUserContext,
+  getOrCreateRebeccaSession,
+} from '@/lib/rebecca/memory';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +21,9 @@ interface ChatMessage {
   content: string;
   name?: string; // function name if role=function
 }
+
+// Track consecutive failures per session (in-memory, resets on server restart)
+const failureTracker = new Map<string, number>();
 
 export async function POST(request: Request) {
   try {
@@ -40,19 +51,82 @@ export async function POST(request: Request) {
       );
     }
 
-    // Step 1: Run RAG pipeline to get context-augmented response
-    const ragResult = await processQuery(lastUserMessage.content, { country, city, sessionId });
+    // ── Step 0: Apply guardrails ──
+    const guardResult = applyGuardrails(lastUserMessage.content);
+    if (!guardResult.allowed) {
+      return NextResponse.json({
+        message: 'Je suis désolée, je ne peux pas traiter ce type de message. Pourriez-vous reformuler votre demande ?',
+        blocked: true,
+        reason: guardResult.reason,
+        sessionId,
+      });
+    }
 
-    // Step 2: Build conversation with history for LLM
+    const sanitizedMessage = guardResult.sanitized || lastUserMessage.content;
+
+    // ── Step 0.5: Check for human handoff ──
+    const effectiveSessionId = sessionId || (userId ? await getOrCreateRebeccaSession(userId) : undefined);
+    const consecutiveFailures = failureTracker.get(effectiveSessionId || 'default') || 0;
+
+    const handoffResult = shouldHandoffToHuman({
+      message: sanitizedMessage,
+      sentiment: 'neutral',
+      consecutiveFailures,
+      userId,
+      sessionId: effectiveSessionId,
+    });
+
+    if (handoffResult.shouldHandoff) {
+      const handoffMsg = buildHandoffMessage({
+        message: sanitizedMessage,
+        sentiment: 'neutral',
+        consecutiveFailures,
+        userId,
+        sessionId: effectiveSessionId,
+      });
+
+      return NextResponse.json({
+        message: 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... 🔄\n\nUn agent va prendre le relais pour mieux vous accompagner.',
+        handoff: true,
+        handoffReason: handoffResult.reason,
+        handoffPriority: handoffResult.priority,
+        handoffDepartment: handoffResult.department,
+        sessionId: effectiveSessionId,
+      });
+    }
+
+    // ── Step 1: Load conversation memory ──
+    let memoryMessages: ChatMessage[] = [];
+    if (effectiveSessionId) {
+      const memory = await getConversationMemory(effectiveSessionId);
+      memoryMessages = memory.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      }));
+    }
+
+    // ── Step 2: Build user context ──
+    let userContext = '';
+    if (userId) {
+      userContext = await getUserContext(userId);
+    }
+
+    // ── Step 3: Run RAG pipeline to get context-augmented response ──
+    const ragResult = await processQuery(sanitizedMessage, { country, city, sessionId: effectiveSessionId });
+
+    // ── Step 4: Build conversation with history for LLM ──
+    const contextPrefix = userContext ? `\n\nContexte utilisateur: ${userContext}` : '';
+
     const conversationMessages = [
-      { role: 'system' as const, content: REBECCA_SYSTEM_PROMPT },
-      ...messages.slice(-10).map((m) => ({
+      { role: 'system' as const, content: REBECCA_SYSTEM_PROMPT + contextPrefix },
+      ...memoryMessages.slice(-10),
+      ...messages.slice(-5).map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
     ];
 
-    // Step 3: Call LLM with function calling support
+    // ── Step 5: Call LLM with function calling support ──
     let aiResponse = ragResult.answer;
     let functionResults: Array<{ name: string; result: unknown }> = [];
 
@@ -70,8 +144,8 @@ export async function POST(request: Request) {
 
       const responseContent = completion.choices?.[0]?.message?.content || '';
 
-      // Simple keyword-based function detection since z-ai may not support native function calling
-      const detectedFunction = detectFunctionCall(lastUserMessage.content);
+      // Keyword-based function detection
+      const detectedFunction = detectFunctionCall(sanitizedMessage);
 
       if (detectedFunction) {
         // Execute the function
@@ -101,14 +175,31 @@ export async function POST(request: Request) {
         // Use RAG-augmented response if no function call detected
         aiResponse = ragResult.contextUsed ? ragResult.answer : responseContent;
       }
+
+      // Validate Rebecca's response
+      const validationResult = validateRebeccaResponse(aiResponse);
+      if (!validationResult.allowed) {
+        aiResponse = 'Je suis désolée, je ne peux pas fournir cette information. Pourriez-vous reformuler votre question ?';
+      }
+
+      // Reset failure tracker on success
+      if (effectiveSessionId) {
+        failureTracker.delete(effectiveSessionId);
+      }
     } catch (llmError) {
       console.error('Rebecca LLM error:', llmError);
       // Fallback to RAG response
       aiResponse = ragResult.answer;
+
+      // Increment failure tracker
+      if (effectiveSessionId) {
+        const current = failureTracker.get(effectiveSessionId) || 0;
+        failureTracker.set(effectiveSessionId, current + 1);
+      }
     }
 
-    // Step 4: Save conversation to DB if sessionId provided
-    if (sessionId && userId) {
+    // ── Step 6: Save conversation to DB ──
+    if (effectiveSessionId && userId) {
       try {
         // Find or create Rebecca user
         let rebeccaUser = await db.user.findFirst({
@@ -129,9 +220,9 @@ export async function POST(request: Request) {
         // Save user message
         await db.chatMessage.create({
           data: {
-            conversationId: sessionId,
+            conversationId: effectiveSessionId,
             senderId: userId,
-            content: lastUserMessage.content,
+            content: sanitizedMessage,
             messageType: 'text',
             metadata: JSON.stringify({ source: 'rebecca_chat' }),
           },
@@ -140,7 +231,7 @@ export async function POST(request: Request) {
         // Save Rebecca's response
         await db.chatMessage.create({
           data: {
-            conversationId: sessionId,
+            conversationId: effectiveSessionId,
             senderId: rebeccaUser.id,
             content: aiResponse,
             messageType: 'text',
@@ -155,9 +246,15 @@ export async function POST(request: Request) {
         });
 
         // Update conversation
-        await db.conversation.update({
-          where: { id: sessionId },
-          data: { updatedAt: new Date() },
+        await db.conversation.upsert({
+          where: { id: effectiveSessionId },
+          update: { updatedAt: new Date() },
+          create: {
+            id: effectiveSessionId,
+            type: 'rebecca',
+            status: 'active',
+            metadata: JSON.stringify({ source: 'rebecca_chat' }),
+          },
         });
       } catch (dbError) {
         console.error('Rebecca DB save error:', dbError);
@@ -165,7 +262,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Step 5: Return response
+    // ── Step 7: Return response ──
     return NextResponse.json({
       message: aiResponse,
       sources: ragResult.sources.map((s) => ({
@@ -175,7 +272,7 @@ export async function POST(request: Request) {
       })),
       functionsCalled: functionResults.map((f) => f.name),
       contextUsed: ragResult.contextUsed,
-      sessionId,
+      sessionId: effectiveSessionId,
     });
   } catch (error) {
     console.error('Rebecca chat API error:', error);
@@ -235,8 +332,9 @@ function detectFunctionCall(message: string): { name: string; args: Record<strin
   if (
     lower.includes('artisan') || lower.includes('maçon') ||
     lower.includes('plombier') || lower.includes('électricien') ||
-    lower.includes('peintre') || lower.includes('devis') ||
-    lower.includes('réparation') || lower.includes('construction')
+    lower.includes('electricien') || lower.includes('peintre') ||
+    lower.includes('devis') || lower.includes('réparation') ||
+    lower.includes('reparation') || lower.includes('construction')
   ) {
     return {
       name: 'find_artisans',
@@ -247,7 +345,8 @@ function detectFunctionCall(message: string): { name: string; args: Record<strin
   // Financing simulation
   if (
     lower.includes('financement') || lower.includes('crédit') ||
-    lower.includes('emprunt') || lower.includes('mensualité') ||
+    lower.includes('credit') || lower.includes('emprunt') ||
+    lower.includes('mensualité') || lower.includes('mensualite') ||
     lower.includes('taux') || lower.includes('banque')
   ) {
     return {
@@ -262,7 +361,6 @@ function detectFunctionCall(message: string): { name: string; args: Record<strin
 function extractPropertyParams(text: string): Record<string, unknown> {
   const params: Record<string, unknown> = {};
 
-  // Detect property type
   const typeMap: Record<string, string> = {
     'villa': 'villa', 'maison': 'villa',
     'appartement': 'appartement', 'studio': 'chambre',
@@ -273,12 +371,10 @@ function extractPropertyParams(text: string): Record<string, unknown> {
     if (text.includes(keyword)) { params.type = type; break; }
   }
 
-  // Detect transaction type
   if (text.includes('louer') || text.includes('location')) params.transaction = 'location';
   else if (text.includes('acheter') || text.includes('achat')) params.transaction = 'achat';
   else if (text.includes('investir') || text.includes('investissement')) params.transaction = 'investissement';
 
-  // Extract location
   const locationParams = extractLocationParams(text);
   Object.assign(params, locationParams);
 
@@ -333,13 +429,11 @@ function extractArtisanParams(text: string): Record<string, unknown> {
 function extractFinancingParams(text: string): Record<string, unknown> {
   const params: Record<string, unknown> = {};
 
-  // Try to extract amount
   const amountMatch = text.match(/(\d[\d\s]*)\s*(?:fcfa|xof|cfa|franc)/i);
   if (amountMatch) {
     params.amount = parseInt(amountMatch[1].replace(/\s/g, ''), 10);
   }
 
-  // Duration
   const durationMatch = text.match(/(\d+)\s*(?:an|année|ans)/i);
   if (durationMatch) {
     params.durationYears = parseInt(durationMatch[1], 10);
