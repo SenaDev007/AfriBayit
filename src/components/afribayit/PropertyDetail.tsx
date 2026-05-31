@@ -1,10 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/lib/afribayit-utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
+const VirtualTourViewer = dynamic(
+  () => import('@/components/afribayit/VirtualTourViewer'),
+  { ssr: false, loading: () => <VirtualTourLoader /> }
+);
+
+function VirtualTourLoader() {
+  return (
+    <div className="w-full h-[70vh] sm:h-[80vh] bg-black rounded-xl flex flex-col items-center justify-center">
+      <div className="w-16 h-16 rounded-full border-4 border-[#D4AF37]/30 flex items-center justify-center mb-4">
+        <div className="w-10 h-10 rounded-full border-4 border-transparent border-t-[#D4AF37] border-r-[#D4AF37] animate-spin" />
+      </div>
+      <p className="text-white/60 text-sm">Chargement du lecteur 3D...</p>
+    </div>
+  );
+}
 
 interface PropertyDetailProps {
   propertyId: string;
@@ -18,6 +37,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
   const { data, isLoading, isError } = useProperty(propertyId);
   const [activeImage, setActiveImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
+  const [showVRTour, setShowVRTour] = useState(false);
 
   const property = data?.property;
 
@@ -81,6 +101,15 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
     ? property.images
     : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop'];
   const features = property.features || [];
+  const hasVR = property.hasVR || false;
+
+  // Demo tours for the virtual tour viewer
+  const demoTours = [
+    { id: 'tour-salon', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=200&fit=crop', duration: null },
+    { id: 'tour-cuisine', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=200&fit=crop', duration: null },
+    { id: 'tour-chambre', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=200&fit=crop', duration: null },
+    { id: 'tour-drone', tourType: 'drone', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=200&fit=crop', duration: null },
+  ];
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8">
@@ -114,8 +143,8 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                   alt={property.title}
                   className="w-full h-full object-cover"
                 />
-                {/* VR Badge */}
-                <div className="absolute top-4 left-4 flex gap-2">
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
                   {property.verified && (
                     <span className="px-3 py-1.5 bg-[#00A651] text-white text-xs font-bold rounded-full flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -132,9 +161,26 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                       GeoTrust
                     </span>
                   )}
-                  <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-gray-700 flex items-center gap-1.5">
-                    <span className="text-lg">🥽</span> VR 360°
-                  </span>
+                  {/* VR 360° Badge — clickable to open virtual tour */}
+                  {hasVR ? (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowVRTour(true)}
+                      className="px-3 py-1.5 bg-[#003087] text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg hover:bg-[#0047b3] transition-colors cursor-pointer"
+                      aria-label="Ouvrir la visite virtuelle 360°"
+                    >
+                      <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Visite VR disponible
+                    </motion.button>
+                  ) : (
+                    <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-gray-700 flex items-center gap-1.5">
+                      <span className="text-lg">🥽</span> VR 360°
+                    </span>
+                  )}
                 </div>
                 {/* Nav arrows */}
                 {images.length > 1 && (
@@ -179,6 +225,40 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 </div>
               )}
             </motion.div>
+
+            {/* Visite VR Prominent Banner — only shown if hasVR */}
+            {hasVR && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.08, ease: easeOut }}
+                className="mb-6"
+              >
+                <button
+                  onClick={() => setShowVRTour(true)}
+                  className="w-full flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-2xl text-left group hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center shrink-0 group-hover:bg-[#D4AF37]/30 transition-colors">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-white font-bold text-sm sm:text-base">Visite virtuelle 360°</h3>
+                      <span className="px-2 py-0.5 bg-[#D4AF37] text-white text-[9px] font-bold rounded-full shrink-0">VR</span>
+                    </div>
+                    <p className="text-white/70 text-xs sm:text-sm">Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce</p>
+                  </div>
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                    </svg>
+                  </div>
+                </button>
+              </motion.div>
+            )}
 
             {/* Title & Location */}
             <motion.div
@@ -347,6 +427,21 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
 
                 {/* CTAs */}
                 <div className="space-y-3">
+                  {/* VR Tour Button — prominent if hasVR */}
+                  {hasVR && (
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setShowVRTour(true)}
+                      className="w-full py-3.5 bg-[#003087] hover:bg-[#0047b3] text-white rounded-full font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Visite virtuelle 360°
+                    </motion.button>
+                  )}
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
@@ -422,6 +517,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                   {[
                     { icon: '✓', text: 'Documents vérifiés', active: property.verified },
                     { icon: '🗺️', text: 'GeoTrust certifié', active: property.geoTrust },
+                    { icon: '🥽', text: 'Visite VR disponible', active: hasVR },
                     { icon: '🔒', text: 'Escrow sécurisé', active: true },
                     { icon: '📋', text: 'Assistance notariale', active: true },
                   ].map((badge) => (
@@ -440,6 +536,34 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
           </div>
         </div>
       </div>
+
+      {/* Virtual Tour Modal */}
+      <Dialog open={showVRTour} onOpenChange={setShowVRTour}>
+        <DialogContent
+          showCloseButton={false}
+          className="sm:max-w-[95vw] lg:max-w-[90vw] h-[85vh] sm:h-[90vh] p-0 gap-0 bg-black border-white/10 overflow-hidden rounded-2xl"
+        >
+          <DialogTitle className="sr-only">Visite virtuelle 360° — {property.title}</DialogTitle>
+          <AnimatePresence>
+            {showVRTour && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full h-full"
+              >
+                <VirtualTourViewer
+                  tours={demoTours}
+                  propertyId={propertyId}
+                  hasVR={hasVR}
+                  onClose={() => setShowVRTour(false)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

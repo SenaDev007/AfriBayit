@@ -1,234 +1,190 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Hotel, Home, Star, MapPin, CalendarCheck } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import {
+  Hotel, Home, Search, Star, MapPin, ChevronLeft, ChevronRight,
+} from 'lucide-react';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
+const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
+
+interface HotelRow {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  stars: number;
+  rating: number;
+  pricePerNight: number;
+  currency: string;
+  status: string;
+  available: boolean;
+}
+
+interface GuesthouseRow {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  overallRating: number;
+  status: string;
+  certificationStatus: string;
+}
 
 export default function CountryHospitalityPage() {
   const params = useParams();
   const country = (params.country as string) || 'BJ';
+  const [tab, setTab] = useState<'hotels' | 'guesthouses'>('hotels');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
-  const { data: hotelsData, isLoading: hotelsLoading } = useQuery({
-    queryKey: ['admin-hotels', country],
-    queryFn: () => apiFetch<{
-      hotels: Array<{
-        id: string;
-        name: string;
-        city: string;
-        stars: number;
-        rating: number;
-        pricePerNight: number;
-        status: string;
-        connectionLevel: number;
-      }>;
-      pagination: { total: number };
-    }>(`/api/admin/hotels?country=${country}&limit=50`),
+  const { data: hotelsData, isLoading: hotelsLoading } = useQuery<{ data: HotelRow[]; total: number }>({
+    queryKey: ['admin-hotels', country, search, page],
+    queryFn: () => apiFetch(`/api/admin/hotels?country=${country}&search=${encodeURIComponent(search)}&skip=${page * PAGE_SIZE}&take=${PAGE_SIZE}`),
+    enabled: tab === 'hotels',
   });
 
-  const { data: guesthousesData, isLoading: ghLoading } = useQuery({
-    queryKey: ['admin-guesthouses', country],
-    queryFn: () => apiFetch<{
-      guesthouses: Array<{
-        id: string;
-        name: string;
-        city: string;
-        overallRating: number;
-        reviewCount: number;
-        status: string;
-        certificationStatus: string;
-        quartier: string | null;
-      }>;
-      pagination: { total: number };
-    }>(`/api/admin/guesthouses?country=${country}&limit=50`),
+  const { data: guesthousesData, isLoading: guesthousesLoading } = useQuery<{ data: GuesthouseRow[]; total: number }>({
+    queryKey: ['admin-guesthouses', country, search, page],
+    queryFn: () => apiFetch(`/api/admin/guesthouses?country=${country}&search=${encodeURIComponent(search)}&skip=${page * PAGE_SIZE}&take=${PAGE_SIZE}`),
+    enabled: tab === 'guesthouses',
   });
 
-  const hotels = hotelsData?.hotels || [];
-  const guesthouses = guesthousesData?.guesthouses || [];
-  const totalHotels = hotelsData?.pagination?.total || hotels.length;
-  const totalGuesthouses = guesthousesData?.pagination?.total || guesthouses.length;
+  const formatPrice = (price: number, currency: string) =>
+    new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(price) + ' ' + currency;
 
-  const connectionLabels: Record<number, string> = {
-    1: 'OTA',
-    2: 'PMS Hors-réseau',
-    3: 'Guesthouse',
-  };
-
-  const certLabels: Record<string, { label: string; color: string }> = {
-    pending: { label: 'En attente', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-    certified: { label: 'Certifiée', color: 'bg-green-50 text-green-700 border-green-200' },
-    rejected: { label: 'Rejetée', color: 'bg-red-50 text-red-700 border-red-200' },
-    expired: { label: 'Expirée', color: 'bg-gray-50 text-gray-600 border-gray-200' },
-  };
+  const certLabels: Record<string, string> = { pending: 'En attente', certified: 'Certifié', rejected: 'Rejeté', expired: 'Expiré' };
+  const certColors: Record<string, string> = { pending: 'bg-amber-50 text-amber-700', certified: 'bg-green-50 text-green-700', rejected: 'bg-red-50 text-red-700', expired: 'bg-gray-50 text-gray-600' };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Hôtellerie & Séjours — {COUNTRY_NAMES[country]}</h1>
-        <p className="text-gray-500 text-sm mt-1">{totalHotels} hôtels, {totalGuesthouses} guesthouses</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Hotel className="w-6 h-6 text-[#003087]" />
+            Hôtellerie — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">Hôtels & Guesthouses du {COUNTRY_NAMES[country]}</p>
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="rounded-2xl">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#003087]/10 flex items-center justify-center">
-              <Hotel className="w-5 h-5 text-[#003087]" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-[#003087]">{totalHotels}</p>
-              <p className="text-xs text-gray-500">Hôtels</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-              <Home className="w-5 h-5 text-[#D4AF37]" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-[#D4AF37]">{totalGuesthouses}</p>
-              <p className="text-xs text-gray-500">Guesthouses</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-              <Star className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-green-600">
-                {hotels.filter((h) => h.status === 'active').length}
-              </p>
-              <p className="text-xs text-gray-500">Hôtels actifs</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
-              <CalendarCheck className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-purple-600">
-                {guesthouses.filter((g) => g.certificationStatus === 'certified').length}
-              </p>
-              <p className="text-xs text-gray-500">GH certifiées</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tab switch */}
+      <div className="flex gap-2">
+        <Button
+          variant={tab === 'hotels' ? 'default' : 'outline'}
+          onClick={() => { setTab('hotels'); setPage(0); }}
+          className={tab === 'hotels' ? 'bg-[#003087] text-white' : ''}
+        >
+          <Hotel className="w-4 h-4 mr-2" /> Hôtels ({hotelsData?.total || 0})
+        </Button>
+        <Button
+          variant={tab === 'guesthouses' ? 'default' : 'outline'}
+          onClick={() => { setTab('guesthouses'); setPage(0); }}
+          className={tab === 'guesthouses' ? 'bg-[#D4AF37] text-white' : ''}
+        >
+          <Home className="w-4 h-4 mr-2" /> Guesthouses ({guesthousesData?.total || 0})
+        </Button>
       </div>
 
-      <Tabs defaultValue="hotels">
-        <TabsList>
-          <TabsTrigger value="hotels" className="gap-1.5">
-            <Hotel className="w-4 h-4" /> Hôtels ({totalHotels})
-          </TabsTrigger>
-          <TabsTrigger value="guesthouses" className="gap-1.5">
-            <Home className="w-4 h-4" /> Guesthouses ({totalGuesthouses})
-          </TabsTrigger>
-        </TabsList>
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Input placeholder="Rechercher par nom, ville..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} className="pl-9" />
+      </div>
 
-        <TabsContent value="hotels" className="mt-4">
-          {hotelsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="animate-pulse rounded-2xl"><CardContent className="p-4"><div className="h-20 bg-gray-100 rounded" /></CardContent></Card>
-              ))}
+      {tab === 'hotels' ? (
+        <Card className="rounded-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50/80">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-600">Hôtel</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Ville</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Étoiles</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Note</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Prix/nuit</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hotelsLoading ? (
+                    <tr><td colSpan={6} className="p-8 text-center text-gray-400">Chargement...</td></tr>
+                  ) : (hotelsData?.data || []).length === 0 ? (
+                    <tr><td colSpan={6} className="p-8 text-center text-gray-400">Aucun hôtel trouvé</td></tr>
+                  ) : (
+                    (hotelsData?.data || []).map((hotel) => (
+                      <tr key={hotel.id} className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
+                        <td className="p-4 font-medium text-gray-900">{hotel.name}</td>
+                        <td className="p-4 text-gray-600">{hotel.city}</td>
+                        <td className="p-4"><div className="flex">{[...Array(5)].map((_, i) => <Star key={i} className={`w-3 h-3 ${i < hotel.stars ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-gray-300'}`} />)}</div></td>
+                        <td className="p-4 text-gray-600">{hotel.rating.toFixed(1)}</td>
+                        <td className="p-4 text-gray-900 font-medium">{formatPrice(hotel.pricePerNight, hotel.currency)}</td>
+                        <td className="p-4">
+                          <Badge className={`text-xs border-0 ${hotel.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-600'}`} variant="outline">
+                            {hotel.status === 'active' ? 'Actif' : hotel.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-          ) : hotels.length === 0 ? (
-            <Card className="rounded-2xl"><CardContent className="p-8 text-center text-gray-400">Aucun hôtel dans ce pays</CardContent></Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {hotels.map((hotel) => (
-                <Card key={hotel.id} className="hover:shadow-md transition-shadow rounded-2xl">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                          <Hotel className="w-4 h-4 text-[#003087]" />
-                          {hotel.name}
-                        </h3>
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3" /> {hotel.city}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="outline" className="text-xs">
-                          {hotel.status}
-                        </Badge>
-                        <Badge variant="outline" className="text-[10px] text-[#003087]">
-                          {connectionLabels[hotel.connectionLevel] || `Niveau ${hotel.connectionLevel}`}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 mt-3 text-xs">
-                      <span className="flex items-center gap-1 text-[#D4AF37] font-medium">
-                        {'★'.repeat(hotel.stars)} {hotel.stars} étoiles
-                      </span>
-                      <span className="text-gray-500">{hotel.rating.toFixed(1)}/5</span>
-                      <span className="font-bold text-[#003087] ml-auto">{hotel.pricePerNight.toLocaleString('fr-FR')} FCFA/nuit</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="rounded-2xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50/80">
+                  <tr>
+                    <th className="text-left p-4 font-medium text-gray-600">Guesthouse</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Ville</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Note</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Certification</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {guesthousesLoading ? (
+                    <tr><td colSpan={5} className="p-8 text-center text-gray-400">Chargement...</td></tr>
+                  ) : (guesthousesData?.data || []).length === 0 ? (
+                    <tr><td colSpan={5} className="p-8 text-center text-gray-400">Aucune guesthouse trouvée</td></tr>
+                  ) : (
+                    (guesthousesData?.data || []).map((gh) => (
+                      <tr key={gh.id} className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
+                        <td className="p-4 font-medium text-gray-900">{gh.name}</td>
+                        <td className="p-4 text-gray-600">{gh.city}</td>
+                        <td className="p-4 text-gray-600">{gh.overallRating.toFixed(1)}</td>
+                        <td className="p-4">
+                          <Badge className={`${certColors[gh.certificationStatus] || 'bg-gray-50 text-gray-600'} text-xs border-0`} variant="outline">
+                            {certLabels[gh.certificationStatus] || gh.certificationStatus}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <Badge className={`text-xs border-0 ${gh.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-600'}`} variant="outline">
+                            {gh.status === 'active' ? 'Actif' : gh.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="guesthouses" className="mt-4">
-          {ghLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="animate-pulse rounded-2xl"><CardContent className="p-4"><div className="h-20 bg-gray-100 rounded" /></CardContent></Card>
-              ))}
-            </div>
-          ) : guesthouses.length === 0 ? (
-            <Card className="rounded-2xl"><CardContent className="p-8 text-center text-gray-400">Aucune guesthouse dans ce pays</CardContent></Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {guesthouses.map((gh) => {
-                const cert = certLabels[gh.certificationStatus] || { label: gh.certificationStatus, color: 'bg-gray-50 text-gray-600 border-gray-200' };
-                return (
-                  <Card key={gh.id} className="hover:shadow-md transition-shadow rounded-2xl">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                            <Home className="w-4 h-4 text-[#003087]" />
-                            {gh.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                            <MapPin className="w-3 h-3" /> {gh.quartier ? `${gh.quartier}, ` : ''}{gh.city}
-                          </p>
-                        </div>
-                        <Badge className={`${cert.color} border text-xs`} variant="outline">
-                          {cert.label}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 mt-3 text-xs">
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-[#D4AF37]" /> {gh.overallRating.toFixed(1)}/5
-                        </span>
-                        <span className="text-gray-500">{gh.reviewCount} avis</span>
-                        <Badge variant="outline" className="text-[10px] ml-auto">{gh.status}</Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

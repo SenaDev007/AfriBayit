@@ -1247,9 +1247,9 @@ model ChatMessage {
 model CountryAccreditation {
   id          String   @id @default(cuid())
   userId      String
-  country     String   // BJ, CI, BF, TG
-  role        String   @default("admin") // admin, editor, viewer
-  grantedBy   String   // userId of global admin who granted
+  country     String   // BJ, CI, BF, TG, ALL (ALL = SUPER_ADMIN access to all countries)
+  role        String   @default("COUNTRY_ADMIN") // SUPER_ADMIN, COUNTRY_ADMIN
+  grantedBy   String?  // userId of admin who granted
   grantedAt   DateTime @default(now())
   expiresAt   DateTime?
   active      Boolean  @default(true)

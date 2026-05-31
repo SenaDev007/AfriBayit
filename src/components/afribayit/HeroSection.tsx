@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useProperties } from '@/hooks/useProperties';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { formatPrice, COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
+import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -68,6 +69,17 @@ function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number
 export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionProps) {
   const [searchType, setSearchType] = useState('achat');
   const [searchCountry, setSearchCountry] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle voice transcript: update state and focus input
+  const handleVoiceTranscript = useCallback((text: string) => {
+    setSearchQuery(text);
+    // Focus the input after voice recognition
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
 
   // Fetch stats from API
   const { data: stats } = useQuery<StatsData>({
@@ -211,9 +223,17 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
+                      ref={searchInputRef}
                       type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Ville, quartier, type de bien..."
                       className="flex-1 text-sm text-[#2C2E2F] placeholder-gray-400 outline-none bg-transparent font-body"
+                    />
+                    {/* Voice Search Button */}
+                    <VoiceSearchButton
+                      onTranscript={handleVoiceTranscript}
+                      currentQuery={searchQuery}
                     />
                   </div>
 

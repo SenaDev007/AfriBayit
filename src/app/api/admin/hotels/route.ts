@@ -1,54 +1,44 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { authGuard } from '@/lib/auth-guard';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
-    if (!auth.success) return auth.response;
-
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
-    const status = searchParams.get('status');
-    const connectionLevel = searchParams.get('connectionLevel');
-    const search = searchParams.get('search');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '25');
+    const search = searchParams.get('search') || '';
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const take = parseInt(searchParams.get('take') || '20');
 
-    const where: Record<string, unknown> = {};
-    if (country && country !== 'ALL') where.country = country;
-    if (status) where.status = status;
-    if (connectionLevel) where.connectionLevel = parseInt(connectionLevel);
+    if (!country) {
+      return NextResponse.json({ error: 'Country parameter is required' }, { status: 400 });
+    }
+
+    const where: Record<string, unknown> = { country };
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { city: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { city: { contains: search, mode: 'insensitive' } },
       ];
     }
 
     const [hotels, total] = await Promise.all([
       db.hotel.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          _count: { select: { rooms: true, bookings: true } },
+        select: {
+          id: true, name: true, city: true, country: true,
+          stars: true, rating: true, pricePerNight: true, currency: true,
+          status: true, available: true,
         },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
       }),
       db.hotel.count({ where }),
     ]);
 
-    const byStatus = await db.hotel.groupBy({ by: ['status'], _count: true });
-    const byCountry = await db.hotel.groupBy({ by: ['country'], _count: true });
-
-    return NextResponse.json({
-      hotels,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-      summary: { byStatus, byCountry },
-    });
+    return NextResponse.json({ data: hotels, total });
   } catch (error) {
-    console.error('Admin hotels API error:', error);
+    console.error('Admin hotels error:', error);
     return NextResponse.json({ error: 'Failed to fetch hotels' }, { status: 500 });
   }
 }

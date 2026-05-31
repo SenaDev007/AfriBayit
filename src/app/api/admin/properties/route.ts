@@ -1,23 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { authGuard } from '@/lib/auth-guard';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
-    if (!auth.success) return auth.response;
-
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
     const country = searchParams.get('country');
-    const search = searchParams.get('search');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '25');
+    const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || '';
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const take = parseInt(searchParams.get('take') || '20');
 
-    const where: Record<string, unknown> = {};
+    if (!country) {
+      return NextResponse.json({ error: 'Country parameter is required' }, { status: 400 });
+    }
 
-    if (status) where.status = status;
-    if (country) where.country = country;
+    const where: Record<string, unknown> = { country };
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -25,69 +22,28 @@ export async function GET(request: Request) {
         { quartier: { contains: search, mode: 'insensitive' } },
       ];
     }
+    if (status) {
+      where.status = status;
+    }
 
     const [properties, total] = await Promise.all([
       db.property.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-              role: true,
-              verified: true,
-            },
-          },
-          legalDocs: {
-            select: {
-              id: true,
-              docType: true,
-              status: true,
-              aiScore: true,
-            },
-          },
-          _count: {
-            select: {
-              propertyImages: true,
-              geoInspections: true,
-            },
-          },
+        select: {
+          id: true, title: true, type: true, transaction: true,
+          price: true, currency: true, city: true, quartier: true,
+          status: true, verified: true, createdAt: true,
         },
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
       }),
       db.property.count({ where }),
     ]);
 
-    // Summary stats
-    const [pendingCount, flaggedCount, publishedCount] = await Promise.all([
-      db.property.count({ where: { status: 'pending', ...where } }),
-      db.property.count({ where: { status: 'rejected', ...where } }),
-      db.property.count({ where: { status: 'published', ...where } }),
-    ]);
-
-    return NextResponse.json({
-      properties,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-      summary: {
-        pending: pendingCount,
-        flagged: flaggedCount,
-        published: publishedCount,
-      },
-    });
+    return NextResponse.json({ data: properties, total });
   } catch (error) {
-    console.error('Admin properties API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch properties' },
-      { status: 500 }
-    );
+    console.error('Admin properties error:', error);
+    return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
   }
 }

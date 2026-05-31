@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,12 +30,18 @@ import {
   Clock,
   UserCircle,
   AlertTriangle,
+  Globe,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
+const PILOT_COUNTRIES = [
+  { code: 'ALL', name: 'Tous les pays (SUPER_ADMIN)', flag: '🌍' },
+  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
+  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
+  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+];
 
 interface Accreditation {
   id: string;
@@ -54,35 +59,42 @@ const roleLabels: Record<string, { label: string; color: string; description: st
   SUPER_ADMIN: {
     label: 'Super Admin',
     color: 'bg-red-50 text-red-700 border-red-200',
-    description: 'Accès à tous les pays + backoffice global',
+    description: 'Accès complet à tous les pays + backoffice global',
   },
   COUNTRY_ADMIN: {
     label: 'Admin Pays',
     color: 'bg-blue-50 text-blue-700 border-blue-200',
-    description: 'Accès complet au backoffice de ce pays',
+    description: 'Accès au backoffice du pays assigné uniquement',
   },
 };
 
-export default function CountryAccreditationsPage() {
-  const params = useParams();
-  const country = (params.country as string) || 'BJ';
+const countryNameMap: Record<string, string> = {
+  ALL: '🌍 Global (tous les pays)',
+  BJ: '🇧🇯 Bénin',
+  CI: "🇨🇮 Côte d'Ivoire",
+  BF: '🇧🇫 Burkina Faso',
+  TG: '🇹🇬 Togo',
+};
+
+export default function GlobalAccreditationsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [searchUserEmail, setSearchUserEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('COUNTRY_ADMIN');
+  const [selectedCountry, setSelectedCountry] = useState('BJ');
   const [expiryDate, setExpiryDate] = useState('');
   const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['accreditations', country],
-    queryFn: () => apiFetch<{ data: Accreditation[] }>(`/api/admin/accreditations?country=${country}`),
+    queryKey: ['all-accreditations'],
+    queryFn: () => apiFetch<{ data: Accreditation[] }>('/api/admin/accreditations'),
   });
 
   const accreditations = data?.data || [];
   const activeAccreditations = accreditations.filter((a) => a.active);
-  const expiredAccreditations = accreditations.filter((a) => !a.active);
+  const revokedAccreditations = accreditations.filter((a) => !a.active);
 
   const grantMutation = useMutation({
     mutationFn: async () => {
@@ -91,18 +103,19 @@ export default function CountryAccreditationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: searchUserEmail.trim(),
-          country,
+          country: selectedCountry,
           role: selectedRole,
           expiresAt: expiryDate || undefined,
         }),
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accreditations', country] });
-      toast({ title: 'Accréditation accordée', description: `L'utilisateur a été accrédité pour ${COUNTRY_NAMES[country]}` });
+      queryClient.invalidateQueries({ queryKey: ['all-accreditations'] });
+      toast({ title: 'Accréditation accordée', description: `L'utilisateur a été accrédité` });
       setGrantDialogOpen(false);
       setSearchUserEmail('');
       setSelectedRole('COUNTRY_ADMIN');
+      setSelectedCountry('BJ');
       setExpiryDate('');
     },
     onError: (error: Error) => {
@@ -121,7 +134,7 @@ export default function CountryAccreditationsPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accreditations', country] });
+      queryClient.invalidateQueries({ queryKey: ['all-accreditations'] });
       toast({ title: 'Accréditation révoquée', description: "L'accès a été supprimé" });
       setConfirmRevokeId(null);
     },
@@ -140,6 +153,10 @@ export default function CountryAccreditationsPage() {
     return new Date(expiresAt) < new Date();
   };
 
+  // Stats
+  const superAdminCount = activeAccreditations.filter((a) => a.role === 'SUPER_ADMIN').length;
+  const countryAdminCount = activeAccreditations.filter((a) => a.role === 'COUNTRY_ADMIN').length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -147,10 +164,10 @@ export default function CountryAccreditationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <KeyRound className="w-6 h-6 text-[#D4AF37]" />
-            Accréditations — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            Accréditations — Global
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestion des accès administrateurs pour le backoffice {COUNTRY_NAMES[country]}
+            Gestion centralisée des accès administrateurs pour tous les pays
           </p>
         </div>
         <Dialog open={grantDialogOpen} onOpenChange={setGrantDialogOpen}>
@@ -168,26 +185,27 @@ export default function CountryAccreditationsPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="bg-[#003087]/5 rounded-xl p-4">
-                <p className="text-sm text-[#003087] font-medium">
-                  {COUNTRY_FLAGS[country]} Backoffice {COUNTRY_NAMES[country]}
-                </p>
-                <p className="text-xs text-gray-500">Pays : {country}</p>
-              </div>
-
+              {/* User email */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Email de l&apos;utilisateur
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input placeholder="recherche@exemple.com" value={searchUserEmail} onChange={(e) => setSearchUserEmail(e.target.value)} className="pl-9" type="email" />
+                  <Input
+                    placeholder="recherche@exemple.com"
+                    value={searchUserEmail}
+                    onChange={(e) => setSearchUserEmail(e.target.value)}
+                    className="pl-9"
+                    type="email"
+                  />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  Saisissez l&apos;email de l&apos;utilisateur existant sur la plateforme
+                  Saisissez l&apos;email d&apos;un utilisateur existant
                 </p>
               </div>
 
+              {/* Role selection */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Rôle</label>
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -204,19 +222,50 @@ export default function CountryAccreditationsPage() {
                     <SelectItem value="COUNTRY_ADMIN">
                       <span className="flex items-center gap-2">
                         <KeyRound className="w-4 h-4 text-blue-500" />
-                        Admin Pays — Accès à ce pays uniquement
+                        Admin Pays — Accès au pays assigné
                       </span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                {selectedRole && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {roleLabels[selectedRole]?.description}
+                  </p>
+                )}
               </div>
 
+              {/* Country selection */}
+              {selectedRole === 'COUNTRY_ADMIN' && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Pays</label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Sélectionner un pays" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PILOT_COUNTRIES.filter((c) => c.code !== 'ALL').map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          <span className="flex items-center gap-2">
+                            {c.flag} {c.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Expiry date */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Date d&apos;expiration (optionnelle)
                 </label>
-                <Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
-                <p className="text-xs text-gray-400 mt-1">Laissez vide pour une accréditation sans expiration</p>
+                <Input
+                  type="date"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
               </div>
 
               <Button
@@ -232,7 +281,7 @@ export default function CountryAccreditationsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="rounded-2xl">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
@@ -240,31 +289,40 @@ export default function CountryAccreditationsPage() {
             </div>
             <div>
               <p className="text-xl font-bold text-green-600">{activeAccreditations.length}</p>
-              <p className="text-xs text-gray-500">Accréditations actives</p>
+              <p className="text-xs text-gray-500">Actives</p>
             </div>
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-              <ShieldX className="w-5 h-5 text-red-500" />
+              <ShieldCheck className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-xl font-bold text-red-500">{expiredAccreditations.length}</p>
-              <p className="text-xs text-gray-500">Accréditations révoquées</p>
+              <p className="text-xl font-bold text-red-600">{superAdminCount}</p>
+              <p className="text-xs text-gray-500">Super Admins</p>
             </div>
           </CardContent>
         </Card>
         <Card className="rounded-2xl">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-              <KeyRound className="w-5 h-5 text-[#D4AF37]" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <KeyRound className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xl font-bold text-[#D4AF37]">
-                {activeAccreditations.filter((a) => a.role === 'COUNTRY_ADMIN').length}
-              </p>
-              <p className="text-xs text-gray-500">Admins pays actifs</p>
+              <p className="text-xl font-bold text-blue-600">{countryAdminCount}</p>
+              <p className="text-xs text-gray-500">Admins Pays</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
+              <ShieldX className="w-5 h-5 text-gray-500" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-500">{revokedAccreditations.length}</p>
+              <p className="text-xs text-gray-500">Révoquées</p>
             </div>
           </CardContent>
         </Card>
@@ -286,6 +344,7 @@ export default function CountryAccreditationsPage() {
                   <th className="text-left p-4 font-medium text-gray-600">Utilisateur</th>
                   <th className="text-left p-4 font-medium text-gray-600">Email</th>
                   <th className="text-left p-4 font-medium text-gray-600">Rôle</th>
+                  <th className="text-left p-4 font-medium text-gray-600">Pays</th>
                   <th className="text-left p-4 font-medium text-gray-600">Statut</th>
                   <th className="text-left p-4 font-medium text-gray-600">Accordée le</th>
                   <th className="text-left p-4 font-medium text-gray-600">Expiration</th>
@@ -294,9 +353,9 @@ export default function CountryAccreditationsPage() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-gray-400">Chargement...</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-gray-400">Chargement...</td></tr>
                 ) : activeAccreditations.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-gray-400">Aucune accréditation active pour ce pays</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-gray-400">Aucune accréditation active</td></tr>
                 ) : (
                   activeAccreditations.map((acc) => {
                     const roleInfo = roleLabels[acc.role] || { label: acc.role, color: 'bg-gray-50 text-gray-600 border-gray-200' };
@@ -316,6 +375,9 @@ export default function CountryAccreditationsPage() {
                           <Badge className={`${roleInfo.color} border text-xs`} variant="outline">
                             {roleInfo.label}
                           </Badge>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm">{countryNameMap[acc.country] || acc.country}</span>
                         </td>
                         <td className="p-4">
                           {expired ? (
@@ -362,45 +424,6 @@ export default function CountryAccreditationsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Revoked accreditations */}
-      {expiredAccreditations.length > 0 && (
-        <Card className="rounded-2xl overflow-hidden">
-          <CardHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
-            <CardTitle className="text-base flex items-center gap-2 text-gray-500">
-              <ShieldX className="w-4 h-4" />
-              Accréditations révoquées ({expiredAccreditations.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50/50">
-                  <tr>
-                    <th className="text-left p-4 font-medium text-gray-600">Utilisateur</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Email</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Rôle</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Accordée le</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {expiredAccreditations.map((acc) => {
-                    const roleInfo = roleLabels[acc.role] || { label: acc.role, color: 'bg-gray-50 text-gray-600 border-gray-200' };
-                    return (
-                      <tr key={acc.id} className="border-t border-gray-100 opacity-60">
-                        <td className="p-4 font-medium text-gray-500">{acc.user?.name || 'Utilisateur'}</td>
-                        <td className="p-4 text-gray-400">{acc.user?.email || acc.userId}</td>
-                        <td className="p-4"><Badge className={`${roleInfo.color} border text-xs`} variant="outline">{roleInfo.label}</Badge></td>
-                        <td className="p-4 text-gray-400 text-xs">{new Date(acc.grantedAt).toLocaleDateString('fr-FR')}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

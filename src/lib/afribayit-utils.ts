@@ -27,6 +27,8 @@ export interface PropertyData {
   lat?: number | null;
   lng?: number | null;
   views: number;
+  hasVR?: boolean;
+  hasDroneView?: boolean;
   createdAt: string;
   status?: string;
   // Agent info (joined from User relation)

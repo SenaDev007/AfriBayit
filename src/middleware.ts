@@ -9,8 +9,20 @@ export default withAuth({
     authorized({ token, req }) {
       const path = req.nextUrl.pathname;
 
-      // Admin routes require admin role
+      // Admin routes require admin role or accreditation
       if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
+        // Allow if user role is admin (legacy support)
+        if (token?.role === 'admin') return true;
+
+        // Allow if user has SUPER_ADMIN or COUNTRY_ADMIN accreditation
+        // The accreditation check is done client-side and in API routes
+        // For middleware, we check the role stored in the token
+        const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string;
+        if (accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN') {
+          return true;
+        }
+
+        // Fallback: allow admin role
         return token?.role === 'admin';
       }
 

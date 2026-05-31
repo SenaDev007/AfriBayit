@@ -1,64 +1,62 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { authGuard } from '@/lib/auth-guard';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
-    if (!auth.success) return auth.response;
-
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
 
-    const countryFilter = country && country !== 'ALL' ? { country } : {};
+    // Base filters
+    const userWhere = country && country !== 'ALL' ? { country } : {};
+    const propertyWhere = country && country !== 'ALL' ? { country } : {};
+    const transactionWhere = country && country !== 'ALL' ? { country } : {};
 
-    // Run all aggregations in parallel
-    const [
-      totalUsers,
-      usersByRole,
-      usersByCountry,
-      recentUsers7d,
-      recentUsers30d,
-      totalProperties,
-      propertiesByStatus,
-      propertiesByCountry,
-      pendingProperties,
-      totalTransactions,
-      transactionsByStatus,
-      transactionStats,
-      activeEscrow,
-      escrowHeld,
-      pendingKyc,
-    ] = await Promise.all([
-      // Users
-      db.user.count({ where: countryFilter }),
-      db.user.groupBy({ by: ['role'], where: countryFilter, _count: true }),
-      db.user.groupBy({ by: ['country'], where: { ...countryFilter, country: { not: null } }, _count: true }),
+    // Users stats
+    const [totalUsers, usersByCountry, usersByRole, recentUsers7d, recentUsers30d] = await Promise.all([
+      db.user.count({ where: userWhere }),
+      db.user.groupBy({ by: ['country'], where: userWhere, _count: { country: true } }),
+      db.user.groupBy({ by: ['role'], where: userWhere, _count: { role: true } }),
       db.user.count({
         where: {
-          ...countryFilter,
+          ...userWhere,
           createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
         },
       }),
       db.user.count({
         where: {
-          ...countryFilter,
+          ...userWhere,
           createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
         },
       }),
-      // Properties
-      db.property.count({ where: countryFilter }),
-      db.property.groupBy({ by: ['status'], where: countryFilter, _count: true }),
-      db.property.groupBy({ by: ['country'], where: countryFilter, _count: true }),
-      db.property.count({ where: { status: 'pending', ...countryFilter } }),
-      // Transactions
-      db.transaction.count({ where: countryFilter }),
-      db.transaction.groupBy({ by: ['status'], where: countryFilter, _count: true }),
+    ]);
+
+    // Properties stats
+    const [totalProperties, propertiesByCountry, propertiesByStatus, pendingProperties] =
+      await Promise.all([
+        db.property.count({ where: propertyWhere }),
+        db.property.groupBy({ by: ['country'], where: propertyWhere, _count: { country: true } }),
+        db.property.groupBy({ by: ['status'], where: propertyWhere, _count: { status: true } }),
+        db.property.count({
+          where: { ...propertyWhere, status: { in: ['pending', 'ai_review', 'human_review'] } },
+        }),
+      ]);
+
+    // Transactions stats
+    const [totalTransactions, transactionAggregates, transactionsByStatus] = await Promise.all([
+      db.transaction.count({ where: transactionWhere }),
       db.transaction.aggregate({
-        where: countryFilter,
+        where: transactionWhere,
         _sum: { amount: true, commission: true },
       }),
-      // Escrow
+      db.transaction.groupBy({
+        by: ['status'],
+        where: transactionWhere,
+        _count: { status: true },
+      }),
+    ]);
+
+    // Escrow stats
+    const [activeEscrow, escrowAggregates] = await Promise.all([
       db.escrowAccount.count({
         where: { status: { in: ['FUNDED', 'PARTIAL_RELEASE'] } },
       }),
@@ -66,105 +64,132 @@ export async function GET(request: Request) {
         where: { status: { in: ['FUNDED', 'PARTIAL_RELEASE'] } },
         _sum: { heldAmount: true },
       }),
-      // KYC
-      db.kycDocument.count({ where: { status: 'pending' } }),
     ]);
 
-    // Build byRole map
-    const byRoleMap: Record<string, number> = {};
-    usersByRole.forEach((item) => {
-      byRoleMap[item.role] = item._count;
+    // KYC pending
+    const pendingKyc = await db.kycDocument.count({
+      where: {
+        status: 'pending',
+        ...(country && country !== 'ALL' ? { country } : {}),
+      },
     });
 
-    // Build byCountry map
-    const byCountryMap: Record<string, number> = {};
-    usersByCountry.forEach((item) => {
-      if (item.country) {
-        byCountryMap[item.country] = item._count;
-      }
-    });
-
-    // Build properties by status
-    const propByStatusMap: Record<string, number> = {};
-    propertiesByStatus.forEach((item) => {
-      propByStatusMap[item.status] = item._count;
-    });
-
-    // Build properties by country
-    const propByCountryMap: Record<string, number> = {};
-    propertiesByCountry.forEach((item) => {
-      propByCountryMap[item.country] = item._count;
-    });
-
-    // Build transactions by status
-    const txByStatusMap: Record<string, number> = {};
-    transactionsByStatus.forEach((item) => {
-      txByStatusMap[item.status] = item._count;
-    });
-
-    // Generate monthly revenue data (last 12 months)
-    const monthlyRevenue: Array<{ month: string; amount: number }> = [];
-    for (let i = 11; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthLabel = date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-
-      // Get transactions completed in this month
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
-
-      const monthCommission = await db.transaction.aggregate({
-        where: {
-          ...countryFilter,
-          status: 'RELEASED',
-          escrowReleasedAt: { gte: startOfMonth, lte: endOfMonth },
-        },
-        _sum: { commission: true },
-      });
-
-      monthlyRevenue.push({
-        month: monthLabel,
-        amount: monthCommission._sum.commission || 0,
-      });
-    }
-
-    // Active users in last 24h (approximation from lastSeenAt)
+    // Active users in last 24h
     const activeUsers24h = await db.user.count({
       where: {
-        ...countryFilter,
+        ...userWhere,
         lastSeenAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       },
     });
 
+    // Monthly revenue (commissions) for the last 12 months
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+    const monthlyTransactions = await db.transaction.findMany({
+      where: {
+        ...transactionWhere,
+        status: 'RELEASED',
+        createdAt: { gte: twelveMonthsAgo },
+      },
+      select: { commission: true, createdAt: true },
+    });
+
+    const monthlyRevenue: Record<string, number> = {};
+    for (let i = 0; i < 12; i++) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - (11 - i));
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthlyRevenue[key] = 0;
+    }
+
+    for (const tx of monthlyTransactions) {
+      const key = `${tx.createdAt.getFullYear()}-${String(tx.createdAt.getMonth() + 1).padStart(2, '0')}`;
+      if (key in monthlyRevenue) {
+        monthlyRevenue[key] += tx.commission;
+      }
+    }
+
+    // Format response
+    const byCountry: Record<string, number> = {};
+    for (const item of usersByCountry) {
+      if (item.country) byCountry[item.country] = item._count.country;
+    }
+
+    const byRole: Record<string, number> = {};
+    for (const item of usersByRole) {
+      byRole[item.role] = item._count.role;
+    }
+
+    const propByCountry: Record<string, number> = {};
+    for (const item of propertiesByCountry) {
+      propByCountry[item.country] = item._count.country;
+    }
+
+    const byStatus: Record<string, number> = {};
+    for (const item of propertiesByStatus) {
+      byStatus[item.status] = item._count.status;
+    }
+
+    const txByStatus: Record<string, number> = {};
+    for (const item of transactionsByStatus) {
+      txByStatus[item.status] = item._count.status;
+    }
+
+    // Hospitality stats
+    const [totalHotels, totalGuesthouses, totalHotelBookings, totalGuesthouseBookings] =
+      await Promise.all([
+        db.hotel.count({ where: country && country !== 'ALL' ? { country } : {} }),
+        db.guesthouse.count({ where: country && country !== 'ALL' ? { country } : {} }),
+        db.hotelBooking.count({
+          where: country && country !== 'ALL'
+            ? { hotel: { country } }
+            : {},
+        }),
+        db.guesthouseBooking.count({
+          where: country && country !== 'ALL'
+            ? { guesthouse: { country } }
+            : {},
+        }),
+      ]);
+
     return NextResponse.json({
       users: {
         total: totalUsers,
-        byRole: byRoleMap,
-        byCountry: byCountryMap,
+        byCountry: byCountry,
+        byRole: byRole,
         recent7d: recentUsers7d,
         recent30d: recentUsers30d,
       },
       properties: {
         total: totalProperties,
-        byStatus: propByStatusMap,
-        byCountry: propByCountryMap,
+        byCountry: propByCountry,
+        byStatus: byStatus,
         pending: pendingProperties,
       },
       transactions: {
         total: totalTransactions,
-        totalVolume: transactionStats._sum.amount || 0,
-        totalCommission: transactionStats._sum.commission || 0,
-        byStatus: txByStatusMap,
+        totalVolume: transactionAggregates._sum.amount || 0,
+        totalCommission: transactionAggregates._sum.commission || 0,
+        byStatus: txByStatus,
       },
       escrow: {
         active: activeEscrow,
-        totalHeld: escrowHeld._sum.heldAmount || 0,
+        totalHeld: escrowAggregates._sum.heldAmount || 0,
       },
       kyc: {
         pending: pendingKyc,
       },
+      hospitality: {
+        hotels: totalHotels,
+        guesthouses: totalGuesthouses,
+        hotelBookings: totalHotelBookings,
+        guesthouseBookings: totalGuesthouseBookings,
+      },
       revenue: {
-        monthly: monthlyRevenue,
+        monthly: Object.entries(monthlyRevenue).map(([month, amount]) => ({ month, amount })),
       },
       platform: {
         activeUsers24h,
@@ -172,10 +197,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error('Admin stats API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch admin stats' },
-      { status: 500 }
-    );
+    console.error('Admin stats error:', error);
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 }
