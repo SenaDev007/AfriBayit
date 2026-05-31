@@ -9,6 +9,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface Course {
   id: string;
@@ -176,7 +177,7 @@ export default function AcademyModule() {
                 className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
               >
                 <div className="relative aspect-[16/9]">
-                  <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <ImageWithFallback src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fallbackType="course" />
                   <div className="absolute top-3 left-3 flex gap-1.5">
                     <span className="px-3 py-1 bg-[#003087] text-white text-[10px] font-bold rounded-full">
                       {course.level}

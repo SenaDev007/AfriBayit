@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useProfile, useFollowProfile } from '@/hooks/useProfiles';
 import { useCreateConversation } from '@/hooks/useChat';
 import { toast } from 'sonner';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -156,7 +157,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           className="relative -mx-4 sm:-mx-6 -mt-4"
         >
           <div className="h-40 sm:h-52 rounded-b-3xl overflow-hidden">
-            <img src={profileData.coverPhoto} alt="Couverture" className="w-full h-full object-cover" />
+            <ImageWithFallback src={profileData.coverPhoto} alt="Couverture" className="w-full h-full object-cover" fallbackType="property" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
         </motion.div>
@@ -170,10 +171,11 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
             <div className="relative">
-              <img
+              <ImageWithFallback
                 src={profileData.avatar}
                 alt={profileData.name}
                 className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl border-4 border-white shadow-lg object-cover"
+                fallbackType="avatar"
               />
               <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-white ${
                 profileData.availability === 'available' ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
@@ -362,7 +364,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                       className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
                     >
                       <div className="aspect-[4/3] overflow-hidden">
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" fallbackType="property" />
                       </div>
                       <div className="p-3">
                         <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{item.title}</h4>
@@ -396,7 +398,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                     className="bg-white rounded-3xl p-5 shadow-sm border"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <img src={rec.avatar} alt={rec.author} className="w-10 h-10 rounded-full object-cover" />
+                      <ImageWithFallback src={rec.avatar} alt={rec.author} className="w-10 h-10 rounded-full object-cover" fallbackType="avatar" />
                       <div>
                         <p className="text-sm font-semibold text-[#2C2E2F]">{rec.author}</p>
                         <div className="flex gap-0.5">

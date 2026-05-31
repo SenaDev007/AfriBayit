@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useProperty } from '@/hooks/useProperties';
 import { formatPrice } from '@/lib/afribayit-utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import dynamic from 'next/dynamic';
 
@@ -138,10 +139,11 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
               className="mb-6"
             >
               <div className="relative rounded-3xl overflow-hidden aspect-[16/10] bg-gray-100">
-                <img
+                <ImageWithFallback
                   src={images[activeImage]}
                   alt={property.title}
                   className="w-full h-full object-cover"
+                  fallbackType="property"
                 />
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
@@ -219,7 +221,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                         i === activeImage ? 'border-[#003087]' : 'border-transparent opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <ImageWithFallback src={img} alt="" className="w-full h-full object-cover" fallbackType="property" />
                     </button>
                   ))}
                 </div>
@@ -473,10 +475,11 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
               {agent && (
                 <div className="bg-white rounded-3xl p-5 shadow-sm border mb-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <img
+                    <ImageWithFallback
                       src={agent.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
                       alt={agent.name}
                       className="w-12 h-12 rounded-full object-cover border-2 border-[#D4AF37]"
+                      fallbackType="avatar"
                     />
                     <div>
                       <div className="flex items-center gap-2">

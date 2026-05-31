@@ -9,6 +9,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface Post {
   id: string;
@@ -282,7 +283,7 @@ export default function CommunityModule() {
                 className="bg-white rounded-2xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-start gap-3">
-                  <img src={post.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <ImageWithFallback src={post.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" fallbackType="avatar" />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-[#2C2E2F] mb-1">{post.title}</h3>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -336,7 +337,7 @@ export default function CommunityModule() {
                   transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                   className="bg-white rounded-3xl p-6 shadow-sm border text-center"
                 >
-                  <img src={profile.avatar} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-[#D4AF37]" />
+                  <ImageWithFallback src={profile.avatar} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-[#D4AF37]" fallbackType="avatar" />
                   <h3 className="font-semibold text-[#2C2E2F]">{profile.name}</h3>
                   <p className="text-xs text-[#D4AF37] font-medium">{profile.role}</p>
                   <p className="text-xs text-gray-500 mb-3">{profile.city}</p>

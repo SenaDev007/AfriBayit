@@ -9,6 +9,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -214,7 +215,7 @@ export default function HospitalityModule() {
                 >
                   <div className="relative aspect-[16/10]">
                     {image ? (
-                      <img src={image} alt={hotel.name} className="w-full h-full object-cover" />
+                      <ImageWithFallback src={image} alt={hotel.name} className="w-full h-full object-cover" fallbackType="hotel" />
                     ) : (
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                         <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

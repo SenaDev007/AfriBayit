@@ -10,6 +10,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from 'sonner';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface Notary {
   id: string;
@@ -335,7 +336,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="relative">
-                          <img src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl object-cover" />
+                          <ImageWithFallback src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl object-cover" fallbackType="avatar" />
                           <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
                         </div>
                         <div className="flex-1 min-w-0">

@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel, timeAgo } from '@/lib/afribayit-utils';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface PropertyCardProps {
   property: PropertyData;
@@ -32,10 +33,11 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-[4/3]">
-        <img
+        <ImageWithFallback
           src={primaryImage}
           alt={property.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fallbackType="property"
         />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">

@@ -1674,3 +1674,23 @@ Stage Summary:
 - All pages include toast notifications for admin actions
 - French language throughout (labels, status names, action descriptions)
 - Analytics page uses recharts for LineChart, BarChart, AreaChart, PieChart
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix broken images - all image URLs pointing to non-existent afribayit.com domain
+
+Work Log:
+- Diagnosed root cause: ALL seed data image URLs pointed to https://afribayit.com/img/... which doesn't exist
+- Created ImageWithFallback component with 6 fallback types (property, hotel, guesthouse, avatar, course, generic)
+- Replaced 34+ broken afribayit.com URLs in seed.ts with working Unsplash image URLs
+- Updated 11 component files to use ImageWithFallback instead of raw <img> tags
+- Added onError handlers for graceful fallback when images fail to load
+- Added loading="lazy" to all images for performance
+- Reset and re-seeded the PostgreSQL database with corrected data
+- Build verified successfully
+
+Stage Summary:
+- Images now display correctly using real Unsplash URLs
+- Fallback mechanism ensures broken images show appropriate placeholders instead of browser broken-image icons
+- 20 properties, 6 hotels, 4 guesthouses, 6 courses all have working images
+- Database fully re-seeded with 17 users, 20 properties, 7 transactions, etc.

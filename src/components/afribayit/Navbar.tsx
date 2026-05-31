@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { useCountry, type CountryCode } from '@/contexts/CountryContext';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface NavbarProps {
   activeSection: string;
@@ -203,10 +204,11 @@ export default function Navbar({
                   onClick={() => onNavigate('dashboard')}
                   className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]"
                 >
-                  <img
+                  <ImageWithFallback
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
                     alt="Profile"
                     className="w-full h-full object-cover"
+                    fallbackType="avatar"
                   />
                 </motion.button>
               )}

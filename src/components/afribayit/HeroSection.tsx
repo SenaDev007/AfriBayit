@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { formatPrice, COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -326,10 +327,11 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
               <div className="bg-white rounded-3xl shadow-2xl overflow-hidden card-shadow">
                 <div className="relative h-40">
                   {premiumProperties[0]?.images?.[0] ? (
-                    <img
+                    <ImageWithFallback
                       src={premiumProperties[0].images[0]}
                       alt={premiumProperties[0].title}
                       className="w-full h-full object-cover"
+                      fallbackType="property"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#003087]/20 to-[#009CDE]/20 flex items-center justify-center">
@@ -373,10 +375,11 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
               <div className="bg-white rounded-3xl shadow-2xl overflow-hidden card-shadow">
                 <div className="relative h-36">
                   {premiumProperties[1]?.images?.[0] ? (
-                    <img
+                    <ImageWithFallback
                       src={premiumProperties[1].images[0]}
                       alt={premiumProperties[1].title}
                       className="w-full h-full object-cover"
+                      fallbackType="property"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#00A651]/15 to-[#009CDE]/15 flex items-center justify-center">
