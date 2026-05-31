@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.png" alt="AfriBayit" className="h-9 w-auto object-contain brightness-0 invert" />
+              <img src="/logo.png" alt="AfriBayit" className="h-14 w-auto object-contain brightness-0 invert" />
             </div>
             <p className="text-white/50 text-sm leading-relaxed max-w-xs">
               Où l&apos;Afrique trouve sa maison. Où les rêves deviennent adresses.

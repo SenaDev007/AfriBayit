@@ -170,7 +170,7 @@ export default function AdminSidebar({
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <img src="/logo.png" alt="AfriBayit" className="h-9 w-auto object-contain shrink-0" />
+          <img src="/logo.png" alt="AfriBayit" className="h-12 w-auto object-contain shrink-0" />
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="text-base font-bold tracking-tight truncate">AfriBayit</h1>
