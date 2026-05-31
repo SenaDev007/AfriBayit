@@ -150,7 +150,7 @@ export function shouldHandoffToHuman(context: HandoffContext): HandoffResult {
 export function buildHandoffMessage(context: HandoffContext): string {
   const parts: string[] = [];
 
-  parts.push(`🔄 Transfert vers un agent humain`);
+  parts.push(`[TRANSFER] Transfert vers un agent humain`);
   parts.push(`Raison: ${context.consecutiveFailures > 0 ? `${context.consecutiveFailures} échecs consécutifs` : 'Demande utilisateur'}`);
   if (context.sentiment !== 'neutral' && context.sentiment !== 'positive') {
     parts.push(`Sentiment: ${context.sentiment}`);

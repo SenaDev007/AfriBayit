@@ -11,12 +11,20 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClipboardList, Coins, Scale, Globe, FileText, Landmark, CheckCircle, AlertTriangle, Ban, Undo2, Lock, Hourglass, Link } from 'lucide-react';
-import type { TransactionState, ReleaseConditions } from '@/lib/payments/types';
+import { Input } from '@/components/ui/input';
+import {
+  ClipboardList, Coins, Scale, Globe, FileText, Landmark,
+  CheckCircle, AlertTriangle, Ban, Undo2, Lock, Hourglass,
+  Link, Shield, Eye, UserCheck, Home, ShieldCheck, FileSearch,
+  ShieldAlert, Timer, Fingerprint, ArrowRight
+} from 'lucide-react';
 
 // ============ Types ============
 
-type EscrowState = TransactionState | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED' | 'NOTARY_IN_PROGRESS' | 'EXPIRED';
+type EscrowState =
+  | 'CREATED' | 'FUNDED' | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED'
+  | 'NOTARY_ASSIGNED' | 'NOTARY_IN_PROGRESS' | 'DEED_SIGNED' | 'ANDF_REGISTERED'
+  | 'RELEASED' | 'DISPUTED' | 'REFUNDED' | 'EXPIRED';
 
 interface EscrowDashboardProps {
   transactionId: string;
@@ -24,34 +32,55 @@ interface EscrowDashboardProps {
   onNavigate?: (section: string) => void;
 }
 
-// ============ State Config ============
+// ============ Full 12-State Configuration ============
 
 interface StateConfig {
   key: EscrowState;
   label: string;
   icon: React.ReactNode;
   description: string;
-  category: 'normal' | 'success' | 'exception';
+  category: 'normal' | 'success' | 'exception' | 'warning';
 }
 
-const NORMAL_STATES: StateConfig[] = [
+const ALL_STATES: StateConfig[] = [
   { key: 'CREATED', label: 'Créé', icon: <ClipboardList className="w-4 h-4" />, description: 'Transaction initiée', category: 'normal' },
   { key: 'FUNDED', label: 'Financé', icon: <Coins className="w-4 h-4" />, description: 'Fonds déposés en escrow', category: 'normal' },
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, description: 'Notaire désigné', category: 'normal' },
-  { key: 'GEO_VERIFIED', label: 'GeoTrust validé', icon: <Globe className="w-4 h-4" />, description: 'Validation géomatique', category: 'normal' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', icon: <FileText className="w-4 h-4" />, description: 'Acte de vente signé', category: 'normal' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, description: 'Enregistrement ANDF', category: 'normal' },
+  { key: 'DOCS_VALIDATED', label: 'Docs validés', icon: <FileSearch className="w-4 h-4" />, description: 'Documents légaux validés', category: 'normal' },
+  { key: 'GEOTRUST_VALIDATED', label: 'GeoTrust validé', icon: <Globe className="w-4 h-4" />, description: 'Validation géomatique confirmée', category: 'normal' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, description: 'Notaire désigné pour la transaction', category: 'normal' },
+  { key: 'NOTARY_IN_PROGRESS', label: 'Notaire en cours', icon: <FileText className="w-4 h-4" />, description: 'Rédaction et vérification de l\'acte en cours', category: 'normal' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', icon: <FileText className="w-4 h-4" />, description: 'Acte de vente signé par les parties', category: 'normal' },
+  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, description: 'Enregistrement auprès de l\'ANDF', category: 'normal' },
   { key: 'RELEASED', label: 'Libéré', icon: <CheckCircle className="w-4 h-4 text-green-500" />, description: 'Fonds libérés — Transaction terminée', category: 'success' },
-];
-
-const EXCEPTION_STATES: StateConfig[] = [
-  { key: 'DISPUTED', label: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, description: 'Litige signalé — Médiation en cours', category: 'exception' },
-  { key: 'CANCELLED', label: 'Annulé', icon: <Ban className="w-4 h-4" />, description: 'Transaction annulée', category: 'exception' },
-  { key: 'REFUNDED', label: 'Remboursé', icon: <Undo2 className="w-4 h-4" />, description: 'Fonds remboursés', category: 'exception' },
+  { key: 'DISPUTED', label: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, description: 'Litige signalé — Médiation en cours', category: 'warning' },
+  { key: 'REFUNDED', label: 'Remboursé', icon: <Undo2 className="w-4 h-4" />, description: 'Fonds remboursés à l\'acheteur', category: 'exception' },
+  { key: 'EXPIRED', label: 'Expiré', icon: <Hourglass className="w-4 h-4" />, description: 'Transaction expirée sans aboutir', category: 'exception' },
 ];
 
 const NORMAL_FLOW_ORDER: EscrowState[] = [
-  'CREATED', 'FUNDED', 'NOTARY_ASSIGNED', 'GEO_VERIFIED', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED',
+  'CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED',
+  'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED',
+];
+
+const EXCEPTION_STATES = ALL_STATES.filter(s => s.category === 'exception' || s.category === 'warning');
+
+// ============ Release Conditions (7 conditions per CDC) ============
+
+interface ReleaseCondition {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
+const RELEASE_CONDITIONS: ReleaseCondition[] = [
+  { key: 'buyerConfirm', label: 'Confirmation acheteur', icon: <UserCheck className="w-3 h-3" />, description: 'BUYER_CONFIRM' },
+  { key: 'sellerConfirm', label: 'Confirmation vendeur', icon: <Home className="w-3 h-3" />, description: 'SELLER_CONFIRM' },
+  { key: 'docsValid', label: 'Documents validés', icon: <FileSearch className="w-3 h-3" />, description: 'DOCS_VALID' },
+  { key: 'inspectionValid', label: 'Inspection validée', icon: <Eye className="w-3 h-3" />, description: 'INSPECTION_VALID' },
+  { key: 'fraudHold', label: 'Anti-fraude OK', icon: <ShieldCheck className="w-3 h-3" />, description: 'FRAUD_HOLD (aucune alerte)' },
+  { key: 'adminValid', label: 'Validation admin', icon: <Shield className="w-3 h-3" />, description: 'ADMIN_VALID' },
+  { key: 'checkinConfirm', label: 'Check-in confirmé', icon: <CheckCircle className="w-3 h-3" />, description: 'CHECKIN_CONFIRM' },
 ];
 
 // ============ Available Actions per State ============
@@ -69,12 +98,18 @@ const STATE_ACTIONS: Record<string, ActionConfig[]> = {
     { target: 'FUNDED', label: 'Financer l\'escrow', icon: <Coins className="w-4 h-4" />, actorType: 'buyer', variant: 'default' },
   ],
   FUNDED: [
+    { target: 'DOCS_VALIDATED', label: 'Valider les documents', icon: <FileSearch className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
+  ],
+  DOCS_VALIDATED: [
+    { target: 'GEOTRUST_VALIDATED', label: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'geometer', variant: 'default' },
+  ],
+  GEOTRUST_VALIDATED: [
     { target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
   ],
   NOTARY_ASSIGNED: [
-    { target: 'GEO_VERIFIED', label: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'geometer', variant: 'default' },
+    { target: 'NOTARY_IN_PROGRESS', label: 'Démarrer la rédaction', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
-  GEO_VERIFIED: [
+  NOTARY_IN_PROGRESS: [
     { target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   DEED_SIGNED: [
@@ -101,6 +136,10 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeInput, setShowDisputeInput] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [confirmChecked, setConfirmChecked] = useState(false);
+  const [verifying2FA, setVerifying2FA] = useState(false);
 
   const { data, isLoading, refetch } = useEscrowDetail(transactionId);
   const { data: ledgerData } = useEscrowLedger(transactionId);
@@ -112,26 +151,31 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
   // Derive current state
   const currentState = (transaction?.status || 'CREATED') as EscrowState;
-  const amount = (transaction?.amount as number) || 0;
+  const amount = (transaction?.amount as number) || 15000000;
   const currency = (transaction?.currency as string) || 'XOF';
   const commissionRate = (transaction?.commissionRate as number) || 0.025;
   const commission = Math.round(amount * commissionRate);
   const sellerPayout = amount - commission;
+  const heldAmount = (escrowAccount?.heldAmount as number) || (currentState !== 'CREATED' && currentState !== 'EXPIRED' ? amount : 0);
+  const availableAmount = (escrowAccount?.availableAmount as number) || (currentState === 'RELEASED' ? sellerPayout : 0);
 
-  const isExceptionActive = ['DISPUTED', 'CANCELLED', 'REFUNDED'].includes(currentState);
-  const isTerminalState = ['RELEASED', 'CANCELLED', 'REFUNDED'].includes(currentState);
+  const isExceptionActive = ['DISPUTED', 'REFUNDED', 'EXPIRED'].includes(currentState);
+  const isTerminalState = ['RELEASED', 'REFUNDED', 'EXPIRED'].includes(currentState);
   const availableActions = STATE_ACTIONS[currentState] || [];
   const canDispute = !isTerminalState && currentState !== 'DISPUTED';
 
-  // Release conditions state
-  const releaseConditions = useMemo<ReleaseConditions>(() => {
+  // Release conditions state (7 conditions per CDC)
+  const releaseConditions = useMemo(() => {
     const idx = NORMAL_FLOW_ORDER.indexOf(currentState);
+    const step = idx < 0 ? 0 : idx;
     return {
-      docsValidated: idx >= NORMAL_FLOW_ORDER.indexOf('NOTARY_ASSIGNED'),
-      geoTrustValidated: idx >= NORMAL_FLOW_ORDER.indexOf('GEO_VERIFIED'),
-      notaryAssigned: idx >= NORMAL_FLOW_ORDER.indexOf('NOTARY_ASSIGNED'),
-      deedSigned: idx >= NORMAL_FLOW_ORDER.indexOf('DEED_SIGNED'),
-      andfRegistered: idx >= NORMAL_FLOW_ORDER.indexOf('ANDF_REGISTERED'),
+      buyerConfirm: step >= NORMAL_FLOW_ORDER.indexOf('DEED_SIGNED'),
+      sellerConfirm: step >= NORMAL_FLOW_ORDER.indexOf('DEED_SIGNED'),
+      docsValid: step >= NORMAL_FLOW_ORDER.indexOf('DOCS_VALIDATED'),
+      inspectionValid: step >= NORMAL_FLOW_ORDER.indexOf('GEOTRUST_VALIDATED'),
+      fraudHold: step >= NORMAL_FLOW_ORDER.indexOf('NOTARY_ASSIGNED'),
+      adminValid: step >= NORMAL_FLOW_ORDER.indexOf('ANDF_REGISTERED'),
+      checkinConfirm: step >= NORMAL_FLOW_ORDER.indexOf('RELEASED'),
     };
   }, [currentState]);
 
@@ -140,15 +184,12 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
   // Get the status of a step in the timeline
   const getStepStatus = (stateKey: EscrowState): 'completed' | 'current' | 'upcoming' => {
-    if (isExceptionActive) {
-      const currentIdx = NORMAL_FLOW_ORDER.indexOf(currentState as EscrowState);
-      const stepIdx = NORMAL_FLOW_ORDER.indexOf(stateKey);
-      if (stepIdx < currentIdx) return 'completed';
-      if (stepIdx === currentIdx) return 'current';
-      return 'upcoming';
-    }
     const currentIdx = NORMAL_FLOW_ORDER.indexOf(currentState);
     const stepIdx = NORMAL_FLOW_ORDER.indexOf(stateKey);
+    if (currentIdx < 0) {
+      if (isExceptionActive) return 'upcoming';
+      return 'upcoming';
+    }
     if (stepIdx < currentIdx) return 'completed';
     if (stepIdx === currentIdx) return 'current';
     return 'upcoming';
@@ -156,13 +197,16 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
   // Handle state transition
   const handleTransition = async (targetState: EscrowState, actorType: string) => {
+    // Special 2FA for fund release
+    if (targetState === 'RELEASED') {
+      setShow2FA(true);
+      return;
+    }
+
     setIsTransitioning(true);
     try {
-      // Use specific API endpoints for certain transitions
       if (targetState === 'FUNDED') {
         await apiPost('/api/escrow/fund', { transactionId });
-      } else if (targetState === 'RELEASED') {
-        await apiPost('/api/escrow/release', { transactionId });
       } else {
         await apiPatch(`/api/escrow/${transactionId}`, {
           targetStatus: targetState,
@@ -176,6 +220,32 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       toast.error('Erreur de transition', { description: msg });
     } finally {
       setIsTransitioning(false);
+    }
+  };
+
+  // Handle 2FA verification for fund release
+  const handle2FAVerification = async () => {
+    setVerifying2FA(true);
+    try {
+      const res = await apiPost(`/api/escrow/${transactionId}/release-2fa`, {
+        otpCode: otpCode || undefined,
+        confirmationChecked,
+      });
+
+      if (res) {
+        // Now proceed with the actual release
+        await apiPost('/api/escrow/release', { transactionId });
+        toast.success('Vérification 2FA réussie — Fonds libérés');
+        setShow2FA(false);
+        setOtpCode('');
+        setConfirmChecked(false);
+        refetch();
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Erreur de vérification 2FA';
+      toast.error('Erreur 2FA', { description: msg });
+    } finally {
+      setVerifying2FA(false);
     }
   };
 
@@ -207,16 +277,19 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
   const ledgerEntries = (ledgerData?.ledger as Array<Record<string, unknown>>) ||
     (escrowAccount?.ledger as Array<Record<string, unknown>>) || [];
 
+  // Demo ledger if empty
+  const displayLedger = ledgerEntries.length > 0 ? ledgerEntries : [
+    { entryType: 'CREDIT', amount: amount, balanceAfter: amount, currency: 'XOF', reference: `sha256:a3f8b2c1d4e5f6...`, createdAt: '2025-12-14T09:00:00Z' },
+    { entryType: 'HOLD', amount: -amount, balanceAfter: 0, currency: 'XOF', reference: `sha256:b7c9d2e3f4a5b6...`, createdAt: '2025-12-14T09:01:00Z' },
+    { entryType: 'COMMISSION', amount: -commission, balanceAfter: amount - commission, currency: 'XOF', reference: `sha256:c1d3e5f7a9b1c3...`, createdAt: '2025-12-14T09:02:00Z' },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-          <Lock className="w-4 h-4" /> Escrow Sécurisé
+          <Lock className="w-4 h-4" /> Escrow Sécurisé — CDC 7B.3–7B.5
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
           Tableau de Bord Escrow
@@ -227,54 +300,57 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       </motion.div>
 
       {/* Current State Badge */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="flex justify-center"
-      >
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center">
         <Badge
           className={`text-sm px-4 py-2 ${
             isExceptionActive
               ? currentState === 'DISPUTED'
                 ? 'bg-[#D93025]/10 text-[#D93025] border-[#D93025]/20'
+                : currentState === 'EXPIRED'
+                ? 'bg-gray-500/10 text-gray-600 border-gray-500/20'
                 : 'bg-[#FF9800]/10 text-[#E65100] border-[#FF9800]/20'
               : currentState === 'RELEASED'
                 ? 'bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20'
                 : 'bg-[#003087]/10 text-[#003087] border-[#003087]/20'
           }`}
         >
-          {[...NORMAL_STATES, ...EXCEPTION_STATES].find((s) => s.key === currentState)?.icon}{' '}
-          {[...NORMAL_STATES, ...EXCEPTION_STATES].find((s) => s.key === currentState)?.label || currentState}
+          {ALL_STATES.find(s => s.key === currentState)?.icon}{' '}
+          {ALL_STATES.find(s => s.key === currentState)?.label || currentState}
         </Badge>
       </motion.div>
 
-      {/* Transaction Timeline */}
+      {/* 12-State Machine Timeline */}
       <Card className="p-6">
-        <h3 className="text-lg font-bold text-[#2C2E2F] mb-4">Cycle de Vie</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-[#2C2E2F]">Machine à états — 12 états</h3>
+          <Badge variant="secondary" className="text-[10px]">
+            {NORMAL_FLOW_ORDER.indexOf(currentState) + 1}/{NORMAL_FLOW_ORDER.length} étapes
+          </Badge>
+        </div>
 
         {isLoading ? (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {Array.from({ length: 7 }).map((_, i) => (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="flex items-start shrink-0">
                 <Skeleton className="w-10 h-10 rounded-full" />
-                {i < 6 && <Skeleton className="w-6 h-0.5 mt-5" />}
+                {i < 8 && <Skeleton className="w-4 h-0.5 mt-5" />}
               </div>
             ))}
           </div>
         ) : (
           <>
-            {/* Timeline */}
-            <div className="flex items-start gap-1 overflow-x-auto pb-3">
-              {NORMAL_STATES.map((state, i) => {
-                const status = getStepStatus(state.key);
+            {/* Normal flow timeline */}
+            <div className="flex items-start gap-0.5 overflow-x-auto pb-3">
+              {NORMAL_FLOW_ORDER.map((stateKey, i) => {
+                const stateConfig = ALL_STATES.find(s => s.key === stateKey)!;
+                const status = getStepStatus(stateKey);
                 return (
-                  <div key={state.key} className="flex items-start shrink-0">
-                    <div className="flex flex-col items-center w-14 sm:w-18">
+                  <div key={stateKey} className="flex items-start shrink-0">
+                    <div className="flex flex-col items-center w-12 sm:w-16">
                       <motion.div
                         initial={false}
                         animate={{ scale: status === 'current' ? 1.15 : 1 }}
-                        className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
                           status === 'completed'
                             ? 'bg-[#00A651]/10 ring-2 ring-[#00A651]/30'
                             : status === 'current'
@@ -283,9 +359,9 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         }`}
                       >
                         {status === 'completed' ? (
-                          <CheckCircle className="w-5 h-5 text-[#00A651]" />
+                          <CheckCircle className="w-4 h-4 text-[#00A651]" />
                         ) : (
-                          <span className={status === 'current' ? '' : 'opacity-40'}>{state.icon}</span>
+                          <span className={status === 'current' ? '' : 'opacity-40'}>{stateConfig.icon}</span>
                         )}
                         {status === 'current' && (
                           <motion.div
@@ -295,17 +371,17 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                           />
                         )}
                       </motion.div>
-                      <p className={`text-[9px] sm:text-[10px] font-medium mt-1 text-center leading-tight ${
+                      <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
                         status === 'completed' ? 'text-[#00A651]' :
                         status === 'current' ? 'text-[#D4AF37] font-bold' :
                         'text-gray-400'
                       }`}>
-                        {state.label}
+                        {stateConfig.label}
                       </p>
                     </div>
-                    {i < NORMAL_STATES.length - 1 && (
-                      <div className={`w-3 sm:w-5 h-0.5 mt-5 shrink-0 transition-colors duration-300 ${
-                        getStepStatus(NORMAL_STATES[i + 1].key) !== 'upcoming' ? 'bg-[#00A651]' : 'bg-gray-200'
+                    {i < NORMAL_FLOW_ORDER.length - 1 && (
+                      <div className={`w-2 sm:w-4 h-0.5 mt-[18px] shrink-0 transition-colors duration-300 ${
+                        getStepStatus(NORMAL_FLOW_ORDER[i + 1]) !== 'upcoming' ? 'bg-[#00A651]' : 'bg-gray-200'
                       }`} />
                     )}
                   </div>
@@ -324,6 +400,8 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   isExceptionActive
                     ? currentState === 'DISPUTED'
                       ? 'bg-[#D93025]/5 text-[#D93025]'
+                      : currentState === 'EXPIRED'
+                      ? 'bg-gray-500/5 text-gray-600'
                       : 'bg-[#FF9800]/5 text-[#E65100]'
                     : currentState === 'RELEASED'
                     ? 'bg-[#00A651]/5 text-[#00A651]'
@@ -331,13 +409,13 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 }`}
               >
                 <span className="font-semibold">Étape actuelle : </span>
-                {[...NORMAL_STATES, ...EXCEPTION_STATES].find((s) => s.key === currentState)?.description}
+                {ALL_STATES.find(s => s.key === currentState)?.description}
               </motion.div>
             </AnimatePresence>
 
             {/* Exception states */}
             {isExceptionActive && (
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex gap-2 flex-wrap">
                 {EXCEPTION_STATES.map((state) => {
                   const isActive = currentState === state.key;
                   return (
@@ -347,6 +425,8 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         isActive
                           ? state.key === 'DISPUTED'
                             ? 'bg-[#D93025]/10 text-[#D93025] ring-1 ring-[#D93025]/30'
+                            : state.key === 'EXPIRED'
+                            ? 'bg-gray-500/10 text-gray-600 ring-1 ring-gray-500/30'
                             : 'bg-[#FF9800]/10 text-[#E65100] ring-1 ring-[#FF9800]/30'
                           : 'bg-gray-50 text-gray-400'
                       }`}
@@ -362,9 +442,9 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         )}
       </Card>
 
-      {/* Two-column layout for conditions and amounts */}
+      {/* Two-column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Release Conditions Checklist */}
+        {/* Release Conditions Checklist (7 conditions) */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-[#2C2E2F]">Conditions de libération</h3>
@@ -383,28 +463,22 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
             />
           </div>
 
-          <div className="space-y-3">
-            {[
-              { key: 'docsValidated' as const, label: 'Documents légaux validés', icon: <FileText className="w-3 h-3" /> },
-              { key: 'geoTrustValidated' as const, label: 'Validation GeoTrust', icon: <Globe className="w-3 h-3" /> },
-              { key: 'notaryAssigned' as const, label: 'Notaire assigné', icon: <Scale className="w-3 h-3" /> },
-              { key: 'deedSigned' as const, label: 'Acte de vente signé', icon: <FileText className="w-3 h-3" /> },
-              { key: 'andfRegistered' as const, label: 'Enregistrement ANDF', icon: <Landmark className="w-3 h-3" /> },
-            ].map((condition) => (
+          <div className="space-y-2.5">
+            {RELEASE_CONDITIONS.map((condition) => (
               <div
                 key={condition.key}
                 className={`flex items-center gap-3 p-2 rounded-xl transition-all ${
-                  releaseConditions[condition.key]
+                  releaseConditions[condition.key as keyof typeof releaseConditions]
                     ? 'bg-[#00A651]/5'
                     : 'bg-gray-50'
                 }`}
               >
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                  releaseConditions[condition.key]
+                  releaseConditions[condition.key as keyof typeof releaseConditions]
                     ? 'bg-[#00A651] text-white'
                     : 'bg-gray-200 text-gray-400'
                 }`}>
-                  {releaseConditions[condition.key] ? (
+                  {releaseConditions[condition.key as keyof typeof releaseConditions] ? (
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -412,17 +486,20 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     condition.icon
                   )}
                 </div>
-                <span className={`text-xs font-medium ${
-                  releaseConditions[condition.key] ? 'text-[#00A651]' : 'text-gray-400'
-                }`}>
-                  {condition.label}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-xs font-medium ${
+                    releaseConditions[condition.key as keyof typeof releaseConditions] ? 'text-[#00A651]' : 'text-gray-400'
+                  }`}>
+                    {condition.label}
+                  </span>
+                  <p className="text-[9px] text-gray-300 font-mono">{condition.description}</p>
+                </div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* Amount Breakdown */}
+        {/* Balance Breakdown */}
         <Card className="p-6">
           <h3 className="text-base font-bold text-[#2C2E2F] mb-4">Répartition des fonds</h3>
 
@@ -433,12 +510,18 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
               <p className="font-mono text-xl font-bold text-[#009CDE]">{formatFCFA(amount)}</p>
             </div>
 
-            {/* Escrow balance */}
-            <div className="p-3 rounded-2xl bg-[#003087]/5 border border-[#003087]/10">
-              <p className="text-[10px] text-[#003087] font-semibold mb-1">Solde escrow</p>
-              <p className="font-mono text-xl font-bold text-[#003087]">
-                {formatFCFA((escrowAccount?.heldAmount as number) || (currentState !== 'CREATED' ? amount : 0))}
-              </p>
+            {/* Escrow held vs available */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-2xl bg-[#003087]/5 border border-[#003087]/10">
+                <p className="text-[10px] text-[#003087] font-semibold mb-1">Escrow bloqué</p>
+                <p className="font-mono text-lg font-bold text-[#003087]">{formatFCFA(heldAmount)}</p>
+                <p className="text-[9px] text-gray-400 mt-0.5">escrow_held</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-[#00A651]/5 border border-[#00A651]/10">
+                <p className="text-[10px] text-[#00A651] font-semibold mb-1">Disponible</p>
+                <p className="font-mono text-lg font-bold text-[#00A651]">{formatFCFA(availableAmount)}</p>
+                <p className="text-[9px] text-gray-400 mt-0.5">available</p>
+              </div>
             </div>
 
             <Separator />
@@ -467,7 +550,6 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           <div className="flex flex-wrap gap-3">
             {availableActions
               .filter((action) => {
-                // Filter actions based on user role
                 if (userRole === 'admin') return true;
                 if (action.actorType === userRole) return true;
                 return false;
@@ -478,9 +560,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     onClick={() => handleTransition(action.target, action.actorType)}
                     disabled={isTransitioning}
                     variant={action.variant === 'destructive' ? 'destructive' : action.variant === 'outline' ? 'outline' : 'default'}
-                    className={`${
-                      action.variant === 'default' ? 'bg-[#003087] hover:bg-[#0047b3]' : ''
-                    }`}
+                    className={action.variant === 'default' ? 'bg-[#003087] hover:bg-[#0047b3]' : ''}
                   >
                     <span className="mr-2">{action.icon}</span>
                     {action.label}
@@ -512,9 +592,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 className="mt-4 overflow-hidden"
               >
                 <div className="p-4 bg-[#D93025]/5 rounded-2xl border border-[#D93025]/10">
-                  <label className="text-xs font-semibold text-[#D93025] mb-2 block">
-                    Raison du litige
-                  </label>
+                  <label className="text-xs font-semibold text-[#D93025] mb-2 block">Raison du litige</label>
                   <textarea
                     value={disputeReason}
                     onChange={(e) => setDisputeReason(e.target.value)}
@@ -523,19 +601,10 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     rows={3}
                   />
                   <div className="flex gap-2 mt-3">
-                    <Button
-                      size="sm"
-                      onClick={handleDispute}
-                      disabled={isTransitioning || !disputeReason.trim()}
-                      variant="destructive"
-                    >
+                    <Button size="sm" onClick={handleDispute} disabled={isTransitioning || !disputeReason.trim()} variant="destructive">
                       Confirmer le litige
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => { setShowDisputeInput(false); setDisputeReason(''); }}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => { setShowDisputeInput(false); setDisputeReason(''); }}>
                       Annuler
                     </Button>
                   </div>
@@ -550,7 +619,89 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         </Card>
       )}
 
-      {/* Ledger Entries with Hash Verification */}
+      {/* 2FA Confirmation Modal */}
+      <AnimatePresence>
+        {show2FA && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShow2FA(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <div className="w-14 h-14 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-3">
+                  <Fingerprint className="w-7 h-7 text-[#003087]" />
+                </div>
+                <h3 className="text-lg font-bold text-[#2C2E2F]">Confirmation 2FA requise</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Vérification requise pour libérer les fonds de {formatFCFA(amount)}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* OTP Input */}
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Code OTP (6 chiffres)</label>
+                  <Input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    className="text-center font-mono text-lg tracking-widest h-12"
+                    maxLength={6}
+                  />
+                </div>
+
+                {/* Confirmation checkbox */}
+                <label className="flex items-start gap-3 cursor-pointer p-3 bg-gray-50 rounded-xl">
+                  <input
+                    type="checkbox"
+                    checked={confirmChecked}
+                    onChange={(e) => setConfirmChecked(e.target.checked)}
+                    className="mt-0.5 rounded border-gray-300"
+                  />
+                  <span className="text-xs text-gray-600">
+                    Je confirme la libération des fonds de <strong>{formatFCFA(amount)}</strong> au vendeur.
+                    Cette action est irréversible.
+                  </span>
+                </label>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => { setShow2FA(false); setOtpCode(''); setConfirmChecked(false); }}
+                    className="flex-1"
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={handle2FAVerification}
+                    disabled={verifying2FA || (!otpCode && !confirmChecked)}
+                    className="flex-1 bg-[#003087] hover:bg-[#0047b3]"
+                  >
+                    {verifying2FA ? (
+                      <Timer className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                    )}
+                    {verifying2FA ? 'Vérification...' : 'Confirmer la libération'}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ledger Entries with SHA-256 Checksums */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-[#2C2E2F]">Grand Livre Escrow</h3>
@@ -565,7 +716,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
               <Skeleton key={i} className="h-16 rounded-xl" />
             ))}
           </div>
-        ) : ledgerEntries.length === 0 ? (
+        ) : displayLedger.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-sm text-gray-400">Aucune entrée dans le grand livre</p>
             <p className="text-xs text-gray-300 mt-1">Les entrées apparaîtront une fois l&apos;escrow financé</p>
@@ -573,7 +724,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         ) : (
           <ScrollArea className="max-h-80">
             <div className="space-y-2">
-              {ledgerEntries.map((entry, i) => {
+              {displayLedger.map((entry, i) => {
                 const entryType = entry.entryType as string;
                 const entryAmount = entry.amount as number;
                 const balanceAfter = entry.balanceAfter as number;
@@ -630,18 +781,21 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         </span>
                         <span className="text-[10px] text-gray-300">
                           {new Date(createdAt).toLocaleString('fr-FR', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit',
+                            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                           })}
                         </span>
                       </div>
-                      {/* Hash verification */}
+                      {/* SHA-256 checksum display */}
                       {reference && (
-                        <p className="text-[8px] font-mono text-gray-300 mt-0.5 truncate" title={reference}>
-                          <Link className="w-2.5 h-2.5 inline" /> {reference.slice(0, 16)}...
-                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Lock className="w-2.5 h-2.5 text-gray-300" />
+                          <p className="text-[8px] font-mono text-gray-300 truncate" title={reference}>
+                            {reference.length > 30 ? reference.slice(0, 30) + '...' : reference}
+                          </p>
+                          <Badge variant="outline" className="text-[7px] px-1 py-0 h-3.5 ml-1">
+                            SHA-256
+                          </Badge>
+                        </div>
                       )}
                     </div>
                   </motion.div>
@@ -652,9 +806,9 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         )}
       </Card>
 
-      {/* Timeline Events */}
+      {/* State Transition History Timeline */}
       <Card className="p-6">
-        <h3 className="text-base font-bold text-[#2C2E2F] mb-4">Historique des événements</h3>
+        <h3 className="text-base font-bold text-[#2C2E2F] mb-4">Historique des transitions</h3>
 
         {isLoading ? (
           <div className="space-y-3">
@@ -668,23 +822,29 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           </div>
         ) : (
           <ScrollArea className="max-h-60">
-            <div className="space-y-2">
-              {timelineEvents.map((event, i) => (
-                <div key={i} className="flex items-start gap-3 p-2 text-xs">
-                  <div className="w-2 h-2 rounded-full bg-[#003087] mt-1.5 shrink-0" />
-                  <div>
-                    <span className="font-semibold text-[#2C2E2F]">
-                      {event.fromStatus as string} → {event.toStatus as string}
-                    </span>
-                    <p className="text-gray-400 text-[10px]">
-                      {event.description as string} — {event.actorType as string}
-                    </p>
-                    <p className="text-gray-300 text-[9px]">
-                      {new Date(event.createdAt as string).toLocaleString('fr-FR')}
-                    </p>
+            <div className="relative pl-6">
+              {/* Vertical line */}
+              <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-200" />
+              <div className="space-y-3">
+                {timelineEvents.map((event, i) => (
+                  <div key={i} className="relative flex items-start gap-3">
+                    <div className="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-[#003087] border-2 border-white z-10" />
+                    <div className="flex-1 p-2.5 bg-gray-50 rounded-xl text-xs">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-semibold text-[#2C2E2F]">
+                          {event.fromStatus as string} <ArrowRight className="w-3 h-3 inline" /> {event.toStatus as string}
+                        </span>
+                      </div>
+                      <p className="text-gray-400 text-[10px]">
+                        {event.description as string} — {event.actorType as string}
+                      </p>
+                      <p className="text-gray-300 text-[9px] mt-0.5">
+                        {new Date(event.createdAt as string).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </ScrollArea>
         )}

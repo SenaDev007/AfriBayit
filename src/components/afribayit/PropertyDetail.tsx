@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import dynamic from 'next/dynamic';
-import { Check, ClipboardList, Eye, Lock, Map } from 'lucide-react';
+import { Check, ClipboardList, Eye, Lock, Map, MapPin } from 'lucide-react';
 
 // Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
 const VirtualTourViewer = dynamic(
@@ -375,22 +375,58 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
               </motion.div>
             )}
 
-            {/* Map Placeholder */}
+            {/* Map */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
               className="mb-6"
             >
-              <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">Localisation</h2>
-              <div className="h-64 rounded-3xl bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-200">
-                <div className="text-center">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <p className="text-sm text-gray-400">Carte Mapbox</p>
-                  <p className="text-xs text-gray-300">{property.quartier}, {property.city}</p>
+              <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-[#003087]" />
+                Localisation
+              </h2>
+              <div className="relative h-64 rounded-3xl overflow-hidden">
+                {/* Simulated map background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
+                  {/* Grid lines to simulate map */}
+                  <div className="absolute inset-0 opacity-[0.07]">
+                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
+                    <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
+                    <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
+                    <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
+                    <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
+                    <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
+                  </div>
+                  {/* Simulated roads */}
+                  <div className="absolute top-[30%] left-0 right-0 h-[2px] bg-gray-200/80" />
+                  <div className="absolute top-[55%] left-0 right-0 h-[2px] bg-gray-200/60" />
+                  <div className="absolute left-[20%] top-0 bottom-0 w-[2px] bg-gray-200/70" />
+                  <div className="absolute left-[65%] top-0 bottom-0 w-[2px] bg-gray-200/50" />
+                  {/* Simulated blocks */}
+                  <div className="absolute top-[32%] left-[22%] w-[18%] h-[20%] rounded-sm bg-gray-200/40" />
+                  <div className="absolute top-[12%] left-[5%] w-[14%] h-[16%] rounded-sm bg-gray-200/30" />
+                  <div className="absolute top-[57%] left-[40%] w-[22%] h-[18%] rounded-sm bg-[#003087]/[0.03]" />
+                </div>
+                {/* Map pin & overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
+                      <MapPin className="w-6 h-6 text-[#003087]" />
+                    </div>
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#003087] rounded-full opacity-20" />
+                  </div>
+                  <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {property.quartier}, {property.city}
+                  </p>
+                </div>
+                {/* Bottom info bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/90 to-transparent pt-8 pb-3 px-4">
+                  <p className="text-[10px] text-gray-400 text-center">
+                    La carte interactive sera disponible avec la configuration Mapbox
+                  </p>
                 </div>
               </div>
             </motion.div>

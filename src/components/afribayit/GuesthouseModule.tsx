@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGuesthouses, useGuesthouse, useGuesthouseBookings, useCreateBooking } from '@/hooks/useGuesthouses';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,7 +8,33 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { Award, BarChart3, Bed, Calendar, CheckCircle, ClipboardList, Coins, Croissant, Home, Key, PartyPopper, Search, Shield, TrendingDown, TrendingUp, User, Users, Wrench, X, XCircle } from 'lucide-react';
+import {
+  Award,
+  BarChart3,
+  Bed,
+  Calendar,
+  CheckCircle,
+  ClipboardList,
+  Coins,
+  Croissant,
+  Home,
+  Key,
+  MapPin,
+  PartyPopper,
+  Plus,
+  Search,
+  Shield,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  User,
+  Users,
+  Wrench,
+  X,
+  XCircle,
+  Filter,
+  ChevronDown,
+} from 'lucide-react';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -16,40 +42,40 @@ interface ModuleProps {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-//  Static UI config (NOT database data) 
+//  Static UI config (NOT database data)
 const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 const certificationProcessSteps = [
-  { step: 1, title: 'Demande', desc: 'Soumission du dossier de certification', icon: '<ClipboardList className="w-4 h-4" />' },
-  { step: 2, title: 'Inspection', desc: 'Visite de contrôle qualité AfriBayit', icon: '<Search className="w-4 h-4" />' },
-  { step: 3, title: 'Conformité', desc: 'Vérification sécurité, hygiène, confort', icon: '<CheckCircle className="w-4 h-4" />' },
-  { step: 4, title: 'Certification', desc: 'Badge Guesthouse Certifié délivré', icon: '<Award className="w-4 h-4" />' },
+  { step: 1, title: 'Demande', desc: 'Soumission du dossier de certification', icon: <ClipboardList className="w-4 h-4" /> },
+  { step: 2, title: 'Inspection', desc: 'Visite de contrôle qualité AfriBayit', icon: <Search className="w-4 h-4" /> },
+  { step: 3, title: 'Conformité', desc: 'Vérification sécurité, hygiène, confort', icon: <CheckCircle className="w-4 h-4" /> },
+  { step: 4, title: 'Certification', desc: 'Badge Guesthouse Certifié délivré', icon: <Award className="w-4 h-4" /> },
 ];
 
 const mealTypeConfig = [
-  { key: 'breakfast', label: 'Petit-déjeuner', icon: '<Croissant className="w-4 h-4" />', color: '#D4AF37' },
-  { key: 'lunch', label: 'Déjeuner', icon: '', color: '#00A651' },
-  { key: 'dinner', label: 'Dîner', icon: '', color: '#003087' },
+  { key: 'breakfast', label: 'Petit-déjeuner', icon: <Croissant className="w-6 h-6" />, color: '#D4AF37' },
+  { key: 'lunch', label: 'Déjeuner', icon: <Users className="w-6 h-6" />, color: '#00A651' },
+  { key: 'dinner', label: 'Dîner', icon: <Home className="w-6 h-6" />, color: '#003087' },
 ];
 
-const roleIconMap: Record<string, string> = {
-  receptionist: '',
-  housekeeping: '',
-  cook: '',
-  security: '<Shield className="w-4 h-4" />',
-  manager: '',
-  maintenance: '<Wrench className="w-4 h-4" />',
-  concierge: '<Key className="w-4 h-4" />',
+const roleIconMap: Record<string, ReactNode> = {
+  receptionist: <User className="w-4 h-4" />,
+  housekeeping: <Home className="w-4 h-4" />,
+  cook: <Croissant className="w-4 h-4" />,
+  security: <Shield className="w-4 h-4" />,
+  manager: <Users className="w-4 h-4" />,
+  maintenance: <Wrench className="w-4 h-4" />,
+  concierge: <Key className="w-4 h-4" />,
 };
 
 const staffRoleOptions = [
-  { value: 'receptionist', label: ' Réceptionniste' },
-  { value: 'housekeeping', label: ' Femme de ménage' },
-  { value: 'cook', label: ' Cuisinier(e)' },
-  { value: 'security', label: '<Shield className="w-4 h-4" /> Sécurité' },
-  { value: 'manager', label: ' Gérant(e)' },
-  { value: 'maintenance', label: '<Wrench className="w-4 h-4" /> Maintenance' },
-  { value: 'concierge', label: '<Key className="w-4 h-4" /> Concierge' },
+  { value: 'receptionist', label: 'Réceptionniste' },
+  { value: 'housekeeping', label: 'Femme de ménage' },
+  { value: 'cook', label: 'Cuisinier(e)' },
+  { value: 'security', label: 'Sécurité' },
+  { value: 'manager', label: 'Gérant(e)' },
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'concierge', label: 'Concierge' },
 ];
 
 const staffSchedulePresets = [
@@ -64,14 +90,14 @@ const staffSchedulePresets = [
 ];
 
 const pricingPeriodOptions = [
-  { value: 'low_season', label: '<TrendingDown className="w-4 h-4" /> Basse saison', color: '#009CDE' },
-  { value: 'high_season', label: '<TrendingUp className="w-4 h-4" /> Haute saison', color: '#D4AF37' },
-  { value: 'event', label: '<PartyPopper className="w-4 h-4" /> Événementiel', color: '#D93025' },
-  { value: 'holiday', label: ' Fêtes', color: '#D4AF37' },
-  { value: 'custom', label: '<BarChart3 className="w-4 h-4" /> Personnalisé', color: '#6b7280' },
+  { value: 'low_season', label: 'Basse saison', icon: <TrendingDown className="w-4 h-4" />, color: '#009CDE' },
+  { value: 'high_season', label: 'Haute saison', icon: <TrendingUp className="w-4 h-4" />, color: '#D4AF37' },
+  { value: 'event', label: 'Événementiel', icon: <PartyPopper className="w-4 h-4" />, color: '#D93025' },
+  { value: 'holiday', label: 'Fêtes', icon: <Calendar className="w-4 h-4" />, color: '#D4AF37' },
+  { value: 'custom', label: 'Personnalisé', icon: <BarChart3 className="w-4 h-4" />, color: '#6b7280' },
 ];
 
-//  API response types 
+//  API response types
 interface GuesthouseListItem {
   id: string;
   name: string;
@@ -140,7 +166,7 @@ interface BookingItem {
   breakfastIncluded: boolean;
 }
 
-//  Helpers 
+//  Helpers
 function parseJsonArray(raw: string | null | undefined): string[] {
   if (!raw) return [];
   try {
@@ -164,6 +190,7 @@ function parseSchedule(raw: string | null | undefined): string {
     if (parsed && typeof parsed === 'object') {
       if (parsed.start && parsed.end) return `${parsed.start}-${parsed.end}`;
       if (parsed.hours) return parsed.hours;
+      if (parsed.shift) return String(parsed.shift);
     }
     return JSON.stringify(parsed);
   } catch {
@@ -199,7 +226,38 @@ function periodLabel(period: string): string {
   return map[period] || period;
 }
 
-//  Skeleton loaders 
+function getRoleLabel(role: string): string {
+  const map: Record<string, string> = {
+    receptionist: 'Réceptionniste',
+    housekeeping: 'Femme de ménage',
+    cook: 'Cuisinier(e)',
+    security: 'Sécurité',
+    manager: 'Gérant(e)',
+    maintenance: 'Maintenance',
+    concierge: 'Concierge',
+  };
+  return map[role] || role;
+}
+
+function getPricingPeriodIcon(period: string): ReactNode {
+  const map: Record<string, ReactNode> = {
+    low_season: <TrendingDown className="w-5 h-5" />,
+    high_season: <TrendingUp className="w-5 h-5" />,
+    event: <PartyPopper className="w-5 h-5" />,
+    holiday: <Calendar className="w-5 h-5" />,
+    custom: <BarChart3 className="w-5 h-5" />,
+  };
+  return map[period] || <BarChart3 className="w-5 h-5" />;
+}
+
+function getPricingPeriodColor(period: string): string {
+  const isLow = period === 'low_season';
+  const isHigh = period === 'high_season';
+  const isEvent = period === 'event' || period === 'holiday';
+  return isLow ? '#009CDE' : isHigh ? '#D4AF37' : isEvent ? '#D93025' : '#6b7280';
+}
+
+//  Skeleton loaders
 function ListingCardSkeleton() {
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
@@ -269,13 +327,33 @@ function PricingCardSkeleton() {
   );
 }
 
-//  Main component 
+// Certification badge component
+function CertificationBadge({ status }: { status: string }) {
+  const isCertified = status === 'certified';
+  const isInProgress = status === 'pending';
+
+  return (
+    <span className={`inline-flex items-center gap-1 px-3 py-1 text-[10px] font-bold rounded-full text-white ${
+      isCertified ? 'bg-[#00A651]' : isInProgress ? 'bg-[#D4AF37]' : 'bg-gray-500'
+    }`}>
+      {isCertified ? <CheckCircle className="w-3 h-3" /> : isInProgress ? <Calendar className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+      {isCertified ? 'Certifié' : isInProgress ? 'En cours' : 'Non certifié'}
+    </span>
+  );
+}
+
+//  Main component
 type TabKey = 'listings' | 'chambers' | 'booking' | 'meals' | 'staff' | 'pricing' | 'certification';
 
 export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('listings');
   const [selectedGhId, setSelectedGhId] = useState<string | null>(null);
   const { selectedCountry } = useCountry();
+
+  // Search & filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [certFilter, setCertFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Staff form state
   const [staffForm, setStaffForm] = useState({ name: '', role: 'receptionist', phone: '', schedule: '' });
@@ -297,8 +375,25 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
 
   // List query
   const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses(undefined, selectedCountry);
-  const guesthousesList: GuesthouseListItem[] =
+  const rawGuesthousesList: GuesthouseListItem[] =
     (listData as { guesthouses: GuesthouseListItem[] } | undefined)?.guesthouses ?? [];
+
+  // Filtered list
+  const guesthousesList = useMemo(() => {
+    let list = rawGuesthousesList;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(gh =>
+        gh.name.toLowerCase().includes(q) ||
+        gh.city.toLowerCase().includes(q) ||
+        gh.country.toLowerCase().includes(q)
+      );
+    }
+    if (certFilter !== 'all') {
+      list = list.filter(gh => gh.certificationStatus === certFilter);
+    }
+    return list;
+  }, [rawGuesthousesList, searchQuery, certFilter]);
 
   // Detail query (enabled when a guesthouse is selected)
   const { data: detailData, isLoading: detailLoading } = useGuesthouse(selectedGhId || '');
@@ -324,7 +419,6 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
     bookings.forEach(booking => {
       const checkIn = new Date(booking.checkIn);
       const checkOut = new Date(booking.checkOut);
-      // Only include bookings in the current month
       const start = new Date(Math.max(checkIn.getTime(), new Date(currentYear, currentMonth, 1).getTime()));
       const end = new Date(Math.min(checkOut.getTime(), new Date(currentYear, currentMonth + 1, 0).getTime()));
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
@@ -336,34 +430,42 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
 
   // Generate calendar days from actual booking data
   const calendarDays = useMemo(() => {
-    return Array.from({ length: 35 }, (_, i) => {
-      const day = (i % 31) + 1;
-      return { day, booked: bookedDays.has(day) };
-    });
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const offset = firstDay === 0 ? 6 : firstDay - 1; // Monday-based
+    const cells: { day: number | null; booked: boolean }[] = [];
+    for (let i = 0; i < offset; i++) cells.push({ day: null, booked: false });
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ day: d, booked: bookedDays.has(d) });
+    }
+    while (cells.length % 7 !== 0) cells.push({ day: null, booked: false });
+    return cells;
   }, [bookedDays]);
 
   // Create booking mutation
   const createBooking = useCreateBooking(effectiveGhId || '');
 
-  const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: 'listings', label: 'Listings', icon: '<Home className="w-4 h-4" />' },
-    { key: 'chambers', label: 'Chambres', icon: '<Bed className="w-4 h-4" />' },
-    { key: 'booking', label: 'Réservations', icon: '<Calendar className="w-4 h-4" />' },
-    { key: 'meals', label: 'Repas', icon: '' },
-    { key: 'staff', label: 'Personnel', icon: '<Users className="w-4 h-4" />' },
-    { key: 'pricing', label: 'Tarifs saisonniers', icon: '<TrendingUp className="w-4 h-4" />' },
-    { key: 'certification', label: 'Certification', icon: '<Award className="w-4 h-4" />' },
+  const tabs: { key: TabKey; label: string; icon: ReactNode }[] = [
+    { key: 'listings', label: 'Listings', icon: <Home className="w-4 h-4" /> },
+    { key: 'chambers', label: 'Chambres', icon: <Bed className="w-4 h-4" /> },
+    { key: 'booking', label: 'Réservations', icon: <Calendar className="w-4 h-4" /> },
+    { key: 'meals', label: 'Repas', icon: <Croissant className="w-4 h-4" /> },
+    { key: 'staff', label: 'Personnel', icon: <Users className="w-4 h-4" /> },
+    { key: 'pricing', label: 'Tarifs saisonniers', icon: <TrendingUp className="w-4 h-4" /> },
+    { key: 'certification', label: 'Certification', icon: <Award className="w-4 h-4" /> },
   ];
 
   // Open booking dialog for a room
-  const handleOpenBooking = (room: GuesthouseRoomItem) => {
+  const handleOpenBooking = useCallback((room: GuesthouseRoomItem) => {
     setBookingRoom(room);
     setBookingCheckIn('');
     setBookingCheckOut('');
     setBookingGuests(1);
     setBookingBreakfast(false);
+    setDynamicPrice(null);
     setShowBookingDialog(true);
-  };
+  }, []);
 
   // Calculate dynamic price when dates change
   useEffect(() => {
@@ -415,7 +517,6 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         totalPrice,
         currency: 'XOF',
         breakfastIncluded: bookingBreakfast,
-        pricePerNight,
       },
       {
         onSuccess: () => {
@@ -429,6 +530,13 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
       }
     );
   };
+
+  // Compute min/max price for a guesthouse
+  function getPriceRange(gh: GuesthouseListItem): { min: number; max: number } {
+    if (gh.rooms.length === 0) return { min: 0, max: 0 };
+    const prices = gh.rooms.map(r => r.basePrice);
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -466,7 +574,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           className="bg-gradient-to-r from-[#003087]/5 to-[#00A651]/5 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3">
-            <span className="text-2xl"><Coins className="w-4 h-4" /></span>
+            <Coins className="w-5 h-5 text-[#D4AF37]" />
             <div>
               <p className="text-sm font-semibold text-[#2C2E2F]">Modèle de revenus</p>
               <p className="text-xs text-gray-500">Commission voyageur : 10-13% · Commission propriétaire : 3%</p>
@@ -486,12 +594,12 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
           {tabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -504,6 +612,80 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           {/* ===== LISTINGS ===== */}
           {activeTab === 'listings' && (
             <motion.div key="listings" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+              {/* Search & Filter Bar */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Rechercher par nom, ville ou pays..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border transition-colors ${
+                      showFilters || certFilter !== 'all' ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Filter className="w-4 h-4" /> Filtres
+                    {certFilter !== 'all' && <span className="w-2 h-2 bg-[#D4AF37] rounded-full" />}
+                  </button>
+                  <button
+                    onClick={() => onNavigate?.('publish')}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" /> Publier une guesthouse
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter Panel */}
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mb-4"
+                  >
+                    <div className="bg-white rounded-2xl p-4 border shadow-sm flex flex-wrap gap-3 items-center">
+                      <span className="text-xs text-gray-500 font-medium">Certification:</span>
+                      {[
+                        { value: 'all', label: 'Toutes' },
+                        { value: 'certified', label: 'Certifiées' },
+                        { value: 'pending', label: 'En cours' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setCertFilter(opt.value)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                            certFilter === opt.value
+                              ? 'bg-[#003087] text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                      <div className="flex-1" />
+                      <span className="text-xs text-gray-400">{guesthousesList.length} résultat{guesthousesList.length !== 1 ? 's' : ''}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Loading */}
               {listLoading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -517,83 +699,133 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
               {listError && (
                 <div className="text-center py-16">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
-                    <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <XCircle className="w-8 h-8 text-red-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Impossible de charger les guesthouses</h3>
                   <p className="text-sm text-gray-500">{(listErrorObj as Error)?.message || 'Une erreur est survenue. Veuillez réessayer.'}</p>
                 </div>
               )}
 
-              {/* Empty */}
+              {/* Empty State - Functional CTA instead of "coming soon" */}
               {!listLoading && !listError && guesthousesList.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4">
-                    <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-16"
+                >
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#003087]/5 mb-6">
+                    <Home className="w-10 h-10 text-[#003087]/40" />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Aucune guesthouse disponible</h3>
-                  <p className="text-sm text-gray-500">Les guesthouses seront bientôt disponibles. Revenez plus tard.</p>
-                </div>
+                  <h3 className="text-xl font-display font-bold text-[#2C2E2F] mb-2">
+                    {searchQuery || certFilter !== 'all'
+                      ? 'Aucune guesthouse ne correspond à votre recherche'
+                      : 'Aucune guesthouse disponible dans ce pays'}
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-md mx-auto mb-8">
+                    {searchQuery || certFilter !== 'all'
+                      ? 'Essayez de modifier vos critères de recherche ou de réinitialiser les filtres.'
+                      : 'Soyez le premier à publier une maison d\'hôtes certifiée AfriBayit dans cette région.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    {(searchQuery || certFilter !== 'all') && (
+                      <button
+                        onClick={() => { setSearchQuery(''); setCertFilter('all'); }}
+                        className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <X className="w-4 h-4" /> Réinitialiser les filtres
+                      </button>
+                    )}
+                    <button
+                      onClick={() => onNavigate?.('publish')}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors shadow-lg shadow-[#00A651]/20"
+                    >
+                      <Plus className="w-4 h-4" /> Publier une guesthouse
+                    </button>
+                  </div>
+
+                  {/* How it works mini section */}
+                  <div className="mt-12 max-w-2xl mx-auto">
+                    <h4 className="text-sm font-semibold text-[#2C2E2F] mb-4">Comment ça marche ?</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {[
+                        { icon: <ClipboardList className="w-5 h-5" />, title: 'Inscrivez votre guesthouse', desc: 'Ajoutez vos informations, photos et chambres' },
+                        { icon: <Search className="w-5 h-5" />, title: 'Obtenez la certification', desc: 'Inspection qualité AfriBayit pour rassurer vos clients' },
+                        { icon: <Coins className="w-5 h-5" />, title: 'Recevez des réservations', desc: 'Gestion complète avec paiement sécurisé via AfriBayit' },
+                      ].map((step, i) => (
+                        <div key={i} className="bg-white rounded-2xl p-4 border shadow-sm text-center">
+                          <div className="w-10 h-10 rounded-full bg-[#003087]/5 flex items-center justify-center mx-auto mb-3 text-[#003087]">
+                            {step.icon}
+                          </div>
+                          <p className="text-xs font-semibold text-[#2C2E2F] mb-1">{step.title}</p>
+                          <p className="text-[10px] text-gray-500">{step.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
               )}
 
-              {/* Data */}
+              {/* Data - Guesthouse Listing Grid */}
               {!listLoading && !listError && guesthousesList.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {guesthousesList.map((gh, i) => {
-                    const image = getFirstImage(gh.images);
-                    const isCertified = gh.certificationStatus === 'certified';
-                    const isInProgress = gh.certificationStatus === 'pending';
-                    return (
-                      <motion.div
-                        key={gh.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08, ease: easeOut }}
-                        whileHover={{ y: -4 }}
-                        onClick={() => { setSelectedGhId(gh.id); setActiveTab('chambers'); }}
-                        className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
-                      >
-                        <div className="relative aspect-[16/10]">
-                          {image ? (
-                            <ImageWithFallback src={image} alt={gh.name} className="w-full h-full group-hover:scale-105 transition-transform duration-500" fallbackType="guesthouse" />
-                          ) : (
-                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                              <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                              </svg>
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {guesthousesList.map((gh, i) => {
+                      const image = getFirstImage(gh.images);
+                      const { min, max } = getPriceRange(gh);
+                      const priceLabel = min === max
+                        ? `${new Intl.NumberFormat('fr-FR').format(min)} FCFA`
+                        : `${new Intl.NumberFormat('fr-FR').format(min)} – ${new Intl.NumberFormat('fr-FR').format(max)} FCFA`;
+                      return (
+                        <motion.div
+                          key={gh.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.08, ease: easeOut }}
+                          whileHover={{ y: -4 }}
+                          onClick={() => { setSelectedGhId(gh.id); setActiveTab('chambers'); }}
+                          className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
+                        >
+                          <div className="relative aspect-[16/10]">
+                            {image ? (
+                              <ImageWithFallback src={image} alt={gh.name} className="w-full h-full group-hover:scale-105 transition-transform duration-500" fallbackType="guesthouse" />
+                            ) : (
+                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                <Home className="w-12 h-12 text-gray-300" />
+                              </div>
+                            )}
+                            <div className="absolute top-3 left-3 flex gap-1.5">
+                              <CertificationBadge status={gh.certificationStatus} />
                             </div>
-                          )}
-                          <div className="absolute top-3 left-3 flex gap-1.5">
-                            <span className={`px-3 py-1 text-[10px] font-bold rounded-full text-white ${
-                              isCertified ? 'bg-[#00A651]' : isInProgress ? 'bg-[#D4AF37]' : 'bg-gray-500'
-                            }`}>
-                              {isCertified ? '<CheckCircle className="w-4 h-4" /> Certifié' : isInProgress ? '⏳ En cours' : '<XCircle className="w-4 h-4" /> Non certifié'}
-                            </span>
+                            <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-mono flex items-center gap-1">
+                              <Bed className="w-3 h-3" /> {gh.rooms.length} chambre{gh.rooms.length > 1 ? 's' : ''}
+                            </div>
                           </div>
-                          <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-mono">
-                            {gh.rooms.length} chambre{gh.rooms.length > 1 ? 's' : ''}
+                          <div className="p-4">
+                            <h3 className="font-display text-base font-bold text-[#2C2E2F] group-hover:text-[#003087] transition-colors">
+                              {gh.name}
+                            </h3>
+                            <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                              <MapPin className="w-3 h-3" /> {gh.city}, {gh.country}
+                            </p>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                                {gh.overallRating > 0 ? `${gh.overallRating} (${gh.reviewCount})` : 'Nouveau'}
+                              </span>
+                              <span>À partir de <span className="font-mono font-bold text-[#D4AF37]">{priceLabel}</span></span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-display text-base font-bold text-[#2C2E2F] group-hover:text-[#003087] transition-colors">
-                            {gh.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 mb-2">{gh.city}, {gh.country}</p>
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                              {gh.overallRating} ({gh.reviewCount})
-                            </span>
-                            <span>À partir de <span className="font-mono font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(gh.rooms[0]?.basePrice || 0)} FCFA</span></span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Results count footer */}
+                  <div className="text-center mt-6 text-xs text-gray-400">
+                    {guesthousesList.length} guesthouse{guesthousesList.length !== 1 ? 's' : ''} trouvée{guesthousesList.length !== 1 ? 's' : ''}
+                    {searchQuery && <> pour &laquo;{searchQuery}&raquo;</>}
+                  </div>
+                </>
               )}
             </motion.div>
           )}
@@ -664,6 +896,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 </div>
               ) : (
                 <div className="text-center py-12">
+                  <Bed className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">Aucune chambre disponible pour cette guesthouse.</p>
                 </div>
               )}
@@ -690,10 +923,11 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                   {calendarDays.map((cd, idx) => (
                     <div
                       key={idx}
-                      className={`aspect-square flex items-center justify-center rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                      className={`aspect-square flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                        cd.day === null ? '' :
                         cd.booked
-                          ? 'bg-[#D93025]/10 text-[#D93025]'
-                          : 'bg-[#00A651]/5 text-[#2C2E2F] hover:bg-[#00A651]/20'
+                          ? 'bg-[#D93025]/10 text-[#D93025] cursor-pointer'
+                          : 'bg-[#00A651]/5 text-[#2C2E2F] hover:bg-[#00A651]/20 cursor-pointer'
                       }`}
                     >
                       {cd.day}
@@ -735,15 +969,17 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-3xl p-6 shadow-sm border text-center"
                       >
-                        <span className="text-4xl block mb-3">{mtc.icon}</span>
+                        <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${mtc.color}10`, color: mtc.color }}>
+                          {mtc.icon}
+                        </div>
                         <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-1">{mtc.label}</h4>
                         {meal ? (
                           <>
                             <p className="font-mono text-2xl font-bold" style={{ color: mtc.color }}>
                               {new Intl.NumberFormat('fr-FR').format(meal.price)} FCFA
                             </p>
-                            <span className="inline-flex mt-2 px-2 py-0.5 bg-[#00A651]/10 text-[#00A651] text-[10px] font-semibold rounded-full">
-                              <CheckCircle className="w-4 h-4" /> Disponible
+                            <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 bg-[#00A651]/10 text-[#00A651] text-[10px] font-semibold rounded-full">
+                              <CheckCircle className="w-3 h-3" /> Disponible
                             </span>
                           </>
                         ) : (
@@ -769,9 +1005,6 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 >
                   {guesthousesList.map(gh => <option key={gh.id} value={gh.id}>{gh.name}</option>)}
                 </select>
-                <button className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-1.5">
-                  + Ajouter personnel
-                </button>
               </div>
 
               {/* Add Staff Form */}
@@ -847,8 +1080,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                             toast.error('Erreur lors de l\'ajout');
                           }
                         } catch {
-                          toast.success('Personnel ajouté (local)');
-                          setStaffForm({ name: '', role: 'receptionist', phone: '', schedule: '' });
+                          toast.error('Erreur réseau lors de l\'ajout');
                         }
                         setStaffSubmitting(false);
                       }}
@@ -871,14 +1103,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 <div className="space-y-3">
                   {activeDetail.staff.map((s, i) => {
                     const schedule = parseSchedule(s.schedule);
-                    const icon = roleIconMap[s.role] || '<User className="w-4 h-4" />';
-                    const roleLabel: Record<string, string> = {
-                      receptionist: 'Réceptionniste',
-                      housekeeping: 'Femme de ménage',
-                      cook: 'Cuisinier(e)',
-                      security: 'Sécurité',
-                      manager: 'Gérant(e)',
-                    };
+                    const icon = roleIconMap[s.role] || <User className="w-4 h-4" />;
                     return (
                       <motion.div
                         key={s.id}
@@ -888,17 +1113,17 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                         className="bg-white rounded-2xl p-4 shadow-sm border flex items-center justify-between"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center">
-                            <span className="text-sm">{icon}</span>
+                          <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087]">
+                            {icon}
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-[#2C2E2F]">{s.name}</p>
-                            <p className="text-xs text-gray-500">{roleLabel[s.role] || s.role}</p>
+                            <p className="text-xs text-gray-500">{getRoleLabel(s.role)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {schedule && (
-                            <span className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600"> {schedule}</span>
+                            <span className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600">{schedule}</span>
                           )}
                           <button
                             onClick={async () => {
@@ -911,7 +1136,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                                   toast.error('Erreur lors du retrait');
                                 }
                               } catch {
-                                toast.success('Personnel retiré (local)');
+                                toast.error('Erreur réseau lors du retrait');
                               }
                             }}
                             className="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -925,6 +1150,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 </div>
               ) : (
                 <div className="text-center py-12">
+                  <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">Aucun personnel enregistré pour cette guesthouse.</p>
                 </div>
               )}
@@ -943,9 +1169,6 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 >
                   {guesthousesList.map(gh => <option key={gh.id} value={gh.id}>{gh.name}</option>)}
                 </select>
-                <button className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-1.5">
-                  + Ajouter une règle tarifaire
-                </button>
               </div>
 
               {/* Add Pricing Rule Form */}
@@ -1031,8 +1254,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                             toast.error('Erreur lors de l\'ajout de la règle');
                           }
                         } catch {
-                          toast.success('Règle tarifaire ajoutée (local)');
-                          setPricingForm({ name: '', period: 'high_season', multiplier: 1.5, startDate: '', endDate: '', eventName: '' });
+                          toast.error('Erreur réseau lors de l\'ajout');
                         }
                         setPricingSubmitting(false);
                       }}
@@ -1067,11 +1289,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
               ) : activeDetail?.pricingRules && activeDetail.pricingRules.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   {activeDetail.pricingRules.map((pr, i) => {
-                    const isLow = pr.period === 'low_season';
-                    const isHigh = pr.period === 'high_season';
-                    const isEvent = pr.period === 'event' || pr.period === 'holiday';
-                    const color = isLow ? '#009CDE' : isHigh ? '#D4AF37' : isEvent ? '#D93025' : '#6b7280';
-                    const icon = isLow ? '<TrendingDown className="w-4 h-4" />' : isHigh ? '<TrendingUp className="w-4 h-4" />' : isEvent ? '<PartyPopper className="w-4 h-4" />' : '<BarChart3 className="w-4 h-4" />';
+                    const color = getPricingPeriodColor(pr.period);
                     return (
                       <motion.div
                         key={pr.id}
@@ -1091,7 +1309,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                                 toast.error('Erreur lors de la suppression');
                               }
                             } catch {
-                              toast.success('Règle tarifaire supprimée (local)');
+                              toast.error('Erreur réseau lors de la suppression');
                             }
                           }}
                           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover/pricing:opacity-100 transition-all"
@@ -1099,7 +1317,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        <span className="text-3xl block mb-2">{icon}</span>
+                        <div className="mb-2 mx-auto w-fit" style={{ color }}>{getPricingPeriodIcon(pr.period)}</div>
                         <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-0.5">{pr.name}</h4>
                         <p className="text-[10px] text-gray-400 mb-1">{periodLabel(pr.period)}</p>
                         <p className="font-mono text-2xl font-bold mb-1" style={{ color }}>{formatModifier(pr.multiplier)}</p>
@@ -1110,6 +1328,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 </div>
               ) : (
                 <div className="text-center py-12">
+                  <BarChart3 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">Aucune règle tarifaire définie pour cette guesthouse.</p>
                 </div>
               )}
@@ -1125,7 +1344,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                   {certificationProcessSteps.map((s, i) => (
                     <div key={s.step} className="flex items-start shrink-0">
                       <div className="flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl ${
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                           i < 2 ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'
                         }`}>
                           {s.icon}
@@ -1138,10 +1357,46 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                     </div>
                   ))}
                 </div>
-                <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
-                  <p className="text-sm text-[#2C2E2F] font-semibold mb-1">⏳ En cours de certification</p>
-                  <p className="text-xs text-gray-500">Votre demande est en cours de traitement. L&apos;inspection sera planifiée sous 5 jours ouvrés.</p>
-                </div>
+
+                {/* Certification status for current guesthouse */}
+                {activeDetail && (
+                  <div className={`p-4 rounded-2xl mb-4 ${
+                    activeDetail.certificationStatus === 'certified' ? 'bg-[#00A651]/5' :
+                    activeDetail.certificationStatus === 'pending' ? 'bg-[#D4AF37]/5' :
+                    'bg-gray-50'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {activeDetail.certificationStatus === 'certified' ? (
+                        <CheckCircle className="w-4 h-4 text-[#00A651]" />
+                      ) : activeDetail.certificationStatus === 'pending' ? (
+                        <Calendar className="w-4 h-4 text-[#D4AF37]" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-gray-500" />
+                      )}
+                      <p className="text-sm text-[#2C2E2F] font-semibold">
+                        {activeDetail.certificationStatus === 'certified'
+                          ? 'Guesthouse certifiée'
+                          : activeDetail.certificationStatus === 'pending'
+                          ? 'En cours de certification'
+                          : 'Non certifiée'}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {activeDetail.certificationStatus === 'certified'
+                        ? 'Cette guesthouse a passé avec succès l\'inspection AfriBayit.'
+                        : activeDetail.certificationStatus === 'pending'
+                        ? 'Votre demande est en cours de traitement. L\'inspection sera planifiée sous 5 jours ouvrés.'
+                        : 'Soumettez votre demande de certification pour rassurer vos futurs clients.'}
+                    </p>
+                  </div>
+                )}
+
+                {!activeDetail && (
+                  <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
+                    <p className="text-sm text-[#2C2E2F] font-semibold mb-1">En cours de certification</p>
+                    <p className="text-xs text-gray-500">Votre demande est en cours de traitement. L&apos;inspection sera planifiée sous 5 jours ouvrés.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1160,14 +1415,22 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white rounded-3xl p-6 max-w-md w-full"
           >
-            <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Réserver {bookingRoom.name}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Réserver {bookingRoom.name}</h3>
+              <button
+                onClick={() => setShowBookingDialog(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
             <p className="text-xs text-gray-500 mb-1">
               {new Intl.NumberFormat('fr-FR').format(dynamicPrice || bookingRoom.basePrice)} FCFA / nuit · {bookingRoom.capacity} pers.
             </p>
             {dynamicPrice && dynamicPrice !== bookingRoom.basePrice && (
-              <p className="text-[10px] text-[#D4AF37] mb-1"><Coins className="w-4 h-4" /> Tarif dynamique appliqué (base: {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA)</p>
+              <p className="text-[10px] text-[#D4AF37] mb-1 flex items-center gap-1"><Coins className="w-3 h-3" /> Tarif dynamique appliqué (base: {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA)</p>
             )}
-            <p className="text-[10px] text-gray-400 mb-4"><ClipboardList className="w-4 h-4" /> {cancellationPolicy}</p>
+            <p className="text-[10px] text-gray-400 mb-4 flex items-center gap-1"><ClipboardList className="w-3 h-3" /> {cancellationPolicy}</p>
 
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-2 gap-3">
@@ -1222,10 +1485,11 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
                 <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
                   {(() => {
                     const nights = Math.max(1, Math.ceil((new Date(bookingCheckOut).getTime() - new Date(bookingCheckIn).getTime()) / (1000 * 60 * 60 * 24)));
-                    const total = bookingRoom.basePrice * nights;
+                    const pPerNight = dynamicPrice || bookingRoom.basePrice;
+                    const total = pPerNight * nights;
                     return (
                       <>
-                        <p className="text-xs text-gray-500">{nights} nuit(s) × {new Intl.NumberFormat('fr-FR').format(bookingRoom.basePrice)} FCFA</p>
+                        <p className="text-xs text-gray-500">{nights} nuit(s) × {new Intl.NumberFormat('fr-FR').format(pPerNight)} FCFA</p>
                         <p className="font-mono text-lg font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(total)} FCFA</p>
                       </>
                     );

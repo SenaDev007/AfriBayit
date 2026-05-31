@@ -27,7 +27,7 @@ export const communityTemplates: NotificationTemplate[] = [
     id: 'post_reply_email',
     category: 'community',
     channel: 'email',
-    subject: '💬 Nouvelle réponse à votre publication',
+    subject: '[Reply] Nouvelle reponse a votre publication',
     title: 'Réponse à votre publication',
     body: '{{replierName}} a répondu à votre publication.',
     htmlBody: `
@@ -63,7 +63,7 @@ export const communityTemplates: NotificationTemplate[] = [
     id: 'group_invite_email',
     category: 'community',
     channel: 'email',
-    subject: '👥 Invitation à rejoindre un groupe',
+    subject: '[Group] Invitation a rejoindre un groupe',
     title: 'Invitation à un groupe',
     body: '{{inviterName}} vous a invité à rejoindre le groupe "{{groupName}}".',
     htmlBody: `

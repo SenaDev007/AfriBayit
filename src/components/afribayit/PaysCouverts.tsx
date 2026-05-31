@@ -81,7 +81,7 @@ export default function PaysCouverts() {
               >
                 {/* Flag */}
                 <div className="text-5xl sm:text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                  {meta?.flag || '<Globe className="w-4 h-4" />'}
+                  {meta?.flag || <Globe className="w-6 h-6 text-[#003087]" />}
                 </div>
 
                 {/* Country Name */}

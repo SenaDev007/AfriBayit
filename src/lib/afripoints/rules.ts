@@ -56,11 +56,11 @@ export function getCostForItem(item: SpendingItem): number {
  * Niveaux de gamification basés sur les AfriPoints
  */
 export const LEVELS = [
-  { name: 'Bronze', minPoints: 0, icon: '🥉', color: '#CD7F32' },
-  { name: 'Argent', minPoints: 200, icon: '🥈', color: '#C0C0C0' },
-  { name: 'Or', minPoints: 500, icon: '🥇', color: '#FFD700' },
-  { name: 'Platine', minPoints: 1500, icon: '💎', color: '#E5E4E2' },
-  { name: 'Diamant', minPoints: 5000, icon: '💠', color: '#B9F2FF' },
+  { name: 'Bronze', minPoints: 0, icon: 'award-bronze', color: '#CD7F32' },
+  { name: 'Argent', minPoints: 200, icon: 'award-silver', color: '#C0C0C0' },
+  { name: 'Or', minPoints: 500, icon: 'award-gold', color: '#FFD700' },
+  { name: 'Platine', minPoints: 1500, icon: 'gem', color: '#E5E4E2' },
+  { name: 'Diamant', minPoints: 5000, icon: 'diamond', color: '#B9F2FF' },
 ] as const;
 
 export type LevelName = (typeof LEVELS)[number]['name'];

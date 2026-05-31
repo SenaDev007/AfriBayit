@@ -70,11 +70,11 @@ export interface LevelDefinition {
 
 /** Seuils de niveau — CDC §5.7 */
 export const LEVEL_THRESHOLDS: LevelDefinition[] = [
-  { minPoints: 0,    level: 'bronze',   labelFr: 'Bronze',   color: '#CD7F32', icon: '🥉' },
-  { minPoints: 200,  level: 'argent',   labelFr: 'Argent',   color: '#C0C0C0', icon: '🥈' },
-  { minPoints: 500,  level: 'or',       labelFr: 'Or',       color: '#D4AF37', icon: '🥇' },
-  { minPoints: 1500, level: 'platine',  labelFr: 'Platine',  color: '#009CDE', icon: '💎' },
-  { minPoints: 5000, level: 'diamant',  labelFr: 'Diamant',  color: '#9333ea', icon: '👑' },
+  { minPoints: 0,    level: 'bronze',   labelFr: 'Bronze',   color: '#CD7F32', icon: 'award-bronze' },
+  { minPoints: 200,  level: 'argent',   labelFr: 'Argent',   color: '#C0C0C0', icon: 'award-silver' },
+  { minPoints: 500,  level: 'or',       labelFr: 'Or',       color: '#D4AF37', icon: 'award-gold' },
+  { minPoints: 1500, level: 'platine',  labelFr: 'Platine',  color: '#009CDE', icon: 'gem' },
+  { minPoints: 5000, level: 'diamant',  labelFr: 'Diamant',  color: '#9333ea', icon: 'crown' },
 ];
 
 // ============ SEUILS DE RÉPUTATION ============

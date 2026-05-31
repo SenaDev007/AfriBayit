@@ -13,7 +13,7 @@ export const escrowTemplates: NotificationTemplate[] = [
     id: 'transaction_created_email',
     category: 'transaction',
     channel: 'email',
-    subject: '💰 Nouvelle transaction initiée — {{amount}}',
+    subject: '[TRANSACTION] Nouvelle transaction initiee — {{amount}}',
     title: 'Transaction créée',
     body: 'Une nouvelle transaction a été initiée pour la propriété "{{propertyTitle}}" d\'un montant de {{amount}}.',
     htmlBody: `
@@ -39,7 +39,7 @@ export const escrowTemplates: NotificationTemplate[] = [
     id: 'funds_received_email',
     category: 'transaction',
     channel: 'email',
-    subject: '✅ Fonds sécurisés en séquestre',
+    subject: '[SUCCESS] Fonds securises en sequestre',
     title: 'Fonds reçus en séquestre',
     body: 'Les fonds de {{amount}} ont été reçus et sécurisés en séquestre.',
     htmlBody: `
@@ -71,7 +71,7 @@ export const escrowTemplates: NotificationTemplate[] = [
     id: 'funds_released_email',
     category: 'transaction',
     channel: 'email',
-    subject: '🎉 Transaction finalisée — Fonds libérés',
+    subject: '[COMPLETED] Transaction finalisee — Fonds liberes',
     title: 'Fonds libérés',
     body: 'Les fonds de {{amount}} ont été libérés au vendeur.',
     htmlBody: `
@@ -81,7 +81,7 @@ export const escrowTemplates: NotificationTemplate[] = [
         <strong>Montant libéré :</strong> {{amount}}<br>
         <strong>Propriété :</strong> {{propertyTitle}}<br>
         <strong>Référence :</strong> {{transactionRef}}<br>
-        <strong>Statut :</strong> Transaction complétée 🎉
+        <strong>Statut :</strong> Transaction completee [DONE]
       </div>
     `,
   },
@@ -96,7 +96,7 @@ export const escrowTemplates: NotificationTemplate[] = [
     id: 'dispute_opened_email',
     category: 'transaction',
     channel: 'email',
-    subject: '⚠️ Litige ouvert — Transaction {{transactionRef}}',
+    subject: '[ALERT] Litige ouvert — Transaction {{transactionRef}}',
     title: 'Litige ouvert',
     body: 'Un litige a été ouvert pour la transaction {{transactionRef}}.',
     htmlBody: `

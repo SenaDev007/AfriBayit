@@ -13,7 +13,7 @@ export const propertyTemplates: NotificationTemplate[] = [
     id: 'new_listing_match_email',
     category: 'property',
     channel: 'email',
-    subject: '🏡 Nouvelle propriété qui pourrait vous intéresser',
+    subject: '[Property] Nouvelle propriete qui pourrait vous interesser',
     title: 'Nouvelle propriété correspondant à votre recherche',
     body: 'Une nouvelle propriété correspond à vos critères de recherche : {{propertyTitle}} à {{propertyCity}} pour {{propertyPrice}}.',
     htmlBody: `
@@ -21,9 +21,9 @@ export const propertyTemplates: NotificationTemplate[] = [
       <p>Une nouvelle propriété correspond à vos critères de recherche :</p>
       <div style="background:#f0f7ff;border-left:4px solid #003087;padding:16px;margin:16px 0;border-radius:4px;">
         <strong style="color:#003087;">{{propertyTitle}}</strong><br>
-        📍 {{propertyCity}}, {{propertyCountry}}<br>
-        💰 {{propertyPrice}}<br>
-        🏠 {{propertyType}} — {{propertySurface}} m²
+        [Location] {{propertyCity}}, {{propertyCountry}}<br>
+        [Price] {{propertyPrice}}<br>
+        [Type] {{propertyType}} — {{propertySurface}} m²
       </div>
     `,
   },
@@ -38,7 +38,7 @@ export const propertyTemplates: NotificationTemplate[] = [
     id: 'price_drop_email',
     category: 'property',
     channel: 'email',
-    subject: '📉 Baisse de prix : {{propertyTitle}}',
+    subject: '[PriceDrop] Baisse de prix : {{propertyTitle}}',
     title: 'Baisse de prix détectée',
     body: 'Le prix de {{propertyTitle}} a baissé de {{oldPrice}} à {{newPrice}}.',
     htmlBody: `

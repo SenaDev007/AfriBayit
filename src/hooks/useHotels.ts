@@ -1,6 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, apiPost } from '@/lib/api';
 
+export interface HotelFilters {
+  city?: string;
+  country?: string;
+  stars?: number;
+  available?: boolean;
+  page?: number;
+  limit?: number;
+}
+
 export function useHotels(city?: string, country?: string, page = 1, limit = 12) {
   const params = new URLSearchParams();
   if (city) params.set('city', city);
@@ -11,6 +20,21 @@ export function useHotels(city?: string, country?: string, page = 1, limit = 12)
   return useQuery({
     queryKey: ['hotels', city, country, page, limit],
     queryFn: () => apiFetch<{ hotels: unknown[]; pagination: unknown }>(`/api/hotels?${params.toString()}`),
+  });
+}
+
+export function useHotelsFiltered(filters: HotelFilters) {
+  const params = new URLSearchParams();
+  if (filters.city) params.set('city', filters.city);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.stars) params.set('stars', String(filters.stars));
+  if (filters.available !== undefined) params.set('available', String(filters.available));
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 12));
+
+  return useQuery({
+    queryKey: ['hotels', filters.city, filters.country, filters.stars, filters.available, filters.page, filters.limit],
+    queryFn: () => apiFetch<{ hotels: unknown[]; pagination: { page: number; limit: number; total: number; pages: number } }>(`/api/hotels?${params.toString()}`),
   });
 }
 
@@ -25,7 +49,7 @@ export function useHotel(id: string) {
 export function useHotelRooms(hotelId: string) {
   return useQuery({
     queryKey: ['hotel-rooms', hotelId],
-    queryFn: () => apiFetch<{ rooms: unknown[] }>(`/api/hotels/${hotelId}/rooms`),
+    queryFn: () => apiFetch<unknown[]>(`/api/hotels/${hotelId}/rooms`),
     enabled: !!hotelId,
   });
 }

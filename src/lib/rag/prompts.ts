@@ -40,12 +40,12 @@ export function buildContextBlock(results: RetrievalResult[]): string {
 
   const contextParts = results.map((r, i) => {
     const sourceLabel = {
-      property: '🏠 Bien immobilier',
-      legal_doc: '📄 Document légal',
-      faq: '❓ FAQ',
-      market_data: '📊 Données marché',
-      artisan: '🔨 Artisan',
-    }[r.sourceType] || '📋 Source';
+      property: '[Property] Bien immobilier',
+      legal_doc: '[Document] Document légal',
+      faq: '[FAQ] FAQ',
+      market_data: '[Market] Données marché',
+      artisan: '[Artisan] Artisan',
+    }[r.sourceType] || '[Source] Source';
 
     return `[${i + 1}] ${sourceLabel} (${r.source}):\n${r.content}`;
   });

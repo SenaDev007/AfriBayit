@@ -21,16 +21,16 @@ export interface AmenityProximityResult {
 }
 
 const CATEGORY_CONFIG: Record<string, { labelFr: string; icon: string; maxDistance: number }> = {
-  school: { labelFr: 'Écoles', icon: '🏫', maxDistance: 1500 },
-  hospital: { labelFr: 'Hôpitaux', icon: '🏥', maxDistance: 3000 },
-  market: { labelFr: 'Marchés', icon: '🏪', maxDistance: 1500 },
-  bank: { labelFr: 'Banques', icon: '🏦', maxDistance: 2000 },
-  pharmacy: { labelFr: 'Pharmacies', icon: '💊', maxDistance: 1000 },
-  restaurant: { labelFr: 'Restaurants', icon: '🍽️', maxDistance: 800 },
-  park: { labelFr: 'Parcs', icon: '🌳', maxDistance: 1500 },
-  worship: { labelFr: 'Lieux de culte', icon: '⛪', maxDistance: 1500 },
-  police: { labelFr: 'Police', icon: '🚔', maxDistance: 3000 },
-  post: { labelFr: 'Poste', icon: '📮', maxDistance: 2000 },
+  school: { labelFr: 'Écoles', icon: 'school', maxDistance: 1500 },
+  hospital: { labelFr: 'Hôpitaux', icon: 'hospital', maxDistance: 3000 },
+  market: { labelFr: 'Marchés', icon: 'store', maxDistance: 1500 },
+  bank: { labelFr: 'Banques', icon: 'landmark', maxDistance: 2000 },
+  pharmacy: { labelFr: 'Pharmacies', icon: 'pill', maxDistance: 1000 },
+  restaurant: { labelFr: 'Restaurants', icon: 'utensils', maxDistance: 800 },
+  park: { labelFr: 'Parcs', icon: 'tree-pine', maxDistance: 1500 },
+  worship: { labelFr: 'Lieux de culte', icon: 'church', maxDistance: 1500 },
+  police: { labelFr: 'Police', icon: 'shield', maxDistance: 3000 },
+  post: { labelFr: 'Poste', icon: 'mail', maxDistance: 2000 },
 };
 
 /**
@@ -63,7 +63,7 @@ export function scoreAmenities(
   let totalScore = 0;
 
   for (const [category, items] of categoryMap) {
-    const config = CATEGORY_CONFIG[category] || { labelFr: category, icon: '📍', maxDistance: 2000 };
+    const config = CATEGORY_CONFIG[category] || { labelFr: category, icon: 'map-pin', maxDistance: 2000 };
     items.sort((a, b) => a.distance - b.distance);
 
     const nearestDistance = items[0]?.distance ?? config.maxDistance;

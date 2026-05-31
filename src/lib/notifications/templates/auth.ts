@@ -13,7 +13,7 @@ export const authTemplates: NotificationTemplate[] = [
     id: 'login_new_device_email',
     category: 'security',
     channel: 'email',
-    subject: '🔒 Connexion depuis un nouvel appareil détectée',
+    subject: '[SECURITY] Connexion depuis un nouvel appareil detectee',
     title: 'Connexion depuis un nouvel appareil',
     body: 'Une connexion à votre compte a été détectée depuis un nouvel appareil.',
     htmlBody: `
@@ -39,7 +39,7 @@ export const authTemplates: NotificationTemplate[] = [
     id: 'password_changed_email',
     category: 'security',
     channel: 'email',
-    subject: '🔑 Mot de passe modifié',
+    subject: '[SECURITY] Mot de passe modifie',
     title: 'Mot de passe modifié',
     body: 'Votre mot de passe AfriBayit a été modifié avec succès.',
     htmlBody: `
@@ -59,13 +59,13 @@ export const authTemplates: NotificationTemplate[] = [
     id: 'kyc_approved_email',
     category: 'security',
     channel: 'email',
-    subject: '✅ Vérification d\'identité approuvée',
+    subject: '[SUCCESS] Verification d\'identite approuvee',
     title: 'KYC approuvé',
     body: 'Votre vérification d\'identité a été approuvée.',
     htmlBody: `
       <p>Bonjour {{userName}},</p>
       <div style="background:#f0fff4;border-left:4px solid #00A651;padding:16px;margin:16px 0;border-radius:4px;">
-        <strong style="color:#00A651;">✅ Vérification d'identité approuvée</strong><br>
+        <strong style="color:#00A651;">[SUCCESS] Verification d'identite approuvee</strong><br>
         Niveau KYC : {{kycLevel}}<br>
         Date d'approbation : {{approvalDate}}
       </div>
@@ -83,13 +83,13 @@ export const authTemplates: NotificationTemplate[] = [
     id: 'kyc_rejected_email',
     category: 'security',
     channel: 'email',
-    subject: '❌ Vérification d\'identité refusée',
+    subject: '[REJECTED] Verification d\'identite refusee',
     title: 'KYC refusé',
     body: 'Votre vérification d\'identité a été refusée.',
     htmlBody: `
       <p>Bonjour {{userName}},</p>
       <div style="background:#fff5f5;border-left:4px solid #D93025;padding:16px;margin:16px 0;border-radius:4px;">
-        <strong style="color:#D93025;">❌ Vérification d'identité refusée</strong><br>
+        <strong style="color:#D93025;">[REJECTED] Verification d'identite refusee</strong><br>
         Niveau KYC : {{kycLevel}}<br>
         Raison : {{rejectionReason}}
       </div>

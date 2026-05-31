@@ -22,11 +22,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 const COUNTRIES = [
-  { code: 'ALL', label: 'Tous les pays', flag: '🌍' },
-  { code: 'BJ', label: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', label: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', label: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', label: 'Togo', flag: '🇹🇬' },
+  { code: 'ALL', label: 'Tous les pays', flagIcon: 'globe' },
+  { code: 'BJ', label: 'Bénin', flagIcon: 'BJ' },
+  { code: 'CI', label: "Côte d'Ivoire", flagIcon: 'CI' },
+  { code: 'BF', label: 'Burkina Faso', flagIcon: 'BF' },
+  { code: 'TG', label: 'Togo', flagIcon: 'TG' },
 ];
 
 interface AdminHeaderProps {
@@ -110,7 +110,13 @@ export default function AdminHeader({
           onClick={() => setShowCountryMenu(!showCountryMenu)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
         >
-          <span>{selectedCountryData.flag}</span>
+          <span className="flex items-center gap-1.5">
+            {selectedCountryData.flagIcon === 'globe' ? (
+              <Globe className="w-4 h-4 text-gray-500" />
+            ) : (
+              <span className="text-xs font-bold text-gray-500 bg-gray-100 rounded px-1 py-0.5">{selectedCountryData.flagIcon}</span>
+            )}
+          </span>
           <span className="hidden md:inline">{selectedCountryData.label}</span>
           <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
         </button>
@@ -128,7 +134,13 @@ export default function AdminHeader({
                   selectedCountry === c.code && 'bg-[#003087]/5 text-[#003087] font-medium'
                 )}
               >
-                <span>{c.flag}</span>
+                <span className="flex items-center gap-1.5">
+                  {c.flagIcon === 'globe' ? (
+                    <Globe className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <span className="text-xs font-bold text-gray-500 bg-gray-100 rounded px-1 py-0.5">{c.flagIcon}</span>
+                  )}
+                </span>
                 <span>{c.label}</span>
               </button>
             ))}

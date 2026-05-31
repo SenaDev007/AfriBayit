@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -47,6 +47,21 @@ import {
   Globe2,
   LayoutGrid,
   PieChart,
+  UserPlus,
+  MessageSquare,
+  Share2,
+  Bookmark,
+  Percent,
+  Receipt,
+  LineChart,
+  BadgeCheck,
+  CircleDollarSign,
+  Handshake,
+  BarChart2,
+  FolderOpen,
+  Clock,
+  ThumbsUp,
+  History,
 } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -56,7 +71,7 @@ function formatPrice(price: number): string {
 }
 
 // ─── Period Types ───
-type PeriodKey = '7j' | '30j' | '3m' | '12m' | 'custom';
+type PeriodKey = '7j' | '30j' | '90j' | '12m' | 'custom';
 type ProfileTab = 'agent' | 'artisan' | 'formateur' | 'investisseur';
 type AnalyticsTab = 'overview' | 'profile_views' | 'search' | 'profiles' | 'heatmap' | 'rebecca' | 'export';
 
@@ -64,17 +79,17 @@ type AnalyticsTab = 'overview' | 'profile_views' | 'search' | 'profiles' | 'heat
 const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
   { key: '7j', label: '7j' },
   { key: '30j', label: '30j' },
-  { key: '3m', label: '3 mois' },
+  { key: '90j', label: '90j' },
   { key: '12m', label: '12 mois' },
   { key: 'custom', label: 'Personnalisé' },
 ];
 
 // ─── Profile Views Demo Data ───
-const PROFILE_VIEWS_DATA: Record<string, { total: number; direct: number; search: number; referral: number }> = {
-  '7j': { total: 142, direct: 45, search: 62, referral: 35 },
-  '30j': { total: 587, direct: 189, search: 248, referral: 150 },
-  '3m': { total: 1842, direct: 580, search: 782, referral: 480 },
-  '12m': { total: 7250, direct: 2280, search: 3070, referral: 1900 },
+const PROFILE_VIEWS_DATA: Record<string, { total: number; direct: number; search: number; referral: number; evolution: number }> = {
+  '7j': { total: 142, direct: 45, search: 62, referral: 35, evolution: 12.3 },
+  '30j': { total: 587, direct: 189, search: 248, referral: 150, evolution: 18.5 },
+  '90j': { total: 1842, direct: 580, search: 782, referral: 480, evolution: 24.1 },
+  '12m': { total: 7250, direct: 2280, search: 3070, referral: 1900, evolution: 31.2 },
 };
 
 // ─── Search Appearances ───
@@ -93,7 +108,7 @@ const SEARCH_APPEARANCES: Record<string, { keyword: string; appearances: number;
     { keyword: 'maison Ouagadougou', appearances: 45, clicks: 7, ctr: 15.6 },
     { keyword: 'investissement Bénin', appearances: 32, clicks: 5, ctr: 15.6 },
   ],
-  '3m': [
+  '90j': [
     { keyword: 'villa Cotonou', appearances: 342, clicks: 58, ctr: 17.0 },
     { keyword: 'terrain Abidjan', appearances: 285, clicks: 47, ctr: 16.5 },
     { keyword: 'appartement Lomé', appearances: 198, clicks: 35, ctr: 17.7 },
@@ -109,9 +124,28 @@ const SEARCH_APPEARANCES: Record<string, { keyword: string; appearances: number;
   ],
 };
 
+// ─── Connections & Followers Growth ───
+const CONNECTIONS_GROWTH: Record<string, { connections: number; followers: number; connGrowth: number; followGrowth: number }> = {
+  '7j': { connections: 8, followers: 14, connGrowth: 5.2, followGrowth: 8.1 },
+  '30j': { connections: 32, followers: 58, connGrowth: 12.4, followGrowth: 18.3 },
+  '90j': { connections: 87, followers: 142, connGrowth: 22.7, followGrowth: 31.5 },
+  '12m': { connections: 248, followers: 425, connGrowth: 45.2, followGrowth: 62.8 },
+};
+
+// ─── Content Engagement ───
+const CONTENT_ENGAGEMENT: Record<string, { likes: number; comments: number; shares: number; saves: number }> = {
+  '7j': { likes: 45, comments: 18, shares: 7, saves: 12 },
+  '30j': { likes: 182, comments: 74, shares: 29, saves: 48 },
+  '90j': { likes: 540, comments: 215, shares: 87, saves: 142 },
+  '12m': { likes: 2180, comments: 870, shares: 350, saves: 570 },
+};
+
 // ─── Agent Analytics ───
 const AGENT_ANALYTICS = {
   timeToSale: { avg: 45, median: 32, best: 7, unit: 'jours' },
+  performanceAnnonces: { active: 12, vues: 4520, contacts: 89, tauxConversion: 5.2 },
+  volumeTransactions: { total: 5, valeur: 125000000, enCours: 3 },
+  roiPremium: { investissement: 35000, revenuGenere: 87500, roi: 150, contactsSupp: 38 },
   conversionFunnel: [
     { stage: 'Vues annonce', count: 1247, pct: 100 },
     { stage: 'Contacts', count: 89, pct: 7.1 },
@@ -126,9 +160,12 @@ const AGENT_ANALYTICS = {
 const ARTISAN_ANALYTICS = {
   missionsCompleted: 28,
   avgRating: 4.7,
+  tauxSatisfaction: 94,
   responseTime: 45,
   repeatClients: 62,
   monthlyRevenue: 1250000,
+  demandesDevis: { recues: 85, envoyees: 62, acceptees: 38, enAttente: 12 },
+  classementMetier: { position: 5, totalArtisans: 89, specialty: 'Carrelage' },
   specialties: [
     { name: 'Carrelage', missions: 12, rating: 4.8 },
     { name: 'Peinture', missions: 9, rating: 4.6 },
@@ -149,6 +186,13 @@ const FORMATEUR_ANALYTICS = {
   avgRating: 4.8,
   completionRate: 78,
   monthlyRevenue: 850000,
+  inscritsParCours: [
+    { name: 'Droit foncier Bénin', students: 145, completion: 82 },
+    { name: 'Investissement immobilier', students: 112, completion: 71 },
+    { name: 'Gestion locative', students: 85, completion: 76 },
+  ],
+  notesAvis: { avg: 4.8, total: 127, repartition: [82, 28, 12, 4, 1] },
+  certificationsDelivrees: 267,
   topCourses: [
     { name: 'Droit foncier Bénin', students: 145, rating: 4.9, revenue: 362500 },
     { name: 'Investissement immobilier', students: 112, rating: 4.7, revenue: 280000 },
@@ -166,14 +210,22 @@ const FORMATEUR_ANALYTICS = {
 const INVESTISSEUR_ANALYTICS = {
   portfolioValue: 85000000,
   totalROI: 14.2,
+  roiLocatif: 8.7,
   propertiesOwned: 6,
   monthlyRentalIncome: 1450000,
   occupancyRate: 92,
+  activiteRecherche: { biensConsultes: 340, alertesActives: 5, visitesPlanifiees: 3 },
+  historiqueTransactions: [
+    { date: '2025-11-15', type: 'Acquisition', bien: 'Villa Cotonou Godomey', montant: 25000000 },
+    { date: '2025-09-20', type: 'Acquisition', bien: 'Appartement Abidjan Cocody', montant: 18000000 },
+    { date: '2025-07-08', type: 'Vente', bien: 'Studio Lomé', montant: 8500000 },
+    { date: '2025-04-12', type: 'Acquisition', bien: 'Terrain Lomé Agoè', montant: 15000000 },
+  ],
   investments: [
-    { name: 'Villa Cotonou Godomey', value: 25000000, roi: 16.5, type: 'villa' },
-    { name: 'Appartement Abidjan Cocody', value: 18000000, roi: 12.8, type: 'appartement' },
-    { name: 'Terrain Lomé Agoè', value: 15000000, roi: 22.0, type: 'terrain' },
-    { name: 'Commerce Cotonou Ganhi', value: 12000000, roi: 10.5, type: 'commerce' },
+    { name: 'Villa Cotonou Godomey', value: 25000000, roi: 16.5, type: 'villa', rentalYield: 9.2 },
+    { name: 'Appartement Abidjan Cocody', value: 18000000, roi: 12.8, type: 'appartement', rentalYield: 7.8 },
+    { name: 'Terrain Lomé Agoè', value: 15000000, roi: 22.0, type: 'terrain', rentalYield: 0 },
+    { name: 'Commerce Cotonou Ganhi', value: 12000000, roi: 10.5, type: 'commerce', rentalYield: 8.1 },
   ],
   conversionFunnel: [
     { stage: 'Biens analysés', count: 340, pct: 100 },
@@ -196,7 +248,7 @@ const DEMO_COMPLETENESS = {
 // ─── Market Comparison ───
 const DEMO_COMPARISON = {
   metrics: [
-    { labelFr: 'Taux de conversion', user: 5.2, market: 4.5, unit: '%', status: 'above' as const },
+    { labelFr: 'Taux de conversion', user: 5.2, market: 4.4, unit: '%', status: 'above' as const },
     { labelFr: 'Temps de réponse', user: 150, market: 180, unit: 'min', status: 'above' as const },
     { labelFr: 'Vues par annonce', user: 200, market: 250, unit: '/mois', status: 'below' as const },
     { labelFr: 'Taux de clôture', user: 22, market: 20, unit: '%', status: 'above' as const },
@@ -236,8 +288,8 @@ const REBECCA_RECOMMENDATIONS = [
   },
   {
     id: 'rec-3',
-    title: 'Passez en Premium Essentiel',
-    description: 'Avec le plan Essentiel, vos annonces seraient vues en premier. Boost x1.5 sur toutes vos publications. ROI estimé: +35% de contacts.',
+    title: 'Passez en Pro Essentiel',
+    description: 'Avec le plan Pro Essentiel, vos annonces seraient vues en premier. Boost x1.5 sur toutes vos publications. ROI estimé: +35% de contacts.',
     action: 'Découvrir Premium',
     priority: 'medium' as const,
     icon: 'premium' as const,
@@ -257,6 +309,14 @@ const REBECCA_RECOMMENDATIONS = [
     action: 'Commencer la vérification',
     priority: 'low' as const,
     icon: 'cert' as const,
+  },
+  {
+    id: 'rec-6',
+    title: 'Augmentez votre réseau',
+    description: 'Votre nombre de connexions a augmenté de 12% ce mois. Continuez à développer votre réseau pour accroître votre visibilité.',
+    action: 'Voir les suggestions',
+    priority: 'low' as const,
+    icon: 'network' as const,
   },
 ];
 
@@ -295,7 +355,6 @@ export default function AnalyticsDashboard() {
   const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
   const properties = ((propsData?.properties ?? []) as unknown) as Record<string, unknown>[];
 
-  // Compute analytics from live data
   const totalRevenue = transactions
     .filter(t => String(t.status) === 'RELEASED')
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
@@ -304,16 +363,17 @@ export default function AnalyticsDashboard() {
   const newClients = new Set(transactions.map(t => String(t.buyerId))).size;
 
   const periodKey = period === 'custom' ? '30j' : period;
-  const profileViews = PROFILE_VIEWS_DATA[periodKey === '7j' ? '7j' : periodKey === '30j' ? '30j' : periodKey === '3m' ? '3m' : '12m'];
+  const profileViews = PROFILE_VIEWS_DATA[periodKey] || PROFILE_VIEWS_DATA['30j'];
+  const connectionsData = CONNECTIONS_GROWTH[periodKey] || CONNECTIONS_GROWTH['30j'];
+  const engagementData = CONTENT_ENGAGEMENT[periodKey] || CONTENT_ENGAGEMENT['30j'];
 
   const kpis = [
     { label: 'Revenus totaux', value: formatPrice(totalRevenue), change: '+12%', icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
     { label: 'Transactions', value: String(totalTransactions), change: '+8%', icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
     { label: 'Nouveaux clients', value: String(newClients), change: '+5%', icon: <Users className="w-4 h-4" />, color: '#009CDE' },
-    { label: 'Vues profil', value: profileViews.total.toLocaleString('fr-FR'), change: '+18%', icon: <Eye className="w-4 h-4" />, color: '#003087' },
+    { label: 'Vues profil', value: profileViews.total.toLocaleString('fr-FR'), change: `+${profileViews.evolution}%`, icon: <Eye className="w-4 h-4" />, color: '#003087' },
   ];
 
-  // Monthly revenue chart
   const monthlyRevenue: Record<string, number> = {};
   transactions.forEach(t => {
     const date = String(t.createdAt ?? t.date ?? '');
@@ -336,7 +396,6 @@ export default function AnalyticsDashboard() {
 
   const hasChartData = chartData.length > 0;
 
-  // City breakdown
   const cityBreakdown: Record<string, number> = {};
   properties.forEach(p => {
     const city = String(p.city ?? 'Autre');
@@ -363,7 +422,70 @@ export default function AnalyticsDashboard() {
   const isLoading = txnLoading || propsLoading;
   const hasError = txnError || propsError;
 
-  const handleExport = useCallback(async (format: 'csv' | 'pdf') => {
+  const handleExport = async (format: 'csv' | 'pdf') => {
+    if (format === 'pdf') {
+      // Generate styled HTML for PDF-like export
+      const htmlContent = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><title>AfriBayit Analytics Report</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:40px 20px;color:#2C2E2F}
+  h1{color:#003087;font-size:24px;border-bottom:3px solid #D4AF37;padding-bottom:8px}
+  h2{color:#003087;font-size:18px;margin-top:24px}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .kpi{background:#f8f9fa;border-radius:12px;padding:16px}
+  .kpi-label{font-size:12px;color:#6b7280}.kpi-value{font-size:24px;font-weight:700;color:#003087}
+  table{width:100%;border-collapse:collapse;margin:12px 0}
+  th,td{text-align:left;padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:14px}
+  th{color:#6b7280;font-weight:500}
+  .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af}
+  .badge{display:inline-block;background:#00A651;color:white;padding:2px 8px;border-radius:12px;font-size:11px}
+</style></head><body>
+<h1>AfriBayit - Rapport Analytique</h1>
+<p>Période : ${PERIOD_OPTIONS.find(p => p.key === period)?.label || period} | Pays : ${COUNTRY_NAMES[selectedCountry] || selectedCountry} | Généré le : ${new Date().toLocaleDateString('fr-FR')}</p>
+
+<h2>Indicateurs clés</h2>
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Revenus totaux</div><div class="kpi-value">${formatPrice(totalRevenue)}</div></div>
+  <div class="kpi"><div class="kpi-label">Transactions</div><div class="kpi-value">${totalTransactions}</div></div>
+  <div class="kpi"><div class="kpi-label">Nouveaux clients</div><div class="kpi-value">${newClients}</div></div>
+  <div class="kpi"><div class="kpi-label">Vues profil</div><div class="kpi-value">${profileViews.total}</div></div>
+</div>
+
+<h2>Vues de profil par origine</h2>
+<table><tr><th>Origine</th><th>Vues</th><th>Part</th></tr>
+<tr><td>Recherche</td><td>${profileViews.search}</td><td>${Math.round((profileViews.search / profileViews.total) * 100)}%</td></tr>
+<tr><td>Accès direct</td><td>${profileViews.direct}</td><td>${Math.round((profileViews.direct / profileViews.total) * 100)}%</td></tr>
+<tr><td>Referral</td><td>${profileViews.referral}</td><td>${Math.round((profileViews.referral / profileViews.total) * 100)}%</td></tr>
+</table>
+
+<h2>Apparitions en recherche</h2>
+<table><tr><th>Mot-clé</th><th>Apparitions</th><th>Clics</th><th>CTR</th></tr>
+${(SEARCH_APPEARANCES[periodKey] || SEARCH_APPEARANCES['30j']).map(kw => `<tr><td>${kw.keyword}</td><td>${kw.appearances}</td><td>${kw.clicks}</td><td>${kw.ctr}%</td></tr>`).join('')}
+</table>
+
+<h2>Entonnoir de conversion (Agent)</h2>
+<table><tr><th>Étape</th><th>Nombre</th><th>%</th></tr>
+${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.count}</td><td>${s.pct}%</td></tr>`).join('')}
+</table>
+
+<h2>Comparaison marché</h2>
+<p><span class="badge">Insight</span> Votre taux de conversion est 18% supérieur à la moyenne des agents de ${AGENT_ANALYTICS.localRanking.city}.</p>
+<table><tr><th>Métrique</th><th>Vous</th><th>Marché</th><th>Statut</th></tr>
+${DEMO_COMPARISON.metrics.map(m => `<tr><td>${m.labelFr}</td><td>${m.user}${m.unit}</td><td>${m.market}${m.unit}</td><td>${m.status === 'above' ? 'Au-dessus' : 'En-dessous'}</td></tr>`).join('')}
+</table>
+
+<div class="footer">AfriBayit - Plateforme Immobilière Pan-Africaine | Rapport généré automatiquement par Rebecca IA</div>
+</body></html>`;
+
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => { printWindow.print(); };
+      }
+      return;
+    }
+
     try {
       const res = await fetch(`/api/analytics/export?format=${format}&userId=${userId || 'demo'}&type=listings`);
       if (res.ok) {
@@ -371,12 +493,11 @@ export default function AnalyticsDashboard() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `afribayit-analytics.${format === 'csv' ? 'csv' : 'html'}`;
+        a.download = `afribayit-analytics.csv`;
         a.click();
         URL.revokeObjectURL(url);
       }
     } catch {
-      // Fallback CSV export
       const csvRows = [
         'Métrique,Valeur',
         `Revenus totaux,${totalRevenue}`,
@@ -386,6 +507,8 @@ export default function AnalyticsDashboard() {
         `Taux de conversion,${AGENT_ANALYTICS.conversionFunnel[4].pct}%`,
         `Temps de vente moyen,${AGENT_ANALYTICS.timeToSale.avg} jours`,
         `Classement local,${AGENT_ANALYTICS.localRanking.position}/${AGENT_ANALYTICS.localRanking.totalAgents}`,
+        `ROI Premium,${AGENT_ANALYTICS.roiPremium.roi}%`,
+        `Volume transactions,${AGENT_ANALYTICS.volumeTransactions.total}`,
       ];
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -396,7 +519,7 @@ export default function AnalyticsDashboard() {
       a.click();
       URL.revokeObjectURL(url);
     }
-  }, [userId, totalRevenue, totalTransactions, newClients, period, profileViews]);
+  };
 
   const searchAppearances = SEARCH_APPEARANCES[periodKey] || SEARCH_APPEARANCES['30j'];
 
@@ -416,7 +539,6 @@ export default function AnalyticsDashboard() {
                 {COUNTRY_NAMES[selectedCountry] || selectedCountry}
               </span>
             </div>
-            {/* ─── Period Selector ─── */}
             <div className="flex gap-1 bg-gray-100 rounded-full p-0.5">
               {PERIOD_OPTIONS.map((p) => (
                 <button
@@ -430,7 +552,6 @@ export default function AnalyticsDashboard() {
                 </button>
               ))}
             </div>
-            {/* Export button */}
             <button
               onClick={() => handleExport('csv')}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#003087] text-white text-xs font-medium hover:bg-[#003087]/90 transition-colors"
@@ -451,21 +572,9 @@ export default function AnalyticsDashboard() {
               className="mb-4 flex items-center gap-3 bg-white p-3 rounded-xl border shadow-sm"
             >
               <Calendar className="w-4 h-4 text-gray-400" />
-              <input
-                type="date"
-                value={customStart}
-                onChange={e => setCustomStart(e.target.value)}
-                className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]"
-                placeholder="Début"
-              />
+              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]" />
               <span className="text-sm text-gray-500">à</span>
-              <input
-                type="date"
-                value={customEnd}
-                onChange={e => setCustomEnd(e.target.value)}
-                className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]"
-                placeholder="Fin"
-              />
+              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -486,12 +595,9 @@ export default function AnalyticsDashboard() {
           ))}
         </div>
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* OVERVIEW TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
         {activeTab === 'overview' && (
           <>
-            {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
@@ -510,18 +616,10 @@ export default function AnalyticsDashboard() {
                 </div>
               ) : (
                 kpis.map((kpi, i) => (
-                  <motion.div
-                    key={kpi.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border"
-                  >
+                  <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }} className="bg-white rounded-2xl p-4 shadow-sm border">
                     <div className="flex items-center justify-between mb-2">
                       <span style={{ color: kpi.color }}>{kpi.icon}</span>
-                      <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">
-                        {kpi.change}
-                      </span>
+                      <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">{kpi.change}</span>
                     </div>
                     <p className="font-mono text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
                     <p className="text-xs text-gray-500">{kpi.label}</p>
@@ -531,18 +629,10 @@ export default function AnalyticsDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Revenue Chart */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border"
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Revenus mensuels</h3>
                 {!hasChartData ? (
-                  <div className="h-64 flex items-center justify-center">
-                    <p className="text-sm text-gray-500">Aucune donnée de revenu disponible</p>
-                  </div>
+                  <div className="h-64 flex items-center justify-center"><p className="text-sm text-gray-500">Aucune donnée de revenu disponible</p></div>
                 ) : (
                   <div className="h-64 flex items-end gap-2">
                     {chartData.map((item, i) => {
@@ -550,12 +640,7 @@ export default function AnalyticsDashboard() {
                       const height = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
                       return (
                         <div key={item.month} className="flex-1 flex flex-col items-center gap-1">
-                          <motion.div
-                            initial={{ height: 0 }}
-                            animate={{ height: `${Math.max(height, 4)}%` }}
-                            transition={{ duration: 0.6, delay: i * 0.05, ease: easeOut }}
-                            className="w-full rounded-t-lg bg-gradient-to-t from-[#003087] to-[#009CDE] min-h-[4px]"
-                          />
+                          <motion.div initial={{ height: 0 }} animate={{ height: `${Math.max(height, 4)}%` }} transition={{ duration: 0.6, delay: i * 0.05, ease: easeOut }} className="w-full rounded-t-lg bg-gradient-to-t from-[#003087] to-[#009CDE] min-h-[4px]" />
                           <span className="text-[9px] text-gray-400">{item.month}</span>
                         </div>
                       );
@@ -564,18 +649,10 @@ export default function AnalyticsDashboard() {
                 )}
               </motion.div>
 
-              {/* City Breakdown */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border"
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Par ville</h3>
                 {barData.length === 0 ? (
-                  <div className="flex items-center justify-center h-32">
-                    <p className="text-sm text-gray-500">Aucune donnée par ville</p>
-                  </div>
+                  <div className="flex items-center justify-center h-32"><p className="text-sm text-gray-500">Aucune donnée par ville</p></div>
                 ) : (
                   <div className="space-y-4">
                     {barData.map((item, i) => {
@@ -587,13 +664,7 @@ export default function AnalyticsDashboard() {
                             <span className="font-mono text-sm font-bold" style={{ color: item.color }}>{item.value}%</span>
                           </div>
                           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${(item.value / maxVal) * 100}%` }}
-                              transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                              className="h-full rounded-full"
-                              style={{ backgroundColor: item.color }}
-                            />
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / maxVal) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-full" style={{ backgroundColor: item.color }} />
                           </div>
                         </div>
                       );
@@ -603,14 +674,52 @@ export default function AnalyticsDashboard() {
               </motion.div>
             </div>
 
+            {/* Connections & Followers Growth + Content Engagement */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.42, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#003087]" /> Connexions & Abonnés</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-[#003087]/5 rounded-2xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500">Connexions</span>
+                      <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">+{connectionsData.connGrowth}%</span>
+                    </div>
+                    <p className="font-mono text-2xl font-bold text-[#003087]">{connectionsData.connections}</p>
+                    <p className="text-xs text-gray-400 mt-1">sur la période</p>
+                  </div>
+                  <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500">Abonnés</span>
+                      <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">+{connectionsData.followGrowth}%</span>
+                    </div>
+                    <p className="font-mono text-2xl font-bold text-[#D4AF37]">{connectionsData.followers}</p>
+                    <p className="text-xs text-gray-400 mt-1">sur la période</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.44, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-[#D93025]" /> Engagement contenu</h3>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { label: 'J\'aime', value: engagementData.likes, icon: <Heart className="w-4 h-4" />, color: '#D93025' },
+                    { label: 'Commentaires', value: engagementData.comments, icon: <MessageSquare className="w-4 h-4" />, color: '#003087' },
+                    { label: 'Partages', value: engagementData.shares, icon: <Share2 className="w-4 h-4" />, color: '#00A651' },
+                    { label: 'Enregistrés', value: engagementData.saves, icon: <Bookmark className="w-4 h-4" />, color: '#D4AF37' },
+                  ].map(item => (
+                    <div key={item.label} className="text-center p-3 bg-gray-50 rounded-xl">
+                      <span className="inline-flex items-center justify-center mb-1" style={{ color: item.color }}>{item.icon}</span>
+                      <p className="font-mono text-lg font-bold text-[#2C2E2F]">{item.value}</p>
+                      <p className="text-[10px] text-gray-500">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+
             {/* Profile Completeness & Market Comparison */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.45, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border"
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Complétude du profil</h3>
                 <div className="flex items-center gap-6">
                   <div className="relative w-24 h-24 shrink-0">
@@ -637,13 +746,7 @@ export default function AnalyticsDashboard() {
                 </div>
               </motion.div>
 
-              {/* Market Comparison with text */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border"
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Comparaison marché</h3>
                 <div className="space-y-3">
                   {DEMO_COMPARISON.metrics.map(metric => {
@@ -652,55 +755,36 @@ export default function AnalyticsDashboard() {
                       : Math.round(((metric.market - metric.user) / metric.market) * 100);
                     return (
                       <div key={metric.labelFr} className="flex items-center gap-3">
-                        <div className="w-32 shrink-0">
-                          <p className="text-xs text-gray-600 truncate">{metric.labelFr}</p>
-                        </div>
+                        <div className="w-32 shrink-0"><p className="text-xs text-gray-600 truncate">{metric.labelFr}</p></div>
                         <div className="flex-1 flex items-center gap-2">
                           <span className="text-xs font-semibold text-[#003087] w-12 text-right">{metric.user}{metric.unit}</span>
                           <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden relative">
                             <div className="absolute inset-0 flex">
-                              <div
-                                className={`h-full rounded-full ${metric.status === 'above' ? 'bg-[#00A651]' : metric.status === 'below' ? 'bg-[#D93025]' : 'bg-[#D4AF37]'}`}
-                                style={{ width: `${Math.min(100, (metric.user / metric.market) * 60)}%` }}
-                              />
+                              <div className={`h-full rounded-full ${metric.status === 'above' ? 'bg-[#00A651]' : metric.status === 'below' ? 'bg-[#D93025]' : 'bg-[#D4AF37]'}`} style={{ width: `${Math.min(100, (metric.user / metric.market) * 60)}%` }} />
                             </div>
                             <div className="absolute top-0 h-full w-0.5 bg-gray-400" style={{ left: '60%' }} />
                           </div>
                           <span className="text-xs text-gray-400 w-14">marché: {metric.market}{metric.unit}</span>
                         </div>
-                        {metric.status === 'above' ? (
-                          <ArrowUpRight className="w-3.5 h-3.5 text-[#00A651]" />
-                        ) : metric.status === 'below' ? (
-                          <ArrowDownRight className="w-3.5 h-3.5 text-[#D93025]" />
-                        ) : (
-                          <Minus className="w-3.5 h-3.5 text-[#D4AF37]" />
-                        )}
+                        {metric.status === 'above' ? <ArrowUpRight className="w-3.5 h-3.5 text-[#00A651]" /> : metric.status === 'below' ? <ArrowDownRight className="w-3.5 h-3.5 text-[#D93025]" /> : <Minus className="w-3.5 h-3.5 text-[#D4AF37]" />}
                       </div>
                     );
                   })}
                 </div>
-                {/* Market comparison insight */}
                 <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl border border-[#00A651]/10">
                   <p className="text-xs text-[#2C2E2F]">
-                    <span className="font-semibold text-[#00A651]">Votre taux de conversion est 15.6% supérieur</span> à la moyenne des agents de {AGENT_ANALYTICS.localRanking.city}.
+                    <span className="font-semibold text-[#00A651]">Votre taux de conversion est 18% supérieur</span> à la moyenne des agents de {AGENT_ANALYTICS.localRanking.city}.
                   </p>
                 </div>
               </motion.div>
             </div>
 
             {/* Rebecca Mini Insights */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
-              className="mt-6 bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-3xl p-6 relative overflow-hidden"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="mt-6 bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-3xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
-                    <Lightbulb className="w-5 h-5 text-white" />
-                  </div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center"><Lightbulb className="w-5 h-5 text-white" /></div>
                   <div>
                     <h3 className="text-white font-semibold text-sm">Rebecca Insights</h3>
                     <p className="text-white/50 text-xs">Analyse IA de vos données</p>
@@ -722,16 +806,15 @@ export default function AnalyticsDashboard() {
           </>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* PROFILE VIEWS TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ PROFILE VIEWS TAB ═══════════════ */}
         {activeTab === 'profile_views' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-white rounded-2xl p-4 shadow-sm border">
                 <Eye className="w-4 h-4 text-[#003087] mb-1" />
                 <p className="font-mono text-xl font-bold text-[#003087] mt-1">{profileViews.total}</p>
                 <p className="text-xs text-gray-500">Vues totales</p>
+                <span className="text-[10px] font-semibold text-[#00A651]">+{profileViews.evolution}%</span>
               </div>
               <div className="bg-white rounded-2xl p-4 shadow-sm border">
                 <MousePointerClick className="w-4 h-4 text-[#00A651] mb-1" />
@@ -748,8 +831,12 @@ export default function AnalyticsDashboard() {
                 <p className="font-mono text-xl font-bold text-[#D4AF37] mt-1">{profileViews.referral}</p>
                 <p className="text-xs text-gray-500">Via referral</p>
               </div>
+              <div className="bg-white rounded-2xl p-4 shadow-sm border">
+                <TrendingUp className="w-4 h-4 text-[#00A651] mb-1" />
+                <p className="font-mono text-xl font-bold text-[#00A651] mt-1">+{profileViews.evolution}%</p>
+                <p className="text-xs text-gray-500">Évolution</p>
+              </div>
             </div>
-
             <div className="bg-white rounded-3xl p-6 shadow-sm border">
               <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Origine des vues</h3>
               <div className="space-y-4">
@@ -761,18 +848,10 @@ export default function AnalyticsDashboard() {
                   <div key={item.label}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm text-gray-600">{item.label}</span>
-                      <span className="font-mono text-sm font-bold" style={{ color: item.color }}>
-                        {item.value} ({Math.round((item.value / item.total) * 100)}%)
-                      </span>
+                      <span className="font-mono text-sm font-bold" style={{ color: item.color }}>{item.value} ({Math.round((item.value / item.total) * 100)}%)</span>
                     </div>
                     <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(item.value / item.total) * 100}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / item.total) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-full" style={{ backgroundColor: item.color }} />
                     </div>
                   </div>
                 ))}
@@ -781,40 +860,22 @@ export default function AnalyticsDashboard() {
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* SEARCH APPEARANCES TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ SEARCH APPEARANCES TAB ═══════════════ */}
         {activeTab === 'search' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="bg-white rounded-3xl p-6 shadow-sm border">
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2">
-                <Search className="w-5 h-5 text-[#009CDE]" />
-                Apparitions en recherche
-              </h3>
+              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2"><Search className="w-5 h-5 text-[#009CDE]" /> Apparitions en recherche</h3>
               <p className="text-sm text-gray-500 mb-4">Mots-clés par lesquels vos biens apparaissent dans les résultats de recherche.</p>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 text-gray-500 font-medium">Mot-clé</th>
-                      <th className="text-right py-2 text-gray-500 font-medium">Apparitions</th>
-                      <th className="text-right py-2 text-gray-500 font-medium">Clics</th>
-                      <th className="text-right py-2 text-gray-500 font-medium">CTR</th>
-                    </tr>
-                  </thead>
+                  <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">Mot-clé</th><th className="text-right py-2 text-gray-500 font-medium">Apparitions</th><th className="text-right py-2 text-gray-500 font-medium">Clics</th><th className="text-right py-2 text-gray-500 font-medium">CTR</th></tr></thead>
                   <tbody>
                     {searchAppearances.map((kw) => (
                       <tr key={kw.keyword} className="border-b last:border-0 hover:bg-gray-50">
                         <td className="py-3 font-medium text-[#2C2E2F]">{kw.keyword}</td>
                         <td className="py-3 text-right font-mono">{kw.appearances}</td>
                         <td className="py-3 text-right font-mono text-[#003087]">{kw.clicks}</td>
-                        <td className="py-3 text-right">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                            kw.ctr >= 17 ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
-                          }`}>
-                            {kw.ctr}%
-                          </span>
-                        </td>
+                        <td className="py-3 text-right"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${kw.ctr >= 17 ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>{kw.ctr}%</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -824,31 +885,18 @@ export default function AnalyticsDashboard() {
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* PER-PROFILE ANALYTICS TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ PER-PROFILE ANALYTICS TAB ═══════════════ */}
         {activeTab === 'profiles' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Profile Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2">
               {PROFILE_TABS_DEF.map((pt) => (
-                <button
-                  key={pt.key}
-                  onClick={() => setActiveProfile(pt.key)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                    activeProfile === pt.key
-                      ? 'text-white shadow-md'
-                      : 'bg-white text-gray-600 border hover:bg-gray-50'
-                  }`}
-                  style={activeProfile === pt.key ? { backgroundColor: pt.color } : {}}
-                >
-                  {pt.icon}
-                  {pt.label}
+                <button key={pt.key} onClick={() => setActiveProfile(pt.key)} className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${activeProfile === pt.key ? 'text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'}`} style={activeProfile === pt.key ? { backgroundColor: pt.color } : {}}>
+                  {pt.icon}{pt.label}
                 </button>
               ))}
             </div>
 
-            {/* Agent Profile */}
+            {/* ─── Agent Profile ─── */}
             {activeProfile === 'agent' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -871,6 +919,53 @@ export default function AnalyticsDashboard() {
                     <p className="text-xs text-gray-500 mt-1">Basé sur performance + avis + activité</p>
                   </motion.div>
                 </div>
+
+                {/* Performance Annonces + Volume Transactions + ROI Premium */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl p-5 shadow-sm border">
+                    <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-[#003087]" /> Performance annonces</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Annonces actives</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.active}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Vues totales</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.vues.toLocaleString('fr-FR')}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Contacts reçus</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.contacts}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Taux conversion</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.performanceAnnonces.tauxConversion}%</span></div>
+                    </div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl p-5 shadow-sm border">
+                    <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#00A651]" /> Volume transactions</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Ventes conclues</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.volumeTransactions.total}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Valeur totale</span><span className="font-mono font-bold text-[#003087]">{formatPrice(AGENT_ANALYTICS.volumeTransactions.valeur)}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">En cours</span><span className="font-mono font-bold text-[#D4AF37]">{AGENT_ANALYTICS.volumeTransactions.enCours}</span></div>
+                    </div>
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white rounded-2xl p-5 shadow-sm border">
+                    <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-[#D4AF37]" /> ROI Premium</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Investissement</span><span className="font-mono font-bold text-gray-600">{formatPrice(AGENT_ANALYTICS.roiPremium.investissement)}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Revenu généré</span><span className="font-mono font-bold text-[#00A651]">{formatPrice(AGENT_ANALYTICS.roiPremium.revenuGenere)}</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">ROI</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.roiPremium.roi}%</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">Contacts supp.</span><span className="font-mono font-bold text-[#009CDE]">+{AGENT_ANALYTICS.roiPremium.contactsSupp}</span></div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Carte de chaleur mini */}
+                <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> Carte de chaleur — Vos zones</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {ZONE_PERFORMANCE.slice(0, 4).map(zone => {
+                      const heatColor = zone.performance >= 80 ? 'bg-[#00A651]' : zone.performance >= 60 ? 'bg-[#D4AF37]' : 'bg-[#F59E0B]';
+                      return (
+                        <div key={zone.zone} className={`p-3 rounded-xl text-white ${heatColor}`} style={{ opacity: Math.max(0.3, zone.performance / 100) }}>
+                          <p className="font-semibold text-xs leading-tight">{zone.zone}</p>
+                          <p className="font-mono text-lg font-bold">{zone.performance}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
                   <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir de conversion</h3>
                   <div className="space-y-3">
@@ -878,16 +973,7 @@ export default function AnalyticsDashboard() {
                       <div key={stage.stage} className="flex items-center gap-4">
                         <div className="w-36 shrink-0 text-sm text-gray-600">{stage.stage}</div>
                         <div className="flex-1 flex items-center gap-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stage.pct}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                            className="h-8 rounded-xl flex items-center justify-end pr-2"
-                            style={{
-                              backgroundColor: i === 0 ? '#003087' : i === AGENT_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#009CDE',
-                              minWidth: stage.pct > 0 ? '40px' : '0',
-                            }}
-                          >
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${stage.pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-8 rounded-xl flex items-center justify-end pr-2" style={{ backgroundColor: i === 0 ? '#003087' : i === AGENT_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#009CDE', minWidth: stage.pct > 0 ? '40px' : '0' }}>
                             <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
                           </motion.div>
                           <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
@@ -899,31 +985,55 @@ export default function AnalyticsDashboard() {
               </div>
             )}
 
-            {/* Artisan Profile */}
+            {/* ─── Artisan Profile ─── */}
             {activeProfile === 'artisan' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <Wrench className="w-5 h-5 text-[#D4AF37] mb-1" />
                     <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.missionsCompleted}</p>
                     <p className="text-xs text-gray-500">Missions terminées</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                    <Star className="w-5 h-5 text-[#D4AF37] mb-1" />
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.avgRating}</p>
-                    <p className="text-xs text-gray-500">Note moyenne</p>
+                    <ThumbsUp className="w-5 h-5 text-[#00A651] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#00A651]">{ARTISAN_ANALYTICS.tauxSatisfaction}%</p>
+                    <p className="text-xs text-gray-500">Taux satisfaction</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                    <Timer className="w-5 h-5 text-[#009CDE] mb-1" />
+                    <Clock className="w-5 h-5 text-[#009CDE] mb-1" />
                     <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.responseTime} min</p>
                     <p className="text-xs text-gray-500">Temps de réponse</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                    <Users className="w-5 h-5 text-[#00A651] mb-1" />
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.repeatClients}%</p>
-                    <p className="text-xs text-gray-500">Clients récurrents</p>
+                    <Trophy className="w-5 h-5 text-[#D4AF37] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#D4AF37]">#{ARTISAN_ANALYTICS.classementMetier.position}</p>
+                    <p className="text-xs text-gray-500">Classement {ARTISAN_ANALYTICS.classementMetier.specialty}</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border">
+                    <Star className="w-5 h-5 text-[#D4AF37] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.avgRating}</p>
+                    <p className="text-xs text-gray-500">Note moyenne</p>
                   </div>
                 </div>
+
+                {/* Demandes devis breakdown */}
+                <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-[#003087]" /> Demandes devis</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Reçues', value: ARTISAN_ANALYTICS.demandesDevis.recues, color: '#003087' },
+                      { label: 'Envoyées', value: ARTISAN_ANALYTICS.demandesDevis.envoyees, color: '#009CDE' },
+                      { label: 'Acceptées', value: ARTISAN_ANALYTICS.demandesDevis.acceptees, color: '#00A651' },
+                      { label: 'En attente', value: ARTISAN_ANALYTICS.demandesDevis.enAttente, color: '#D4AF37' },
+                    ].map(item => (
+                      <div key={item.label} className="p-3 bg-gray-50 rounded-xl text-center">
+                        <p className="font-mono text-lg font-bold" style={{ color: item.color }}>{item.value}</p>
+                        <p className="text-xs text-gray-500">{item.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
                   <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir de conversion artisan</h3>
                   <div className="space-y-3">
@@ -931,13 +1041,7 @@ export default function AnalyticsDashboard() {
                       <div key={stage.stage} className="flex items-center gap-4">
                         <div className="w-40 shrink-0 text-sm text-gray-600">{stage.stage}</div>
                         <div className="flex-1 flex items-center gap-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stage.pct}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                            className="h-8 rounded-xl flex items-center justify-end pr-2"
-                            style={{ backgroundColor: i === ARTISAN_ANALYTICS.conversionFunnel.length - 1 ? '#D4AF37' : '#003087', minWidth: '40px' }}
-                          >
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${stage.pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-8 rounded-xl flex items-center justify-end pr-2" style={{ backgroundColor: i === ARTISAN_ANALYTICS.conversionFunnel.length - 1 ? '#D4AF37' : '#003087', minWidth: '40px' }}>
                             <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
                           </motion.div>
                           <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
@@ -946,6 +1050,7 @@ export default function AnalyticsDashboard() {
                     ))}
                   </div>
                 </div>
+
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
                   <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Spécialités</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -960,10 +1065,10 @@ export default function AnalyticsDashboard() {
               </div>
             )}
 
-            {/* Formateur Profile */}
+            {/* ─── Formateur Profile ─── */}
             {activeProfile === 'formateur' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <BookOpen className="w-5 h-5 text-[#009CDE] mb-1" />
                     <p className="font-mono text-xl font-bold text-[#2C2E2F]">{FORMATEUR_ANALYTICS.coursesPublished}</p>
@@ -972,19 +1077,61 @@ export default function AnalyticsDashboard() {
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <GraduationCap className="w-5 h-5 text-[#003087] mb-1" />
                     <p className="font-mono text-xl font-bold text-[#2C2E2F]">{FORMATEUR_ANALYTICS.totalStudents}</p>
-                    <p className="text-xs text-gray-500">Étudiants total</p>
+                    <p className="text-xs text-gray-500">Inscrits total</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border">
+                    <Percent className="w-5 h-5 text-[#00A651] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#00A651]">{FORMATEUR_ANALYTICS.completionRate}%</p>
+                    <p className="text-xs text-gray-500">Taux complétion</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <Star className="w-5 h-5 text-[#D4AF37] mb-1" />
                     <p className="font-mono text-xl font-bold text-[#2C2E2F]">{FORMATEUR_ANALYTICS.avgRating}</p>
-                    <p className="text-xs text-gray-500">Note moyenne</p>
+                    <p className="text-xs text-gray-500">Notes & avis ({FORMATEUR_ANALYTICS.notesAvis.total})</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                    <Award className="w-5 h-5 text-[#00A651] mb-1" />
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">{FORMATEUR_ANALYTICS.completionRate}%</p>
-                    <p className="text-xs text-gray-500">Taux de complétion</p>
+                    <BadgeCheck className="w-5 h-5 text-[#00A651] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#00A651]">{FORMATEUR_ANALYTICS.certificationsDelivrees}</p>
+                    <p className="text-xs text-gray-500">Certifications délivrées</p>
                   </div>
                 </div>
+
+                {/* Inscrits par cours + Revenus générés */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-[#009CDE]" /> Inscrits par cours</h3>
+                    <div className="space-y-3">
+                      {FORMATEUR_ANALYTICS.inscritsParCours.map(course => (
+                        <div key={course.name} className="p-3 bg-gray-50 rounded-xl">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-semibold text-sm text-[#2C2E2F]">{course.name}</p>
+                            <span className="font-mono text-sm font-bold text-[#003087]">{course.students} inscrits</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full bg-[#009CDE]" style={{ width: `${course.completion}%` }} />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Taux complétion : {course.completion}%</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><CircleDollarSign className="w-5 h-5 text-[#00A651]" /> Revenus générés</h3>
+                    <div className="text-center mb-4">
+                      <p className="font-mono text-3xl font-bold text-[#00A651]">{formatPrice(FORMATEUR_ANALYTICS.monthlyRevenue)}</p>
+                      <p className="text-xs text-gray-500">ce mois</p>
+                    </div>
+                    <div className="space-y-3">
+                      {FORMATEUR_ANALYTICS.topCourses.map(course => (
+                        <div key={course.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                          <div><p className="font-semibold text-sm text-[#2C2E2F]">{course.name}</p><p className="text-xs text-gray-500">{course.students} étudiants · <span className="text-[#D4AF37]">{course.rating}/5</span></p></div>
+                          <p className="font-mono text-sm font-bold text-[#00A651]">{formatPrice(course.revenue)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
                   <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir de conversion formateur</h3>
                   <div className="space-y-3">
@@ -992,31 +1139,11 @@ export default function AnalyticsDashboard() {
                       <div key={stage.stage} className="flex items-center gap-4">
                         <div className="w-40 shrink-0 text-sm text-gray-600">{stage.stage}</div>
                         <div className="flex-1 flex items-center gap-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stage.pct}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                            className="h-8 rounded-xl flex items-center justify-end pr-2"
-                            style={{ backgroundColor: i === FORMATEUR_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#009CDE', minWidth: '40px' }}
-                          >
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${stage.pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-8 rounded-xl flex items-center justify-end pr-2" style={{ backgroundColor: i === FORMATEUR_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#009CDE', minWidth: '40px' }}>
                             <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
                           </motion.div>
                           <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Cours les plus performants</h3>
-                  <div className="space-y-3">
-                    {FORMATEUR_ANALYTICS.topCourses.map(course => (
-                      <div key={course.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                        <div>
-                          <p className="font-semibold text-sm text-[#2C2E2F]">{course.name}</p>
-                          <p className="text-xs text-gray-500">{course.students} étudiants · <span className="text-[#D4AF37]">{course.rating}/5</span></p>
-                        </div>
-                        <p className="font-mono text-sm font-bold text-[#00A651]">{formatPrice(course.revenue)}</p>
                       </div>
                     ))}
                   </div>
@@ -1024,14 +1151,14 @@ export default function AnalyticsDashboard() {
               </div>
             )}
 
-            {/* Investisseur Profile */}
+            {/* ─── Investisseur Profile ─── */}
             {activeProfile === 'investisseur' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <Landmark className="w-5 h-5 text-[#00A651] mb-1" />
                     <p className="font-mono text-lg font-bold text-[#2C2E2F]">{formatPrice(INVESTISSEUR_ANALYTICS.portfolioValue)}</p>
-                    <p className="text-xs text-gray-500">Valeur portefeuille</p>
+                    <p className="text-xs text-gray-500">Portfolio immobilier</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <TrendingUp className="w-5 h-5 text-[#00A651] mb-1" />
@@ -1039,9 +1166,9 @@ export default function AnalyticsDashboard() {
                     <p className="text-xs text-gray-500">ROI total</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
-                    <Building2 className="w-5 h-5 text-[#003087] mb-1" />
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">{INVESTISSEUR_ANALYTICS.propertiesOwned}</p>
-                    <p className="text-xs text-gray-500">Biens détenus</p>
+                    <Percent className="w-5 h-5 text-[#009CDE] mb-1" />
+                    <p className="font-mono text-xl font-bold text-[#009CDE]">{INVESTISSEUR_ANALYTICS.roiLocatif}%</p>
+                    <p className="text-xs text-gray-500">ROI locatif</p>
                   </div>
                   <div className="bg-white rounded-2xl p-4 shadow-sm border">
                     <Banknote className="w-5 h-5 text-[#D4AF37] mb-1" />
@@ -1049,30 +1176,20 @@ export default function AnalyticsDashboard() {
                     <p className="text-xs text-gray-500">Revenus locatifs/mois</p>
                   </div>
                 </div>
+
+                {/* Activité recherche */}
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir d'investissement</h3>
-                  <div className="space-y-3">
-                    {INVESTISSEUR_ANALYTICS.conversionFunnel.map((stage, i) => (
-                      <div key={stage.stage} className="flex items-center gap-4">
-                        <div className="w-40 shrink-0 text-sm text-gray-600">{stage.stage}</div>
-                        <div className="flex-1 flex items-center gap-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${stage.pct}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }}
-                            className="h-8 rounded-xl flex items-center justify-end pr-2"
-                            style={{ backgroundColor: i === INVESTISSEUR_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#003087', minWidth: '40px' }}
-                          >
-                            <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
-                          </motion.div>
-                          <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
-                        </div>
-                      </div>
-                    ))}
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Search className="w-5 h-5 text-[#003087]" /> Activité recherche</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#003087]">{INVESTISSEUR_ANALYTICS.activiteRecherche.biensConsultes}</p><p className="text-xs text-gray-500">Biens consultés</p></div>
+                    <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#D4AF37]">{INVESTISSEUR_ANALYTICS.activiteRecherche.alertesActives}</p><p className="text-xs text-gray-500">Alertes actives</p></div>
+                    <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#00A651]">{INVESTISSEUR_ANALYTICS.activiteRecherche.visitesPlanifiees}</p><p className="text-xs text-gray-500">Visites planifiées</p></div>
                   </div>
                 </div>
+
+                {/* Portfolio immobilier with ROI locatif */}
                 <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Portefeuille immobilier</h3>
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Portfolio immobilier</h3>
                   <div className="space-y-3">
                     {INVESTISSEUR_ANALYTICS.investments.map(inv => (
                       <div key={inv.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
@@ -1083,14 +1200,52 @@ export default function AnalyticsDashboard() {
                             <p className="text-xs text-gray-500">{inv.type} · {formatPrice(inv.value)}</p>
                           </div>
                         </div>
-                        <span className={`font-mono text-sm font-bold ${inv.roi >= 15 ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>{inv.roi}% ROI</span>
+                        <div className="text-right">
+                          <span className={`font-mono text-sm font-bold ${inv.roi >= 15 ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>{inv.roi}% ROI</span>
+                          {inv.rentalYield > 0 && <p className="text-xs text-[#009CDE]">{inv.rentalYield}% rendement locatif</p>}
+                        </div>
                       </div>
                     ))}
                   </div>
                   <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl border border-[#00A651]/10">
-                    <p className="text-xs text-[#2C2E2F]">
-                      <span className="font-semibold text-[#00A651]">Taux d'occupation : {INVESTISSEUR_ANALYTICS.occupancyRate}%</span> — Supérieur de 7% à la moyenne du marché.
-                    </p>
+                    <p className="text-xs text-[#2C2E2F]"><span className="font-semibold text-[#00A651]">Taux d&apos;occupation : {INVESTISSEUR_ANALYTICS.occupancyRate}%</span> — Supérieur de 7% à la moyenne du marché.</p>
+                  </div>
+                </div>
+
+                {/* Historique transactions */}
+                <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><History className="w-5 h-5 text-[#003087]" /> Historique transactions</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">Date</th><th className="text-left py-2 text-gray-500 font-medium">Type</th><th className="text-left py-2 text-gray-500 font-medium">Bien</th><th className="text-right py-2 text-gray-500 font-medium">Montant</th></tr></thead>
+                      <tbody>
+                        {INVESTISSEUR_ANALYTICS.historiqueTransactions.map((txn, i) => (
+                          <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
+                            <td className="py-3 text-gray-600">{new Date(txn.date).toLocaleDateString('fr-FR')}</td>
+                            <td className="py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-bold ${txn.type === 'Acquisition' ? 'bg-[#003087]/10 text-[#003087]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>{txn.type}</span></td>
+                            <td className="py-3 font-medium text-[#2C2E2F]">{txn.bien}</td>
+                            <td className="py-3 text-right font-mono font-bold">{formatPrice(txn.montant)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl p-6 shadow-sm border">
+                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir d&apos;investissement</h3>
+                  <div className="space-y-3">
+                    {INVESTISSEUR_ANALYTICS.conversionFunnel.map((stage, i) => (
+                      <div key={stage.stage} className="flex items-center gap-4">
+                        <div className="w-40 shrink-0 text-sm text-gray-600">{stage.stage}</div>
+                        <div className="flex-1 flex items-center gap-2">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${stage.pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-8 rounded-xl flex items-center justify-end pr-2" style={{ backgroundColor: i === INVESTISSEUR_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#003087', minWidth: '40px' }}>
+                            <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
+                          </motion.div>
+                          <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1098,37 +1253,18 @@ export default function AnalyticsDashboard() {
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* HEATMAP / ZONE TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ HEATMAP / ZONE TAB ═══════════════ */}
         {activeTab === 'heatmap' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="bg-white rounded-3xl p-6 shadow-sm border">
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2">
-                <Flame className="w-5 h-5 text-[#D93025]" />
-                Performance par zone
-              </h3>
+              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> Performance par zone</h3>
               <p className="text-sm text-gray-500 mb-6">Carte de chaleur des performances immobilières par quartier et ville.</p>
-
-              {/* Heat Map Placeholder — Grid Visualization */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {ZONE_PERFORMANCE.map(zone => {
-                  const heatColor = zone.performance >= 80
-                    ? 'bg-[#00A651]'
-                    : zone.performance >= 60
-                    ? 'bg-[#D4AF37]'
-                    : zone.performance >= 40
-                    ? 'bg-[#F59E0B]'
-                    : 'bg-[#D93025]';
+                  const heatColor = zone.performance >= 80 ? 'bg-[#00A651]' : zone.performance >= 60 ? 'bg-[#D4AF37]' : zone.performance >= 40 ? 'bg-[#F59E0B]' : 'bg-[#D93025]';
                   const heatOpacity = Math.max(0.3, zone.performance / 100);
                   return (
-                    <motion.div
-                      key={zone.zone}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className={`relative p-4 rounded-xl text-white ${heatColor} overflow-hidden`}
-                      style={{ opacity: heatOpacity }}
-                    >
+                    <motion.div key={zone.zone} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className={`relative p-4 rounded-xl text-white ${heatColor} overflow-hidden`} style={{ opacity: heatOpacity }}>
                       <p className="font-semibold text-sm leading-tight">{zone.zone}</p>
                       <p className="font-mono text-2xl font-bold mt-1">{zone.performance}</p>
                       <div className="flex items-center gap-1 mt-1">
@@ -1140,51 +1276,30 @@ export default function AnalyticsDashboard() {
                   );
                 })}
               </div>
-
-              {/* Legend */}
               <div className="flex items-center gap-4 justify-center text-xs text-gray-500">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-[#00A651]" />
-                  <span>Excellent (80+)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-[#D4AF37]" />
-                  <span>Bon (60-79)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-[#F59E0B]" />
-                  <span>Moyen (40-59)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded bg-[#D93025]" />
-                  <span>Faible (&lt;40)</span>
-                </div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#00A651]" /><span>Excellent (80+)</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#D4AF37]" /><span>Bon (60-79)</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#F59E0B]" /><span>Moyen (40-59)</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#D93025]" /><span>Faible (&lt;40)</span></div>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* REBECCA RECOMMENDATIONS TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ REBECCA RECOMMENDATIONS TAB ═══════════════ */}
         {activeTab === 'rebecca' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Rebecca Header */}
             <div className="bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-3xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D4AF37]/10 rounded-full translate-y-1/2 -translate-x-1/2" />
               <div className="relative z-10 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg">
-                  <Lightbulb className="w-7 h-7 text-white" />
-                </div>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg"><Lightbulb className="w-7 h-7 text-white" /></div>
                 <div>
                   <h2 className="text-white text-xl font-bold">Rebecca — Votre conseillère IA</h2>
                   <p className="text-white/60 text-sm mt-1">Recommandations personnalisées basées sur vos données et les tendances du marché</p>
                 </div>
               </div>
             </div>
-
-            {/* Priority Categories */}
             <div className="space-y-4">
               {(['high', 'medium', 'low'] as const).map(priority => {
                 const items = REBECCA_RECOMMENDATIONS.filter(r => r.priority === priority);
@@ -1200,32 +1315,16 @@ export default function AnalyticsDashboard() {
                     <h3 className="text-sm font-bold mb-2" style={{ color: cfg.color }}>{cfg.label}</h3>
                     <div className="space-y-3">
                       {items.map((rec, i) => {
-                        const recIcon = rec.icon === 'listing' ? <LayoutGrid className="w-5 h-5" />
-                          : rec.icon === 'message' ? <Phone className="w-5 h-5" />
-                          : rec.icon === 'premium' ? <Crown className="w-5 h-5" />
-                          : rec.icon === 'location' ? <MapPin className="w-5 h-5" />
-                          : <Shield className="w-5 h-5" />;
+                        const recIcon = rec.icon === 'listing' ? <LayoutGrid className="w-5 h-5" /> : rec.icon === 'message' ? <Phone className="w-5 h-5" /> : rec.icon === 'premium' ? <Crown className="w-5 h-5" /> : rec.icon === 'location' ? <MapPin className="w-5 h-5" /> : rec.icon === 'network' ? <Users className="w-5 h-5" /> : <Shield className="w-5 h-5" />;
                         return (
-                          <motion.div
-                            key={rec.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.1, duration: 0.4, ease: easeOut }}
-                            className={`${cfg.bg} border ${cfg.border} rounded-2xl p-4 flex items-start gap-4`}
-                          >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: cfg.color + '15', color: cfg.color }}>
-                              {recIcon}
-                            </div>
+                          <motion.div key={rec.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1, duration: 0.4, ease: easeOut }} className={`${cfg.bg} border ${cfg.border} rounded-2xl p-4 flex items-start gap-4`}>
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: cfg.color + '15', color: cfg.color }}>{recIcon}</div>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-sm text-[#2C2E2F]">{rec.title}</h4>
                               <p className="text-xs text-gray-600 mt-1 leading-relaxed">{rec.description}</p>
                             </div>
-                            <button
-                              className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors"
-                              style={{ backgroundColor: cfg.color }}
-                            >
-                              {rec.action}
-                              <ChevronRight className="w-3 h-3" />
+                            <button className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors" style={{ backgroundColor: cfg.color }}>
+                              {rec.action}<ChevronRight className="w-3 h-3" />
                             </button>
                           </motion.div>
                         );
@@ -1238,9 +1337,7 @@ export default function AnalyticsDashboard() {
           </motion.div>
         )}
 
-        {/* ═══════════════════════════════════════════ */}
-        {/* EXPORT TAB */}
-        {/* ═══════════════════════════════════════════ */}
+        {/* ═══════════════ EXPORT TAB ═══════════════ */}
         {activeTab === 'export' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="bg-white rounded-3xl p-6 shadow-sm border max-w-2xl mx-auto text-center">
@@ -1248,18 +1345,12 @@ export default function AnalyticsDashboard() {
               <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Exporter vos données</h3>
               <p className="text-sm text-gray-500 mb-6">Téléchargez vos statistiques et données analytiques au format de votre choix.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleExport('csv')}
-                  className="p-4 border-2 border-[#00A651]/20 rounded-2xl hover:border-[#00A651] hover:bg-[#00A651]/5 transition-all"
-                >
+                <button onClick={() => handleExport('csv')} className="p-4 border-2 border-[#00A651]/20 rounded-2xl hover:border-[#00A651] hover:bg-[#00A651]/5 transition-all">
                   <FileText className="w-6 h-6 mx-auto mb-2 text-[#00A651]" />
                   <h4 className="font-display text-base font-bold text-[#2C2E2F]">CSV</h4>
                   <p className="text-xs text-gray-500 mt-1">Compatible Excel, Google Sheets</p>
                 </button>
-                <button
-                  onClick={() => handleExport('pdf')}
-                  className="p-4 border-2 border-[#003087]/20 rounded-2xl hover:border-[#003087] hover:bg-[#003087]/5 transition-all"
-                >
+                <button onClick={() => handleExport('pdf')} className="p-4 border-2 border-[#003087]/20 rounded-2xl hover:border-[#003087] hover:bg-[#003087]/5 transition-all">
                   <FileText className="w-6 h-6 mx-auto mb-2 text-[#003087]" />
                   <h4 className="font-display text-base font-bold text-[#2C2E2F]">PDF</h4>
                   <p className="text-xs text-gray-500 mt-1">Rapport formaté prêt à imprimer</p>
@@ -1269,12 +1360,14 @@ export default function AnalyticsDashboard() {
                 <p className="text-xs text-gray-500 mb-2">Données incluses dans l&apos;export :</p>
                 <ul className="text-sm text-gray-600 space-y-1.5">
                   <li className="flex items-center gap-2"><Coins className="w-4 h-4 text-[#D4AF37]" /> Revenus et transactions</li>
-                  <li className="flex items-center gap-2"><Eye className="w-4 h-4 text-[#003087]" /> Vues de profil (origines)</li>
+                  <li className="flex items-center gap-2"><Eye className="w-4 h-4 text-[#003087]" /> Vues de profil (origines + évolution)</li>
                   <li className="flex items-center gap-2"><Search className="w-4 h-4 text-[#009CDE]" /> Apparitions en recherche</li>
                   <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-[#00A651]" /> Entonnoir de conversion</li>
                   <li className="flex items-center gap-2"><Trophy className="w-4 h-4 text-[#D4AF37]" /> Classement et performance</li>
-                  <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#003087]" /> Tendances mensuelles</li>
+                  <li className="flex items-center gap-2"><UserPlus className="w-4 h-4 text-[#003087]" /> Connexions et abonnés</li>
+                  <li className="flex items-center gap-2"><Heart className="w-4 h-4 text-[#D93025]" /> Engagement contenu</li>
                   <li className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#D93025]" /> Performance par zone</li>
+                  <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-[#D4AF37]" /> ROI Premium</li>
                 </ul>
               </div>
             </div>

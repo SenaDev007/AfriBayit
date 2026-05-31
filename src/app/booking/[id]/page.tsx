@@ -501,7 +501,7 @@ export default function BookingDetailPage() {
               </Card>
             </motion.div>
 
-            {/* Map placeholder */}
+            {/* Map */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -509,11 +509,54 @@ export default function BookingDetailPage() {
             >
               <Card className="rounded-3xl card-shadow border-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Localisation</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-[#003087]" />
+                    Localisation
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="aspect-[16/9] bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
-                    <MapPin className="w-8 h-8 mr-2" /> Carte bientôt disponible
+                  <div className="relative aspect-[16/9] rounded-2xl overflow-hidden">
+                    {/* Simulated map background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
+                      {/* Grid lines to simulate map */}
+                      <div className="absolute inset-0 opacity-[0.07]">
+                        <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
+                        <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
+                        <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
+                        <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
+                        <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
+                        <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
+                      </div>
+                      {/* Simulated roads */}
+                      <div className="absolute top-[30%] left-0 right-0 h-[2px] bg-gray-200/80" />
+                      <div className="absolute top-[60%] left-0 right-0 h-[2px] bg-gray-200/60" />
+                      <div className="absolute left-[25%] top-0 bottom-0 w-[2px] bg-gray-200/70" />
+                      <div className="absolute left-[70%] top-0 bottom-0 w-[2px] bg-gray-200/50" />
+                      {/* Simulated blocks */}
+                      <div className="absolute top-[32%] left-[27%] w-[15%] h-[26%] rounded-sm bg-gray-200/40" />
+                      <div className="absolute top-[10%] left-[5%] w-[18%] h-[18%] rounded-sm bg-gray-200/30" />
+                      <div className="absolute top-[62%] left-[45%] w-[22%] h-[20%] rounded-sm bg-[#003087]/[0.03]" />
+                    </div>
+                    {/* Map pin & overlay */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
+                          <MapPin className="w-6 h-6 text-[#003087]" />
+                        </div>
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#003087] rounded-full opacity-20" />
+                      </div>
+                      <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
+                      <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {address}, {city}
+                      </p>
+                    </div>
+                    {/* Bottom info bar */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/90 to-transparent pt-8 pb-3 px-4">
+                      <p className="text-[10px] text-gray-400 text-center">
+                        La carte interactive sera disponible avec la configuration Mapbox
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

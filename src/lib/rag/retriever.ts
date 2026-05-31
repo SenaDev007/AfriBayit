@@ -54,7 +54,7 @@ export async function searchProperties(
           `Surface: ${p.surface}m² | ${p.bedrooms}ch | ${p.bathrooms}sdb\n` +
           `Description: ${p.description.slice(0, 300)}...\n` +
           `Caractéristiques: ${Array.isArray(features) ? features.join(', ') : ''}\n` +
-          `Vérifié: ${p.verified ? '✅' : '❌'} | GeoTrust: ${p.geoTrust ? '✅' : '❌'}\n` +
+          `Verifie: ${p.verified ? '[OUI]' : '[NON]'} | GeoTrust: ${p.geoTrust ? '[OUI]' : '[NON]'}\n` +
           `Agent: ${p.owner?.name || 'N/A'}`,
         source: `property:${p.id}`,
         sourceType: 'property' as const,
@@ -175,7 +175,7 @@ export async function searchLegalDocs(
       const score = keywordSimilarity(queryTokens, docTokens);
       if (score > 0) {
         results.push({
-          content: `📄 **${doc.topic}** (${c})\n${doc.content}`,
+          content: `[Document] **${doc.topic}** (${c})\n${doc.content}`,
           source: `legal:${c}:${doc.topic}`,
           sourceType: 'legal_doc',
           score,
@@ -232,7 +232,7 @@ export async function searchFAQ(
     const score = keywordSimilarity(queryTokens, docTokens);
     if (score > 0) {
       results.push({
-        content: `❓ **${faq.q}**\n${faq.a}`,
+        content: `[FAQ] **${faq.q}**\n${faq.a}`,
         source: `faq:${faq.q}`,
         sourceType: 'faq',
         score,
@@ -265,7 +265,7 @@ export async function searchMarketData(
 
     if (properties.length === 0) {
       return [{
-        content: `📊 Aucune donnée de marché disponible pour ${area || country || 'cette zone'}. Les données du marché sont mises à jour régulièrement.`,
+        content: `[Market] Aucune donnée de marché disponible pour ${area || country || 'cette zone'}. Les données du marché sont mises à jour régulièrement.`,
         source: 'market:empty',
         sourceType: 'market_data',
         score: 0.5,
@@ -301,7 +301,7 @@ export async function searchMarketData(
     });
 
     const areaName = area || country || 'toutes zones';
-    const content = `📊 **Marché immobilier — ${areaName}**\n` +
+    const content = `[Market] **Marché immobilier — ${areaName}**\n` +
       `Basé sur ${properties.length} annonces publiées:\n\n` +
       stats.map((s) =>
         `- **${s.type}** (${s.transaction}): Moy. ${new Intl.NumberFormat('fr-FR').format(s.avgPrice)} FCFA | ` +
@@ -356,9 +356,9 @@ export async function searchArtisans(
       const score = keywordSimilarity(queryTokens, docTokens);
 
       return {
-        content: `🔨 **${a.trade}** — ${a.city || ''}, ${a.country || ''}\n` +
-          `Spécialités: ${Array.isArray(specialties) ? specialties.join(', ') : a.trade}\n` +
-          `Certifié: ${a.certified ? '✅' : '❌'} | Note: ${a.rating}/5 (${a.reviews} avis)\n` +
+        content: `[Artisan] **${a.trade}** — ${a.city || ''}, ${a.country || ''}\n` +
+          `Specialites: ${Array.isArray(specialties) ? specialties.join(', ') : a.trade}\n` +
+          `Certifie: ${a.certified ? '[OUI]' : '[NON]'} | Note: ${a.rating}/5 (${a.reviews} avis)\n` +
           `Missions complétées: ${a.completedMissions}\n` +
           `Tarif: ${a.dailyRate ? new Intl.NumberFormat('fr-FR').format(a.dailyRate) + ' FCFA/jour' : a.priceRange || 'Sur devis'}\n` +
           `Temps de réponse: ${a.responseTime ? a.responseTime + ' min' : 'N/A'}`,

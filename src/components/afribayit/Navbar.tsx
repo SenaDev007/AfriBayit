@@ -6,9 +6,9 @@ import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { useCountry, type CountryCode } from '@/contexts/CountryContext';
 import { useLocale } from '@/lib/i18n/context';
 import { useRouter, usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { BarChart3, Coins, Home, User, KeyRound, CalendarDays, Shield, LogOut, CreditCard, LayoutDashboard, FileText } from 'lucide-react';
+import { BarChart3, Coins, Home, User, KeyRound, CalendarDays, Shield, LogOut, CreditCard, LayoutDashboard, FileText, Languages } from 'lucide-react';
 
 interface NavbarProps {
   onOpenNotifications: () => void;
@@ -162,7 +162,7 @@ export default function Navbar({
                 }`}
                 title={locale === 'fr' ? 'Switch to English' : 'Passer en Français'}
               >
-                <span>{locale === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                <Languages className="w-3.5 h-3.5" />
                 <span>{locale === 'fr' ? 'FR' : 'EN'}</span>
               </button>
 
@@ -201,7 +201,7 @@ export default function Navbar({
                         : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  {isAdmin ? ' Backoffice' : 'Dashboard'}
+                  {isAdmin ? 'Backoffice' : 'Dashboard'}
                 </motion.button>
               )}
 
@@ -277,7 +277,7 @@ export default function Navbar({
 
                         <div className="border-t border-gray-100 py-1">
                           <button
-                            onClick={() => { navigate('/auth/login'); }}
+                            onClick={() => { signOut({ callbackUrl: '/' }); }}
                             className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
@@ -428,7 +428,7 @@ export default function Navbar({
                     onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-medium text-[#2C2E2F] hover:bg-gray-50"
                   >
-                    <span>{locale === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                    <Languages className="w-4 h-4" />
                     {locale === 'fr' ? 'Français' : 'English'}
                     <span className="text-xs text-gray-400">→ {locale === 'fr' ? 'English' : 'Français'}</span>
                   </button>
