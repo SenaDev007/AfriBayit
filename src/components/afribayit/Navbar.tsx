@@ -354,22 +354,32 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </motion.button>
               )}
 
-              {/* Dashboard / Backoffice quick button */}
-              {isLoggedIn && (
+              {/* Dashboard / Backoffice quick button — always visible for admins */}
+              {isLoggedIn && isAdmin && (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
+                  onClick={() => navigate('/admin')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold bg-[#003087] text-white border border-[#003087]/30 hover:bg-[#002060] shadow-md transition-all"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Backoffice
+                </motion.button>
+              )}
+              {/* Dashboard button for non-admin logged-in users */}
+              {isLoggedIn && !isAdmin && (
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate('/dashboard')}
                   className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    isAdmin
-                      ? 'bg-[#003087]/10 text-[#003087] border border-[#003087]/20 hover:bg-[#003087]/20'
-                      : scrolled
-                        ? 'text-[#003087] hover:bg-blue-50'
-                        : 'text-white hover:bg-white/10'
+                    scrolled
+                      ? 'text-[#003087] hover:bg-blue-50'
+                      : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  {isAdmin ? <LayoutDashboard className="w-4 h-4" /> : <BarChart3 className="w-4 h-4" />}
-                  {isAdmin ? 'Backoffice' : 'Dashboard'}
+                  <BarChart3 className="w-4 h-4" />
+                  Dashboard
                 </motion.button>
               )}
 
@@ -634,9 +644,22 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       })}
                     </div>
 
-                    {/* Admin section */}
+                    {/* Admin Backoffice Button — prominent */}
                     {isAdmin && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
+                        <button
+                          onClick={() => navigate('/admin')}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#002060] transition-colors shadow-md"
+                        >
+                          <LayoutDashboard className="w-4 h-4" />
+                          Accéder au Backoffice
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Admin section */}
+                    {isAdmin && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
                         <p className="px-4 py-1 text-[10px] uppercase tracking-wider font-bold text-[#003087]">Administration</p>
                         {[
                           { label: 'Backoffice Admin', href: '/admin', icon: LayoutDashboard },
