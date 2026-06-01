@@ -110,12 +110,11 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
 
   return (
     <section className="relative bg-navy-gradient noise-overlay overflow-hidden">
-      {/* 3D Animation Background — full width, behind content */}
+      {/* 3D Animation Background — FULLSCREEN, no frame, behind content */}
       <div className="absolute inset-0 z-0">
         <PoemAnimation
           poemHTML={AFRIBAYIT_POEM_HTML}
-          backgroundImageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80"
-          overlayImageUrl="https://images.unsplash.com/photo-1597740452428-3b1f45da8f5a?w=400&q=80"
+          backgroundImageUrl="https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1920&q=80"
         />
       </div>
 

@@ -7,6 +7,7 @@ import React, { useEffect, useRef } from 'react';
  * a background image, and an optional overlay image. The cube reflects
  * below for a polished visual effect.
  *
+ * FULLSCREEN — takes 100% of parent, no border-radius, no fixed size constraint.
  * Adapted for AfriBayit's brand palette (navy #003087, gold #D4AF37).
  */
 export const PoemAnimation = ({
@@ -18,96 +19,78 @@ export const PoemAnimation = ({
   backgroundImageUrl: string;
   overlayImageUrl?: string;
 }) => {
-  const contentRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  // Responsive scaling of the animation container
+  // No need for responsive scaling — CSS handles fullscreen via 100vw/100vh
   useEffect(() => {
-    function adjustContentSize() {
-      if (contentRef.current) {
-        const viewportWidth = window.innerWidth;
-        const baseWidth = 1000;
-        const scaleFactor =
-          viewportWidth < baseWidth ? (viewportWidth / baseWidth) * 0.9 : 1;
-        contentRef.current.style.transform = `scale(${scaleFactor})`;
-      }
-    }
-
-    adjustContentSize();
-    window.addEventListener('resize', adjustContentSize);
-    return () => window.removeEventListener('resize', adjustContentSize);
+    // Empty — fullscreen CSS takes care of layout
   }, []);
 
   return (
-    <header className="hero-3d-section">
-      <div className="hero-3d-outer">
-        <div
-          ref={contentRef}
-          className="hero-3d-content"
-          style={{ display: 'block', width: '1000px', height: '562px' }}
-        >
-          <div className="hero-3d-container-full">
-            <div className="animated hue" />
+    <section ref={sectionRef} className="hero-3d-section hero-3d-fullscreen">
+      <div className="hero-3d-outer hero-3d-fullscreen-outer">
+        <div className="hero-3d-container-full hero-3d-fullscreen-container">
+          <div className="animated hue" />
+          <img
+            className="hero-3d-backgroundImage"
+            src={backgroundImageUrl}
+            alt="Villa de luxe africaine"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+          {overlayImageUrl && (
             <img
-              className="hero-3d-backgroundImage"
-              src={backgroundImageUrl}
-              alt="Paysage urbain africain"
+              className="hero-3d-overlayImage"
+              src={overlayImageUrl}
+              alt="AfriBayit"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
-            {overlayImageUrl && (
-              <img
-                className="hero-3d-overlayImage"
-                src={overlayImageUrl}
-                alt="AfriBayit"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+          )}
+
+          <div className="hero-3d-cube-wrapper">
+            <div className="cube">
+              <div className="face top" />
+              <div className="face bottom" />
+              <div
+                className="face left text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
               />
-            )}
-
-            <div className="hero-3d-cube-wrapper">
-              <div className="cube">
-                <div className="face top" />
-                <div className="face bottom" />
-                <div
-                  className="face left text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-                <div
-                  className="face right text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-                <div className="face front" />
-                <div
-                  className="face back text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-              </div>
+              <div
+                className="face right text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
+              />
+              <div className="face front" />
+              <div
+                className="face back text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
+              />
             </div>
+          </div>
 
-            <div className="hero-3d-cube-wrapper-reflect">
-              <div className="cube">
-                <div className="face top" />
-                <div className="face bottom" />
-                <div
-                  className="face left text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-                <div
-                  className="face right text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-                <div className="face front" />
-                <div
-                  className="face back text"
-                  dangerouslySetInnerHTML={{ __html: poemHTML }}
-                />
-              </div>
+          <div className="hero-3d-cube-wrapper-reflect">
+            <div className="cube">
+              <div className="face top" />
+              <div className="face bottom" />
+              <div
+                className="face left text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
+              />
+              <div
+                className="face right text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
+              />
+              <div className="face front" />
+              <div
+                className="face back text"
+                dangerouslySetInnerHTML={{ __html: poemHTML }}
+              />
             </div>
           </div>
         </div>
       </div>
-    </header>
+    </section>
   );
 };

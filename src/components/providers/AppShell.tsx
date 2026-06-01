@@ -1,7 +1,7 @@
 'use client';
 
 import { Component, type ReactNode } from 'react';
-import Navbar from '@/components/afribayit/Navbar';
+import { Header } from '@/components/ui/header-3';
 import Footer from '@/components/afribayit/Footer';
 import NotificationsCenter from '@/components/afribayit/NotificationsCenter';
 import { useSession } from 'next-auth/react';
@@ -65,7 +65,7 @@ function AppShellInner({ children }: { children: ReactNode }) {
   return (
     <CountryProvider>
       <div className="min-h-screen flex flex-col bg-white">
-        <Navbar
+        <Header
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           notificationCount={notificationCount}
         />
