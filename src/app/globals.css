@@ -365,3 +365,320 @@
 .transition-afribayit {
   transition: cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ======================================================
+   3D Animation Hero — AfriBayit Cube
+   ====================================================== */
+
+/* Keyframes for cube face scrolling text */
+@keyframes scrollLeft {
+  100% {
+    margin-left: -54000px;
+  }
+}
+@keyframes scrollBack {
+  100% {
+    margin-left: -54870px;
+  }
+}
+@keyframes scrollRight {
+  100% {
+    margin-left: -55740px;
+  }
+}
+
+/* Hue-rotate ambient effect */
+@keyframes filter-animation {
+  0%, 100% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(100deg);
+  }
+}
+
+/* Background zoom in */
+@keyframes zoom-in {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(2.5);
+  }
+}
+
+/* Background blur transition */
+@keyframes blur {
+  0% {
+    filter: blur(0px);
+  }
+  100% {
+    filter: blur(3px);
+  }
+}
+
+/* Background brightness/contrast transition */
+@keyframes brightness {
+  0% {
+    filter: brightness(1) contrast(1);
+  }
+  100% {
+    filter: brightness(0.8) contrast(1.3);
+  }
+}
+
+/* Text glow pulse */
+@keyframes text-glow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+}
+
+/* Mesh shift for gradient backgrounds */
+@keyframes meshShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Slow pulse for search glow */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* 3D Hero Section Layout */
+.hero-3d-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #003087 0%, #001f5c 50%, #001440 100%);
+}
+
+.hero-3d-outer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.hero-3d-content {
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+
+.hero-3d-container-full {
+  position: relative;
+  width: 1000px;
+  height: 562px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+}
+
+/* Animated hue overlay */
+.hero-3d-container-full .animated.hue {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  animation: filter-animation 15s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Background image */
+.hero-3d-backgroundImage {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  animation: zoom-in 30s ease-in-out forwards, blur 30s ease-in-out forwards, brightness 30s ease-in-out forwards;
+}
+
+/* Overlay image (character/element) */
+.hero-3d-overlayImage {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 90%;
+  z-index: 2;
+  object-fit: contain;
+  filter: drop-shadow(0 0 30px rgba(0, 48, 135, 0.5));
+}
+
+/* Cube wrapper — top cube */
+.hero-3d-cube-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  z-index: 4;
+  width: 200px;
+  height: 200px;
+  perspective: 600px;
+}
+
+/* Cube wrapper — reflection */
+.hero-3d-cube-wrapper-reflect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 5%) scaleY(-1);
+  z-index: 4;
+  width: 200px;
+  height: 200px;
+  perspective: 600px;
+  opacity: 0.25;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+}
+
+/* 3D Cube */
+.hero-3d-cube-wrapper .cube,
+.hero-3d-cube-wrapper-reflect .cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotateCube 20s infinite linear;
+}
+
+@keyframes rotateCube {
+  0%   { transform: rotateX(-20deg) rotateY(0deg); }
+  25%  { transform: rotateX(-20deg) rotateY(90deg); }
+  50%  { transform: rotateX(-20deg) rotateY(180deg); }
+  75%  { transform: rotateX(-20deg) rotateY(270deg); }
+  100% { transform: rotateX(-20deg) rotateY(360deg); }
+}
+
+/* Cube faces */
+.hero-3d-cube-wrapper .face,
+.hero-3d-cube-wrapper-reflect .face {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(0, 48, 135, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.hero-3d-cube-wrapper .face.front {
+  transform: translateZ(100px);
+  background: linear-gradient(135deg, rgba(0, 48, 135, 0.8) 0%, rgba(212, 175, 55, 0.3) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-3d-cube-wrapper .face.front::after {
+  content: 'AfriBayit';
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #D4AF37;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.hero-3d-cube-wrapper .face.back {
+  transform: rotateY(180deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper .face.right {
+  transform: rotateY(90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper .face.left {
+  transform: rotateY(-90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper .face.top {
+  transform: rotateX(90deg) translateZ(100px);
+  background: linear-gradient(135deg, rgba(0, 48, 135, 0.9) 0%, rgba(0, 156, 222, 0.4) 100%);
+}
+
+.hero-3d-cube-wrapper .face.bottom {
+  transform: rotateX(-90deg) translateZ(100px);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4) 0%, rgba(0, 48, 135, 0.8) 100%);
+}
+
+/* Scrolling text on cube faces */
+.hero-3d-cube-wrapper .face.text,
+.hero-3d-cube-wrapper-reflect .face.text {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.hero-3d-cube-wrapper .face.text p,
+.hero-3d-cube-wrapper-reflect .face.text p {
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  white-space: nowrap;
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.hero-3d-cube-wrapper .face.text p span,
+.hero-3d-cube-wrapper-reflect .face.text p span {
+  color: #D4AF37;
+  font-weight: 700;
+}
+
+.hero-3d-cube-wrapper .face.left.text p {
+  animation: scrollLeft 300s linear infinite;
+}
+
+.hero-3d-cube-wrapper .face.right.text p {
+  animation: scrollRight 300s linear infinite;
+}
+
+.hero-3d-cube-wrapper .face.back.text p {
+  animation: scrollBack 300s linear infinite;
+}
+
+/* Reflection cube faces — same positioning */
+.hero-3d-cube-wrapper-reflect .face.front {
+  transform: translateZ(100px);
+  background: linear-gradient(135deg, rgba(0, 48, 135, 0.8) 0%, rgba(212, 175, 55, 0.3) 100%);
+}
+
+.hero-3d-cube-wrapper-reflect .face.back {
+  transform: rotateY(180deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper-reflect .face.right {
+  transform: rotateY(90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper-reflect .face.left {
+  transform: rotateY(-90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper-reflect .face.top {
+  transform: rotateX(90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper-reflect .face.bottom {
+  transform: rotateX(-90deg) translateZ(100px);
+}
+
+.hero-3d-cube-wrapper-reflect .face.left.text p {
+  animation: scrollLeft 300s linear infinite;
+}
+
+.hero-3d-cube-wrapper-reflect .face.right.text p {
+  animation: scrollRight 300s linear infinite;
+}
+
+.hero-3d-cube-wrapper-reflect .face.back.text p {
+  animation: scrollBack 300s linear infinite;
+}

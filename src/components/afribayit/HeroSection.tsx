@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/api';
 import { formatPrice, COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { PoemAnimation } from '@/components/ui/3d-animation';
 import { Check } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -68,16 +69,20 @@ function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number
   );
 }
 
+// AfriBayit 3D Cube text — real estate themed in French
+const AFRIBAYIT_POEM_HTML = `
+  <p>Sur <span>AfriBayit</span>, chaque maison raconte une histoire, chaque porte ouvre sur un rêve, chaque clé offre une <span>opportunité</span>; de Cotonou à Abidjan, de Dakar à Lomé, nous <span>connectons</span> les familles à leur avenir, les investisseurs à la <span>confiance</span>, les communautés à leur patrimoine. Avec l'<span>escrow sécurisé</span> et les documents vérifiés, chaque transaction est transparente, chaque achat est protégé, chaque <span>adresse</span> est certifiée. Ensemble, bâtissons l'immobilier africain de demain, où la <span>technologie</span> rencontre la tradition, où l'<span>innovation</span> sert l'humain, où l'Afrique <span>trouve sa maison</span>.</p>
+`;
+
 export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionProps) {
   const [searchType, setSearchType] = useState('achat');
   const [searchCountry, setSearchCountry] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle voice transcript: update state and focus input
+  // Handle voice transcript
   const handleVoiceTranscript = useCallback((text: string) => {
     setSearchQuery(text);
-    // Focus the input after voice recognition
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
@@ -87,7 +92,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
   const { data: stats } = useQuery<StatsData>({
     queryKey: ['stats'],
     queryFn: () => apiFetch<StatsData>('/api/stats'),
-    staleTime: 5 * 60 * 1000, // 5 min cache
+    staleTime: 5 * 60 * 1000,
   });
 
   // Fetch 2 premium properties for floating cards
@@ -104,10 +109,21 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
   ];
 
   return (
-    <section className="relative min-h-[100vh] sm:min-h-[90vh] bg-navy-gradient noise-overlay overflow-hidden">
-      {/* Animated mesh gradient background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Primary gradient orbs with animation */}
+    <section className="relative bg-navy-gradient noise-overlay overflow-hidden">
+      {/* 3D Animation Background — full width, behind content */}
+      <div className="absolute inset-0 z-0">
+        <PoemAnimation
+          poemHTML={AFRIBAYIT_POEM_HTML}
+          backgroundImageUrl="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80"
+          overlayImageUrl="https://images.unsplash.com/photo-1597740452428-3b1f45da8f5a?w=400&q=80"
+        />
+      </div>
+
+      {/* Dark overlay to ensure text readability over 3D animation */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#001440]/70 via-[#001f5c]/60 to-[#003087]/80" />
+
+      {/* Animated mesh gradient accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
         <motion.div
           animate={{
             x: [0, 30, -20, 0],
@@ -126,51 +142,9 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute bottom-0 left-0 w-80 h-80 bg-[#D4AF37]/10 rounded-full blur-3xl"
         />
-        <motion.div
-          animate={{
-            x: [0, 20, -30, 0],
-            y: [0, -20, 30, 0],
-            scale: [1, 1.15, 0.9, 1],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/2 left-1/3 w-64 h-64 bg-[#009CDE]/5 rounded-full blur-3xl"
-        />
-        {/* Mesh gradient lines */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(135deg, transparent 0%, transparent 40%, rgba(0,156,222,0.15) 50%, transparent 60%, transparent 100%),
-              linear-gradient(225deg, transparent 0%, transparent 35%, rgba(212,175,55,0.1) 45%, transparent 55%, transparent 100%),
-              linear-gradient(315deg, transparent 0%, transparent 45%, rgba(0,156,222,0.08) 55%, transparent 65%, transparent 100%)
-            `,
-            backgroundSize: '200% 200%',
-            animation: 'meshShift 15s ease-in-out infinite',
-          }}
-        />
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-white/20 rounded-full"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              y: [-10, 10, -10],
-              opacity: [0.2, 0.6, 0.2],
-            }}
-            transition={{
-              duration: 3 + i * 0.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: i * 0.3,
-            }}
-          />
-        ))}
       </div>
 
+      {/* Main Content — overlaid on top of 3D animation */}
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-16">
         <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-8">
           {/* Left Column - 60% */}
@@ -217,7 +191,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             >
               <div className="relative">
                 {/* Gradient border glow */}
-                <div className="absolute -inset-[1px] rounded-[1.6rem] bg-gradient-to-r from-[#009CDE]/40 via-[#D4AF37]/30 to-[#009CDE]/40 animate-pulse-slow" />
+                <div className="absolute -inset-[1px] rounded-[1.6rem] bg-gradient-to-r from-[#009CDE]/40 via-[#D4AF37]/30 to-[#009CDE]/40" style={{ animation: 'pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                 <div className="relative flex flex-col sm:flex-row gap-2 p-2 bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-2xl">
                   {/* Search Input */}
                   <div className="flex-1 flex items-center gap-3 px-4 py-3">
@@ -411,7 +385,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
               </div>
             </motion.div>
 
-            {/* Rebecca IA Card - Enhanced with pulsing border */}
+            {/* Rebecca IA Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -429,7 +403,6 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                   <div className="flex items-center gap-3 mb-3">
                     <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-[#003087] to-[#009CDE] flex items-center justify-center">
                       <span className="text-white text-sm font-bold">R</span>
-                      {/* AI pulse ring */}
                       <div className="absolute inset-0 rounded-full border-2 border-[#009CDE]/40 animate-ping" style={{ animationDuration: '2s' }} />
                     </div>
                     <div>
@@ -452,22 +425,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
       </div>
 
       {/* Bottom wave/gradient transition */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
-
-      {/* CSS animation for slow pulse on search bar */}
-      <style jsx>{`
-        @keyframes meshShift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .animate-pulse-slow {
-          animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent z-10" />
     </section>
   );
 }
