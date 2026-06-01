@@ -30,12 +30,15 @@ export const TextHoverEffect = ({
     }
   }, [cursor]);
 
+  // "AFRIBAYIT" is 9 chars in uppercase — needs a wider viewBox to avoid clipping
+  // Using 600×140 with text at font-size 80 to fit comfortably
   return (
     <svg
       ref={svgRef}
       width="100%"
       height="100%"
-      viewBox="0 0 300 100"
+      viewBox="0 0 600 140"
+      preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -46,9 +49,10 @@ export const TextHoverEffect = ({
         <linearGradient
           id="textGradient"
           gradientUnits="userSpaceOnUse"
-          cx="50%"
-          cy="50%"
-          r="25%"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
         >
           {hovered && (
             <>
@@ -82,24 +86,27 @@ export const TextHoverEffect = ({
           />
         </mask>
       </defs>
+      {/* Ghost text — visible on hover as faint outline */}
       <text
-        x="50%"
-        y="50%"
+        x="300"
+        y="70"
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="fill-transparent stroke-neutral-200 font-[helvetica] text-7xl font-bold dark:stroke-neutral-800"
-        style={{ opacity: hovered ? 0.7 : 0 }}
+        className="fill-transparent stroke-neutral-200 font-[helvetica] font-bold"
+        style={{ opacity: hovered ? 0.7 : 0, fontSize: "80px" }}
       >
         {text}
       </text>
+      {/* Animated stroke-draw text */}
       <motion.text
-        x="50%"
-        y="50%"
+        x="300"
+        y="70"
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="fill-transparent stroke-[#D4AF37] font-[helvetica] text-7xl font-bold dark:stroke-[#D4AF3799]"
+        className="fill-transparent stroke-[#D4AF37] font-[helvetica] font-bold"
+        style={{ fontSize: "80px" }}
         initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
         animate={{
           strokeDashoffset: 0,
@@ -112,15 +119,17 @@ export const TextHoverEffect = ({
       >
         {text}
       </motion.text>
+      {/* Gradient mask text — reveals on hover */}
       <text
-        x="50%"
-        y="50%"
+        x="300"
+        y="70"
         textAnchor="middle"
         dominantBaseline="middle"
         stroke="url(#textGradient)"
         strokeWidth="0.3"
         mask="url(#textMask)"
-        className="fill-transparent font-[helvetica] text-7xl font-bold"
+        className="fill-transparent font-[helvetica] font-bold"
+        style={{ fontSize: "80px" }}
       >
         {text}
       </text>
@@ -135,7 +144,7 @@ export const FooterBackgroundGradient = () => {
       className="absolute inset-0 z-0"
       style={{
         background:
-          "radial-gradient(125% 125% at 50% 10%, #0F0F1166 50%, #00308733 100%)",
+          "radial-gradient(125% 125% at 50% 10%, #0a0a0c99 50%, #00308744 100%)",
       }}
     />
   );

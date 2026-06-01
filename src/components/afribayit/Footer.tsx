@@ -13,7 +13,6 @@ import {
   Home,
   Shield,
   Bot,
-  BookOpen,
   Building2,
   Hotel,
   Scale,
@@ -127,24 +126,24 @@ export default function Footer() {
       icon: <Twitter size={20} />,
       label: 'X (Twitter)',
       href: 'https://x.com/afribayit',
-      hoverColor: 'hover:text-[#000000]',
+      hoverColor: 'hover:text-white',
     },
     {
       icon: <Globe size={20} />,
       label: 'Site web',
       href: 'https://afribayit.com',
-      hoverColor: 'hover:text-[#003087]',
+      hoverColor: 'hover:text-[#009CDE]',
     },
   ];
 
-  // Payment & telecom partners
+  // Payment & telecom partners — brighter text on dark bg
   const partners = [
-    { name: 'MTN', color: 'bg-[#FFCC00]/20 text-[#FFCC00]' },
-    { name: 'Orange', color: 'bg-[#FF7900]/20 text-[#FF7900]' },
-    { name: 'Moov', color: 'bg-[#009DE0]/20 text-[#009DE0]' },
-    { name: 'Visa', color: 'bg-[#1A1F71]/20 text-[#1A1F71]' },
-    { name: 'Mastercard', color: 'bg-[#EB001B]/20 text-[#EB001B]' },
-    { name: 'FedaPay', color: 'bg-[#00C853]/20 text-[#00C853]' },
+    { name: 'MTN', color: 'bg-[#FFCC00]/25 text-[#FFCC00]' },
+    { name: 'Orange', color: 'bg-[#FF7900]/25 text-[#FF7900]' },
+    { name: 'Moov', color: 'bg-[#009DE0]/25 text-[#009DE0]' },
+    { name: 'Visa', color: 'bg-[#1A1F71]/25 text-[#8B9FFF]' },
+    { name: 'Mastercard', color: 'bg-[#EB001B]/25 text-[#FF6B6B]' },
+    { name: 'FedaPay', color: 'bg-[#00C853]/25 text-[#69F0AE]' },
   ];
 
   // Countries covered
@@ -157,7 +156,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#0F0F11]/10 relative h-fit rounded-3xl overflow-hidden m-4 sm:m-8">
+    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden m-4 sm:m-8 rounded-3xl">
       <div className="max-w-7xl mx-auto p-8 sm:p-14 z-40 relative">
         {/* Brand + Contact Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pb-10">
@@ -173,7 +172,7 @@ export default function Footer() {
                 AfriBayit
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-gray-400">
+            <p className="text-sm leading-relaxed text-gray-300">
               Où l&apos;Afrique trouve sa maison. Où les rêves deviennent adresses.
               Plateforme immobilière de référence en Afrique de l&apos;Ouest, agréée par les autorités immobilières.
             </p>
@@ -188,7 +187,7 @@ export default function Footer() {
                   <button
                     key={c.code}
                     onClick={() => navigateTo(`/search?country=${c.code}`)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-xs text-gray-300 hover:text-white"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 transition-colors text-xs text-gray-200 hover:text-white"
                   >
                     <span>{c.flag}</span>
                     <span>{c.name}</span>
@@ -211,12 +210,12 @@ export default function Footer() {
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-gray-400 hover:text-[#D4AF37] transition-colors text-sm"
+                      className="text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
                     >
                       {item.text}
                     </a>
                   ) : (
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-gray-300 text-sm">
                       {item.text}
                     </span>
                   )}
@@ -233,7 +232,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className={`w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 ${hoverColor} transition-colors`}
+                  className={`w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-gray-300 ${hoverColor} transition-colors`}
                 >
                   {icon}
                 </a>
@@ -256,7 +255,7 @@ export default function Footer() {
                 </span>
               ))}
             </div>
-            <div className="mt-4 p-3 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20">
+            <div className="mt-4 p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30">
               <p className="text-xs text-[#D4AF37] font-medium flex items-center gap-2">
                 <Shield size={14} />
                 Transactions sécurisées par Escrow & GeoTrust
@@ -278,9 +277,9 @@ export default function Footer() {
                   <li key={link.label} className="relative">
                     <button
                       onClick={() => navigateTo(link.href)}
-                      className="flex items-center gap-2 text-gray-400 hover:text-[#D4AF37] transition-colors text-sm group"
+                      className="flex items-center gap-2 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm group"
                     >
-                      <span className="opacity-50 group-hover:opacity-100 transition-opacity">
+                      <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-400">
                         {link.icon}
                       </span>
                       {link.label}
@@ -292,24 +291,24 @@ export default function Footer() {
           ))}
         </div>
 
-        <hr className="border-t border-gray-700/50 my-6" />
+        <hr className="border-t border-white/10 my-6" />
 
         {/* Footer bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-4 md:space-y-0">
-          <p className="text-gray-500 text-xs text-center md:text-left">
+          <p className="text-gray-400 text-xs text-center md:text-left">
             &copy; {new Date().getFullYear()} AfriBayit. Tous droits réservés. Plateforme agréée par les autorités immobilières.
           </p>
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/auth/login')}
-              className="text-xs text-gray-500 hover:text-[#D4AF37] transition-colors"
+              className="text-xs text-gray-400 hover:text-[#D4AF37] transition-colors"
             >
               Espace Pro
             </button>
-            <span className="text-gray-700">|</span>
+            <span className="text-gray-600">|</span>
             <button
               onClick={() => navigateTo('/admin')}
-              className="text-xs text-gray-500 hover:text-[#D4AF37] transition-colors"
+              className="text-xs text-gray-400 hover:text-[#D4AF37] transition-colors"
             >
               Administration
             </button>
