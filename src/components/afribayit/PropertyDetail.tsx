@@ -315,6 +315,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     verified: property.verified,
     geoTrust: property.geoTrust,
     investmentScore: null,
+    address: property.address || `${property.quartier}, ${property.city}`,
   }] : [];
 
   return (
@@ -613,6 +614,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                   <PropertyMap
                     properties={mapProperties}
                     selectedCountry={property.country}
+                    selectedPropertyId={property.id}
                     className="w-full h-full"
                   />
                 </div>

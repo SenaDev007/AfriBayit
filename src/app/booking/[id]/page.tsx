@@ -35,6 +35,17 @@ import {
   Clock,
 } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for PropertyMap to avoid SSR issues with Mapbox
+const PropertyMap = dynamic(
+  () => import('@/components/afribayit/PropertyMap'),
+  { ssr: false, loading: () => (
+    <div className="w-full h-full bg-gray-100 rounded-2xl animate-pulse flex items-center justify-center">
+      <MapPin className="w-8 h-8 text-gray-300" />
+    </div>
+  ) }
+);
 
 const COUNTRY_FLAGS: Record<string, string> = {
   BJ: '🇧🇯',
@@ -183,6 +194,8 @@ export default function BookingDetailPage() {
     `Séjournez au ${name}, un établissement de qualité situé à ${city}, ${COUNTRY_FLAGS[country] || ''} ${country}. Profitez d'un confort exceptionnel et d'un service irréprochable.`;
   const reviewCount = hotel?._count?.reviews_hotel || guesthouse?.reviewCount || 0;
   const address = guesthouse?.address || guesthouse?.quartier ? `${guesthouse?.quartier || ''}, ${city}` : city;
+  const lat = hotel?.lat || guesthouse?.lat || null;
+  const lng = hotel?.lng || guesthouse?.lng || null;
   const rooms = hotel?.rooms || guesthouse?.rooms || [];
   const reviews = hotel?.reviews_hotel || [];
 
@@ -520,49 +533,56 @@ export default function BookingDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative aspect-[16/9] rounded-2xl overflow-hidden">
-                    {/* Simulated map background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
-                      {/* Grid lines to simulate map */}
-                      <div className="absolute inset-0 opacity-[0.07]">
-                        <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
-                        <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
-                        <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
-                        <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
-                        <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
-                        <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
-                      </div>
-                      {/* Simulated roads */}
-                      <div className="absolute top-[30%] left-0 right-0 h-[2px] bg-gray-200/80" />
-                      <div className="absolute top-[60%] left-0 right-0 h-[2px] bg-gray-200/60" />
-                      <div className="absolute left-[25%] top-0 bottom-0 w-[2px] bg-gray-200/70" />
-                      <div className="absolute left-[70%] top-0 bottom-0 w-[2px] bg-gray-200/50" />
-                      {/* Simulated blocks */}
-                      <div className="absolute top-[32%] left-[27%] w-[15%] h-[26%] rounded-sm bg-gray-200/40" />
-                      <div className="absolute top-[10%] left-[5%] w-[18%] h-[18%] rounded-sm bg-gray-200/30" />
-                      <div className="absolute top-[62%] left-[45%] w-[22%] h-[20%] rounded-sm bg-[#003087]/[0.03]" />
+                  {lat && lng ? (
+                    <div className="h-64 rounded-2xl overflow-hidden">
+                      <PropertyMap
+                        properties={[{
+                          id: id,
+                          title: name,
+                          price: pricePerNight,
+                          transaction: 'location_courte_duree',
+                          type: 'hotel',
+                          city: city,
+                          quartier: guesthouse?.quartier || '',
+                          bedrooms: 0,
+                          surface: 0,
+                          images: images,
+                          lat: lat,
+                          lng: lng,
+                          verified: false,
+                          geoTrust: false,
+                          investmentScore: null,
+                          address: address,
+                        }]}
+                        selectedPropertyId={id}
+                        selectedCountry={country}
+                        className="w-full h-full"
+                      />
                     </div>
-                    {/* Map pin & overlay */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="relative">
+                  ) : (
+                    <div className="relative aspect-[16/9] rounded-2xl overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
+                        <div className="absolute inset-0 opacity-[0.07]">
+                          <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
+                          <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
+                          <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
+                          <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
+                          <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
+                          <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
                           <MapPin className="w-6 h-6 text-[#003087]" />
                         </div>
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#003087] rounded-full opacity-20" />
+                        <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
+                        <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {address}, {city}
+                        </p>
                       </div>
-                      <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
-                      <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {address}, {city}
-                      </p>
                     </div>
-                    {/* Bottom info bar */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/90 to-transparent pt-8 pb-3 px-4">
-                      <p className="text-[10px] text-gray-400 text-center">
-                        La carte interactive sera disponible avec la configuration Mapbox
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
