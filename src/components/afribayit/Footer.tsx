@@ -418,8 +418,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Text hover effect — AfriBayit branding */}
-      <div className="lg:flex hidden h-[28rem] -mt-52 -mb-36">
+      {/* Text hover effect — AfriBayit branding (large) */}
+      <div className="lg:flex hidden h-[36rem] -mt-40 -mb-28">
         <TextHoverEffect text="AfriBayit" className="z-50" />
       </div>
 
