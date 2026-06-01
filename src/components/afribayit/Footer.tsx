@@ -6,10 +6,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Instagram,
-  Twitter,
-  Globe,
   Home,
   Shield,
   Bot,
@@ -32,8 +28,35 @@ import {
   GraduationCap,
   Plane,
 } from 'lucide-react';
-import { FooterBackgroundGradient } from '@/components/ui/hover-footer';
-import { TextHoverEffect } from '@/components/ui/hover-footer';
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+  FaTiktok,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcPaypal,
+  FaMobileAlt,
+} from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+// FedaPay doesn't exist in react-icons — custom SVG icon
+const FedaPayIcon = ({ size = 28 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="4" fill="#00C853" />
+    <path
+      d="M6 8h5.5c1.4 0 2.5 1.1 2.5 2.5S12.9 13 11.5 13H8v3H6V8zm2 2v1h3.5c.3 0 .5-.2.5-.5s-.2-.5-.5-.5H8zm5 2l3 4h-2.5l-2-2.7L11 16H8.5l3-4 2.5-2z"
+      fill="white"
+    />
+  </svg>
+);
+import { FooterBackgroundGradient, TextHoverEffect } from '@/components/ui/hover-footer';
 
 export default function Footer() {
   const router = useRouter();
@@ -108,48 +131,96 @@ export default function Footer() {
     },
   ];
 
-  // Social media with official brand colors
+  // Social media — official brand icons from react-icons
   const socialLinks = [
     {
-      icon: <Facebook size={20} />,
+      icon: <FaFacebookF size={18} />,
       label: 'Facebook',
       href: 'https://facebook.com/afribayit',
-      hoverColor: 'hover:text-[#1877F2]',
+      brandColor: '#1877F2',
     },
     {
-      icon: <Instagram size={20} />,
+      icon: <FaInstagram size={18} />,
       label: 'Instagram',
       href: 'https://instagram.com/afribayit',
-      hoverColor: 'hover:text-[#E4405F]',
+      brandColor: '#E4405F',
     },
     {
-      icon: <Twitter size={20} />,
+      icon: <FaXTwitter size={18} />,
       label: 'X (Twitter)',
       href: 'https://x.com/afribayit',
-      hoverColor: 'hover:text-white',
+      brandColor: '#FFFFFF',
     },
     {
-      icon: <Globe size={20} />,
-      label: 'Site web',
-      href: 'https://afribayit.com',
-      hoverColor: 'hover:text-[#009CDE]',
+      icon: <FaLinkedinIn size={18} />,
+      label: 'LinkedIn',
+      href: 'https://linkedin.com/company/afribayit',
+      brandColor: '#0A66C2',
+    },
+    {
+      icon: <FaYoutube size={18} />,
+      label: 'YouTube',
+      href: 'https://youtube.com/@afribayit',
+      brandColor: '#FF0000',
+    },
+    {
+      icon: <FaTiktok size={18} />,
+      label: 'TikTok',
+      href: 'https://tiktok.com/@afribayit',
+      brandColor: '#FFFFFF',
     },
   ];
 
-  // Payment & telecom partners — brighter text on dark bg
-  const partners = [
-    { name: 'MTN', color: 'bg-[#FFCC00]/25 text-[#FFCC00]' },
-    { name: 'Orange', color: 'bg-[#FF7900]/25 text-[#FF7900]' },
-    { name: 'Moov', color: 'bg-[#009DE0]/25 text-[#009DE0]' },
-    { name: 'Visa', color: 'bg-[#1A1F71]/25 text-[#8B9FFF]' },
-    { name: 'Mastercard', color: 'bg-[#EB001B]/25 text-[#FF6B6B]' },
-    { name: 'FedaPay', color: 'bg-[#00C853]/25 text-[#69F0AE]' },
+  // Payment & telecom partners — using official brand icons
+  const paymentPartners = [
+    {
+      icon: <FaCcVisa size={36} />,
+      label: 'Visa',
+      brandColor: '#1A1F71',
+    },
+    {
+      icon: <FaCcMastercard size={36} />,
+      label: 'Mastercard',
+      brandColor: '#EB001B',
+    },
+    {
+      icon: <FaCcPaypal size={36} />,
+      label: 'PayPal',
+      brandColor: '#003087',
+    },
+    {
+      icon: <FedaPayIcon size={32} />,
+      label: 'FedaPay',
+      brandColor: '#00C853',
+    },
+  ];
+
+  // Mobile money partners with custom styled badges
+  const mobileMoneyPartners = [
+    {
+      name: 'MTN MoMo',
+      bg: 'bg-[#FFCC00]',
+      text: 'text-[#1a1a1a]',
+      icon: <FaMobileAlt size={14} className="text-[#1a1a1a]" />,
+    },
+    {
+      name: 'Orange Money',
+      bg: 'bg-[#FF7900]',
+      text: 'text-white',
+      icon: <FaMobileAlt size={14} className="text-white" />,
+    },
+    {
+      name: 'Moov Money',
+      bg: 'bg-[#009DE0]',
+      text: 'text-white',
+      icon: <FaMobileAlt size={14} className="text-white" />,
+    },
   ];
 
   // Countries covered
   const countries = [
     { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-    { code: 'CI', name: 'Côte d\'Ivoire', flag: '🇨🇮' },
+    { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
     { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
     { code: 'TG', name: 'Togo', flag: '🇹🇬' },
     { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
@@ -172,7 +243,7 @@ export default function Footer() {
                 AfriBayit
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-gray-300">
+            <p className="text-sm leading-relaxed text-gray-200">
               Où l&apos;Afrique trouve sa maison. Où les rêves deviennent adresses.
               Plateforme immobilière de référence en Afrique de l&apos;Ouest, agréée par les autorités immobilières.
             </p>
@@ -187,7 +258,7 @@ export default function Footer() {
                   <button
                     key={c.code}
                     onClick={() => navigateTo(`/search?country=${c.code}`)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/15 transition-colors text-xs text-gray-200 hover:text-white"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-xs text-white hover:text-[#D4AF37]"
                   >
                     <span>{c.flag}</span>
                     <span>{c.name}</span>
@@ -210,12 +281,12 @@ export default function Footer() {
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-gray-300 hover:text-[#D4AF37] transition-colors text-sm"
+                      className="text-gray-100 hover:text-[#D4AF37] transition-colors text-sm"
                     >
                       {item.text}
                     </a>
                   ) : (
-                    <span className="text-gray-300 text-sm">
+                    <span className="text-gray-100 text-sm">
                       {item.text}
                     </span>
                   )}
@@ -223,16 +294,27 @@ export default function Footer() {
               ))}
             </ul>
 
-            {/* Social icons */}
-            <div className="flex space-x-4 pt-2">
-              {socialLinks.map(({ icon, label, href, hoverColor }) => (
+            {/* Social icons — official brand logos */}
+            <div className="flex space-x-3 pt-2">
+              {socialLinks.map(({ icon, label, href, brandColor }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className={`w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-gray-300 ${hoverColor} transition-colors`}
+                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                  style={{
+                    // On hover, use the brand color via inline style for the shadow
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = brandColor;
+                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 12px ${brandColor}44`;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.color = '';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '';
+                  }}
                 >
                   {icon}
                 </a>
@@ -240,21 +322,41 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Partners & Payments */}
+          {/* Partners & Payments — official brand icons */}
           <div className="flex flex-col space-y-4">
-            <h4 className="text-white text-lg font-semibold">
+            <h4 className="text-white text-lg font-semibold flex items-center gap-2">
+              <Shield size={18} className="text-[#D4AF37]" />
               Paiement & Partenaires
             </h4>
-            <div className="flex flex-wrap gap-2">
-              {partners.map((p) => (
+
+            {/* Official payment card icons */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {paymentPartners.map((p) => (
+                <div
+                  key={p.label}
+                  className="flex items-center justify-center bg-white rounded-md px-2 py-1.5 transition-transform hover:scale-110"
+                  title={p.label}
+                >
+                  <span style={{ color: p.brandColor }}>
+                    {p.icon}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile money badges */}
+            <div className="flex flex-wrap gap-2 mt-1">
+              {mobileMoneyPartners.map((p) => (
                 <span
                   key={p.name}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${p.color}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.bg} ${p.text} transition-transform hover:scale-105`}
                 >
+                  {p.icon}
                   {p.name}
                 </span>
               ))}
             </div>
+
             <div className="mt-4 p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30">
               <p className="text-xs text-[#D4AF37] font-medium flex items-center gap-2">
                 <Shield size={14} />
@@ -277,9 +379,9 @@ export default function Footer() {
                   <li key={link.label} className="relative">
                     <button
                       onClick={() => navigateTo(link.href)}
-                      className="flex items-center gap-2 text-gray-300 hover:text-[#D4AF37] transition-colors text-sm group"
+                      className="flex items-center gap-2 text-gray-100 hover:text-[#D4AF37] transition-colors text-sm group"
                     >
-                      <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-400">
+                      <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-300">
                         {link.icon}
                       </span>
                       {link.label}
@@ -295,20 +397,20 @@ export default function Footer() {
 
         {/* Footer bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-4 md:space-y-0">
-          <p className="text-gray-400 text-xs text-center md:text-left">
+          <p className="text-gray-300 text-xs text-center md:text-left">
             &copy; {new Date().getFullYear()} AfriBayit. Tous droits réservés. Plateforme agréée par les autorités immobilières.
           </p>
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/auth/login')}
-              className="text-xs text-gray-400 hover:text-[#D4AF37] transition-colors"
+              className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
               Espace Pro
             </button>
             <span className="text-gray-600">|</span>
             <button
               onClick={() => navigateTo('/admin')}
-              className="text-xs text-gray-400 hover:text-[#D4AF37] transition-colors"
+              className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
               Administration
             </button>

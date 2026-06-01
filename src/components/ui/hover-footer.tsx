@@ -30,14 +30,14 @@ export const TextHoverEffect = ({
     }
   }, [cursor]);
 
-  // "AFRIBAYIT" is 9 chars in uppercase — needs a wider viewBox to avoid clipping
-  // Using 600×140 with text at font-size 80 to fit comfortably
+  // Wide viewBox (900×160) with generous padding so text never clips
+  // Font-size 72px centered at (450, 80) for comfortable rendering
   return (
     <svg
       ref={svgRef}
       width="100%"
       height="100%"
-      viewBox="0 0 600 140"
+      viewBox="0 0 900 160"
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
@@ -88,25 +88,25 @@ export const TextHoverEffect = ({
       </defs>
       {/* Ghost text — visible on hover as faint outline */}
       <text
-        x="300"
-        y="70"
+        x="450"
+        y="80"
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
         className="fill-transparent stroke-neutral-200 font-[helvetica] font-bold"
-        style={{ opacity: hovered ? 0.7 : 0, fontSize: "80px" }}
+        style={{ opacity: hovered ? 0.7 : 0, fontSize: "72px" }}
       >
         {text}
       </text>
       {/* Animated stroke-draw text */}
       <motion.text
-        x="300"
-        y="70"
+        x="450"
+        y="80"
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
         className="fill-transparent stroke-[#D4AF37] font-[helvetica] font-bold"
-        style={{ fontSize: "80px" }}
+        style={{ fontSize: "72px" }}
         initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
         animate={{
           strokeDashoffset: 0,
@@ -121,15 +121,15 @@ export const TextHoverEffect = ({
       </motion.text>
       {/* Gradient mask text — reveals on hover */}
       <text
-        x="300"
-        y="70"
+        x="450"
+        y="80"
         textAnchor="middle"
         dominantBaseline="middle"
         stroke="url(#textGradient)"
         strokeWidth="0.3"
         mask="url(#textMask)"
         className="fill-transparent font-[helvetica] font-bold"
-        style={{ fontSize: "80px" }}
+        style={{ fontSize: "72px" }}
       >
         {text}
       </text>
