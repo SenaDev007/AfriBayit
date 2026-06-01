@@ -51,3 +51,25 @@ Stage Summary:
 - Schema migrated from SQLite to PostgreSQL
 - Build passing with 0 errors
 - CDC gap analysis completed: most CDC features already implemented
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix 6 user-reported production issues and push
+
+Work Log:
+- Fixed réservation stat showing 0: Added ShortTermRentalBooking count to stats API
+- Fixed "Bien non trouvé" critical bug: API returned {data: property} but hook expected {property} - changed API to return {property}
+- Replaced CSS placeholder map with real Mapbox PropertyMap component on property detail page
+- Implemented full reviews/avis section with star ratings, review form, and reviews list
+- Implemented favorites with heart button toggle (add/remove favorites via API)
+- Implemented working social sharing: WhatsApp, Facebook, Twitter, copy link, and native share API
+- Fixed 3D 360° VR tours: fetch from API instead of hardcoded demo data
+- Added PropertyData.favorites field to type definition
+- Build passes with 0 errors
+- Pushed to GitHub (commit 3d5e3dc)
+
+Stage Summary:
+- 6 user-reported issues fixed
+- Property detail page now fully functional with reviews, favorites, sharing, interactive map, and VR tours
+- Stats API now includes short-term rental bookings in reservation count
+- Critical API response format bug fixed (property detail)
