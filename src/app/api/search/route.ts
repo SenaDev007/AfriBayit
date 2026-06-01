@@ -1,10 +1,12 @@
 // AfriBayit — GET /api/search
-// Full-text search with PostgreSQL tsvector/tsquery
-// Supports: query, filters, pagination, auto-suggest
+// Multi-model full-text search with PostgreSQL tsvector/tsquery
+// Supports: Property, Hotel, Guesthouse, Artisan, Course
+// Features: query, filters, pagination, auto-suggest, type grouping
 
 import { NextRequest, NextResponse } from 'next/server';
+import { searchDocuments, type SearchModelType, TYPE_LABELS, ALL_TYPES } from '@/lib/search/elasticsearch';
 import { buildSearchQuery, autoComplete, getSearchSuggestions } from '@/lib/search/fulltext';
-import type { SearchFilters } from '@/lib/search/fulltext';
+import type { SearchFilters as FulltextFilters } from '@/lib/search/fulltext';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,7 +37,11 @@ export async function GET(request: NextRequest) {
                      searchParams.get('geoTrust') === 'false' ? false : undefined;
     const premium = searchParams.get('premium') === 'true' ? true :
                     searchParams.get('premium') === 'false' ? false : undefined;
-    const sortBy = (searchParams.get('sortBy') as SearchFilters['sortBy']) || 'relevance';
+    const stars = searchParams.get('stars') ? Number(searchParams.get('stars')) : undefined;
+    const certified = searchParams.get('certified') === 'true' ? true : undefined;
+    const category = searchParams.get('category') || undefined;
+    const level = searchParams.get('level') || undefined;
+    const sortBy = searchParams.get('sortBy') as 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'rating' | 'popular' || 'relevance';
     const page = Math.max(1, Number(searchParams.get('page')) || 1);
     const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 20));
 
@@ -59,37 +65,79 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Build and execute the search query
-    const filters: SearchFilters = {
-      q,
+    // Validate type parameter
+    const validTypes: SearchModelType[] = ALL_TYPES;
+    const requestedType = type as SearchModelType | undefined;
+    if (requestedType && !validTypes.includes(requestedType)) {
+      return NextResponse.json(
+        {
+          error: 'Type de recherche invalide',
+          validTypes,
+          message: `Le type "${type}" n'est pas supporté. Types valides: ${validTypes.join(', ')}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // ── Multi-model search using the enhanced Elasticsearch module ──
+    const searchResult = await searchDocuments(q || '', {
+      query: q,
+      type: requestedType,
       country,
-      type,
-      transaction,
-      priceMin,
-      priceMax,
       city,
-      quartier,
-      bedrooms,
-      bathrooms,
-      surfaceMin,
-      surfaceMax,
-      verified,
-      geoTrust,
-      premium,
+      minPrice: priceMin,
+      maxPrice: priceMax,
       sortBy,
       page,
       limit,
-    };
+      stars,
+      certified,
+      category,
+      level,
+    }, country);
 
-    const results = await buildSearchQuery(filters);
+    // Build response with grouped results by type
+    const groupedResults: Record<string, unknown> = {};
+    for (const modelType of validTypes) {
+      const docs = searchResult.groupedByType[modelType];
+      if (docs && docs.length > 0) {
+        groupedResults[modelType] = {
+          label: TYPE_LABELS[modelType],
+          count: searchResult.typeCounts[modelType],
+          items: docs,
+        };
+      }
+    }
 
-    return NextResponse.json(results);
+    return NextResponse.json({
+      // Unified flat list (paginated)
+      results: searchResult.documents,
+      total: searchResult.total,
+      page: searchResult.page,
+      limit: searchResult.limit,
+      totalPages: searchResult.pages,
+      query: q || '',
+      filters: {
+        type: requestedType || 'all',
+        country,
+        city,
+        priceMin,
+        priceMax,
+      },
+
+      // Grouped by type
+      groupedByType: groupedResults,
+      typeCounts: searchResult.typeCounts,
+
+      // Facets for filtering UI
+      facets: searchResult.facets,
+    });
   } catch (error) {
-    console.error('GET /api/search error:', error);
+    console.error('GET /api/search erreur:', error);
     return NextResponse.json(
       {
-        error: 'Search failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: 'La recherche a échoué',
+        details: error instanceof Error ? error.message : 'Erreur inconnue',
         results: [],
         total: 0,
         page: 1,
@@ -97,6 +145,8 @@ export async function GET(request: NextRequest) {
         totalPages: 0,
         query: '',
         filters: {},
+        groupedByType: {},
+        typeCounts: {},
       },
       { status: 500 }
     );

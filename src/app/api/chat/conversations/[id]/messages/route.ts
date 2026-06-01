@@ -131,8 +131,8 @@ export async function POST(
           }));
 
         // Use z-ai-web-dev-sdk for AI response
-        const { default: ZAI } = await import('z-ai-web-dev-sdk');
-        const zai = new ZAI();
+        const ZAI = (await import('z-ai-web-dev-sdk')).default;
+        const zai = await ZAI.create();
 
         const aiResponse = await zai.chat.completions.create({
           model: 'glm-4-flash',

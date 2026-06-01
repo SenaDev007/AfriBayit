@@ -385,7 +385,8 @@ export async function buildSearchQuery(
 
 /**
  * Get search suggestions using pg_trgm similarity for fuzzy matching.
- * Returns city names and quartier names that are similar to the query.
+ * Returns city names, quartier names, hotel names, artisan trades, and course titles
+ * that are similar to the query — across ALL models.
  */
 export async function getSearchSuggestions(query: string): Promise<string[]> {
   if (!query || query.trim().length < 2) return [];
@@ -394,6 +395,7 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
 
   try {
     // Try using similarity from pg_trgm (if extension is available)
+    // Multi-model suggestions
     const result = await db.$queryRawUnsafe(`
       SELECT DISTINCT city AS suggestion, similarity(city, '${sanitizedQuery}') AS sim
       FROM properties
@@ -409,8 +411,28 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
       FROM properties
       WHERE status = 'published'
         AND similarity(title, '${sanitizedQuery}') > 0.2
+      UNION ALL
+      SELECT DISTINCT name AS suggestion, similarity(name, '${sanitizedQuery}') AS sim
+      FROM hotels
+      WHERE status = 'active'
+        AND similarity(name, '${sanitizedQuery}') > 0.2
+      UNION ALL
+      SELECT DISTINCT name AS suggestion, similarity(name, '${sanitizedQuery}') AS sim
+      FROM guesthouses
+      WHERE status = 'active'
+        AND similarity(name, '${sanitizedQuery}') > 0.2
+      UNION ALL
+      SELECT DISTINCT trade AS suggestion, similarity(trade, '${sanitizedQuery}') AS sim
+      FROM artisans
+      WHERE available = true
+        AND similarity(trade, '${sanitizedQuery}') > 0.2
+      UNION ALL
+      SELECT DISTINCT title AS suggestion, similarity(title, '${sanitizedQuery}') AS sim
+      FROM courses
+      WHERE published = true
+        AND similarity(title, '${sanitizedQuery}') > 0.2
       ORDER BY sim DESC
-      LIMIT 10
+      LIMIT 15
     `);
 
     return (result as any[]).map((row: any) => row.suggestion);
@@ -427,6 +449,26 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
         FROM properties
         WHERE status = 'published' AND quartier ILIKE '%${sanitizedQuery}%'
         LIMIT 5
+        UNION ALL
+        SELECT DISTINCT name AS suggestion
+        FROM hotels
+        WHERE status = 'active' AND name ILIKE '%${sanitizedQuery}%'
+        LIMIT 3
+        UNION ALL
+        SELECT DISTINCT name AS suggestion
+        FROM guesthouses
+        WHERE status = 'active' AND name ILIKE '%${sanitizedQuery}%'
+        LIMIT 3
+        UNION ALL
+        SELECT DISTINCT trade AS suggestion
+        FROM artisans
+        WHERE available = true AND trade ILIKE '%${sanitizedQuery}%'
+        LIMIT 3
+        UNION ALL
+        SELECT DISTINCT title AS suggestion
+        FROM courses
+        WHERE published = true AND title ILIKE '%${sanitizedQuery}%'
+        LIMIT 3
       `);
 
       return (result as any[]).map((row: any) => row.suggestion);
@@ -437,14 +479,19 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
 }
 
 /**
- * Auto-suggest endpoint: returns matching cities, quartiers, and property titles.
+ * Auto-suggest endpoint: returns matching cities, quartiers, and titles across ALL models.
  * Used for the search bar typeahead.
+ * Includes: properties, hotels, guesthouses, artisans, courses
  */
 export async function autoComplete(
   query: string,
   country?: string,
   limit = 8
-): Promise<{ cities: string[]; quartiers: string[]; titles: { id: string; title: string; slug: string | null }[] }> {
+): Promise<{
+  cities: string[];
+  quartiers: string[];
+  titles: { id: string; title: string; slug: string | null; type?: string }[];
+}> {
   if (!query || query.trim().length < 2) {
     return { cities: [], quartiers: [], titles: [] };
   }
@@ -462,38 +509,80 @@ export async function autoComplete(
   const likeParam = `$${paramIndex}`;
 
   try {
-    const [cities, quartiers, titles] = await Promise.all([
+    // Cities and quartiers from properties, hotels, guesthouses
+    const [cities, quartiers, propertyTitles, hotelTitles, guesthouseTitles, artisanTitles, courseTitles] = await Promise.all([
+      // Cities from properties + hotels + guesthouses
       db.$queryRawUnsafe(`
-        SELECT DISTINCT city
-        FROM properties
-        WHERE status = 'published' ${countryFilter} AND city ILIKE ${likeParam}
+        SELECT DISTINCT city FROM (
+          SELECT city FROM properties WHERE status = 'published' ${countryFilter} AND city ILIKE ${likeParam}
+          UNION ALL
+          SELECT city FROM hotels WHERE status = 'active' ${countryFilter} AND city ILIKE ${likeParam}
+          UNION ALL
+          SELECT city FROM guesthouses WHERE status = 'active' ${countryFilter} AND city ILIKE ${likeParam}
+        ) sub
         ORDER BY city
         LIMIT ${limit}
       `, ...params),
+      // Quartiers from properties + guesthouses
       db.$queryRawUnsafe(`
-        SELECT DISTINCT quartier
-        FROM properties
-        WHERE status = 'published' ${countryFilter} AND quartier ILIKE ${likeParam}
+        SELECT DISTINCT quartier FROM (
+          SELECT quartier FROM properties WHERE status = 'published' ${countryFilter} AND quartier ILIKE ${likeParam}
+          UNION ALL
+          SELECT quartier FROM guesthouses WHERE status = 'active' ${countryFilter} AND quartier ILIKE ${likeParam}
+        ) sub
         ORDER BY quartier
         LIMIT ${limit}
       `, ...params),
+      // Property titles
       db.$queryRawUnsafe(`
-        SELECT id, title, slug
-        FROM properties
+        SELECT id, title, slug FROM properties
         WHERE status = 'published' ${countryFilter} AND title ILIKE ${likeParam}
         ORDER BY premium DESC, views DESC
         LIMIT ${limit}
       `, ...params),
+      // Hotel names
+      db.$queryRawUnsafe(`
+        SELECT id, name AS title, slug FROM hotels
+        WHERE status = 'active' ${countryFilter} AND name ILIKE ${likeParam}
+        ORDER BY rating DESC
+        LIMIT ${limit}
+      `, ...params),
+      // Guesthouse names
+      db.$queryRawUnsafe(`
+        SELECT id, name AS title, slug FROM guesthouses
+        WHERE status = 'active' ${countryFilter} AND name ILIKE ${likeParam}
+        ORDER BY overall_rating DESC
+        LIMIT ${limit}
+      `, ...params),
+      // Artisan trades
+      db.$queryRawUnsafe(`
+        SELECT id, trade AS title, NULL AS slug FROM artisans
+        WHERE available = true ${countryFilter} AND trade ILIKE ${likeParam}
+        ORDER BY rating DESC
+        LIMIT ${limit}
+      `, ...params),
+      // Course titles
+      db.$queryRawUnsafe(`
+        SELECT id, title, slug FROM courses
+        WHERE published = true ${countryFilter} AND title ILIKE ${likeParam}
+        ORDER BY rating DESC
+        LIMIT ${limit}
+      `, ...params),
     ]);
+
+    // Merge titles from all models with type label
+    const allTitles: { id: string; title: string; slug: string | null; type?: string }[] = [
+      ...(propertyTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'property' })),
+      ...(hotelTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'hotel' })),
+      ...(guesthouseTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'guesthouse' })),
+      ...(artisanTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'artisan' })),
+      ...(courseTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'course' })),
+    ].slice(0, limit);
 
     return {
       cities: (cities as any[]).map((r: any) => r.city),
       quartiers: (quartiers as any[]).map((r: any) => r.quartier),
-      titles: (titles as any[]).map((r: any) => ({
-        id: r.id,
-        title: r.title,
-        slug: r.slug,
-      })),
+      titles: allTitles,
     };
   } catch {
     return { cities: [], quartiers: [], titles: [] };

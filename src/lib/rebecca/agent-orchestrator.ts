@@ -380,8 +380,8 @@ async function generateGeneralResponse(
   history?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<string> {
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const systemPrompt = `Tu es Rebecca, l'IA d'AfriBayit, la plateforme immobilière panafricaine. Tu aides les utilisateurs avec leurs questions immobilières en Afrique de l'Ouest (Bénin, Côte d'Ivoire, Burkina Faso, Togo, Sénégal). Tu es professionnelle, chaleureuse et concise. Réponds en français sauf si l'utilisateur utilise une autre langue. Si la question n'est pas liée à l'immobilier, redirige poliment vers tes compétences.`;
 

@@ -215,8 +215,8 @@ export async function POST(request: Request) {
     let functionResults: Array<{ name: string; result: unknown }> = [];
 
     try {
-      const { default: ZAI } = await import('z-ai-web-dev-sdk');
-      const zai = new ZAI();
+      const ZAI = (await import('z-ai-web-dev-sdk')).default;
+      const zai = await ZAI.create();
 
       // First LLM call — check if function calling is needed
       const completion = await zai.chat.completions.create({

@@ -28,27 +28,26 @@ export async function POST(request: Request) {
     let analysisResult: Record<string, unknown>;
 
     try {
-      const { default: ZAI } = await import('z-ai-web-dev-sdk');
-      const zai = new ZAI();
+      const ZAI = (await import('z-ai-web-dev-sdk')).default;
+      const zai = await ZAI.create();
 
       if (imageUrl) {
-        // Use VLM for image-based document analysis
-        const messages = [
-          {
-            role: 'system' as const,
-            content: analysisPrompt,
-          },
-          {
-            role: 'user' as const,
-            content: imageUrl
-              ? `Analyse ce document immobilier. Image: ${imageUrl}`
-              : `Analyse ce document immobilier:\n\n${documentText}`,
-          },
-        ];
-
+        // Use VLM for image-based document analysis with structured image content
         const completion = await zai.chat.completions.create({
-          model: 'glm-4-flash',
-          messages,
+          model: 'glm-4v-flash',
+          messages: [
+            {
+              role: 'system' as const,
+              content: analysisPrompt,
+            },
+            {
+              role: 'user' as const,
+              content: [
+                { type: 'text', text: 'Analyse ce document immobilier.' },
+                { type: 'image_url', image_url: { url: imageUrl } },
+              ],
+            },
+          ],
           temperature: 0.3,
           max_tokens: 1200,
         });

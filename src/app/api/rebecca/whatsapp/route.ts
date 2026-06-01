@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { applyGuardrails } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman } from '@/lib/rebecca/handoff';
-import { RefreshCw } from 'lucide-react';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
           });
 
           if (handoffResult.shouldHandoff) {
-            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... <RefreshCw className="w-4 h-4" />');
+            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp...');
             // TODO: Create handoff ticket in DB and notify support team
             continue;
           }
@@ -158,8 +158,8 @@ async function processWhatsAppMessage(
   context: Record<string, unknown>
 ): Promise<string> {
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const systemPrompt = `Tu es Rebecca, l'assistante IA immobilière d'AfriBayit. Tu réponds via WhatsApp, donc tes réponses doivent être:
 - Concises (max 300 caractères si possible)

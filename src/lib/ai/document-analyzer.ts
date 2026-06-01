@@ -39,17 +39,24 @@ export async function analyzeDocument(
   const systemPrompt = buildDocumentAnalysisPrompt(documentType, countryCode, claimedData);
 
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
-    // Use VLM chat completions with image input
-    const userContent = buildVLMUserContent(imageBase64, documentType);
+    // Build VLM user content with structured image input
+    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const imageUrl = `data:image/jpeg;base64,${cleanBase64}`;
 
     const completion = await zai.chat.completions.create({
       model: 'glm-4v-flash',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: `Analyse ce document de type ${documentType}.` },
+            { type: 'image_url', image_url: { url: imageUrl } },
+          ],
+        },
       ],
       temperature: 0.2,
       max_tokens: 2000,
@@ -163,17 +170,7 @@ Règles de scoring:
 - recommendation: APPROVE si confidence≥70 ET authenticity≥70, REVIEW si confidence≥40 OU authenticity≥40, REJECT sinon`;
 }
 
-/**
- * Build the user content for VLM with the document image.
- */
-function buildVLMUserContent(imageBase64: string, documentType: DocumentType): string {
-  // The z-ai-web-dev-sdk VLM accepts base64 images in the content
-  const dataUrl = imageBase64.startsWith('data:')
-    ? imageBase64
-    : `data:image/jpeg;base64,${imageBase64.replace(/^data:image\/\w+;base64,/, '')}`;
 
-  return `Analyse ce document de type ${documentType}.\n\nImage du document: ${dataUrl}`;
-}
 
 /**
  * Parse the VLM analysis response into a structured result.

@@ -40,8 +40,8 @@ export async function processQuery(
 
   // Step 3: Call LLM with augmented context
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const response = await zai.chat.completions.create({
       model: 'glm-4-flash',

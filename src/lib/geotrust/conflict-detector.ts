@@ -2,14 +2,17 @@
 // CDC §6.4 — Auto-detection of boundary conflicts when a property is published
 //
 // Checks:
-//   1. Overlapping boundaries (using coordinate proximity)
+//   1. Overlapping boundaries (using PostGIS ST_DWithin with haversine fallback)
 //   2. Same address different owner
 //   3. Duplicate coordinates
+//   4. Area discrepancy
 //
-// Uses haversine distance to detect overlapping parcels
+// Primary: PostGIS spatial queries (ST_DWithin, ST_DistanceSphere)
+// Fallback: Haversine distance in JS when PostGIS is unavailable
 // Returns: { hasConflicts, conflicts: ConflictDetail[], riskLevel }
 
 import { db } from '@/lib/db';
+import { detectSpatialConflicts, haversineDistance } from '@/lib/geo/postgis';
 
 // ============ Types ============
 
@@ -111,17 +114,67 @@ export async function detectBoundaryConflicts(
 
 /**
  * Check 1: Overlapping boundaries
- * Uses coordinate proximity to detect potential parcel overlaps
+ * Uses PostGIS ST_DWithin for spatial search, falls back to haversine JS
  */
 async function detectOverlappingBoundaries(property: PropertyWithBoundary): Promise<ConflictDetail[]> {
   const conflicts: ConflictDetail[] = [];
 
-  if (!property.lat || !property.lng) {
-    return conflicts; // Can't check without coordinates
+  if (!property.lat || !property.lng || !property.propertyId) {
+    return conflicts; // Can't check without coordinates or property ID
   }
 
   try {
-    // Find properties in the same quartier with coordinates
+    // Use PostGIS detectSpatialConflicts for accurate spatial search
+    // Search within OVERLAP_THRESHOLD_METERS radius
+    const nearbyConflicts = await detectSpatialConflicts(
+      property.propertyId,
+      property.lat,
+      property.lng,
+      OVERLAP_THRESHOLD_METERS
+    );
+
+    for (const candidate of nearbyConflicts) {
+      // Check if similar surface area (same parcel)
+      const surfaceRatio = property.surface > 0 && candidate.surface > 0
+        ? Math.min(property.surface, candidate.surface) / Math.max(property.surface, candidate.surface)
+        : 0;
+
+      const isLikelySameParcel = surfaceRatio > 0.7; // Similar size = likely same parcel
+
+      conflicts.push({
+        type: 'overlapping_boundary',
+        severity: isLikelySameParcel ? 'critical' : 'high',
+        message: isLikelySameParcel
+          ? 'Parcelle probablement en double'
+          : 'Chevauchement de parcelle détecté',
+        detail: `Bien à ${Math.round(candidate.distanceMeters)}m — "${candidate.title}" (${candidate.type}, ${candidate.surface}m², ${candidate.geoTrust ? 'GeoTrust' : 'non vérifié'})`,
+        conflictingPropertyId: candidate.id,
+        conflictingPropertyTitle: candidate.title,
+        conflictingAgentId: candidate.agentId,
+        distanceMeters: Math.round(candidate.distanceMeters),
+      });
+    }
+  } catch {
+    // PostGIS failed — fall back to haversine-based detection
+    console.info('[GeoTrust] detectSpatialConflicts échoué, repli haversine');
+    return detectOverlappingBoundariesHaversine(property);
+  }
+
+  return conflicts;
+}
+
+/**
+ * Fallback: Overlapping boundary detection using haversine distance
+ * Used when PostGIS is unavailable
+ */
+async function detectOverlappingBoundariesHaversine(property: PropertyWithBoundary): Promise<ConflictDetail[]> {
+  const conflicts: ConflictDetail[] = [];
+
+  if (!property.lat || !property.lng) {
+    return conflicts;
+  }
+
+  try {
     const nearbyProperties = await db.property.findMany({
       where: {
         status: { in: ['published', 'pending', 'ai_review', 'human_review', 'draft'] },
@@ -145,7 +198,6 @@ async function detectOverlappingBoundaries(property: PropertyWithBoundary): Prom
       take: 100,
     });
 
-    // Filter out the current property
     const candidates = property.propertyId
       ? nearbyProperties.filter(p => p.id !== property.propertyId)
       : nearbyProperties;
@@ -159,12 +211,11 @@ async function detectOverlappingBoundaries(property: PropertyWithBoundary): Prom
       );
 
       if (distance <= OVERLAP_THRESHOLD_METERS) {
-        // Potential overlap — check if similar surface area (same parcel)
         const surfaceRatio = property.surface > 0 && candidate.surface > 0
           ? Math.min(property.surface, candidate.surface) / Math.max(property.surface, candidate.surface)
           : 0;
 
-        const isLikelySameParcel = surfaceRatio > 0.7; // Similar size = likely same parcel
+        const isLikelySameParcel = surfaceRatio > 0.7;
 
         conflicts.push({
           type: 'overlapping_boundary',
@@ -256,13 +307,56 @@ async function detectSameAddressDifferentOwner(property: PropertyWithBoundary): 
 async function detectDuplicateCoordinates(property: PropertyWithBoundary): Promise<ConflictDetail[]> {
   const conflicts: ConflictDetail[] = [];
 
+  if (!property.lat || !property.lng || !property.propertyId) {
+    return conflicts;
+  }
+
+  try {
+    // Use PostGIS detectSpatialConflicts with a very small radius for duplicate detection
+    const nearbyConflicts = await detectSpatialConflicts(
+      property.propertyId,
+      property.lat,
+      property.lng,
+      DUPLICATE_COORDINATE_THRESHOLD_METERS
+    );
+
+    for (const candidate of nearbyConflicts) {
+      const sameOwner = candidate.agentId === property.agentId;
+
+      conflicts.push({
+        type: 'duplicate_coordinates',
+        severity: sameOwner ? 'high' : 'critical',
+        message: sameOwner
+          ? 'Coordonnées en double (même agent)'
+          : 'Coordonnées identiques à un autre bien',
+        detail: `Distance: ${candidate.distanceMeters}m — "${candidate.title}"`,
+        conflictingPropertyId: candidate.id,
+        conflictingPropertyTitle: candidate.title,
+        conflictingAgentId: candidate.agentId,
+        distanceMeters: candidate.distanceMeters,
+      });
+    }
+  } catch {
+    // PostGIS failed — fall back to bounding box + haversine
+    console.info('[GeoTrust] detectDuplicateCoordinates PostGIS échoué, repli haversine');
+    return detectDuplicateCoordinatesHaversine(property);
+  }
+
+  return conflicts;
+}
+
+/**
+ * Fallback: Duplicate coordinate detection using haversine distance
+ */
+async function detectDuplicateCoordinatesHaversine(property: PropertyWithBoundary): Promise<ConflictDetail[]> {
+  const conflicts: ConflictDetail[] = [];
+
   if (!property.lat || !property.lng) {
     return conflicts;
   }
 
   try {
     // Search for properties with very close coordinates
-    // We use a bounding box for approximate search, then filter with haversine
     const latDelta = 0.001; // ~111m
     const lngDelta = 0.001 / Math.cos(property.lat * Math.PI / 180);
 

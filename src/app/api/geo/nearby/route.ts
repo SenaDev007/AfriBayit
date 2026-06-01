@@ -1,8 +1,15 @@
 // AfriBayit — API: Geo Nearby Search
 // GET: Find properties/hotels/guesthouses near a geographic point
+// Uses PostGIS ST_DWithin for native spatial queries with Haversine fallback
 
 import { NextResponse } from 'next/server';
-import { findNearby } from '@/lib/geo/postgis';
+import {
+  findNearbyProperties,
+  findNearbyHotels,
+  findNearbyGuesthouses,
+  findWithinBoundingBox,
+  type NearbyFilters,
+} from '@/lib/geo/postgis';
 
 export async function GET(request: Request) {
   try {
@@ -11,59 +18,99 @@ export async function GET(request: Request) {
     const lng = parseFloat(searchParams.get('lng') || '');
     const radius = parseFloat(searchParams.get('radius') || '10'); // default 10 km
     const type = searchParams.get('type') || 'property'; // property, hotel, guesthouse, all
-    const country = searchParams.get('country') || ''; // optional country filter
+    const country = searchParams.get('country') || undefined; // optional country filter
 
+    // Bounding box params
+    const swLat = searchParams.get('swLat');
+    const swLng = searchParams.get('swLng');
+    const neLat = searchParams.get('neLat');
+    const neLng = searchParams.get('neLng');
+
+    // Additional filters
+    const filters: NearbyFilters = {
+      type: searchParams.get('propertyType') || undefined, // e.g., villa, terrain
+      minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
+      maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
+      minSurface: searchParams.get('minSurface') ? parseFloat(searchParams.get('minSurface')!) : undefined,
+      maxSurface: searchParams.get('maxSurface') ? parseFloat(searchParams.get('maxSurface')!) : undefined,
+      quartier: searchParams.get('quartier') || undefined,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined,
+    };
+
+    // ── Bounding box search mode ───────────────────────────
+    if (swLat && swLng && neLat && neLng) {
+      const swLatNum = parseFloat(swLat);
+      const swLngNum = parseFloat(swLng);
+      const neLatNum = parseFloat(neLat);
+      const neLngNum = parseFloat(neLng);
+
+      if ([swLatNum, swLngNum, neLatNum, neLngNum].some(isNaN)) {
+        return NextResponse.json(
+          { error: 'Paramètres de boîte englobante invalides (swLat, swLng, neLat, neLng)' },
+          { status: 400 }
+        );
+      }
+
+      const results = await findWithinBoundingBox(swLatNum, swLngNum, neLatNum, neLngNum, country);
+
+      return NextResponse.json({
+        boundingBox: { swLat: swLatNum, swLng: swLngNum, neLat: neLatNum, neLng: neLngNum },
+        country: country || undefined,
+        total: results.length,
+        results,
+      });
+    }
+
+    // ── Radius search mode ─────────────────────────────────
     // Validate required params
     if (isNaN(lat) || isNaN(lng)) {
       return NextResponse.json(
-        { error: 'lat and lng parameters are required and must be valid numbers' },
+        { error: 'Les paramètres lat et lng sont requis et doivent être des nombres valides' },
         { status: 400 }
       );
     }
 
     if (lat < -90 || lat > 90) {
       return NextResponse.json(
-        { error: 'Latitude must be between -90 and 90' },
+        { error: 'La latitude doit être entre -90 et 90' },
         { status: 400 }
       );
     }
 
     if (lng < -180 || lng > 180) {
       return NextResponse.json(
-        { error: 'Longitude must be between -180 and 180' },
+        { error: 'La longitude doit être entre -180 et 180' },
         { status: 400 }
       );
     }
 
     if (radius <= 0 || radius > 100) {
       return NextResponse.json(
-        { error: 'Radius must be between 0 and 100 km' },
+        { error: 'Le rayon doit être entre 0 et 100 km' },
         { status: 400 }
       );
     }
 
-    const modelMap: Record<string, 'Property' | 'Hotel' | 'Guesthouse'> = {
-      property: 'Property',
-      hotel: 'Hotel',
-      guesthouse: 'Guesthouse',
-    };
+    const validTypes = ['property', 'hotel', 'guesthouse', 'all'];
+    if (!validTypes.includes(type)) {
+      return NextResponse.json(
+        { error: 'Type invalide. Doit être : property, hotel, guesthouse, ou all' },
+        { status: 400 }
+      );
+    }
 
     if (type === 'all') {
-      // Search all models in parallel
+      // Search all models in parallel using PostGIS ST_DWithin
       const [properties, hotels, guesthouses] = await Promise.all([
-        findNearby(lat, lng, radius, 'Property'),
-        findNearby(lat, lng, radius, 'Hotel'),
-        findNearby(lat, lng, radius, 'Guesthouse'),
+        findNearbyProperties(lat, lng, radius, country, filters),
+        findNearbyHotels(lat, lng, radius, country, filters),
+        findNearbyGuesthouses(lat, lng, radius, country, filters),
       ]);
 
-      // Filter by country if specified
-      const filterByCountry = (items: typeof properties) =>
-        country ? items.filter((i) => i.country === country) : items;
-
       const allResults = [
-        ...filterByCountry(properties).map((p) => ({ ...p, category: 'property' })),
-        ...filterByCountry(hotels).map((h) => ({ ...h, category: 'hotel' })),
-        ...filterByCountry(guesthouses).map((g) => ({ ...g, category: 'guesthouse' })),
+        ...properties.map((p) => ({ ...p, category: 'property' as const })),
+        ...hotels.map((h) => ({ ...h, category: 'hotel' as const })),
+        ...guesthouses.map((g) => ({ ...g, category: 'guesthouse' as const })),
       ].sort((a, b) => a.distanceKm - b.distanceKm);
 
       return NextResponse.json({
@@ -75,20 +122,20 @@ export async function GET(request: Request) {
       });
     }
 
-    // Single model search
-    const model = modelMap[type];
-    if (!model) {
-      return NextResponse.json(
-        { error: 'Invalid type. Must be: property, hotel, guesthouse, or all' },
-        { status: 400 }
-      );
-    }
-
-    let results = await findNearby(lat, lng, radius, model);
-
-    // Filter by country if specified
-    if (country) {
-      results = results.filter((r) => r.country === country);
+    // Single model search using dedicated PostGIS functions
+    let results;
+    switch (type) {
+      case 'property':
+        results = await findNearbyProperties(lat, lng, radius, country, filters);
+        break;
+      case 'hotel':
+        results = await findNearbyHotels(lat, lng, radius, country, filters);
+        break;
+      case 'guesthouse':
+        results = await findNearbyGuesthouses(lat, lng, radius, country, filters);
+        break;
+      default:
+        results = [];
     }
 
     return NextResponse.json({
@@ -100,9 +147,9 @@ export async function GET(request: Request) {
       results,
     });
   } catch (error) {
-    console.error('[Geo:Nearby] Error:', error);
+    console.error('[Geo:Nearby] Erreur :', error);
     return NextResponse.json(
-      { error: 'Failed to search nearby locations' },
+      { error: 'Échec de la recherche de lieux à proximité' },
       { status: 500 }
     );
   }

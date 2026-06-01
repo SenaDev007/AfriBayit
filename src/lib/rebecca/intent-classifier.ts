@@ -357,8 +357,8 @@ export async function classifyIntentWithAI(
 
   // Otherwise, use AI for disambiguation
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const historyContext = history
       ? history.slice(-5).map((m) => `${m.role}: ${m.content}`).join('\n')
