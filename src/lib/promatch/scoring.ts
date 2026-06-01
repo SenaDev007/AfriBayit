@@ -1,5 +1,12 @@
-// AfriBayit ProMatch — Weighted Scoring Algorithm
-// CDC Section 5.5.2 weights for artisan matching
+// AfriBayit ProMatch — Weighted Scoring Algorithm V2
+// CDC §5.5.2 — Updated weights for artisan matching
+//
+// Weights:
+//   Proximity     — 30%
+//   Specialty     — 25%
+//   Availability  — 20%
+//   Rating        — 15%
+//   Price         — 10%
 
 export interface ArtisanData {
   id: string;
@@ -32,20 +39,25 @@ export interface MatchRequest {
   maxBudget?: number; // max daily rate
 }
 
+export interface RankedArtisan extends ScoredArtisan {
+  matchReasons: string[];
+}
+
 export interface ScoredArtisan {
   artisan: ArtisanData;
   totalScore: number;
   scores: {
-    proximity: number;   // 0-1, weight 35%
-    specialty: number;   // 0-1, weight 30%
+    proximity: number;    // 0-1, weight 30%
+    specialty: number;    // 0-1, weight 25%
     availability: number; // 0-1, weight 20%
-    trust: number;       // 0-1, weight 15%
+    rating: number;       // 0-1, weight 15%
+    price: number;        // 0-1, weight 10%
   };
 }
 
 /**
  * Calculate proximity score between artisan location and request location
- * Weight: 35%
+ * Weight: 30%
  */
 export function calculateProximityScore(
   artisan: ArtisanData,
@@ -95,7 +107,7 @@ export function calculateProximityScore(
 
 /**
  * Calculate specialty/skill match score
- * Weight: 30%
+ * Weight: 25%
  */
 export function calculateSpecialtyScore(
   artisan: ArtisanData,
@@ -128,8 +140,12 @@ export function calculateSpecialtyScore(
     artisan.trade.toLowerCase().includes(s) || s.includes(artisan.trade.toLowerCase())
   );
 
-  let score = matchRate * 0.8;
+  // Certification bonus for specialty confidence
+  const certBonus = artisan.certified ? 0.1 : 0;
+
+  let score = matchRate * 0.7;
   if (tradeMatch) score = Math.min(score + 0.2, 1.0);
+  score = Math.min(score + certBonus, 1.0);
 
   return score;
 }
@@ -162,49 +178,65 @@ export function calculateAvailabilityScore(
     else score += 0.05;
   }
 
-  // Budget compatibility
-  if (request.maxBudget && artisan.dailyRate) {
-    if (artisan.dailyRate <= request.maxBudget) {
-      score += 0.1; // Within budget
-    } else {
-      score -= 0.2; // Over budget
-    }
+  return Math.max(0, Math.min(1, score));
+}
+
+/**
+ * Calculate rating score based on reviews and rating
+ * Weight: 15%
+ */
+export function calculateRatingScore(artisan: ArtisanData): number {
+  let score = 0;
+
+  // Rating (0-5 scale, normalized to 0-0.5)
+  score += (artisan.rating / 5) * 0.5;
+
+  // Number of reviews (more reviews = more trustworthy rating)
+  if (artisan.reviews >= 20) score += 0.25;
+  else if (artisan.reviews >= 10) score += 0.2;
+  else if (artisan.reviews >= 5) score += 0.12;
+  else if (artisan.reviews >= 1) score += 0.05;
+
+  // Certification bonus
+  if (artisan.certified) score += 0.15;
+
+  // Completed missions (logarithmic scaling)
+  if (artisan.completedMissions > 0) {
+    const missionScore = Math.min(Math.log10(artisan.completedMissions + 1) / 2, 0.1);
+    score += missionScore;
   }
 
   return Math.max(0, Math.min(1, score));
 }
 
 /**
- * Calculate trust/reputation score
- * Weight: 15%
+ * Calculate price competitiveness score
+ * Weight: 10%
  */
-export function calculateTrustScore(
-  artisan: ArtisanData
+export function calculatePriceScore(
+  artisan: ArtisanData,
+  request: MatchRequest
 ): number {
-  let score = 0;
-
-  // Rating (0-5 scale, normalized to 0-0.4)
-  score += (artisan.rating / 5) * 0.4;
-
-  // Certification
-  if (artisan.certified) score += 0.25;
-
-  // Completed missions (logarithmic scaling)
-  if (artisan.completedMissions > 0) {
-    const missionScore = Math.min(Math.log10(artisan.completedMissions + 1) / 2, 0.2);
-    score += missionScore;
+  // If no budget specified or no daily rate, give neutral score
+  if (!request.maxBudget || !artisan.dailyRate) {
+    return 0.5;
   }
 
-  // Reviews count (more reviews = more trustworthy rating)
-  if (artisan.reviews >= 10) score += 0.15;
-  else if (artisan.reviews >= 5) score += 0.1;
-  else if (artisan.reviews >= 1) score += 0.05;
+  const ratio = artisan.dailyRate / request.maxBudget;
 
-  return Math.max(0, Math.min(1, score));
+  // Price well within budget
+  if (ratio <= 0.5) return 1.0;
+  if (ratio <= 0.7) return 0.9;
+  if (ratio <= 0.85) return 0.8;
+  if (ratio <= 1.0) return 0.6;   // At budget limit
+  if (ratio <= 1.15) return 0.4;  // Slightly over budget
+  if (ratio <= 1.3) return 0.2;   // Over budget
+  return 0.1;                       // Way over budget
 }
 
 /**
  * Calculate the full ProMatch score using CDC §5.5.2 weights
+ * V2: proximity 30%, specialty 25%, availability 20%, rating 15%, price 10%
  */
 export function calculateProMatchScore(
   artisan: ArtisanData,
@@ -213,9 +245,15 @@ export function calculateProMatchScore(
   const proximity = calculateProximityScore(artisan, request);
   const specialty = calculateSpecialtyScore(artisan, request);
   const availability = calculateAvailabilityScore(artisan, request);
-  const trust = calculateTrustScore(artisan);
+  const rating = calculateRatingScore(artisan);
+  const price = calculatePriceScore(artisan, request);
 
-  const totalScore = (proximity * 0.35) + (specialty * 0.30) + (availability * 0.20) + (trust * 0.15);
+  const totalScore =
+    (proximity * 0.30) +
+    (specialty * 0.25) +
+    (availability * 0.20) +
+    (rating * 0.15) +
+    (price * 0.10);
 
   return {
     artisan,
@@ -224,9 +262,106 @@ export function calculateProMatchScore(
       proximity: Math.round(proximity * 100) / 100,
       specialty: Math.round(specialty * 100) / 100,
       availability: Math.round(availability * 100) / 100,
-      trust: Math.round(trust * 100) / 100,
+      rating: Math.round(rating * 100) / 100,
+      price: Math.round(price * 100) / 100,
     },
   };
+}
+
+/**
+ * Match artisans for a project need and return ranked results with match reasons.
+ * This is the main function for ProMatch scoring per the CDC.
+ */
+export function matchArtisan(
+  project: ProjectNeed,
+  artisans: ArtisanData[]
+): RankedArtisan[] {
+  const request: MatchRequest = {
+    jobDescription: project.description,
+    skills: project.requiredSkills,
+    city: project.city,
+    country: project.country,
+    lat: project.lat,
+    lng: project.lng,
+    emergency: project.emergency,
+    maxBudget: project.maxBudget,
+  };
+
+  const ranked = artisans
+    .map((artisan) => {
+      const scored = calculateProMatchScore(artisan, request);
+      const matchReasons = generateMatchReasons(scored, request);
+      return { ...scored, matchReasons };
+    })
+    .filter((s) => s.totalScore > 0.1)
+    .sort((a, b) => b.totalScore - a.totalScore);
+
+  return ranked;
+}
+
+/**
+ * Project need definition for ProMatch
+ */
+export interface ProjectNeed {
+  description: string;
+  requiredSkills: string[];
+  city?: string;
+  country?: string;
+  lat?: number;
+  lng?: number;
+  emergency?: boolean;
+  maxBudget?: number;
+  preferredDate?: Date;
+}
+
+/**
+ * Generate human-readable match reasons for display
+ */
+function generateMatchReasons(scored: ScoredArtisan, request: MatchRequest): string[] {
+  const reasons: string[] = [];
+  const s = scored.scores;
+  const a = scored.artisan;
+
+  if (s.proximity >= 0.8) {
+    reasons.push(`Proximité excellente (${a.city || a.zone || 'zone locale'})`);
+  } else if (s.proximity >= 0.5) {
+    reasons.push(`Proximité acceptable (${a.city || 'zone'})`);
+  }
+
+  if (s.specialty >= 0.8) {
+    reasons.push(`Spécialiste qualifié en ${a.trade}`);
+  } else if (s.specialty >= 0.5) {
+    reasons.push(`Compétences correspondantes`);
+  }
+
+  if (s.availability >= 0.8) {
+    reasons.push('Disponible immédiatement');
+    if (request.emergency && a.emergency) {
+      reasons.push('Intervention d\'urgence possible');
+    }
+  }
+
+  if (s.rating >= 0.8) {
+    reasons.push(`Excellente réputation (${a.rating}/5, ${a.reviews} avis)`);
+  } else if (s.rating >= 0.5) {
+    reasons.push(`Bonne réputation (${a.rating}/5)`);
+  }
+
+  if (s.price >= 0.8) {
+    reasons.push('Tarif compétitif');
+  } else if (s.price >= 0.5 && a.dailyRate) {
+    reasons.push(`Tarif: ${new Intl.NumberFormat('fr-FR').format(a.dailyRate)} FCFA/jour`);
+  }
+
+  if (a.certified) {
+    reasons.push('Artisan certifié AfriBayit');
+  }
+
+  if (a.completedMissions >= 20) {
+    reasons.push(`${a.completedMissions} missions complétées`);
+  }
+
+  return reasons;
 }
 
 /**

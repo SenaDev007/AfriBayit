@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
@@ -11,35 +12,56 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
+    // Use tenant-aware DB client for automatic country filtering
+    const tenantCountry = extractTenantFromRequest(request);
+    const tenantDb = getTenantDb(tenantCountry);
+
     const where: Record<string, unknown> = { certified: true };
 
     if (trade) where.trade = trade;
     if (city) where.city = city;
     if (country) where.country = country;
 
+    // Note: Artisan model doesn't have a User relation in Prisma schema,
+    // so we fetch user data separately after getting artisans
     const [artisans, total] = await Promise.all([
-      db.artisan.findMany({
+      tenantDb.artisan.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { rating: 'desc' },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-              city: true,
-              country: true,
-            },
-          },
-        },
       }),
-      db.artisan.count({ where }),
+      tenantDb.artisan.count({ where }),
     ]);
 
+    // Fetch user data for artisans that have a userId
+    const userIds = artisans
+      .map((a) => a.userId)
+      .filter(Boolean);
+
+    const users = userIds.length > 0
+      ? await tenantDb.user.findMany({
+          where: { id: { in: userIds } },
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            city: true,
+            country: true,
+          },
+        })
+      : [];
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    // Merge user data into artisans
+    const artisansWithUsers = artisans.map((artisan) => ({
+      ...artisan,
+      user: userMap.get(artisan.userId) || null,
+    }));
+
     return NextResponse.json({
-      artisans,
+      artisans: artisansWithUsers,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

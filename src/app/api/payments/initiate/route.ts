@@ -1,126 +1,148 @@
 // AfriBayit — POST /api/payments/initiate
-// Initiate a payment through the Payment Abstraction Layer
+// Initiates a payment for a transaction using the appropriate provider
+// Routes to FedaPay (BJ/CI/TG/BF) or Stripe (others)
 
-import { NextResponse } from 'next/server';
-import { authGuard } from '@/lib/auth-guard';
+import { NextRequest, NextResponse } from 'next/server';
+import { initiatePayment, getAvailablePaymentMethods } from '@/lib/payments/provider-router';
 import { db } from '@/lib/db';
-import { initiatePayment, selectBestProvider, getAvailableMethods } from '@/lib/payments';
 import type { PaymentProvider, PaymentMethod } from '@/lib/payments/types';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const auth = await authGuard({ requireKycLevel: 1 });
-    if (!auth.success) return auth.response;
-
     const body = await request.json();
+
     const {
+      transactionId,
       amount,
       currency = 'XOF',
-      provider,
+      country = 'BJ',
       method,
-      reference,
-      metadata,
       customerEmail,
       customerPhone,
-      countryCode,
+      customerFirstName,
+      customerLastName,
+      customerId,
       description,
-    } = body as {
-      amount: number;
-      currency?: string;
-      provider?: PaymentProvider;
-      method: PaymentMethod;
-      reference: string;
-      metadata?: Record<string, unknown>;
-      customerEmail?: string;
-      customerPhone?: string;
-      countryCode: string;
-      description?: string;
-    };
+      returnUrl,
+    } = body;
 
     // Validate required fields
-    if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
-    }
-
-    if (!method) {
-      return NextResponse.json({ error: 'Moyen de paiement requis' }, { status: 400 });
-    }
-
-    if (!reference) {
-      return NextResponse.json({ error: 'Référence de transaction requise' }, { status: 400 });
-    }
-
-    if (!countryCode) {
-      return NextResponse.json({ error: 'Code pays requis' }, { status: 400 });
-    }
-
-    // Validate payment method availability
-    const availableMethods = getAvailableMethods(countryCode);
-    if (!availableMethods.includes(method)) {
+    if (!transactionId && !amount) {
       return NextResponse.json(
-        { error: 'Moyen de paiement non disponible dans ce pays', availableMethods },
+        { error: 'transactionId or amount is required' },
         { status: 400 }
       );
     }
 
-    // Auto-select provider if not specified
-    const selectedProvider = provider || selectBestProvider(countryCode, method);
+    // If transactionId provided, fetch transaction details
+    let paymentAmount = amount;
+    let paymentCurrency = currency;
+    let paymentCountry = country;
+    let paymentDescription = description;
+    let paymentCustomerId = customerId;
+    let buyerEmail = customerEmail || '';
+    let buyerPhone = customerPhone;
+    let buyerFirstName = customerFirstName;
+    let buyerLastName = customerLastName;
+    let transactionRecord: any = null;
 
-    // Get user email if not provided
-    const user = await db.user.findUnique({
-      where: { id: auth.userId },
-      select: { email: true, phone: true, name: true },
-    });
+    if (transactionId) {
+      transactionRecord = await db.transaction.findUnique({
+        where: { id: transactionId },
+        include: {
+          buyer: { select: { email: true, phone: true, firstName: true, lastName: true } },
+          property: { select: { title: true, country: true } },
+        },
+      });
 
-    // Initiate payment through PAL
-    const result = await initiatePayment({
-      amount,
-      currency,
-      provider: selectedProvider,
-      method,
-      reference,
-      metadata: {
-        ...metadata,
-        userId: auth.userId,
+      if (!transactionRecord) {
+        return NextResponse.json(
+          { error: 'Transaction not found' },
+          { status: 404 }
+        );
+      }
+
+      paymentAmount = transactionRecord.amount;
+      paymentCurrency = transactionRecord.currency;
+      paymentCountry = transactionRecord.country || country;
+      paymentDescription = description || `AfriBayit — ${transactionRecord.property?.title || 'Transaction'}`;
+      paymentCustomerId = transactionRecord.buyerId;
+      buyerEmail = transactionRecord.buyer?.email || customerEmail || '';
+      buyerPhone = transactionRecord.buyer?.phone || customerPhone;
+      buyerFirstName = transactionRecord.buyer?.firstName || customerFirstName;
+      buyerLastName = transactionRecord.buyer?.lastName || customerLastName;
+
+      // Check if transaction can be funded
+      if (transactionRecord.status !== 'CREATED') {
+        return NextResponse.json(
+          { error: `Transaction cannot be funded in status: ${transactionRecord.status}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (!buyerEmail) {
+      return NextResponse.json(
+        { error: 'Customer email is required' },
+        { status: 400 }
+      );
+    }
+
+    // Initiate payment via provider router
+    const result = await initiatePayment(
+      paymentAmount,
+      paymentCurrency,
+      paymentCountry,
+      {
+        email: buyerEmail,
+        phone: buyerPhone,
+        firstName: buyerFirstName,
+        lastName: buyerLastName,
+        id: paymentCustomerId,
       },
-      customerEmail: customerEmail || user?.email || '',
-      customerPhone: customerPhone || user?.phone || undefined,
-      countryCode,
-      description,
-    });
+      {
+        transactionId: transactionId || undefined,
+        method: method as PaymentMethod | undefined,
+        description: paymentDescription,
+        returnUrl,
+      }
+    );
 
-    // Create a wallet transaction record for tracking
-    await db.walletTransaction.create({
-      data: {
-        userId: auth.userId,
-        type: 'escrow_fund',
-        amount: -amount, // Debit from wallet perspective
-        balanceAfter: 0, // Will be updated by webhook
-        currency,
-        status: 'pending',
-        providerRef: result.providerRef,
-        metadata: JSON.stringify({
-          paymentId: result.paymentId,
-          provider: selectedProvider,
-          method,
-          reference,
-          countryCode,
-          redirectUrl: result.redirectUrl,
-        }),
-      },
-    });
+    // If transactionId provided and payment was initiated, update the transaction
+    if (transactionId && result.success) {
+      await db.transaction.update({
+        where: { id: transactionId },
+        data: {
+          paymentProvider: result.provider,
+          paymentRef: result.transactionId,
+        },
+      });
+    }
 
     return NextResponse.json({
       success: result.success,
-      paymentId: result.paymentId,
-      providerRef: result.providerRef,
-      redirectUrl: result.redirectUrl,
+      provider: result.provider,
+      transactionId: result.transactionId,
+      checkoutUrl: result.checkoutUrl,
+      clientSecret: result.clientSecret,
       status: result.status,
-      provider: selectedProvider,
-    }, { status: 201 });
+      error: result.error,
+    });
   } catch (error) {
-    console.error('Payment initiation error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to initiate payment';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('POST /api/payments/initiate error:', error);
+    return NextResponse.json(
+      { error: 'Payment initiation failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
+}
+
+// GET: Return available payment methods for a country
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const country = searchParams.get('country') || 'BJ';
+
+  const result = getAvailablePaymentMethods(country);
+
+  return NextResponse.json(result);
 }

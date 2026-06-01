@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
@@ -11,6 +12,10 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
+    // Use tenant-aware DB client for automatic country filtering
+    const tenantCountry = extractTenantFromRequest(request);
+    const tenantDb = getTenantDb(tenantCountry);
+
     const where: Record<string, unknown> = { published: true };
 
     if (category) where.category = category;
@@ -18,13 +23,13 @@ export async function GET(request: Request) {
     if (country) where.country = country;
 
     const [courses, total] = await Promise.all([
-      db.course.findMany({
+      tenantDb.course.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { students: 'desc' },
       }),
-      db.course.count({ where }),
+      tenantDb.course.count({ where }),
     ]);
 
     return NextResponse.json({

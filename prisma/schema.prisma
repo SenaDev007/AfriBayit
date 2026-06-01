@@ -157,11 +157,15 @@ model Property {
   images       String?  // JSON array of URLs
   lat          Float?
   lng          Float?
+  /// PostGIS geometry field — requires PostGIS extension. Use createPoint() from @/lib/geo/postgis for writes.
+  geometry     Unsupported("geometry(Point, 4326)")?
+  /// Full-text search vector (PostgreSQL tsvector) — used for ts_rank and ts_query searches
+  searchVector Unsupported("tsvector")?
   verified     Boolean  @default(false)
   geoTrust     Boolean  @default(false)
   geoTrustLevel String?  // standard, expert, elite
   premium      Boolean  @default(false)
-  status       String   @default("draft") // draft, pending, ai_review, human_review, published, sold, rented, rejected
+  status       String   @default("draft") // draft, pending, pending_validation, ai_review, human_review, published, sold, rented, rejected
   views        Int      @default(0)
   favorites    Int      @default(0)
   agentId      String
@@ -867,6 +871,8 @@ model Hotel {
   otaRefs         String?  // JSON: {booking_com_id, expedia_id, ...}
   lat             Float?
   lng             Float?
+  /// PostGIS geometry field — requires PostGIS extension
+  geometry        Unsupported("geometry(Point, 4326)")?
   status          String   @default("active") // active, inactive, pending_review
   subscriptionTier String? // starter, pro, enterprise
   subscriptionExpiry DateTime?
@@ -1015,6 +1021,8 @@ model Guesthouse {
   address         String?
   lat             Float?
   lng             Float?
+  /// PostGIS geometry field — requires PostGIS extension
+  geometry        Unsupported("geometry(Point, 4326)")?
   images          String?  // JSON array
   amenities       String?  // JSON: common amenities
   rules           String?  // JSON: house rules
@@ -1595,4 +1603,32 @@ model ShortTermRentalReview {
   rental      ShortTermRental        @relation(fields: [rentalId], references: [id])
 
   @@map("short_term_rental_reviews")
+}
+
+// ============ SCHEDULED PAYOUTS (J+1 Engine) ============
+
+model ScheduledPayout {
+  id              String   @id @default(cuid())
+  transactionId   String
+  recipientId     String
+  amount          Float
+  currency        String   @default("XOF")
+  method          String   // mobile_money, bank_transfer, fedapay
+  destination     String   // phone number or bank account ref
+  country         String   @default("BJ") // BJ, CI, BF, TG
+  status          String   @default("scheduled") // scheduled, processing, completed, failed
+  scheduledAt     DateTime // when the payout should be executed
+  processedAt     DateTime?
+  providerRef     String?
+  confirmationRef String?
+  failureReason   String?
+  retryCount      Int      @default(0)
+  maxRetries      Int      @default(3)
+  metadata        String?  // JSON: additional context
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([recipientId])
+  @@map("scheduled_payouts")
 }

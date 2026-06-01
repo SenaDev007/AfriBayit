@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { propertyCreateSchema } from '@/lib/validations/property.schema';
 import { authGuard } from '@/lib/auth-guard';
 
@@ -19,11 +20,16 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
+    // Use tenant-aware DB client for automatic country filtering
+    const tenantCountry = extractTenantFromRequest(request);
+    const tenantDb = getTenantDb(tenantCountry);
+
     const where: Record<string, unknown> = { status: 'published' };
 
     if (type && type !== 'all') where.type = type;
     if (transaction && transaction !== 'all') where.transaction = transaction;
     if (city && city !== 'all') where.city = city;
+    // Explicit country param overrides tenant context (respected by middleware)
     if (country && country !== 'all') where.country = country;
     if (verified === 'true') where.verified = true;
     if (geoTrust === 'true') where.geoTrust = true;
@@ -41,7 +47,7 @@ export async function GET(request: Request) {
     else if (sortBy === 'popular') orderBy = { views: 'desc' };
 
     const [propertiesRaw, total] = await Promise.all([
-      db.property.findMany({
+      tenantDb.property.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -63,7 +69,7 @@ export async function GET(request: Request) {
           },
         },
       }),
-      db.property.count({ where }),
+      tenantDb.property.count({ where }),
     ]);
 
     // Parse JSON fields and shape response

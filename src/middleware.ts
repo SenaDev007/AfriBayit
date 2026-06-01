@@ -2,13 +2,39 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware for AfriBayit platform.
+ * AfriBayit Platform Middleware
  *
- * Uses next-auth/middleware with withAuth when NEXTAUTH_SECRET is available.
- * If NEXTAUTH_SECRET is missing (e.g. on Vercel without env vars configured),
- * the middleware falls back to a simple public-route check that lets
- * unauthenticated users through to public pages only.
+ * Handles:
+ * 1. Subdomain-based tenant routing (bj.afribayit.com → country "BJ")
+ * 2. Query param tenant override (?country=BJ)
+ * 3. Country cookie management (afribayit_country)
+ * 4. Authentication & authorization
+ * 5. Route protection
  */
+
+// ─── Tenant Configuration ─────────────────────────────────────────────────────────
+
+// Supported subdomain-to-country mappings
+const SUBDOMAIN_COUNTRY_MAP: Record<string, string> = {
+  bj: 'BJ',
+  ci: 'CI',
+  bf: 'BF',
+  tg: 'TG',
+  sn: 'SN',
+};
+
+// Valid country codes
+const VALID_COUNTRIES = new Set(['BJ', 'CI', 'BF', 'TG', 'SN']);
+
+// Root domain (no subdomain) — landing page
+const ROOT_DOMAINS = new Set([
+  'afribayit.com',
+  'www.afribayit.com',
+  'localhost',
+  '127.0.0.1',
+]);
+
+// ─── Route Protection ─────────────────────────────────────────────────────────────
 
 // Public routes that never require authentication
 const PUBLIC_ROUTES = [
@@ -23,6 +49,7 @@ const PUBLIC_ROUTES = [
   '/geotrust',
   '/community',
   '/notary',
+  '/short-term',
 ];
 
 // Routes that work in guest/demo mode (no auth redirect)
@@ -82,6 +109,69 @@ function isAdminRoute(pathname: string): boolean {
     ADMIN_API_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   );
 }
+
+// ─── Tenant Detection ─────────────────────────────────────────────────────────────
+
+/**
+ * Extracts the country code from the request's subdomain.
+ * e.g., bj.afribayit.com → "BJ"
+ *       localhost → null (no subdomain on localhost)
+ */
+function extractCountryFromSubdomain(hostname: string): string | null {
+  // Handle localhost with port
+  const host = hostname.split(':')[0];
+
+  // Check if it's a root domain (no subdomain)
+  if (ROOT_DOMAINS.has(host)) {
+    return null;
+  }
+
+  // Check for subdomain pattern: xx.afribayit.com or xx.localhost
+  const parts = host.split('.');
+
+  // Need at least 3 parts for a subdomain (e.g., bj.afribayit.com)
+  if (parts.length >= 3) {
+    const subdomain = parts[0].toLowerCase();
+    if (SUBDOMAIN_COUNTRY_MAP[subdomain]) {
+      return SUBDOMAIN_COUNTRY_MAP[subdomain];
+    }
+  }
+
+  // Handle localhost subdomains: bj.localhost, ci.localhost
+  if (parts.length === 2 && parts[1] === 'localhost') {
+    const subdomain = parts[0].toLowerCase();
+    if (SUBDOMAIN_COUNTRY_MAP[subdomain]) {
+      return SUBDOMAIN_COUNTRY_MAP[subdomain];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extracts the country code from a query parameter.
+ * e.g., ?country=BJ → "BJ"
+ */
+function extractCountryFromQuery(url: URL): string | null {
+  const country = url.searchParams.get('country');
+  if (country && VALID_COUNTRIES.has(country.toUpperCase())) {
+    return country.toUpperCase();
+  }
+  return null;
+}
+
+/**
+ * Extracts the country code from a cookie.
+ */
+function extractCountryFromCookie(request: NextRequest): string | null {
+  const cookie = request.cookies.get('afribayit_country');
+  if (cookie?.value && VALID_COUNTRIES.has(cookie.value.toUpperCase())) {
+    return cookie.value.toUpperCase();
+  }
+  return null;
+}
+
+// ─── Auth Middleware ───────────────────────────────────────────────────────────────
 
 /**
  * Lightweight middleware that runs when NEXTAUTH_SECRET is not available.
@@ -159,25 +249,65 @@ async function authMiddleware(request: NextRequest) {
   })(request as unknown as Parameters<ReturnType<typeof withAuth>>[0]) as NextResponse;
 }
 
+// ─── Main Middleware ───────────────────────────────────────────────────────────────
+
 export async function middleware(request: NextRequest) {
-  // Check if NEXTAUTH_SECRET is available
-  const hasSecret = !!process.env.NEXTAUTH_SECRET;
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') || '';
 
-  if (!hasSecret) {
-    // Fall back to simple route-based middleware
-    return fallbackMiddleware(request);
+  // ─── Step 1: Tenant Detection ────────────────────────────────────────────
+
+  // Priority: subdomain > query param > cookie > default (none)
+  let country: string | null = extractCountryFromSubdomain(hostname);
+
+  // Query param override (for testing)
+  const queryCountry = extractCountryFromQuery(request.nextUrl);
+  if (queryCountry) {
+    country = queryCountry;
   }
 
-  try {
-    return await authMiddleware(request);
-  } catch (error) {
-    // If withAuth fails for any reason, fall back to simple middleware
-    console.warn(
-      '[AfriBayit] Auth middleware failed, using fallback. Error:',
-      error instanceof Error ? error.message : error
-    );
-    return fallbackMiddleware(request);
+  // Cookie fallback
+  if (!country) {
+    country = extractCountryFromCookie(request);
   }
+
+  // ─── Step 2: Set Tenant Context ──────────────────────────────────────────
+
+  const response = await (async () => {
+    // Check if NEXTAUTH_SECRET is available
+    const hasSecret = !!process.env.NEXTAUTH_SECRET;
+
+    if (!hasSecret) {
+      return fallbackMiddleware(request);
+    }
+
+    try {
+      return await authMiddleware(request);
+    } catch (error) {
+      console.warn(
+        '[AfriBayit] Auth middleware failed, using fallback. Error:',
+        error instanceof Error ? error.message : error
+      );
+      return fallbackMiddleware(request);
+    }
+  })();
+
+  // ─── Step 3: Inject Tenant Context into Response ─────────────────────────
+
+  if (country && VALID_COUNTRIES.has(country)) {
+    // Set/update the country cookie (1 year expiry)
+    response.cookies.set('afribayit_country', country, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    // Set the tenant header for API routes to read
+    response.headers.set('x-tenant-country', country);
+  }
+
+  return response;
 }
 
 export const config = {
@@ -203,5 +333,22 @@ export const config = {
     '/api/kyc/:path*',
     '/api/notifications/:path*',
     '/api/profiles/:path*',
+    // Tenant-related routes - need cookie/header injection
+    '/search/:path*',
+    '/property/:path*',
+    '/artisans/:path*',
+    '/hospitality/:path*',
+    '/guesthouse/:path*',
+    '/api/properties/:path*',
+    '/api/artisans/:path*',
+    '/api/hotels/:path*',
+    '/api/guesthouses/:path*',
+    '/api/notaries/:path*',
+    '/api/courses/:path*',
+    '/api/stats/:path*',
+    '/api/search/:path*',
+    '/api/short-term/:path*',
+    // Home page
+    '/',
   ],
 };

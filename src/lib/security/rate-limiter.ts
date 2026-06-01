@@ -1,5 +1,8 @@
 // AfriBayit — Rate Limiting Middleware
-// In-memory rate limiting with differentiated limits per route type
+// Redis-backed rate limiting with in-memory fallback
+// Supports distributed rate limiting when Upstash Redis is configured
+
+import { isRedisAvailable } from '@/lib/cache/redis';
 
 interface RateLimitEntry {
   count: number;
@@ -9,14 +12,16 @@ interface RateLimitEntry {
 const limits = new Map<string, RateLimitEntry>();
 
 // Cleanup expired entries every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of limits) {
-    if (now > entry.resetAt) {
-      limits.delete(key);
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of limits) {
+      if (now > entry.resetAt) {
+        limits.delete(key);
+      }
     }
-  }
-}, 10 * 60 * 1000);
+  }, 10 * 60 * 1000);
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -26,9 +31,9 @@ export interface RateLimitResult {
 }
 
 /**
- * Check if a request should be rate limited
+ * Check if a request should be rate limited (in-memory backend)
  */
-export function rateLimit(
+function rateLimitMemory(
   key: string,
   maxRequests: number,
   windowMs: number
@@ -65,6 +70,86 @@ export function rateLimit(
 }
 
 /**
+ * Check if a request should be rate limited (Redis backend)
+ * Uses Redis INCR + EXPIRE for distributed rate limiting
+ */
+async function rateLimitRedis(
+  key: string,
+  maxRequests: number,
+  windowSeconds: number
+): Promise<RateLimitResult> {
+  const { getRedisClient } = await import('@/lib/cache/redis');
+  const redis = getRedisClient();
+
+  if (!redis) {
+    return rateLimitMemory(key, maxRequests, windowSeconds * 1000);
+  }
+
+  const redisKey = `ratelimit:${key}`;
+  const now = Date.now();
+  const resetAt = now + windowSeconds * 1000;
+
+  try {
+    // Use Redis pipeline for atomic INCR + EXPIRE
+    const count = await redis.incr(redisKey);
+
+    // Set expiry on first request in window
+    if (count === 1) {
+      await redis.expire(redisKey, windowSeconds);
+    }
+
+    // Get remaining TTL to calculate resetAt
+    const ttl = await redis.ttl(redisKey);
+    const actualResetAt = ttl > 0 ? now + ttl * 1000 : resetAt;
+
+    if (count > maxRequests) {
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: actualResetAt,
+        retryAfter: ttl > 0 ? ttl : Math.ceil(windowSeconds),
+      };
+    }
+
+    return {
+      allowed: true,
+      remaining: maxRequests - count,
+      resetAt: actualResetAt,
+    };
+  } catch (error) {
+    console.error('Redis rate limit error, falling back to memory:', error);
+    return rateLimitMemory(key, maxRequests, windowSeconds * 1000);
+  }
+}
+
+/**
+ * Check if a request should be rate limited.
+ * Uses Redis when available, falls back to in-memory.
+ */
+export async function rateLimit(
+  key: string,
+  maxRequests: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  if (isRedisAvailable()) {
+    return rateLimitRedis(key, maxRequests, Math.ceil(windowMs / 1000));
+  }
+  return rateLimitMemory(key, maxRequests, windowMs);
+}
+
+/**
+ * Synchronous rate limit check (in-memory only, for backwards compatibility)
+ * @deprecated Use the async rateLimit() function instead
+ */
+export function rateLimitSync(
+  key: string,
+  maxRequests: number,
+  windowMs: number
+): RateLimitResult {
+  return rateLimitMemory(key, maxRequests, windowMs);
+}
+
+/**
  * Rate limit configurations per route type
  */
 export const RATE_LIMIT_CONFIGS = {
@@ -76,6 +161,8 @@ export const RATE_LIMIT_CONFIGS = {
   upload: { maxRequests: 20, windowMs: 60 * 1000 },          // 20 per min
   messaging: { maxRequests: 30, windowMs: 60 * 1000 },       // 30 per min
   notification: { maxRequests: 60, windowMs: 60 * 1000 },    // 60 per min
+  checkin: { maxRequests: 20, windowMs: 60 * 1000 },         // 20 per min (QR check-in)
+  payout: { maxRequests: 5, windowMs: 60 * 1000 },           // 5 per min (payout operations)
 } as const;
 
 /**
@@ -101,6 +188,8 @@ export function getRateLimitConfigForPath(path: string): {
 } {
   if (path.startsWith('/api/auth')) return RATE_LIMIT_CONFIGS.auth;
   if (path.startsWith('/api/escrow') || path.startsWith('/api/wallet') || path.startsWith('/api/transactions')) return RATE_LIMIT_CONFIGS.payment;
+  if (path.startsWith('/api/payouts')) return RATE_LIMIT_CONFIGS.payout;
+  if (path.startsWith('/api/checkin')) return RATE_LIMIT_CONFIGS.checkin;
   if (path.startsWith('/api/properties') && path.includes('search')) return RATE_LIMIT_CONFIGS.search;
   if (path.startsWith('/api/admin')) return RATE_LIMIT_CONFIGS.admin;
   if (path.startsWith('/api/messages') || path.startsWith('/api/chat')) return RATE_LIMIT_CONFIGS.messaging;
@@ -124,7 +213,7 @@ export function withRateLimit(
       : getRateLimitConfigForPath(path);
 
     const key = getRateLimitKey(request);
-    const result = rateLimit(
+    const result = await rateLimit(
       `rate:${key}:${path}`,
       config.maxRequests,
       config.windowMs

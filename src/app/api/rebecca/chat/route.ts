@@ -1,5 +1,6 @@
 // AfriBayit — Rebecca AI Chat Endpoint
-// POST /api/rebecca/chat — Main chat endpoint with RAG + function calling + guardrails + handoff + memory
+// POST /api/rebecca/chat — Main chat endpoint with agent orchestrator + RAG + guardrails + handoff + memory
+// V2: Now uses multi-step agent orchestrator for intent-based routing
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
@@ -8,12 +9,14 @@ import { executeRebeccaFunction, REBECCA_FUNCTIONS } from '../functions/route';
 import { applyGuardrails, validateRebeccaResponse } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman, buildHandoffMessage } from '@/lib/rebecca/handoff';
 import { checkPromptInjection, validateOutputSecurity, buildProtectedSystemPrompt } from '@/lib/rebecca/prompt-injection-guard';
-
-import {  getConversationMemory,
+import {
+  getConversationMemory,
   storeConversationMemory,
   getUserContext,
   getOrCreateRebeccaSession,
 } from '@/lib/rebecca/memory';
+import { executeAgentGraph } from '@/lib/rebecca/agent-orchestrator';
+import { classifyIntent } from '@/lib/rebecca/intent-classifier';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,12 +32,13 @@ const failureTracker = new Map<string, number>();
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { messages, sessionId, userId, country, city } = body as {
+    const { messages, sessionId, userId, country, city, useAgent } = body as {
       messages: ChatMessage[];
       sessionId?: string;
       userId?: string;
       country?: string;
       city?: string;
+      useAgent?: boolean; // V2: opt-in to agent orchestrator
     };
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -52,7 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    //  Step 0: Apply guardrails 
+    //  Step 0: Apply guardrails
     const guardResult = applyGuardrails(lastUserMessage.content);
     if (!guardResult.allowed) {
       return NextResponse.json({
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
 
     const sanitizedMessage = injectionCheck.sanitizedInput;
 
-    //  Step 0.5: Check for human handoff 
+    //  Step 0.5: Check for human handoff
     const effectiveSessionId = sessionId || (userId ? await getOrCreateRebeccaSession(userId) : undefined);
     const consecutiveFailures = failureTracker.get(effectiveSessionId || 'default') || 0;
 
@@ -119,7 +123,62 @@ export async function POST(request: Request) {
       });
     }
 
-    //  Step 1: Load conversation memory 
+    // ─── V2: Agent Orchestrator Path ──────────────────────────────────────
+    // Use the agent orchestrator for all requests (useAgent flag is deprecated,
+    // the orchestrator is now the default path for better routing)
+
+    const intentResult = classifyIntent(sanitizedMessage);
+    const shouldUseOrchestrator = useAgent !== false &&
+      ['PROPERTY_SEARCH', 'FINANCIAL_INQUIRY', 'LEGAL_QUESTION', 'NEIGHBORHOOD_INFO', 'ESCROW_HELP', 'BOOKING'].includes(intentResult.intent);
+
+    if (shouldUseOrchestrator) {
+      // Use the multi-step agent orchestrator
+      const conversationHistory = messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .map((m) => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+        }));
+
+      const agentState = await executeAgentGraph(
+        sanitizedMessage,
+        conversationHistory,
+        { userId, sessionId: effectiveSessionId, country, city }
+      );
+
+      // Validate output security
+      let finalResponse = agentState.finalResponse || '';
+      const outputSecurity = validateOutputSecurity(finalResponse);
+      if (!outputSecurity.isSafe) {
+        finalResponse = 'Je suis désolée, je ne peux pas fournir cette information. Pourriez-vous reformuler votre question ?';
+      }
+
+      // Save to DB
+      if (effectiveSessionId && userId) {
+        await saveConversationToDB(effectiveSessionId, userId, sanitizedMessage, finalResponse, {
+          agentUsed: true,
+          intent: agentState.intent,
+          executedNodes: agentState.executedNodes,
+        });
+      }
+
+      return NextResponse.json({
+        message: finalResponse,
+        intent: agentState.intent,
+        intentConfidence: agentState.intentConfidence,
+        entities: agentState.entities,
+        agentSteps: agentState.agentSteps,
+        executedNodes: agentState.executedNodes,
+        shouldHandoff: agentState.shouldHandoff,
+        functionsCalled: agentState.executedNodes.filter((n) => n !== 'intent_classifier' && n !== 'response_generator'),
+        contextUsed: agentState.executedNodes.length > 1,
+        sessionId: effectiveSessionId,
+      });
+    }
+
+    // ─── Legacy Path: RAG + Function Calling ─────────────────────────────
+
+    //  Step 1: Load conversation memory
     let memoryMessages: ChatMessage[] = [];
     if (effectiveSessionId) {
       const memory = await getConversationMemory(effectiveSessionId);
@@ -129,16 +188,16 @@ export async function POST(request: Request) {
       }));
     }
 
-    //  Step 2: Build user context 
+    //  Step 2: Build user context
     let userContext = '';
     if (userId) {
       userContext = await getUserContext(userId);
     }
 
-    //  Step 3: Run RAG pipeline to get context-augmented response 
+    //  Step 3: Run RAG pipeline to get context-augmented response
     const ragResult = await processQuery(sanitizedMessage, { country, city, sessionId: effectiveSessionId });
 
-    //  Step 4: Build conversation with history for LLM 
+    //  Step 4: Build conversation with history for LLM
     const contextPrefix = userContext ? `\n\nContexte utilisateur: ${userContext}` : '';
     const protectedSystemPrompt = buildProtectedSystemPrompt(REBECCA_SYSTEM_PROMPT);
 
@@ -151,7 +210,7 @@ export async function POST(request: Request) {
       })),
     ];
 
-    //  Step 5: Call LLM with function calling support 
+    //  Step 5: Call LLM with function calling support
     let aiResponse = ragResult.answer;
     let functionResults: Array<{ name: string; result: unknown }> = [];
 
@@ -230,71 +289,17 @@ export async function POST(request: Request) {
       }
     }
 
-    //  Step 6: Save conversation to DB 
+    //  Step 6: Save conversation to DB
     if (effectiveSessionId && userId) {
-      try {
-        // Find or create Rebecca user
-        let rebeccaUser = await db.user.findFirst({
-          where: { email: 'rebecca@afribayit.com' },
-        });
-
-        if (!rebeccaUser) {
-          rebeccaUser = await db.user.create({
-            data: {
-              email: 'rebecca@afribayit.com',
-              name: 'Rebecca IA',
-              role: 'admin',
-              verified: true,
-            },
-          });
-        }
-
-        // Save user message
-        await db.chatMessage.create({
-          data: {
-            conversationId: effectiveSessionId,
-            senderId: userId,
-            content: sanitizedMessage,
-            messageType: 'text',
-            metadata: JSON.stringify({ source: 'rebecca_chat' }),
-          },
-        });
-
-        // Save Rebecca's response
-        await db.chatMessage.create({
-          data: {
-            conversationId: effectiveSessionId,
-            senderId: rebeccaUser.id,
-            content: aiResponse,
-            messageType: 'text',
-            metadata: JSON.stringify({
-              aiGenerated: true,
-              model: 'rebecca-ia',
-              sources: ragResult.sources.map((s) => s.source),
-              functionsCalled: functionResults.map((f) => f.name),
-              contextUsed: ragResult.contextUsed,
-            }),
-          },
-        });
-
-        // Update conversation
-        await db.conversation.upsert({
-          where: { id: effectiveSessionId },
-          update: { updatedAt: new Date() },
-          create: {
-            id: effectiveSessionId,
-            type: 'rebecca',
-            status: 'active',
-            metadata: JSON.stringify({ source: 'rebecca_chat' }),
-          },
-        });
-      } catch (dbError) {
-        console.error('Rebecca DB save error:', dbError);
-        // Don't fail the request if DB save fails
-      }
+      await saveConversationToDB(effectiveSessionId, userId, sanitizedMessage, aiResponse, {
+        agentUsed: false,
+        sources: ragResult.sources.map((s) => s.source),
+        functionsCalled: functionResults.map((f) => f.name),
+        contextUsed: ragResult.contextUsed,
+      });
     }
 
-    //  Step 7: Return response 
+    //  Step 7: Return response
     return NextResponse.json({
       message: aiResponse,
       sources: ragResult.sources.map((s) => ({
@@ -304,6 +309,8 @@ export async function POST(request: Request) {
       })),
       functionsCalled: functionResults.map((f) => f.name),
       contextUsed: ragResult.contextUsed,
+      intent: intentResult.intent,
+      intentConfidence: intentResult.confidence,
       sessionId: effectiveSessionId,
     });
   } catch (error) {
@@ -312,6 +319,75 @@ export async function POST(request: Request) {
       { error: 'Erreur lors du traitement de votre demande' },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * Save conversation messages to database.
+ */
+async function saveConversationToDB(
+  sessionId: string,
+  userId: string,
+  userMessage: string,
+  aiResponse: string,
+  metadata: Record<string, unknown>
+): Promise<void> {
+  try {
+    // Find or create Rebecca user
+    let rebeccaUser = await db.user.findFirst({
+      where: { email: 'rebecca@afribayit.com' },
+    });
+
+    if (!rebeccaUser) {
+      rebeccaUser = await db.user.create({
+        data: {
+          email: 'rebecca@afribayit.com',
+          name: 'Rebecca IA',
+          role: 'admin',
+          verified: true,
+        },
+      });
+    }
+
+    // Save user message
+    await db.chatMessage.create({
+      data: {
+        conversationId: sessionId,
+        senderId: userId,
+        content: userMessage,
+        messageType: 'text',
+        metadata: JSON.stringify({ source: 'rebecca_chat' }),
+      },
+    });
+
+    // Save Rebecca's response
+    await db.chatMessage.create({
+      data: {
+        conversationId: sessionId,
+        senderId: rebeccaUser.id,
+        content: aiResponse,
+        messageType: 'text',
+        metadata: JSON.stringify({
+          aiGenerated: true,
+          model: 'rebecca-ia',
+          ...metadata,
+        }),
+      },
+    });
+
+    // Update conversation
+    await db.conversation.upsert({
+      where: { id: sessionId },
+      update: { updatedAt: new Date() },
+      create: {
+        id: sessionId,
+        type: 'rebecca',
+        status: 'active',
+        metadata: JSON.stringify({ source: 'rebecca_chat' }),
+      },
+    });
+  } catch (dbError) {
+    console.error('Rebecca DB save error:', dbError);
   }
 }
 

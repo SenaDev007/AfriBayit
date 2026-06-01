@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { detectFraud } from '@/lib/security/fraud-detector';
+import { detectBoundaryConflicts, type PropertyWithBoundary } from '@/lib/geotrust/conflict-detector';
 
 export async function GET(
   _request: Request,
@@ -109,6 +111,128 @@ export async function PATCH(
     // Check ownership: only the agent/owner or admin can update
     if (existing.agentId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden: not the property owner' }, { status: 403 });
+    }
+
+    // === GeoTrust Conflict Detection on Publication ===
+    // When status is being changed to 'published', run fraud + conflict checks
+    if (body.status === 'published' && existing.status !== 'published') {
+      const propertyImages = await db.propertyImage.findMany({
+        where: { propertyId: id },
+        select: { url: true },
+      });
+
+      const fraudInput = {
+        propertyId: existing.id,
+        title: body.title || existing.title,
+        type: body.type || existing.type,
+        transaction: body.transaction || existing.transaction,
+        price: body.price ?? existing.price,
+        surface: body.surface ?? existing.surface,
+        city: body.city || existing.city,
+        country: body.country || existing.country,
+        quartier: body.quartier || existing.quartier,
+        address: body.address ?? existing.address,
+        lat: body.lat ?? existing.lat,
+        lng: body.lng ?? existing.lng,
+        images: propertyImages.map((img: { url: string }) => img.url),
+        agentId: existing.agentId,
+        description: body.description || existing.description,
+        bedrooms: body.bedrooms ?? existing.bedrooms,
+        bathrooms: body.bathrooms ?? existing.bathrooms,
+      };
+
+      const conflictInput: PropertyWithBoundary = {
+        propertyId: existing.id,
+        title: body.title || existing.title,
+        type: body.type || existing.type,
+        price: body.price ?? existing.price,
+        surface: body.surface ?? existing.surface,
+        city: body.city || existing.city,
+        country: body.country || existing.country,
+        quartier: body.quartier || existing.quartier,
+        address: body.address ?? existing.address,
+        lat: body.lat ?? existing.lat,
+        lng: body.lng ?? existing.lng,
+        agentId: existing.agentId,
+        geoTrustLevel: body.geoTrustLevel ?? existing.geoTrustLevel,
+      };
+
+      const [fraudResult, conflictResult] = await Promise.all([
+        detectFraud(fraudInput),
+        detectBoundaryConflicts(conflictInput),
+      ]);
+
+      // Auto-reject on critical risk
+      if (fraudResult.riskLevel === 'critical' || conflictResult.riskLevel === 'critical') {
+        const reasons: string[] = [];
+        if (fraudResult.riskLevel === 'critical') {
+          reasons.push(`Fraude critique: ${fraudResult.flags.filter(f => f.severity === 'critical').map(f => f.message).join('; ')}`);
+        }
+        if (conflictResult.riskLevel === 'critical') {
+          reasons.push(`Conflit critique: ${conflictResult.conflicts.filter(c => c.severity === 'critical').map(c => c.message).join('; ')}`);
+        }
+
+        await db.property.update({
+          where: { id },
+          data: {
+            status: 'rejected',
+            rejectionReason: `Publication auto-rejetée: ${reasons.join('. ')}`,
+          },
+        });
+
+        // Create conflict zone records
+        for (const conflict of conflictResult.conflicts) {
+          if (conflict.type === 'overlapping_boundary' || conflict.type === 'duplicate_coordinates') {
+            await db.conflictZone.create({
+              data: {
+                propertyIdA: id,
+                propertyIdB: conflict.conflictingPropertyId,
+                areaSqmOverlap: conflict.overlapArea || 0,
+                status: 'detected',
+              },
+            }).catch(() => {});
+          }
+        }
+
+        return NextResponse.json({
+          error: 'Publication refusée',
+          reason: reasons.join('. '),
+          fraud: { riskScore: fraudResult.riskScore, riskLevel: fraudResult.riskLevel, flags: fraudResult.flags.length },
+          conflicts: { hasConflicts: conflictResult.hasConflicts, riskLevel: conflictResult.riskLevel, count: conflictResult.conflicts.length },
+        }, { status: 403 });
+      }
+
+      // Set to pending_validation on high/medium risk
+      if (fraudResult.riskLevel === 'high' || fraudResult.riskLevel === 'medium' ||
+          conflictResult.riskLevel === 'high' || conflictResult.riskLevel === 'medium') {
+        await db.property.update({
+          where: { id },
+          data: {
+            status: 'pending_validation',
+          },
+        });
+
+        return NextResponse.json({
+          data: { id, status: 'pending_validation' },
+          message: 'Bien en attente de validation manuelle',
+          fraud: { riskScore: fraudResult.riskScore, riskLevel: fraudResult.riskLevel, flags: fraudResult.flags.length },
+          conflicts: { hasConflicts: conflictResult.hasConflicts, riskLevel: conflictResult.riskLevel, count: conflictResult.conflicts.length },
+        });
+      }
+
+      // Create conflict zone records for detected conflicts even if approved
+      for (const conflict of conflictResult.conflicts) {
+        if (conflict.type === 'overlapping_boundary' || conflict.type === 'duplicate_coordinates') {
+          await db.conflictZone.create({
+            data: {
+              propertyIdA: id,
+              propertyIdB: conflict.conflictingPropertyId,
+              areaSqmOverlap: conflict.overlapArea || 0,
+              status: 'detected',
+            },
+          }).catch(() => {});
+        }
+      }
     }
 
     const updated = await db.property.update({

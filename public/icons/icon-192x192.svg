@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="32" fill="#003087"/>
+  <g transform="translate(96, 96)">
+    <!-- House shape -->
+    <path d="M-45,10 L-45,-20 L0,-50 L45,-20 L45,10 L45,30 L-45,30 Z" fill="#FFFFFF" stroke="none"/>
+    <!-- Door -->
+    <rect x="-12" y="5" width="24" height="25" rx="3" fill="#003087"/>
+    <!-- Window left -->
+    <rect x="-35" y="-8" width="16" height="16" rx="2" fill="#003087"/>
+    <!-- Window right -->
+    <rect x="19" y="-8" width="16" height="16" rx="2" fill="#003087"/>
+    <!-- Roof accent -->
+    <path d="M-50,-18 L0,-52 L50,-18 L45,-14 L0,-46 L-45,-14 Z" fill="#FFB800"/>
+  </g>
+  <!-- Text -->
+  <text x="96" y="155" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle">AfriBayit</text>
+</svg>
