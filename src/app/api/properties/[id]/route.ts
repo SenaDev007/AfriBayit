@@ -82,7 +82,7 @@ export async function GET(
     // Increment view count asynchronously (fire and forget)
     db.property.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
 
-    return NextResponse.json({ data: property });
+    return NextResponse.json({ property });
   } catch (error) {
     console.error('Property detail API error:', error);
     return NextResponse.json({ error: 'Failed to fetch property' }, { status: 500 });

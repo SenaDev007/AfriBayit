@@ -1,19 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProperty } from '@/hooks/useProperties';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, apiPost, apiDelete } from '@/lib/api';
 import { formatPrice } from '@/lib/afribayit-utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useAuthStore } from '@/stores/authStore';
 import dynamic from 'next/dynamic';
-import { Check, ClipboardList, Eye, Lock, Map, MapPin } from 'lucide-react';
+import { Check, ClipboardList, Eye, Heart, Lock, Map, MapPin, MessageCircle, Share2, Star, ThumbsUp, Copy, ExternalLink } from 'lucide-react';
 
 // Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
 const VirtualTourViewer = dynamic(
   () => import('@/components/afribayit/VirtualTourViewer'),
   { ssr: false, loading: () => <VirtualTourLoader /> }
+);
+
+// Dynamic import for PropertyMap to avoid SSR issues with Mapbox
+const PropertyMap = dynamic(
+  () => import('@/components/afribayit/PropertyMap'),
+  { ssr: false, loading: () => <MapLoader /> }
 );
 
 function VirtualTourLoader() {
@@ -27,21 +36,193 @@ function VirtualTourLoader() {
   );
 }
 
+function MapLoader() {
+  return (
+    <div className="h-64 rounded-3xl bg-gray-100 animate-pulse flex items-center justify-center">
+      <MapPin className="w-8 h-8 text-gray-300" />
+    </div>
+  );
+}
+
+// ============ Types ============
 interface PropertyDetailProps {
   propertyId: string;
   onBack: () => void;
   onNavigate: (section: string) => void;
 }
 
+interface ReviewData {
+  id: string;
+  reviewerId: string;
+  targetId: string;
+  targetType: string;
+  rating: number;
+  comment: string | null;
+  verified: boolean;
+  createdAt: string;
+  reviewer: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+}
+
+interface ReviewsResponse {
+  reviews: ReviewData[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+}
+
+interface VirtualTourData {
+  id: string;
+  tourType: string;
+  url: string;
+  thumbnailUrl?: string | null;
+  duration?: number | null;
+}
+
+interface VirtualToursResponse {
+  data: {
+    propertyId: string;
+    hasVR: boolean;
+    hasDroneView: boolean;
+    tours: VirtualTourData[];
+  };
+}
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export default function PropertyDetail({ propertyId, onBack, onNavigate }: PropertyDetailProps) {
+export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavigate }: PropertyDetailProps) {
   const { data, isLoading, isError } = useProperty(propertyId);
   const [activeImage, setActiveImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
   const [showVRTour, setShowVRTour] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuthStore();
 
   const property = data?.property;
+
+  // Fetch reviews for this property
+  const { data: reviewsData } = useQuery<ReviewsResponse>({
+    queryKey: ['reviews', 'property', propertyId],
+    queryFn: () => apiFetch<ReviewsResponse>(`/api/reviews?targetId=${propertyId}&targetType=property&limit=10`),
+    enabled: !!propertyId,
+  });
+
+  // Fetch virtual tours from API
+  const { data: toursData } = useQuery<VirtualToursResponse>({
+    queryKey: ['virtualTours', propertyId],
+    queryFn: () => apiFetch<VirtualToursResponse>(`/api/properties/${propertyId}/virtual-tours`),
+    enabled: !!propertyId,
+  });
+
+  // Check if property is in favorites
+  useEffect(() => {
+    if (!isAuthenticated || !propertyId) return;
+    fetch(`/api/favorites`, { credentials: 'include' })
+      .then(res => res.ok ? res.json() : [])
+      .then((favs: { propertyId: string }[]) => {
+        setIsFavorite(favs.some((f) => f.propertyId === propertyId));
+      })
+      .catch(() => {});
+  }, [isAuthenticated, propertyId]);
+
+  // Toggle favorite
+  const toggleFavorite = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setFavoriteLoading(true);
+    try {
+      if (isFavorite) {
+        await apiDelete(`/api/favorites?propertyId=${propertyId}`);
+        setIsFavorite(false);
+      } else {
+        await apiPost('/api/favorites', { propertyId });
+        setIsFavorite(true);
+      }
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    } catch (err) {
+      console.error('Favorite toggle error:', err);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  }, [isAuthenticated, isFavorite, propertyId, queryClient]);
+
+  // Share functionality
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyId}` : '';
+  const shareTitle = property?.title || 'Bien immobilier sur AfriBayit';
+
+  const handleShare = useCallback(async (platform: string) => {
+    const text = `${shareTitle} - ${shareUrl}`;
+
+    switch (platform) {
+      case 'WhatsApp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        break;
+      case 'Facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'Twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'Lien':
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          // Fallback for older browsers
+          const input = document.createElement('input');
+          input.value = shareUrl;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }
+        break;
+      case 'Native':
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: shareTitle, url: shareUrl });
+          }
+        } catch {
+          // User cancelled or not supported
+        }
+        break;
+    }
+    setShowShareMenu(false);
+  }, [shareTitle, shareUrl]);
+
+  // Submit review
+  const handleSubmitReview = useCallback(async () => {
+    if (!isAuthenticated || !reviewComment.trim()) return;
+    setReviewSubmitting(true);
+    try {
+      await apiPost('/api/reviews', {
+        targetId: propertyId,
+        targetType: 'property',
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+      });
+      setShowReviewForm(false);
+      setReviewComment('');
+      setReviewRating(5);
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'property', propertyId] });
+    } catch (err) {
+      console.error('Review submission error:', err);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }, [isAuthenticated, propertyId, reviewRating, reviewComment, queryClient]);
 
   // Loading state
   if (isLoading) {
@@ -90,8 +271,12 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-gray-300" />
+          </div>
           <h2 className="font-display text-2xl font-bold text-gray-400">Bien non trouvé</h2>
-          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm">Retour</button>
+          <p className="text-sm text-gray-400 mt-2">Ce bien n&apos;existe pas ou a été retiré.</p>
+          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">Retour</button>
         </div>
       </div>
     );
@@ -104,14 +289,30 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
     : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop'];
   const features = property.features || [];
   const hasVR = property.hasVR || false;
+  const tours = toursData?.data?.tours || [];
+  const reviews = reviewsData?.reviews || [];
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
 
-  // Demo tours for the virtual tour viewer
-  const demoTours = [
-    { id: 'tour-salon', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=200&fit=crop', duration: null },
-    { id: 'tour-cuisine', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=200&fit=crop', duration: null },
-    { id: 'tour-chambre', tourType: '360_photo', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=200&fit=crop', duration: null },
-    { id: 'tour-drone', tourType: 'drone', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=4096&h=2048&fit=crop', thumbnailUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=200&fit=crop', duration: null },
-  ];
+  // Map properties for PropertyMap component
+  const mapProperties = property.lat && property.lng ? [{
+    id: property.id,
+    title: property.title,
+    price: property.price,
+    transaction: property.transaction,
+    type: property.type,
+    city: property.city,
+    quartier: property.quartier,
+    bedrooms: property.bedrooms,
+    surface: property.surface,
+    images: property.images,
+    lat: property.lat,
+    lng: property.lng,
+    verified: property.verified,
+    geoTrust: property.geoTrust,
+    investmentScore: null,
+  }] : [];
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8">
@@ -150,17 +351,13 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
                   {property.verified && (
                     <span className="px-3 py-1.5 bg-[#00A651] text-white text-xs font-bold rounded-full flex items-center gap-1.5">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
+                      <Check className="w-3.5 h-3.5" />
                       Documents vérifiés
                     </span>
                   )}
                   {property.geoTrust && (
                     <span className="px-3 py-1.5 bg-[#009CDE] text-white text-xs font-bold rounded-full flex items-center gap-1.5">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-                      </svg>
+                      <Map className="w-3.5 h-3.5" />
                       GeoTrust
                     </span>
                   )}
@@ -173,18 +370,32 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                       className="px-3 py-1.5 bg-[#003087] text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg hover:bg-[#0047b3] transition-colors cursor-pointer"
                       aria-label="Ouvrir la visite virtuelle 360°"
                     >
-                      <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
                       Visite VR disponible
                     </motion.button>
                   ) : (
                     <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-gray-700 flex items-center gap-1.5">
-                      <span className="text-lg"><Eye className="w-4 h-4" /></span> VR 360°
+                      <Eye className="w-4 h-4" /> VR 360°
                     </span>
                   )}
                 </div>
+
+                {/* Favorite Button */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={isAuthenticated ? toggleFavorite : undefined}
+                  className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+                    isFavorite
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white/90 backdrop-blur text-gray-400 hover:text-red-400'
+                  } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  title={!isAuthenticated ? 'Connectez-vous pour ajouter aux favoris' : ''}
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+                </motion.button>
+
                 {/* Nav arrows */}
                 {images.length > 1 && (
                   <>
@@ -242,10 +453,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                   className="w-full flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-2xl text-left group hover:shadow-xl transition-all duration-300"
                 >
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center shrink-0 group-hover:bg-[#D4AF37]/30 transition-colors">
-                    <svg className="w-6 h-6 sm:w-7 sm:h-7 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                    <Eye className="w-6 h-6 sm:w-7 sm:h-7 text-[#D4AF37]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -274,15 +482,18 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 {property.premium && (
                   <span className="px-2.5 py-0.5 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Premium</span>
                 )}
+                {avgRating && (
+                  <span className="flex items-center gap-1 px-2.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full">
+                    <Star className="w-3 h-3 fill-current" />
+                    {avgRating}
+                  </span>
+                )}
               </div>
               <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-2">
                 {property.title}
               </h1>
               <p className="text-gray-500 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <MapPin className="w-4 h-4" />
                 {property.quartier}, {property.city}, {property.country}
               </p>
             </motion.div>
@@ -333,16 +544,24 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                  <Eye className="w-5 h-5 text-[#003087]" />
                 </div>
                 <div>
                   <span className="text-lg font-bold text-[#2C2E2F]">{property.views}</span>
                   <span className="text-xs text-gray-500 ml-1">Vues</span>
                 </div>
               </div>
+              {property.favorites > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-bold text-[#2C2E2F]">{property.favorites}</span>
+                    <span className="text-xs text-gray-500 ml-1">Favoris</span>
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             {/* Description */}
@@ -375,7 +594,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
               </motion.div>
             )}
 
-            {/* Map */}
+            {/* Interactive Map */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -386,49 +605,190 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 <MapPin className="w-5 h-5 text-[#003087]" />
                 Localisation
               </h2>
-              <div className="relative h-64 rounded-3xl overflow-hidden">
-                {/* Simulated map background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
-                  {/* Grid lines to simulate map */}
-                  <div className="absolute inset-0 opacity-[0.07]">
-                    <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
-                    <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
-                    <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
-                    <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
-                    <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
-                    <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
-                  </div>
-                  {/* Simulated roads */}
-                  <div className="absolute top-[30%] left-0 right-0 h-[2px] bg-gray-200/80" />
-                  <div className="absolute top-[55%] left-0 right-0 h-[2px] bg-gray-200/60" />
-                  <div className="absolute left-[20%] top-0 bottom-0 w-[2px] bg-gray-200/70" />
-                  <div className="absolute left-[65%] top-0 bottom-0 w-[2px] bg-gray-200/50" />
-                  {/* Simulated blocks */}
-                  <div className="absolute top-[32%] left-[22%] w-[18%] h-[20%] rounded-sm bg-gray-200/40" />
-                  <div className="absolute top-[12%] left-[5%] w-[14%] h-[16%] rounded-sm bg-gray-200/30" />
-                  <div className="absolute top-[57%] left-[40%] w-[22%] h-[18%] rounded-sm bg-[#003087]/[0.03]" />
+              {property.lat && property.lng ? (
+                <div className="h-80 rounded-3xl overflow-hidden">
+                  <PropertyMap
+                    properties={mapProperties}
+                    selectedCountry={property.country}
+                    className="w-full h-full"
+                  />
                 </div>
-                {/* Map pin & overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
+              ) : (
+                <div className="relative h-64 rounded-3xl overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
+                    <div className="absolute inset-0 opacity-[0.07]">
+                      <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
+                      <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
+                      <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
+                      <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
+                      <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
+                      <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2">
                       <MapPin className="w-6 h-6 text-[#003087]" />
                     </div>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#003087] rounded-full opacity-20" />
+                    <p className="text-sm font-semibold text-[#2C2E2F] mt-2">{property.quartier}, {property.city}</p>
+                    <p className="text-xs text-gray-400 mt-1">Coordonnées GPS non disponibles</p>
                   </div>
-                  <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
-                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {property.quartier}, {property.city}
-                  </p>
                 </div>
-                {/* Bottom info bar */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/90 to-transparent pt-8 pb-3 px-4">
-                  <p className="text-[10px] text-gray-400 text-center">
-                    La carte interactive sera disponible avec la configuration Mapbox
-                  </p>
-                </div>
+              )}
+            </motion.div>
+
+            {/* Reviews / Avis Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35, ease: easeOut }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xl font-bold text-[#2C2E2F] flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-[#003087]" />
+                  Avis ({reviews.length})
+                </h2>
+                {isAuthenticated && (
+                  <button
+                    onClick={() => setShowReviewForm(!showReviewForm)}
+                    className="text-sm font-semibold text-[#003087] hover:underline flex items-center gap-1"
+                  >
+                    <Star className="w-4 h-4" />
+                    {showReviewForm ? 'Annuler' : 'Donner un avis'}
+                  </button>
+                )}
               </div>
+
+              {/* Rating Summary */}
+              {avgRating && (
+                <div className="flex items-center gap-3 p-4 bg-[#D4AF37]/5 rounded-2xl mb-4">
+                  <div className="text-3xl font-bold text-[#D4AF37]">{avgRating}</div>
+                  <div>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= Math.round(Number(avgRating))
+                              ? 'text-[#D4AF37] fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500">{reviews.length} avis vérifiés</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Review Form */}
+              <AnimatePresence>
+                {showReviewForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden mb-4"
+                  >
+                    <div className="p-4 bg-gray-50 rounded-2xl border">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium text-gray-700">Votre note :</span>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => setReviewRating(star)}
+                              className="focus:outline-none"
+                            >
+                              <Star
+                                className={`w-6 h-6 transition-colors ${
+                                  star <= reviewRating
+                                    ? 'text-[#D4AF37] fill-current'
+                                    : 'text-gray-300 hover:text-[#D4AF37]/50'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Partagez votre expérience avec ce bien..."
+                        className="w-full p-3 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] outline-none"
+                        rows={3}
+                      />
+                      <div className="flex justify-end mt-3">
+                        <button
+                          onClick={handleSubmitReview}
+                          disabled={reviewSubmitting || !reviewComment.trim()}
+                          className="px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-full hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {reviewSubmitting ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <ThumbsUp className="w-4 h-4" />
+                          )}
+                          Publier l&apos;avis
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Reviews List */}
+              {reviews.length > 0 ? (
+                <div className="space-y-3">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="p-4 bg-white rounded-2xl border">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center">
+                          <span className="text-sm font-bold text-[#003087]">
+                            {review.reviewer.name?.charAt(0).toUpperCase() || '?'}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-[#2C2E2F]">{review.reviewer.name}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3 h-3 ${
+                                    star <= review.rating
+                                      ? 'text-[#D4AF37] fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            {review.verified && (
+                              <span className="text-[9px] text-[#00A651] font-medium">Vérifié</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-gray-600 ml-12">{review.comment}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gray-50 rounded-2xl">
+                  <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Aucun avis pour le moment</p>
+                  {isAuthenticated && (
+                    <button
+                      onClick={() => setShowReviewForm(true)}
+                      className="mt-2 text-sm font-semibold text-[#003087] hover:underline"
+                    >
+                      Soyez le premier à donner votre avis
+                    </button>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
 
@@ -474,10 +834,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                       onClick={() => setShowVRTour(true)}
                       className="w-full py-3.5 bg-[#003087] hover:bg-[#0047b3] text-white rounded-full font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
                     >
-                      <svg className="w-4 h-4 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <Eye className="w-4 h-4 text-[#D4AF37]" />
                       Visite virtuelle 360°
                     </motion.button>
                   )}
@@ -497,14 +854,96 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                   </motion.button>
                 </div>
 
-                {/* Share */}
-                <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t">
-                  <span className="text-xs text-gray-400">Partager :</span>
-                  {['WhatsApp', 'Facebook', 'Twitter', 'Lien'].map((platform) => (
-                    <button key={platform} className="px-3 py-1 bg-gray-50 rounded-full text-[10px] font-medium text-gray-500 hover:bg-gray-100 transition-colors">
-                      {platform}
+                {/* Share & Favorite Row */}
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                  {/* Favorite Button */}
+                  <button
+                    onClick={isAuthenticated ? toggleFavorite : undefined}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-medium transition-colors ${
+                      isFavorite
+                        ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={!isAuthenticated ? 'Connectez-vous' : isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                    {isFavorite ? 'Enregistré' : 'Enregistrer'}
+                  </button>
+
+                  {/* Share Button */}
+                  <div className="relative flex-1">
+                    <button
+                      onClick={() => setShowShareMenu(!showShareMenu)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-50 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Partager
                     </button>
-                  ))}
+
+                    {/* Share Dropdown */}
+                    <AnimatePresence>
+                      {showShareMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-xl border p-2 z-50"
+                        >
+                          {/* Native Share (mobile) */}
+                          {typeof navigator !== 'undefined' && navigator.share && (
+                            <button
+                              onClick={() => handleShare('Native')}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-left"
+                            >
+                              <ExternalLink className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-700">Partager...</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleShare('WhatsApp')}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-green-50 rounded-xl transition-colors text-left"
+                          >
+                            <div className="w-5 h-5 rounded-full bg-[#25D366] flex items-center justify-center">
+                              <span className="text-white text-[8px] font-bold">W</span>
+                            </div>
+                            <span className="text-sm text-gray-700">WhatsApp</span>
+                          </button>
+                          <button
+                            onClick={() => handleShare('Facebook')}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 rounded-xl transition-colors text-left"
+                          >
+                            <div className="w-5 h-5 rounded-full bg-[#1877F2] flex items-center justify-center">
+                              <span className="text-white text-[8px] font-bold">f</span>
+                            </div>
+                            <span className="text-sm text-gray-700">Facebook</span>
+                          </button>
+                          <button
+                            onClick={() => handleShare('Twitter')}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-100 rounded-xl transition-colors text-left"
+                          >
+                            <div className="w-5 h-5 rounded-full bg-black flex items-center justify-center">
+                              <span className="text-white text-[8px] font-bold">X</span>
+                            </div>
+                            <span className="text-sm text-gray-700">X (Twitter)</span>
+                          </button>
+                          <button
+                            onClick={() => handleShare('Lien')}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-left"
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4 text-[#00A651]" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-gray-500" />
+                            )}
+                            <span className="text-sm text-gray-700">
+                              {copied ? 'Lien copié !' : 'Copier le lien'}
+                            </span>
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
 
@@ -531,9 +970,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                   {(agent.rating !== undefined && agent.rating > 0) && (
                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
                       <span className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                        <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
                         {agent.rating} ({agent.reviews})
                       </span>
                       {agent.listings !== undefined && <span>{agent.listings} annonces</span>}
@@ -594,7 +1031,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
                 className="w-full h-full"
               >
                 <VirtualTourViewer
-                  tours={demoTours}
+                  tours={tours.length > 0 ? tours : []}
                   propertyId={propertyId}
                   hasVR={hasVR}
                   onClose={() => setShowVRTour(false)}
@@ -604,6 +1041,14 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate }: Prope
           </AnimatePresence>
         </DialogContent>
       </Dialog>
+
+      {/* Click outside to close share menu */}
+      {showShareMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowShareMenu(false)}
+        />
+      )}
     </section>
   );
 }

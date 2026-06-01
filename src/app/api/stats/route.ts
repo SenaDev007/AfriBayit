@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       guesthousesCount,
       hotelBookingsCount,
       guesthouseBookingsCount,
+      shortTermBookingsCount,
     ] = await Promise.all([
       db.property.count({ where: { status: 'published', ...countryFilter } }),
       db.transaction.count({
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
       db.guesthouse.count({ where: { status: 'active', ...countryFilter } }),
       db.hotelBooking.count(),
       db.guesthouseBooking.count(),
+      db.shortTermRentalBooking.count(),
     ]);
 
     // Count distinct countries with published properties
@@ -58,7 +60,7 @@ export async function GET(request: Request) {
       courses: coursesCount,
       hotels: hotelsCount,
       guesthouses: guesthousesCount,
-      bookings: hotelBookingsCount + guesthouseBookingsCount,
+      bookings: hotelBookingsCount + guesthouseBookingsCount + shortTermBookingsCount,
     });
   } catch (error) {
     console.error('Stats API error:', error);
@@ -74,6 +76,7 @@ export async function GET(request: Request) {
       hotels: 0,
       guesthouses: 0,
       bookings: 0,
+      shortTermBookings: 0,
     });
   }
 }
