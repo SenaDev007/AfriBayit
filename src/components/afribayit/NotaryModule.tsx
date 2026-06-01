@@ -171,35 +171,45 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       if (typeof rawSpec === 'string') specialities = [rawSpec];
       else if (Array.isArray(rawSpec)) specialities = rawSpec as string[];
     } catch { specialities = []; }
+    // Safely convert potentially null/Date fields
+    const safeStr = (v: unknown): string => {
+      if (v == null) return '';
+      if (v instanceof Date) return v.toISOString();
+      return String(v);
+    };
     return {
-      id: n.id as string,
-      name: (user?.name || n.name || '') as string,
-      license: (n.licenseNumber || n.license || '') as string,
-      zone: (n.zone || '') as string,
-      country: (user?.country || n.country || '') as string,
-      rating: (n.rating ?? 0) as number,
-      missions: (n.missions ?? 0) as number,
-      certificationLevel: (n.certificationLevel || '') as string,
-      avatar: (user?.avatar || n.avatar || '') as string,
-      available: (n.available ?? false) as boolean,
+      id: safeStr(n.id),
+      name: safeStr(user?.name ?? n.name),
+      license: safeStr(n.licenseNumber ?? n.license),
+      zone: safeStr(n.zone),
+      country: safeStr(user?.country ?? n.country),
+      rating: Number(n.rating ?? 0),
+      missions: Number(n.missions ?? 0),
+      certificationLevel: safeStr(n.certificationLevel),
+      avatar: safeStr(user?.avatar ?? n.avatar),
+      available: Boolean(n.available ?? false),
       specialities,
-      subscription: (n.subscriptionTier || '') as string,
-      userId: (user?.id || n.userId || '') as string,
-      certifiedAt: n.certifiedAt as string | undefined,
-      createdAt: n.createdAt as string | undefined,
+      subscription: safeStr(n.subscriptionTier),
+      userId: safeStr(user?.id ?? n.userId),
+      certifiedAt: n.certifiedAt instanceof Date ? n.certifiedAt.toISOString() : (typeof n.certifiedAt === 'string' ? n.certifiedAt : undefined),
+      createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : (typeof n.createdAt === 'string' ? n.createdAt : undefined),
     };
   });
   const escrowAccounts: EscrowAccount[] = (escrowData?.escrowAccounts as EscrowAccount[]) || [];
 
   const filteredNotaries = notaries.filter(n => {
-    const nameStr = (n.name || '').toLowerCase();
-    const licenseStr = (n.license || '').toLowerCase();
-    const queryStr = (searchQuery || '').toLowerCase();
-    const matchSearch = nameStr.includes(queryStr) || licenseStr.includes(queryStr);
-    const matchZone = selectedZone === 'Toutes' || n.zone === selectedZone;
-    const matchLevel = selectedLevel === 'Tous' || n.certificationLevel === selectedLevel;
-    const matchSpeciality = selectedSpeciality === 'Toutes' || n.specialities.includes(selectedSpeciality);
-    return matchSearch && matchZone && matchLevel && matchSpeciality;
+    try {
+      const nameStr = String(n.name ?? '').toLowerCase();
+      const licenseStr = String(n.license ?? '').toLowerCase();
+      const queryStr = String(searchQuery ?? '').toLowerCase();
+      const matchSearch = nameStr.includes(queryStr) || licenseStr.includes(queryStr);
+      const matchZone = selectedZone === 'Toutes' || String(n.zone ?? '') === selectedZone;
+      const matchLevel = selectedLevel === 'Tous' || String(n.certificationLevel ?? '') === selectedLevel;
+      const matchSpeciality = selectedSpeciality === 'Toutes' || Array.isArray(n.specialities) && n.specialities.includes(selectedSpeciality);
+      return matchSearch && matchZone && matchLevel && matchSpeciality;
+    } catch {
+      return false;
+    }
   });
 
   // Revenue computation

@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const zone = searchParams.get('zone');
+    const specialty = searchParams.get('specialty');
     const certificationLevel = searchParams.get('certificationLevel');
     const available = searchParams.get('available');
     const country = searchParams.get('country');
@@ -15,6 +16,7 @@ export async function GET(request: Request) {
     const where: Record<string, unknown> = { certified: true };
 
     if (zone) where.zone = zone;
+    if (specialty) where.specialty = specialty;
     if (certificationLevel) where.certificationLevel = certificationLevel;
     if (available === 'true') where.available = true;
     if (country) where.country = country;

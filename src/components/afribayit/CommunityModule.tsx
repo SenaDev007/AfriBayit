@@ -159,40 +159,72 @@ export default function CommunityModule() {
 
   const posts: Post[] = ((postsData?.posts as Record<string, unknown>[]) || []).map(p => {
     const authorObj = p.author as Record<string, unknown> | null;
-    const authorName = authorObj && typeof authorObj === 'object' ? (authorObj.name as string || '') : (p.author as string || '');
-    const authorAvatar = authorObj && typeof authorObj === 'object' ? (authorObj.avatar as string || '') : (p.avatar as string || '');
+    let authorName = '';
+    try {
+      if (authorObj && typeof authorObj === 'object') {
+        authorName = String(authorObj.name ?? '');
+      } else if (typeof p.author === 'string') {
+        authorName = p.author;
+      }
+    } catch { authorName = ''; }
+    let authorAvatar = '';
+    try {
+      if (authorObj && typeof authorObj === 'object') {
+        authorAvatar = String(authorObj.avatar ?? '');
+      } else if (typeof p.avatar === 'string') {
+        authorAvatar = p.avatar;
+      }
+    } catch { authorAvatar = ''; }
+    // Safely convert Date objects to ISO strings
+    const toDateStr = (v: unknown): string => {
+      if (!v) return '';
+      if (v instanceof Date) return v.toISOString();
+      if (typeof v === 'string') return v;
+      return String(v);
+    };
     return {
-      id: p.id as string,
-      title: p.title as string,
+      id: String(p.id ?? ''),
+      title: String(p.title ?? ''),
       author: authorName,
       avatar: authorAvatar,
-      replies: (p.replies ?? (p._count && (p._count as Record<string, number>).replies_rel) ?? 0) as number,
-      views: (p.views ?? 0) as number,
-      category: (p.category || '') as string,
-      lastActivity: (p.lastActivity || p.createdAt || '') as string,
-      createdAt: p.createdAt as string | undefined,
-      city: p.city as string | undefined,
-      country: p.country as string | undefined,
+      replies: Number(p.replies ?? (p._count && (p._count as Record<string, number>).replies_rel) ?? 0),
+      views: Number(p.views ?? 0),
+      category: String(p.category ?? ''),
+      lastActivity: toDateStr(p.lastActivity || p.createdAt),
+      createdAt: toDateStr(p.createdAt) || undefined,
+      city: p.city != null ? String(p.city) : undefined,
+      country: p.country != null ? String(p.country) : undefined,
     };
   });
   const groups: Group[] = ((groupsData?.groups as Record<string, unknown>[]) || []).map(g => ({
-    id: g.id as string,
-    name: (g.name || '') as string,
-    role: (g.type || '') as string,
-    city: (g.city || '') as string,
-    score: (g.members ?? 0) as number,
-    avatar: (g.coverImage || '') as string,
-    skills: typeof g.type === 'string' ? [g.type as string] : [],
-    userId: g.organizerId as string | undefined,
+    id: String(g.id ?? ''),
+    name: String(g.name ?? ''),
+    role: String(g.type ?? ''),
+    city: String(g.city ?? ''),
+    score: Number(g.members ?? 0),
+    avatar: String(g.coverImage ?? ''),
+    skills: typeof g.type === 'string' ? [g.type] : [],
+    userId: g.organizerId != null ? String(g.organizerId) : undefined,
   }));
-  const events: Event[] = ((eventsData?.events as Record<string, unknown>[]) || []).map(e => ({
-    id: e.id as string,
-    title: (e.title || '') as string,
-    date: e.eventDate ? new Date(e.eventDate as string).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '',
-    location: ((e.venue || e.city || '') as string) + (e.isVirtual ? ' (Virtuel)' : ''),
-    type: (e.eventType || '') as string,
-    attendees: (e.maxAttendees ?? 0) as number,
-  }));
+  const events: Event[] = ((eventsData?.events as Record<string, unknown>[]) || []).map(e => {
+    let dateStr = '';
+    try {
+      const d = e.eventDate ? new Date(e.eventDate as string | Date) : null;
+      if (d && !isNaN(d.getTime())) {
+        dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      }
+    } catch { dateStr = ''; }
+    const venue = String(e.venue ?? e.city ?? '');
+    const isVirt = e.isVirtual === true || e.isVirtual === 'true';
+    return {
+      id: String(e.id ?? ''),
+      title: String(e.title ?? ''),
+      date: dateStr,
+      location: venue + (isVirt ? ' (Virtuel)' : ''),
+      type: String(e.eventType ?? ''),
+      attendees: Number(e.maxAttendees ?? e.attendees ?? 0),
+    };
+  });
 
   const currentUserScore = (user as Record<string, unknown> & { reputationScore?: number })?.reputationScore ? Number((user as Record<string, unknown> & { reputationScore?: number }).reputationScore) : 0;
   const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
@@ -223,11 +255,12 @@ export default function CommunityModule() {
     setReportingPostId(null);
   };
 
-  const eventTypeIcon = (type: string) => {
-    if (type.toLowerCase().includes('summit')) return <Trophy className="w-5 h-5 text-[#D4AF37]" />;
-    if (type.toLowerCase().includes('networking')) return <Users className="w-5 h-5 text-[#009CDE]" />;
-    if (type.toLowerCase().includes('portes ouvertes') || type.toLowerCase().includes('virtuel')) return <Globe className="w-5 h-5 text-[#00A651]" />;
-    if (type.toLowerCase().includes('formation')) return <BookOpen className="w-5 h-5 text-[#003087]" />;
+  const eventTypeIcon = (type: string | null | undefined) => {
+    const t = (type || '').toLowerCase();
+    if (t.includes('summit')) return <Trophy className="w-5 h-5 text-[#D4AF37]" />;
+    if (t.includes('networking')) return <Users className="w-5 h-5 text-[#009CDE]" />;
+    if (t.includes('portes ouvertes') || t.includes('virtuel')) return <Globe className="w-5 h-5 text-[#00A651]" />;
+    if (t.includes('formation')) return <BookOpen className="w-5 h-5 text-[#003087]" />;
     return <Calendar className="w-5 h-5 text-[#D4AF37]" />;
   };
 
@@ -331,7 +364,7 @@ export default function CommunityModule() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-[#2C2E2F] mb-1">{post.title}</h3>
                     <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                      <span className="font-medium text-[#003087]">{typeof post.author === 'object' ? (post.author as PostAuthor)?.name : post.author}</span>
+                      <span className="font-medium text-[#003087]">{typeof post.author === 'object' && post.author !== null ? String((post.author as PostAuthor)?.name ?? '') : String(post.author ?? '')}</span>
                       <span className="px-2 py-0.5 bg-gray-100 rounded-full">{post.category}</span>
                       {post.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{post.city}</span>}
                       <span>{post.replies} réponses</span>

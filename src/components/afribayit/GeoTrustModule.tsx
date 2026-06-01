@@ -83,18 +83,24 @@ export default function GeoTrustModule() {
       if (typeof rawSpec === 'string') certifications = JSON.parse(rawSpec);
       else if (Array.isArray(rawSpec)) certifications = rawSpec as string[];
     } catch { certifications = []; }
+    // Safely convert potentially null/Date fields
+    const safeStr = (v: unknown): string => {
+      if (v == null) return '';
+      if (v instanceof Date) return v.toISOString();
+      return String(v);
+    };
     return {
-      id: g.id as string,
-      name: (user?.name || g.name || '') as string,
-      avatar: (user?.avatar || g.avatar || '') as string,
-      city: (user?.city || g.city || '') as string,
-      country: (user?.country || g.country || '') as string,
-      rating: (g.rating ?? 0) as number,
-      reviews: (g.reviews ?? 0) as number,
+      id: safeStr(g.id),
+      name: safeStr(user?.name ?? g.name),
+      avatar: safeStr(user?.avatar ?? g.avatar),
+      city: safeStr(user?.city ?? g.city),
+      country: safeStr(user?.country ?? g.country),
+      rating: Number(g.rating ?? 0),
+      reviews: Number(g.reviews ?? 0),
       certifications,
-      missions: (g.missions ?? 0) as number,
-      certifiedAt: g.certifiedAt as string | undefined,
-      createdAt: g.createdAt as string | undefined,
+      missions: Number(g.missions ?? 0),
+      certifiedAt: g.certifiedAt instanceof Date ? g.certifiedAt.toISOString() : (typeof g.certifiedAt === 'string' ? g.certifiedAt : undefined),
+      createdAt: g.createdAt instanceof Date ? g.createdAt.toISOString() : (typeof g.createdAt === 'string' ? g.createdAt : undefined),
     };
   });
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];

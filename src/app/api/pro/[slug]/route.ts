@@ -35,10 +35,17 @@ export async function GET(
       },
     });
 
-    if (!profile || !profile.isPublic) {
+    if (!profile) {
       return NextResponse.json(
-        { error: 'Profil introuvable ou non public.' },
+        { error: 'Profil introuvable.' },
         { status: 404 }
+      );
+    }
+
+    if (!profile.isPublic) {
+      return NextResponse.json(
+        { error: 'Profil non public.' },
+        { status: 403 }
       );
     }
 
