@@ -31,8 +31,8 @@ export async function POST(request: Request) {
     }
 
     // Use z-ai-web-dev-sdk for Whisper AI transcription
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const response = await zai.audio.asr.create({
       file_base64: audio,
