@@ -74,7 +74,7 @@ function AppShellInner({ children }: { children: ReactNode }) {
           {children}
         </main>
 
-        {isHomePage && <Footer />}
+        <Footer />
 
         {/* Rebecca Chat Widget (on all pages except auth) */}
         <RebeccaChat isOpen={isRebeccaOpen} onClose={() => setIsRebeccaOpen(false)} />
