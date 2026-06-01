@@ -18,10 +18,17 @@ import {
   Search, Filter, ChevronRight, ArrowRight, Building2, CircleDot,
 } from 'lucide-react';
 
+interface PostAuthor {
+  id: string;
+  name: string;
+  avatar?: string;
+  reputation?: string;
+}
+
 interface Post {
   id: string;
   title: string;
-  author: string;
+  author: string | PostAuthor;
   avatar: string;
   replies: number;
   views: number;
@@ -150,9 +157,42 @@ export default function CommunityModule() {
   const createPost = useCreateCommunityPost();
   const registerEvent = useRegisterCommunityEvent();
 
-  const posts: Post[] = (postsData?.posts as Post[]) || [];
-  const groups: Group[] = (groupsData?.groups as Group[]) || [];
-  const events: Event[] = (eventsData?.events as Event[]) || [];
+  const posts: Post[] = ((postsData?.posts as Record<string, unknown>[]) || []).map(p => {
+    const authorObj = p.author as Record<string, unknown> | null;
+    const authorName = authorObj && typeof authorObj === 'object' ? (authorObj.name as string || '') : (p.author as string || '');
+    const authorAvatar = authorObj && typeof authorObj === 'object' ? (authorObj.avatar as string || '') : (p.avatar as string || '');
+    return {
+      id: p.id as string,
+      title: p.title as string,
+      author: authorName,
+      avatar: authorAvatar,
+      replies: (p.replies ?? (p._count && (p._count as Record<string, number>).replies_rel) ?? 0) as number,
+      views: (p.views ?? 0) as number,
+      category: (p.category || '') as string,
+      lastActivity: (p.lastActivity || p.createdAt || '') as string,
+      createdAt: p.createdAt as string | undefined,
+      city: p.city as string | undefined,
+      country: p.country as string | undefined,
+    };
+  });
+  const groups: Group[] = ((groupsData?.groups as Record<string, unknown>[]) || []).map(g => ({
+    id: g.id as string,
+    name: (g.name || '') as string,
+    role: (g.type || '') as string,
+    city: (g.city || '') as string,
+    score: (g.members ?? 0) as number,
+    avatar: (g.coverImage || '') as string,
+    skills: typeof g.type === 'string' ? [g.type as string] : [],
+    userId: g.organizerId as string | undefined,
+  }));
+  const events: Event[] = ((eventsData?.events as Record<string, unknown>[]) || []).map(e => ({
+    id: e.id as string,
+    title: (e.title || '') as string,
+    date: e.eventDate ? new Date(e.eventDate as string).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '',
+    location: ((e.venue || e.city || '') as string) + (e.isVirtual ? ' (Virtuel)' : ''),
+    type: (e.eventType || '') as string,
+    attendees: (e.maxAttendees ?? 0) as number,
+  }));
 
   const currentUserScore = (user as Record<string, unknown> & { reputationScore?: number })?.reputationScore ? Number((user as Record<string, unknown> & { reputationScore?: number }).reputationScore) : 0;
   const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
@@ -291,7 +331,7 @@ export default function CommunityModule() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-[#2C2E2F] mb-1">{post.title}</h3>
                     <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                      <span className="font-medium text-[#003087]">{post.author}</span>
+                      <span className="font-medium text-[#003087]">{typeof post.author === 'object' ? (post.author as PostAuthor)?.name : post.author}</span>
                       <span className="px-2 py-0.5 bg-gray-100 rounded-full">{post.category}</span>
                       {post.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{post.city}</span>}
                       <span>{post.replies} réponses</span>

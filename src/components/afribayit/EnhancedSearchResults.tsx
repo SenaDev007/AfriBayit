@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiPost, apiFetch } from '@/lib/api';
@@ -88,6 +88,18 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
     page: 1,
     limit: 24,
   });
+
+  // Sync initialTab with filters when it changes (e.g. navigating from Acheter to Louer)
+  // Using a ref to track the previous value and update state only when initialTab actually changes
+  const [prevTab, setPrevTab] = useState(initialTab);
+  if (prevTab !== initialTab) {
+    setPrevTab(initialTab);
+    setFilters(prev => ({
+      ...prev,
+      transaction: [initialTab as SearchFilters['transaction'] extends (infer T)[] ? T : never],
+      page: 1,
+    }));
+  }
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [compareIds, setCompareIds] = useState<string[]>([]);

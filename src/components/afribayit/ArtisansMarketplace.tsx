@@ -36,6 +36,34 @@ interface Artisan {
   emergency: boolean;
   priceRange: string;
   createdAt?: string;
+  userId?: string;
+}
+
+function mapArtisanFromApi(raw: Record<string, unknown>): Artisan {
+  const user = raw.user as Record<string, unknown> | null;
+  let specialties: string[] = [];
+  try {
+    const rawSpec = raw.specialties;
+    if (typeof rawSpec === 'string') specialties = JSON.parse(rawSpec);
+    else if (Array.isArray(rawSpec)) specialties = rawSpec as string[];
+  } catch { specialties = []; }
+  return {
+    id: raw.id as string,
+    name: (user?.name || raw.name || '') as string,
+    avatar: (user?.avatar || raw.avatar || '') as string,
+    trade: (raw.trade || '') as string,
+    city: (user?.city || raw.city || '') as string,
+    country: (user?.country || raw.country || '') as string,
+    certified: (raw.certified ?? false) as boolean,
+    rating: (raw.rating ?? 0) as number,
+    reviews: (raw.reviews ?? 0) as number,
+    specialties,
+    available: (raw.available ?? true) as boolean,
+    emergency: (raw.emergency ?? false) as boolean,
+    priceRange: (raw.priceRange || '') as string,
+    createdAt: raw.createdAt as string | undefined,
+    userId: raw.userId as string | undefined,
+  };
 }
 
 interface ArtisansMarketplaceProps {
@@ -92,7 +120,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const createQuote = useCreateArtisanQuote();
   const createNotification = useCreateNotification();
 
-  const artisans: Artisan[] = (data?.artisans as Artisan[]) || [];
+  const artisans: Artisan[] = ((data?.artisans as Record<string, unknown>[]) || []).map(mapArtisanFromApi);
 
   const filtered = selectedTrade === 'Tous'
     ? artisans

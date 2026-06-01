@@ -75,7 +75,28 @@ export default function GeoTrustModule() {
 
   const createMission = useCreateGeotrustMission();
 
-  const geometers: Geometer[] = (geometersData?.geometers as Geometer[]) || [];
+  const geometers: Geometer[] = ((geometersData?.geometers as Record<string, unknown>[]) || []).map(g => {
+    const user = g.user as Record<string, unknown> | null;
+    let certifications: string[] = [];
+    try {
+      const rawSpec = g.specialities;
+      if (typeof rawSpec === 'string') certifications = JSON.parse(rawSpec);
+      else if (Array.isArray(rawSpec)) certifications = rawSpec as string[];
+    } catch { certifications = []; }
+    return {
+      id: g.id as string,
+      name: (user?.name || g.name || '') as string,
+      avatar: (user?.avatar || g.avatar || '') as string,
+      city: (user?.city || g.city || '') as string,
+      country: (user?.country || g.country || '') as string,
+      rating: (g.rating ?? 0) as number,
+      reviews: (g.reviews ?? 0) as number,
+      certifications,
+      missions: (g.missions ?? 0) as number,
+      certifiedAt: g.certifiedAt as string | undefined,
+      createdAt: g.createdAt as string | undefined,
+    };
+  });
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
 
   const handleOpenMissionDialog = (geometer: Geometer) => {

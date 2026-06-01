@@ -19,22 +19,37 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-interface Notary {
+interface NotaryUser {
   id: string;
   name: string;
-  license: string;
+  avatar: string | null;
+  city: string | null;
+  country: string | null;
+  reputation: string | null;
+}
+
+interface Notary {
+  id: string;
+  userId: string;
+  name: string; // derived from user.name
+  license: string; // derived from licenseNumber
   zone: string;
   country: string;
   rating: number;
   missions: number;
   certificationLevel: string;
-  avatar: string;
+  avatar: string; // derived from user.avatar
   available: boolean;
-  specialities: string[];
-  subscription: string;
-  userId?: string;
+  specialities: string[]; // derived from specialty
+  subscription: string; // derived from subscriptionTier
+  chamberName?: string;
+  specialty?: string;
+  subscriptionTier?: string;
+  conventionSigned?: boolean;
+  certified?: boolean;
   certifiedAt?: string;
   createdAt?: string;
+  user?: NotaryUser;
 }
 
 interface EscrowAccount {
@@ -148,11 +163,39 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const createConversation = useCreateConversation();
   const createSubscription = useCreateSubscription();
 
-  const notaries: Notary[] = (notariesData?.notaries as Notary[]) || [];
+  const notaries: Notary[] = ((notariesData?.notaries as Record<string, unknown>[]) || []).map(n => {
+    const user = n.user as Record<string, unknown> | null;
+    let specialities: string[] = [];
+    try {
+      const rawSpec = n.specialty || n.specialities;
+      if (typeof rawSpec === 'string') specialities = [rawSpec];
+      else if (Array.isArray(rawSpec)) specialities = rawSpec as string[];
+    } catch { specialities = []; }
+    return {
+      id: n.id as string,
+      name: (user?.name || n.name || '') as string,
+      license: (n.licenseNumber || n.license || '') as string,
+      zone: (n.zone || '') as string,
+      country: (user?.country || n.country || '') as string,
+      rating: (n.rating ?? 0) as number,
+      missions: (n.missions ?? 0) as number,
+      certificationLevel: (n.certificationLevel || '') as string,
+      avatar: (user?.avatar || n.avatar || '') as string,
+      available: (n.available ?? false) as boolean,
+      specialities,
+      subscription: (n.subscriptionTier || '') as string,
+      userId: (user?.id || n.userId || '') as string,
+      certifiedAt: n.certifiedAt as string | undefined,
+      createdAt: n.createdAt as string | undefined,
+    };
+  });
   const escrowAccounts: EscrowAccount[] = (escrowData?.escrowAccounts as EscrowAccount[]) || [];
 
   const filteredNotaries = notaries.filter(n => {
-    const matchSearch = n.name.toLowerCase().includes(searchQuery.toLowerCase()) || n.license.toLowerCase().includes(searchQuery.toLowerCase());
+    const nameStr = (n.name || '').toLowerCase();
+    const licenseStr = (n.license || '').toLowerCase();
+    const queryStr = (searchQuery || '').toLowerCase();
+    const matchSearch = nameStr.includes(queryStr) || licenseStr.includes(queryStr);
     const matchZone = selectedZone === 'Toutes' || n.zone === selectedZone;
     const matchLevel = selectedLevel === 'Tous' || n.certificationLevel === selectedLevel;
     const matchSpeciality = selectedSpeciality === 'Toutes' || n.specialities.includes(selectedSpeciality);

@@ -23,6 +23,17 @@ export async function GET(request: Request) {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { rating: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              city: true,
+              country: true,
+            },
+          },
+        },
       }),
       db.artisan.count({ where }),
     ]);
