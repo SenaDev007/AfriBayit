@@ -2,8 +2,39 @@ import NextAuth from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
 
-// Create the NextAuth handler
-const handler = NextAuth(authOptions);
+// In-memory error log for debugging OAuth issues (last 10 errors)
+const oauthErrorLog: Array<{ timestamp: string; url: string; method: string; error: string }> = [];
+
+// Create the NextAuth handler with custom logger to capture OAuth errors
+const handler = NextAuth({
+  ...authOptions,
+  logger: {
+    error(code, ...meta) {
+      console.error('[NextAuth ERROR]', code, ...meta);
+      // Capture the error for our debug endpoint
+      const errorMsg = meta.map(m => {
+        if (m instanceof Error) return `${m.name}: ${m.message}`;
+        if (typeof m === 'string') return m;
+        try { return JSON.stringify(m); } catch { return String(m); }
+      }).join(' | ');
+      oauthErrorLog.push({
+        timestamp: new Date().toISOString(),
+        url: 'auth-handler',
+        method: code,
+        error: `${code}: ${errorMsg}`,
+      });
+      // Keep only last 10 entries
+      if (oauthErrorLog.length > 10) oauthErrorLog.shift();
+    },
+    warn(code, ...meta) {
+      console.warn('[NextAuth WARN]', code, ...meta);
+    },
+    debug(code, ...meta) {
+      // Uncomment for verbose debugging:
+      // console.debug('[NextAuth DEBUG]', code, ...meta);
+    },
+  },
+});
 
 // Wrap with login rate limiting: 20 attempts per IP per 15 minutes
 async function rateLimitedHandler(req: Request, ctx: { params: Promise<{ nextauth: string[] }> }) {
@@ -11,6 +42,13 @@ async function rateLimitedHandler(req: Request, ctx: { params: Promise<{ nextaut
   // Exclude OAuth callback paths from rate limiting
   const url = new URL(req.url);
   const isOAuthCallback = url.pathname.includes('/callback/');
+
+  // Special debug endpoint: /api/auth/oauth-errors
+  if (url.pathname === '/api/auth/oauth-errors') {
+    return new Response(JSON.stringify({ errors: oauthErrorLog }, null, 2), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (req.method === 'POST' && !isOAuthCallback) {
     const rlKey = getRateLimitKey(req);
@@ -33,7 +71,21 @@ async function rateLimitedHandler(req: Request, ctx: { params: Promise<{ nextaut
     }
   }
 
-  return handler(req, ctx);
+  try {
+    const result = await handler(req, ctx);
+    return result;
+  } catch (err) {
+    // Capture unhandled errors from NextAuth
+    const errorMsg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    oauthErrorLog.push({
+      timestamp: new Date().toISOString(),
+      url: url.pathname,
+      method: req.method,
+      error: `UNHANDLED: ${errorMsg}`,
+    });
+    if (oauthErrorLog.length > 10) oauthErrorLog.shift();
+    throw err;
+  }
 }
 
 export { rateLimitedHandler as GET, rateLimitedHandler as POST };
