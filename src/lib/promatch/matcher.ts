@@ -1,10 +1,20 @@
-// AfriBayit ProMatch — Artisan Matcher
+// AfriBayit ProMatch — Artisan Matcher V2
 // Finds and ranks artisans for a given job request
+// Updated: uses V2 scoring with proximity 30%, specialty 25%, availability 20%, rating 15%, price 10%
 
 import { db } from '@/lib/db';
-import { calculateProMatchScore, ArtisanData, MatchRequest, ScoredArtisan } from './scoring';
+import {
+  calculateProMatchScore,
+  matchArtisan,
+  ArtisanData,
+  MatchRequest,
+  ProjectNeed,
+  ScoredArtisan,
+  RankedArtisan,
+} from './scoring';
 
-export type { ArtisanData, MatchRequest, ScoredArtisan } from './scoring';
+export type { ArtisanData, MatchRequest, ProjectNeed, ScoredArtisan, RankedArtisan } from './scoring';
+export { matchArtisan, calculateProMatchScore } from './scoring';
 
 /**
  * Find the best matching artisans for a job request
@@ -12,7 +22,7 @@ export type { ArtisanData, MatchRequest, ScoredArtisan } from './scoring';
 export async function findMatchingArtisans(
   request: MatchRequest,
   maxResults = 10
-): Promise<ScoredArtisan[]> {
+): Promise<RankedArtisan[]> {
   try {
     // Build search filter
     const where: Record<string, unknown> = { available: true };
@@ -52,16 +62,21 @@ export async function findMatchingArtisans(
       lng: null,
     }));
 
-    // Score each artisan
-    const scored = artisanDataList.map((artisan) =>
-      calculateProMatchScore(artisan, request)
-    );
+    // Build project need and use matchArtisan for ranked results
+    const projectNeed: ProjectNeed = {
+      description: request.jobDescription,
+      requiredSkills: request.skills,
+      city: request.city,
+      country: request.country,
+      lat: request.lat,
+      lng: request.lng,
+      emergency: request.emergency,
+      maxBudget: request.maxBudget,
+    };
 
-    // Sort by total score descending
-    return scored
-      .filter((s) => s.totalScore > 0.1) // Filter out very low scores
-      .sort((a, b) => b.totalScore - a.totalScore)
-      .slice(0, maxResults);
+    const ranked = matchArtisan(projectNeed, artisanDataList);
+
+    return ranked.slice(0, maxResults);
   } catch (error) {
     console.error('ProMatch error:', error);
     return [];

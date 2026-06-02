@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifications, useMarkNotificationRead, useMarkAllRead } from '@/hooks/useNotifications';
+import { useRealtimeNotifications } from '@/hooks/useRealtime';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -35,6 +37,8 @@ import {
   BarChart3,
   CreditCard,
   Megaphone,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 
 interface NotificationsCenterProps {
@@ -277,9 +281,30 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
     inmail_credit: true,
   });
 
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useNotifications(userId, 1, 50);
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllRead();
+
+  // Real-time notification subscription via Pusher
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const onNewNotificationRef = useRef<(data: any) => void>();
+
+  onNewNotificationRef.current = (data: any) => {
+    // Invalidate notification queries to trigger a refresh
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    // Dispatch global event for NotificationToast and badge updates
+    window.dispatchEvent(new CustomEvent('afribayit:realtime-notification', { detail: data }));
+  };
+
+  const { lastNotification } = useRealtimeNotifications(userId, {
+    onNewNotification: useCallback((data: any) => {
+      onNewNotificationRef.current?.(data);
+    }, []),
+    onCountUpdate: useCallback((data: { unreadCount: number }) => {
+      window.dispatchEvent(new CustomEvent('afribayit:notification-count', { detail: data }));
+    }, []),
+  });
 
   const notifications = (data?.notifications ?? []) as Record<string, unknown>[];
 
@@ -445,7 +470,18 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
             <div className="p-5 border-b sticky top-0 bg-white z-10">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F]">Notifications</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-display text-lg font-bold text-[#2C2E2F]">Notifications</h2>
+                    {process.env.NEXT_PUBLIC_PUSHER_KEY && (
+                      <span className="flex items-center gap-1" title={realtimeConnected ? 'Temps reel connecte' : 'Temps reel deconnecte'}>
+                        {realtimeConnected ? (
+                          <Wifi className="w-3.5 h-3.5 text-[#00A651]" />
+                        ) : (
+                          <WifiOff className="w-3.5 h-3.5 text-gray-300" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                   {activeTab === 'notifications' && (
                     <p className="text-xs text-gray-500">{unreadCount} non lue{unreadCount !== 1 ? 's' : ''}</p>
                   )}

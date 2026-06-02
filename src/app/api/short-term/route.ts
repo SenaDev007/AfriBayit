@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
@@ -18,6 +19,10 @@ export async function GET(request: Request) {
     const instantBooking = searchParams.get('instantBooking');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
+
+    // Use tenant-aware DB client for automatic country filtering
+    const tenantCountry = extractTenantFromRequest(request);
+    const tenantDb = getTenantDb(tenantCountry);
 
     const where: Record<string, unknown> = { status: 'active' };
 
@@ -61,7 +66,7 @@ export async function GET(request: Request) {
     }
 
     const [rentals, total] = await Promise.all([
-      db.shortTermRental.findMany({
+      tenantDb.shortTermRental.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -71,7 +76,7 @@ export async function GET(request: Request) {
           pricingRules: { where: { period: { in: ['high_season', 'low_season', 'weekend', 'event', 'holiday'] } } },
         },
       }),
-      db.shortTermRental.count({ where }),
+      tenantDb.shortTermRental.count({ where }),
     ]);
 
     // Filter by amenities if specified (JSON field filter - post-query)

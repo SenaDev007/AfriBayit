@@ -51,3 +51,15 @@ export {
   type TokenVerificationResult,
   type DeviceFingerprint,
 } from './jwt-security';
+export {
+  hashPassword,
+  verifyPassword,
+  needsRehash,
+} from './password';
+export {
+  detectFraud,
+  type FraudCheckInput,
+  type FraudResult,
+  type FraudFlag,
+  type RiskLevel,
+} from './fraud-detector';

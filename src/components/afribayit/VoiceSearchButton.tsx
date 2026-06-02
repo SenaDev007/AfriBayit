@@ -42,6 +42,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const showUnsupportedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if Web Speech API is supported
   const isSpeechRecognitionSupported = useCallback(() => {
@@ -55,7 +56,13 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
   const startWhisperFallback = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      // Determine best supported MIME type
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : 'audio/mp4';
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -111,6 +118,13 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
 
       mediaRecorder.start();
       setVoiceState('listening');
+
+      // Auto-stop recording after 10 seconds max
+      autoStopTimerRef.current = setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.stop();
+        }
+      }, 10000);
     } catch {
       setVoiceState('error');
       setErrorMessage('Accès au microphone refusé');
@@ -118,6 +132,10 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
   }, [currentQuery, onTranscript]);
 
   const stopWhisperFallback = useCallback(() => {
+    if (autoStopTimerRef.current) {
+      clearTimeout(autoStopTimerRef.current);
+      autoStopTimerRef.current = null;
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
@@ -150,13 +168,25 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
+      let interimTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
           finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
         }
       }
 
+      // Show interim results in the search field as user speaks
+      if (interimTranscript) {
+        const combinedText = currentQuery
+          ? `${currentQuery} ${interimTranscript.trim()}`
+          : interimTranscript.trim();
+        onTranscript(combinedText);
+      }
+
+      // Final result — override with confirmed text
       if (finalTranscript) {
         const combinedText = currentQuery
           ? `${currentQuery} ${finalTranscript.trim()}`
@@ -186,7 +216,8 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
     };
 
     recognition.onend = () => {
-      setVoiceState('idle');
+      // Only set idle if we're still in listening state (not already processing or error)
+      setVoiceState((prev) => prev === 'listening' ? 'idle' : prev);
     };
 
     recognitionRef.current = recognition;
@@ -244,6 +275,9 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
       }
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
+      }
+      if (autoStopTimerRef.current) {
+        clearTimeout(autoStopTimerRef.current);
       }
     };
   }, []);

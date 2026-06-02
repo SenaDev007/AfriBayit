@@ -19,22 +19,37 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-interface Notary {
+interface NotaryUser {
   id: string;
   name: string;
-  license: string;
+  avatar: string | null;
+  city: string | null;
+  country: string | null;
+  reputation: string | null;
+}
+
+interface Notary {
+  id: string;
+  userId: string;
+  name: string; // derived from user.name
+  license: string; // derived from licenseNumber
   zone: string;
   country: string;
   rating: number;
   missions: number;
   certificationLevel: string;
-  avatar: string;
+  avatar: string; // derived from user.avatar
   available: boolean;
-  specialities: string[];
-  subscription: string;
-  userId?: string;
+  specialities: string[]; // derived from specialty
+  subscription: string; // derived from subscriptionTier
+  chamberName?: string;
+  specialty?: string;
+  subscriptionTier?: string;
+  conventionSigned?: boolean;
+  certified?: boolean;
   certifiedAt?: string;
   createdAt?: string;
+  user?: NotaryUser;
 }
 
 interface EscrowAccount {
@@ -148,15 +163,53 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const createConversation = useCreateConversation();
   const createSubscription = useCreateSubscription();
 
-  const notaries: Notary[] = (notariesData?.notaries as Notary[]) || [];
+  const notaries: Notary[] = ((notariesData?.notaries as Record<string, unknown>[]) || []).map(n => {
+    const user = n.user as Record<string, unknown> | null;
+    let specialities: string[] = [];
+    try {
+      const rawSpec = n.specialty || n.specialities;
+      if (typeof rawSpec === 'string') specialities = [rawSpec];
+      else if (Array.isArray(rawSpec)) specialities = rawSpec as string[];
+    } catch { specialities = []; }
+    // Safely convert potentially null/Date fields
+    const safeStr = (v: unknown): string => {
+      if (v == null) return '';
+      if (v instanceof Date) return v.toISOString();
+      return String(v);
+    };
+    return {
+      id: safeStr(n.id),
+      name: safeStr(user?.name ?? n.name),
+      license: safeStr(n.licenseNumber ?? n.license),
+      zone: safeStr(n.zone),
+      country: safeStr(user?.country ?? n.country),
+      rating: Number(n.rating ?? 0),
+      missions: Number(n.missions ?? 0),
+      certificationLevel: safeStr(n.certificationLevel),
+      avatar: safeStr(user?.avatar ?? n.avatar),
+      available: Boolean(n.available ?? false),
+      specialities,
+      subscription: safeStr(n.subscriptionTier),
+      userId: safeStr(user?.id ?? n.userId),
+      certifiedAt: n.certifiedAt instanceof Date ? n.certifiedAt.toISOString() : (typeof n.certifiedAt === 'string' ? n.certifiedAt : undefined),
+      createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : (typeof n.createdAt === 'string' ? n.createdAt : undefined),
+    };
+  });
   const escrowAccounts: EscrowAccount[] = (escrowData?.escrowAccounts as EscrowAccount[]) || [];
 
   const filteredNotaries = notaries.filter(n => {
-    const matchSearch = n.name.toLowerCase().includes(searchQuery.toLowerCase()) || n.license.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchZone = selectedZone === 'Toutes' || n.zone === selectedZone;
-    const matchLevel = selectedLevel === 'Tous' || n.certificationLevel === selectedLevel;
-    const matchSpeciality = selectedSpeciality === 'Toutes' || n.specialities.includes(selectedSpeciality);
-    return matchSearch && matchZone && matchLevel && matchSpeciality;
+    try {
+      const nameStr = String(n.name ?? '').toLowerCase();
+      const licenseStr = String(n.license ?? '').toLowerCase();
+      const queryStr = String(searchQuery ?? '').toLowerCase();
+      const matchSearch = nameStr.includes(queryStr) || licenseStr.includes(queryStr);
+      const matchZone = selectedZone === 'Toutes' || String(n.zone ?? '') === selectedZone;
+      const matchLevel = selectedLevel === 'Tous' || String(n.certificationLevel ?? '') === selectedLevel;
+      const matchSpeciality = selectedSpeciality === 'Toutes' || Array.isArray(n.specialities) && n.specialities.includes(selectedSpeciality);
+      return matchSearch && matchZone && matchLevel && matchSpeciality;
+    } catch {
+      return false;
+    }
   });
 
   // Revenue computation

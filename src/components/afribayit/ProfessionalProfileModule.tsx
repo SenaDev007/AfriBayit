@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProfile, useFollowProfile } from '@/hooks/useProfiles';
 import { useCreateConversation } from '@/hooks/useChat';
+import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { apiPost } from '@/lib/api';
@@ -113,7 +114,9 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
   const [endorsingSkill, setEndorsingSkill] = useState<string | null>(null);
   const [showCopied, setShowCopied] = useState(false);
 
-  const { data: profileDataRaw, isLoading, error } = useProfile(userId || 'demo-user');
+  const { user } = useAuthStore();
+  const effectiveUserId = userId || (user as Record<string, unknown> & { id?: string })?.id || 'demo-user';
+  const { data: profileDataRaw, isLoading, error } = useProfile(effectiveUserId);
   const profileData = profileDataRaw as ProfileData | undefined;
 
   const followProfile = useFollowProfile();

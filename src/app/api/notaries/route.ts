@@ -1,24 +1,35 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getTenantDb, extractTenantFromRequest, getTenantFilter } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const zone = searchParams.get('zone');
+    const specialty = searchParams.get('specialty');
     const certificationLevel = searchParams.get('certificationLevel');
     const available = searchParams.get('available');
     const country = searchParams.get('country');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
-    const where: Record<string, unknown> = { certified: true };
+    // Use tenant-aware country filter
+    const tenantCountry = extractTenantFromRequest(request);
+
+    const where: Record<string, unknown> = {
+      certified: true,
+      // Apply tenant filter - explicit country param overrides tenant context
+      ...(country ? { country } : getTenantFilter(tenantCountry)),
+    };
 
     if (zone) where.zone = zone;
+    if (specialty) where.specialty = specialty;
     if (certificationLevel) where.certificationLevel = certificationLevel;
     if (available === 'true') where.available = true;
-    if (country) where.country = country;
 
+    // Note: Notary's user relation may not be available in generated client,
+    // so we fetch user data separately after getting notaries
     const [notaries, total] = await Promise.all([
       db.notary.findMany({
         where,
@@ -29,8 +40,31 @@ export async function GET(request: Request) {
       db.notary.count({ where }),
     ]);
 
+    // Fetch user data for notaries
+    const userIds = notaries.map((n) => n.userId).filter(Boolean);
+    const users = userIds.length > 0
+      ? await db.user.findMany({
+          where: { id: { in: userIds } },
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            city: true,
+            country: true,
+            reputation: true,
+          },
+        })
+      : [];
+
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const notariesWithUsers = notaries.map((notary) => ({
+      ...notary,
+      user: userMap.get(notary.userId) || null,
+    }));
+
     return NextResponse.json({
-      notaries,
+      notaries: notariesWithUsers,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

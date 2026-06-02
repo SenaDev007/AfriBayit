@@ -111,8 +111,9 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
   const { data: session } = useSession();
 
   const isLoggedIn = !!session?.user;
-  const isAdmin = session?.user?.role === 'admin' || (session?.user as any)?.accreditationRole;
-  const isNotary = (session?.user as any)?.role === 'notary';
+  const userRole = session?.user?.role || (session?.user as Record<string, unknown>)?.role as string || '';
+  const isAdmin = userRole === 'admin';
+  const isNotary = userRole === 'notary';
 
   /* Scroll listener */
   useEffect(() => {
@@ -354,18 +355,22 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </motion.button>
               )}
 
-              {/* Dashboard / Backoffice quick button — always visible for admins */}
-              {isLoggedIn && isAdmin && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate('/admin')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold bg-[#003087] text-white border border-[#003087]/30 hover:bg-[#002060] shadow-md transition-all"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Backoffice
-                </motion.button>
-              )}
+              {/* Backoffice button — always visible, redirects to login if not admin */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(isLoggedIn && isAdmin ? '/admin' : '/auth/login')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                  isLoggedIn && isAdmin
+                    ? 'bg-[#003087] text-white border border-[#003087]/30 hover:bg-[#002060] shadow-md'
+                    : scrolled
+                      ? 'text-[#003087] hover:bg-blue-50 border border-[#003087]/20'
+                      : 'text-white hover:bg-white/10 border border-white/20'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                {isLoggedIn && isAdmin ? 'Backoffice' : 'Admin'}
+              </motion.button>
               {/* Dashboard button for non-admin logged-in users */}
               {isLoggedIn && !isAdmin && (
                 <motion.button
@@ -423,8 +428,8 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       >
                         {/* User info */}
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-semibold text-[#2C2E2F]">{(session?.user as any)?.name || 'Utilisateur'}</p>
-                          <p className="text-xs text-gray-400">{(session?.user as any)?.email || ''}</p>
+                          <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                          <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                         </div>
 
                         {/* Menu items */}
@@ -619,8 +624,8 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#2C2E2F]">{(session?.user as any)?.name || 'Utilisateur'}</p>
-                        <p className="text-xs text-gray-400">{(session?.user as any)?.email || ''}</p>
+                        <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                        <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                       </div>
                     </div>
 
@@ -710,6 +715,13 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002060] transition-colors"
                     >
                       Connexion
+                    </button>
+                    <button
+                      onClick={() => navigate('/admin')}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087]/10 text-[#003087] rounded-full text-sm font-semibold hover:bg-[#003087]/20 transition-colors border border-[#003087]/20"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Accès Backoffice
                     </button>
                     <button
                       onClick={() => navigate('/auth/register')}

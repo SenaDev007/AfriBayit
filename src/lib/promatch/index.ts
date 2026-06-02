@@ -2,8 +2,8 @@
 // Main entry point for artisan matching
 
 export { findMatchingArtisans } from './matcher';
-export { calculateProMatchScore } from './scoring';
-export type { ArtisanData, MatchRequest, ScoredArtisan } from './scoring';
+export { calculateProMatchScore, matchArtisan } from './scoring';
+export type { ArtisanData, MatchRequest, ProjectNeed, ScoredArtisan, RankedArtisan } from './scoring';
 
 // Emergency Dispatch (CDC §5.5)
 export {

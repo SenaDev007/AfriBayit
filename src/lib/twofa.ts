@@ -6,7 +6,7 @@
 
 import { TOTP, Secret } from 'otpauth';
 import { db } from '@/lib/db';
-import { verifyPassword } from '@/lib/auth';
+import { verifyPassword } from '@/lib/security/password';
 
 const TOTP_ISSUER = 'AfriBayit';
 const TOTP_PERIOD = 30; // 30-second window

@@ -284,9 +284,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-xl bg-[#003087] flex items-center justify-center">
-                    <span className="text-white font-bold text-lg font-display">A</span>
-                  </div>
+                  <img src="/logo.svg" alt="AfriBayit" className="h-9 w-auto" />
                   <span className="font-display text-lg font-bold text-[#003087]">
                     Afri<span className="text-[#D4AF37]">Bayit</span>
                   </span>

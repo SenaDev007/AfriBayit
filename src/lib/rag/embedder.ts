@@ -16,8 +16,8 @@ export interface EmbeddingResult {
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     // Use chat completions to generate a semantic representation
     // Since the SDK may not have a dedicated embeddings endpoint,

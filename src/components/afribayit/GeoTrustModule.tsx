@@ -75,7 +75,34 @@ export default function GeoTrustModule() {
 
   const createMission = useCreateGeotrustMission();
 
-  const geometers: Geometer[] = (geometersData?.geometers as Geometer[]) || [];
+  const geometers: Geometer[] = ((geometersData?.geometers as Record<string, unknown>[]) || []).map(g => {
+    const user = g.user as Record<string, unknown> | null;
+    let certifications: string[] = [];
+    try {
+      const rawSpec = g.specialities;
+      if (typeof rawSpec === 'string') certifications = JSON.parse(rawSpec);
+      else if (Array.isArray(rawSpec)) certifications = rawSpec as string[];
+    } catch { certifications = []; }
+    // Safely convert potentially null/Date fields
+    const safeStr = (v: unknown): string => {
+      if (v == null) return '';
+      if (v instanceof Date) return v.toISOString();
+      return String(v);
+    };
+    return {
+      id: safeStr(g.id),
+      name: safeStr(user?.name ?? g.name),
+      avatar: safeStr(user?.avatar ?? g.avatar),
+      city: safeStr(user?.city ?? g.city),
+      country: safeStr(user?.country ?? g.country),
+      rating: Number(g.rating ?? 0),
+      reviews: Number(g.reviews ?? 0),
+      certifications,
+      missions: Number(g.missions ?? 0),
+      certifiedAt: g.certifiedAt instanceof Date ? g.certifiedAt.toISOString() : (typeof g.certifiedAt === 'string' ? g.certifiedAt : undefined),
+      createdAt: g.createdAt instanceof Date ? g.createdAt.toISOString() : (typeof g.createdAt === 'string' ? g.createdAt : undefined),
+    };
+  });
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
 
   const handleOpenMissionDialog = (geometer: Geometer) => {

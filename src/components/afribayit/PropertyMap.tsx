@@ -24,6 +24,7 @@ interface PropertyMapItem {
   geoTrustStatus?: 'verified' | 'pending' | 'conflict';
   investmentScore: number | null;
   boundaryPolygon?: number[][]; // GeoJSON coordinates for parcel boundary
+  address?: string; // Full address for geocoding fallback
 }
 
 interface PropertyMapProps {
@@ -33,6 +34,8 @@ interface PropertyMapProps {
   selectedCountry?: string;
   className?: string;
   showGeoTrustOverlay?: boolean;
+  /** If provided, the map will zoom precisely to this single property */
+  selectedPropertyId?: string;
 }
 
 const COUNTRY_BOUNDS: Record<string, { longitude: number; latitude: number; zoom: number }> = {
@@ -40,6 +43,7 @@ const COUNTRY_BOUNDS: Record<string, { longitude: number; latitude: number; zoom
   CI: { longitude: -5.5, latitude: 7.5, zoom: 6 },
   BF: { longitude: -1.5, latitude: 12.2, zoom: 6 },
   TG: { longitude: 0.9, latitude: 8.5, zoom: 7 },
+  SN: { longitude: -14.7, latitude: 14.5, zoom: 6 },
 };
 
 const TRANSACTION_COLORS: Record<string, string> = {
@@ -68,14 +72,125 @@ export default function PropertyMap({
   selectedCountry,
   className = '',
   showGeoTrustOverlay = false,
+  selectedPropertyId,
 }: PropertyMapProps) {
   const [popupInfo, setPopupInfo] = useState<PropertyMapItem | null>(null);
-  const mapCenter = selectedCountry && COUNTRY_BOUNDS[selectedCountry]
-    ? COUNTRY_BOUNDS[selectedCountry]
-    : { longitude: 2.3, latitude: 9.5, zoom: 5 };
   const mapRef = React.useRef<MapRef>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+  // Only show properties with valid coordinates
+  const mapProperties = useMemo(
+    () => properties.filter(p => p.lat !== null && p.lng !== null),
+    [properties]
+  );
+
+  // Compute initial view state: zoom to properties if available, otherwise country default
+  const initialViewState = useMemo(() => {
+    // If a single property is selected, zoom precisely to it
+    if (selectedPropertyId) {
+      const selected = mapProperties.find(p => p.id === selectedPropertyId);
+      if (selected && selected.lat != null && selected.lng != null) {
+        return {
+          longitude: selected.lng,
+          latitude: selected.lat,
+          zoom: 16, // Street-level zoom for precise location
+        };
+      }
+    }
+
+    // If we have properties with coords, fit bounds around them
+    if (mapProperties.length === 1) {
+      return {
+        longitude: mapProperties[0].lng!,
+        latitude: mapProperties[0].lat!,
+        zoom: 15, // Neighborhood-level zoom for single property
+      };
+    }
+
+    if (mapProperties.length > 1) {
+      const lats = mapProperties.map(p => p.lat!);
+      const lngs = mapProperties.map(p => p.lng!);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+      return {
+        longitude: (minLng + maxLng) / 2,
+        latitude: (minLat + maxLat) / 2,
+        zoom: 10,
+      };
+    }
+
+    // Fallback: country-level
+    if (selectedCountry && COUNTRY_BOUNDS[selectedCountry]) {
+      return COUNTRY_BOUNDS[selectedCountry];
+    }
+
+    return { longitude: 2.3, latitude: 9.5, zoom: 5 };
+  }, [mapProperties, selectedCountry, selectedPropertyId]);
+
+  // Auto-fly to selected property when it changes
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+
+    if (selectedPropertyId) {
+      const selected = mapProperties.find(p => p.id === selectedPropertyId);
+      if (selected && selected.lat != null && selected.lng != null) {
+        mapRef.current.flyTo({
+          center: [selected.lng, selected.lat],
+          zoom: 16,
+          duration: 1500,
+          essential: true,
+        });
+      }
+    }
+  }, [selectedPropertyId, mapProperties, mapLoaded]);
+
+  // Fit bounds when map loads with multiple properties
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded || mapProperties.length <= 1) return;
+    if (selectedPropertyId) return; // Don't override if a specific property is selected
+
+    const lats = mapProperties.map(p => p.lat!);
+    const lngs = mapProperties.map(p => p.lng!);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+
+    // Add padding around the bounds
+    const latPadding = (maxLat - minLat) * 0.15 || 0.01;
+    const lngPadding = (maxLng - minLng) * 0.15 || 0.01;
+
+    mapRef.current.fitBounds(
+      [
+        [minLng - lngPadding, minLat - latPadding],
+        [maxLng + lngPadding, maxLat + latPadding],
+      ],
+      { padding: 60, duration: 1000 }
+    );
+  }, [mapLoaded, mapProperties, selectedPropertyId]);
+
+  // Geocoding: try to refine coordinates using Mapbox Geocoding API
+  const geocodeAddress = useCallback(async (address: string, city: string, country: string): Promise<{ lat: number; lng: number } | null> => {
+    if (!mapboxToken) return null;
+    try {
+      const query = encodeURIComponent(`${address}, ${city}, ${country}`);
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapboxToken}&limit=1&types=address,place,locality,neighborhood`
+      );
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        return { lat, lng };
+      }
+    } catch {
+      // Silently fail — fall back to stored coordinates
+    }
+    return null;
+  }, [mapboxToken]);
 
   const handleBoundsChange = useCallback(() => {
     if (mapRef.current && onBoundsChange) {
@@ -89,12 +204,6 @@ export default function PropertyMap({
       });
     }
   }, [onBoundsChange]);
-
-  // Only show properties with valid coordinates
-  const mapProperties = useMemo(
-    () => properties.filter(p => p.lat !== null && p.lng !== null),
-    [properties]
-  );
 
   // Build GeoJSON features for GeoTrust parcel overlay
   const parcelGeoJSON = useMemo(() => {
@@ -159,17 +268,15 @@ export default function PropertyMap({
     <div className={`relative rounded-2xl overflow-hidden ${className}`} style={{ minHeight: 400 }}>
       <Map
         ref={mapRef}
-        initialViewState={{
-          longitude: mapCenter.longitude,
-          latitude: mapCenter.latitude,
-          zoom: mapCenter.zoom,
-        }}
+        initialViewState={initialViewState}
         onMoveEnd={handleBoundsChange}
-        onLoad={handleBoundsChange}
-        mapStyle="mapbox://styles/mapbox/light-v11"
+        onLoad={() => {
+          setMapLoaded(true);
+          handleBoundsChange();
+        }}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={mapboxToken}
         style={{ width: '100%', height: '100%', minHeight: 400 }}
-        key={selectedCountry || 'default'}
       >
         <NavigationControl position="top-right" />
         <FullscreenControl position="top-right" />
@@ -213,6 +320,8 @@ export default function PropertyMap({
 
         {mapProperties.map(property => {
           const color = TRANSACTION_COLORS[property.transaction] || '#003087';
+          const isSelected = property.id === selectedPropertyId;
+
           return (
             <Marker
               key={property.id}
@@ -225,18 +334,41 @@ export default function PropertyMap({
                 onClick={(e) => {
                   e.stopPropagation();
                   setPopupInfo(property);
+                  onPropertyClick?.(property.id);
                 }}
               >
+                {/* Pulsing ring for selected/precise location */}
+                {isSelected && (
+                  <span className="absolute -inset-2 rounded-full border-2 animate-ping"
+                    style={{ borderColor: color, opacity: 0.5 }} />
+                )}
+
+                {/* Price marker */}
                 <div
-                  className="px-2 py-1 rounded-full text-white text-[10px] font-bold shadow-lg border-2 border-white transition-transform group-hover:scale-110"
-                  style={{ backgroundColor: color }}
+                  className={`px-2.5 py-1.5 rounded-full text-white text-[11px] font-bold shadow-lg border-2 border-white transition-all group-hover:scale-110 ${isSelected ? 'scale-110 ring-2 ring-offset-1' : ''}`}
+                  style={{ backgroundColor: color, ringColor: color }}
                 >
-                  {(property.price / 1000000).toFixed(0)}M
+                  {property.price >= 1000000
+                    ? `${(property.price / 1000000).toFixed(0)}M`
+                    : property.price >= 1000
+                    ? `${(property.price / 1000).toFixed(0)}K`
+                    : `${property.price}`}
                 </div>
+
+                {/* Pin point */}
                 <div
-                  className="w-2 h-2 rounded-full mx-auto -mt-0.5"
+                  className="w-3 h-3 rounded-full mx-auto -mt-1 shadow"
                   style={{ backgroundColor: color }}
                 />
+
+                {/* Address label for selected property */}
+                {isSelected && property.address && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
+                    <span className="text-[10px] bg-white text-gray-800 px-2 py-0.5 rounded shadow-sm font-medium">
+                      {property.address}
+                    </span>
+                  </div>
+                )}
               </button>
             </Marker>
           );
@@ -253,7 +385,7 @@ export default function PropertyMap({
             closeOnClick={false}
             className="property-popup"
           >
-            <div className="p-2 min-w-[200px]">
+            <div className="p-2 min-w-[220px]">
               <div className="flex gap-2 mb-2">
                 <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
                   {popupInfo.images?.[0] ? (
@@ -283,6 +415,22 @@ export default function PropertyMap({
                   <span className="text-[#00A651] font-semibold">Score: {popupInfo.investmentScore}</span>
                 )}
               </div>
+
+              {/* Coordinates display */}
+              <div className="flex items-center gap-1 text-[9px] text-gray-400 mb-2">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z" />
+                </svg>
+                <span>{popupInfo.lat?.toFixed(4)}, {popupInfo.lng?.toFixed(4)}</span>
+                {popupInfo.address && (
+                  <>
+                    <span>·</span>
+                    <span className="truncate">{popupInfo.address}</span>
+                  </>
+                )}
+              </div>
+
               <button
                 onClick={() => {
                   onPropertyClick?.(popupInfo.id);

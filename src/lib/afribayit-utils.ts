@@ -27,6 +27,7 @@ export interface PropertyData {
   lat?: number | null;
   lng?: number | null;
   views: number;
+  favorites?: number;
   hasVR?: boolean;
   hasDroneView?: boolean;
   createdAt: string;
