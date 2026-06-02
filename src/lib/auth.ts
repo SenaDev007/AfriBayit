@@ -1,4 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
+import type { JWT as NextAuthJWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
@@ -9,6 +10,52 @@ import {
   generateTokenPair,
   verifyRefreshToken,
 } from '@/lib/security/jwt-security';
+
+// Check if RS256 JWT keys are available (required for custom JWT encoding)
+// If not, NextAuth uses its default JWT encoding (HMAC-SHA256 with NEXTAUTH_SECRET)
+// IMPORTANT: On Vercel serverless, each cold start generates a new RSA key pair
+// unless JWT_PRIVATE_KEY/JWT_PUBLIC_KEY env vars are set. Without them, custom
+// encoding will break because different function instances use different keys.
+const hasRSAKeys = !!(process.env.JWT_PRIVATE_KEY && process.env.JWT_PUBLIC_KEY);
+
+// Build the authOptions object — conditionally include custom JWT encode/decode
+// only when RSA keys are available. Otherwise, NextAuth uses its default.
+const jwtConfig: NextAuthOptions['jwt'] = {
+  maxAge: 7 * 24 * 60 * 60, // 7 days
+};
+
+if (hasRSAKeys) {
+  jwtConfig.encode = async ({ token }) => {
+    if (!token) throw new Error('No token to encode');
+
+    const userId = (token.id as string) || (token.sub as string) || '';
+    const email = (token.email as string) || '';
+    const role = (token.role as string) || 'buyer';
+    const country = (token.country as string) || undefined;
+    const kycLevel = (token.kycLevel as number) || 0;
+
+    const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+    return pair.refreshToken;
+  };
+
+  jwtConfig.decode = async ({ token }) => {
+    if (!token) return null;
+    const result = verifyRefreshToken(token);
+    if (!result.valid || !result.payload) return null;
+    const payload = result.payload;
+    // Return as JWT type expected by NextAuth
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      role: payload.role as string,
+      country: payload.country as string | null,
+      kycLevel: payload.kycLevel as number,
+      iat: payload.iat,
+      exp: payload.exp,
+      jti: payload.jti,
+    } as unknown as NextAuthJWT;
+  };
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -73,72 +120,30 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 15 * 60, // 15 min — how often the session is re-fetched
   },
-  jwt: {
-    maxAge: 7 * 24 * 60 * 60, // 7 days — lifetime of the JWT cookie (refresh token)
-    /**
-     * Custom RS256 JWT encoding for NextAuth.
-     * The JWT stored in the cookie is our RS256-signed refresh token (7-day expiry).
-     * Short-lived access tokens (15 min) are generated separately for API Bearer auth.
-     */
-    async encode({ token }) {
-      if (!token) throw new Error('No token to encode');
-
-      const userId = (token.id as string) || (token.sub as string) || '';
-      const email = (token.email as string) || '';
-      const role = (token.role as string) || 'buyer';
-      const country = (token.country as string) || undefined;
-      const kycLevel = (token.kycLevel as number) || 0;
-
-      // Generate a fresh RS256 token pair
-      // We store the refresh token (7d) in the NextAuth cookie for session persistence
-      const pair = generateTokenPair(userId, email, role, { country, kycLevel });
-
-      // Return the refresh token as the cookie JWT — it has the 7-day expiry
-      // The access token (15 min) will be exposed to the client via the session callback
-      return pair.refreshToken;
-    },
-    /**
-     * Custom RS256 JWT decoding for NextAuth.
-     * Verifies the refresh token from the cookie using our RS256 public key.
-     */
-    async decode({ token }) {
-      if (!token) return null;
-      const result = verifyRefreshToken(token);
-      if (!result.valid || !result.payload) return null;
-      const payload = result.payload;
-      return {
-        sub: payload.sub,
-        email: payload.email,
-        role: payload.role,
-        country: payload.country,
-        kycLevel: payload.kycLevel,
-        iat: payload.iat,
-        exp: payload.exp,
-        jti: payload.jti,
-      } as Record<string, unknown>;
-    },
-  },
+  jwt: jwtConfig,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.sub = user.id;
-        token.role = (user as Record<string, unknown>).role || 'buyer';
-        token.country = (user as Record<string, unknown>).country || null;
-        token.kycLevel = (user as Record<string, unknown>).kycLevel || 0;
+        token.role = (user as unknown as { role?: string }).role || 'buyer';
+        token.country = (user as unknown as { country?: string | null }).country || null;
+        token.kycLevel = (user as unknown as { kycLevel?: number }).kycLevel || 0;
       }
 
       // Generate a fresh access token on every JWT refresh (for API Bearer auth)
-      // This is included in the token so the session callback can expose it
-      const userId = (token.id as string) || (token.sub as string) || '';
-      const email = (token.email as string) || '';
-      const role = (token.role as string) || 'buyer';
-      const country = (token.country as string) || undefined;
-      const kycLevel = (token.kycLevel as number) || 0;
+      // Only do this when RSA keys are available (otherwise default encoding handles it)
+      if (hasRSAKeys) {
+        const userId = (token.id as string) || (token.sub as string) || '';
+        const email = (token.email as string) || '';
+        const role = (token.role as string) || 'buyer';
+        const country = (token.country as string) || undefined;
+        const kycLevel = (token.kycLevel as number) || 0;
 
-      if (userId && email) {
-        const pair = generateTokenPair(userId, email, role, { country, kycLevel });
-        (token as Record<string, unknown>).accessToken = pair.accessToken;
+        if (userId && email) {
+          const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+          (token as Record<string, unknown>).accessToken = pair.accessToken;
+        }
       }
 
       return token;
@@ -157,45 +162,91 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       // Handle OAuth sign-in: create user record if new
       if (account?.provider === 'google' || account?.provider === 'facebook') {
-        if (!user.email) return false;
+        if (!user.email) {
+          console.error('[OAuth] No email returned from provider:', account.provider);
+          return false;
+        }
 
-        const existingUser = await db.user.findUnique({
-          where: { email: user.email },
-        });
-
-        if (!existingUser) {
-          // Create new user from OAuth
-          const newUser = await db.user.create({
-            data: {
-              email: user.email,
-              name: user.name || 'Utilisateur',
-              avatar: user.image || null,
-              role: 'buyer',
-              kycLevel: 0,
-              verified: false,
-            },
+        try {
+          const existingUser = await db.user.findUnique({
+            where: { email: user.email },
           });
 
-          // Create OAuth account record
-          await db.oAuthAccount.create({
-            data: {
-              provider: account.provider,
-              providerId: account.providerAccountId,
-              userId: newUser.id,
-              accessToken: account.access_token || null,
-              refreshToken: account.refresh_token || null,
-            },
-          });
+          if (!existingUser) {
+            // Create new user from OAuth
+            const newUser = await db.user.create({
+              data: {
+                email: user.email,
+                name: user.name || 'Utilisateur',
+                avatar: user.image || null,
+                role: 'buyer',
+                kycLevel: 0,
+                verified: false,
+              },
+            });
 
-          user.id = newUser.id;
-          (user as Record<string, unknown>).role = newUser.role;
-          (user as Record<string, unknown>).country = newUser.country;
-          (user as Record<string, unknown>).kycLevel = newUser.kycLevel;
-        } else {
-          user.id = existingUser.id;
-          (user as Record<string, unknown>).role = existingUser.role;
-          (user as Record<string, unknown>).country = existingUser.country;
-          (user as Record<string, unknown>).kycLevel = existingUser.kycLevel;
+            // Create OAuth account record
+            await db.oAuthAccount.create({
+              data: {
+                provider: account.provider,
+                providerId: account.providerAccountId,
+                userId: newUser.id,
+                accessToken: account.access_token || null,
+                refreshToken: account.refresh_token || null,
+              },
+            });
+
+            user.id = newUser.id;
+            (user as unknown as Record<string, unknown>).role = newUser.role;
+            (user as unknown as Record<string, unknown>).country = newUser.country;
+            (user as unknown as Record<string, unknown>).kycLevel = newUser.kycLevel;
+
+            console.log('[OAuth] New user created:', newUser.id, 'via', account.provider);
+          } else {
+            // Update OAuth account link if not exists
+            const existingOAuth = await db.oAuthAccount.findFirst({
+              where: { provider: account.provider, userId: existingUser.id },
+            });
+
+            if (!existingOAuth) {
+              await db.oAuthAccount.create({
+                data: {
+                  provider: account.provider,
+                  providerId: account.providerAccountId,
+                  userId: existingUser.id,
+                  accessToken: account.access_token || null,
+                  refreshToken: account.refresh_token || null,
+                },
+              });
+            } else {
+              // Update tokens
+              await db.oAuthAccount.update({
+                where: { id: existingOAuth.id },
+                data: {
+                  accessToken: account.access_token || null,
+                  refreshToken: account.refresh_token || null,
+                },
+              });
+            }
+
+            // Update avatar if provided by OAuth and not already set
+            if (user.image && !existingUser.avatar) {
+              await db.user.update({
+                where: { id: existingUser.id },
+                data: { avatar: user.image },
+              });
+            }
+
+            user.id = existingUser.id;
+            (user as unknown as Record<string, unknown>).role = existingUser.role;
+            (user as unknown as Record<string, unknown>).country = existingUser.country;
+            (user as unknown as Record<string, unknown>).kycLevel = existingUser.kycLevel;
+
+            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider);
+          }
+        } catch (error) {
+          console.error('[OAuth] Error during sign-in:', error);
+          return false;
         }
       }
       return true;

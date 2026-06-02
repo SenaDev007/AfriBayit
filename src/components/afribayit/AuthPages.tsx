@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { Check, Drama, Key, Loader2, Mail, User } from 'lucide-react';
@@ -50,6 +50,27 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  // Check for OAuth errors in URL params (e.g. ?error=OAuthAccountNotLinked)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
+      if (error) {
+        const errorMessages: Record<string, string> = {
+          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion. Veuillez utiliser la même méthode que lors de votre inscription.',
+          OAuthSignin: 'Erreur lors de la connexion via le fournisseur. Veuillez réessayer.',
+          OAuthCallback: 'Erreur lors du traitement de la réponse du fournisseur. Veuillez réessayer.',
+          OAuthCreateAccount: 'Impossible de créer votre compte. Veuillez réessayer.',
+          Callback: 'Erreur de connexion. Veuillez réessayer.',
+          Default: 'Une erreur est survenue lors de la connexion.',
+        };
+        setLoginError(errorMessages[error] || errorMessages.Default || 'Erreur de connexion.');
+        // Clean the URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, []);
 
   //  Register state 
   const [registerStep, setRegisterStep] = useState(0);
