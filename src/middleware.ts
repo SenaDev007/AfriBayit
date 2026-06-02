@@ -35,6 +35,8 @@ const EXCLUDED_HOSTNAMES = ['localhost', '127.0.0.1', '0.0.0.0'];
 // ============================================================================
 
 // Public routes that never require authentication
+// Per CDC: the platform must be browsable without login.
+// Only actions (publish, transact, admin) require auth.
 const PUBLIC_ROUTES = [
   '/',
   '/search',
@@ -47,6 +49,10 @@ const PUBLIC_ROUTES = [
   '/geotrust',
   '/community',
   '/notary',
+  '/short-term',
+  '/booking',
+  '/pro/',
+  '/offline',
 ];
 
 // Routes that work in guest/demo mode (no auth redirect)
@@ -215,6 +221,18 @@ function fallbackMiddleware(request: NextRequest): NextResponse {
 async function authMiddleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
+  // Public routes are ALWAYS accessible — skip NextAuth entirely
+  // This is critical: withAuth's authorized callback redirects to login
+  // when it returns false, so public routes must be handled BEFORE withAuth
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Non-protected, non-admin API routes are also public
+  if (pathname.startsWith('/api/') && !isProtectedRoute(pathname) && !isAdminRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   // Dynamically import next-auth middleware
   const { withAuth } = await import('next-auth/middleware');
 
@@ -233,7 +251,12 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
           if (accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN') {
             return true;
           }
-          return token?.role === 'admin';
+          return false; // Deny — not admin
+        }
+
+        // Protected routes require authentication
+        if (isProtectedRoute(path)) {
+          return !!token;
         }
 
         // Guest-accessible routes: allow through even without token
@@ -241,8 +264,8 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
           return true;
         }
 
-        // Other protected routes just require authentication
-        return !!token;
+        // All other routes: allow by default (public access per CDC)
+        return true;
       },
     },
   })(request as unknown as Parameters<ReturnType<typeof withAuth>>[0]) as NextResponse;
