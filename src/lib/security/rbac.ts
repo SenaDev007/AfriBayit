@@ -2,27 +2,36 @@
 // Permission definitions and enforcement for all roles
 
 export type Role =
-  | 'BUYER'
-  | 'SELLER'
-  | 'AGENT'
-  | 'ARTISAN'
-  | 'NOTARY'
-  | 'GEOMETER'
-  | 'HOTELIER'
-  | 'TRAINER'
-  | 'COUNTRY_ADMIN'
-  | 'SUPER_ADMIN';
+  | 'BUYER' // USER_STANDARD — navigation, recherche, favoris, messagerie, formations, réservations
+  | 'SELLER' // Propriétaire/Vendeur — dashboard analytics, gestion multi-propriétés
+  | 'INVESTOR' // Acheteur/Investisseur — calculateur ROI, alertes intelligentes
+  | 'TOURIST' // Touriste/Voyageur — réservations hôtels, programme fidélité
+  | 'ARTISAN' // Artisan BTP — profil certifié, galerie réalisations
+  | 'CERTIFIED_AGENT' // Agent immobilier certifié — publication annonces, dashboard pro
+  | 'PREMIUM_AGENT' // Agent Premium — droits CERTIFIED_AGENT + boost + analytics + InMail
+  | 'ARTISAN_PRO' // Artisan Pro — profil pro, missions, portfolio
+  | 'HOTELIER' // Propriétaire Guesthouse/Hotel — dashboard multi-chambres
+  | 'TRAINER' // Formateur/Expert — cours publiés, certifications
+  | 'NOTARY' // Notaire certifié — transactions notariales
+  | 'GEOMETER' // Géomètre certifié GeoTrust — missions géométriques
+  | 'COUNTRY_ADMIN' // Admin pays — validation annonces, gestion agents
+  | 'SUPER_ADMIN'; // Admin global — accès total
 
 // Map from database roles to RBAC roles
 export const DB_ROLE_MAP: Record<string, Role> = {
   buyer: 'BUYER',
   seller: 'SELLER',
-  agent: 'AGENT',
+  investor: 'INVESTOR',
+  tourist: 'TOURIST',
+  agent: 'CERTIFIED_AGENT',
+  certified_agent: 'CERTIFIED_AGENT',
+  premium_agent: 'PREMIUM_AGENT',
   artisan: 'ARTISAN',
-  notary: 'NOTARY',
-  geometer: 'GEOMETER',
+  artisan_pro: 'ARTISAN_PRO',
   hotelier: 'HOTELIER',
   trainer: 'TRAINER',
+  notary: 'NOTARY',
+  geometer: 'GEOMETER',
   admin: 'SUPER_ADMIN',
   country_admin: 'COUNTRY_ADMIN',
 };
@@ -47,8 +56,29 @@ export const PERMISSIONS: Record<Role, string[]> = {
     'messages:own',
     'profile:own',
     'wallet:own',
+    'analytics:own',
   ],
-  AGENT: [
+  INVESTOR: [
+    'properties:read',
+    'transactions:own',
+    'analytics:own',
+    'messages:own',
+    'reviews:write',
+    'favorites:manage',
+    'profile:own',
+    'wallet:own',
+  ],
+  TOURIST: [
+    'properties:read',
+    'bookings:own',
+    'hotels:read',
+    'messages:own',
+    'reviews:write',
+    'favorites:manage',
+    'profile:own',
+    'wallet:own',
+  ],
+  CERTIFIED_AGENT: [
     'properties:crud',
     'transactions:manage',
     'listings:boost',
@@ -58,6 +88,20 @@ export const PERMISSIONS: Record<Role, string[]> = {
     'wallet:own',
     'reviews:write',
   ],
+  PREMIUM_AGENT: [
+    'properties:crud',
+    'transactions:manage',
+    'listings:boost',
+    'analytics:own',
+    'messages:own',
+    'profile:own',
+    'wallet:own',
+    'reviews:write',
+    'inmail:send',
+    'boost:premium',
+    'vr:access',
+    'crm:access',
+  ],
   ARTISAN: [
     'profile:own',
     'missions:own',
@@ -65,20 +109,13 @@ export const PERMISSIONS: Record<Role, string[]> = {
     'messages:own',
     'wallet:own',
   ],
-  NOTARY: [
-    'transactions:notarize',
-    'deeds:manage',
-    'conventions:sign',
-    'messages:own',
+  ARTISAN_PRO: [
     'profile:own',
-    'wallet:own',
-  ],
-  GEOMETER: [
-    'missions:geo',
-    'reports:create',
-    'conflicts:flag',
+    'profile:pro',
+    'missions:own',
+    'quotes:manage',
+    'portfolio:manage',
     'messages:own',
-    'profile:own',
     'wallet:own',
   ],
   HOTELIER: [
@@ -94,6 +131,22 @@ export const PERMISSIONS: Record<Role, string[]> = {
     'courses:own',
     'enrollments:view',
     'certificates:issue',
+    'messages:own',
+    'profile:own',
+    'wallet:own',
+  ],
+  NOTARY: [
+    'transactions:notarize',
+    'deeds:manage',
+    'conventions:sign',
+    'messages:own',
+    'profile:own',
+    'wallet:own',
+  ],
+  GEOMETER: [
+    'missions:geo',
+    'reports:create',
+    'conflicts:flag',
     'messages:own',
     'profile:own',
     'wallet:own',

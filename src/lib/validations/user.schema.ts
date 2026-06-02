@@ -7,8 +7,8 @@ export const userRegisterSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  country: z.enum(['BJ', 'CI', 'BF', 'TG']).optional(),
-  role: z.enum(['buyer', 'seller', 'investor', 'tourist', 'artisan', 'agent', 'notary', 'geometer']).default('buyer'),
+  country: z.enum(['BJ', 'CI', 'BF', 'TG', 'SN']).optional(),
+  role: z.enum(['buyer', 'seller', 'investor', 'tourist', 'artisan', 'agent', 'hotelier', 'trainer', 'notary', 'geometer', 'certified_agent', 'premium_agent', 'artisan_pro']).default('buyer'),
 });
 
 export const userLoginSchema = z.object({
@@ -21,7 +21,7 @@ export const userUpdateSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
-  country: z.enum(['BJ', 'CI', 'BF', 'TG']).optional(),
+  country: z.enum(['BJ', 'CI', 'BF', 'TG', 'SN']).optional(),
   city: z.string().optional(),
   bio: z.string().max(500).optional(),
   preferredLanguage: z.enum(['fr', 'en', 'sw', 'ha', 'wo', 'ar']).optional(),

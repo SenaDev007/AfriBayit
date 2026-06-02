@@ -23,7 +23,7 @@ model User {
   avatar        String?
   coverPhoto    String?
   password      String?
-  role          String   @default("buyer") // buyer, seller, investor, tourist, artisan, agent, notary, geometer, admin
+  role          String   @default("buyer") // buyer, seller, investor, tourist, artisan, agent, notary, geometer, admin, hotelier, trainer, certified_agent, premium_agent, artisan_pro
   country       String?  // BJ, CI, BF, TG
   city          String?
   kycLevel      Int      @default(0) // 0=Anonyme, 1=Standard, 2=Avancé, 3=Pro
@@ -31,7 +31,9 @@ model User {
   reputation    String   @default("Decouvreur") // Decouvreur, Acteur, Expert, Ambassadeur
   bio           String?
   specialties   String?  // JSON array
-  verified           Boolean  @default(false)
+  emailVerified     DateTime? // When email was verified (null = not verified)
+  phoneVerified     DateTime? // When phone was verified (null = not verified)
+  verified          Boolean  @default(false)
   verificationStatus String   @default("PENDING") // PENDING, APPROVED, REJECTED — agent certification status
   premiumTier   String?  // starter, essentiel, avance, elite
   premiumExpiry DateTime?
@@ -104,7 +106,7 @@ model OAuthAccount {
 model KycDocument {
   id            String   @id @default(cuid())
   userId        String
-  docType       String   // id_card, passport, selfie, proof_address, agent_license, notary_license, geometer_license, business_reg
+  docType       String   // id_card, passport, selfie, proof_address, income_source, rccm, company_statutes, agent_license, notary_license, geometer_license, business_reg
   docUrl        String
   ocrResult     String?  // JSON: OCR extracted data
   ocrValid      Boolean  @default(false)

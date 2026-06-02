@@ -68,6 +68,7 @@ const COUNTRIES = [
   { value: 'CI', label: "Côte d'Ivoire" },
   { value: 'BF', label: 'Burkina Faso' },
   { value: 'TG', label: 'Togo' },
+  { value: 'SN', label: 'Sénégal' },
 ];
 
 const CITIES_BY_COUNTRY: Record<string, string[]> = {
@@ -75,15 +76,18 @@ const CITIES_BY_COUNTRY: Record<string, string[]> = {
   CI: ['Abidjan', 'Bouaké', 'Daloa', 'San-Pédro', 'Yamoussoukro'],
   BF: ['Ouagadougou', 'Bobo-Dioulasso', 'Koudougou', 'Banfora', 'Ouahigouya'],
   TG: ['Lomé', 'Sokodé', 'Kara', 'Atakpamé', 'Dapaong'],
+  SN: ['Dakar', 'Saint-Louis', 'Thiès', 'Kaolack', 'Ziguinchor'],
 };
 
 const ROLES = [
   { value: 'buyer', label: 'Acheteur', desc: 'Je cherche un bien immobilier' },
   { value: 'seller', label: 'Vendeur', desc: 'Je veux vendre mon bien' },
-  { value: 'agent', label: 'Agent', desc: 'Je suis agent immobilier' },
+  { value: 'agent', label: 'Agent immobilier', desc: 'Je suis agent immobilier certifié' },
   { value: 'investor', label: 'Investisseur', desc: 'Je souhaite investir' },
   { value: 'tourist', label: 'Touriste', desc: 'Je cherche un hébergement' },
-  { value: 'artisan', label: 'Artisan', desc: 'Je suis artisan du bâtiment' },
+  { value: 'artisan', label: 'Artisan BTP', desc: 'Je suis artisan du bâtiment' },
+  { value: 'hotelier', label: 'Hôtelier / Guesthouse', desc: 'Je gère un hôtel ou une guesthouse' },
+  { value: 'trainer', label: 'Formateur', desc: 'Je souhaite publier des cours' },
 ];
 
 export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPagesProps) {
@@ -92,6 +96,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null); // 'google' | 'facebook' | null
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // OAuth provider availability
@@ -194,9 +199,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
 
   //  Social login handlers 
   const handleGoogleLogin = async () => {
-    // If in an in-app browser, get the OAuth URL and open it in the system browser
+    setLoginError('');
+    setOauthLoading('google');
     try {
       const csrfRes = await fetch('/api/auth/csrf');
+      if (!csrfRes.ok) throw new Error('CSRF fetch failed');
       const { csrfToken } = await csrfRes.json();
 
       const signinRes = await fetch('/api/auth/signin/google', {
@@ -205,26 +212,40 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
         body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
       });
 
+      if (!signinRes.ok) {
+        throw new Error(`Signin request failed: ${signinRes.status}`);
+      }
+
       const data = await signinRes.json();
 
       if (data.url) {
         // Open the Google OAuth URL directly — this bypasses in-app browser restrictions
         if (inAppBrowser) {
           openInSystemBrowser(data.url);
+          setOauthLoading(null);
         } else {
           window.location.href = data.url;
         }
       } else if (data.error) {
         setLoginError('Erreur lors de la connexion Google. Veuillez réessayer.');
+        setOauthLoading(null);
+      } else {
+        setLoginError('Réponse inattendue du serveur. Veuillez réessayer.');
+        setOauthLoading(null);
       }
-    } catch {
-      setLoginError('Erreur de connexion au serveur.');
+    } catch (err) {
+      console.error('[Google OAuth] Error:', err);
+      setLoginError('Erreur de connexion au serveur. Vérifiez votre connexion et réessayez.');
+      setOauthLoading(null);
     }
   };
 
   const handleFacebookLogin = async () => {
+    setLoginError('');
+    setOauthLoading('facebook');
     try {
       const csrfRes = await fetch('/api/auth/csrf');
+      if (!csrfRes.ok) throw new Error('CSRF fetch failed');
       const { csrfToken } = await csrfRes.json();
 
       const signinRes = await fetch('/api/auth/signin/facebook', {
@@ -233,19 +254,30 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
         body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
       });
 
+      if (!signinRes.ok) {
+        throw new Error(`Facebook signin request failed: ${signinRes.status}`);
+      }
+
       const data = await signinRes.json();
 
       if (data.url) {
         if (inAppBrowser) {
           openInSystemBrowser(data.url);
+          setOauthLoading(null);
         } else {
           window.location.href = data.url;
         }
       } else if (data.error) {
-        setLoginError('Erreur lors de la connexion Facebook. Veuillez réessayer.');
+        setLoginError('Erreur lors de la connexion Facebook. Vérifiez la configuration ou réessayez.');
+        setOauthLoading(null);
+      } else {
+        setLoginError('Réponse inattendue du serveur. Veuillez réessayer.');
+        setOauthLoading(null);
       }
-    } catch {
-      setLoginError('Erreur de connexion au serveur.');
+    } catch (err) {
+      console.error('[Facebook OAuth] Error:', err);
+      setLoginError('Erreur de connexion au serveur. Vérifiez votre connexion et réessayez.');
+      setOauthLoading(null);
     }
   };
 
@@ -552,8 +584,12 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                             <button
                               type="button"
                               onClick={handleGoogleLogin}
-                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                              disabled={!!oauthLoading}
+                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
+                              {oauthLoading === 'google' ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
                               <svg className="w-4 h-4" viewBox="0 0 24 24">
                                 <path
                                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -572,19 +608,25 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                                   fill="#EA4335"
                                 />
                               </svg>
-                              Google
+                              )}
+                              {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
                             </button>
                           )}
                           {oauthAvailable.facebook && (
                             <button
                               type="button"
                               onClick={handleFacebookLogin}
-                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                              disabled={!!oauthLoading}
+                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
+                              {oauthLoading === 'facebook' ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
                               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
                                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                               </svg>
-                              Facebook
+                              )}
+                              {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
                             </button>
                           )}
                         </div>

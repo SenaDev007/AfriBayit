@@ -118,11 +118,13 @@ export async function POST(request: Request) {
       },
     });
 
-    // Step 5: Update user KYC level based on analysis
-    const updatedKycLevel = calculateUpdatedKycLevel(
+    // Step 5: Update user KYC level based on ALL validated documents (cumulative per CDC)
+    const isDocValid = analysisResult?.isValid ?? false;
+    const updatedKycLevel = await calculateUpdatedKycLevel(
+      userId,
       user.kycLevel,
       documentType,
-      analysisResult
+      isDocValid
     );
 
     if (updatedKycLevel > user.kycLevel) {
@@ -238,33 +240,59 @@ function buildRejectionReason(analysis: KycAnalysisResult): string {
 }
 
 /**
- * Calculate the updated KYC level for a user based on document submission.
+ * Calculate the updated KYC level for a user based on ALL submitted documents.
+ * Per CDC Section 7B.8.1:
  *
- * KYC Levels:
- * 0 = Anonyme (no documents)
- * 1 = Standard (ID or passport submitted)
- * 2 = Avancé (ID + proof of address or business reg)
- * 3 = Pro (All required documents + professional certification)
+ * KYC 0 — Anonyme:     Email + téléphone vérifié → Consultation uniquement
+ * KYC 1 — Standard:    CNI/Passeport + selfie AI → Jusqu'à 500 000 XOF/mois
+ * KYC 2 — Avancé:      KYC1 + justificatif domicile + source de revenus → Jusqu'à 5 000 000 XOF/mois
+ * KYC 3 — Professionnel: KYC2 + RCCM + statuts société + mandataire → Volume illimité
  */
-function calculateUpdatedKycLevel(
+async function calculateUpdatedKycLevel(
+  userId: string,
   currentLevel: number,
-  documentType: KycDocumentType,
-  analysis: KycAnalysisResult | null
-): number {
-  // If AI analysis failed or rejected, don't upgrade
-  if (!analysis || !analysis.isValid) return currentLevel;
+  newDocumentType: string,
+  isNewDocValid: boolean
+): Promise<number> {
+  // If the new document is not valid, don't upgrade
+  if (!isNewDocValid) return currentLevel;
 
-  // Level 1: ID documents
-  const idDocuments: KycDocumentType[] = ['ID_CARD', 'PASSPORT', 'DRIVER_LICENSE'];
-  const professionalDocuments: KycDocumentType[] = ['BUSINESS_REG', 'NOTARY_CERT', 'LAND_TITLE'];
+  // Fetch ALL validated documents for this user
+  const validatedDocs = await db.kycDocument.findMany({
+    where: {
+      userId,
+      status: { in: ['ai_validated', 'human_validated'] },
+    },
+    select: { docType: true },
+  });
 
-  if (idDocuments.includes(documentType)) {
-    return Math.max(currentLevel, 1);
+  const docTypes = new Set(validatedDocs.map((d) => d.docType.toLowerCase()));
+  // Also include the new document if it's valid
+  docTypes.add(newDocumentType.toLowerCase());
+
+  // KYC 1 requirements: CNI/Passport + selfie
+  const hasId = docTypes.has('id_card') || docTypes.has('passport');
+  const hasSelfie = docTypes.has('selfie');
+
+  // KYC 2 requirements: KYC1 + proof of address + income source
+  const hasProofOfAddress = docTypes.has('proof_address');
+  const hasIncomeSource = docTypes.has('income_source');
+
+  // KYC 3 requirements: KYC2 + RCCM + company statutes + business registration
+  const hasRccm = docTypes.has('rccm');
+  const hasCompanyStatutes = docTypes.has('company_statutes');
+  const hasBusinessReg = docTypes.has('business_reg');
+
+  // Calculate level cumulatively
+  if (hasId && hasSelfie && hasProofOfAddress && hasIncomeSource && (hasRccm || hasCompanyStatutes || hasBusinessReg)) {
+    return 3; // KYC 3 — Professionnel
+  }
+  if (hasId && hasSelfie && hasProofOfAddress && hasIncomeSource) {
+    return 2; // KYC 2 — Avancé
+  }
+  if (hasId && hasSelfie) {
+    return 1; // KYC 1 — Standard
   }
 
-  if (professionalDocuments.includes(documentType)) {
-    return Math.max(currentLevel, 2);
-  }
-
-  return currentLevel;
+  return currentLevel; // No upgrade yet
 }
