@@ -844,3 +844,22 @@ Stage Summary:
 - Facebook category: Business → Real Estate
 - Data deletion URL for Facebook: https://afri-bayit.vercel.app/delete-data
 - OAuth callback URL: https://afri-bayit.vercel.app/api/auth/callback/facebook
+
+---
+Task ID: 2
+Agent: Main
+Task: Fix critical OAuth bug — JWT key pair not persisting across Vercel serverless cold starts
+
+Work Log:
+- Analyzed OAuth flow and identified root cause: custom RS256 JWT encoding generates a new RSA key pair on every Vercel serverless cold start, making tokens undecodable across instances
+- Modified auth.ts to conditionally use custom JWT encode/decode only when JWT_PRIVATE_KEY/JWT_PUBLIC_KEY env vars are set; otherwise NextAuth uses its default encoding (HMAC-SHA256 with NEXTAUTH_SECRET)
+- Added OAuth error detection from URL params in AuthPages.tsx (displays French error messages for OAuthAccountNotLinked, OAuthSignin, OAuthCallback, etc.)
+- Improved OAuth signIn callback: error handling with try/catch, OAuth account linking for existing users, avatar update on login, detailed console logging
+- Fixed TypeScript type errors (JWT import, user type casting)
+- Pushed to GitHub (commit d7961ef)
+
+Stage Summary:
+- Critical fix: OAuth now works without JWT_PRIVATE_KEY/JWT_PUBLIC_KEY env vars
+- NextAuth uses NEXTAUTH_SECRET (already configured on Vercel) for JWT by default
+- RS256 custom encoding is opt-in when keys are configured
+- OAuth errors are now displayed in French in the login modal
