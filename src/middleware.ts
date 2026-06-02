@@ -53,6 +53,8 @@ const PUBLIC_ROUTES = [
   '/booking',
   '/pro/',
   '/offline',
+  '/terms',
+  '/privacy',
 ];
 
 // Routes that work in guest/demo mode (no auth redirect)

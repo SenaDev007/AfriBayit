@@ -104,11 +104,11 @@ export default function Footer() {
       title: 'Légal',
       icon: <Scale size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'CGU', href: '#', icon: <FileText size={14} /> },
-        { label: 'Confidentialité', href: '#', icon: <Lock size={14} /> },
-        { label: 'Cookies', href: '#', icon: <Cookie size={14} /> },
-        { label: 'Mentions légales', href: '#', icon: <FileText size={14} /> },
-        { label: 'Signaler', href: '#', icon: <AlertTriangle size={14} /> },
+        { label: 'CGU', href: '/terms', icon: <FileText size={14} /> },
+        { label: 'Confidentialité', href: '/privacy', icon: <Lock size={14} /> },
+        { label: 'Cookies', href: '/privacy#cookies', icon: <Cookie size={14} /> },
+        { label: 'Mentions légales', href: '/terms#droit-applicable', icon: <FileText size={14} /> },
+        { label: 'Signaler', href: 'mailto:contact@afribayit.com', icon: <AlertTriangle size={14} /> },
       ],
     },
   ];
