@@ -180,11 +180,11 @@ export async function setTenantSession(countryCode: string): Promise<void> {
 
   try {
     await db.$executeRawUnsafe(
-      `SET LOCAL app.current_tenant = '${upperCountry}'`
+      `SET LOCAL app.current_country = '${upperCountry}'`
     );
   } catch {
     // Silently ignore if not on PostgreSQL (e.g., SQLite in dev)
-    // or if the app.current_tenant variable is not yet configured
+    // or if the app.current_country variable is not yet configured
   }
 }
 

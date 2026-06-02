@@ -73,22 +73,29 @@ export function withCountryScope<T extends Record<string, unknown>>(
  * Execute a callback within an RLS context.
  * Automatically sets and clears the RLS context around the callback.
  *
+ * IMPORTANT: This uses Prisma $transaction to ensure SET LOCAL persists.
+ * Without a transaction block, SET LOCAL is lost immediately because
+ * Neon's connection pool returns the connection after each query.
+ *
  * Usage:
- *   const results = await withRLSContext(userId, 'BJ', async () => {
- *     return db.property.findMany({ where: { status: 'published' } });
+ *   const results = await withRLSContext(userId, 'BJ', async (tx) => {
+ *     return tx.property.findMany({ where: { status: 'published' } });
  *   });
  */
 export async function withRLSContext<T>(
   userId: string,
   country: string,
-  callback: () => Promise<T>
+  callback: (tx: Parameters<Parameters<typeof db.$transaction>[0]>[0]) => Promise<T>
 ): Promise<T> {
-  await setRLSContext(userId, country);
-  try {
-    return await callback();
-  } finally {
-    await clearRLSContext();
-  }
+  return db.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `SET LOCAL app.current_user_id = '${sanitizeSQLString(userId)}';`
+    );
+    await tx.$executeRawUnsafe(
+      `SET LOCAL app.current_country = '${sanitizeSQLString(country)}';`
+    );
+    return callback(tx);
+  });
 }
 
 /**
