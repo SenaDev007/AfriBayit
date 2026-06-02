@@ -57,65 +57,99 @@ if (hasRSAKeys) {
   };
 }
 
-export const authOptions: NextAuthOptions = {
-  providers: [
+// Only include OAuth providers when valid credentials are configured
+// This prevents "placeholder" errors on Vercel when env vars are not set
+const providers: NextAuthOptions['providers'] = [
+  CredentialsProvider({
+    name: 'credentials',
+    credentials: {
+      email: { label: 'Email', type: 'email' },
+      password: { label: 'Mot de passe', type: 'password' },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        throw new Error('Email et mot de passe requis');
+      }
+
+      const user = await db.user.findUnique({
+        where: { email: credentials.email },
+      });
+
+      if (!user || !user.password) {
+        throw new Error('Identifiants invalides');
+      }
+
+      // Verify password with Argon2id, falling back to bcrypt for legacy hashes
+      const isValid = await verifyPassword(credentials.password, user.password);
+
+      if (!isValid) {
+        throw new Error('Identifiants invalides');
+      }
+
+      // Auto-upgrade legacy bcrypt hashes to Argon2id on successful login
+      if (needsRehash(user.password)) {
+        // Fire-and-forget rehash — don't block the login flow
+        rehashPasswordIfNeeded(user.id, credentials.password, user.password).catch(() => {});
+      }
+
+      // Check if user has 2FA enabled — handled in separate 2FA verify flow
+      if (user.twoFactorEnabled) {
+        // Return partial auth to trigger 2FA verification
+        throw new Error('2FA_REQUIRED');
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        country: user.country,
+        kycLevel: user.kycLevel,
+      };
+    },
+  }),
+];
+
+// Conditionally add Google provider
+const hasGoogle =
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_ID !== 'placeholder-google-client-id' &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CLIENT_SECRET !== 'placeholder-google-client-secret';
+
+if (hasGoogle) {
+  providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || 'placeholder-google-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'placeholder-google-client-secret',
-    }),
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    })
+  );
+}
+
+// Conditionally add Facebook provider
+const hasFacebook =
+  process.env.FACEBOOK_CLIENT_ID &&
+  process.env.FACEBOOK_CLIENT_ID !== 'placeholder-facebook-client-id' &&
+  process.env.FACEBOOK_CLIENT_SECRET &&
+  process.env.FACEBOOK_CLIENT_SECRET !== 'placeholder-facebook-client-secret';
+
+if (hasFacebook) {
+  providers.push(
     FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || 'placeholder-facebook-client-id',
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || 'placeholder-facebook-client-secret',
-    }),
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Mot de passe', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email et mot de passe requis');
-        }
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    })
+  );
+}
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email },
-        });
+// Export OAuth availability for frontend consumption
+export const oauthProviders = {
+  google: !!hasGoogle,
+  facebook: !!hasFacebook,
+};
 
-        if (!user || !user.password) {
-          throw new Error('Identifiants invalides');
-        }
-
-        // Verify password with Argon2id, falling back to bcrypt for legacy hashes
-        const isValid = await verifyPassword(credentials.password, user.password);
-
-        if (!isValid) {
-          throw new Error('Identifiants invalides');
-        }
-
-        // Auto-upgrade legacy bcrypt hashes to Argon2id on successful login
-        if (needsRehash(user.password)) {
-          // Fire-and-forget rehash — don't block the login flow
-          rehashPasswordIfNeeded(user.id, credentials.password, user.password).catch(() => {});
-        }
-
-        // Check if user has 2FA enabled — handled in separate 2FA verify flow
-        if (user.twoFactorEnabled) {
-          // Return partial auth to trigger 2FA verification
-          throw new Error('2FA_REQUIRED');
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          country: user.country,
-          kycLevel: user.kycLevel,
-        };
-      },
-    }),
-  ],
+export const authOptions: NextAuthOptions = {
+  providers,
   session: {
     strategy: 'jwt',
     maxAge: 15 * 60, // 15 min — how often the session is re-fetched
