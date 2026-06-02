@@ -1,9 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import { signOut } from 'next-auth/react';
 import SafeModule from '@/components/safe/SafeModule';
+import { Loader2 } from 'lucide-react';
 
 const UserDashboard = dynamic(() => import('@/components/afribayit/UserDashboard'), {
   loading: () => (
@@ -24,11 +28,40 @@ const UserDashboard = dynamic(() => import('@/components/afribayit/UserDashboard
 });
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { onNavigate } = useAfriBayitNav();
+
+  // Redirect OAuth users without a country to the complete-profile page
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      const country = (session.user as Record<string, unknown>).country as string | null;
+      const needsCompletion = (session.user as Record<string, unknown>).needsProfileCompletion as boolean;
+
+      if (!country || needsCompletion) {
+        router.push('/auth/complete-profile');
+      }
+    } else if (status === 'unauthenticated') {
+      router.push('/auth/login');
+    }
+  }, [status, session, router]);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });
   };
+
+  // Show loading while checking session or redirecting
+  if (status === 'loading' || (status === 'authenticated' && !(session?.user as Record<string, unknown>)?.country)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/30">
+        <Loader2 className="w-8 h-8 animate-spin text-[#003087]" />
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen">

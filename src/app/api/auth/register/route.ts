@@ -7,7 +7,8 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 5 registrations per IP per hour
     const rlKey = getRateLimitKey(request);
-    const rlResult = rateLimit(`register:${rlKey}`, 5, 60 * 60 * 1000);
+    // CRITICAL: rateLimit is async, MUST be awaited!
+    const rlResult = await rateLimit(`register:${rlKey}`, 5, 60 * 60 * 1000);
     if (!rlResult.allowed) {
       return NextResponse.json(
         {

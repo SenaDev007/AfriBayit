@@ -11,7 +11,8 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 3 OTP sends per IP per hour (prevents abuse for password reset)
     const rlKey = getRateLimitKey(request);
-    const rlResult = rateLimit(`otp-send:${rlKey}`, 3, 60 * 60 * 1000);
+    // CRITICAL: rateLimit is async, MUST be awaited!
+    const rlResult = await rateLimit(`otp-send:${rlKey}`, 3, 60 * 60 * 1000);
     if (!rlResult.allowed) {
       return NextResponse.json(
         {

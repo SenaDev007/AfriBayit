@@ -12,7 +12,8 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 10 OTP verification attempts per IP per 15 minutes
     const rlKey = getRateLimitKey(request);
-    const rlResult = rateLimit(`otp-verify:${rlKey}`, 10, 15 * 60 * 1000);
+    // CRITICAL: rateLimit is async, MUST be awaited!
+    const rlResult = await rateLimit(`otp-verify:${rlKey}`, 10, 15 * 60 * 1000);
     if (!rlResult.allowed) {
       return NextResponse.json(
         {

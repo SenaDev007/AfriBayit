@@ -156,13 +156,37 @@ export const authOptions: NextAuthOptions = {
   },
   jwt: jwtConfig,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // On sign-in, populate token with user data
       if (user) {
         token.id = user.id;
         token.sub = user.id;
         token.role = (user as unknown as { role?: string }).role || 'buyer';
         token.country = (user as unknown as { country?: string | null }).country || null;
         token.kycLevel = (user as unknown as { kycLevel?: number }).kycLevel || 0;
+        token.needsProfileCompletion = (user as unknown as { needsProfileCompletion?: boolean }).needsProfileCompletion || false;
+      }
+
+      // On session update (e.g. after profile completion), refresh user data from DB
+      if (trigger === 'update') {
+        try {
+          const userId = (token.id as string) || (token.sub as string);
+          if (userId) {
+            const freshUser = await db.user.findUnique({
+              where: { id: userId },
+              select: { id: true, role: true, country: true, kycLevel: true, name: true, email: true },
+            });
+            if (freshUser) {
+              token.role = freshUser.role;
+              token.country = freshUser.country;
+              token.kycLevel = freshUser.kycLevel;
+              token.needsProfileCompletion = !freshUser.country;
+              token.email = freshUser.email;
+            }
+          }
+        } catch (error) {
+          console.error('[JWT] Error refreshing user data on update:', error);
+        }
       }
 
       // Generate a fresh access token on every JWT refresh (for API Bearer auth)
@@ -188,13 +212,14 @@ export const authOptions: NextAuthOptions = {
         (session.user as Record<string, unknown>).role = token.role;
         (session.user as Record<string, unknown>).country = token.country;
         (session.user as Record<string, unknown>).kycLevel = token.kycLevel;
+        (session.user as Record<string, unknown>).needsProfileCompletion = token.needsProfileCompletion || false;
         // Expose the short-lived access token for API Bearer auth
         (session.user as Record<string, unknown>).accessToken = (token as Record<string, unknown>).accessToken;
       }
       return session;
     },
     async signIn({ user, account }) {
-      // Handle OAuth sign-in: create user record if new
+      // Handle OAuth sign-in: create user record if new, with tenant-scoped country
       if (account?.provider === 'google' || account?.provider === 'facebook') {
         if (!user.email) {
           console.error('[OAuth] No email returned from provider:', account.provider);
@@ -207,22 +232,26 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!existingUser) {
-            // Create new user from OAuth
+            // Create new user from OAuth — country will be null, must complete profile
             const newUser = await db.user.create({
               data: {
                 email: user.email,
                 name: user.name || 'Utilisateur',
+                firstName: user.name?.split(' ')[0] || null,
+                lastName: user.name?.split(' ').slice(1).join(' ') || null,
                 avatar: user.image || null,
                 role: 'buyer',
+                country: null, // Must be set via complete-profile flow
                 kycLevel: 0,
                 verified: false,
+                verificationStatus: 'PENDING',
               },
             });
 
             // Create OAuth account record
             await db.oAuthAccount.create({
               data: {
-                provider: account.provider,
+                provider: account.provider as 'google' | 'facebook',
                 providerId: account.providerAccountId,
                 userId: newUser.id,
                 accessToken: account.access_token || null,
@@ -234,8 +263,10 @@ export const authOptions: NextAuthOptions = {
             (user as unknown as Record<string, unknown>).role = newUser.role;
             (user as unknown as Record<string, unknown>).country = newUser.country;
             (user as unknown as Record<string, unknown>).kycLevel = newUser.kycLevel;
+            // Flag: this user needs to complete their profile (select country)
+            (user as unknown as Record<string, unknown>).needsProfileCompletion = !newUser.country;
 
-            console.log('[OAuth] New user created:', newUser.id, 'via', account.provider);
+            console.log('[OAuth] New user created:', newUser.id, 'via', account.provider, '| needsProfileCompletion:', !newUser.country);
           } else {
             // Update OAuth account link if not exists
             const existingOAuth = await db.oAuthAccount.findFirst({
@@ -245,7 +276,7 @@ export const authOptions: NextAuthOptions = {
             if (!existingOAuth) {
               await db.oAuthAccount.create({
                 data: {
-                  provider: account.provider,
+                  provider: account.provider as 'google' | 'facebook',
                   providerId: account.providerAccountId,
                   userId: existingUser.id,
                   accessToken: account.access_token || null,
@@ -275,8 +306,10 @@ export const authOptions: NextAuthOptions = {
             (user as unknown as Record<string, unknown>).role = existingUser.role;
             (user as unknown as Record<string, unknown>).country = existingUser.country;
             (user as unknown as Record<string, unknown>).kycLevel = existingUser.kycLevel;
+            // Flag: existing user may still need profile completion if no country
+            (user as unknown as Record<string, unknown>).needsProfileCompletion = !existingUser.country;
 
-            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider);
+            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider, '| needsProfileCompletion:', !existingUser.country);
           }
         } catch (error) {
           console.error('[OAuth] Error during sign-in:', error);
@@ -284,6 +317,21 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // After OAuth sign-in, redirect to:
+      // 1. The callbackUrl if provided and valid
+      // 2. /dashboard as default
+      // Note: If the user needs profile completion (no country set), the dashboard
+      // page will detect this and redirect to /auth/complete-profile
+
+      // If the url is relative, make it absolute
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      // If url is on the same origin, it's safe to redirect there
+      if (new URL(url).origin === baseUrl) return url;
+
+      // Default redirect after sign-in
+      return baseUrl + '/dashboard';
     },
   },
   pages: {

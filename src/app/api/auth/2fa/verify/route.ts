@@ -18,7 +18,8 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 5 TOTP verification attempts per IP per 15 minutes
     const rlKey = getRateLimitKey(request);
-    const rlResult = rateLimit(`2fa-verify:${rlKey}`, 5, 15 * 60 * 1000);
+    // CRITICAL: rateLimit is async, MUST be awaited!
+    const rlResult = await rateLimit(`2fa-verify:${rlKey}`, 5, 15 * 60 * 1000);
     if (!rlResult.allowed) {
       return NextResponse.json(
         {

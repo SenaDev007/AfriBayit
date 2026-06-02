@@ -11,7 +11,8 @@ export async function POST(request: Request) {
   try {
     // Rate limiting
     const rateLimitKey = getRateLimitKey(request);
-    const rateResult = rateLimit(`moderate:${rateLimitKey}`, 30, 60 * 1000);
+    // CRITICAL: rateLimit is async, MUST be awaited!
+    const rateResult = await rateLimit(`moderate:${rateLimitKey}`, 30, 60 * 1000);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Trop de requetes. Reessayez plus tard.', code: 'RATE_LIMITED' },
