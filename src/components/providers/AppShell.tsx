@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation';
 import RebeccaChat from '@/components/afribayit/RebeccaChat';
 import { motion } from 'framer-motion';
 import { CountryProvider } from '@/contexts/CountryContext';
+import { useAuthStore } from '@/stores/authStore';
 
 function AppShellInner({ children }: { children: ReactNode }) {
   // useSession is called unconditionally per React's rules of hooks.
@@ -17,13 +18,37 @@ function AppShellInner({ children }: { children: ReactNode }) {
   // NextAuthProvider error boundary will catch the SessionProvider failure
   // and render children without it. In that case useSession may throw,
   // which will be caught by the AppShell error boundary below.
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
+  const { user: storeUser, setUser } = useAuthStore();
 
   const pathname = usePathname();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRebeccaOpen, setIsRebeccaOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const isLoggedIn = !!session?.user;
+
+  // Sync NextAuth session → Zustand authStore
+  // This is critical for OAuth logins (Google/Facebook) which set cookies
+  // but don't update the Zustand store. All components using useAuthStore
+  // will automatically get the user data after this sync.
+  useEffect(() => {
+    if (session?.user) {
+      const su = session.user as Record<string, unknown>;
+      if (!storeUser || storeUser.id !== su.id) {
+        setUser({
+          id: (su.id as string) || '',
+          email: (su.email as string) || '',
+          name: (su.name as string) || '',
+          role: (su.role as string) || 'buyer',
+          country: (su.country as string | null) || null,
+          kycLevel: (su.kycLevel as number) || 0,
+          avatar: (su.image as string | null) || null,
+        });
+      }
+    } else if (sessionStatus === 'unauthenticated' && storeUser) {
+      setUser(null);
+    }
+  }, [session, sessionStatus, storeUser, setUser]);
 
   const isHomePage = pathname === '/';
   const isAuthPage = pathname.startsWith('/auth/');

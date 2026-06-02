@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallet } from '@/hooks/useWallet';
@@ -50,9 +51,27 @@ function formatPrice(price: number): string {
 
 export default function UserDashboard({ onNavigate, onLogout }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const { user } = useAuthStore();
+
+  // Use NextAuth session as the primary source of truth for auth state
+  // AppShell syncs session → authStore, so both are available after OAuth
+  const { data: session, status: sessionStatus } = useSession();
+  const { user: storeUser } = useAuthStore();
+
+  // Prefer session user (works after OAuth), fall back to store (works after credentials login)
+  const user = session?.user
+    ? {
+        id: ((session.user as Record<string, unknown>).id as string) || storeUser?.id || '',
+        email: session.user.email || storeUser?.email || '',
+        name: session.user.name || storeUser?.name || '',
+        role: ((session.user as Record<string, unknown>).role as string) || storeUser?.role || 'buyer',
+        country: ((session.user as Record<string, unknown>).country as string | null) || storeUser?.country || null,
+        kycLevel: ((session.user as Record<string, unknown>).kycLevel as number) || storeUser?.kycLevel || 0,
+        avatar: session.user.image || storeUser?.avatar || null,
+      }
+    : storeUser;
+
   const userId = user?.id;
-  const isLoggedIn = !!userId;
+  const isLoggedIn = !!userId && sessionStatus !== 'loading';
 
   const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
   const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId);
