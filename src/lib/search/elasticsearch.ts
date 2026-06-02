@@ -21,6 +21,18 @@ export interface SearchDocument {
   [key: string]: unknown;
 }
 
+export type SearchModelType = 'property' | 'hotel' | 'guesthouse' | 'course' | 'artisan';
+
+export const ALL_TYPES: SearchModelType[] = ['property', 'hotel', 'guesthouse', 'course', 'artisan'];
+
+export const TYPE_LABELS: Record<SearchModelType, string> = {
+  property: 'Bien immobilier',
+  hotel: 'Hôtel',
+  guesthouse: 'Guesthouse',
+  course: 'Formation',
+  artisan: 'Artisan',
+};
+
 export interface SearchFilters {
   query?: string;
   type?: string;
