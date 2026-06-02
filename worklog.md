@@ -863,3 +863,28 @@ Stage Summary:
 - NextAuth uses NEXTAUTH_SECRET (already configured on Vercel) for JWT by default
 - RS256 custom encoding is opt-in when keys are configured
 - OAuth errors are now displayed in French in the login modal
+
+---
+Task ID: 1
+Agent: main
+Task: Fix Google and Facebook OAuth on AfriBayit live site
+
+Work Log:
+- Diagnosed OAuth failure: both Google and Facebook OAuth returned `error=google` / `error=facebook`
+- Created /api/auth/oauth-status endpoint to check env var configuration - all were set correctly
+- Created /api/auth/oauth-test endpoint to test OIDC discovery and provider initialization - all worked
+- Discovered that GET /api/auth/signin/google returning error=google was NORMAL behavior (NextAuth redirects to custom signIn page on GET)
+- Found the CRITICAL BUG: in route.ts, `rateLimit()` is an async function but was called WITHOUT `await`
+  - This caused `rlResult` to be a Promise instead of RateLimitResult
+  - `rlResult.allowed` was `undefined` (falsy), so `!rlResult.allowed` was always `true`
+  - Every OAuth sign-in POST was blocked with a 429 rate limit response
+- Fixed by: 1) Adding `await` to the `rateLimit()` call, 2) Excluding OAuth signin paths from rate limiting
+- Verified fix: POST to /api/auth/signin/google now returns Google OAuth authorization URL
+- Verified fix: POST to /api/auth/signin/facebook now returns Facebook OAuth authorization URL
+- Cleaned up debug endpoints (removed oauth-test, cleaned oauth-status)
+
+Stage Summary:
+- Root cause: Missing `await` on async `rateLimit()` call in [...nextauth]/route.ts
+- Fix: Added `await` and excluded OAuth signin/callback paths from rate limiting
+- Both Google and Facebook OAuth flows now correctly initiate
+- File changed: src/app/api/auth/[...nextauth]/route.ts
