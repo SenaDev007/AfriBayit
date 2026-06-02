@@ -824,3 +824,23 @@ Stage Summary:
 - Financial calculator produces accurate mortgage simulations with West African bank rates
 - Legal advisor provides per-country document guidance for BJ/CI/BF/TG
 - Rebecca chat API now uses agent orchestrator for specialist queries while maintaining backward compatibility
+
+---
+Task ID: 1
+Agent: Main
+Task: Create data deletion page and provide Facebook OAuth setup guide
+
+Work Log:
+- Analyzed user's Facebook Developer screenshot via VLM — user on Dashboard, app "AfriBayit" not published
+- Discovered /delete-data page already existed with full content (8 sections)
+- Confirmed middleware already includes /delete-data as public route
+- Added Trash2 icon import and "Suppression de données" link in Footer Légal section
+- Pushed to GitHub (commit 756c0b1)
+- Provided complete Facebook OAuth setup guide with category (Business → Real Estate), all required URLs, and step-by-step instructions
+
+Stage Summary:
+- Data deletion page: already existed at /delete-data, comprehensive with 8 sections
+- Footer: updated with link to /delete-data
+- Facebook category: Business → Real Estate
+- Data deletion URL for Facebook: https://afri-bayit.vercel.app/delete-data
+- OAuth callback URL: https://afri-bayit.vercel.app/api/auth/callback/facebook
