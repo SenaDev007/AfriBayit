@@ -7,27 +7,28 @@ const handler = NextAuth(authOptions);
 
 // Wrap with login rate limiting: 50 attempts per IP per 15 minutes
 async function rateLimitedHandler(req: Request, ctx: { params: Promise<{ nextauth: string[] }> }) {
-  // Only rate limit POST requests (sign-in attempts)
-  if (req.method === 'POST') {
-    const rlKey = getRateLimitKey(req);
-    const rlResult = rateLimit(`login:${rlKey}`, 50, 15 * 60 * 1000);
-    if (!rlResult.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: 'Trop de tentatives de connexion. Veuillez réessayer plus tard.',
-          code: 'RATE_LIMITED',
-          retryAfter: rlResult.retryAfter,
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': String(rlResult.retryAfter),
-          },
-        }
-      );
-    }
-  }
+  // Rate limiting temporarily disabled for OAuth debugging
+  // TODO: Re-enable after OAuth is working
+  // if (req.method === 'POST') {
+  //   const rlKey = getRateLimitKey(req);
+  //   const rlResult = rateLimit(`login:${rlKey}`, 50, 15 * 60 * 1000);
+  //   if (!rlResult.allowed) {
+  //     return new Response(
+  //       JSON.stringify({
+  //         error: 'Trop de tentatives de connexion. Veuillez réessayer plus tard.',
+  //         code: 'RATE_LIMITED',
+  //         retryAfter: rlResult.retryAfter,
+  //       }),
+  //       {
+  //         status: 429,
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Retry-After': String(rlResult.retryAfter),
+  //         },
+  //       }
+  //     );
+  //   }
+  // }
 
   try {
     const response = await handler(req, ctx);
