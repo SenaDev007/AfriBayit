@@ -9,6 +9,8 @@ import type {
   VerifyPaymentResponse,
   RefundResponse,
   WebhookEvent,
+  PayoutRequest,
+  PayoutResponse,
   PaymentStatus,
 } from '../types';
 import { CARD_METHODS } from '../types';
@@ -212,6 +214,36 @@ export class StripeProvider extends PaymentProviderBase {
       status: paymentStatus,
       amount,
       metadata: eventMetadata,
+    };
+  }
+
+  /**
+   * Process a payout via Stripe Connect.
+   * Used for disbursing escrow funds to sellers.
+   */
+  async processPayout(request: PayoutRequest): Promise<PayoutResponse> {
+    const { amount, currency, destination } = request;
+
+    // Stripe expects amounts in smallest currency unit
+    const unitMultiplier = currency.toUpperCase() === 'EUR' ? 100 : 1;
+    const stripeAmount = Math.round(amount * unitMultiplier);
+
+    const payout = await this.client.payouts.create({
+      amount: stripeAmount,
+      currency: currency.toLowerCase(),
+      destination: destination || undefined,
+      metadata: {
+        userId: request.userId,
+        method: request.method,
+        country: request.countryCode,
+      },
+    });
+
+    return {
+      success: payout.status === 'pending' || payout.status === 'paid',
+      payoutId: payout.id,
+      providerRef: payout.id,
+      status: payout.status === 'paid' ? 'completed' : 'pending',
     };
   }
 

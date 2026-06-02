@@ -4,11 +4,35 @@ import type { NextRequest } from 'next/server';
 /**
  * Middleware for AfriBayit platform.
  *
- * Uses next-auth/middleware with withAuth when NEXTAUTH_SECRET is available.
- * If NEXTAUTH_SECRET is missing (e.g. on Vercel without env vars configured),
- * the middleware falls back to a simple public-route check that lets
- * unauthenticated users through to public pages only.
+ * Handles two concerns:
+ * 1. Subdomain-based country routing (multi-tenant isolation)
+ * 2. Authentication & authorization (with next-auth when available)
+ *
+ * Subdomain mapping:
+ *   bj.afri-bayit.vercel.app → BJ (Bénin)
+ *   ci.afri-bayit.vercel.app → CI (Côte d'Ivoire)
+ *   bf.afri-bayit.vercel.app → BF (Burkina Faso)
+ *   tg.afri-bayit.vercel.app → TG (Togo)
  */
+
+// ============================================================================
+// Country Subdomain Configuration
+// ============================================================================
+
+const SUBDOMAIN_COUNTRY_MAP: Record<string, string> = {
+  bj: 'BJ', // Bénin
+  ci: 'CI', // Côte d'Ivoire
+  bf: 'BF', // Burkina Faso
+  tg: 'TG', // Togo
+  sn: 'SN', // Sénégal (future)
+};
+
+// Hostnames that should NOT be checked for subdomains (e.g., localhost, Vercel preview)
+const EXCLUDED_HOSTNAMES = ['localhost', '127.0.0.1', '0.0.0.0'];
+
+// ============================================================================
+// Route Protection Configuration
+// ============================================================================
 
 // Public routes that never require authentication
 const PUBLIC_ROUTES = [
@@ -62,6 +86,68 @@ const ADMIN_API_PREFIXES = [
   '/api/admin',
 ];
 
+// ============================================================================
+// Subdomain Detection
+// ============================================================================
+
+/**
+ * Detect the country from the request's subdomain, cookie, or URL parameter.
+ * Priority:
+ *   1. Subdomain (e.g., bj.afri-bayit.vercel.app)
+ *   2. URL parameter ?country=BJ
+ *   3. Existing cookie afribayit_country
+ *   4. Default: null (no country override)
+ */
+function detectCountry(request: NextRequest): string | null {
+  const hostname = request.headers.get('host') || '';
+
+  // 1. Check subdomain
+  // e.g., bj.afri-bayit.vercel.app → bj
+  if (!EXCLUDED_HOSTNAMES.some((h) => hostname.startsWith(h))) {
+    const parts = hostname.split('.');
+    if (parts.length >= 3) {
+      // Has a subdomain (e.g., bj.afri-bayit.vercel.app)
+      const subdomain = parts[0].toLowerCase();
+      const country = SUBDOMAIN_COUNTRY_MAP[subdomain];
+      if (country) return country;
+    }
+  }
+
+  // 2. Check URL parameter
+  const countryParam = request.nextUrl.searchParams.get('country');
+  if (countryParam) {
+    const upper = countryParam.toUpperCase();
+    if (Object.values(SUBDOMAIN_COUNTRY_MAP).includes(upper)) {
+      return upper;
+    }
+  }
+
+  // 3. Check existing cookie
+  const cookieCountry = request.cookies.get('afribayit_country')?.value;
+  if (cookieCountry && Object.values(SUBDOMAIN_COUNTRY_MAP).includes(cookieCountry)) {
+    return cookieCountry;
+  }
+
+  // No country detected
+  return null;
+}
+
+/**
+ * Set the country cookie and header on the response.
+ */
+function setCountryContext(response: NextResponse, country: string): void {
+  response.cookies.set('afribayit_country', country, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+    sameSite: 'lax',
+  });
+  response.headers.set('x-afribayit-country', country);
+}
+
+// ============================================================================
+// Route Protection Helpers
+// ============================================================================
+
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => {
     if (route.endsWith('/')) return pathname.startsWith(route);
@@ -83,11 +169,11 @@ function isAdminRoute(pathname: string): boolean {
   );
 }
 
-/**
- * Lightweight middleware that runs when NEXTAUTH_SECRET is not available.
- * Allows public routes through, redirects protected routes to login.
- */
-function fallbackMiddleware(request: NextRequest) {
+// ============================================================================
+// Fallback Auth Middleware (when NEXTAUTH_SECRET is not available)
+// ============================================================================
+
+function fallbackMiddleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   // Public routes are always accessible
@@ -122,8 +208,11 @@ function fallbackMiddleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Try to use withAuth when NEXTAUTH_SECRET is available
-async function authMiddleware(request: NextRequest) {
+// ============================================================================
+// Auth Middleware (when NEXTAUTH_SECRET is available)
+// ============================================================================
+
+async function authMiddleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   // Dynamically import next-auth middleware
@@ -159,49 +248,71 @@ async function authMiddleware(request: NextRequest) {
   })(request as unknown as Parameters<ReturnType<typeof withAuth>>[0]) as NextResponse;
 }
 
+// ============================================================================
+// Main Middleware
+// ============================================================================
+
 export async function middleware(request: NextRequest) {
-  // Check if NEXTAUTH_SECRET is available
+  const { pathname } = request.nextUrl;
+
+  // --- Step 1: Subdomain/Country Detection ---
+  const detectedCountry = detectCountry(request);
+
+  // Skip country detection for API routes and static assets
+  const isApiOrStatic =
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/auth/') ||
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg');
+
+  // --- Step 2: Auth/Route Protection ---
+  let response: NextResponse;
+
   const hasSecret = !!process.env.NEXTAUTH_SECRET;
 
   if (!hasSecret) {
-    // Fall back to simple route-based middleware
-    return fallbackMiddleware(request);
+    response = fallbackMiddleware(request);
+  } else {
+    try {
+      response = await authMiddleware(request);
+    } catch (error) {
+      console.warn(
+        '[AfriBayit] Auth middleware failed, using fallback. Error:',
+        error instanceof Error ? error.message : error
+      );
+      response = fallbackMiddleware(request);
+    }
   }
 
-  try {
-    return await authMiddleware(request);
-  } catch (error) {
-    // If withAuth fails for any reason, fall back to simple middleware
-    console.warn(
-      '[AfriBayit] Auth middleware failed, using fallback. Error:',
-      error instanceof Error ? error.message : error
-    );
-    return fallbackMiddleware(request);
+  // --- Step 3: Set Country Context on Response ---
+  // Always set the country cookie/header if we detected a country from subdomain
+  // This ensures the frontend CountryContext can read it
+  if (detectedCountry && !isApiOrStatic) {
+    setCountryContext(response, detectedCountry);
   }
+
+  // Also support ?country=BJ parameter on any page — set cookie and clean URL
+  if (!isApiOrStatic) {
+    const countryParam = request.nextUrl.searchParams.get('country');
+    if (countryParam && Object.values(SUBDOMAIN_COUNTRY_MAP).includes(countryParam.toUpperCase())) {
+      setCountryContext(response, countryParam.toUpperCase());
+      // Optionally clean the URL by removing the country param
+      // (keep other params intact)
+      const cleanUrl = new URL(request.url);
+      cleanUrl.searchParams.delete('country');
+      // Don't redirect — just set the cookie and let the page load
+      // The redirect would be a bad UX for SPA navigation
+    }
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    // Admin routes - require admin role
-    '/admin/:path*',
-    '/api/admin/:path*',
-    // Protected routes - require authentication
-    '/dashboard/:path*',
-    '/agent-dashboard/:path*',
-    '/wallet/:path*',
-    '/publish/:path*',
-    '/escrow/:path*',
-    '/analytics/:path*',
-    // API routes that need protection
-    '/api/wallet/:path*',
-    '/api/escrow/:path*',
-    '/api/subscriptions/:path*',
-    '/api/transactions/:path*',
-    '/api/chat/:path*',
-    '/api/messages/:path*',
-    '/api/favorites/:path*',
-    '/api/kyc/:path*',
-    '/api/notifications/:path*',
-    '/api/profiles/:path*',
+    // Match all routes except static assets
+    '/((?!_next/static|_next/image|favicon\\.ico|logo\\.png|robots\\.txt|manifest\\.json|sw\\.js).*)',
   ],
 };

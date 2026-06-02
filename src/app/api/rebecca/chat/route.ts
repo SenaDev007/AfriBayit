@@ -2,6 +2,7 @@
 // POST /api/rebecca/chat — Main chat endpoint with RAG + function calling + guardrails + handoff + memory
 
 import { NextResponse } from 'next/server';
+import ZAI from 'z-ai-web-dev-sdk';
 import { db } from '@/lib/db';
 import { processQuery, REBECCA_SYSTEM_PROMPT } from '@/lib/rag';
 import { executeRebeccaFunction, REBECCA_FUNCTIONS } from '../functions/route';
@@ -156,8 +157,7 @@ export async function POST(request: Request) {
     let functionResults: Array<{ name: string; result: unknown }> = [];
 
     try {
-      const { default: ZAI } = await import('z-ai-web-dev-sdk');
-      const zai = new ZAI();
+      const zai = await ZAI.create();
 
       // First LLM call — check if function calling is needed
       const completion = await zai.chat.completions.create({

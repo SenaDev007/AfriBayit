@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { Phone } from 'lucide-react';
 
 /**
  * AfriBayit — USSD Handler for Africa's Talking
  * Supports session-based menu navigation for feature phones
  * All text in French — targeting West African markets (BJ, CI, BF, TG)
+ *
+ * Enhanced with:
+ * - Wallet balance check
+ * - Rebecca AI assistant access
+ * - Budget-based property search
+ * - Property detail viewing
+ * - Help & support menu
  */
 
 interface UssdSession {
@@ -57,6 +63,14 @@ const PROPERTY_TYPES = [
   { key: '5', label: 'Commerce', value: 'commerce' },
 ];
 
+// Budget ranges
+const BUDGET_RANGES = [
+  { key: '1', label: '< 5M', min: 0, max: 5_000_000 },
+  { key: '2', label: '5-15M', min: 5_000_000, max: 15_000_000 },
+  { key: '3', label: '15-50M', min: 15_000_000, max: 50_000_000 },
+  { key: '4', label: '> 50M', min: 50_000_000, max: Infinity },
+];
+
 // Cities by country
 const CITIES: Record<string, { key: string; label: string; value: string }[]> = {
   BJ: [
@@ -68,8 +82,8 @@ const CITIES: Record<string, { key: string; label: string; value: string }[]> = 
   CI: [
     { key: '1', label: 'Abidjan', value: 'Abidjan' },
     { key: '2', label: 'Yamoussoukro', value: 'Yamoussoukro' },
-    { key: '3', label: 'Bouaké', value: 'Bouaké' },
-    { key: '4', label: 'San-Pédro', value: 'San-Pédro' },
+    { key: '3', label: 'Bouake', value: 'Bouaké' },
+    { key: '4', label: 'San-Pedro', value: 'San-Pédro' },
   ],
   BF: [
     { key: '1', label: 'Ouagadougou', value: 'Ouagadougou' },
@@ -77,8 +91,8 @@ const CITIES: Record<string, { key: string; label: string; value: string }[]> = 
     { key: '3', label: 'Koudougou', value: 'Koudougou' },
   ],
   TG: [
-    { key: '1', label: 'Lomé', value: 'Lomé' },
-    { key: '2', label: 'Sokodé', value: 'Sokodé' },
+    { key: '1', label: 'Lome', value: 'Lomé' },
+    { key: '2', label: 'Sokode', value: 'Sokodé' },
     { key: '3', label: 'Kara', value: 'Kara' },
   ],
 };
@@ -97,16 +111,18 @@ function detectCountry(phoneNumber: string): string {
   return 'BJ'; // default
 }
 
-// Main menu
+// ============ Menu Builders ============
+
 function getMainMenu(): string {
-  return `CON AfriBayit - Immobilier Pan-Africain
+  return `CON Bienvenue sur AfriBayit !
 1. Rechercher un bien
-2. Contacter un agent
-3. Mon compte`;
+2. Mes favoris
+3. Mon portefeuille
+4. Contacter Rebecca IA
+5. Aide`;
 }
 
-// Search menu — property type selection
-function getSearchTypeMenu(country: string): string {
+function getSearchTypeMenu(): string {
   return `CON Type de bien :
 1. Villa
 2. Appartement
@@ -116,88 +132,207 @@ function getSearchTypeMenu(country: string): string {
 0. Retour`;
 }
 
-// Search menu — city selection
 function getSearchCityMenu(country: string): string {
   const cities = CITIES[country] || CITIES.BJ;
   const cityList = cities.map(c => `${c.key}. ${c.label}`).join('\n');
   return `CON Ville (${country}) :\n${cityList}\n0. Retour`;
 }
 
-// Search results (mock — in production, query the database)
-async function getSearchResults(type: string, city: string): Promise<string> {
+function getSearchBudgetMenu(): string {
+  return `CON Budget max (FCFA) :
+1. < 5 millions
+2. 5-15 millions
+3. 15-50 millions
+4. > 50 millions
+0. Retour`;
+}
+
+async function getSearchResults(type: string, city: string, minPrice?: number, maxPrice?: number): Promise<string> {
   try {
     const { db } = await import('@/lib/db');
+    const where: Record<string, unknown> = {
+      type,
+      city,
+      status: 'published',
+    };
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) (where.price as Record<string, unknown>).gte = minPrice;
+      if (maxPrice !== undefined && maxPrice !== Infinity) (where.price as Record<string, unknown>).lte = maxPrice;
+    }
+
     const properties = await db.property.findMany({
-      where: {
-        type,
-        city,
-        status: 'published',
-      },
+      where,
       take: 3,
       orderBy: { createdAt: 'desc' },
-      include: {
-        owner: {
-          select: { name: true, phone: true },
-        },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        rooms: true,
+        bedrooms: true,
+        surface: true,
       },
     });
 
     if (properties.length === 0) {
-      return `END Aucun bien trouvé pour ce critère.
-Réessayez avec d'autres filtres.`;
+      return `END Aucun bien trouve.
+Reessayez avec d'autres criteres
+ou consultez afribayit.com`;
     }
 
-    const results = properties.map((p, i) => {
-      return `${i + 1}. ${p.title}
-   ${formatPrice(p.price)} - ${p.rooms}ch/${p.bedrooms}chb`;
-    }).join('\n');
+    const results = properties.map((p, i) =>
+      `${i + 1}. ${p.title.substring(0, 25)}\n   ${formatPrice(p.price)}`
+    ).join('\n');
 
-    return `CON ${properties.length} bien(s) trouvé(s) :
+    return `CON ${properties.length} bien(s) trouve(s) :
 ${results}
 0. Nouvelle recherche`;
   } catch {
     // Fallback demo data
-    return `CON Résultats de recherche :
+    return `CON Resultats de recherche :
 1. Villa moderne - ${city}
-   25 000 000 FCFA - 3ch/2chb
-2. Appartement standing
-   15 000 000 FCFA - 2ch/1chb
+   25 000 000 FCFA
+2. Appart standing
+   15 000 000 FCFA
 0. Nouvelle recherche`;
   }
 }
 
-// Agent contact menu
-function getAgentContactMenu(): string {
-  return `CON Contacter un agent :
-1. Agent immobilier
-2. Géomètre
-3. Notaire
+async function getFavorites(phoneNumber: string): Promise<string> {
+  try {
+    const { db } = await import('@/lib/db');
+    const user = await db.user.findFirst({
+      where: { phone: phoneNumber.replace('+', '') },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return `END Aucun compte trouve.
+Inscrivez-vous sur afribayit.com`;
+    }
+
+    const favorites = await db.favorite.findMany({
+      where: { userId: user.id },
+      take: 3,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        property: {
+          select: { title: true, price: true, city: true },
+        },
+      },
+    });
+
+    if (favorites.length === 0) {
+      return `END Aucun favori enregistre.
+Consultez afribayit.com pour
+ajouter des favoris.`;
+    }
+
+    const list = favorites.map((f, i) =>
+      `${i + 1}. ${f.property.title.substring(0, 20)}\n   ${formatPrice(f.property.price)}`
+    ).join('\n');
+
+    return `CON Vos favoris (${favorites.length}) :
+${list}
+0. Retour`;
+  } catch {
+    return `END Service temporairement
+indisponible. Reessayez plus tard.`;
+  }
+}
+
+async function getWalletBalance(phoneNumber: string): Promise<string> {
+  try {
+    const { db } = await import('@/lib/db');
+    const user = await db.user.findFirst({
+      where: { phone: phoneNumber.replace('+', '') },
+      select: {
+        name: true,
+        walletBalance: true,
+        pendingPayout: true,
+        kycLevel: true,
+      },
+    });
+
+    if (!user) {
+      return `END Aucun compte trouve.
+Inscrivez-vous sur afribayit.com`;
+    }
+
+    const kycLabels = ['Non verifie', 'Basique', 'Intermediaire', 'Complet'];
+
+    return `END Portefeuille AfriBayit
+Solde : ${formatPrice(user.walletBalance)}
+En attente : ${formatPrice(user.pendingPayout)}
+KYC : ${kycLabels[user.kycLevel] || 'Inconnu'}
+Retrait : afribayit.com/wallet`;
+  } catch {
+    return `END Service temporairement
+indisponible. Reessayez plus tard.`;
+  }
+}
+
+function getRebeccaMenu(): string {
+  return `CON Rebecca IA - Assistant
+1. Estimer un bien
+2. Questions juridiques
+3. Guide investissement
 0. Retour`;
 }
 
-// Account menu
-function getAccountMenu(phoneNumber: string): string {
-  const country = detectCountry(phoneNumber);
-  return `CON Mon compte AfriBayit
-Pays : ${country}
-Tel : ${phoneNumber}
----
-1. Mes favoris
-2. Mes recherches
-3. Aide
+function getRebeccaEstimate(): string {
+  return `CON Estimation Rebecca IA
+Entrez la ville du bien :`;
+}
+
+function getHelpMenu(): string {
+  return `CON Aide AfriBayit
+1. Comment rechercher
+2. Comment publier
+3. Securite escrow
+4. Nous contacter
 0. Retour`;
 }
 
-// Help text
-function getHelpText(): string {
-  return `END AfriBayit - Aide
-USSD : *XXX# 
-Web : afribayit.com
+function getHelpSearch(): string {
+  return `END Recherche :
+1. Choisissez le type
+2. Selectionnez la ville
+3. Indiquez le budget
+4. Consultez les resultats
+Web : afribayit.com/search`;
+}
+
+function getHelpPublish(): string {
+  return `END Publier une annonce :
+1. Creez un compte
+2. Verifiez votre identite
+3. Ajoutez votre bien
+4. Recevez des contacts
+Web : afribayit.com/publish`;
+}
+
+function getHelpEscrow(): string {
+  return `END Escrow securise :
+1. Acheteur paie sur AfriBayit
+2. Fonds bloques en securite
+3. Verification GeoTrust
+4. Paiement vendeur apres validation
+Web : afribayit.com/escrow`;
+}
+
+function getHelpContact(): string {
+  return `END Contact AfriBayit :
 Tel : +229 90 00 00 00
-WhatsApp : +229 90 00 00 00`;
+WhatsApp : +229 90 00 00 00
+Email : help@afribayit.com
+Web : afribayit.com`;
 }
 
-// POST handler for Africa's Talking USSD
+// ============ POST Handler ============
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -228,30 +363,39 @@ export async function POST(request: Request) {
     // Navigate based on input path
     const depth = parts.length;
 
-    // Main menu selection
+    // ── Main menu selection ──
     if (depth === 1) {
       switch (currentInput) {
         case '1':
-          // Search — show type menu
           session.currentMenu = 'search_type';
           session.data = {};
-          return new NextResponse(getSearchTypeMenu(country), {
+          return new NextResponse(getSearchTypeMenu(), {
             headers: { 'Content-Type': 'text/plain' },
           });
         case '2':
-          // Contact agent
-          session.currentMenu = 'agent_contact';
-          return new NextResponse(getAgentContactMenu(), {
+          session.currentMenu = 'favorites';
+          const favResult = await getFavorites(phoneNumber);
+          return new NextResponse(favResult, {
             headers: { 'Content-Type': 'text/plain' },
           });
         case '3':
-          // Account
-          session.currentMenu = 'account';
-          return new NextResponse(getAccountMenu(phoneNumber), {
+          session.currentMenu = 'wallet';
+          const walletResult = await getWalletBalance(phoneNumber);
+          return new NextResponse(walletResult, {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        case '4':
+          session.currentMenu = 'rebecca';
+          return new NextResponse(getRebeccaMenu(), {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        case '5':
+          session.currentMenu = 'help';
+          return new NextResponse(getHelpMenu(), {
             headers: { 'Content-Type': 'text/plain' },
           });
         default:
-          return new NextResponse(`END Choix invalide. Merci de réessayer.`, {
+          return new NextResponse(`END Choix invalide. Reessayez.`, {
             headers: { 'Content-Type': 'text/plain' },
           });
       }
@@ -260,10 +404,9 @@ export async function POST(request: Request) {
     // Depth 2+: sub-menu navigation
     const mainChoice = parts[0];
 
-    // ---- SEARCH FLOW ----
+    // ── SEARCH FLOW (1*type*city*budget) ──
     if (mainChoice === '1') {
       if (depth === 2) {
-        // Property type selected
         if (currentInput === '0') {
           return new NextResponse(getMainMenu(), {
             headers: { 'Content-Type': 'text/plain' },
@@ -271,7 +414,7 @@ export async function POST(request: Request) {
         }
         const typeEntry = PROPERTY_TYPES.find(t => t.key === currentInput);
         if (!typeEntry) {
-          return new NextResponse(`END Type invalide. Merci de réessayer.`, {
+          return new NextResponse(`END Type invalide. Reessayez.`, {
             headers: { 'Content-Type': 'text/plain' },
           });
         }
@@ -283,32 +426,55 @@ export async function POST(request: Request) {
       }
 
       if (depth === 3) {
-        // City selected — show results
         if (currentInput === '0') {
           session.currentMenu = 'search_type';
-          return new NextResponse(getSearchTypeMenu(country), {
+          return new NextResponse(getSearchTypeMenu(), {
             headers: { 'Content-Type': 'text/plain' },
           });
         }
         const cities = CITIES[country] || CITIES.BJ;
         const cityEntry = cities.find(c => c.key === currentInput);
         if (!cityEntry) {
-          return new NextResponse(`END Ville invalide. Merci de réessayer.`, {
+          return new NextResponse(`END Ville invalide. Reessayez.`, {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }
+        session.data.city = cityEntry.value;
+        session.currentMenu = 'search_budget';
+        return new NextResponse(getSearchBudgetMenu(), {
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
+
+      if (depth === 4) {
+        if (currentInput === '0') {
+          session.currentMenu = 'search_city';
+          return new NextResponse(getSearchCityMenu(country), {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }
+        const budgetEntry = BUDGET_RANGES.find(b => b.key === currentInput);
+        if (!budgetEntry) {
+          return new NextResponse(`END Budget invalide. Reessayez.`, {
             headers: { 'Content-Type': 'text/plain' },
           });
         }
 
-        const results = await getSearchResults(session.data.propertyType || 'villa', cityEntry.value);
+        const results = await getSearchResults(
+          session.data.propertyType || 'villa',
+          session.data.city || 'Cotonou',
+          budgetEntry.min,
+          budgetEntry.max,
+        );
         return new NextResponse(results, {
           headers: { 'Content-Type': 'text/plain' },
         });
       }
 
-      if (depth === 4 && currentInput === '0') {
-        // New search
+      if (depth === 5 && currentInput === '0') {
         session.currentMenu = 'search_type';
         session.data = {};
-        return new NextResponse(getSearchTypeMenu(country), {
+        return new NextResponse(getSearchTypeMenu(), {
           headers: { 'Content-Type': 'text/plain' },
         });
       }
@@ -318,47 +484,30 @@ export async function POST(request: Request) {
       });
     }
 
-    // ---- AGENT CONTACT FLOW ----
+    // ── FAVORITES FLOW (2) ──
     if (mainChoice === '2') {
-      if (depth === 2) {
-        if (currentInput === '0') {
-          return new NextResponse(getMainMenu(), {
-            headers: { 'Content-Type': 'text/plain' },
-          });
-        }
-        switch (currentInput) {
-          case '1':
-            return new NextResponse(`END Agent Immobilier
-Contactez-nous :
-<Phone className="w-4 h-4" /> +229 90 00 00 00
-WhatsApp : +229 90 00 00 00
-Web : afribayit.com/agents`, {
-              headers: { 'Content-Type': 'text/plain' },
-            });
-          case '2':
-            return new NextResponse(`END Géomètre AfriBayit
-GeoTrust - Certification foncière
-<Phone className="w-4 h-4" /> +229 90 00 00 01
-Web : afribayit.com/geotrust`, {
-              headers: { 'Content-Type': 'text/plain' },
-            });
-          case '3':
-            return new NextResponse(`END Notaire AfriBayit
-Service juridique immobilier
-<Phone className="w-4 h-4" /> +229 90 00 00 02
-Web : afribayit.com/notaires`, {
-              headers: { 'Content-Type': 'text/plain' },
-            });
-          default:
-            return new NextResponse(`END Choix invalide.`, {
-              headers: { 'Content-Type': 'text/plain' },
-            });
-        }
+      if (depth === 2 && currentInput === '0') {
+        return new NextResponse(getMainMenu(), {
+          headers: { 'Content-Type': 'text/plain' },
+        });
       }
+      return new NextResponse(`END Consultez vos favoris
+sur afribayit.com`, {
+        headers: { 'Content-Type': 'text/plain' },
+      });
     }
 
-    // ---- ACCOUNT FLOW ----
+    // ── WALLET FLOW (3) ──
     if (mainChoice === '3') {
+      return new NextResponse(`END Portefeuille :
+Connectez-vous sur
+afribayit.com/wallet`, {
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+
+    // ── REBECCA AI FLOW (4) ──
+    if (mainChoice === '4') {
       if (depth === 2) {
         if (currentInput === '0') {
           return new NextResponse(getMainMenu(), {
@@ -367,19 +516,65 @@ Web : afribayit.com/notaires`, {
         }
         switch (currentInput) {
           case '1':
-            return new NextResponse(`END Vos favoris
-Connectez-vous sur afribayit.com pour voir vos biens favoris.
-<Phone className="w-4 h-4" /> +229 90 00 00 00`, {
+            session.currentMenu = 'rebecca_estimate';
+            return new NextResponse(getRebeccaEstimate(), {
               headers: { 'Content-Type': 'text/plain' },
             });
           case '2':
-            return new NextResponse(`END Vos recherches
-Retrouvez l'historique sur afribayit.com
-<Phone className="w-4 h-4" /> +229 90 00 00 00`, {
+            return new NextResponse(`END Questions juridiques :
+Rebecca peut vous aider avec
+droit foncier, titres, baux.
+Web : afribayit.com/rebecca`, {
               headers: { 'Content-Type': 'text/plain' },
             });
           case '3':
-            return new NextResponse(getHelpText(), {
+            return new NextResponse(`END Guide investissement :
+Rebecca conseille sur ROI,
+rentabilite, localisation.
+Web : afribayit.com/rebecca`, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          default:
+            return new NextResponse(`END Choix invalide.`, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+        }
+      }
+
+      // Rebecca estimate flow — user enters city name
+      if (depth === 3 && session.currentMenu === 'rebecca_estimate') {
+        return new NextResponse(`END Estimation pour ${currentInput} :
+Consultez Rebecca sur
+afribayit.com/rebecca
+pour une estimation detaillee.`, {
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
+    }
+
+    // ── HELP FLOW (5) ──
+    if (mainChoice === '5') {
+      if (depth === 2) {
+        if (currentInput === '0') {
+          return new NextResponse(getMainMenu(), {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        }
+        switch (currentInput) {
+          case '1':
+            return new NextResponse(getHelpSearch(), {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          case '2':
+            return new NextResponse(getHelpPublish(), {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          case '3':
+            return new NextResponse(getHelpEscrow(), {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          case '4':
+            return new NextResponse(getHelpContact(), {
               headers: { 'Content-Type': 'text/plain' },
             });
           default:
@@ -390,12 +585,14 @@ Retrouvez l'historique sur afribayit.com
       }
     }
 
-    return new NextResponse(`END Session terminée. Merci d'utiliser AfriBayit !`, {
+    return new NextResponse(`END Session terminee.
+Merci d'utiliser AfriBayit !`, {
       headers: { 'Content-Type': 'text/plain' },
     });
   } catch (error) {
     console.error('USSD API error:', error);
-    return new NextResponse(`END Service temporairement indisponible. Réessayez plus tard.`, {
+    return new NextResponse(`END Service temporairement
+indisponible. Reessayez.`, {
       headers: { 'Content-Type': 'text/plain' },
     });
   }
@@ -407,6 +604,7 @@ export async function GET() {
     service: 'AfriBayit USSD',
     status: 'active',
     supportedCountries: ['BJ', 'CI', 'BF', 'TG'],
-    menus: ['search', 'contact_agent', 'account'],
+    menus: ['search', 'favorites', 'wallet', 'rebecca', 'help'],
+    version: '2.0',
   });
 }

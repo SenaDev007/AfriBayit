@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sendOTP } from '@/lib/otp';
+import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
 import { z } from 'zod';
 
 const sendOTPSchema = z.object({
@@ -8,6 +9,25 @@ const sendOTPSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 3 OTP sends per IP per hour (prevents abuse for password reset)
+    const rlKey = getRateLimitKey(request);
+    const rlResult = rateLimit(`otp-send:${rlKey}`, 3, 60 * 60 * 1000);
+    if (!rlResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Trop de demandes de code. Veuillez réessayer plus tard.',
+          code: 'RATE_LIMITED',
+          retryAfter: rlResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rlResult.retryAfter),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const validation = sendOTPSchema.safeParse(body);
 

@@ -1,5 +1,5 @@
 // AfriBayit — OTA Orchestrator
-// Point d'entrée principal pour l'intégration OTA
+// Main entry point for OTA channel integration
 
 export * from './types';
 export { BaseOTAProvider } from './providers/base-provider';
@@ -7,6 +7,10 @@ export { BookingComProvider } from './providers/booking-com';
 export { ExpediaProvider } from './providers/expedia';
 export {
   syncAllProviders,
+  syncSingleProvider,
+  pushAvailabilityToAllChannels,
+  pushRatesToAllChannels,
+  checkOverbookingAcrossChannels,
   distributeAvailability,
   reconcileBookings,
   getUnifiedCalendar,

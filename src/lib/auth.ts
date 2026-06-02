@@ -4,6 +4,11 @@ import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import { db } from '@/lib/db';
 import argon2 from 'argon2';
+import bcryptjs from 'bcryptjs';
+import {
+  generateTokenPair,
+  verifyRefreshToken,
+} from '@/lib/security/jwt-security';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -34,10 +39,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Identifiants invalides');
         }
 
-        const isValid = await argon2.verify(user.password, credentials.password);
+        // Verify password with Argon2id, falling back to bcrypt for legacy hashes
+        const isValid = await verifyPassword(credentials.password, user.password);
 
         if (!isValid) {
           throw new Error('Identifiants invalides');
+        }
+
+        // Auto-upgrade legacy bcrypt hashes to Argon2id on successful login
+        if (needsRehash(user.password)) {
+          // Fire-and-forget rehash — don't block the login flow
+          rehashPasswordIfNeeded(user.id, credentials.password, user.password).catch(() => {});
         }
 
         // Check if user has 2FA enabled — handled in separate 2FA verify flow
@@ -59,27 +71,86 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 15 * 60, // 15 min access token
+    maxAge: 15 * 60, // 15 min — how often the session is re-fetched
   },
   jwt: {
-    maxAge: 7 * 24 * 60 * 60, // 7 days refresh
+    maxAge: 7 * 24 * 60 * 60, // 7 days — lifetime of the JWT cookie (refresh token)
+    /**
+     * Custom RS256 JWT encoding for NextAuth.
+     * The JWT stored in the cookie is our RS256-signed refresh token (7-day expiry).
+     * Short-lived access tokens (15 min) are generated separately for API Bearer auth.
+     */
+    async encode({ token }) {
+      if (!token) throw new Error('No token to encode');
+
+      const userId = (token.id as string) || (token.sub as string) || '';
+      const email = (token.email as string) || '';
+      const role = (token.role as string) || 'buyer';
+      const country = (token.country as string) || undefined;
+      const kycLevel = (token.kycLevel as number) || 0;
+
+      // Generate a fresh RS256 token pair
+      // We store the refresh token (7d) in the NextAuth cookie for session persistence
+      const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+
+      // Return the refresh token as the cookie JWT — it has the 7-day expiry
+      // The access token (15 min) will be exposed to the client via the session callback
+      return pair.refreshToken;
+    },
+    /**
+     * Custom RS256 JWT decoding for NextAuth.
+     * Verifies the refresh token from the cookie using our RS256 public key.
+     */
+    async decode({ token }) {
+      if (!token) return null;
+      const result = verifyRefreshToken(token);
+      if (!result.valid || !result.payload) return null;
+      const payload = result.payload;
+      return {
+        sub: payload.sub,
+        email: payload.email,
+        role: payload.role,
+        country: payload.country,
+        kycLevel: payload.kycLevel,
+        iat: payload.iat,
+        exp: payload.exp,
+        jti: payload.jti,
+      } as Record<string, unknown>;
+    },
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.sub = user.id;
         token.role = (user as Record<string, unknown>).role || 'buyer';
         token.country = (user as Record<string, unknown>).country || null;
         token.kycLevel = (user as Record<string, unknown>).kycLevel || 0;
       }
+
+      // Generate a fresh access token on every JWT refresh (for API Bearer auth)
+      // This is included in the token so the session callback can expose it
+      const userId = (token.id as string) || (token.sub as string) || '';
+      const email = (token.email as string) || '';
+      const role = (token.role as string) || 'buyer';
+      const country = (token.country as string) || undefined;
+      const kycLevel = (token.kycLevel as number) || 0;
+
+      if (userId && email) {
+        const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+        (token as Record<string, unknown>).accessToken = pair.accessToken;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as Record<string, unknown>).id = token.id;
+        (session.user as Record<string, unknown>).id = token.id || token.sub;
         (session.user as Record<string, unknown>).role = token.role;
         (session.user as Record<string, unknown>).country = token.country;
         (session.user as Record<string, unknown>).kycLevel = token.kycLevel;
+        // Expose the short-lived access token for API Bearer auth
+        (session.user as Record<string, unknown>).accessToken = (token as Record<string, unknown>).accessToken;
       }
       return session;
     },
@@ -151,8 +222,47 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
- * Verify a password against an Argon2 hash
+ * Verify a password against a stored hash.
+ * Supports Argon2id (new) and bcrypt (legacy) for backward compatibility.
+ * Argon2 hashes start with "$argon2", bcrypt hashes start with "$2a$", "$2b$", or "$2y$".
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return argon2.verify(hash, password);
+  // Detect hash type by prefix
+  if (hash.startsWith('$argon2')) {
+    return argon2.verify(hash, password);
+  }
+
+  if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+    // Legacy bcrypt hash — verify with bcryptjs
+    return bcryptjs.compare(password, hash);
+  }
+
+  // Unknown hash format — try argon2 as default
+  try {
+    return await argon2.verify(hash, password);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a password hash needs rehashing (i.e., it's a legacy bcrypt hash).
+ * After successful login, callers should rehash with Argon2id if this returns true.
+ */
+export function needsRehash(hash: string): boolean {
+  return hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$');
+}
+
+/**
+ * Rehash a password with Argon2id if it was stored with bcrypt.
+ * Call this after a successful login when needsRehash() returns true.
+ */
+export async function rehashPasswordIfNeeded(userId: string, password: string, currentHash: string): Promise<void> {
+  if (needsRehash(currentHash)) {
+    const newHash = await hashPassword(password);
+    await db.user.update({
+      where: { id: userId },
+      data: { password: newHash },
+    });
+  }
 }

@@ -2,6 +2,7 @@
 // POST /api/rebecca/analyze-document — AI-powered document analysis
 
 import { NextResponse } from 'next/server';
+import ZAI from 'z-ai-web-dev-sdk';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,29 +29,29 @@ export async function POST(request: Request) {
     let analysisResult: Record<string, unknown>;
 
     try {
-      const { default: ZAI } = await import('z-ai-web-dev-sdk');
-      const zai = new ZAI();
+      const zai = await ZAI.create();
 
       if (imageUrl) {
-        // Use VLM for image-based document analysis
-        const messages = [
+        // Use VLM for image-based document analysis — multimodal call with image URL
+        const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
           {
-            role: 'system' as const,
-            content: analysisPrompt,
+            type: 'text',
+            text: 'Analyse ce document immobilier en détail. Identifie le type de document, les parties, le bien immobilier, les montants, les dates, et toute information pertinente. Signale les incohérences ou éléments manquants.',
           },
           {
-            role: 'user' as const,
-            content: imageUrl
-              ? `Analyse ce document immobilier. Image: ${imageUrl}`
-              : `Analyse ce document immobilier:\n\n${documentText}`,
+            type: 'image_url',
+            image_url: { url: imageUrl },
           },
         ];
 
         const completion = await zai.chat.completions.create({
-          model: 'glm-4-flash',
-          messages,
+          model: 'glm-4v-flash',
+          messages: [
+            { role: 'system', content: analysisPrompt },
+            { role: 'user', content: userContent as unknown as string },
+          ],
           temperature: 0.3,
-          max_tokens: 1200,
+          max_tokens: 1500,
         });
 
         const aiContent = completion.choices?.[0]?.message?.content || '';
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
         analysisResult = {
           analysis: aiContent,
           source: 'vlm',
+          model: 'glm-4v-flash',
         };
       } else {
         // Text-based document analysis
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
             { role: 'user', content: `Analyse ce document immobilier:\n\n${documentText}` },
           ],
           temperature: 0.3,
-          max_tokens: 1200,
+          max_tokens: 1500,
         });
 
         const aiContent = completion.choices?.[0]?.message?.content || '';
@@ -76,6 +78,7 @@ export async function POST(request: Request) {
         analysisResult = {
           analysis: aiContent,
           source: 'text-analysis',
+          model: 'glm-4-flash',
         };
       }
 

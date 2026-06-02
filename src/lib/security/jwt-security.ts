@@ -15,6 +15,7 @@ export interface JWTPayload {
   jti: string;          // JWT ID (unique token identifier)
   deviceFingerprint?: string;
   country?: string;
+  kycLevel?: number;    // KYC verification level (0-3)
   type: 'access' | 'refresh';
 }
 
@@ -224,6 +225,7 @@ export function generateTokenPair(
   role: string,
   options?: {
     country?: string;
+    kycLevel?: number;
     deviceFingerprint?: string;
     accessTokenExpiry?: number;
     refreshTokenExpiry?: number;
@@ -240,6 +242,7 @@ export function generateTokenPair(
     role,
     exp: accessExpiry,
     country: options?.country,
+    kycLevel: options?.kycLevel,
     deviceFingerprint: options?.deviceFingerprint,
     type: 'access',
   });
@@ -252,6 +255,7 @@ export function generateTokenPair(
     role,
     exp: refreshExpiry,
     country: options?.country,
+    kycLevel: options?.kycLevel,
     deviceFingerprint: options?.deviceFingerprint,
     type: 'refresh',
   });
@@ -387,6 +391,7 @@ export function rotateRefreshToken(
     oldPayload.role,
     {
       country: options?.country ?? oldPayload.country,
+      kycLevel: oldPayload.kycLevel,
       deviceFingerprint: options?.deviceFingerprint ?? oldPayload.deviceFingerprint,
     }
   );
@@ -570,4 +575,20 @@ export function decodeJWTPayload(token: string): JWTPayload | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Get the current RSA public key (PEM format).
+ * Useful for external services that need to verify tokens.
+ */
+export function getPublicKey(): string {
+  return getKeyPair().publicKey;
+}
+
+/**
+ * Get the current RSA private key (PEM format).
+ * Should only be used internally — never expose to clients.
+ */
+export function getPrivateKey(): string {
+  return getKeyPair().privateKey;
 }

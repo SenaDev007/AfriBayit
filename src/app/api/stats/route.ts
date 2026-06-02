@@ -1,10 +1,24 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { cache, buildCacheKey } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
+
+    // Build cache key for stats (10 min TTL)
+    const cacheKey = buildCacheKey(
+      'stats',
+      `platform:${country || 'global'}`,
+      country || undefined
+    );
+
+    // Try cache first
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const countryFilter = country ? { country } : {};
 
@@ -48,7 +62,7 @@ export async function GET(request: Request) {
       ? Math.round((reviewsCount / totalReviews) * 100)
       : 98; // fallback
 
-    return NextResponse.json({
+    const responseData = {
       properties: propertiesCount,
       transactions: transactionsCount,
       countries: countriesCount,
@@ -59,7 +73,12 @@ export async function GET(request: Request) {
       hotels: hotelsCount,
       guesthouses: guesthousesCount,
       bookings: hotelBookingsCount + guesthouseBookingsCount,
-    });
+    };
+
+    // Cache platform stats for 10 minutes
+    await cache.set(cacheKey, responseData, 600);
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Stats API error:', error);
     // Return fallback values on error

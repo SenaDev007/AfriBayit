@@ -1,5 +1,5 @@
 // AfriBayit — OTA Types & Interfaces
-// Types partagés pour l'intégration des canaux OTA
+// Shared types for OTA channel integration
 
 export type OTAProvider = 'booking_com' | 'expedia' | 'airbnb';
 export type RoomStatus = 'available' | 'occupied' | 'maintenance' | 'out_of_order';
@@ -102,4 +102,30 @@ export interface UnifiedCalendarDay {
     guestName: string;
     status: BookingStatus;
   }[];
+}
+
+// ─── Webhook Event Types ──────────────────────────────────────────────────
+
+export interface OTAWebhookEvent {
+  provider: OTAProvider;
+  eventType: 'new_booking' | 'modification' | 'cancellation' | 'availability_change' | 'rate_change';
+  hotelId: string;
+  reservationId?: string;
+  payload: Record<string, unknown>;
+  receivedAt: string;
+}
+
+// ─── Sync Configuration ───────────────────────────────────────────────────
+
+export interface OTASyncConfig {
+  /** Maximum number of concurrent sync operations */
+  maxConcurrentSyncs: number;
+  /** Timeout for individual provider API calls (ms) */
+  apiTimeout: number;
+  /** Whether to enforce rate parity before pushing rates */
+  enforceRateParity: boolean;
+  /** Whether to check for overbooking before confirming reservations */
+  preventOverbooking: boolean;
+  /** Channels to sync (empty = all configured) */
+  channels: OTAProvider[];
 }

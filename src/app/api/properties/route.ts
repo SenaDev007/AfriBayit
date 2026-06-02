@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { propertyCreateSchema } from '@/lib/validations/property.schema';
 import { authGuard } from '@/lib/auth-guard';
+import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -18,6 +19,19 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get('sortBy') || 'recent';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
+
+    // Build cache key from query parameters
+    const cacheKey = buildCacheKey(
+      'properties',
+      `list:${type || 'all'}:${transaction || 'all'}:${city || 'all'}:${country || 'all'}:${minPrice || ''}:${maxPrice || ''}:${verified || ''}:${geoTrust || ''}:${premium || ''}:${sortBy}:${page}:${limit}`,
+      country || undefined
+    );
+
+    // Try cache first (5 min TTL for property listings)
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const where: Record<string, unknown> = { status: 'published' };
 
@@ -100,7 +114,7 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({
+    const responseData = {
       properties,
       pagination: {
         page,
@@ -108,7 +122,12 @@ export async function GET(request: Request) {
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+
+    // Cache the response for 5 minutes
+    await cache.set(cacheKey, responseData, 300);
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Properties API error:', error);
     return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
@@ -168,6 +187,9 @@ export async function POST(request: Request) {
         status: 'draft',
       },
     });
+
+    // Invalidate property listing caches for this country
+    await invalidatePropertyCache(validated.country);
 
     return NextResponse.json(property, { status: 201 });
   } catch (error: unknown) {

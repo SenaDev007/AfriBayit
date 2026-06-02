@@ -6,6 +6,8 @@ import type {
   PaymentMethod,
   InitPaymentRequest,
   InitPaymentResponse,
+  PayoutRequest,
+  PayoutResponse,
   WebhookEvent,
 } from './types';
 import { FEDAPAY_COUNTRIES, MOBILE_MONEY_METHODS, CARD_METHODS } from './types';
@@ -61,7 +63,7 @@ export function selectBestProvider(
   // Cards in WAEMU countries — prefer FedaPay for local processing, fallback Stripe
   if (isCard && isFedapayCountry) {
     // If FedaPay is configured, use it; otherwise Stripe
-    if (process.env.FEDAPAY_API_KEY) {
+    if (process.env.FEDAPAY_SECRET_KEY) {
       return 'fedapay';
     }
     return 'stripe';
@@ -146,6 +148,32 @@ export async function processRefund(
 }
 
 /**
+ * Process a payout through the appropriate provider.
+ * Used for disbursing escrow funds to sellers.
+ */
+export async function processPayout(request: PayoutRequest): Promise<PayoutResponse> {
+  // Select the best provider for the payout
+  const providerName = selectBestProvider(request.countryCode, request.method);
+  const provider = getProvider(providerName);
+
+  if (!provider.supportsMethod(request.method, request.countryCode)) {
+    // Try fallback
+    const fallback = providerName === 'fedapay' ? 'stripe' : 'fedapay';
+    const fallbackProvider = getProvider(fallback as PaymentProvider);
+
+    if (fallbackProvider.supportsMethod(request.method, request.countryCode)) {
+      return fallbackProvider.processPayout(request);
+    }
+
+    throw new Error(
+      `No payment provider supports payout via "${request.method}" in country "${request.countryCode}"`
+    );
+  }
+
+  return provider.processPayout(request);
+}
+
+/**
  * Get available payment methods for a specific country.
  */
 export function getAvailableMethods(country: string): PaymentMethod[] {
@@ -160,7 +188,7 @@ export function getAvailableMethods(country: string): PaymentMethod[] {
     }
   }
 
-  // Cards are available everywhere via Stripe
+  // Cards are available everywhere via Stripe or FedaPay
   methods.push('card_visa', 'card_mastercard');
 
   // Bank transfer via Stripe

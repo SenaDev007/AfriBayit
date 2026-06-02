@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyOTP } from '@/lib/otp';
+import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
 import { z } from 'zod';
 
 const verifyOTPSchema = z.object({
@@ -9,6 +10,25 @@ const verifyOTPSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 10 OTP verification attempts per IP per 15 minutes
+    const rlKey = getRateLimitKey(request);
+    const rlResult = rateLimit(`otp-verify:${rlKey}`, 10, 15 * 60 * 1000);
+    if (!rlResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Trop de tentatives de vérification. Veuillez réessayer plus tard.',
+          code: 'RATE_LIMITED',
+          retryAfter: rlResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rlResult.retryAfter),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const validation = verifyOTPSchema.safeParse(body);
 

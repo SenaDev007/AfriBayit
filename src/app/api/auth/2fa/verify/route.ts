@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verify2FALogin } from '@/lib/twofa';
 import { db } from '@/lib/db';
+import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
 import { z } from 'zod';
 
 const verify2FASchema = z.object({
@@ -15,6 +16,25 @@ const verify2FASchema = z.object({
  */
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 TOTP verification attempts per IP per 15 minutes
+    const rlKey = getRateLimitKey(request);
+    const rlResult = rateLimit(`2fa-verify:${rlKey}`, 5, 15 * 60 * 1000);
+    if (!rlResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Trop de tentatives de vérification 2FA. Veuillez réessayer plus tard.',
+          code: 'RATE_LIMITED',
+          retryAfter: rlResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rlResult.retryAfter),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const validation = verify2FASchema.safeParse(body);
 

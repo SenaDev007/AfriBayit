@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { runValuation, type PropertyData } from '@/lib/avm';
+import { cache, buildCacheKey } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +90,18 @@ export async function POST(request: Request) {
     }
 
     // Run the full valuation
+    // Try cache first (15 min TTL for AVM estimates)
+    const cacheKey = buildCacheKey(
+      'avm',
+      `estimate:${propertyData.id}:${propertyData.type}:${propertyData.city}:${propertyData.country}:${propertyData.surface}`,
+      propertyData.country || undefined
+    );
+
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const report = await runValuation(propertyData);
 
     // Format the response
@@ -99,7 +112,7 @@ export async function POST(request: Request) {
     };
     const formattedPricePerM2 = new Intl.NumberFormat('fr-FR').format(report.valuation.pricePerM2);
 
-    return NextResponse.json({
+    const responseData = {
       property: {
         id: propertyData.id,
         type: propertyData.type,
@@ -132,7 +145,13 @@ export async function POST(request: Request) {
         trend: report.marketStats.trend,
         trendPercentage: report.marketStats.trendPercentage,
       } : null,
-    });
+      aiInsight: report.aiInsight || null,
+    };
+
+    // Cache AVM estimates for 15 minutes
+    await cache.set(cacheKey, responseData, 900);
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('AVM estimate API error:', error);
     return NextResponse.json(

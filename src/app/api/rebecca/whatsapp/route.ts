@@ -3,9 +3,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
+import ZAI from 'z-ai-web-dev-sdk';
 import { applyGuardrails } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman } from '@/lib/rebecca/handoff';
-import { RefreshCw } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
           });
 
           if (handoffResult.shouldHandoff) {
-            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... <RefreshCw className="w-4 h-4" />');
+            await sendWhatsAppMessage(from, 'Je vais vous mettre en contact avec un de nos conseillers. Un instant svp... ⏳');
             // TODO: Create handoff ticket in DB and notify support team
             continue;
           }
@@ -158,8 +158,19 @@ async function processWhatsAppMessage(
   context: Record<string, unknown>
 ): Promise<string> {
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const zai = await ZAI.create();
+
+    const locationContext = context.latitude
+      ? `L'utilisateur a partagé sa position: Lat ${context.latitude}, Lng ${context.longitude}${context.address ? `, Adresse: ${context.address}` : ''}`
+      : '';
+
+    const documentContext = context.documentUrl
+      ? `L'utilisateur a envoyé un document: ${context.documentFilename || 'sans nom'} (${context.documentMimetype || 'type inconnu'})`
+      : '';
+
+    const imageContext = context.imageUrl
+      ? `L'utilisateur a envoyé une image.${context.imageCaption ? ` Légende: ${context.imageCaption}` : ''}`
+      : '';
 
     const systemPrompt = `Tu es Rebecca, l'assistante IA immobilière d'AfriBayit. Tu réponds via WhatsApp, donc tes réponses doivent être:
 - Concises (max 300 caractères si possible)
@@ -168,8 +179,31 @@ async function processWhatsAppMessage(
 - Avec des emojis modérés
 
 Tu es experte en immobilier en Afrique de l'Ouest (Bénin, Côte d'Ivoire, Burkina Faso, Togo).
+Tu aides les utilisateurs à: rechercher des biens, estimer des valeurs, trouver des artisans, comprendre les démarches immobilières.
 
-${context.latitude ? `L'utilisateur a partagé sa position: Lat ${context.latitude}, Lng ${context.longitude}${context.address ? `, Adresse: ${context.address}` : ''}` : ''}`;
+${locationContext}
+${documentContext}
+${imageContext}`.trim();
+
+    // If image was sent, use multimodal model
+    if (context.imageUrl) {
+      const userContent: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
+        { type: 'text', text: message },
+        { type: 'image_url', image_url: { url: context.imageUrl as string } },
+      ];
+
+      const response = await zai.chat.completions.create({
+        model: 'glm-4v-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent as unknown as string },
+        ],
+        temperature: 0.7,
+        max_tokens: 400,
+      });
+
+      return response.choices?.[0]?.message?.content || 'Je suis désolée, je n\'ai pas pu analyser cette image. Réessayez svp.';
+    }
 
     const response = await zai.chat.completions.create({
       model: 'glm-4-flash',

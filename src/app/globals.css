@@ -228,6 +228,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* CDC §2: All headings use Cormorant Garamond (font-display) by default */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
 }
 
 /* AfriBayit Custom Utilities */

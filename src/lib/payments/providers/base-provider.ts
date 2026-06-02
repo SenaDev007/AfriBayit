@@ -7,6 +7,8 @@ import type {
   VerifyPaymentResponse,
   RefundResponse,
   WebhookEvent,
+  PayoutRequest,
+  PayoutResponse,
   PaymentProvider,
 } from '../types';
 
@@ -41,4 +43,10 @@ export abstract class PaymentProviderBase {
    * Check if this provider supports a given payment method and country.
    */
   abstract supportsMethod(method: string, countryCode: string): boolean;
+
+  /**
+   * Process a payout to a seller's Mobile Money or bank account.
+   * Used for disbursing escrow funds to sellers upon transaction completion.
+   */
+  abstract processPayout(request: PayoutRequest): Promise<PayoutResponse>;
 }

@@ -1,5 +1,6 @@
 // AfriBayit — Channel Inventory Manager
-// Gestionnaire de pool d'inventaire multi-canal
+// Enhanced multi-channel sync with rate parity enforcement and overbooking prevention
+// Supports async sync operations and cross-channel availability management
 
 import { db } from '@/lib/db';
 import {
@@ -8,13 +9,29 @@ import {
   UnifiedCalendarDay,
   DateRange,
   AvailabilityUpdate,
+  RateUpdate,
+  OTASyncConfig,
 } from './types';
 import { BookingComProvider } from './providers/booking-com';
 import { ExpediaProvider } from './providers/expedia';
 import { BaseOTAProvider } from './providers/base-provider';
 import type { OTAProviderConfig } from './types';
+import { validateRates, suggestParityRates } from './rate-parity';
+import { checkAvailability, reserveRoom } from './overbooking-guard';
 
-/** Créer un fournisseur OTA à partir de la config */
+// ─── Default Sync Config ──────────────────────────────────────────────────
+
+const DEFAULT_SYNC_CONFIG: OTASyncConfig = {
+  maxConcurrentSyncs: 3,
+  apiTimeout: 30_000,
+  enforceRateParity: true,
+  preventOverbooking: true,
+  channels: [],
+};
+
+// ─── Provider Factory ─────────────────────────────────────────────────────
+
+/** Create an OTA provider instance from config */
 export function createProvider(config: OTAProviderConfig): BaseOTAProvider {
   switch (config.provider) {
     case 'booking_com':
@@ -26,7 +43,7 @@ export function createProvider(config: OTAProviderConfig): BaseOTAProvider {
   }
 }
 
-/** Obtenir les fournisseurs configurés pour un hôtel */
+/** Get configured providers for a hotel */
 async function getHotelProviders(hotelId: string): Promise<BaseOTAProvider[]> {
   const hotel = await db.hotel.findUnique({
     where: { id: hotelId },
@@ -35,7 +52,9 @@ async function getHotelProviders(hotelId: string): Promise<BaseOTAProvider[]> {
 
   if (!hotel?.otaRefs) return [];
 
-  const refs = JSON.parse(hotel.otaRefs) as Record<string, string>;
+  let refs: Record<string, string> = {};
+  try { refs = JSON.parse(hotel.otaRefs); } catch { refs = {}; }
+
   const providers: BaseOTAProvider[] = [];
 
   if (refs.booking_com_id) {
@@ -63,8 +82,19 @@ async function getHotelProviders(hotelId: string): Promise<BaseOTAProvider[]> {
   return providers;
 }
 
-/** Synchroniser les disponibilités sur tous les canaux connectés */
-export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
+// ─── Sync Operations ──────────────────────────────────────────────────────
+
+/**
+ * Sync availability across all OTA channels.
+ * Pulls bookings from each channel, updates local DB, pushes availability.
+ * Runs asynchronously — does not block the main request.
+ */
+export async function syncAllProviders(
+  hotelId: string,
+  dateRange: DateRange,
+  syncConfig?: Partial<OTASyncConfig>
+) {
+  const config = { ...DEFAULT_SYNC_CONFIG, ...syncConfig };
   const providers = await getHotelProviders(hotelId);
   const results = [];
 
@@ -72,20 +102,58 @@ export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
     if (!provider.isEnabled) continue;
 
     try {
-      // Récupérer les réservations du fournisseur
+      // 1. Pull bookings from the provider
       const bookings = await provider.fetchBookings(hotelId, dateRange);
 
-      // Mettre à jour la base de données avec les réservations importées
+      // 2. Update local database with imported bookings
+      let bookingsImported = 0;
       for (const booking of bookings) {
         const existing = await db.hotelBooking.findFirst({
           where: { bookingRef: booking.bookingId },
         });
 
         if (!existing) {
+          // Check for overbooking before creating
+          if (config.preventOverbooking) {
+            const availability = await checkAvailability(
+              hotelId,
+              booking.roomTypeId,
+              booking.checkIn,
+              booking.checkOut
+            );
+
+            if (!availability.available) {
+              console.warn(
+                `[ChannelManager] Overbooking detected for ${booking.bookingId} from ${provider.providerName}. ` +
+                `Available: ${availability.availableRooms}/${availability.totalRooms}`
+              );
+
+              // Log the overbooking attempt
+              await db.otaSyncLog.create({
+                data: {
+                  hotelId,
+                  ota: provider.providerId,
+                  operation: 'PULL',
+                  status: 'failed',
+                  errorMessage: `Overbooking prevented: ${booking.bookingId} — no availability`,
+                  payload: JSON.stringify(booking),
+                },
+              });
+
+              continue; // Skip this booking
+            }
+          }
+
+          // Find the room
+          const room = await db.hotelRoom.findFirst({
+            where: { hotelId, type: booking.roomTypeId },
+          });
+
           await db.hotelBooking.create({
             data: {
               bookingRef: booking.bookingId,
               hotelId,
+              roomId: room?.id,
               checkIn: new Date(booking.checkIn),
               checkOut: new Date(booking.checkOut),
               guests: 1,
@@ -94,13 +162,14 @@ export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
               sourceChannel: booking.provider,
               status: booking.status,
               specialRequests: booking.specialRequests,
-              userId: 'system', // Les réservations OTA sont créées par le système
+              userId: 'system',
             },
           });
+          bookingsImported++;
         }
       }
 
-      // Calculer les disponibilités actuelles
+      // 3. Calculate current availability
       const rooms = await db.hotelRoom.findMany({
         where: { hotelId },
         include: { channelItems: true },
@@ -112,7 +181,7 @@ export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
           where: {
             hotelId,
             roomId: room.id,
-            status: { in: ['confirmed', 'checked_in'] },
+            status: { in: ['confirmed', 'checked_in', 'pending'] },
             checkIn: { lte: new Date(dateRange.end) },
             checkOut: { gte: new Date(dateRange.start) },
           },
@@ -126,24 +195,54 @@ export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
         });
       }
 
-      // Pousser les disponibilités vers le fournisseur
+      // 4. Push availability to the provider
       await provider.pushAvailability(hotelId, availabilityUpdates);
 
-      // Logger le succès de la synchronisation
+      // 5. Enforce rate parity and push rates
+      if (config.enforceRateParity) {
+        const parityResult = await validateRates(hotelId, []);
+        if (!parityResult.valid) {
+          console.warn(
+            `[ChannelManager] Rate parity violations detected for hotel ${hotelId}:`,
+            parityResult.violations
+          );
+        }
+      }
+
+      // Push current rates
+      const rateUpdates: RateUpdate[] = [];
+      for (const room of rooms) {
+        rateUpdates.push({
+          roomTypeId: room.id,
+          date: dateRange.start,
+          rate: room.basePriceXof,
+          currency: room.currency || 'XOF',
+        });
+      }
+
+      if (rateUpdates.length > 0) {
+        await provider.pushRates(hotelId, rateUpdates);
+      }
+
+      // 6. Log success
       await db.otaSyncLog.create({
         data: {
           hotelId,
           ota: provider.providerId,
           operation: 'PULL',
           status: 'success',
-          payload: JSON.stringify({ bookingsImported: bookings.length, availabilityUpdates: availabilityUpdates.length }),
+          payload: JSON.stringify({
+            bookingsImported,
+            availabilityUpdates: availabilityUpdates.length,
+            rateUpdates: rateUpdates.length,
+          }),
         },
       });
 
       results.push({
         provider: provider.providerId,
         success: true,
-        bookingsImported: bookings.length,
+        bookingsImported,
         availabilityUpdated: availabilityUpdates.length,
         errors: [],
       });
@@ -173,13 +272,192 @@ export async function syncAllProviders(hotelId: string, dateRange: DateRange) {
   return results;
 }
 
-/** Distribuer les chambres disponibles entre les canaux */
+/**
+ * Sync a single channel for a hotel.
+ * More targeted than syncAllProviders.
+ */
+export async function syncSingleProvider(
+  hotelId: string,
+  providerId: OTAProvider,
+  dateRange: DateRange
+) {
+  const providers = await getHotelProviders(hotelId);
+  const provider = providers.find((p) => p.providerId === providerId);
+
+  if (!provider || !provider.isEnabled) {
+    return {
+      provider: providerId,
+      success: false,
+      bookingsImported: 0,
+      availabilityUpdated: 0,
+      errors: ['Provider not configured or disabled'],
+    };
+  }
+
+  const fullResults = await syncAllProviders(hotelId, dateRange, { channels: [providerId] });
+  return fullResults[0] || {
+    provider: providerId,
+    success: false,
+    bookingsImported: 0,
+    availabilityUpdated: 0,
+    errors: ['No sync result returned'],
+  };
+}
+
+/**
+ * Push availability update to all channels.
+ * Used when availability changes locally (e.g., direct booking, cancellation).
+ * This is async and non-blocking.
+ */
+export async function pushAvailabilityToAllChannels(
+  hotelId: string,
+  updates: AvailabilityUpdate[]
+): Promise<Record<string, { success: boolean; errors: string[] }>> {
+  const providers = await getHotelProviders(hotelId);
+  const results: Record<string, { success: boolean; errors: string[] }> = {};
+
+  // Push to each provider in parallel
+  const pushPromises = providers
+    .filter((p) => p.isEnabled)
+    .map(async (provider) => {
+      try {
+        const result = await provider.pushAvailability(hotelId, updates);
+        results[provider.providerId] = result;
+
+        // Log the push
+        await db.otaSyncLog.create({
+          data: {
+            hotelId,
+            ota: provider.providerId,
+            operation: 'PUSH',
+            status: result.success ? 'success' : 'failed',
+            payload: JSON.stringify({ updatesCount: updates.length }),
+            errorMessage: result.errors.join(', ') || null,
+          },
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        results[provider.providerId] = { success: false, errors: [message] };
+      }
+    });
+
+  await Promise.allSettled(pushPromises);
+  return results;
+}
+
+/**
+ * Push rate updates to all channels with rate parity enforcement.
+ */
+export async function pushRatesToAllChannels(
+  hotelId: string,
+  rates: RateUpdate[],
+  enforceParity: boolean = true
+): Promise<Record<string, { success: boolean; errors: string[] }>> {
+  const providers = await getHotelProviders(hotelId);
+  const results: Record<string, { success: boolean; errors: string[] }> = {};
+
+  // Check rate parity before pushing
+  if (enforceParity) {
+    const parityCheck = await validateRates(hotelId, rates);
+    if (!parityCheck.valid) {
+      console.warn(
+        `[ChannelManager] Rate parity violations before push:`,
+        parityCheck.violations
+      );
+      // Still push, but log the violations
+    }
+  }
+
+  const pushPromises = providers
+    .filter((p) => p.isEnabled)
+    .map(async (provider) => {
+      try {
+        const result = await provider.pushRates(hotelId, rates);
+        results[provider.providerId] = result;
+
+        await db.otaSyncLog.create({
+          data: {
+            hotelId,
+            ota: provider.providerId,
+            operation: 'PUSH',
+            status: result.success ? 'success' : 'failed',
+            payload: JSON.stringify({ ratesCount: rates.length, enforceParity }),
+            errorMessage: result.errors.join(', ') || null,
+          },
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        results[provider.providerId] = { success: false, errors: [message] };
+      }
+    });
+
+  await Promise.allSettled(pushPromises);
+  return results;
+}
+
+/**
+ * Check overbooking across all channels before accepting a booking.
+ * Returns true if the booking is safe to accept.
+ */
+export async function checkOverbookingAcrossChannels(
+  hotelId: string,
+  roomType: string,
+  checkIn: string,
+  checkOut: string
+): Promise<{
+  safe: boolean;
+  availableRooms: number;
+  totalRooms: number;
+  channelBreakdown: Record<string, number>;
+}> {
+  // Get current availability
+  const availability = await checkAvailability(hotelId, roomType, checkIn, checkOut);
+
+  // Get bookings breakdown by channel
+  const room = await db.hotelRoom.findFirst({
+    where: { hotelId, type: roomType },
+  });
+
+  let channelBreakdown: Record<string, number> = {};
+  if (room) {
+    const bookingsByChannel = await db.hotelBooking.groupBy({
+      by: ['sourceChannel'],
+      where: {
+        hotelId,
+        roomId: room.id,
+        status: { in: ['confirmed', 'checked_in', 'pending'] },
+        checkIn: { lt: new Date(checkOut) },
+        checkOut: { gt: new Date(checkIn) },
+      },
+      _count: { id: true },
+    });
+
+    channelBreakdown = bookingsByChannel.reduce((acc, b) => {
+      acc[b.sourceChannel] = b._count.id;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+
+  return {
+    safe: availability.available,
+    availableRooms: availability.availableRooms,
+    totalRooms: availability.totalRooms,
+    channelBreakdown,
+  };
+}
+
+// ─── Distribution & Calendar ──────────────────────────────────────────────
+
+/**
+ * Distribute available rooms between channels.
+ * Uses proportional allocation strategy.
+ */
 export async function distributeAvailability(
   hotelId: string,
   totalRooms: number,
   dateRange: DateRange
 ): Promise<ChannelAllocation[]> {
-  // Obtenir le nombre de réservations par canal
+  // Get bookings by channel
   const bookingsByChannel = await db.hotelBooking.groupBy({
     by: ['sourceChannel'],
     where: {
@@ -191,11 +469,10 @@ export async function distributeAvailability(
     _count: { id: true },
   });
 
-  // Calculer l'allocation par canal — stratégie proportionnelle
   const totalBookings = bookingsByChannel.reduce((sum, b) => sum + b._count.id, 0);
   const availableRooms = Math.max(0, totalRooms - totalBookings);
 
-  // Réserver 40% pour direct, 35% Booking.com, 25% Expedia
+  // Allocation ratios — 40% direct, 35% Booking.com, 25% Expedia
   const allocationRatios: Record<string, number> = {
     direct: 0.4,
     booking_com: 0.35,
@@ -210,7 +487,7 @@ export async function distributeAvailability(
     const finalAllocated = Math.min(allocated, remaining);
     remaining -= finalAllocated;
 
-    // Obtenir le tarif actuel du canal
+    // Get current channel rate
     const channelInv = await db.channelInventory.findFirst({
       where: { hotelId, ota: channel },
     });
@@ -223,7 +500,7 @@ export async function distributeAvailability(
     });
   }
 
-  // Distribuer le reste au canal direct
+  // Distribute remainder to direct channel
   if (remaining > 0) {
     const directAlloc = allocations.find((a) => a.ota === 'direct');
     if (directAlloc) {
@@ -234,7 +511,9 @@ export async function distributeAvailability(
   return allocations;
 }
 
-/** Réconcilier les réservations de tous les canaux */
+/**
+ * Reconcile bookings across all channels to detect issues.
+ */
 export async function reconcileBookings(hotelId: string, dateRange: DateRange) {
   const bookings = await db.hotelBooking.findMany({
     where: {
@@ -245,7 +524,7 @@ export async function reconcileBookings(hotelId: string, dateRange: DateRange) {
     orderBy: { checkIn: 'asc' },
   });
 
-  // Grouper par canal source
+  // Group by channel
   const byChannel: Record<string, typeof bookings> = {};
   for (const booking of bookings) {
     const channel = booking.sourceChannel;
@@ -253,7 +532,7 @@ export async function reconcileBookings(hotelId: string, dateRange: DateRange) {
     byChannel[channel].push(booking);
   }
 
-  // Vérifier les chevauchements (potentiel surbooking)
+  // Detect overlapping bookings (potential overbooking)
   const overlappingBookings: typeof bookings = [];
   for (let i = 0; i < bookings.length - 1; i++) {
     for (let j = i + 1; j < bookings.length; j++) {
@@ -279,14 +558,16 @@ export async function reconcileBookings(hotelId: string, dateRange: DateRange) {
   };
 }
 
-/** Obtenir le calendrier unifié pour un hôtel */
+/**
+ * Get unified calendar for a hotel.
+ */
 export async function getUnifiedCalendar(
   hotelId: string,
   month: number,
   year: number
 ): Promise<UnifiedCalendarDay[]> {
   const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0); // Dernier jour du mois
+  const endDate = new Date(year, month, 0);
 
   const rooms = await db.hotelRoom.findMany({
     where: { hotelId },
@@ -294,7 +575,6 @@ export async function getUnifiedCalendar(
 
   const totalRooms = rooms.reduce((sum, r) => sum + r.totalRooms, 0);
 
-  // Récupérer toutes les réservations du mois
   const bookings = await db.hotelBooking.findMany({
     where: {
       hotelId,
@@ -304,7 +584,6 @@ export async function getUnifiedCalendar(
     },
   });
 
-  // Récupérer les disponibilités
   const availabilities = await db.roomAvailability.findMany({
     where: {
       room: { hotelId },
@@ -312,14 +591,12 @@ export async function getUnifiedCalendar(
     },
   });
 
-  // Construire le calendrier jour par jour
   const calendar: UnifiedCalendarDay[] = [];
   const current = new Date(startDate);
 
   while (current <= endDate) {
     const dateStr = current.toISOString().split('T')[0];
 
-    // Compter les chambres réservées pour ce jour
     const bookedForDay = bookings.filter((b) => {
       const checkIn = new Date(b.checkIn);
       const checkOut = new Date(b.checkOut);
@@ -331,7 +608,6 @@ export async function getUnifiedCalendar(
       (a) => a.date.toISOString().split('T')[0] === dateStr && a.status === 'MAINTENANCE'
     ).length;
 
-    // Tarif moyen du jour
     const dayAvail = availabilities.filter(
       (a) => a.date.toISOString().split('T')[0] === dateStr
     );
@@ -350,7 +626,7 @@ export async function getUnifiedCalendar(
       bookings: bookedForDay.map((b) => ({
         id: b.id,
         source: b.sourceChannel as OTAProvider | 'direct',
-        guestName: '***', // Anonymisé pour le calendrier global
+        guestName: '***',
         status: b.status as 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show',
       })),
     });

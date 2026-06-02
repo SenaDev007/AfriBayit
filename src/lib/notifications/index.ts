@@ -12,7 +12,7 @@ import type {
 import { getAllowedChannels, shouldSendToChannel } from './preferences';
 import { sendEmail } from './channels/email';
 import { sendSms } from './channels/sms';
-import { sendPush, getVapidPublicKey, type PushSubscriptionData } from './channels/push';
+import { sendPush, getUserPushSubscriptions, getVapidPublicKey, type PushSubscriptionData } from './channels/push';
 import { sendWhatsApp } from './channels/whatsapp';
 
 // Priority escalation: urgent always bypasses quiet hours
@@ -182,19 +182,10 @@ async function deliverSms(payload: NotificationPayload): Promise<NotificationDel
  * Send push notification
  */
 async function deliverPush(payload: NotificationPayload): Promise<NotificationDeliveryResult> {
-  // Get user's push subscriptions from metadata
-  const user = await db.user.findUnique({
-    where: { id: payload.userId },
-    select: { specialties: true }, // temporarily using specialties for push subscriptions
-  });
-
-  if (!user?.specialties) {
-    return { channel: 'push', success: false, error: 'No push subscriptions found', sentAt: new Date() };
-  }
-
+  // Get user's push subscriptions from the dedicated PushSubscription table
   try {
-    const subscriptions: PushSubscriptionData[] = JSON.parse(user.specialties);
-    if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
+    const subscriptions = await getUserPushSubscriptions(payload.userId);
+    if (subscriptions.length === 0) {
       return { channel: 'push', success: false, error: 'No push subscriptions found', sentAt: new Date() };
     }
 
@@ -217,7 +208,7 @@ async function deliverPush(payload: NotificationPayload): Promise<NotificationDe
       sentAt: new Date(),
     };
   } catch {
-    return { channel: 'push', success: false, error: 'Failed to parse push subscriptions', sentAt: new Date() };
+    return { channel: 'push', success: false, error: 'Failed to retrieve push subscriptions', sentAt: new Date() };
   }
 }
 

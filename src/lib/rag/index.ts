@@ -1,6 +1,7 @@
 // AfriBayit RAG — Orchestrator
 // Main RAG pipeline: retrieve → augment → generate
 
+import ZAI from 'z-ai-web-dev-sdk';
 import { retrieve, RetrievalResult } from './retriever';
 import { augmentPrompt, REBECCA_SYSTEM_PROMPT } from './prompts';
 
@@ -40,8 +41,7 @@ export async function processQuery(
 
   // Step 3: Call LLM with augmented context
   try {
-    const { default: ZAI } = await import('z-ai-web-dev-sdk');
-    const zai = new ZAI();
+    const zai = await ZAI.create();
 
     const response = await zai.chat.completions.create({
       model: 'glm-4-flash',

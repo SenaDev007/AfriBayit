@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
 
 export async function GET(
   _request: Request,
@@ -111,6 +112,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden: not the property owner' }, { status: 403 });
     }
 
+    // Invalidate caches for this property and its listings
+    await cache.del(buildCacheKey('properties', `detail:${id}`, existing.country || undefined));
+    await invalidatePropertyCache(existing.country || undefined);
+
     const updated = await db.property.update({
       where: { id },
       data: {
@@ -174,6 +179,10 @@ export async function DELETE(
     if (existing.agentId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden: not the property owner' }, { status: 403 });
     }
+
+    // Invalidate caches for this property and its listings
+    await cache.del(buildCacheKey('properties', `detail:${id}`, existing.country || undefined));
+    await invalidatePropertyCache(existing.country || undefined);
 
     // Soft delete by setting status to 'rejected' (archived)
     const deleted = await db.property.update({

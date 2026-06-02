@@ -1,11 +1,49 @@
 // AfriBayit — POST /api/payments/initiate
 // Initiate a payment through the Payment Abstraction Layer
+// Supports: Mobile Money (MTN, Orange, Moov), Visa/Mastercard
+// Creates Transaction + EscrowAccount records and returns FedaPay checkout URL
 
 import { NextResponse } from 'next/server';
 import { authGuard } from '@/lib/auth-guard';
 import { db } from '@/lib/db';
 import { initiatePayment, selectBestProvider, getAvailableMethods } from '@/lib/payments';
 import type { PaymentProvider, PaymentMethod } from '@/lib/payments/types';
+
+/** Map simplified payment method names to our PaymentMethod type */
+function resolvePaymentMethod(method: string, _countryCode: string): PaymentMethod {
+  // Handle simplified names from the frontend
+  switch (method) {
+    case 'mobile_money':
+    case 'mobile_money_mtn':
+      // Default Mobile Money to MTN for the country
+      return 'mobile_money_mtn';
+    case 'mobile_money_orange':
+      return 'mobile_money_orange';
+    case 'mobile_money_moov':
+      return 'mobile_money_moov';
+    case 'mobile_money_wave':
+      return 'mobile_money_wave';
+    case 'card':
+    case 'card_visa':
+      return 'card_visa';
+    case 'card_mastercard':
+      return 'card_mastercard';
+    default:
+      return method as PaymentMethod;
+  }
+}
+
+interface PropertyInfo {
+  id: string;
+  title: string;
+  type: string;
+  transaction: string;
+  price: number;
+  currency: string;
+  country: string;
+  city: string;
+  agentId: string;
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,26 +52,30 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const {
+      propertyId,
       amount,
       currency = 'XOF',
       provider,
-      method,
+      method: rawMethod = 'mobile_money',
+      paymentMethod, // alternative field name
       reference,
       metadata,
       customerEmail,
       customerPhone,
-      countryCode,
+      countryCode: bodyCountryCode,
       description,
     } = body as {
+      propertyId?: string;
       amount: number;
       currency?: string;
       provider?: PaymentProvider;
-      method: PaymentMethod;
-      reference: string;
+      method?: string;
+      paymentMethod?: string; // alternative: 'mobile_money' or 'card'
+      reference?: string;
       metadata?: Record<string, unknown>;
       customerEmail?: string;
       customerPhone?: string;
-      countryCode: string;
+      countryCode?: string;
       description?: string;
     };
 
@@ -42,17 +84,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Montant invalide' }, { status: 400 });
     }
 
-    if (!method) {
-      return NextResponse.json({ error: 'Moyen de paiement requis' }, { status: 400 });
+    // Resolve payment method (support both 'method' and 'paymentMethod' fields)
+    const methodInput = rawMethod || paymentMethod || 'mobile_money';
+
+    // Determine country code
+    let countryCode = bodyCountryCode || auth.country || 'BJ';
+
+    // If propertyId is provided, look up the property for additional context
+    let property: PropertyInfo | null = null;
+    let sellerId: string | undefined;
+    let transactionId: string | undefined = reference;
+
+    if (propertyId) {
+      property = await db.property.findUnique({
+        where: { id: propertyId },
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          transaction: true,
+          price: true,
+          currency: true,
+          country: true,
+          city: true,
+          agentId: true,
+        },
+      });
+
+      if (!property) {
+        return NextResponse.json(
+          { error: 'Propriété introuvable' },
+          { status: 404 }
+        );
+      }
+
+      // Use property's country if not provided
+      if (!bodyCountryCode && property.country) {
+        countryCode = property.country;
+      }
+
+      // The seller is the property owner/agent
+      sellerId = property.agentId;
     }
 
-    if (!reference) {
-      return NextResponse.json({ error: 'Référence de transaction requise' }, { status: 400 });
-    }
-
-    if (!countryCode) {
-      return NextResponse.json({ error: 'Code pays requis' }, { status: 400 });
-    }
+    // Resolve to a proper PaymentMethod
+    const method = resolvePaymentMethod(methodInput, countryCode);
 
     // Validate payment method availability
     const availableMethods = getAvailableMethods(countryCode);
@@ -66,11 +142,59 @@ export async function POST(request: Request) {
     // Auto-select provider if not specified
     const selectedProvider = provider || selectBestProvider(countryCode, method);
 
-    // Get user email if not provided
+    // Get user info for customer data
     const user = await db.user.findUnique({
       where: { id: auth.userId },
-      select: { email: true, phone: true, name: true },
+      select: { email: true, phone: true, name: true, firstName: true, lastName: true },
     });
+
+    // Create or find the Transaction record
+    if (propertyId && sellerId) {
+      // Check for existing transaction
+      const existingTransaction = reference
+        ? await db.transaction.findUnique({ where: { id: reference } })
+        : null;
+
+      if (existingTransaction) {
+        transactionId = existingTransaction.id;
+      } else {
+        // Create new transaction
+        const newTransaction = await db.transaction.create({
+          data: {
+            propertyId,
+            buyerId: auth.userId,
+            sellerId,
+            amount,
+            commission: 0, // Will be calculated by escrow engine on release
+            currency,
+            country: countryCode,
+            status: 'CREATED',
+            paymentProvider: selectedProvider,
+          },
+        });
+        transactionId = newTransaction.id;
+
+        // Create escrow account for this transaction
+        await db.escrowAccount.create({
+          data: {
+            transactionId: newTransaction.id,
+            balance: 0,
+            heldAmount: 0,
+            releasedAmount: 0,
+            refundedAmount: 0,
+            currency,
+            status: 'EMPTY',
+          },
+        });
+
+        console.log(`[Payment] Transaction ${transactionId} created for property ${propertyId} with escrow account`);
+      }
+    }
+
+    // Build description
+    const paymentDescription = description || (property
+      ? `Achat ${property.title} - AfriBayit`
+      : `Paiement AfriBayit - ${amount} ${currency}`);
 
     // Initiate payment through PAL
     const result = await initiatePayment({
@@ -78,16 +202,34 @@ export async function POST(request: Request) {
       currency,
       provider: selectedProvider,
       method,
-      reference,
+      reference: transactionId || `pay_${Date.now()}`,
       metadata: {
         ...metadata,
         userId: auth.userId,
+        propertyId: propertyId || undefined,
+        transactionId: transactionId || undefined,
+        customerFirstName: user?.firstName || user?.name?.split(' ')[0] || '',
+        customerLastName: user?.lastName || user?.name?.split(' ').slice(1).join(' ') || '',
       },
       customerEmail: customerEmail || user?.email || '',
       customerPhone: customerPhone || user?.phone || undefined,
       countryCode,
-      description,
+      description: paymentDescription,
     });
+
+    // Update the Transaction record with payment reference
+    if (transactionId) {
+      await db.transaction.update({
+        where: { id: transactionId },
+        data: {
+          paymentProvider: selectedProvider,
+          paymentRef: result.providerRef,
+          escrowReference: result.paymentId,
+        },
+      }).catch(() => {
+        // Transaction record might not exist for non-property payments
+      });
+    }
 
     // Create a wallet transaction record for tracking
     await db.walletTransaction.create({
@@ -103,12 +245,16 @@ export async function POST(request: Request) {
           paymentId: result.paymentId,
           provider: selectedProvider,
           method,
-          reference,
-          countryCode,
+          reference: transactionId,
+          propertyId: propertyId || undefined,
+          transactionId: transactionId || undefined,
           redirectUrl: result.redirectUrl,
+          countryCode,
         }),
       },
     });
+
+    console.log(`[Payment] Payment initiated: ${result.paymentId}, provider: ${selectedProvider}, method: ${method}`);
 
     return NextResponse.json({
       success: result.success,
@@ -117,6 +263,10 @@ export async function POST(request: Request) {
       redirectUrl: result.redirectUrl,
       status: result.status,
       provider: selectedProvider,
+      method,
+      transactionId: transactionId || null,
+      currency,
+      amount,
     }, { status: 201 });
   } catch (error) {
     console.error('Payment initiation error:', error);

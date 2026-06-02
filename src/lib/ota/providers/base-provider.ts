@@ -1,14 +1,15 @@
 // AfriBayit — OTA Base Provider (Abstract)
-// Classe de base pour tous les adaptateurs OTA
+// Base class for all OTA provider adapters
+// Includes common functionality and interface contract
 
 import {
   OTABooking,
-  OTAAvailability,
   AvailabilityUpdate,
   RateUpdate,
   DateRange,
   OTAProviderConfig,
-} from './types';
+  OTARoom,
+} from '../types';
 
 export abstract class BaseOTAProvider {
   protected config: OTAProviderConfig;
@@ -17,41 +18,51 @@ export abstract class BaseOTAProvider {
     this.config = config;
   }
 
-  /** Récupérer les réservations depuis le fournisseur OTA */
+  /** Fetch reservations from the OTA provider */
   abstract fetchBookings(hotelId: string, dateRange: DateRange): Promise<OTABooking[]>;
 
-  /** Pousser les disponibilités vers le fournisseur */
+  /** Push availability to the provider */
   abstract pushAvailability(hotelId: string, availability: AvailabilityUpdate[]): Promise<{ success: boolean; errors: string[] }>;
 
-  /** Pousser les tarifs vers le fournisseur */
+  /** Push rates to the provider */
   abstract pushRates(hotelId: string, rates: RateUpdate[]): Promise<{ success: boolean; errors: string[] }>;
 
-  /** Confirmer une réservation */
+  /** Confirm a reservation */
   abstract confirmBooking(bookingId: string): Promise<{ success: boolean }>;
 
-  /** Annuler une réservation */
+  /** Cancel a reservation */
   abstract cancelBooking(bookingId: string, reason: string): Promise<{ success: boolean }>;
 
-  /** Vérifier la connexion au fournisseur */
+  /** Test connection to the provider */
   abstract testConnection(): Promise<{ connected: boolean; message: string }>;
 
-  /** Mapper les types de chambre du fournisseur vers AfriBayit */
+  /** Map provider room type ID to AfriBayit room type */
   abstract mapRoomType(providerRoomTypeId: string): string | null;
 
-  /** Nom lisible du fournisseur */
+  /** Human-readable provider name */
   abstract get providerName(): string;
 
-  /** Identifiant du fournisseur */
+  /** List rooms configured on the provider (optional, with default) */
+  async listRooms(_hotelId: string): Promise<OTARoom[]> {
+    return [];
+  }
+
+  /** Provider identifier */
   get providerId(): string {
     return this.config.provider;
   }
 
-  /** Vérifier si le fournisseur est activé */
+  /** Check if the provider is enabled */
   get isEnabled(): boolean {
     return this.config.enabled;
   }
 
-  /** Logger une erreur OTA */
+  /** Check if the provider is in sandbox/test mode */
+  get isSandbox(): boolean {
+    return process.env.OTA_SANDBOX_MODE !== 'false';
+  }
+
+  /** Log an OTA error and return the message */
   protected logError(operation: string, error: unknown): string {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[OTA:${this.providerName}] ${operation} failed:`, message);

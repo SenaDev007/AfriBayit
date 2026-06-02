@@ -44,6 +44,8 @@ export {
   getTokenJti,
   getTokenStats,
   decodeJWTPayload,
+  getPublicKey,
+  getPrivateKey,
   type JWTPayload,
   type TokenPair,
   type TokenVerificationResult,

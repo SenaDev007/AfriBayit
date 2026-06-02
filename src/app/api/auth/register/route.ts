@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
+import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 registrations per IP per hour
+    const rlKey = getRateLimitKey(request);
+    const rlResult = rateLimit(`register:${rlKey}`, 5, 60 * 60 * 1000);
+    if (!rlResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Trop de tentatives d\'inscription. Veuillez réessayer plus tard.',
+          code: 'RATE_LIMITED',
+          retryAfter: rlResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rlResult.retryAfter),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { email, password, name, phone, country, city, role } = body;
 
