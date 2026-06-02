@@ -5,6 +5,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { Check, Drama, Key, Loader2, Mail, User } from 'lucide-react';
 
+/**
+ * Detect if the user is in an embedded/in-app browser (WebView).
+ * Google OAuth blocks these with "disallowed_useragent" error.
+ * Returns the browser type or null if it's a standard browser.
+ */
+function detectInAppBrowser(): string | null {
+  if (typeof navigator === 'undefined') return null;
+  const ua = navigator.userAgent || '';
+  const wa = (navigator as unknown as { whatsapp?: unknown }).whatsapp;
+
+  // WhatsApp in-app browser
+  if (/WhatsApp/i.test(ua) || wa) return 'WhatsApp';
+  // Facebook / Instagram in-app browser
+  if (/FBAN|FBAV|FBIOS|FB4A/i.test(ua)) return 'Facebook';
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  // Twitter/X in-app browser
+  if (/Twitter/i.test(ua)) return 'Twitter';
+  // LinkedIn in-app browser
+  if (/LinkedInApp/i.test(ua)) return 'LinkedIn';
+  // Snapchat
+  if (/Snapchat/i.test(ua)) return 'Snapchat';
+  // Generic Android WebView
+  if (/; wv\)/i.test(ua)) return 'Android WebView';
+  // iOS WKWebView (but not Safari)
+  if (/(iPhone|iPad).*AppleWebKit(?!.*Safari)/i.test(ua)) return 'iOS WebView';
+
+  return null;
+}
+
+/**
+ * Open a URL in the system browser, bypassing in-app browsers.
+ * On most mobile browsers, window.open with _system target or
+ * direct location.href change will open the system browser.
+ */
+function openInSystemBrowser(url: string) {
+  // Try opening with the system browser
+  const newWindow = window.open(url, '_system');
+  // Fallback: if window.open was blocked or didn't work, use location.href
+  if (!newWindow || newWindow.closed) {
+    window.location.href = url;
+  }
+}
+
 interface AuthPagesProps {
   mode: 'login' | 'register';
   onClose: () => void;
@@ -141,13 +184,69 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     }
   };
 
+  // In-app browser detection state
+  const [inAppBrowser, setInAppBrowser] = useState<string | null>(null);
+  const [showInAppWarning, setShowInAppWarning] = useState(false);
+
+  useEffect(() => {
+    setInAppBrowser(detectInAppBrowser());
+  }, []);
+
   //  Social login handlers 
-  const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/dashboard' });
+  const handleGoogleLogin = async () => {
+    // If in an in-app browser, get the OAuth URL and open it in the system browser
+    try {
+      const csrfRes = await fetch('/api/auth/csrf');
+      const { csrfToken } = await csrfRes.json();
+
+      const signinRes = await fetch('/api/auth/signin/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
+      });
+
+      const data = await signinRes.json();
+
+      if (data.url) {
+        // Open the Google OAuth URL directly — this bypasses in-app browser restrictions
+        if (inAppBrowser) {
+          openInSystemBrowser(data.url);
+        } else {
+          window.location.href = data.url;
+        }
+      } else if (data.error) {
+        setLoginError('Erreur lors de la connexion Google. Veuillez réessayer.');
+      }
+    } catch {
+      setLoginError('Erreur de connexion au serveur.');
+    }
   };
 
-  const handleFacebookLogin = () => {
-    signIn('facebook', { callbackUrl: '/dashboard' });
+  const handleFacebookLogin = async () => {
+    try {
+      const csrfRes = await fetch('/api/auth/csrf');
+      const { csrfToken } = await csrfRes.json();
+
+      const signinRes = await fetch('/api/auth/signin/facebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
+      });
+
+      const data = await signinRes.json();
+
+      if (data.url) {
+        if (inAppBrowser) {
+          openInSystemBrowser(data.url);
+        } else {
+          window.location.href = data.url;
+        }
+      } else if (data.error) {
+        setLoginError('Erreur lors de la connexion Facebook. Veuillez réessayer.');
+      }
+    } catch {
+      setLoginError('Erreur de connexion au serveur.');
+    }
   };
 
   //  Register step validation 
@@ -412,6 +511,29 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                       {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                       {loginLoading ? 'Connexion...' : 'Se connecter'}
                     </motion.button>
+
+                    {/* In-App Browser Warning */}
+                    {inAppBrowser && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-700"
+                      >
+                        <p className="font-semibold mb-1">Navigateur {inAppBrowser} detecte</p>
+                        <p>Pour une connexion securisee, ouvrez ce site dans Chrome ou Safari : copiez le lien ci-dessous et ouvrez-le dans votre navigateur.</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(window.location.href);
+                            setShowInAppWarning(true);
+                            setTimeout(() => setShowInAppWarning(false), 2000);
+                          }}
+                          className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-full text-xs font-medium hover:bg-amber-700 transition-colors"
+                        >
+                          {showInAppWarning ? 'Lien copie !' : 'Copier le lien'}
+                        </button>
+                      </motion.div>
+                    )}
 
                     {/* Social Login */}
                     {oauthAvailable.google || oauthAvailable.facebook ? (
