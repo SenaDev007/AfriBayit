@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 
 /**
- * OAuth Test Endpoint
- * Tests OAuth configuration by manually constructing authorization URLs
- * and attempting to discover the provider's OIDC configuration.
- * This helps debug why NextAuth's OAuth flow fails.
+ * OAuth Test Endpoint v2
+ * Tests the actual openid-client library that NextAuth uses internally.
  */
 export async function GET() {
   const results: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
+    nodeVersion: process.version,
     env: {
       NEXTAUTH_URL: process.env.NEXTAUTH_URL || '(not set)',
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? `SET (len=${process.env.NEXTAUTH_SECRET.length})` : 'NOT SET',
@@ -19,122 +18,105 @@ export async function GET() {
     },
   };
 
-  // Test 1: Google OIDC Discovery
+  // Test 1: Use openid-client to discover Google's OIDC config (same as NextAuth does)
   try {
-    const googleDiscoveryUrl = 'https://accounts.google.com/.well-known/openid-configuration';
-    const discoveryResponse = await fetch(googleDiscoveryUrl, {
-      signal: AbortSignal.timeout(10000),
-    });
-    if (discoveryResponse.ok) {
-      const discovery = await discoveryResponse.json();
-      results.googleDiscovery = {
+    const openidClient = await import('openid-client');
+    results.openidClientVersion = openidClient.version || 'unknown';
+
+    // Google OIDC discovery
+    try {
+      const googleIssuer = await openidClient.Issuer.discover('https://accounts.google.com/.well-known/openid-configuration');
+      results.googleOidcDiscovery = {
         success: true,
-        authorization_endpoint: discovery.authorization_endpoint,
-        token_endpoint: discovery.token_endpoint,
-        issuer: discovery.issuer,
+        issuer: googleIssuer.metadata.issuer,
+        authorization_endpoint: googleIssuer.metadata.authorization_endpoint,
+        token_endpoint: googleIssuer.metadata.token_endpoint,
+        userinfo_endpoint: googleIssuer.metadata.userinfo_endpoint,
       };
-    } else {
-      results.googleDiscovery = {
+
+      // Try to create a Client and build the authorization URL
+      try {
+        const client = new googleIssuer.Client({
+          client_id: process.env.GOOGLE_CLIENT_ID!,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+          redirect_uris: [`${process.env.NEXTAUTH_URL || 'https://afri-bayit.vercel.app'}/api/auth/callback/google`],
+        });
+
+        const authUrl = client.authorizationUrl({
+          scope: 'openid email profile',
+          access_type: 'offline',
+          prompt: 'consent',
+          state: 'test_state',
+          code_challenge_method: 'S256',
+        });
+
+        results.googleClientCreation = {
+          success: true,
+          authUrl: authUrl.substring(0, 100) + '...',
+          authUrlLength: authUrl.length,
+        };
+      } catch (clientErr) {
+        results.googleClientCreation = {
+          success: false,
+          error: (clientErr as Error).message,
+          stack: (clientErr as Error).stack?.substring(0, 300),
+        };
+      }
+    } catch (discoveryErr) {
+      results.googleOidcDiscovery = {
         success: false,
-        status: discoveryResponse.status,
-        statusText: discoveryResponse.statusText,
+        error: (discoveryErr as Error).message,
+        stack: (discoveryErr as Error).stack?.substring(0, 300),
       };
     }
-  } catch (e) {
-    results.googleDiscovery = {
+
+    // Facebook doesn't use OIDC discovery, but has a specific graph API URL
+    try {
+      const fbDiscoveryUrl = 'https://www.facebook.com/.well-known/openid-configuration/';
+      const fbDiscoveryResponse = await fetch(fbDiscoveryUrl, {
+        signal: AbortSignal.timeout(10000),
+      });
+      if (fbDiscoveryResponse.ok) {
+        const fbDiscovery = await fbDiscoveryResponse.json();
+        results.facebookOidcDiscovery = {
+          success: true,
+          issuer: fbDiscovery.issuer,
+          authorization_endpoint: fbDiscovery.authorization_endpoint,
+          token_endpoint: fbDiscovery.token_endpoint,
+          userinfo_endpoint: fbDiscovery.userinfo_endpoint,
+        };
+      } else {
+        results.facebookOidcDiscovery = {
+          success: false,
+          status: fbDiscoveryResponse.status,
+          note: 'Facebook may not support standard OIDC discovery',
+        };
+      }
+    } catch (fbErr) {
+      results.facebookOidcDiscovery = {
+        success: false,
+        error: (fbErr as Error).message,
+        note: 'Facebook may not support standard OIDC discovery',
+      };
+    }
+  } catch (importErr) {
+    results.openidClientImport = {
       success: false,
-      error: (e as Error).message,
+      error: (importErr as Error).message,
     };
   }
 
-  // Test 2: Construct Google OAuth URL
-  if (process.env.GOOGLE_CLIENT_ID) {
-    const redirectUri = `${process.env.NEXTAUTH_URL || 'https://afri-bayit.vercel.app'}/api/auth/callback/google`;
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `response_type=code&` +
-      `scope=${encodeURIComponent('openid email profile')}&` +
-      `state=test_state`;
-
-    results.googleAuthUrl = {
-      redirectUri,
-      url: googleAuthUrl,
-      urlLength: googleAuthUrl.length,
-    };
-
-    // Test if the redirect URI is properly formatted
-    results.googleRedirectUriCheck = {
-      redirectUri,
-      startsWithHttps: redirectUri.startsWith('https://'),
-      containsCallback: redirectUri.includes('/api/auth/callback/google'),
-      domain: redirectUri.replace(/https?:\/\//, '').split('/')[0],
-    };
-  }
-
-  // Test 3: Facebook OAuth URL
-  if (process.env.FACEBOOK_CLIENT_ID) {
-    const fbRedirectUri = `${process.env.NEXTAUTH_URL || 'https://afri-bayit.vercel.app'}/api/auth/callback/facebook`;
-    results.facebookAuthUrl = {
-      redirectUri: fbRedirectUri,
-      appId: process.env.FACEBOOK_CLIENT_ID,
-    };
-  }
-
-  // Test 4: Try to import and use NextAuth's internal OAuth handler
+  // Test 2: Check NextAuth providers config
   try {
-    // Dynamically import next-auth to test provider initialization
-    const { default: NextAuth } = await import('next-auth');
-    const GoogleProvider = (await import('next-auth/providers/google')).default;
-    const FacebookProvider = (await import('next-auth/providers/facebook')).default;
-
-    // Try creating Google provider
-    try {
-      const googleProvider = GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      });
-      results.googleProviderInit = {
-        success: true,
-        id: googleProvider.id,
-        name: googleProvider.name,
-        type: googleProvider.type,
-        hasAuthorization: !!googleProvider.authorization,
-        hasToken: !!googleProvider.token,
-        hasUserInfo: !!googleProvider.userinfo,
-        wellKnown: (googleProvider as Record<string, unknown>).wellKnown || null,
-      };
-    } catch (e) {
-      results.googleProviderInit = {
-        success: false,
-        error: (e as Error).message,
-      };
-    }
-
-    // Try creating Facebook provider
-    try {
-      const fbProvider = FacebookProvider({
-        clientId: process.env.FACEBOOK_CLIENT_ID!,
-        clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-      });
-      results.facebookProviderInit = {
-        success: true,
-        id: fbProvider.id,
-        name: fbProvider.name,
-        type: fbProvider.type,
-        hasAuthorization: !!fbProvider.authorization,
-        hasToken: !!fbProvider.token,
-        hasUserInfo: !!fbProvider.userinfo,
-        wellKnown: (fbProvider as Record<string, unknown>).wellKnown || null,
-      };
-    } catch (e) {
-      results.facebookProviderInit = {
-        success: false,
-        error: (e as Error).message,
-      };
-    }
-  } catch (e) {
-    results.nextAuthImportError = (e as Error).message;
+    const { authOptions } = await import('@/lib/auth');
+    results.nextAuthProviders = authOptions.providers.map((p: Record<string, unknown>) => ({
+      id: p.id,
+      name: p.name,
+      type: p.type,
+    }));
+    results.nextAuthPages = authOptions.pages;
+  } catch (err) {
+    results.nextAuthConfigError = (err as Error).message;
   }
 
   return NextResponse.json(results, { status: 200 });
