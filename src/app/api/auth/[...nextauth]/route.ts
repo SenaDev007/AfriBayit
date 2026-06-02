@@ -10,7 +10,7 @@ async function rateLimitedHandler(req: Request, ctx: { params: Promise<{ nextaut
   // Only rate limit POST requests (sign-in attempts)
   if (req.method === 'POST') {
     const rlKey = getRateLimitKey(req);
-    const rlResult = rateLimit(`login:${rlKey}`, 10, 15 * 60 * 1000);
+    const rlResult = rateLimit(`login:${rlKey}`, 50, 15 * 60 * 1000);
     if (!rlResult.allowed) {
       return new Response(
         JSON.stringify({
