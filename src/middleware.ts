@@ -55,6 +55,7 @@ const PUBLIC_ROUTES = [
   '/offline',
   '/terms',
   '/privacy',
+  '/delete-data',
 ];
 
 // Routes that work in guest/demo mode (no auth redirect)
