@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallet } from '@/hooks/useWallet';
+import { useMyProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge, BarChart3, CheckCircle, ClipboardList, Coins, Crown, Home, RefreshCw, User } from 'lucide-react';
+import { Badge, BarChart3, Building2, CheckCircle, ClipboardList, Coins, CreditCard, Crown, Home, LogOut, RefreshCw, Settings, ShieldCheck, User, Wallet } from 'lucide-react';
 
 interface UserDashboardProps {
   onNavigate: (section: string) => void;
@@ -17,10 +19,15 @@ interface UserDashboardProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const sideNavItems = [
-  { key: 'overview', label: "Vue d'ensemble", icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { key: 'wallet', label: 'Portefeuille', icon: 'M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z' },
-  { key: 'transactions', label: 'Transactions', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
-  { key: 'settings', label: 'Paramètres', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+  { key: 'overview', label: "Vue d'ensemble", icon: Home, href: '/dashboard' },
+  { key: 'profile', label: 'Mon profil', icon: User, href: '/profile' },
+  { key: 'kyc', label: 'KYC Vérification', icon: ShieldCheck, href: '/kyc' },
+  { key: 'wallet', label: 'Portefeuille', icon: Wallet, href: '/wallet' },
+  { key: 'transactions', label: 'Transactions', icon: ClipboardList, href: '/escrow' },
+  { key: 'subscriptions', label: 'Mes abonnements', icon: CreditCard, href: '/subscriptions' },
+  { key: 'analytics', label: 'Analytics', icon: BarChart3, href: '/analytics' },
+  { key: 'agent-dashboard', label: 'Mes annonces', icon: Building2, href: '/agent-dashboard' },
+  { key: 'settings', label: 'Paramètres', icon: Settings, href: '/settings' },
 ];
 
 const statusColors: Record<string, string> = {
@@ -51,6 +58,7 @@ function formatPrice(price: number): string {
 
 export default function UserDashboard({ onNavigate, onLogout }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const router = useRouter();
 
   // Use NextAuth session as the primary source of truth for auth state
   // AppShell syncs session → authStore, so both are available after OAuth
@@ -75,6 +83,8 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
 
   const { data: walletData, isLoading: walletLoading, isError: walletError } = useWallet(userId);
   const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId);
+  const { data: myPropertiesData } = useMyProperties(userId);
+  const activeListingsCount = myPropertiesData?.pagination?.total ?? myPropertiesData?.properties?.length ?? 0;
 
   const summary = walletData?.summary;
   const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
@@ -145,32 +155,34 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 <div>
                   <h3 className="text-sm font-semibold text-[#2C2E2F]">{userName}</h3>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
-                    {userKyc.icon} {userKyc.name}
+                    <userKyc.Icon className="w-3 h-3 inline" /> {userKyc.name}
                   </span>
                 </div>
               </div>
               <nav className="space-y-1">
-                {sideNavItems.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => setActiveTab(item.key)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === item.key ? 'bg-[#003087] text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                    </svg>
-                    {item.label}
-                  </button>
-                ))}
+                {sideNavItems.map((item) => {
+                  const IconComp = item.icon;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => {
+                        setActiveTab(item.key);
+                        router.push(item.href);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        activeTab === item.key ? 'bg-[#003087] text-white' : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <IconComp className="w-5 h-5" />
+                      {item.label}
+                    </button>
+                  );
+                })}
                 <button
                   onClick={onLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#D93025] hover:bg-red-50 transition-all"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                  </svg>
+                  <LogOut className="w-5 h-5" />
                   Déconnexion
                 </button>
               </nav>
@@ -198,7 +210,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 </div>
               ) : (
                 [
-                  { label: 'Annonces actives', value: '—', icon: <Home className="w-4 h-4" />, color: '#003087' },
+                  { label: 'Annonces actives', value: String(activeListingsCount), icon: <Home className="w-4 h-4" />, color: '#003087' },
                   { label: 'Transactions', value: String(transactions.length), icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
                   { label: 'Solde wallet', value: formatPrice(walletBalance), icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
                   { label: 'Score AfriBayit', value: `${userScore}/100`, icon: null, color: '#009CDE' },
@@ -253,9 +265,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       </p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                      </svg>
+                      <Wallet className="w-6 h-6 text-[#D4AF37]" />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
@@ -269,7 +279,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                     </div>
                     <div>
                       <p className="text-white/40 text-[10px] mb-0.5">KYC Level</p>
-                      <p className="text-sm font-bold text-white">{userKyc.icon} {userKyc.name}</p>
+                      <p className="text-sm font-bold text-white flex items-center gap-1"><userKyc.Icon className="w-3.5 h-3.5" /> {userKyc.name}</p>
                     </div>
                   </div>
                 </div>
@@ -347,7 +357,10 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
               className="bg-white rounded-3xl p-6 shadow-sm border mt-6"
             >
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Niveau KYC</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Niveau KYC</h3>
+                <a href="/kyc" className="text-xs font-semibold text-[#003087] hover:underline">Vérifier mon identité →</a>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {kycLevels.map((level) => (
                   <div

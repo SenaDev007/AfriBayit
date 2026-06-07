@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { geoServiceLabel } from '@/lib/geotrust/service-codes';
 
 export async function GET(request: Request) {
   try {
@@ -46,7 +47,21 @@ export async function GET(request: Request) {
     ]);
 
     return NextResponse.json({
-      geometers,
+      geometers: geometers.map((geo) => {
+        // Parse specialities and add human-readable labels
+        let specialityLabels: string[] = [];
+        try {
+          const raw = typeof geo.specialities === 'string' ? JSON.parse(geo.specialities) : geo.specialities;
+          if (Array.isArray(raw)) {
+            specialityLabels = raw.map((s: string) => geoServiceLabel(s));
+          }
+        } catch { /* ignore parse errors */ }
+
+        return {
+          ...geo,
+          specialityLabels,
+        };
+      }),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

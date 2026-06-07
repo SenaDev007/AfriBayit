@@ -121,6 +121,7 @@ async function loadUserProfile(userId: string): Promise<{
         phone: true,
         country: true,
         city: true,
+        dateOfBirth: true,
         kycLevel: true,
       },
     });
@@ -129,7 +130,7 @@ async function loadUserProfile(userId: string): Promise<{
 
     return {
       ...user,
-      dateOfBirth: null, // Not stored in current schema
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : null,
     };
   } catch (error) {
     console.error('[kyc-analyzer] Error loading user profile:', error);
@@ -163,6 +164,7 @@ function buildClaimedData(
   if (userProfile.phone) claimed.telephone = userProfile.phone;
   if (userProfile.country) claimed.pays = userProfile.country;
   if (userProfile.city) claimed.ville = userProfile.city;
+  if (userProfile.dateOfBirth) claimed.date_de_naissance = userProfile.dateOfBirth;
 
   // Document-specific claimed data
   switch (documentType) {

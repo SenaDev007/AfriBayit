@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { geoServiceLabel } from '@/lib/geotrust/service-codes';
 
 export async function GET(request: Request) {
   try {
@@ -38,8 +39,14 @@ export async function GET(request: Request) {
       db.geometerMission.count({ where }),
     ]);
 
+    // Add human-readable service labels to mission data
+    const missionsWithLabels = missions.map((mission) => ({
+      ...mission,
+      serviceLabel: geoServiceLabel(mission.serviceCode),
+    }));
+
     return NextResponse.json({
-      missions,
+      missions: missionsWithLabels,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

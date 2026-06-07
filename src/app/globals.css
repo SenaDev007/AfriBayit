@@ -369,3 +369,440 @@
 .transition-afribayit {
   transition: cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   3D Animation Hero Section — PoemAnimation Component
+   Rotating 3D cube with scrolling poem text, background & overlay images
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes left {
+  100% { margin-left: -54000px; }
+}
+@keyframes back {
+  100% { margin-left: -54870px; }
+}
+@keyframes right {
+  100% { margin-left: -55740px; }
+}
+@keyframes filter-animation {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(100deg); }
+}
+@keyframes zoom-in {
+  0% { transform: scale(1); }
+  100% { transform: scale(2.5); }
+}
+@keyframes blur-anim {
+  0% { filter: blur(0px); }
+  100% { filter: blur(3px); }
+}
+@keyframes brightness-anim {
+  0% { filter: brightness(1) contrast(1); }
+  100% { filter: brightness(0.8) contrast(1.3); }
+}
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+  50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+}
+@keyframes cube-rotate {
+  0% { transform: rotateX(-20deg) rotateY(0deg); }
+  100% { transform: rotateX(-20deg) rotateY(360deg); }
+}
+@keyframes cube-rotate-reflect {
+  0% { transform: rotateX(20deg) rotateY(0deg); }
+  100% { transform: rotateX(20deg) rotateY(360deg); }
+}
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Hero section container */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #001440;
+}
+
+.hero-section > .container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-section .content {
+  position: relative;
+  transform-origin: center center;
+}
+
+/* Full container for all 3D elements */
+.container-full {
+  position: relative;
+  width: 1000px;
+  height: 562px;
+  overflow: hidden;
+}
+
+/* Animated hue overlay */
+.container-full .animated.hue {
+  position: absolute;
+  inset: 0;
+  animation: filter-animation 10s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Background image — Ken Burns slow pan with brightness animation */
+.container-full .backgroundImage {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+  animation: ken-burns 40s ease-in-out infinite, brightness-anim 20s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+/* Boy/overlay image — positioned right side with silhouette glow */
+.container-full .boyImage {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 90%;
+  width: auto;
+  object-fit: contain;
+  z-index: 2;
+  animation: silhouette-glow 20s ease-in-out infinite alternate;
+  filter: blur(2px) brightness(0.6);
+  mix-blend-mode: lighten;
+}
+
+/* 3D Cube wrapper — centered */
+.container-full > .container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  perspective: 800px;
+  z-index: 3;
+}
+
+/* Cube */
+.container-full > .container .cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cube-rotate-enhanced 25s linear infinite;
+}
+
+/* Cube faces */
+.container-full > .container .cube .face {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(0, 156, 222, 0.35);
+  background: rgba(0, 48, 135, 0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 20px rgba(0, 156, 222, 0.1), 0 0 10px rgba(0, 156, 222, 0.05);
+}
+
+.container-full > .container .cube .face.top {
+  transform: rotateX(90deg) translateZ(90px);
+  background: rgba(0, 48, 135, 0.1);
+}
+
+.container-full > .container .cube .face.bottom {
+  transform: rotateX(-90deg) translateZ(90px);
+  background: rgba(0, 48, 135, 0.1);
+}
+
+.container-full > .container .cube .face.front {
+  transform: rotateY(0deg) translateZ(90px);
+  background: rgba(0, 20, 64, 0.3);
+}
+
+.container-full > .container .cube .face.back {
+  transform: rotateY(180deg) translateZ(90px);
+}
+
+.container-full > .container .cube .face.left {
+  transform: rotateY(-90deg) translateZ(90px);
+}
+
+.container-full > .container .cube .face.right {
+  transform: rotateY(90deg) translateZ(90px);
+}
+
+/* Text on cube faces */
+.container-full > .container .cube .face.text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.container-full > .container .cube .face.text p {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  animation: text-glow 3s ease-in-out infinite;
+  white-space: nowrap;
+  animation: scroll-left 60s linear infinite;
+}
+
+.container-full > .container .cube .face.text p span {
+  color: #D4AF37;
+  font-weight: 700;
+}
+
+/* Reflection cube */
+.container-reflect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateY(190px) scaleY(-1);
+  width: 180px;
+  height: 180px;
+  perspective: 800px;
+  z-index: 3;
+  opacity: 0.25;
+  filter: blur(2px);
+}
+
+.container-reflect .cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cube-rotate-reflect-enhanced 25s linear infinite;
+}
+
+.container-reflect .cube .face {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(0, 48, 135, 0.08);
+}
+
+.container-reflect .cube .face.top {
+  transform: rotateX(90deg) translateZ(90px);
+  background: rgba(0, 48, 135, 0.05);
+}
+
+.container-reflect .cube .face.bottom {
+  transform: rotateX(-90deg) translateZ(90px);
+  background: rgba(0, 48, 135, 0.05);
+}
+
+.container-reflect .cube .face.front {
+  transform: rotateY(0deg) translateZ(90px);
+  background: rgba(0, 20, 64, 0.15);
+}
+
+.container-reflect .cube .face.back {
+  transform: rotateY(180deg) translateZ(90px);
+}
+
+.container-reflect .cube .face.left {
+  transform: rotateY(-90deg) translateZ(90px);
+}
+
+.container-reflect .cube .face.right {
+  transform: rotateY(90deg) translateZ(90px);
+}
+
+.container-reflect .cube .face.text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.container-reflect .cube .face.text p {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  animation: scroll-left 60s linear infinite;
+}
+
+.container-reflect .cube .face.text p span {
+  color: #D4AF37;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Futuristic Room Enhancement — Neon, Vignette, Particles, Floor
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Neon ceiling light strip pulsing */
+@keyframes neon-pulse {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 20px rgba(0, 156, 222, 0.5), 0 0 40px rgba(0, 156, 222, 0.2); }
+  50% { opacity: 1; box-shadow: 0 0 30px rgba(0, 156, 222, 0.8), 0 0 60px rgba(0, 156, 222, 0.3); }
+}
+
+@keyframes neon-pulse-secondary {
+  0%, 100% { opacity: 0.4; box-shadow: 0 0 10px rgba(0, 156, 222, 0.3), 0 0 20px rgba(0, 156, 222, 0.1); }
+  50% { opacity: 0.8; box-shadow: 0 0 15px rgba(0, 156, 222, 0.5), 0 0 30px rgba(0, 156, 222, 0.2); }
+}
+
+/* Vignette breathing effect */
+@keyframes vignette-breathe {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.92; }
+}
+
+/* Floating gold particles */
+@keyframes float-particle {
+  0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  10% { opacity: 0.7; transform: translateY(-10px) translateX(2px) scale(1); }
+  50% { opacity: 0.5; transform: translateY(-50px) translateX(10px) scale(0.8); }
+  90% { opacity: 0.3; transform: translateY(-90px) translateX(18px) scale(0.6); }
+  100% { transform: translateY(-100px) translateX(20px) scale(0.4); opacity: 0; }
+}
+
+@keyframes float-particle-2 {
+  0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  15% { opacity: 0.6; transform: translateY(-15px) translateX(-5px) scale(0.9); }
+  50% { opacity: 0.4; transform: translateY(-55px) translateX(-12px) scale(0.7); }
+  85% { opacity: 0.2; transform: translateY(-85px) translateX(-8px) scale(0.5); }
+  100% { transform: translateY(-100px) translateX(-10px) scale(0.3); opacity: 0; }
+}
+
+@keyframes float-particle-3 {
+  0% { transform: translateY(0) translateX(0) scale(0.8); opacity: 0; }
+  12% { opacity: 0.5; transform: translateY(-12px) translateX(4px) scale(0.9); }
+  55% { opacity: 0.35; transform: translateY(-60px) translateX(15px) scale(0.6); }
+  100% { transform: translateY(-110px) translateX(25px) scale(0.3); opacity: 0; }
+}
+
+/* Room perspective lines */
+@keyframes perspective-shimmer {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+
+/* Warm golden ambient glow */
+@keyframes warm-ambient {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.15; }
+}
+
+/* Neon strip classes */
+.neon-strip-primary {
+  animation: neon-pulse 4s ease-in-out infinite;
+}
+
+.neon-strip-secondary {
+  animation: neon-pulse-secondary 4s ease-in-out infinite 1s;
+}
+
+.neon-strip-tertiary {
+  animation: neon-pulse 5s ease-in-out infinite 2s;
+}
+
+/* Vignette overlay */
+.vignette-overlay {
+  animation: vignette-breathe 8s ease-in-out infinite;
+}
+
+/* Floor reflection gradient */
+.floor-reflection {
+  background: linear-gradient(
+    to top,
+    rgba(0, 20, 64, 0.95) 0%,
+    rgba(0, 20, 64, 0.7) 15%,
+    rgba(0, 48, 135, 0.2) 40%,
+    transparent 70%
+  );
+}
+
+/* Room wall perspective lines */
+.room-perspective-line {
+  animation: perspective-shimmer 6s ease-in-out infinite;
+}
+
+/* Floating particle base */
+.particle-gold {
+  background: radial-gradient(circle, #D4AF37 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+  border-radius: 50%;
+}
+
+.particle-gold-1 { animation: float-particle 8s ease-in-out infinite; }
+.particle-gold-2 { animation: float-particle-2 10s ease-in-out infinite 2s; }
+.particle-gold-3 { animation: float-particle-3 9s ease-in-out infinite 4s; }
+.particle-gold-4 { animation: float-particle 12s ease-in-out infinite 1s; }
+.particle-gold-5 { animation: float-particle-2 11s ease-in-out infinite 3s; }
+.particle-gold-6 { animation: float-particle-3 7s ease-in-out infinite 5s; }
+.particle-gold-7 { animation: float-particle 9s ease-in-out infinite 6s; }
+.particle-gold-8 { animation: float-particle-2 8s ease-in-out infinite 0.5s; }
+
+/* Warm ambient light wash */
+.warm-ambient-glow {
+  animation: warm-ambient 6s ease-in-out infinite;
+}
+
+/* Enhanced cube rotation — smoother with slight pause effect */
+@keyframes cube-rotate-enhanced {
+  0% { transform: rotateX(-20deg) rotateY(0deg); }
+  25% { transform: rotateX(-18deg) rotateY(90deg); }
+  50% { transform: rotateX(-22deg) rotateY(180deg); }
+  75% { transform: rotateX(-18deg) rotateY(270deg); }
+  100% { transform: rotateX(-20deg) rotateY(360deg); }
+}
+
+@keyframes cube-rotate-reflect-enhanced {
+  0% { transform: rotateX(20deg) rotateY(0deg); }
+  25% { transform: rotateX(18deg) rotateY(90deg); }
+  50% { transform: rotateX(22deg) rotateY(180deg); }
+  75% { transform: rotateX(18deg) rotateY(270deg); }
+  100% { transform: rotateX(20deg) rotateY(360deg); }
+}
+
+/* Neon border glow at hero top */
+@keyframes neon-border-glow {
+  0%, 100% {
+    box-shadow: 0 2px 20px rgba(0, 156, 222, 0.3), 0 2px 40px rgba(0, 156, 222, 0.1);
+    border-color: rgba(0, 156, 222, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 30px rgba(0, 156, 222, 0.5), 0 2px 60px rgba(0, 156, 222, 0.2);
+    border-color: rgba(0, 156, 222, 0.5);
+  }
+}
+
+.hero-neon-top-border {
+  border-top: 2px solid rgba(0, 156, 222, 0.3);
+  animation: neon-border-glow 4s ease-in-out infinite;
+}
+
+/* Enhanced background image — subtle zoom with Ken Burns effect */
+@keyframes ken-burns {
+  0% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.05) translate(-1%, -0.5%); }
+  50% { transform: scale(1.08) translate(0.5%, -1%); }
+  75% { transform: scale(1.04) translate(-0.5%, 0%); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+/* Silhouette subtle glow */
+@keyframes silhouette-glow {
+  0%, 100% { filter: blur(2px) brightness(0.6); }
+  50% { filter: blur(3px) brightness(0.8); }
+}

@@ -16,6 +16,14 @@ export function useCourses(category?: string, level?: string, country?: CountryC
   });
 }
 
+export function useCourseDetail(id: string) {
+  return useQuery({
+    queryKey: ['course-detail', id],
+    queryFn: () => apiFetch<{ course: unknown }>(`/api/courses/${id}`),
+    enabled: !!id,
+  });
+}
+
 export function useEnrollCourse() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -25,5 +33,29 @@ export function useEnrollCourse() {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
     },
+  });
+}
+
+export function useMyEnrollments(userId?: string) {
+  return useQuery({
+    queryKey: ['enrollments', userId],
+    queryFn: () => apiFetch<{ enrollments: unknown[] }>(`/api/courses/enrollments?userId=${userId}`),
+    enabled: !!userId,
+  });
+}
+
+export function useMyCertificates(userId?: string) {
+  return useQuery({
+    queryKey: ['certificates', userId],
+    queryFn: () => apiFetch<{ certificates: unknown[] }>(`/api/academy/certificates/generate?userId=${userId}`),
+    enabled: !!userId,
+  });
+}
+
+export function useCourseQuiz(courseId: string) {
+  return useQuery({
+    queryKey: ['course-quiz', courseId],
+    queryFn: () => apiFetch<{ quiz: unknown }>(`/api/academy/quiz/${courseId}`),
+    enabled: !!courseId,
   });
 }

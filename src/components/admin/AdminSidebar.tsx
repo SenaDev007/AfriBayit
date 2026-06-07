@@ -21,6 +21,7 @@ import {
   Settings,
   DollarSign,
   Cable,
+  ScrollText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
       { label: 'OTA Config', href: '/admin/ota', icon: Cable },
+      { label: "Journaux d'audit", href: '/admin/audit-logs', icon: ScrollText },
     ],
   },
 ];

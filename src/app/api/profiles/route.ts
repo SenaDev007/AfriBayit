@@ -41,31 +41,68 @@ export async function GET(request: Request) {
       });
 
       if (!profile) {
-        // Return a demo profile when no profile exists yet
+        // Fetch real user data from DB instead of returning mock data
+        const realUser = await db.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            coverPhoto: true,
+            city: true,
+            country: true,
+            bio: true,
+            verified: true,
+            kycLevel: true,
+            score: true,
+            credibilityScore: true,
+            reputation: true,
+            isOnline: true,
+          },
+        });
+
+        if (!realUser) {
+          return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+        }
+
+        const countryNames: Record<string, string> = {
+          BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo', SN: 'Sénégal',
+        };
+
+        const certifications: { id: string; name: string; icon: string; color: string; year: string }[] = [];
+        if (realUser.kycLevel >= 1) {
+          certifications.push({ id: 'cert-kyc', name: 'KYC Vérifié', icon: 'kyc', color: '#00A651', year: new Date().getFullYear().toString() });
+        }
+        if (realUser.verified) {
+          certifications.push({ id: 'cert-verified', name: 'Email vérifié', icon: 'agent', color: '#009CDE', year: new Date().getFullYear().toString() });
+        }
+
+        // Return a minimal profile using real user data — no mock data
         return NextResponse.json({
-          name: 'Utilisateur AfriBayit',
-          headline: 'Professionnel de l\'immobilier',
-          location: 'Cotonou, Bénin',
-          avatar: '',
-          coverPhoto: '',
-          availability: 'available',
-          bio: 'Bienvenue sur AfriBayit ! Complétez votre profil professionnel pour améliorer votre visibilité et votre crédibilité.',
-          skills: [
-            { name: 'Immobilier résidentiel', endorsements: 5, endorsedByMe: false },
-            { name: 'Analyse de marché', endorsements: 3, endorsedByMe: false },
-            { name: 'Négociation', endorsements: 2, endorsedByMe: false },
-          ],
+          name: realUser.name || '',
+          headline: '',
+          location: `${realUser.city || ''}${realUser.city && realUser.country ? ', ' : ''}${countryNames[realUser.country || ''] || realUser.country || ''}`,
+          avatar: realUser.avatar || '',
+          coverPhoto: realUser.coverPhoto || '',
+          availability: realUser.isOnline ? 'available' : 'offline',
+          bio: realUser.bio || '',
+          skills: [],
           experience: [],
           education: [],
-          certifications: [
-            { id: 'cert-kyc', name: 'KYC Vérifié', icon: 'kyc', color: '#00A651', year: '2025' },
-          ],
+          certifications,
           portfolio: [],
           recommendations: [],
-          stats: { profileViews: 42, searchAppearances: 18, connections: 5, credibilityScore: 45 },
-          profileCompleteness: 35,
+          stats: {
+            profileViews: 0,
+            searchAppearances: 0,
+            connections: 0,
+            credibilityScore: realUser.credibilityScore || realUser.score || 0,
+          },
+          profileCompleteness: realUser.name ? 10 : 0,
           userId: userId,
-          slug: 'demo',
+          slug: '',
+          isProfileCreated: false, // Flag: professional profile not yet created
         });
       }
 

@@ -90,6 +90,8 @@ const PROFILE_MENU_ITEMS = [
   { label: 'Mes annonces', href: '/agent-dashboard', icon: Building2 },
   { label: 'Mon portefeuille', href: '/wallet', icon: Wallet },
   { label: 'Escrow & Transactions', href: '/escrow', icon: Shield },
+  { label: 'Vérification KYC', href: '/kyc', icon: ShieldCheck },
+  { label: 'Paramètres du compte', href: '/settings', icon: Settings },
   { label: 'Mes abonnements', href: '/subscriptions', icon: CreditCard },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   { label: 'Espace Notaire', href: '/notary-dashboard', icon: Landmark },
@@ -388,7 +390,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </motion.button>
               )}
 
-              {/* Login / Profile Avatar with dropdown */}
+              {/* Login / Logout + Profile Avatar with dropdown */}
               {!isLoggedIn ? (
                 <motion.button
                   whileHover={{ scale: 1.03 }}
@@ -401,20 +403,22 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   Connexion
                 </motion.button>
               ) : (
-                <div className="relative">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                    className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]"
-                  >
-                    <ImageWithFallback
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
-                      alt="Profile"
-                      className="w-full h-full"
-                      fallbackType="avatar"
-                    />
-                  </motion.button>
+                <div className="flex items-center gap-2">
+                  {/* Profile Avatar with dropdown */}
+                  <div className="relative">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                      className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]"
+                    >
+                      <ImageWithFallback
+                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face"
+                        alt="Profile"
+                        className="w-full h-full"
+                        fallbackType="avatar"
+                      />
+                    </motion.button>
 
                   {/* Profile Dropdown */}
                   <AnimatePresence>
@@ -496,6 +500,19 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </div>
+                  {/* Visible Déconnexion button in top nav */}
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className={`hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      scrolled ? 'text-[#D93025] hover:bg-red-50' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Déconnexion
+                  </motion.button>
                 </div>
               )}
 

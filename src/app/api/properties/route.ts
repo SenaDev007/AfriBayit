@@ -33,7 +33,23 @@ export async function GET(request: Request) {
       return NextResponse.json(cached);
     }
 
-    const where: Record<string, unknown> = { status: 'published' };
+    // Support agentId filter for "my listings" queries
+    const agentId = searchParams.get('agentId');
+    // Support status filter for owner queries (default: published for public listings)
+    const statusFilter = searchParams.get('status');
+
+    const where: Record<string, unknown> = {};
+    // If agentId is provided, filter by that agent's properties (allows draft/published for owner)
+    if (agentId) {
+      where.agentId = agentId;
+      if (statusFilter) {
+        where.status = statusFilter;
+      } else {
+        where.status = { in: ['published', 'draft', 'pending_review'] };
+      }
+    } else {
+      where.status = 'published';
+    }
 
     if (type && type !== 'all') where.type = type;
     if (transaction && transaction !== 'all') where.transaction = transaction;

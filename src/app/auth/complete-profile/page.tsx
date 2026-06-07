@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Check, Loader2, MapPin } from 'lucide-react';
+import { Check, Loader2, MapPin, Mail } from 'lucide-react';
 
 const COUNTRIES = [
   { value: 'BJ', label: 'Bénin', flag: '🇧🇯' },
@@ -22,6 +22,9 @@ const CITIES_BY_COUNTRY: Record<string, string[]> = {
   SN: ['Dakar', 'Saint-Louis', 'Thiès', 'Kaolack', 'Ziguinchor'],
 };
 
+// Placeholder email pattern used when Facebook OAuth doesn't return an email
+const PLACEHOLDER_EMAIL_SUFFIX = '@placeholder.afribayit.com';
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function CompleteProfilePage() {
@@ -32,6 +35,8 @@ export default function CompleteProfilePage() {
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [needsEmail, setNeedsEmail] = useState(false);
 
   // If user is not authenticated or already has a country, redirect
   useEffect(() => {
@@ -43,9 +48,14 @@ export default function CompleteProfilePage() {
     if (status === 'authenticated') {
       const userCountry = (session?.user as Record<string, unknown>)?.country as string | null;
       const needsCompletion = (session?.user as Record<string, unknown>)?.needsProfileCompletion as boolean;
+      const userEmail = session?.user?.email || '';
 
-      // If user already has a country set, go to dashboard
-      if (userCountry && !needsCompletion) {
+      // Check if the user has a placeholder email (from Facebook without email scope)
+      const hasPlaceholderEmail = userEmail.endsWith(PLACEHOLDER_EMAIL_SUFFIX);
+      setNeedsEmail(hasPlaceholderEmail);
+
+      // If user already has a country set and no placeholder email, go to dashboard
+      if (userCountry && !needsCompletion && !hasPlaceholderEmail) {
         router.push('/dashboard');
       }
     }
@@ -54,6 +64,20 @@ export default function CompleteProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (needsEmail && !email.trim()) {
+      setError("L'adresse email est requise");
+      return;
+    }
+
+    // Basic email validation
+    if (needsEmail && email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError("Format d'email invalide");
+        return;
+      }
+    }
 
     if (!selectedCountry) {
       setError('Veuillez sélectionner votre pays');
@@ -74,6 +98,7 @@ export default function CompleteProfilePage() {
           country: selectedCountry,
           city: selectedCity,
           phone: phone.trim() || undefined,
+          email: needsEmail ? email.trim() : undefined,
         }),
       });
 
@@ -85,7 +110,7 @@ export default function CompleteProfilePage() {
         return;
       }
 
-      // Update the NextAuth session to reflect the new country
+      // Update the NextAuth session to reflect the new country and email
       await update();
 
       // Redirect to dashboard
@@ -137,6 +162,15 @@ export default function CompleteProfilePage() {
           </div>
         )}
 
+        {/* Facebook email notice */}
+        {needsEmail && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200">
+            <p className="text-sm text-amber-700">
+              Votre connexion Facebook n&apos;a pas fourni d&apos;adresse email. Veuillez renseigner une adresse email pour continuer.
+            </p>
+          </div>
+        )}
+
         {/* Error message */}
         {error && (
           <motion.div
@@ -149,6 +183,29 @@ export default function CompleteProfilePage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email (required for Facebook users without email) */}
+          {needsEmail && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                Adresse email *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  required
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+                />
+              </div>
+            </motion.div>
+          )}
+
           {/* Country Selection */}
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1.5 block">
@@ -224,7 +281,7 @@ export default function CompleteProfilePage() {
             whileHover={{ scale: loading ? 1 : 1.01 }}
             whileTap={{ scale: loading ? 1 : 0.99 }}
             type="submit"
-            disabled={loading || !selectedCountry || !selectedCity}
+            disabled={loading || !selectedCountry || !selectedCity || (needsEmail && !email.trim())}
             className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}

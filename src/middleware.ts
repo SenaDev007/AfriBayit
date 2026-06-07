@@ -70,6 +70,8 @@ const GUEST_ACCESSIBLE_ROUTES = [
 const PROTECTED_ROUTE_PREFIXES = [
   '/agent-dashboard',
   '/publish',
+  '/kyc',
+  '/settings',
 ];
 
 // Admin route prefixes that require admin role
@@ -89,6 +91,11 @@ const PROTECTED_API_PREFIXES = [
   '/api/kyc',
   '/api/notifications',
   '/api/profiles',
+  '/api/user',
+  '/api/auth/2fa',
+  '/api/auth/oauth-unlink',
+  '/api/auth/oauth-status',
+  '/api/auth/verify-phone',
 ];
 
 const ADMIN_API_PREFIXES = [

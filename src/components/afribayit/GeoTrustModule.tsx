@@ -9,6 +9,7 @@ import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search } from 'lucide-react';
+import { geoServiceLabel } from '@/lib/geotrust/service-codes';
 
 interface Geometer {
   id: string;
@@ -34,14 +35,16 @@ interface Mission {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-// Static config — geometer service catalog (not DB data)
+// Static config — geometer service catalog using DB service codes (GEO_*)
 const geometerServices = [
-  { id: 'geo-1', name: 'Vérification superficie', code: 'verification_superficie', price: 50000, priceLabel: '50 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain' },
-  { id: 'geo-2', name: 'Inspection terrain', code: 'inspection_terrain', price: 75000, priceLabel: '75 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques' },
-  { id: 'geo-3', name: 'Bornage', code: 'bornage', price: 120000, priceLabel: '120 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes' },
-  { id: 'geo-4', name: 'Drone mapping', code: 'drone_mapping', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution' },
-  { id: 'geo-5', name: 'Certificat GeoTrust', code: 'certificat_geotrust', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique' },
-  { id: 'geo-6', name: 'Topographie complète', code: 'topographie_complete', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan' },
+  { id: 'geo-1', name: geoServiceLabel('GEO_GPS'), code: 'GEO_GPS', price: 50000, priceLabel: '50 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Relevé GPS de précision pour repérage et coordonnées' },
+  { id: 'geo-2', name: geoServiceLabel('GEO_SURF'), code: 'GEO_SURF', price: 75000, priceLabel: '75 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain' },
+  { id: 'geo-3', name: geoServiceLabel('GEO_INSP'), code: 'GEO_INSP', price: 120000, priceLabel: '120 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques' },
+  { id: 'geo-4', name: geoServiceLabel('GEO_BORN'), code: 'GEO_BORN', price: 150000, priceLabel: '150 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes' },
+  { id: 'geo-5', name: geoServiceLabel('GEO_TOPO'), code: 'GEO_TOPO', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan' },
+  { id: 'geo-6', name: geoServiceLabel('GEO_DRON'), code: 'GEO_DRON', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution' },
+  { id: 'geo-7', name: geoServiceLabel('GEO_CERT'), code: 'GEO_CERT', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique' },
+  { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: 250000, priceLabel: '250 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions' },
 ];
 
 function GeometerSkeleton() {
@@ -262,7 +265,7 @@ export default function GeoTrustModule() {
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     {geo.certifications.map((cert) => (
                       <span key={cert} className="px-2.5 py-1 bg-[#009CDE]/5 text-[#009CDE] text-[10px] font-medium rounded-full">
-                        {cert}
+                        {geoServiceLabel(cert)}
                       </span>
                     ))}
                   </div>

@@ -53,22 +53,50 @@ async function sendOTPToPhone(phone: string, code: string): Promise<void> {
 }
 
 /**
- * Send OTP to email address
- * In production, integrate with Resend or SendGrid
+ * Send OTP to email address via Resend
+ * Uses noreply@academiahelm.com as sender for testing/production
  */
 async function sendOTPToEmail(email: string, code: string): Promise<void> {
-  // In production, integrate with Resend email API
-  console.log(`[OTP] Email to ${email}: Your AfriBayit verification code is ${code}. Valid for ${OTP_EXPIRY_MINUTES} minutes.`);
-  
-  // TODO: Replace with actual email provider integration
-  // Example with Resend:
-  // const resend = new Resend(process.env.RESEND_API_KEY);
-  // await resend.emails.send({
-  //   from: 'AfriBayit <noreply@afribayit.com>',
-  //   to: email,
-  //   subject: 'Code de vérification AfriBayit',
-  //   html: `<p>Votre code de vérification est <strong>${code}</strong>. Valide ${OTP_EXPIRY_MINUTES} minutes.</p>`,
-  // });
+  console.log(`[OTP] Sending verification code to ${email}`);
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[OTP] RESEND_API_KEY not configured — OTP email will NOT be sent. Code for dev:', code);
+    return;
+  }
+
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    await resend.emails.send({
+      from: 'AfriBayit <noreply@academiahelm.com>',
+      to: email,
+      subject: 'Code de vérification AfriBayit',
+      html: `
+        <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 24px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; color: #003087; font-size: 28px; margin: 0;">Afri<span style="color: #D4AF37;">Bayit</span></h1>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Où l'Afrique trouve sa maison</p>
+          </div>
+          <div style="background: #f0f4f8; border-radius: 16px; padding: 24px; text-align: center;">
+            <p style="color: #2C2E2F; font-size: 14px; margin-bottom: 16px;">Votre code de vérification est :</p>
+            <div style="font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 700; color: #003087; letter-spacing: 8px; padding: 12px 0;">
+              ${code}
+            </div>
+            <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">Ce code est valable pendant ${OTP_EXPIRY_MINUTES} minutes.</p>
+          </div>
+          <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
+            Si vous n'avez pas demandé ce code, ignorez cet email. Votre compte est en sécurité.
+          </p>
+        </div>
+      `,
+    });
+
+    console.log(`[OTP] Verification email sent to ${email} via Resend`);
+  } catch (error) {
+    console.error('[OTP] Failed to send email via Resend:', error);
+    // Don't throw — the OTP is stored in the DB, user can still use dev console
+  }
 }
 
 /**

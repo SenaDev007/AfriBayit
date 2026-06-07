@@ -2,17 +2,19 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useProfile, useFollowProfile } from '@/hooks/useProfiles';
 import { useCreateConversation } from '@/hooks/useChat';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { apiPost } from '@/lib/api';
+import { apiPost, apiFetch } from '@/lib/api';
 import {
   AlertTriangle, Award, BarChart3, BookOpen, Camera, Check, ChevronRight,
   Circle, Clock, Copy, Eye, FileBadge, GraduationCap, Handshake,
   Link2, MapPin, MessageCircle, PlusCircle, Search, Shield, Star,
-  ThumbsUp, Trophy, User, Users, Globe, BadgeCheck, Briefcase
+  ThumbsUp, Trophy, User, Users, Globe, BadgeCheck, Briefcase, Pencil,
+  Loader2
 } from 'lucide-react';
 
 interface ModuleProps {
@@ -44,6 +46,7 @@ interface ProfileData {
   userId?: string;
   slug?: string;
   specialities?: string;
+  isProfileCreated?: boolean;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -114,10 +117,50 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
   const [endorsingSkill, setEndorsingSkill] = useState<string | null>(null);
   const [showCopied, setShowCopied] = useState(false);
 
-  const { user } = useAuthStore();
-  const effectiveUserId = userId || (user as Record<string, unknown> & { id?: string })?.id || 'demo-user';
-  const { data: profileDataRaw, isLoading, error } = useProfile(effectiveUserId);
+  // Use session for authenticated user identification
+  const { data: session } = useSession();
+  const storeUser = useAuthStore(s => s.user);
+  const sessionUserId = (session?.user as Record<string, unknown>)?.id as string | undefined;
+  const storeUserId = storeUser?.id;
+
+  // Determine effective user ID: prop > session > store (never fallback to 'demo-user')
+  const effectiveUserId = userId || sessionUserId || storeUserId || '';
+  const isOwnProfile = !userId || userId === sessionUserId || userId === storeUserId;
+
+  const { data: profileDataRaw, isLoading, error, refetch } = useProfile(effectiveUserId);
   const profileData = profileDataRaw as ProfileData | undefined;
+  const isProfileCreated = profileData?.isProfileCreated !== false;
+
+  // Profile creation form state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [formHeadline, setFormHeadline] = useState('');
+  const [formBio, setFormBio] = useState('');
+  const [formSpecialities, setFormSpecialities] = useState('');
+  const [formCity, setFormCity] = useState('');
+
+  const handleCreateProfile = async () => {
+    if (!effectiveUserId) return;
+    setCreating(true);
+    try {
+      await apiPost('/api/profiles', {
+        userId: effectiveUserId,
+        headline: formHeadline,
+        bio: formBio,
+        specialities: formSpecialities ? formSpecialities.split(',').map(s => s.trim()) : [],
+        zone: formCity,
+        availability: 'available',
+        isPublic: true,
+      });
+      toast.success('Profil professionnel créé !');
+      setShowCreateForm(false);
+      refetch();
+    } catch {
+      toast.error('Erreur', { description: 'Impossible de créer le profil professionnel' });
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const followProfile = useFollowProfile();
   const createConversation = useCreateConversation();
@@ -197,7 +240,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
     );
   }
 
-  const publicProfileUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/pro/${profileData.slug || profileData.userId || 'demo'}`;
+  const publicProfileUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/pro/${profileData.slug || profileData.userId || ''}`;
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -207,6 +250,12 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           <div className="h-40 sm:h-52 rounded-b-3xl overflow-hidden">
             <ImageWithFallback src={profileData.coverPhoto} alt="Couverture" className="w-full h-full" fallbackType="property" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            {/* Edit cover button for own profile */}
+            {isOwnProfile && (
+              <button className="absolute top-3 right-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-[#003087] hover:bg-white transition-colors flex items-center gap-1.5 shadow-sm">
+                <Camera className="w-3.5 h-3.5" /> Modifier
+              </button>
+            )}
           </div>
         </motion.div>
 
@@ -222,37 +271,68 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F]">{profileData.name}</h1>
-                <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full flex items-center gap-1"><Award className="w-3 h-3" /> Certifie</span>
+                {isProfileCreated && (
+                  <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full flex items-center gap-1"><Award className="w-3 h-3" /> Certifie</span>
+                )}
               </div>
-              <p className="text-sm text-gray-600 mb-1">{profileData.headline}</p>
+              {profileData.headline ? (
+                <p className="text-sm text-gray-600 mb-1">{profileData.headline}</p>
+              ) : isOwnProfile ? (
+                <p className="text-sm text-gray-400 mb-1 italic">Ajoutez un titre professionnel</p>
+              ) : null}
               <div className="flex items-center gap-2 text-xs text-gray-400">
-                <MapPin className="w-3 h-3" /> {profileData.location}
+                {profileData.location && <><MapPin className="w-3 h-3" /> {profileData.location}</>}
                 <span className={`flex items-center gap-1 ${profileData.availability === 'available' ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
                   <Circle className="w-3 h-3 fill-current" /> {profileData.availability === 'available' ? 'Disponible' : profileData.availability === 'busy' ? 'Occupe' : 'Hors ligne'}
                 </span>
               </div>
 
-              {/* Public Profile URL */}
-              <div className="flex items-center gap-2 mt-2">
-                <Link2 className="w-3.5 h-3.5 text-[#003087]" />
-                <span className="text-xs text-[#003087] font-medium truncate max-w-[200px]">{publicProfileUrl}</span>
-                <button onClick={handleCopyProfileUrl} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-                  {showCopied ? <Check className="w-3.5 h-3.5 text-[#00A651]" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+              {/* Public Profile URL - only show if profile is created */}
+              {isProfileCreated && profileData.slug && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Link2 className="w-3.5 h-3.5 text-[#003087]" />
+                  <span className="text-xs text-[#003087] font-medium truncate max-w-[200px]">{publicProfileUrl}</span>
+                  <button onClick={handleCopyProfileUrl} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                    {showCopied ? <Check className="w-3.5 h-3.5 text-[#00A651]" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* Show Contacter/Suivre only for other users' profiles */}
+            {!isOwnProfile && (
+              <div className="flex gap-2">
+                <button onClick={handleContact} disabled={isContacting || createConversation.isPending}
+                  className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isContacting || createConversation.isPending ? '...' : 'Contacter'}
+                </button>
+                <button onClick={handleFollow} disabled={isFollowing || followProfile.isPending}
+                  className={`px-4 py-2 border rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed flex items-center gap-1.5 ${
+                    isFollowing ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50'
+                  }`}>
+                  {isFollowing ? <><Check className="w-4 h-4" /> Suivi</> : <><PlusCircle className="w-4 h-4" /> Suivre</>}
                 </button>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={handleContact} disabled={isContacting || createConversation.isPending}
-                className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                {isContacting || createConversation.isPending ? '...' : 'Contacter'}
-              </button>
-              <button onClick={handleFollow} disabled={isFollowing || followProfile.isPending}
-                className={`px-4 py-2 border rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed flex items-center gap-1.5 ${
-                  isFollowing ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50'
-                }`}>
-                {isFollowing ? <><Check className="w-4 h-4" /> Suivi</> : <><PlusCircle className="w-4 h-4" /> Suivre</>}
-              </button>
-            </div>
+            )}
+            {/* Show Edit/Create button for own profile */}
+            {isOwnProfile && (
+              <div className="flex gap-2">
+                {!isProfileCreated ? (
+                  <button
+                    onClick={() => setShowCreateForm(true)}
+                    className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-2"
+                  >
+                    <Pencil className="w-4 h-4" /> Creer mon profil pro
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowCreateForm(true)}
+                    className="px-4 py-2 border border-gray-200 text-gray-600 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                  >
+                    <Pencil className="w-4 h-4" /> Modifier
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Profile Completeness + Credibility Score */}
@@ -277,15 +357,124 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           </div>
 
           {/* Certifications Badges */}
-          <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-            {profileData.certifications.map(cert => (
-              <span key={cert.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0"
-                style={{ backgroundColor: `${cert.color}10`, color: cert.color }}>
-                {getCertIcon(cert.icon)} {cert.name}
-              </span>
-            ))}
-          </div>
+          {profileData.certifications.length > 0 && (
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+              {profileData.certifications.map(cert => (
+                <span key={cert.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0"
+                  style={{ backgroundColor: `${cert.color}10`, color: cert.color }}>
+                  {getCertIcon(cert.icon)} {cert.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* CTA: Create Professional Profile — shown when profile not yet created and viewing own profile */}
+          {!isProfileCreated && isOwnProfile && !showCreateForm && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-5 bg-gradient-to-r from-[#003087]/5 to-[#D4AF37]/5 rounded-2xl border border-[#003087]/10"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+                  <Award className="w-5 h-5 text-[#003087]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-[#2C2E2F] mb-1">Completez votre profil professionnel</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Un profil professionnel complet augmente votre visibilite, votre credibilite et vos chances de conclure des transactions. Ajoutez vos competences, experiences et certifications.
+                  </p>
+                  <button
+                    onClick={() => setShowCreateForm(true)}
+                    className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                  >
+                    Creer mon profil professionnel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
+
+        {/* Create/Edit Profile Form Modal */}
+        <AnimatePresence>
+          {showCreateForm && isOwnProfile && (
+            <motion.div
+              key="create-form"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white rounded-3xl p-6 shadow-sm border mb-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">
+                  {isProfileCreated ? 'Modifier le profil professionnel' : 'Creer votre profil professionnel'}
+                </h3>
+                <button onClick={() => setShowCreateForm(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                  <AlertTriangle className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Titre professionnel</label>
+                  <input
+                    type="text"
+                    value={formHeadline}
+                    onChange={e => setFormHeadline(e.target.value)}
+                    placeholder="Ex: Agent immobilier, Promoteur, Investisseur..."
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Bio professionnelle</label>
+                  <textarea
+                    value={formBio}
+                    onChange={e => setFormBio(e.target.value)}
+                    placeholder="Decrivez votre activite, vos expertises et vos realisations..."
+                    rows={3}
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Competences (separees par des virgules)</label>
+                  <input
+                    type="text"
+                    value={formSpecialities}
+                    onChange={e => setFormSpecialities(e.target.value)}
+                    placeholder="Ex: Immobilier residentiel, Analyse de marche, Negociation"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Zone d'activite</label>
+                  <input
+                    type="text"
+                    value={formCity}
+                    onChange={e => setFormCity(e.target.value)}
+                    placeholder="Ex: Cotonou, Abidjan..."
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                  />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    onClick={() => setShowCreateForm(false)}
+                    className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleCreateProfile}
+                    disabled={creating || !formHeadline}
+                    className="px-6 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    {isProfileCreated ? 'Enregistrer' : 'Creer le profil'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">

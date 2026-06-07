@@ -497,17 +497,18 @@ model Course {
 }
 
 model CourseEnrollment {
-  id            String   @id @default(cuid())
-  userId        String
-  courseId      String
-  progress      Float    @default(0)
-  completed     Boolean  @default(false)
-  certificateId String?
-  certificateUrl String?
-  enrolledAt    DateTime @default(now())
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String
+  courseId        String
+  progress        Float    @default(0)
+  completed       Boolean  @default(false)
+  certificateId   String?
+  certificateUrl  String?
+  completedModules String? // JSON array of completed module IDs
+  enrolledAt      DateTime @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -1652,4 +1653,26 @@ model ScheduledPayout {
   @@index([status, scheduledAt])
   @@index([recipientId])
   @@map("scheduled_payouts")
+}
+
+// ============ AUDIT LOG ============
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorId     String?  // who performed the action (null for system)
+  actorRole   String?  // role at time of action
+  action      String   // e.g. "user.update_role", "kyc.validate", "property.publish", "escrow.release"
+  targetType  String?  // "user", "property", "kyc_document", "transaction", "escrow", "subscription", "course"
+  targetId    String?  // ID of the affected entity
+  country     String?  // BJ, CI, BF, TG, SN — tenant scope
+  details     String?  // JSON: before/after snapshot, reason, etc.
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([country])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

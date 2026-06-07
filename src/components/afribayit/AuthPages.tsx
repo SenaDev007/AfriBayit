@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
-import { Check, Drama, Key, Loader2, Mail, User } from 'lucide-react';
+import { Check, Drama, Key, Loader2, Mail, ShieldCheck, User } from 'lucide-react';
 
 /**
  * Detect if the user is in an embedded/in-app browser (WebView).
@@ -99,18 +99,26 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   const [oauthLoading, setOauthLoading] = useState<string | null>(null); // 'google' | 'facebook' | null
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  // OAuth provider availability
-  const [oauthAvailable, setOauthAvailable] = useState<{ google: boolean; facebook: boolean }>({
-    google: false,
-    facebook: false,
-  });
+  // 2FA Login state
+  const [show2FA, setShow2FA] = useState(false);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [twoFALoading, setTwoFALoading] = useState(false);
+  const [twoFAError, setTwoFAError] = useState('');
+  const [twoFAUserId, setTwoFAUserId] = useState('');
 
-  useEffect(() => {
-    fetch('/api/auth/oauth-status')
-      .then((res) => res.json())
-      .then((data) => setOauthAvailable(data))
-      .catch(() => {});
-  }, []);
+  // Forgot password state
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [forgotOtpCode, setForgotOtpCode] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  // OAuth providers are always available for login/register (configured in NextAuth)
+  // The /api/auth/oauth-status endpoint is only for authenticated users checking linked providers
+  // So we always show the OAuth buttons on the auth pages
 
   // Check for OAuth errors in URL params (e.g. ?error=OAuthAccountNotLinked)
   useEffect(() => {
@@ -176,7 +184,18 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       });
 
       if (result?.error) {
-        setLoginError('Email ou mot de passe incorrect');
+        // Check if 2FA is required
+        if (result.error.includes('2FA_REQUIRED')) {
+          // Extract userId from error message (format: '2FA_REQUIRED:userId')
+          const userId = result.error.includes(':') ? result.error.split(':').slice(1).join(':') : '';
+          setTwoFAUserId(userId);
+          setShow2FA(true);
+          setLoginError('');
+        } else if (result.error.includes('2FA_INVALID')) {
+          setTwoFAError('Code de vérification invalide');
+        } else {
+          setLoginError('Email ou mot de passe incorrect');
+        }
       } else if (result?.ok) {
         onSuccess();
       } else {
@@ -186,6 +205,124 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       setLoginError('Erreur de connexion au serveur');
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  //  2FA Verification handler
+  const handle2FAVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTwoFAError('');
+
+    if (!twoFACode || twoFACode.length !== 6) {
+      setTwoFAError('Veuillez entrer un code à 6 chiffres');
+      return;
+    }
+
+    setTwoFALoading(true);
+    try {
+      // Verify the TOTP code via the 2FA API
+      const verifyRes = await fetch('/api/auth/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: twoFAUserId, token: twoFACode }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok) {
+        setTwoFAError(verifyData.error || 'Code de vérification invalide');
+        setTwoFALoading(false);
+        return;
+      }
+
+      // 2FA verified — now establish the NextAuth session by signing in with the TOTP code
+      const result = await signIn('credentials', {
+        email: loginEmail.trim(),
+        password: loginPassword,
+        totpCode: twoFACode,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        onSuccess();
+      } else if (result?.error) {
+        setTwoFAError('Erreur lors de la connexion. Veuillez réessayer.');
+      } else {
+        setTwoFAError('Erreur lors de la connexion');
+      }
+    } catch {
+      setTwoFAError('Erreur de connexion au serveur');
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
+  //  Forgot password handler
+  const handleForgotPasswordSubmit = async () => {
+    setForgotError('');
+    setForgotSuccess(false);
+
+    if (!loginEmail.trim()) {
+      setForgotError('Veuillez entrer votre email');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail.trim() }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setForgotSuccess(true);
+      } else {
+        setForgotError(data.error || "Erreur lors de l'envoi de l'email");
+      }
+    } catch {
+      setForgotError('Erreur de connexion au serveur');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  //  Reset password handler
+  const handleResetPassword = async () => {
+    setResetError('');
+
+    if (!forgotOtpCode || forgotOtpCode.length !== 6) {
+      setResetError('Veuillez entrer le code de vérification à 6 chiffres');
+      return;
+    }
+    if (!forgotNewPassword || forgotNewPassword.length < 8) {
+      setResetError('Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: loginEmail.trim(),
+          code: forgotOtpCode,
+          newPassword: forgotNewPassword,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setResetSuccess(true);
+      } else {
+        setResetError(data.error || 'Erreur lors de la réinitialisation');
+      }
+    } catch {
+      setResetError('Erreur de connexion au serveur');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -393,7 +530,15 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   Mot de passe oublié
                 </h2>
                 <button
-                  onClick={() => setShowForgotPassword(false)}
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotSuccess(false);
+                    setForgotError('');
+                    setResetSuccess(false);
+                    setResetError('');
+                    setForgotOtpCode('');
+                    setForgotNewPassword('');
+                  }}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   <svg
@@ -407,35 +552,168 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   </svg>
                 </button>
               </div>
-              <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl"><Key className="w-4 h-4" /></span>
-              </div>
-              <p className="text-sm text-gray-600 text-center mb-4">
-                Entrez votre email pour recevoir un lien de réinitialisation
-              </p>
-              <div>
-                <label className="text-xs font-medium text-gray-500 mb-1.5 block">Email</label>
-                <input
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="votre@email.com"
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
-                />
-              </div>
+
+              {!resetSuccess ? (
+                <>
+                  {!forgotSuccess ? (
+                    <>
+                      {/* Step 1: Enter email and send OTP */}
+                      <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+                        <Key className="w-8 h-8 text-[#003087]" />
+                      </div>
+                      <p className="text-sm text-gray-600 text-center mb-4">
+                        Entrez votre email pour recevoir un code de vérification
+                      </p>
+
+                      {forgotError && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+                        >
+                          {forgotError}
+                        </motion.div>
+                      )}
+
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 mb-1.5 block">Email</label>
+                        <input
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => {
+                            setLoginEmail(e.target.value);
+                            setForgotError('');
+                          }}
+                          placeholder="votre@email.com"
+                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                        />
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: forgotLoading ? 1 : 1.01 }}
+                        whileTap={{ scale: forgotLoading ? 1 : 0.99 }}
+                        onClick={handleForgotPasswordSubmit}
+                        disabled={forgotLoading}
+                        className="w-full mt-4 py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {forgotLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {forgotLoading ? 'Envoi en cours...' : 'Envoyer le code'}
+                      </motion.button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Step 2: Enter OTP code and new password */}
+                      <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+                        <Mail className="w-8 h-8 text-green-600" />
+                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-4 p-3 rounded-2xl bg-green-50 border border-green-200 text-sm text-green-700 text-center"
+                      >
+                        Un code de vérification a été envoyé à votre email
+                      </motion.div>
+
+                      {resetError && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+                        >
+                          {resetError}
+                        </motion.div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            Code de vérification
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={forgotOtpCode}
+                            onChange={(e) => {
+                              setForgotOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                              setResetError('');
+                            }}
+                            placeholder="000000"
+                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-center tracking-[0.5em] font-mono outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            Nouveau mot de passe
+                          </label>
+                          <input
+                            type="password"
+                            value={forgotNewPassword}
+                            onChange={(e) => {
+                              setForgotNewPassword(e.target.value);
+                              setResetError('');
+                            }}
+                            placeholder="8 caractères minimum"
+                            autoComplete="new-password"
+                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                          />
+                          {forgotNewPassword && forgotNewPassword.length < 8 && (
+                            <p className="text-xs text-amber-600 mt-1">
+                              Le mot de passe doit contenir au moins 8 caractères
+                            </p>
+                          )}
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: resetLoading ? 1 : 1.01 }}
+                          whileTap={{ scale: resetLoading ? 1 : 0.99 }}
+                          onClick={handleResetPassword}
+                          disabled={resetLoading}
+                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {resetLoading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
+                        </motion.button>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Step 3: Password reset success */}
+                  <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-8 h-8 text-green-600" />
+                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 p-3 rounded-2xl bg-green-50 border border-green-200 text-sm text-green-700 text-center"
+                  >
+                    Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.
+                  </motion.div>
+                  <button
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setForgotSuccess(false);
+                      setResetSuccess(false);
+                      setForgotOtpCode('');
+                      setForgotNewPassword('');
+                    }}
+                    className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors"
+                  >
+                    Se connecter
+                  </button>
+                </>
+              )}
+
               <button
                 onClick={() => {
-                  alert(
-                    `Un email de réinitialisation sera envoyé à ${loginEmail || 'votre adresse'}. (Fonctionnalité en cours de développement)`
-                  );
                   setShowForgotPassword(false);
+                  setForgotSuccess(false);
+                  setForgotError('');
+                  setResetSuccess(false);
+                  setResetError('');
+                  setForgotOtpCode('');
+                  setForgotNewPassword('');
                 }}
-                className="w-full mt-4 py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors"
-              >
-                Envoyer le lien
-              </button>
-              <button
-                onClick={() => setShowForgotPassword(false)}
                 className="w-full mt-2 py-3 text-sm text-gray-500 hover:text-gray-700"
               >
                 Retour à la connexion
@@ -472,167 +750,241 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
 
               {mode === 'login' ? (
                 <>
-                  {/*  LOGIN FORM  */}
-                  <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
-                    Bon retour !
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Connectez-vous à votre compte AfriBayit
-                  </p>
+                  {!show2FA ? (
+                    <>
+                      {/*  LOGIN FORM  */}
+                      <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
+                        Bon retour !
+                      </h2>
+                      <p className="text-sm text-gray-500 mb-6">
+                        Connectez-vous à votre compte AfriBayit
+                      </p>
 
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    {/* Error message */}
-                    {loginError && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
-                      >
-                        {loginError}
-                      </motion.div>
-                    )}
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        {/* Error message */}
+                        {loginError && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+                          >
+                            {loginError}
+                          </motion.div>
+                        )}
 
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={loginEmail}
-                        onChange={(e) => {
-                          setLoginEmail(e.target.value);
-                          setLoginError('');
-                        }}
-                        placeholder="votre@email.com"
-                        autoComplete="email"
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                        Mot de passe
-                      </label>
-                      <input
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => {
-                          setLoginPassword(e.target.value);
-                          setLoginError('');
-                        }}
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
-                      />
-                    </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={loginEmail}
+                            onChange={(e) => {
+                              setLoginEmail(e.target.value);
+                              setLoginError('');
+                            }}
+                            placeholder="votre@email.com"
+                            autoComplete="email"
+                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            Mot de passe
+                          </label>
+                          <input
+                            type="password"
+                            value={loginPassword}
+                            onChange={(e) => {
+                              setLoginPassword(e.target.value);
+                              setLoginError('');
+                            }}
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                          />
+                        </div>
 
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-xs text-[#003087] font-medium hover:underline"
-                    >
-                      Mot de passe oublié ?
-                    </button>
+                        <button
+                          type="button"
+                          onClick={handleForgotPassword}
+                          className="text-xs text-[#003087] font-medium hover:underline"
+                        >
+                          Mot de passe oublié ?
+                        </button>
 
-                    <motion.button
-                      whileHover={{ scale: loginLoading ? 1 : 1.01 }}
-                      whileTap={{ scale: loginLoading ? 1 : 0.99 }}
-                      type="submit"
-                      disabled={loginLoading}
-                      className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                      {loginLoading ? 'Connexion...' : 'Se connecter'}
-                    </motion.button>
+                        <motion.button
+                          whileHover={{ scale: loginLoading ? 1 : 1.01 }}
+                          whileTap={{ scale: loginLoading ? 1 : 0.99 }}
+                          type="submit"
+                          disabled={loginLoading}
+                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {loginLoading ? 'Connexion...' : 'Se connecter'}
+                        </motion.button>
 
-                    {/* In-App Browser Warning */}
-                    {inAppBrowser && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-700"
-                      >
-                        <p className="font-semibold mb-1">Navigateur {inAppBrowser} detecte</p>
-                        <p>Pour une connexion securisee, ouvrez ce site dans Chrome ou Safari : copiez le lien ci-dessous et ouvrez-le dans votre navigateur.</p>
+                        {/* In-App Browser Warning */}
+                        {inAppBrowser && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-700"
+                          >
+                            <p className="font-semibold mb-1">Navigateur {inAppBrowser} detecte</p>
+                            <p>Pour une connexion securisee, ouvrez ce site dans Chrome ou Safari : copiez le lien ci-dessous et ouvrez-le dans votre navigateur.</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(window.location.href);
+                                setShowInAppWarning(true);
+                                setTimeout(() => setShowInAppWarning(false), 2000);
+                              }}
+                              className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-full text-xs font-medium hover:bg-amber-700 transition-colors"
+                            >
+                              {showInAppWarning ? 'Lien copie !' : 'Copier le lien'}
+                            </button>
+                          </motion.div>
+                        )}
+
+                    </form>
+                    </>
+                  ) : (
+                    <>
+                      {/*  2FA VERIFICATION FORM  */}
+                      <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+                        <ShieldCheck className="w-8 h-8 text-[#003087]" />
+                      </div>
+                      <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1 text-center">
+                        Vérification 2FA
+                      </h2>
+                      <p className="text-sm text-gray-500 mb-6 text-center">
+                        Entrez le code de votre application d&apos;authentification
+                      </p>
+
+                      <form onSubmit={handle2FAVerify} className="space-y-4">
+                        {/* 2FA Error message */}
+                        {twoFAError && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+                          >
+                            {twoFAError}
+                          </motion.div>
+                        )}
+
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 mb-1.5 block text-center">
+                            Code à 6 chiffres
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={twoFACode}
+                            onChange={(e) => {
+                              setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                              setTwoFAError('');
+                            }}
+                            placeholder="000000"
+                            autoFocus
+                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-center tracking-[0.5em] font-mono outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+                          />
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: twoFALoading ? 1 : 1.01 }}
+                          whileTap={{ scale: twoFALoading ? 1 : 0.99 }}
+                          type="submit"
+                          disabled={twoFALoading}
+                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {twoFALoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {twoFALoading ? 'Vérification...' : 'Vérifier'}
+                        </motion.button>
+
                         <button
                           type="button"
                           onClick={() => {
-                            navigator.clipboard?.writeText(window.location.href);
-                            setShowInAppWarning(true);
-                            setTimeout(() => setShowInAppWarning(false), 2000);
+                            setShow2FA(false);
+                            setTwoFACode('');
+                            setTwoFAError('');
+                            setTwoFAUserId('');
                           }}
-                          className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-full text-xs font-medium hover:bg-amber-700 transition-colors"
+                          className="w-full py-3 text-sm text-gray-500 hover:text-gray-700"
                         >
-                          {showInAppWarning ? 'Lien copie !' : 'Copier le lien'}
+                          Retour
                         </button>
-                      </motion.div>
-                    )}
+                      </form>
+                    </>
+                  )}
 
-                    {/* Social Login */}
-                    {oauthAvailable.google || oauthAvailable.facebook ? (
-                      <>
-                        <div className="relative my-4">
-                          <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t" />
-                          </div>
-                          <div className="relative flex justify-center text-xs">
-                            <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
-                          </div>
+                  {/* Social Login — shown below both login and 2FA forms */}
+                  {!show2FA && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t" />
                         </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+                        </div>
+                      </div>
 
-                        <div className={`grid ${oauthAvailable.google && oauthAvailable.facebook ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
-                          {oauthAvailable.google && (
-                            <button
-                              type="button"
-                              onClick={handleGoogleLogin}
-                              disabled={!!oauthLoading}
-                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {oauthLoading === 'google' ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                                <path
-                                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                                  fill="#4285F4"
-                                />
-                                <path
-                                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                  fill="#34A853"
-                                />
-                                <path
-                                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                  fill="#FBBC05"
-                                />
-                                <path
-                                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                  fill="#EA4335"
-                                />
-                              </svg>
-                              )}
-                              {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
-                            </button>
-                          )}
-                          {oauthAvailable.facebook && (
-                            <button
-                              type="button"
-                              onClick={handleFacebookLogin}
-                              disabled={!!oauthLoading}
-                              className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {oauthLoading === 'facebook' ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                              </svg>
-                              )}
-                              {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
-                            </button>
-                          )}
-                        </div>
-                      </>
-                    ) : null}
-                  </form>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(
+                          <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            disabled={!!oauthLoading}
+                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {oauthLoading === 'google' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+                              <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                                fill="#4285F4"
+                              />
+                              <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853"
+                              />
+                              <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05"
+                              />
+                              <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335"
+                              />
+                            </svg>
+                            )}
+                            {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
+                          </button>
+                        )}
+                        {(
+                          <button
+                            type="button"
+                            onClick={handleFacebookLogin}
+                            disabled={!!oauthLoading}
+                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {oauthLoading === 'facebook' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                            )}
+                            {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
 
                   <p className="text-center text-sm text-gray-500 mt-6 pb-6">
                     Pas encore de compte ?{' '}
@@ -872,6 +1224,68 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           : 'Continuer'}
                       </motion.button>
                     </div>
+                  </div>
+
+                  {/* Social Login — register form */}
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {(
+                      <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={!!oauthLoading}
+                        className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {oauthLoading === 'google' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                            fill="#4285F4"
+                          />
+                          <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853"
+                          />
+                          <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            fill="#FBBC05"
+                          />
+                          <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EA4335"
+                          />
+                        </svg>
+                        )}
+                        {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
+                      </button>
+                    )}
+                    {(
+                      <button
+                        type="button"
+                        onClick={handleFacebookLogin}
+                        disabled={!!oauthLoading}
+                        className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {oauthLoading === 'facebook' ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        )}
+                        {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
+                      </button>
+                    )}
                   </div>
 
                   <p className="text-center text-sm text-gray-500 mt-4 pb-6">

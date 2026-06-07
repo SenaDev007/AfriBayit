@@ -232,8 +232,11 @@ function buildRejectionReason(analysis: KycAnalysisResult): string {
     );
   }
 
-  if (analysis.issues.length > 0) {
-    reasons.push(analysis.issues.slice(0, 3).join('; '));
+  const majorDiscrepancies = analysis.discrepancy.filter((d) => d.severity === 'major');
+  if (majorDiscrepancies.length > 0) {
+    reasons.push(
+      `Incohérences majeures détectées: ${majorDiscrepancies.map((d) => d.field).join(', ')}`
+    );
   }
 
   return reasons.length > 0 ? reasons.join('. ') : 'Document non conforme';

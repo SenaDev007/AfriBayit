@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, Award, BarChart3, Camera, Circle, Coins, GraduationCap, MessageCircle, User } from 'lucide-react';
+import { geoServiceLabel } from '@/lib/geotrust/service-codes';
 
 interface ProfileData {
   profile: {
@@ -284,7 +285,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                 ) : (
                   profile.specialities.map((skill) => (
                     <span key={skill} className="inline-block px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-full mr-2 mb-2">
-                      {skill}
+                      {geoServiceLabel(skill)}
                     </span>
                   ))
                 )}

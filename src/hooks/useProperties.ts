@@ -68,3 +68,17 @@ export function useDeleteProperty() {
 
 // Re-export PropertyData for convenience
 export type { PropertyData };
+
+/** Hook to fetch the current user's own property listings (all statuses) */
+export function useMyProperties(userId?: string, page = 1, limit = 50) {
+  const params = new URLSearchParams();
+  if (userId) params.set('agentId', userId);
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+
+  return useQuery<PropertiesResponse>({
+    queryKey: ['my-properties', userId, page, limit],
+    queryFn: () => apiFetch<PropertiesResponse>(`/api/properties?${params.toString()}`),
+    enabled: !!userId,
+  });
+}

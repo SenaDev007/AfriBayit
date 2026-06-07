@@ -13,6 +13,8 @@ import {
   NavigationMenuLink,
 } from '@/components/ui/navigation-menu';
 import { LucideIcon } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Home,
   Key,
@@ -47,6 +49,9 @@ import {
   LayoutDashboard,
   LogOut,
   Languages,
+  User,
+  Settings,
+  ChevronDown,
 } from 'lucide-react';
 
 type LinkItem = {
@@ -260,7 +265,22 @@ interface HeaderProps {
 
 export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
   const scrolled = useScroll(10);
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
+  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Close profile menu on outside click
+  React.useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   React.useEffect(() => {
     if (open) {
@@ -455,15 +475,64 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             Publier
           </Button>
 
-          {/* Connexion */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white"
-            onClick={() => window.location.href = '/auth/login'}
-          >
-            Connexion
-          </Button>
+          {/* Connexion / Profile */}
+          {!isLoggedIn ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white"
+              onClick={() => window.location.href = '/auth/login'}
+            >
+              Connexion
+            </Button>
+          ) : (
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-1.5"
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+                  <ImageWithFallback
+                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+                    alt="Profile"
+                    className="w-full h-full"
+                    fallbackType="avatar"
+                  />
+                </div>
+                <ChevronDown className={`w-3 h-3 text-[#003087] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {profileMenuOpen && (
+                <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                    <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+                  </div>
+                  <div className="py-1">
+                    <a href="/dashboard" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+                      <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+                    </a>
+                    <a href="/profile" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+                      <User className="w-4 h-4 text-gray-400" /> Mon profil
+                    </a>
+                    <a href="/wallet" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+                      <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+                    </a>
+                    <a href="/settings" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+                      <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+                    </a>
+                  </div>
+                  <div className="border-t border-gray-100 py-1">
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Déconnexion
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -514,20 +583,68 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           </div>
         </NavigationMenu>
         <div className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full bg-transparent border-[#003087] text-[#003087]"
-            onClick={() => { window.location.href = '/auth/login'; setOpen(false); }}
-          >
-            Connexion
-          </Button>
-          <Button
-            className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
-            onClick={() => { window.location.href = '/publish'; setOpen(false); }}
-          >
-            <Plus className="size-4 mr-1" />
-            Publier une annonce
-          </Button>
+          {isLoggedIn ? (
+            <>
+              <div className="flex items-center gap-3 px-2 py-2 mb-1">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+                  <ImageWithFallback
+                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+                    alt="Profile"
+                    className="w-full h-full"
+                    fallbackType="avatar"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                  <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+                </div>
+              </div>
+              <a href="/dashboard" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+              </a>
+              <a href="/profile" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <User className="w-4 h-4 text-gray-400" /> Mon profil
+              </a>
+              <a href="/wallet" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+              </a>
+              <a href="/settings" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+              </a>
+              <Button
+                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+              >
+                <Plus className="size-4 mr-1" />
+                Publier une annonce
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full bg-transparent border-red-200 text-red-500 hover:bg-red-50"
+                onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
+              >
+                <LogOut className="size-4 mr-1" />
+                Déconnexion
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                className="w-full bg-transparent border-[#003087] text-[#003087]"
+                onClick={() => { window.location.href = '/auth/login'; setOpen(false); }}
+              >
+                Connexion
+              </Button>
+              <Button
+                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+              >
+                <Plus className="size-4 mr-1" />
+                Publier une annonce
+              </Button>
+            </>
+          )}
         </div>
       </MobileMenu>
     </header>

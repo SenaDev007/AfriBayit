@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import type { JWT as NextAuthJWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import FacebookProvider from 'next-auth/providers/facebook';
 import { db } from '@/lib/db';
 import argon2 from 'argon2';
@@ -10,6 +11,7 @@ import {
   generateTokenPair,
   verifyRefreshToken,
 } from '@/lib/security/jwt-security';
+import { verify2FALogin } from '@/lib/twofa';
 
 // Check if RS256 JWT keys are available (required for custom JWT encoding)
 // If not, NextAuth uses its default JWT encoding (HMAC-SHA256 with NEXTAUTH_SECRET)
@@ -65,6 +67,7 @@ const providers: NextAuthOptions['providers'] = [
     credentials: {
       email: { label: 'Email', type: 'email' },
       password: { label: 'Mot de passe', type: 'password' },
+      totpCode: { label: 'Code 2FA', type: 'text' },
     },
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) {
@@ -92,10 +95,19 @@ const providers: NextAuthOptions['providers'] = [
         rehashPasswordIfNeeded(user.id, credentials.password, user.password).catch(() => {});
       }
 
-      // Check if user has 2FA enabled — handled in separate 2FA verify flow
+      // Check if user has 2FA enabled
       if (user.twoFactorEnabled) {
-        // Return partial auth to trigger 2FA verification
-        throw new Error('2FA_REQUIRED');
+        // If totpCode is provided, verify it inline
+        if (credentials.totpCode) {
+          const totpResult = await verify2FALogin(user.id, credentials.totpCode);
+          if (!totpResult.success) {
+            throw new Error('2FA_INVALID:' + totpResult.message);
+          }
+          // TOTP verified, proceed with login
+        } else {
+          // Return partial auth to trigger 2FA verification
+          throw new Error('2FA_REQUIRED:' + user.id);
+        }
       }
 
       return {
@@ -134,12 +146,47 @@ const hasFacebook =
   process.env.FACEBOOK_CLIENT_SECRET !== 'placeholder-facebook-client-secret';
 
 if (hasFacebook) {
-  providers.push(
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID!,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    })
-  );
+  // CRITICAL: We use a custom OAuth provider instead of the built-in FacebookProvider
+  // because next-auth v4's FacebookProvider always includes 'email' in the default
+  // scope, and the override mechanisms (top-level 'scope' and 'authorization.params.scope')
+  // don't reliably override the default due to how NextAuth merges authorization objects.
+  // Our Facebook app (ID: 921931210715530) has NOT completed App Review for the 'email'
+  // permission, so sending 'email' scope causes Facebook to reject the authorization with
+  // "Invalid Scopes: email".
+  // By using a generic OAuth provider, we have full control over the authorization URL
+  // and can guarantee only 'public_profile' is sent.
+  // Once Facebook approves the email permission through App Review, switch back to:
+  // FacebookProvider({ clientId, clientSecret }) and add 'email' to the scope.
+  providers.push({
+    id: 'facebook',
+    name: 'Facebook',
+    type: 'oauth',
+    clientId: process.env.FACEBOOK_CLIENT_ID!,
+    clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    wellKnown: 'https://www.facebook.com/.well-known/openid-configuration/',
+    authorization: {
+      url: 'https://www.facebook.com/v18.0/dialog/oauth',
+      params: {
+        scope: 'public_profile',
+        auth_type: 'rerequest',
+      },
+    },
+    token: 'https://graph.facebook.com/v18.0/oauth/access_token',
+    userinfo: {
+      url: 'https://graph.facebook.com/me',
+      params: { fields: 'id,name,first_name,last_name,picture.width(200).height(200)' },
+    },
+    profile(profile: Record<string, unknown>) {
+      return {
+        id: String(profile.id),
+        name: (profile.name as string) || (profile.first_name as string) || '',
+        email: null, // Facebook won't return email without 'email' scope
+        image: (profile as Record<string, unknown>).picture
+          ? ((profile.picture as Record<string, Record<string, string>>)?.data?.url) || null
+          : null,
+      };
+    },
+  } as unknown as NextAuthOptions['providers'][number]);
 }
 
 // Export OAuth availability for frontend consumption
@@ -180,7 +227,7 @@ export const authOptions: NextAuthOptions = {
               token.role = freshUser.role;
               token.country = freshUser.country;
               token.kycLevel = freshUser.kycLevel;
-              token.needsProfileCompletion = !freshUser.country;
+              token.needsProfileCompletion = !freshUser.country || freshUser.email.endsWith('@placeholder.afribayit.com');
               token.email = freshUser.email;
             }
           }
@@ -221,99 +268,189 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       // Handle OAuth sign-in: create user record if new, with tenant-scoped country
       if (account?.provider === 'google' || account?.provider === 'facebook') {
-        if (!user.email) {
-          console.error('[OAuth] No email returned from provider:', account.provider);
-          return false;
-        }
-
         try {
-          const existingUser = await db.user.findUnique({
-            where: { email: user.email },
-          });
+          // Facebook may not return email if the 'email' scope isn't approved yet.
+          // In that case, we still allow sign-in with public_profile data and
+          // the user will be asked to provide their email during profile completion.
+          if (!user.email && account.provider !== 'facebook') {
+            console.error('[OAuth] No email returned from provider:', account.provider, '| user.id:', user.id);
+            return '/auth/login?error=OAuthCallback';
+          }
+          if (!user.email && account.provider === 'facebook') {
+            console.warn('[OAuth] Facebook did not return email (scope not approved). User will complete email during profile completion. ProviderAccountId:', account.providerAccountId);
+          }
 
+          console.log(`[OAuth] Sign-in attempt via ${account.provider} for email: ${user.email || 'no-email'} | providerAccountId: ${account.providerAccountId}`);
+
+          // Step 1: Look up existing user by email or OAuth account link
+          let existingUser: Awaited<ReturnType<typeof db.user.findUnique>> = null;
+
+          // Try finding user by email first
+          if (user.email) {
+            try {
+              existingUser = await db.user.findUnique({ where: { email: user.email } });
+            } catch (error) {
+              console.error('[OAuth] Error finding user by email:', error);
+            }
+          }
+
+          // If no email (Facebook without email scope), try finding user via OAuth link
+          if (!existingUser && !user.email) {
+            try {
+              const oauthAccount = await db.oAuthAccount.findUnique({
+                where: { provider_providerId: { provider: account.provider, providerId: account.providerAccountId } },
+                include: { user: true },
+              });
+              if (oauthAccount) {
+                existingUser = oauthAccount.user;
+              }
+            } catch (error) {
+              console.error('[OAuth] Error finding user via OAuthAccount:', error);
+            }
+          }
+
+          // Determine email to use for user creation
+          const userEmail = user.email || `fb_${account.providerAccountId}@placeholder.afribayit.com`;
+
+          // Check if placeholder email already exists (Facebook re-register edge case)
+          if (!existingUser && userEmail.endsWith('@placeholder.afribayit.com')) {
+            try {
+              const existingPlaceholder = await db.user.findUnique({ where: { email: userEmail } });
+              if (existingPlaceholder) {
+                console.log('[OAuth] Found existing user with placeholder email:', userEmail);
+                existingUser = existingPlaceholder;
+              }
+            } catch (error) {
+              console.error('[OAuth] Error checking placeholder email:', error);
+            }
+          }
+
+          // Step 2: Create new user if not found
           if (!existingUser) {
-            // Create new user from OAuth — country will be null, must complete profile
-            const newUser = await db.user.create({
-              data: {
-                email: user.email,
-                name: user.name || 'Utilisateur',
-                firstName: user.name?.split(' ')[0] || null,
-                lastName: user.name?.split(' ').slice(1).join(' ') || null,
-                avatar: user.image || null,
-                role: 'buyer',
-                country: null, // Must be set via complete-profile flow
-                kycLevel: 0,
-                verified: false,
-                verificationStatus: 'PENDING',
-              },
-            });
-
-            // Create OAuth account record
-            await db.oAuthAccount.create({
-              data: {
-                provider: account.provider as 'google' | 'facebook',
-                providerId: account.providerAccountId,
-                userId: newUser.id,
-                accessToken: account.access_token || null,
-                refreshToken: account.refresh_token || null,
-              },
-            });
-
-            user.id = newUser.id;
-            (user as unknown as Record<string, unknown>).role = newUser.role;
-            (user as unknown as Record<string, unknown>).country = newUser.country;
-            (user as unknown as Record<string, unknown>).kycLevel = newUser.kycLevel;
-            // Flag: this user needs to complete their profile (select country)
-            (user as unknown as Record<string, unknown>).needsProfileCompletion = !newUser.country;
-
-            console.log('[OAuth] New user created:', newUser.id, 'via', account.provider, '| needsProfileCompletion:', !newUser.country);
-          } else {
-            // Update OAuth account link if not exists
-            const existingOAuth = await db.oAuthAccount.findFirst({
-              where: { provider: account.provider, userId: existingUser.id },
-            });
-
-            if (!existingOAuth) {
-              await db.oAuthAccount.create({
+            let newUser;
+            try {
+              newUser = await db.user.create({
                 data: {
-                  provider: account.provider as 'google' | 'facebook',
-                  providerId: account.providerAccountId,
-                  userId: existingUser.id,
-                  accessToken: account.access_token || null,
-                  refreshToken: account.refresh_token || null,
+                  email: userEmail,
+                  name: user.name || 'Utilisateur',
+                  firstName: user.name?.split(' ')[0] || null,
+                  lastName: user.name?.split(' ').slice(1).join(' ') || null,
+                  avatar: user.image || null,
+                  role: 'buyer',
+                  country: null,
+                  kycLevel: 0,
+                  verified: false,
+                  verificationStatus: 'PENDING',
                 },
               });
-            } else {
-              // Update tokens
-              await db.oAuthAccount.update({
-                where: { id: existingOAuth.id },
-                data: {
-                  accessToken: account.access_token || null,
-                  refreshToken: account.refresh_token || null,
-                },
-              });
+            } catch (error) {
+              console.error('[OAuth] Error creating user record:', error);
+              // Handle unique constraint violation (race condition)
+              if (error instanceof Error && (error.message?.includes('Unique constraint') || error.message?.includes('unique'))) {
+                try {
+                  existingUser = await db.user.findUnique({ where: { email: userEmail } });
+                  if (existingUser) {
+                    console.log('[OAuth] Found existing user after constraint violation:', existingUser.id);
+                  }
+                } catch (findError) {
+                  console.error('[OAuth] Error finding user after constraint violation:', findError);
+                }
+              }
+              if (!existingUser) {
+                return '/auth/login?error=OAuthCallback';
+              }
             }
 
-            // Update avatar if provided by OAuth and not already set
-            if (user.image && !existingUser.avatar) {
-              await db.user.update({
-                where: { id: existingUser.id },
-                data: { avatar: user.image },
+            if (newUser) {
+              // Create OAuth account record (non-fatal)
+              try {
+                await db.oAuthAccount.create({
+                  data: {
+                    provider: account.provider as 'google' | 'facebook',
+                    providerId: account.providerAccountId,
+                    userId: newUser.id,
+                    accessToken: account.access_token || null,
+                    refreshToken: account.refresh_token || null,
+                  },
+                });
+              } catch (error) {
+                console.error('[OAuth] Error creating OAuthAccount link (non-fatal):', error);
+              }
+
+              user.id = newUser.id;
+              (user as unknown as Record<string, unknown>).role = newUser.role;
+              (user as unknown as Record<string, unknown>).country = newUser.country;
+              (user as unknown as Record<string, unknown>).kycLevel = newUser.kycLevel;
+              (user as unknown as Record<string, unknown>).needsProfileCompletion = true;
+              user.email = userEmail;
+
+              console.log('[OAuth] New user created:', newUser.id, 'via', account.provider, '| needsProfileCompletion: true', '| email:', userEmail);
+              return true;
+            }
+          }
+
+          // Step 2b: Existing user — link OAuth account if not already linked (non-fatal)
+          if (existingUser) {
+            try {
+              const existingOAuth = await db.oAuthAccount.findFirst({
+                where: { provider: account.provider, userId: existingUser.id },
               });
+
+              if (!existingOAuth) {
+                try {
+                  await db.oAuthAccount.create({
+                    data: {
+                      provider: account.provider as 'google' | 'facebook',
+                      providerId: account.providerAccountId,
+                      userId: existingUser.id,
+                      accessToken: account.access_token || null,
+                      refreshToken: account.refresh_token || null,
+                    },
+                  });
+                } catch (error) {
+                  console.error('[OAuth] Error creating OAuthAccount link for existing user (non-fatal):', error);
+                }
+              } else {
+                try {
+                  await db.oAuthAccount.update({
+                    where: { id: existingOAuth.id },
+                    data: {
+                      accessToken: account.access_token || null,
+                      refreshToken: account.refresh_token || null,
+                    },
+                  });
+                } catch (error) {
+                  console.error('[OAuth] Error updating OAuthAccount tokens (non-fatal):', error);
+                }
+              }
+            } catch (error) {
+              console.error('[OAuth] Error looking up existing OAuthAccount (non-fatal):', error);
+            }
+
+            // Update avatar if provided by OAuth and not already set (non-fatal)
+            if (user.image && !existingUser.avatar) {
+              try {
+                await db.user.update({
+                  where: { id: existingUser.id },
+                  data: { avatar: user.image },
+                });
+              } catch (error) {
+                console.error('[OAuth] Error updating user avatar (non-fatal):', error);
+              }
             }
 
             user.id = existingUser.id;
             (user as unknown as Record<string, unknown>).role = existingUser.role;
             (user as unknown as Record<string, unknown>).country = existingUser.country;
             (user as unknown as Record<string, unknown>).kycLevel = existingUser.kycLevel;
-            // Flag: existing user may still need profile completion if no country
-            (user as unknown as Record<string, unknown>).needsProfileCompletion = !existingUser.country;
+            const hasPlaceholderEmail = existingUser.email.endsWith('@placeholder.afribayit.com');
+            (user as unknown as Record<string, unknown>).needsProfileCompletion = !existingUser.country || hasPlaceholderEmail;
 
-            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider, '| needsProfileCompletion:', !existingUser.country);
+            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider, '| needsProfileCompletion:', !existingUser.country || hasPlaceholderEmail);
           }
         } catch (error) {
-          console.error('[OAuth] Error during sign-in:', error);
-          return false;
+          console.error('[OAuth] Unhandled error in signIn callback:', error);
+          return '/auth/login?error=OAuthCallback';
         }
       }
       return true;

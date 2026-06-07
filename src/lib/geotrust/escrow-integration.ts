@@ -17,19 +17,12 @@
 import { db } from '@/lib/db';
 import { transition } from '@/lib/payments/escrow-engine';
 import type { TransactionState } from '@/lib/payments/types';
+import type { GeoTrustServiceCode } from '@/lib/geotrust/service-codes';
 
 // ============ Types ============
 
-/** GeoTrust service codes matching GeometerMission.serviceCode */
-export type GeoTrustServiceCode =
-  | 'GEO_GPS'
-  | 'GEO_SURF'
-  | 'GEO_INSP'
-  | 'GEO_BORN'
-  | 'GEO_TOPO'
-  | 'GEO_DRON'
-  | 'GEO_CERT'
-  | 'GEO_3D';
+// Re-export GeoTrustServiceCode from centralized module
+export type { GeoTrustServiceCode } from '@/lib/geotrust/service-codes';
 
 /** Geometer validation status for escrow integration */
 export type GeometerValidationStatus =

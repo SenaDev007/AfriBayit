@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 
+// Placeholder email pattern used when Facebook OAuth doesn't return an email
+const PLACEHOLDER_EMAIL_SUFFIX = '@placeholder.afribayit.com';
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,9 +26,46 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { country, city, phone, name } = body;
+    const { country, city, phone, name, email } = body;
 
-    // Validate required fields
+    // Check if the current user has a placeholder email (from Facebook OAuth without email scope)
+    const currentUser = await db.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    const hasPlaceholderEmail = currentUser?.email?.endsWith(PLACEHOLDER_EMAIL_SUFFIX);
+
+    // Validate required fields — email is required if user has a placeholder
+    if (hasPlaceholderEmail && !email) {
+      return NextResponse.json(
+        { error: "L'adresse email est requise" },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json(
+          { error: "Format d'email invalide" },
+          { status: 400 }
+        );
+      }
+
+      // Check email uniqueness (excluding the current user)
+      const existingEmailUser = await db.user.findUnique({
+        where: { email },
+      });
+      if (existingEmailUser && existingEmailUser.id !== userId) {
+        return NextResponse.json(
+          { error: 'Cette adresse email est déjà utilisée' },
+          { status: 409 }
+        );
+      }
+    }
+
     if (!country) {
       return NextResponse.json(
         { error: 'Le pays est requis' },
@@ -47,6 +87,10 @@ export async function POST(request: Request) {
     if (city) updateData.city = city;
     if (phone) updateData.phone = phone;
     if (name) updateData.name = name;
+    // Update email if provided and user currently has a placeholder
+    if (email && hasPlaceholderEmail) {
+      updateData.email = email;
+    }
 
     // Update user in database
     const updatedUser = await db.user.update({

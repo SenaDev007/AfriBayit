@@ -47,6 +47,10 @@ export default class NextAuthProvider extends Component<
       return this.props.children;
     }
 
-    return <SessionProvider>{this.props.children}</SessionProvider>;
+    return (
+      <SessionProvider refetchInterval={30 * 1000}>
+        {this.props.children}
+      </SessionProvider>
+    );
   }
 }
