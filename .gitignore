@@ -67,3 +67,4 @@ server.log
 /examples/
 # Caddy
 Caddyfile.env
+.env
