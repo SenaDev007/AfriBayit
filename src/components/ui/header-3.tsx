@@ -304,21 +304,22 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   // Determine text colors based on scroll state and path
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const textColor = scrolled ? 'text-[#2C2E2F]' : (isHome ? 'text-white' : 'text-[#2C2E2F]');
-  const mutedColor = scrolled ? 'text-gray-500' : (isHome ? 'text-white/70' : 'text-gray-500');
+  // Non-home pages always have a white bg, so text should always be dark
+  const textColor = isHome && !scrolled ? 'text-white' : 'text-[#2C2E2F]';
+  const mutedColor = isHome && !scrolled ? 'text-white/70' : 'text-gray-500';
 
   return (
     <header
-      className={cn('sticky top-0 z-50 w-full border-b border-transparent transition-all duration-300', {
-        'bg-background/95 supports-[backdrop-filter]:bg-background/50 border-border backdrop-blur-lg shadow-sm':
-          scrolled,
-        'bg-transparent': !scrolled,
+      className={cn('sticky top-0 z-50 w-full transition-all duration-300', {
+        'bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-200/60':
+          scrolled || !isHome,
+        'bg-transparent border-b border-transparent': !scrolled && isHome,
       })}
     >
       <nav className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-5">
           {/* Logo */}
-          <a href="/" className="hover:bg-accent rounded-md p-2 transition-colors">
+          <a href="/" className="rounded-md p-2 transition-colors">
             <img
               src="/logo.png"
               alt="AfriBayit"
@@ -467,8 +468,12 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.href = '/admin'}
-            className="border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5"
+            className={cn(
+              'transition-colors',
+              isHome && !scrolled
+                ? 'border-white/30 text-white hover:bg-white/10 hover:text-white'
+                : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5'
+            )}
           >
             <LayoutDashboard className="size-3.5 mr-1" />
             Admin
@@ -477,7 +482,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           {/* Publier — Gold CTA */}
           <Button
             size="sm"
-            className="bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+            className="bg-[#D4AF37] hover:bg-[#b8961f] text-white shadow-sm"
             onClick={() => window.location.href = '/publish'}
           >
             <Plus className="size-3.5 mr-1" />
@@ -491,7 +496,12 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             <Button
               variant="outline"
               size="sm"
-              className="border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white"
+              className={cn(
+                'transition-colors',
+                isHome && !scrolled
+                  ? 'border-white text-white hover:bg-white hover:text-[#003087]'
+                  : 'border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white'
+              )}
               onClick={() => window.location.href = '/auth/login'}
             >
               Connexion
@@ -510,7 +520,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                     fallbackType="avatar"
                   />
                 </div>
-                <ChevronDown className={`w-3 h-3 text-[#003087] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={cn('w-3 h-3 transition-transform', profileMenuOpen ? 'rotate-180' : '', isHome && !scrolled ? 'text-white' : 'text-[#003087]')} />
               </button>
               {profileMenuOpen && (
                 <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
@@ -552,10 +562,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           variant="outline"
           onClick={() => setOpen(!open)}
           className={cn(
-            'md:hidden',
-            !scrolled && isHome
+            'md:hidden transition-colors',
+            isHome && !scrolled
               ? 'border-white/20 text-white hover:bg-white/10'
-              : 'border-[#003087]/20 text-[#003087]',
+              : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5',
           )}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -677,7 +687,7 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
     <div
       id="mobile-menu"
       className={cn(
-        'bg-background/95 supports-[backdrop-filter]:bg-background/50 backdrop-blur-lg',
+        'bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-lg',
         'fixed top-16 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden',
       )}
     >
