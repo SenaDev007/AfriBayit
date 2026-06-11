@@ -1,0 +1,504 @@
+     1→'use client';
+     2→
+     3→import React, { useState } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import { BarChart3, Bot, Calendar, Check, ClipboardList, Coins, FileText, Folder, Home, PenTool, ScrollText } from 'lucide-react';
+     6→
+     7→const easeOut = [0.16, 1, 0.3, 1] as const;
+     8→
+     9→//  Types 
+    10→interface Transaction {
+    11→  id: string;
+    12→  propertyTitle: string;
+    13→  buyer: string;
+    14→  seller: string;
+    15→  amount: number;
+    16→  status: string;
+    17→  country: string;
+    18→  createdAt: string;
+    19→}
+    20→
+    21→interface DeedDraft {
+    22→  id: string;
+    23→  title: string;
+    24→  templateId: string;
+    25→  country: string;
+    26→  deedType: string;
+    27→  sections: { id: string; title: string; content: string }[];
+    28→  status: string;
+    29→  generatedAt: string;
+    30→}
+    31→
+    32→interface SignatureItem {
+    33→  id: string;
+    34→  documentTitle: string;
+    35→  signers: { name: string; role: string; status: string }[];
+    36→  status: string;
+    37→  createdAt: string;
+    38→}
+    39→
+    40→interface Appointment {
+    41→  id: string;
+    42→  title: string;
+    43→  date: string;
+    44→  time: string;
+    45→  type: 'visit' | 'signing' | 'consultation';
+    46→  client: string;
+    47→  status: 'upcoming' | 'completed' | 'cancelled';
+    48→}
+    49→
+    50→//  Demo Data 
+    51→const DEMO_TRANSACTIONS: Transaction[] = [
+    52→  { id: 'txn-001', propertyTitle: 'Villa 4ch Cotonou', buyer: 'Adama Diallo', seller: 'Kofi Mensah', amount: 35000000, status: 'NOTARY_ASSIGNED', country: 'BJ', createdAt: '2025-01-15' },
+    53→  { id: 'txn-002', propertyTitle: 'Terrain Akpakpa', buyer: 'Fatou Ouédraogo', seller: 'Yao Koffi', amount: 12000000, status: 'NOTARY_IN_PROGRESS', country: 'BJ', createdAt: '2025-01-10' },
+    54→  { id: 'txn-003', propertyTitle: 'Appartement Abidjan', buyer: 'Jean Brou', seller: 'Marie Koné', amount: 28000000, status: 'DEED_SIGNED', country: 'CI', createdAt: '2025-01-08' },
+    55→  { id: 'txn-004', propertyTitle: 'Commerce Ouaga', buyer: 'Pascal Zoungrana', seller: 'Aline Traoré', amount: 45000000, status: 'NOTARY_ASSIGNED', country: 'BF', createdAt: '2025-01-05' },
+    56→  { id: 'txn-005', propertyTitle: 'Villa Lomé', buyer: 'Essivi Agbo', seller: 'Kodjo Amegee', amount: 22000000, status: 'FUNDED', country: 'TG', createdAt: '2025-01-03' },
+    57→];
+    58→
+    59→const DEMO_DEEDS: DeedDraft[] = [
+    60→  { id: 'deed-001', title: 'Acte de Vente (TF)', templateId: 'BJ-ACTE-VENTE-TF', country: 'BJ', deedType: 'acte_vente_tf', sections: [{ id: 's1', title: 'En-tête', content: 'RÉPUBLIQUE DU BÉNIN...' }, { id: 's2', title: 'Parties', content: 'LE VENDEUR : Kofi Mensah...' }], status: 'draft', generatedAt: '2025-01-15' },
+    61→  { id: 'deed-002', title: 'Contrat de Bail', templateId: 'BJ-BAIL', country: 'BJ', deedType: 'bail', sections: [{ id: 's1', title: 'En-tête', content: 'CONTRAT DE BAIL...' }], status: 'review', generatedAt: '2025-01-12' },
+    62→  { id: 'deed-003', title: 'Acte de Vente (ACD)', templateId: 'CI-ACTE-VENTE-ACD', country: 'CI', deedType: 'acte_vente_acd', sections: [{ id: 's1', title: 'En-tête', content: 'RÉPUBLIQUE DE CÔTE D\'IVOIRE...' }], status: 'pending_signature', generatedAt: '2025-01-10' },
+    63→];
+    64→
+    65→const DEMO_SIGNATURES: SignatureItem[] = [
+    66→  { id: 'sig-001', documentTitle: 'Acte de Vente - Villa Cotonou', signers: [{ name: 'Kofi Mensah', role: 'Vendeur', status: 'signed' }, { name: 'Adama Diallo', role: 'Acquéreur', status: 'pending' }, { name: 'Me. Ako', role: 'Notaire', status: 'pending' }], status: 'in_progress', createdAt: '2025-01-15' },
+    67→  { id: 'sig-002', documentTitle: 'Contrat de Bail - Appartement', signers: [{ name: 'Yao Koffi', role: 'Bailleur', status: 'signed' }, { name: 'Fatou Ouédraogo', role: 'Preneur', status: 'signed' }], status: 'completed', createdAt: '2025-01-10' },
+    68→];
+    69→
+    70→const DEMO_APPOINTMENTS: Appointment[] = [
+    71→  { id: 'apt-001', title: 'Signature acte de vente', date: '2025-02-05', time: '10:00', type: 'signing', client: 'Adama Diallo', status: 'upcoming' },
+    72→  { id: 'apt-002', title: 'Visite terrain Akpakpa', date: '2025-02-06', time: '14:00', type: 'visit', client: 'Fatou Ouédraogo', status: 'upcoming' },
+    73→  { id: 'apt-003', title: 'Consultation succession', date: '2025-02-07', time: '09:00', type: 'consultation', client: 'Jean Brou', status: 'upcoming' },
+    74→];
+    75→
+    76→const DEMO_CONVENTIONS = [
+    77→  { id: 'conv-001', transactionId: 'txn-001', type: 'Convention de séquestre', status: 'signed', signers: 2, signedCount: 2 },
+    78→  { id: 'conv-002', transactionId: 'txn-002', type: 'Convention notariale', status: 'in_progress', signers: 3, signedCount: 1 },
+    79→  { id: 'conv-003', transactionId: 'txn-004', type: 'Convention de mandat', status: 'pending', signers: 2, signedCount: 0 },
+    80→];
+    81→
+    82→const TABS = [
+    83→  { key: 'dashboard', label: 'Tableau de bord', icon: <BarChart3 className="w-4 h-4" /> },
+    84→  { key: 'deeds', label: 'Actes', icon: <ScrollText className="w-4 h-4" /> },
+    85→  { key: 'signatures', label: 'Signatures', icon: <PenTool className="w-4 h-4" /> },
+    86→  { key: 'conventions', label: 'Conventions', icon: <FileText className="w-4 h-4" /> },
+    87→  { key: 'calendar', label: 'Calendrier', icon: <Calendar className="w-4 h-4" /> },
+    88→  { key: 'documents', label: 'Documents', icon: <Folder className="w-4 h-4" /> },
+    89→];
+    90→
+    91→type TabKey = typeof TABS[number]['key'];
+    92→
+    93→function formatPrice(price: number): string {
+    94→  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
+    95→}
+    96→
+    97→function getStatusColor(status: string): string {
+    98→  const colors: Record<string, string> = {
+    99→    NOTARY_ASSIGNED: 'bg-[#D4AF37]/10 text-[#D4AF37]',
+   100→    NOTARY_IN_PROGRESS: 'bg-[#003087]/10 text-[#003087]',
+   101→    DEED_SIGNED: 'bg-[#00A651]/10 text-[#00A651]',
+   102→    FUNDED: 'bg-[#009CDE]/10 text-[#009CDE]',
+   103→    draft: 'bg-gray-100 text-gray-600',
+   104→    review: 'bg-[#D4AF37]/10 text-[#D4AF37]',
+   105→    pending_signature: 'bg-[#003087]/10 text-[#003087]',
+   106→    completed: 'bg-[#00A651]/10 text-[#00A651]',
+   107→    in_progress: 'bg-[#003087]/10 text-[#003087]',
+   108→    signed: 'bg-[#00A651]/10 text-[#00A651]',
+   109→    pending: 'bg-gray-100 text-gray-600',
+   110→    upcoming: 'bg-[#009CDE]/10 text-[#009CDE]',
+   111→  };
+   112→  return colors[status] || 'bg-gray-100 text-gray-600';
+   113→}
+   114→
+   115→function getStatusLabel(status: string): string {
+   116→  const labels: Record<string, string> = {
+   117→    NOTARY_ASSIGNED: 'Notaire assigné',
+   118→    NOTARY_IN_PROGRESS: 'En cours',
+   119→    DEED_SIGNED: 'Acte signé',
+   120→    FUNDED: 'Financé',
+   121→    draft: 'Brouillon',
+   122→    review: 'En révision',
+   123→    pending_signature: 'En attente signature',
+   124→    completed: 'Complété',
+   125→    in_progress: 'En cours',
+   126→    signed: 'Signé',
+   127→    pending: 'En attente',
+   128→    upcoming: 'À venir',
+   129→  };
+   130→  return labels[status] || status;
+   131→}
+   132→
+   133→//  Main Component 
+   134→export default function NotaryDashboardPage() {
+   135→  const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
+   136→  const [generating, setGenerating] = useState(false);
+   137→  const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
+   138→  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+   139→
+   140→  const totalRevenue = DEMO_TRANSACTIONS.reduce((sum, t) => sum + t.amount * 0.03, 0);
+   141→  const activeTransactions = DEMO_TRANSACTIONS.filter(t => ['NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS'].includes(t.status)).length;
+   142→  const pendingDeeds = DEMO_DEEDS.filter(d => ['draft', 'review'].includes(d.status)).length;
+   143→  const pendingSignatures = DEMO_SIGNATURES.filter(s => s.status === 'in_progress').length;
+   144→
+   145→  const handleGenerateDeed = async () => {
+   146→    if (!selectedTransaction || !selectedTemplate) return;
+   147→    setGenerating(true);
+   148→    try {
+   149→      const res = await fetch('/api/notary/deeds/generate', {
+   150→        method: 'POST',
+   151→        headers: { 'Content-Type': 'application/json' },
+   152→        body: JSON.stringify({
+   153→          transactionId: selectedTransaction,
+   154→          templateId: selectedTemplate,
+   155→          data: { country: 'BJ' },
+   156→        }),
+   157→      });
+   158→      if (res.ok) {
+   159→        const result = await res.json();
+   160→        alert(`Acte généré: ${result.deed.title} (${result.deed.id})`);
+   161→      }
+   162→    } catch {
+   163→      alert('Acte généré (demo)');
+   164→    }
+   165→    setGenerating(false);
+   166→  };
+   167→
+   168→  return (
+   169→    <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">
+   170→      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+   171→        {/* Header */}
+   172→        <div className="mb-6">
+   173→          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">Espace Notaire</h1>
+   174→          <p className="text-sm text-gray-500 mt-1">Gérez vos actes, signatures et rendez-vous</p>
+   175→        </div>
+   176→
+   177→        {/* Tabs */}
+   178→        <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+   179→          {TABS.map(tab => (
+   180→            <button
+   181→              key={tab.key}
+   182→              onClick={() => setActiveTab(tab.key)}
+   183→              className={`px-4 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+   184→                activeTab === tab.key
+   185→                  ? 'bg-[#003087] text-white shadow-lg'
+   186→                  : 'bg-white text-gray-600 border border-gray-100 hover:border-[#003087]/30 hover:text-[#003087]'
+   187→              }`}
+   188→            >
+   189→              {tab.icon} {tab.label}
+   190→            </button>
+   191→          ))}
+   192→        </div>
+   193→
+   194→        <AnimatePresence mode="wait">
+   195→          {/*  DASHBOARD TAB  */}
+   196→          {activeTab === 'dashboard' && (
+   197→            <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   198→              {/* KPIs */}
+   199→              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+   200→                {[
+   201→                  { label: 'Revenus notariaux', value: formatPrice(totalRevenue), icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
+   202→                  { label: 'Transactions actives', value: String(activeTransactions), icon: <ClipboardList className="w-4 h-4" />, color: '#003087' },
+   203→                  { label: 'Actes en attente', value: String(pendingDeeds), icon: <ScrollText className="w-4 h-4" />, color: '#009CDE' },
+   204→                  { label: 'Signatures en attente', value: String(pendingSignatures), icon: <PenTool className="w-4 h-4" />, color: '#00A651' },
+   205→                ].map((kpi, i) => (
+   206→                  <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className="bg-white rounded-2xl p-4 shadow-sm border">
+   207→                    <div className="text-xl">{kpi.icon}</div>
+   208→                    <p className="font-mono text-lg font-bold text-[#2C2E2F] mt-2">{kpi.value}</p>
+   209→                    <p className="text-xs text-gray-500">{kpi.label}</p>
+   210→                  </motion.div>
+   211→                ))}
+   212→              </div>
+   213→
+   214→              {/* Active Transactions */}
+   215→              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+   216→                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions actives</h3>
+   217→                <div className="space-y-3 max-h-96 overflow-y-auto">
+   218→                  {DEMO_TRANSACTIONS.filter(t => ['NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'FUNDED'].includes(t.status)).map(txn => (
+   219→                    <div key={txn.id} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+   220→                      <div className="flex-1 min-w-0">
+   221→                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.propertyTitle}</p>
+   222→                        <p className="text-xs text-gray-500">{txn.buyer} → {txn.seller}</p>
+   223→                      </div>
+   224→                      <div className="flex items-center gap-3 shrink-0">
+   225→                        <span className="font-mono text-sm font-bold text-[#D4AF37]">{formatPrice(txn.amount)}</span>
+   226→                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(txn.status)}`}>
+   227→                          {getStatusLabel(txn.status)}
+   228→                        </span>
+   229→                      </div>
+   230→                    </div>
+   231→                  ))}
+   232→                </div>
+   233→              </div>
+   234→
+   235→              {/* Pending Deed Reviews */}
+   236→              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+   237→                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Actes en révision</h3>
+   238→                <div className="space-y-3">
+   239→                  {DEMO_DEEDS.filter(d => d.status === 'review').map(deed => (
+   240→                    <div key={deed.id} className="flex items-center justify-between p-3 rounded-2xl bg-[#D4AF37]/5 border border-[#D4AF37]/10">
+   241→                      <div>
+   242→                        <p className="text-sm font-semibold text-[#2C2E2F]">{deed.title}</p>
+   243→                        <p className="text-xs text-gray-500">{deed.country} · {deed.sections.length} sections</p>
+   244→                      </div>
+   245→                      <button className="px-4 py-2 bg-[#D4AF37] text-white text-xs font-semibold rounded-full hover:bg-[#c9a030] transition-colors">
+   246→                        Réviser
+   247→                      </button>
+   248→                    </div>
+   249→                  ))}
+   250→                </div>
+   251→              </div>
+   252→            </motion.div>
+   253→          )}
+   254→
+   255→          {/*  DEEDS TAB  */}
+   256→          {activeTab === 'deeds' && (
+   257→            <motion.div key="deeds" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   258→              {/* Deed Generator */}
+   259→              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+   260→                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Rédaction IA d&apos;actes</h3>
+   261→                <p className="text-sm text-gray-500 mb-4">Sélectionnez une transaction et un modèle d&apos;acte pour générer un brouillon automatique.</p>
+   262→                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+   263→                  <div>
+   264→                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Transaction</label>
+   265→                    <select
+   266→                      value={selectedTransaction || ''}
+   267→                      onChange={e => setSelectedTransaction(e.target.value)}
+   268→                      className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-[#003087] focus:outline-none"
+   269→                    >
+   270→                      <option value="">-- Choisir --</option>
+   271→                      {DEMO_TRANSACTIONS.map(t => (
+   272→                        <option key={t.id} value={t.id}>{t.propertyTitle} ({formatPrice(t.amount)})</option>
+   273→                      ))}
+   274→                    </select>
+   275→                  </div>
+   276→                  <div>
+   277→                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Modèle d&apos;acte</label>
+   278→                    <select
+   279→                      value={selectedTemplate}
+   280→                      onChange={e => setSelectedTemplate(e.target.value)}
+   281→                      className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-[#003087] focus:outline-none"
+   282→                    >
+   283→                      <option value="">-- Choisir --</option>
+   284→                      <optgroup label="Bénin">
+   285→                        <option value="BJ-ACTE-VENTE-TF">Acte de Vente (TF)</option>
+   286→                        <option value="BJ-BAIL">Contrat de Bail</option>
+   287→                        <option value="BJ-DONATION">Acte de Donation</option>
+   288→                      </optgroup>
+   289→                      <optgroup label="Côte d'Ivoire">
+   290→                        <option value="CI-ACTE-VENTE-ACD">Acte de Vente (ACD)</option>
+   291→                        <option value="CI-BAIL-COMMERCIAL">Bail Commercial</option>
+   292→                      </optgroup>
+   293→                      <optgroup label="Burkina Faso">
+   294→                        <option value="BF-ACTE-VENTE-APFR">Acte de Vente (APFR)</option>
+   295→                        <option value="BF-BAIL">Contrat de Bail</option>
+   296→                      </optgroup>
+   297→                      <optgroup label="Togo">
+   298→                        <option value="TG-ACTE-VENTE-CFD">Acte de Vente (CFD)</option>
+   299→                        <option value="TG-BAIL">Contrat de Bail</option>
+   300→                      </optgroup>
+   301→                    </select>
+   302→                  </div>
+   303→                </div>
+   304→                <button
+   305→                  onClick={handleGenerateDeed}
+   306→                  disabled={!selectedTransaction || !selectedTemplate || generating}
+   307→                  className="px-6 py-3 bg-[#003087] text-white rounded-full font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 flex items-center gap-2"
+   308→                >
+   309→                  {generating ? (
+   310→                    <><span className="animate-spin">⏳</span> Génération en cours...</>
+   311→                  ) : (
+   312→                    <><span><Bot className="w-4 h-4" /></span> Générer l&apos;acte</>
+   313→                  )}
+   314→                </button>
+   315→              </div>
+   316→
+   317→              {/* Existing Deeds */}
+   318→              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+   319→                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Actes récents</h3>
+   320→                <div className="space-y-3">
+   321→                  {DEMO_DEEDS.map(deed => (
+   322→                    <div key={deed.id} className="p-4 rounded-2xl border border-gray-100 hover:border-[#003087]/20 transition-colors">
+   323→                      <div className="flex items-center justify-between mb-2">
+   324→                        <h4 className="text-sm font-bold text-[#2C2E2F]">{deed.title}</h4>
+   325→                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(deed.status)}`}>
+   326→                          {getStatusLabel(deed.status)}
+   327→                        </span>
+   328→                      </div>
+   329→                      <p className="text-xs text-gray-500 mb-2">{deed.country} · {deed.sections.length} sections · Généré le {deed.generatedAt}</p>
+   330→                      <div className="flex gap-2">
+   331→                        <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-full hover:bg-[#003087]/10 transition-colors">
+   332→                          Voir
+   333→                        </button>
+   334→                        <button className="px-3 py-1.5 text-xs font-semibold text-[#00A651] bg-[#00A651]/5 rounded-full hover:bg-[#00A651]/10 transition-colors">
+   335→                          Modifier
+   336→                        </button>
+   337→                        <button className="px-3 py-1.5 text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/5 rounded-full hover:bg-[#D4AF37]/10 transition-colors">
+   338→                          Envoyer signature
+   339→                        </button>
+   340→                      </div>
+   341→                    </div>
+   342→                  ))}
+   343→                </div>
+   344→              </div>
+   345→            </motion.div>
+   346→          )}
+   347→
+   348→          {/*  SIGNATURES TAB  */}
+   349→          {activeTab === 'signatures' && (
+   350→            <motion.div key="signatures" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   351→              <div className="space-y-4">
+   352→                {DEMO_SIGNATURES.map(sig => {
+   353→                  const signed = sig.signers.filter(s => s.status === 'signed').length;
+   354→                  const total = sig.signers.length;
+   355→                  return (
+   356→                    <div key={sig.id} className="bg-white rounded-3xl p-6 shadow-sm border">
+   357→                      <div className="flex items-center justify-between mb-4">
+   358→                        <h4 className="text-sm font-bold text-[#2C2E2F]">{sig.documentTitle}</h4>
+   359→                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(sig.status)}`}>
+   360→                          {getStatusLabel(sig.status)}
+   361→                        </span>
+   362→                      </div>
+   363→                      <div className="mb-3">
+   364→                        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+   365→                          <span>Progression signature</span>
+   366→                          <span className="font-semibold text-[#003087]">{signed}/{total}</span>
+   367→                        </div>
+   368→                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+   369→                          <div className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-full" style={{ width: `${(signed / total) * 100}%` }} />
+   370→                        </div>
+   371→                      </div>
+   372→                      <div className="space-y-2">
+   373→                        {sig.signers.map((s, i) => (
+   374→                          <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-gray-50">
+   375→                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${s.status === 'signed' ? 'bg-[#00A651]' : 'bg-gray-300'}`}>
+   376→                              {s.status === 'signed' ? <Check className="w-4 h-4" /> : (i + 1)}
+   377→                            </div>
+   378→                            <span className="text-sm text-[#2C2E2F]">{s.name}</span>
+   379→                            <span className="text-xs text-gray-400 ml-auto">{s.role}</span>
+   380→                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(s.status)}`}>
+   381→                              {getStatusLabel(s.status)}
+   382→                            </span>
+   383→                          </div>
+   384→                        ))}
+   385→                      </div>
+   386→                    </div>
+   387→                  );
+   388→                })}
+   389→              </div>
+   390→            </motion.div>
+   391→          )}
+   392→
+   393→          {/*  CONVENTIONS TAB  */}
+   394→          {activeTab === 'conventions' && (
+   395→            <motion.div key="conventions" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   396→              <div className="space-y-4">
+   397→                {DEMO_CONVENTIONS.map(conv => {
+   398→                  const progress = conv.signers > 0 ? (conv.signedCount / conv.signers) * 100 : 0;
+   399→                  return (
+   400→                    <div key={conv.id} className="bg-white rounded-3xl p-6 shadow-sm border">
+   401→                      <div className="flex items-center justify-between mb-3">
+   402→                        <h4 className="text-sm font-bold text-[#2C2E2F]">{conv.type}</h4>
+   403→                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(conv.status)}`}>
+   404→                          {getStatusLabel(conv.status)}
+   405→                        </span>
+   406→                      </div>
+   407→                      <p className="text-xs text-gray-500 mb-3">Transaction: {conv.transactionId}</p>
+   408→                      <div className="flex items-center gap-3">
+   409→                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+   410→                          <div className={`h-full rounded-full ${progress === 100 ? 'bg-[#00A651]' : 'bg-[#003087]'}`} style={{ width: `${progress}%` }} />
+   411→                        </div>
+   412→                        <span className="text-xs font-semibold text-[#003087]">{conv.signedCount}/{conv.signers}</span>
+   413→                      </div>
+   414→                    </div>
+   415→                  );
+   416→                })}
+   417→
+   418→                <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-3xl text-sm font-semibold text-gray-400 hover:text-[#003087] hover:border-[#003087]/30 transition-colors">
+   419→                  + Envoyer une nouvelle convention
+   420→                </button>
+   421→              </div>
+   422→            </motion.div>
+   423→          )}
+   424→
+   425→          {/*  CALENDAR TAB  */}
+   426→          {activeTab === 'calendar' && (
+   427→            <motion.div key="calendar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   428→              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+   429→                <div className="flex items-center justify-between mb-4">
+   430→                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Rendez-vous à venir</h3>
+   431→                  <button className="px-4 py-2 bg-[#003087] text-white text-xs font-semibold rounded-full hover:bg-[#0047b3] transition-colors">
+   432→                    + Nouveau RDV
+   433→                  </button>
+   434→                </div>
+   435→                <div className="space-y-3">
+   436→                  {DEMO_APPOINTMENTS.map(apt => {
+   437→                    const typeIcons: Record<string, React.ReactNode> = { visit: <Home className="w-4 h-4" />, signing: <PenTool className="w-4 h-4" />, consultation: null };
+   438→                    const typeLabels: Record<string, string> = { visit: 'Visite', signing: 'Signature', consultation: 'Consultation' };
+   439→                    return (
+   440→                      <div key={apt.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+   441→                        <div className="w-12 h-12 rounded-xl bg-[#003087]/10 flex items-center justify-center text-xl shrink-0">
+   442→                          {typeIcons[apt.type]}
+   443→                        </div>
+   444→                        <div className="flex-1 min-w-0">
+   445→                          <p className="text-sm font-semibold text-[#2C2E2F]">{apt.title}</p>
+   446→                          <p className="text-xs text-gray-500">{apt.client} · {typeLabels[apt.type]}</p>
+   447→                        </div>
+   448→                        <div className="text-right shrink-0">
+   449→                          <p className="text-sm font-semibold text-[#003087]">{apt.date}</p>
+   450→                          <p className="text-xs text-gray-400">{apt.time}</p>
+   451→                        </div>
+   452→                      </div>
+   453→                    );
+   454→                  })}
+   455→                </div>
+   456→              </div>
+   457→            </motion.div>
+   458→          )}
+   459→
+   460→          {/*  DOCUMENTS TAB  */}
+   461→          {activeTab === 'documents' && (
+   462→            <motion.div key="documents" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
+   463→              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+   464→                <div className="flex items-center justify-between mb-4">
+   465→                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Archives documentaires</h3>
+   466→                  <div className="flex gap-2">
+   467→                    <input
+   468→                      type="text"
+   469→                      placeholder="Rechercher..."
+   470→                      className="px-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-[#003087] focus:outline-none w-48"
+   471→                    />
+   472→                  </div>
+   473→                </div>
+   474→                <div className="space-y-2">
+   475→                  {[
+   476→                    { name: 'Acte_Vente_Villa_Cotonou.pdf', type: 'PDF', size: '2.4 MB', date: '2025-01-15' },
+   477→                    { name: 'Bail_Appartement_Abidjan.pdf', type: 'PDF', size: '1.8 MB', date: '2025-01-12' },
+   478→                    { name: 'Convention_Séquestre_TXN001.pdf', type: 'PDF', size: '540 KB', date: '2025-01-10' },
+   479→                    { name: 'Rapport_Géomètre_Akpakpa.pdf', type: 'PDF', size: '3.1 MB', date: '2025-01-08' },
+   480→                    { name: 'Certificat_Propriété_ANDF.pdf', type: 'PDF', size: '320 KB', date: '2025-01-05' },
+   481→                  ].map((doc, i) => (
+   482→                    <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+   483→                      <div className="w-10 h-10 rounded-lg bg-[#D93025]/10 flex items-center justify-center text-sm font-bold text-[#D93025]">
+   484→                        PDF
+   485→                      </div>
+   486→                      <div className="flex-1 min-w-0">
+   487→                        <p className="text-sm font-medium text-[#2C2E2F] truncate">{doc.name}</p>
+   488→                        <p className="text-xs text-gray-400">{doc.size} · {doc.date}</p>
+   489→                      </div>
+   490→                      <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-full hover:bg-[#003087]/10 transition-colors">
+   491→                        Télécharger
+   492→                      </button>
+   493→                    </div>
+   494→                  ))}
+   495→                </div>
+   496→              </div>
+   497→            </motion.div>
+   498→          )}
+   499→        </AnimatePresence>
+   500→      </div>
+   501→    </div>
+   502→  );
+   503→}
+   504→

@@ -1,0 +1,1005 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect, useCallback } from 'react';
+     4→import { useRouter } from 'next/navigation';
+     5→import { useSession } from 'next-auth/react';
+     6→import { motion, AnimatePresence } from 'framer-motion';
+     7→import {
+     8→  User,
+     9→  Shield,
+    10→  BadgeCheck,
+    11→  Link2,
+    12→  Settings,
+    13→  Trash2,
+    14→  ChevronLeft,
+    15→  Loader2,
+    16→  Mail,
+    17→  Phone,
+    18→  MapPin,
+    19→  Globe,
+    20→  Coins,
+    21→  Save,
+    22→  Send,
+    23→  CheckCircle2,
+    24→  XCircle,
+    25→  AlertTriangle,
+    26→} from 'lucide-react';
+    27→import { Button } from '@/components/ui/button';
+    28→import { Input } from '@/components/ui/input';
+    29→import { Label } from '@/components/ui/label';
+    30→import { Textarea } from '@/components/ui/textarea';
+    31→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+    32→import { Badge } from '@/components/ui/badge';
+    33→import { Separator } from '@/components/ui/separator';
+    34→import {
+    35→  Select,
+    36→  SelectContent,
+    37→  SelectItem,
+    38→  SelectTrigger,
+    39→  SelectValue,
+    40→} from '@/components/ui/select';
+    41→import {
+    42→  AlertDialog,
+    43→  AlertDialogAction,
+    44→  AlertDialogCancel,
+    45→  AlertDialogContent,
+    46→  AlertDialogDescription,
+    47→  AlertDialogFooter,
+    48→  AlertDialogHeader,
+    49→  AlertDialogTitle,
+    50→  AlertDialogTrigger,
+    51→} from '@/components/ui/alert-dialog';
+    52→import { useToast } from '@/hooks/use-toast';
+    53→import SecuritySettings from '@/components/afribayit/SecuritySettings';
+    54→import ConnectedAccounts from '@/components/afribayit/ConnectedAccounts';
+    55→
+    56→// Types
+    57→interface UserProfile {
+    58→  id: string;
+    59→  email: string;
+    60→  name: string;
+    61→  firstName: string | null;
+    62→  lastName: string | null;
+    63→  phone: string | null;
+    64→  bio: string | null;
+    65→  city: string | null;
+    66→  country: string | null;
+    67→  avatar: string | null;
+    68→  preferredLanguage: string;
+    69→  currency: string;
+    70→  verified: boolean;
+    71→  emailVerified: string | null;
+    72→  phoneVerified: string | null;
+    73→  twoFactorEnabled: boolean;
+    74→  role: string;
+    75→  kycLevel: number;
+    76→  createdAt: string;
+    77→}
+    78→
+    79→// Tab config
+    80→const TABS = [
+    81→  { id: 'profile', label: 'Profil', icon: User },
+    82→  { id: 'security', label: 'Sécurité', icon: Shield },
+    83→  { id: 'verification', label: 'Vérification', icon: BadgeCheck },
+    84→  { id: 'connected', label: 'Comptes connectés', icon: Link2 },
+    85→  { id: 'preferences', label: 'Préférences', icon: Settings },
+    86→  { id: 'delete', label: 'Supprimer le compte', icon: Trash2 },
+    87→];
+    88→
+    89→export default function SettingsPage() {
+    90→  const { data: session, status } = useSession();
+    91→  const router = useRouter();
+    92→  const { toast } = useToast();
+    93→  const [activeTab, setActiveTab] = useState('profile');
+    94→  const [profile, setProfile] = useState<UserProfile | null>(null);
+    95→  const [loading, setLoading] = useState(true);
+    96→  const [saving, setSaving] = useState(false);
+    97→
+    98→  // Profile form
+    99→  const [formName, setFormName] = useState('');
+   100→  const [formBio, setFormBio] = useState('');
+   101→  const [formPhone, setFormPhone] = useState('');
+   102→  const [formCity, setFormCity] = useState('');
+   103→  const [formCountry, setFormCountry] = useState('');
+   104→
+   105→  // Preferences
+   106→  const [formLanguage, setFormLanguage] = useState('fr');
+   107→  const [formCurrency, setFormCurrency] = useState('XOF');
+   108→
+   109→  // Verification
+   110→  const [emailOtpSent, setEmailOtpSent] = useState(false);
+   111→  const [emailOtpCode, setEmailOtpCode] = useState('');
+   112→  const [verifyingEmail, setVerifyingEmail] = useState(false);
+   113→  const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
+   114→  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+   115→  const [phoneOtpCode, setPhoneOtpCode] = useState('');
+   116→  const [verifyingPhone, setVerifyingPhone] = useState(false);
+   117→  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
+   118→
+   119→  // Delete account
+   120→  const [deletePassword, setDeletePassword] = useState('');
+   121→  const [deleteConfirm, setDeleteConfirm] = useState('');
+   122→  const [deleting, setDeleting] = useState(false);
+   123→
+   124→  // Fetch user profile
+   125→  const fetchProfile = useCallback(async () => {
+   126→    try {
+   127→      const res = await fetch('/api/user/me');
+   128→      if (res.ok) {
+   129→        const data = await res.json();
+   130→        setProfile(data.user);
+   131→        // Populate form
+   132→        setFormName(data.user.name || '');
+   133→        setFormBio(data.user.bio || '');
+   134→        setFormPhone(data.user.phone || '');
+   135→        setFormCity(data.user.city || '');
+   136→        setFormCountry(data.user.country || '');
+   137→        setFormLanguage(data.user.preferredLanguage || 'fr');
+   138→        setFormCurrency(data.user.currency || 'XOF');
+   139→      }
+   140→    } catch (err) {
+   141→      console.error('Error fetching profile:', err);
+   142→    } finally {
+   143→      setLoading(false);
+   144→    }
+   145→  }, []);
+   146→
+   147→  useEffect(() => {
+   148→    if (status === 'unauthenticated') {
+   149→      router.push('/auth/login?callbackUrl=/settings');
+   150→      return;
+   151→    }
+   152→    if (status === 'authenticated') {
+   153→      fetchProfile();
+   154→    }
+   155→  }, [status, router, fetchProfile]);
+   156→
+   157→  // Save profile
+   158→  const handleSaveProfile = async () => {
+   159→    setSaving(true);
+   160→    try {
+   161→      const res = await fetch('/api/user/update-profile', {
+   162→        method: 'PATCH',
+   163→        headers: { 'Content-Type': 'application/json' },
+   164→        body: JSON.stringify({
+   165→          name: formName,
+   166→          bio: formBio,
+   167→          phone: formPhone,
+   168→          city: formCity,
+   169→          country: formCountry,
+   170→        }),
+   171→      });
+   172→      const data = await res.json();
+   173→
+   174→      if (!res.ok) {
+   175→        throw new Error(data.error || 'Erreur lors de la sauvegarde');
+   176→      }
+   177→
+   178→      setProfile(data.user);
+   179→      toast({ title: 'Succès', description: 'Profil mis à jour' });
+   180→    } catch (err) {
+   181→      toast({
+   182→        title: 'Erreur',
+   183→        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
+   184→        variant: 'destructive',
+   185→      });
+   186→    } finally {
+   187→      setSaving(false);
+   188→    }
+   189→  };
+   190→
+   191→  // Save preferences
+   192→  const handleSavePreferences = async () => {
+   193→    setSaving(true);
+   194→    try {
+   195→      const res = await fetch('/api/user/update-profile', {
+   196→        method: 'PATCH',
+   197→        headers: { 'Content-Type': 'application/json' },
+   198→        body: JSON.stringify({
+   199→          preferredLanguage: formLanguage,
+   200→          currency: formCurrency,
+   201→        }),
+   202→      });
+   203→      const data = await res.json();
+   204→
+   205→      if (!res.ok) {
+   206→        throw new Error(data.error || 'Erreur lors de la sauvegarde');
+   207→      }
+   208→
+   209→      setProfile(data.user);
+   210→      toast({ title: 'Succès', description: 'Préférences mises à jour' });
+   211→    } catch (err) {
+   212→      toast({
+   213→        title: 'Erreur',
+   214→        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
+   215→        variant: 'destructive',
+   216→      });
+   217→    } finally {
+   218→      setSaving(false);
+   219→    }
+   220→  };
+   221→
+   222→  // Send email verification
+   223→  const handleSendEmailOtp = async () => {
+   224→    setSendingEmailOtp(true);
+   225→    try {
+   226→      const res = await fetch(`/api/auth/verify-email?email=${encodeURIComponent(profile?.email || '')}`);
+   227→      const data = await res.json();
+   228→
+   229→      if (!res.ok) {
+   230→        throw new Error(data.error || 'Erreur lors de l\'envoi');
+   231→      }
+   232→
+   233→      setEmailOtpSent(true);
+   234→      toast({ title: 'Code envoyé', description: 'Vérifiez votre boîte mail' });
+   235→    } catch (err) {
+   236→      toast({
+   237→        title: 'Erreur',
+   238→        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
+   239→        variant: 'destructive',
+   240→      });
+   241→    } finally {
+   242→      setSendingEmailOtp(false);
+   243→    }
+   244→  };
+   245→
+   246→  // Verify email
+   247→  const handleVerifyEmail = async () => {
+   248→    setVerifyingEmail(true);
+   249→    try {
+   250→      const res = await fetch('/api/auth/verify-email', {
+   251→        method: 'POST',
+   252→        headers: { 'Content-Type': 'application/json' },
+   253→        body: JSON.stringify({ email: profile?.email, code: emailOtpCode }),
+   254→      });
+   255→      const data = await res.json();
+   256→
+   257→      if (!res.ok) {
+   258→        throw new Error(data.error || 'Code invalide');
+   259→      }
+   260→
+   261→      // Refresh profile
+   262→      await fetchProfile();
+   263→      setEmailOtpSent(false);
+   264→      setEmailOtpCode('');
+   265→      toast({ title: 'Succès', description: 'Email vérifié avec succès' });
+   266→    } catch (err) {
+   267→      toast({
+   268→        title: 'Erreur',
+   269→        description: err instanceof Error ? err.message : 'Code invalide',
+   270→        variant: 'destructive',
+   271→      });
+   272→    } finally {
+   273→      setVerifyingEmail(false);
+   274→    }
+   275→  };
+   276→
+   277→  // Send phone verification
+   278→  const handleSendPhoneOtp = async () => {
+   279→    if (!formPhone) {
+   280→      toast({ title: 'Erreur', description: 'Ajoutez un numéro de téléphone d\'abord', variant: 'destructive' });
+   281→      return;
+   282→    }
+   283→    setSendingPhoneOtp(true);
+   284→    try {
+   285→      const res = await fetch(`/api/auth/verify-phone?phone=${encodeURIComponent(formPhone)}`);
+   286→      const data = await res.json();
+   287→
+   288→      if (!res.ok) {
+   289→        throw new Error(data.error || 'Erreur lors de l\'envoi');
+   290→      }
+   291→
+   292→      setPhoneOtpSent(true);
+   293→      toast({ title: 'Code envoyé', description: 'Vérifiez votre téléphone' });
+   294→    } catch (err) {
+   295→      toast({
+   296→        title: 'Erreur',
+   297→        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
+   298→        variant: 'destructive',
+   299→      });
+   300→    } finally {
+   301→      setSendingPhoneOtp(false);
+   302→    }
+   303→  };
+   304→
+   305→  // Verify phone
+   306→  const handleVerifyPhone = async () => {
+   307→    setVerifyingPhone(true);
+   308→    try {
+   309→      const res = await fetch('/api/auth/verify-phone', {
+   310→        method: 'POST',
+   311→        headers: { 'Content-Type': 'application/json' },
+   312→        body: JSON.stringify({ phone: formPhone, code: phoneOtpCode }),
+   313→      });
+   314→      const data = await res.json();
+   315→
+   316→      if (!res.ok) {
+   317→        throw new Error(data.error || 'Code invalide');
+   318→      }
+   319→
+   320→      await fetchProfile();
+   321→      setPhoneOtpSent(false);
+   322→      setPhoneOtpCode('');
+   323→      toast({ title: 'Succès', description: 'Téléphone vérifié avec succès' });
+   324→    } catch (err) {
+   325→      toast({
+   326→        title: 'Erreur',
+   327→        description: err instanceof Error ? err.message : 'Code invalide',
+   328→        variant: 'destructive',
+   329→      });
+   330→    } finally {
+   331→      setVerifyingPhone(false);
+   332→    }
+   333→  };
+   334→
+   335→  // Delete account
+   336→  const handleDeleteAccount = async () => {
+   337→    if (deleteConfirm !== 'SUPPRIMER') {
+   338→      toast({ title: 'Erreur', description: 'Tapez SUPPRIMER pour confirmer', variant: 'destructive' });
+   339→      return;
+   340→    }
+   341→
+   342→    setDeleting(true);
+   343→    try {
+   344→      const res = await fetch('/api/user/delete-account', {
+   345→        method: 'POST',
+   346→        headers: { 'Content-Type': 'application/json' },
+   347→        body: JSON.stringify({ password: deletePassword, confirmation: 'SUPPRIMER' }),
+   348→      });
+   349→      const data = await res.json();
+   350→
+   351→      if (!res.ok) {
+   352→        throw new Error(data.error || 'Erreur lors de la suppression');
+   353→      }
+   354→
+   355→      toast({ title: 'Compte supprimé', description: 'Votre compte a été supprimé' });
+   356→      router.push('/');
+   357→    } catch (err) {
+   358→      toast({
+   359→        title: 'Erreur',
+   360→        description: err instanceof Error ? err.message : 'Erreur lors de la suppression',
+   361→        variant: 'destructive',
+   362→      });
+   363→    } finally {
+   364→      setDeleting(false);
+   365→    }
+   366→  };
+   367→
+   368→  // Loading state
+   369→  if (status === 'loading' || loading) {
+   370→    return (
+   371→      <div className="min-h-screen flex items-center justify-center bg-white">
+   372→        <div className="flex flex-col items-center gap-3">
+   373→          <Loader2 className="h-8 w-8 animate-spin text-[#003087]" />
+   374→          <p className="text-sm text-muted-foreground">Chargement des paramètres...</p>
+   375→        </div>
+   376→      </div>
+   377→    );
+   378→  }
+   379→
+   380→  // Not authenticated
+   381→  if (status === 'unauthenticated' || !session) {
+   382→    return (
+   383→      <div className="min-h-screen flex items-center justify-center bg-white">
+   384→        <Card className="max-w-md w-full mx-4">
+   385→          <CardContent className="p-6 text-center">
+   386→            <p className="text-muted-foreground mb-4">Connectez-vous pour accéder aux paramètres</p>
+   387→            <Button className="bg-[#003087] hover:bg-[#002266] text-white" onClick={() => router.push('/auth/login?callbackUrl=/settings')}>
+   388→              Se connecter
+   389→            </Button>
+   390→          </CardContent>
+   391→        </Card>
+   392→      </div>
+   393→    );
+   394→  }
+   395→
+   396→  return (
+   397→    <div className="min-h-screen bg-gray-50/50">
+   398→      {/* Header */}
+   399→      <div className="bg-white border-b sticky top-0 z-10">
+   400→        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+   401→          <div className="flex items-center gap-3">
+   402→            <Button
+   403→              variant="ghost"
+   404→              size="sm"
+   405→              onClick={() => router.back()}
+   406→              className="text-[#003087] hover:bg-[#003087]/5"
+   407→            >
+   408→              <ChevronLeft className="h-4 w-4 mr-1" />
+   409→              Retour
+   410→            </Button>
+   411→            <Separator orientation="vertical" className="h-5" />
+   412→            <div>
+   413→              <h1 className="text-xl font-bold text-[#003087]">Paramètres du compte</h1>
+   414→              <p className="text-xs text-muted-foreground">{profile?.email}</p>
+   415→            </div>
+   416→          </div>
+   417→        </div>
+   418→      </div>
+   419→
+   420→      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+   421→        <div className="flex flex-col lg:flex-row gap-6">
+   422→          {/* Sidebar Tabs — Desktop */}
+   423→          <nav className="hidden lg:block w-64 shrink-0">
+   424→            <div className="sticky top-24 space-y-1">
+   425→              {TABS.map((tab) => {
+   426→                const Icon = tab.icon;
+   427→                const isActive = activeTab === tab.id;
+   428→                return (
+   429→                  <button
+   430→                    key={tab.id}
+   431→                    onClick={() => setActiveTab(tab.id)}
+   432→                    className={`
+   433→                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+   434→                      ${isActive
+   435→                        ? 'bg-[#003087] text-white shadow-md'
+   436→                        : 'text-gray-600 hover:bg-gray-100 hover:text-[#003087]'
+   437→                      }
+   438→                      ${tab.id === 'delete' && !isActive ? 'text-red-500 hover:bg-red-50 hover:text-red-600' : ''}
+   439→                      ${tab.id === 'delete' && isActive ? 'bg-red-600 text-white shadow-md' : ''}
+   440→                    `}
+   441→                  >
+   442→                    <Icon className="h-4 w-4" />
+   443→                    {tab.label}
+   444→                  </button>
+   445→                );
+   446→              })}
+   447→            </div>
+   448→          </nav>
+   449→
+   450→          {/* Mobile Tabs */}
+   451→          <div className="lg:hidden overflow-x-auto pb-2 -mx-4 px-4">
+   452→            <div className="flex gap-2 min-w-max">
+   453→              {TABS.map((tab) => {
+   454→                const Icon = tab.icon;
+   455→                const isActive = activeTab === tab.id;
+   456→                return (
+   457→                  <button
+   458→                    key={tab.id}
+   459→                    onClick={() => setActiveTab(tab.id)}
+   460→                    className={`
+   461→                      flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap
+   462→                      ${isActive
+   463→                        ? 'bg-[#003087] text-white shadow-sm'
+   464→                        : 'bg-white text-gray-600 border hover:bg-gray-50'
+   465→                      }
+   466→                      ${tab.id === 'delete' && !isActive ? 'text-red-500 border-red-200' : ''}
+   467→                      ${tab.id === 'delete' && isActive ? 'bg-red-600 text-white' : ''}
+   468→                    `}
+   469→                  >
+   470→                    <Icon className="h-3.5 w-3.5" />
+   471→                    {tab.label}
+   472→                  </button>
+   473→                );
+   474→              })}
+   475→            </div>
+   476→          </div>
+   477→
+   478→          {/* Tab Content */}
+   479→          <div className="flex-1 min-w-0">
+   480→            <AnimatePresence mode="wait">
+   481→              {/* ============ TAB 1: PROFILE ============ */}
+   482→              {activeTab === 'profile' && (
+   483→                <motion.div
+   484→                  key="profile"
+   485→                  initial={{ opacity: 0, x: 20 }}
+   486→                  animate={{ opacity: 1, x: 0 }}
+   487→                  exit={{ opacity: 0, x: -20 }}
+   488→                  transition={{ duration: 0.2 }}
+   489→                  className="space-y-6"
+   490→                >
+   491→                  <div>
+   492→                    <h2 className="text-lg font-semibold text-[#003087]">Informations du profil</h2>
+   493→                    <p className="text-sm text-muted-foreground mt-1">Mettez à jour vos informations personnelles</p>
+   494→                  </div>
+   495→
+   496→                  <Card className="border-[#003087]/10">
+   497→                    <CardContent className="p-6 space-y-5">
+   498→                      {/* Name */}
+   499→                      <div className="space-y-2">
+   500→                        <Label htmlFor="name" className="flex items-center gap-2">
+   501→                          <User className="h-3.5 w-3.5" /> Nom complet
+   502→                        </Label>
+   503→                        <Input
+   504→                          id="name"
+   505→                          value={formName}
+   506→                          onChange={(e) => setFormName(e.target.value)}
+   507→                          placeholder="Votre nom"
+   508→                        />
+   509→                      </div>
+   510→
+   511→                      {/* Bio */}
+   512→                      <div className="space-y-2">
+   513→                        <Label htmlFor="bio" className="flex items-center gap-2">
+   514→                          <span className="text-sm">📝</span> Bio
+   515→                        </Label>
+   516→                        <Textarea
+   517→                          id="bio"
+   518→                          value={formBio}
+   519→                          onChange={(e) => setFormBio(e.target.value)}
+   520→                          placeholder="Parlez un peu de vous..."
+   521→                          maxLength={500}
+   522→                          rows={3}
+   523→                        />
+   524→                        <p className="text-xs text-muted-foreground text-right">{formBio.length}/500</p>
+   525→                      </div>
+   526→
+   527→                      <Separator />
+   528→
+   529→                      {/* Phone */}
+   530→                      <div className="space-y-2">
+   531→                        <Label htmlFor="phone" className="flex items-center gap-2">
+   532→                          <Phone className="h-3.5 w-3.5" /> Téléphone
+   533→                        </Label>
+   534→                        <Input
+   535→                          id="phone"
+   536→                          value={formPhone}
+   537→                          onChange={(e) => setFormPhone(e.target.value)}
+   538→                          placeholder="+229 90 00 00 00"
+   539→                        />
+   540→                      </div>
+   541→
+   542→                      {/* City */}
+   543→                      <div className="space-y-2">
+   544→                        <Label htmlFor="city" className="flex items-center gap-2">
+   545→                          <MapPin className="h-3.5 w-3.5" /> Ville
+   546→                        </Label>
+   547→                        <Input
+   548→                          id="city"
+   549→                          value={formCity}
+   550→                          onChange={(e) => setFormCity(e.target.value)}
+   551→                          placeholder="Cotonou"
+   552→                        />
+   553→                      </div>
+   554→
+   555→                      {/* Country */}
+   556→                      <div className="space-y-2">
+   557→                        <Label htmlFor="country" className="flex items-center gap-2">
+   558→                          <Globe className="h-3.5 w-3.5" /> Pays
+   559→                        </Label>
+   560→                        <Select value={formCountry} onValueChange={setFormCountry}>
+   561→                          <SelectTrigger id="country">
+   562→                            <SelectValue placeholder="Sélectionnez votre pays" />
+   563→                          </SelectTrigger>
+   564→                          <SelectContent>
+   565→                            <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+   566→                            <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
+   567→                            <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+   568→                            <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+   569→                            <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+   570→                            <SelectItem value="ML">🇲🇱 Mali</SelectItem>
+   571→                            <SelectItem value="NE">🇳🇪 Niger</SelectItem>
+   572→                            <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
+   573→                          </SelectContent>
+   574→                        </Select>
+   575→                      </div>
+   576→
+   577→                      <div className="flex justify-end pt-2">
+   578→                        <Button
+   579→                          onClick={handleSaveProfile}
+   580→                          disabled={saving}
+   581→                          className="bg-[#003087] hover:bg-[#002266] text-white min-w-[140px]"
+   582→                        >
+   583→                          {saving ? (
+   584→                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sauvegarde...</>
+   585→                          ) : (
+   586→                            <><Save className="h-4 w-4 mr-2" /> Enregistrer</>
+   587→                          )}
+   588→                        </Button>
+   589→                      </div>
+   590→                    </CardContent>
+   591→                  </Card>
+   592→                </motion.div>
+   593→              )}
+   594→
+   595→              {/* ============ TAB 2: SECURITY ============ */}
+   596→              {activeTab === 'security' && (
+   597→                <motion.div
+   598→                  key="security"
+   599→                  initial={{ opacity: 0, x: 20 }}
+   600→                  animate={{ opacity: 1, x: 0 }}
+   601→                  exit={{ opacity: 0, x: -20 }}
+   602→                  transition={{ duration: 0.2 }}
+   603→                >
+   604→                  <div className="mb-6">
+   605→                    <h2 className="text-lg font-semibold text-[#003087]">Sécurité</h2>
+   606→                    <p className="text-sm text-muted-foreground mt-1">Gérez votre mot de passe et l&apos;authentification à deux facteurs</p>
+   607→                  </div>
+   608→                  <SecuritySettings
+   609→                    twoFactorEnabled={profile?.twoFactorEnabled || false}
+   610→                    hasPassword={true}
+   611→                  />
+   612→                </motion.div>
+   613→              )}
+   614→
+   615→              {/* ============ TAB 3: VERIFICATION ============ */}
+   616→              {activeTab === 'verification' && (
+   617→                <motion.div
+   618→                  key="verification"
+   619→                  initial={{ opacity: 0, x: 20 }}
+   620→                  animate={{ opacity: 1, x: 0 }}
+   621→                  exit={{ opacity: 0, x: -20 }}
+   622→                  transition={{ duration: 0.2 }}
+   623→                  className="space-y-6"
+   624→                >
+   625→                  <div>
+   626→                    <h2 className="text-lg font-semibold text-[#003087]">Vérification</h2>
+   627→                    <p className="text-sm text-muted-foreground mt-1">Vérifiez votre email et votre numéro de téléphone</p>
+   628→                  </div>
+   629→
+   630→                  {/* Email Verification */}
+   631→                  <Card className="border-[#003087]/10">
+   632→                    <CardContent className="p-6">
+   633→                      <div className="flex items-start gap-4">
+   634→                        <div className="p-3 rounded-lg bg-[#003087]/10 shrink-0">
+   635→                          <Mail className="h-5 w-5 text-[#003087]" />
+   636→                        </div>
+   637→                        <div className="flex-1 min-w-0">
+   638→                          <div className="flex items-center gap-2 flex-wrap">
+   639→                            <h3 className="font-medium">Adresse email</h3>
+   640→                            {profile?.emailVerified ? (
+   641→                              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
+   642→                                <CheckCircle2 className="h-3 w-3 mr-1" /> Vérifié
+   643→                              </Badge>
+   644→                            ) : (
+   645→                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700 border-amber-200">
+   646→                                <XCircle className="h-3 w-3 mr-1" /> Non vérifié
+   647→                              </Badge>
+   648→                            )}
+   649→                          </div>
+   650→                          <p className="text-sm text-muted-foreground mt-1">{profile?.email}</p>
+   651→
+   652→                          {!profile?.emailVerified && (
+   653→                            <div className="mt-4 space-y-3">
+   654→                              {!emailOtpSent ? (
+   655→                                <Button
+   656→                                  onClick={handleSendEmailOtp}
+   657→                                  disabled={sendingEmailOtp}
+   658→                                  variant="outline"
+   659→                                  size="sm"
+   660→                                  className="border-[#003087] text-[#003087] hover:bg-[#003087]/5"
+   661→                                >
+   662→                                  {sendingEmailOtp ? (
+   663→                                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>
+   664→                                  ) : (
+   665→                                    <><Send className="h-3.5 w-3.5 mr-1.5" /> Envoyer un code de vérification</>
+   666→                                  )}
+   667→                                </Button>
+   668→                              ) : (
+   669→                                <div className="flex items-end gap-2">
+   670→                                  <div className="space-y-1 flex-1">
+   671→                                    <Label className="text-xs">Code de vérification</Label>
+   672→                                    <Input
+   673→                                      value={emailOtpCode}
+   674→                                      onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+   675→                                      placeholder="000000"
+   676→                                      className="font-mono text-center tracking-widest"
+   677→                                      maxLength={6}
+   678→                                    />
+   679→                                  </div>
+   680→                                  <Button
+   681→                                    onClick={handleVerifyEmail}
+   682→                                    disabled={verifyingEmail || emailOtpCode.length !== 6}
+   683→                                    size="sm"
+   684→                                    className="bg-[#00A651] hover:bg-[#008f47] text-white"
+   685→                                  >
+   686→                                    {verifyingEmail ? (
+   687→                                      <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /></>
+   688→                                    ) : (
+   689→                                      <><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Vérifier</>
+   690→                                    )}
+   691→                                  </Button>
+   692→                                </div>
+   693→                              )}
+   694→                            </div>
+   695→                          )}
+   696→                        </div>
+   697→                      </div>
+   698→                    </CardContent>
+   699→                  </Card>
+   700→
+   701→                  {/* Phone Verification */}
+   702→                  <Card className="border-[#003087]/10">
+   703→                    <CardContent className="p-6">
+   704→                      <div className="flex items-start gap-4">
+   705→                        <div className="p-3 rounded-lg bg-[#003087]/10 shrink-0">
+   706→                          <Phone className="h-5 w-5 text-[#003087]" />
+   707→                        </div>
+   708→                        <div className="flex-1 min-w-0">
+   709→                          <div className="flex items-center gap-2 flex-wrap">
+   710→                            <h3 className="font-medium">Numéro de téléphone</h3>
+   711→                            {profile?.phoneVerified ? (
+   712→                              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
+   713→                                <CheckCircle2 className="h-3 w-3 mr-1" /> Vérifié
+   714→                              </Badge>
+   715→                            ) : (
+   716→                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700 border-amber-200">
+   717→                                <XCircle className="h-3 w-3 mr-1" /> Non vérifié
+   718→                              </Badge>
+   719→                            )}
+   720→                          </div>
+   721→                          <p className="text-sm text-muted-foreground mt-1">
+   722→                            {profile?.phone || 'Aucun numéro de téléphone'}
+   723→                          </p>
+   724→
+   725→                          {!profile?.phoneVerified && (
+   726→                            <div className="mt-4 space-y-3">
+   727→                              {!profile?.phone && (
+   728→                                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+   729→                                  Ajoutez un numéro de téléphone dans l&apos;onglet Profil avant de le vérifier.
+   730→                                </p>
+   731→                              )}
+   732→                              {!phoneOtpSent ? (
+   733→                                <Button
+   734→                                  onClick={handleSendPhoneOtp}
+   735→                                  disabled={sendingPhoneOtp || !profile?.phone}
+   736→                                  variant="outline"
+   737→                                  size="sm"
+   738→                                  className="border-[#003087] text-[#003087] hover:bg-[#003087]/5"
+   739→                                >
+   740→                                  {sendingPhoneOtp ? (
+   741→                                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>
+   742→                                  ) : (
+   743→                                    <><Send className="h-3.5 w-3.5 mr-1.5" /> Envoyer un code SMS</>
+   744→                                  )}
+   745→                                </Button>
+   746→                              ) : (
+   747→                                <div className="flex items-end gap-2">
+   748→                                  <div className="space-y-1 flex-1">
+   749→                                    <Label className="text-xs">Code de vérification</Label>
+   750→                                    <Input
+   751→                                      value={phoneOtpCode}
+   752→                                      onChange={(e) => setPhoneOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+   753→                                      placeholder="000000"
+   754→                                      className="font-mono text-center tracking-widest"
+   755→                                      maxLength={6}
+   756→                                    />
+   757→                                  </div>
+   758→                                  <Button
+   759→                                    onClick={handleVerifyPhone}
+   760→                                    disabled={verifyingPhone || phoneOtpCode.length !== 6}
+   761→                                    size="sm"
+   762→                                    className="bg-[#00A651] hover:bg-[#008f47] text-white"
+   763→                                  >
+   764→                                    {verifyingPhone ? (
+   765→                                      <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /></>
+   766→                                    ) : (
+   767→                                      <><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Vérifier</>
+   768→                                    )}
+   769→                                  </Button>
+   770→                                </div>
+   771→                              )}
+   772→                            </div>
+   773→                          )}
+   774→                        </div>
+   775→                      </div>
+   776→                    </CardContent>
+   777→                  </Card>
+   778→
+   779→                  {/* KYC Level */}
+   780→                  <Card className="border-[#003087]/10">
+   781→                    <CardContent className="p-6">
+   782→                      <div className="flex items-start gap-4">
+   783→                        <div className="p-3 rounded-lg bg-[#D4AF37]/10 shrink-0">
+   784→                          <BadgeCheck className="h-5 w-5 text-[#D4AF37]" />
+   785→                        </div>
+   786→                        <div>
+   787→                          <h3 className="font-medium">Niveau KYC</h3>
+   788→                          <p className="text-sm text-muted-foreground mt-1">
+   789→                            Niveau actuel : <span className="font-medium text-[#003087]">{profile?.kycLevel || 0}</span> / 3
+   790→                          </p>
+   791→                          <div className="flex gap-1 mt-2">
+   792→                            {[0, 1, 2, 3].map((level) => (
+   793→                              <div
+   794→                                key={level}
+   795→                                className={`h-2 w-12 rounded-full ${
+   796→                                  (profile?.kycLevel || 0) >= level ? 'bg-[#00A651]' : 'bg-gray-200'
+   797→                                }`}
+   798→                              />
+   799→                            ))}
+   800→                          </div>
+   801→                          <p className="text-xs text-muted-foreground mt-2">
+   802→                            Augmentez votre niveau KYC pour débloquer plus de fonctionnalités
+   803→                          </p>
+   804→                        </div>
+   805→                      </div>
+   806→                    </CardContent>
+   807→                  </Card>
+   808→                </motion.div>
+   809→              )}
+   810→
+   811→              {/* ============ TAB 4: CONNECTED ACCOUNTS ============ */}
+   812→              {activeTab === 'connected' && (
+   813→                <motion.div
+   814→                  key="connected"
+   815→                  initial={{ opacity: 0, x: 20 }}
+   816→                  animate={{ opacity: 1, x: 0 }}
+   817→                  exit={{ opacity: 0, x: -20 }}
+   818→                  transition={{ duration: 0.2 }}
+   819→                >
+   820→                  <div className="mb-6">
+   821→                    <h2 className="text-lg font-semibold text-[#003087]">Comptes connectés</h2>
+   822→                    <p className="text-sm text-muted-foreground mt-1">Gérez vos comptes Google et Facebook liés</p>
+   823→                  </div>
+   824→                  <ConnectedAccounts userEmail={profile?.email || ''} />
+   825→                </motion.div>
+   826→              )}
+   827→
+   828→              {/* ============ TAB 5: PREFERENCES ============ */}
+   829→              {activeTab === 'preferences' && (
+   830→                <motion.div
+   831→                  key="preferences"
+   832→                  initial={{ opacity: 0, x: 20 }}
+   833→                  animate={{ opacity: 1, x: 0 }}
+   834→                  exit={{ opacity: 0, x: -20 }}
+   835→                  transition={{ duration: 0.2 }}
+   836→                  className="space-y-6"
+   837→                >
+   838→                  <div>
+   839→                    <h2 className="text-lg font-semibold text-[#003087]">Préférences</h2>
+   840→                    <p className="text-sm text-muted-foreground mt-1">Personnalisez votre expérience</p>
+   841→                  </div>
+   842→
+   843→                  <Card className="border-[#003087]/10">
+   844→                    <CardContent className="p-6 space-y-6">
+   845→                      {/* Language */}
+   846→                      <div className="space-y-2">
+   847→                        <Label className="flex items-center gap-2">
+   848→                          <Globe className="h-3.5 w-3.5" /> Langue
+   849→                        </Label>
+   850→                        <Select value={formLanguage} onValueChange={setFormLanguage}>
+   851→                          <SelectTrigger>
+   852→                            <SelectValue placeholder="Sélectionnez une langue" />
+   853→                          </SelectTrigger>
+   854→                          <SelectContent>
+   855→                            <SelectItem value="fr">🇫🇷 Français</SelectItem>
+   856→                            <SelectItem value="en">🇬🇧 English</SelectItem>
+   857→                          </SelectContent>
+   858→                        </Select>
+   859→                        <p className="text-xs text-muted-foreground">
+   860→                          Langue de l&apos;interface utilisateur
+   861→                        </p>
+   862→                      </div>
+   863→
+   864→                      <Separator />
+   865→
+   866→                      {/* Currency */}
+   867→                      <div className="space-y-2">
+   868→                        <Label className="flex items-center gap-2">
+   869→                          <Coins className="h-3.5 w-3.5" /> Devise
+   870→                        </Label>
+   871→                        <Select value={formCurrency} onValueChange={setFormCurrency}>
+   872→                          <SelectTrigger>
+   873→                            <SelectValue placeholder="Sélectionnez une devise" />
+   874→                          </SelectTrigger>
+   875→                          <SelectContent>
+   876→                            <SelectItem value="XOF">💶 FCFA (XOF)</SelectItem>
+   877→                            <SelectItem value="EUR">💶 Euro (EUR)</SelectItem>
+   878→                            <SelectItem value="USD">💵 Dollar US (USD)</SelectItem>
+   879→                          </SelectContent>
+   880→                        </Select>
+   881→                        <p className="text-xs text-muted-foreground">
+   882→                          Devise affichée pour les prix et transactions
+   883→                        </p>
+   884→                      </div>
+   885→
+   886→                      <div className="flex justify-end pt-2">
+   887→                        <Button
+   888→                          onClick={handleSavePreferences}
+   889→                          disabled={saving}
+   890→                          className="bg-[#003087] hover:bg-[#002266] text-white min-w-[140px]"
+   891→                        >
+   892→                          {saving ? (
+   893→                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sauvegarde...</>
+   894→                          ) : (
+   895→                            <><Save className="h-4 w-4 mr-2" /> Enregistrer</>
+   896→                          )}
+   897→                        </Button>
+   898→                      </div>
+   899→                    </CardContent>
+   900→                  </Card>
+   901→                </motion.div>
+   902→              )}
+   903→
+   904→              {/* ============ TAB 6: DELETE ACCOUNT ============ */}
+   905→              {activeTab === 'delete' && (
+   906→                <motion.div
+   907→                  key="delete"
+   908→                  initial={{ opacity: 0, x: 20 }}
+   909→                  animate={{ opacity: 1, x: 0 }}
+   910→                  exit={{ opacity: 0, x: -20 }}
+   911→                  transition={{ duration: 0.2 }}
+   912→                  className="space-y-6"
+   913→                >
+   914→                  <div>
+   915→                    <h2 className="text-lg font-semibold text-red-600">Supprimer le compte</h2>
+   916→                    <p className="text-sm text-muted-foreground mt-1">Cette action est irréversible</p>
+   917→                  </div>
+   918→
+   919→                  <Card className="border-red-200 bg-red-50/30">
+   920→                    <CardContent className="p-6 space-y-5">
+   921→                      <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
+   922→                        <AlertTriangle className="h-6 w-6 text-red-500 shrink-0 mt-0.5" />
+   923→                        <div>
+   924→                          <h3 className="font-semibold text-red-700">Attention</h3>
+   925→                          <p className="text-sm text-red-600 mt-1">
+   926→                            La suppression de votre compte est permanente et irréversible. Toutes vos données,
+   927→                            propriétés, transactions et historique seront définitivement supprimés.
+   928→                          </p>
+   929→                        </div>
+   930→                      </div>
+   931→
+   932→                      <div className="space-y-2">
+   933→                        <Label htmlFor="deletePassword" className="text-red-700">
+   934→                          Confirmez avec votre mot de passe
+   935→                        </Label>
+   936→                        <Input
+   937→                          id="deletePassword"
+   938→                          type="password"
+   939→                          value={deletePassword}
+   940→                          onChange={(e) => setDeletePassword(e.target.value)}
+   941→                          placeholder="Entrez votre mot de passe"
+   942→                          className="border-red-200 focus:border-red-500"
+   943→                        />
+   944→                      </div>
+   945→
+   946→                      <div className="space-y-2">
+   947→                        <Label htmlFor="deleteConfirm" className="text-red-700">
+   948→                          Tapez <span className="font-mono font-bold bg-red-100 px-1.5 py-0.5 rounded">SUPPRIMER</span> pour confirmer
+   949→                        </Label>
+   950→                        <Input
+   951→                          id="deleteConfirm"
+   952→                          value={deleteConfirm}
+   953→                          onChange={(e) => setDeleteConfirm(e.target.value)}
+   954→                          placeholder="SUPPRIMER"
+   955→                          className="border-red-200 focus:border-red-500 font-mono"
+   956→                        />
+   957→                      </div>
+   958→
+   959→                      <AlertDialog>
+   960→                        <AlertDialogTrigger asChild>
+   961→                          <Button
+   962→                            variant="destructive"
+   963→                            className="w-full"
+   964→                            disabled={!deletePassword || deleteConfirm !== 'SUPPRIMER'}
+   965→                          >
+   966→                            <Trash2 className="h-4 w-4 mr-2" />
+   967→                            Supprimer définitivement mon compte
+   968→                          </Button>
+   969→                        </AlertDialogTrigger>
+   970→                        <AlertDialogContent>
+   971→                          <AlertDialogHeader>
+   972→                            <AlertDialogTitle className="text-red-600">Dernière confirmation</AlertDialogTitle>
+   973→                            <AlertDialogDescription>
+   974→                              Êtes-vous absolument sûr de vouloir supprimer votre compte ? Cette action est
+   975→                              irréversible. Toutes vos données seront perdues.
+   976→                            </AlertDialogDescription>
+   977→                          </AlertDialogHeader>
+   978→                          <AlertDialogFooter>
+   979→                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+   980→                            <AlertDialogAction
+   981→                              onClick={handleDeleteAccount}
+   982→                              className="bg-red-600 hover:bg-red-700"
+   983→                              disabled={deleting}
+   984→                            >
+   985→                              {deleting ? (
+   986→                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Suppression...</>
+   987→                              ) : (
+   988→                                'Oui, supprimer mon compte'
+   989→                              )}
+   990→                            </AlertDialogAction>
+   991→                          </AlertDialogFooter>
+   992→                        </AlertDialogContent>
+   993→                      </AlertDialog>
+   994→                    </CardContent>
+   995→                  </Card>
+   996→                </motion.div>
+   997→              )}
+   998→            </AnimatePresence>
+   999→          </div>
+  1000→        </div>
+  1001→      </div>
+  1002→    </div>
+  1003→  );
+  1004→}
+  1005→

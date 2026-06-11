@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { SessionProvider } from 'next-auth/react';
-import { ArrowLeft, ArrowLeftRight, BarChart3, Bell, Building2, ChevronDown, ChevronRight, Globe, Home, Hotel, LayoutDashboard, LogOut, Menu, Plus, RefreshCw, Search, Settings, ShieldCheck, User, Users } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, BarChart3, Bell, Building2, ChevronDown, ChevronRight, Globe, Home, Hotel, Landmark, LayoutDashboard, LogOut, Menu, Plus, RefreshCw, Search, Settings, ShieldCheck, Star, UserPlus, User, Users, Wrench, FileText, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,19 +46,33 @@ function getNavGroups(country: string): NavGroup[] {
         { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
         { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
         { label: 'Transactions', href: `${base}/transactions`, icon: ArrowLeftRight },
+        { label: 'Artisans BTP', href: `${base}/artisans`, icon: Wrench },
+        { label: 'Notaires', href: `${base}/notaries`, icon: Landmark },
+        { label: 'GeoTrust', href: `${base}/geotrust`, icon: ShieldCheck },
       ],
     },
     {
-      label: 'HÔTELLERIE',
+      label: 'HÔTELLERIE & SÉJOURS',
       items: [
         { label: 'Hôtels & Séjours', href: `${base}/hospitality`, icon: Hotel },
         { label: 'Guesthouses', href: `${base}/hospitality?tab=guesthouses`, icon: Home },
+        { label: 'Locations courte durée', href: `${base}/short-term-rentals`, icon: CalendarDays },
+        { label: 'Réservations', href: `${base}/bookings`, icon: CalendarDays },
+      ],
+    },
+    {
+      label: 'COMMUNAUTÉ',
+      items: [
+        { label: 'Avis', href: `${base}/reviews`, icon: Star },
+        { label: 'Ambassadeurs', href: `${base}/ambassadors`, icon: UserPlus },
+        { label: 'Notifications', href: `${base}/notifications`, icon: Bell },
       ],
     },
     {
       label: 'ADMINISTRATION',
       items: [
         { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
+        { label: 'Contenu', href: `${base}/content`, icon: FileText },
         { label: 'Paramètres', href: `${base}/dashboard?tab=settings`, icon: Settings },
       ],
     },
@@ -74,6 +88,15 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   accreditations: 'Accréditations',
   analytics: 'Analytics',
   settings: 'Paramètres',
+  artisans: 'Artisans BTP',
+  notaries: 'Notaires',
+  geotrust: 'GeoTrust',
+  'short-term-rentals': 'Locations courte durée',
+  bookings: 'Réservations',
+  reviews: 'Avis',
+  ambassadors: 'Ambassadeurs',
+  notifications: 'Notifications',
+  content: 'Contenu',
 };
 
 function CountryHeader({

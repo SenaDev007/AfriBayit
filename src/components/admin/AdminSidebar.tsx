@@ -22,6 +22,16 @@ import {
   DollarSign,
   Cable,
   ScrollText,
+  FileText,
+  Wrench,
+  Landmark,
+  Shield,
+  CalendarDays,
+  Star,
+  Megaphone,
+  Heart,
+  Bell,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -54,11 +64,56 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'IMMOBILIER',
+    items: [
+      { label: 'Propriétés', href: '/admin/properties', icon: Building2 },
+      { label: 'Utilisateurs', href: '/admin/users', icon: Users },
+      { label: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
+      { label: 'KYC', href: '/admin/kyc', icon: Shield },
+      { label: 'Escrow', href: '/admin/escrow', icon: DollarSign },
+      { label: 'Portefeuilles', href: '/admin/wallets', icon: DollarSign },
+    ],
+  },
+  {
+    label: 'SERVICES',
+    items: [
+      { label: 'Artisans BTP', href: '/admin/artisans', icon: Wrench },
+      { label: 'Notaires', href: '/admin/notaries', icon: Landmark },
+      { label: 'GeoTrust', href: '/admin/geotrust', icon: ShieldCheck },
+      { label: 'Abonnements', href: '/admin/subscriptions', icon: KeyRound },
+    ],
+  },
+  {
+    label: 'HÔTELLERIE & SÉJOURS',
+    items: [
+      { label: 'Hôtels', href: '/admin/hotels', icon: Hotel },
+      { label: 'Guesthouses', href: '/admin/guesthouses', icon: Home },
+      { label: 'Locations courte durée', href: '/admin/short-term-rentals', icon: CalendarDays },
+      { label: 'Réservations', href: '/admin/bookings', icon: CalendarDays },
+      { label: 'OTA Config', href: '/admin/ota', icon: Cable },
+    ],
+  },
+  {
+    label: 'COMMUNAUTÉ',
+    items: [
+      { label: 'Académie', href: '/admin/courses', icon: BarChart3 },
+      { label: 'Communauté', href: '/admin/community', icon: Users },
+      { label: 'Avis', href: '/admin/reviews', icon: Star },
+      { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: UserPlus },
+    ],
+  },
+  {
+    label: 'COMMUNICATION',
+    items: [
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
+      { label: 'Gestion du Contenu', href: '/admin/content', icon: FileText },
+    ],
+  },
+  {
     label: 'SYSTÈME',
     items: [
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
-      { label: 'OTA Config', href: '/admin/ota', icon: Cable },
       { label: "Journaux d'audit", href: '/admin/audit-logs', icon: ScrollText },
     ],
   },
@@ -79,18 +134,32 @@ function getCountryNavGroups(country: string): NavGroup[] {
         { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
         { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
         { label: 'Transactions', href: `${base}/transactions`, icon: ArrowLeftRight },
+        { label: 'Artisans BTP', href: `${base}/artisans`, icon: Wrench },
+        { label: 'Notaires', href: `${base}/notaries`, icon: Landmark },
+        { label: 'GeoTrust', href: `${base}/geotrust`, icon: ShieldCheck },
       ],
     },
     {
-      label: `${country} — HÔTELLERIE`,
+      label: `${country} — HÔTELLERIE & SÉJOURS`,
       items: [
         { label: 'Hôtels & Guesthouses', href: `${base}/hospitality`, icon: Hotel },
+        { label: 'Locations courte durée', href: `${base}/short-term-rentals`, icon: CalendarDays },
+        { label: 'Réservations', href: `${base}/bookings`, icon: CalendarDays },
+      ],
+    },
+    {
+      label: `${country} — COMMUNAUTÉ`,
+      items: [
+        { label: 'Avis', href: `${base}/reviews`, icon: Star },
+        { label: 'Ambassadeurs', href: `${base}/ambassadors`, icon: UserPlus },
+        { label: 'Notifications', href: `${base}/notifications`, icon: Bell },
       ],
     },
     {
       label: `${country} — ADMINISTRATION`,
       items: [
         { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
+        { label: 'Contenu', href: `${base}/content`, icon: FileText },
       ],
     },
   ];

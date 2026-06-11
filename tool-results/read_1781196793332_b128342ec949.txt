@@ -1,0 +1,749 @@
+     1→     1→'use client';
+     2→     2→import React from 'react';
+     3→     3→import { Button } from '@/components/ui/button';
+     4→     4→import { cn } from '@/lib/utils';
+     5→     5→import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
+     6→     6→import { createPortal } from 'react-dom';
+     7→     7→import {
+     8→     8→  NavigationMenu,
+     9→     9→  NavigationMenuContent,
+    10→    10→  NavigationMenuItem,
+    11→    11→  NavigationMenuList,
+    12→    12→  NavigationMenuTrigger,
+    13→    13→  NavigationMenuLink,
+    14→    14→} from '@/components/ui/navigation-menu';
+    15→    15→import { LucideIcon } from 'lucide-react';
+    16→    16→import { useSession, signOut } from 'next-auth/react';
+    17→    17→import { usePathname } from 'next/navigation';
+    18→    18→import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+    19→    19→import {
+    20→    20→  Home,
+    21→    21→  Key,
+    22→    22→  TrendingUp,
+    23→    23→  CalendarDays,
+    24→    24→  Hotel,
+    25→    25→  BedDouble,
+    26→    26→  Wrench,
+    27→    27→  Landmark,
+    28→    28→  ShieldCheck,
+    29→    29→  GraduationCap,
+    30→    30→  Shield,
+    31→    31→  Wallet,
+    32→    32→  CreditCard,
+    33→    33→  MessageCircle,
+    34→    34→  Briefcase,
+    35→    35→  BarChart3,
+    36→    36→  Users,
+    37→    37→  Star,
+    38→    38→  FileText,
+    39→    39→  RotateCcw,
+    40→    40→  Handshake,
+    41→    41→  HelpCircle,
+    42→    42→  Leaf,
+    43→    43→  GlobeIcon,
+    44→    44→  LayersIcon,
+    45→    45→  UserPlusIcon,
+    46→    46→  PlugIcon,
+    47→    47→  CodeIcon,
+    48→    48→  Bell,
+    49→    49→  Plus,
+    50→    50→  LayoutDashboard,
+    51→    51→  LogOut,
+    52→    52→  Languages,
+    53→    53→  User,
+    54→    54→  Settings,
+    55→    55→  ChevronDown,
+    56→    56→} from 'lucide-react';
+    57→    57→
+    58→    58→type LinkItem = {
+    59→    59→  title: string;
+    60→    60→  href: string;
+    61→    61→  icon: LucideIcon;
+    62→    62→  description?: string;
+    63→    63→  gold?: boolean;
+    64→    64→};
+    65→    65→
+    66→    66→function useScroll(threshold: number) {
+    67→    67→  const [scrolled, setScrolled] = React.useState(false);
+    68→    68→
+    69→    69→  const onScroll = React.useCallback(() => {
+    70→    70→    setScrolled(window.scrollY > threshold);
+    71→    71→  }, [threshold]);
+    72→    72→
+    73→    73→  React.useEffect(() => {
+    74→    74→    window.addEventListener('scroll', onScroll);
+    75→    75→    return () => window.removeEventListener('scroll', onScroll);
+    76→    76→  }, [onScroll]);
+    77→    77→
+    78→    78→  React.useEffect(() => {
+    79→    79→    onScroll();
+    80→    80→  }, [onScroll]);
+    81→    81→
+    82→    82→  return scrolled;
+    83→    83→}
+    84→    84→
+    85→    85→// ─── AfriBayit Navigation Links ────────────────────────────────
+    86→    86→
+    87→    87→const immobilierLinks: LinkItem[] = [
+    88→    88→  {
+    89→    89→    title: 'Acheter',
+    90→    90→    href: '/search?tab=achat',
+    91→    91→    description: 'Villas, appartements, terrains à vendre',
+    92→    92→    icon: Home,
+    93→    93→  },
+    94→    94→  {
+    95→    95→    title: 'Louer',
+    96→    96→    href: '/search?tab=location',
+    97→    97→    description: 'Location longue durée dans 5 pays',
+    98→    98→    icon: Key,
+    99→    99→  },
+   100→   100→  {
+   101→   101→    title: 'Investir',
+   102→   102→    href: '/search?tab=investissement',
+   103→   103→    description: 'Opportunités de rendement immobilier',
+   104→   104→    icon: TrendingUp,
+   105→   105→  },
+   106→   106→  {
+   107→   107→    title: 'Location courte durée',
+   108→   108→    href: '/short-term',
+   109→   109→    description: 'Séjours et locations temporaires',
+   110→   110→    icon: CalendarDays,
+   111→   111→  },
+   112→   112→];
+   113→   113→
+   114→   114→const hospitalityLinks: LinkItem[] = [
+   115→   115→  {
+   116→   116→    title: 'Hôtels',
+   117→   117→    href: '/hospitality',
+   118→   118→    description: 'Réservez des hôtels vérifiés',
+   119→   119→    icon: Hotel,
+   120→   120→  },
+   121→   121→  {
+   122→   122→    title: 'Guesthouses',
+   123→   123→    href: '/guesthouse',
+   124→   124→    description: 'Séjournez chez l\'habitant',
+   125→   125→    icon: BedDouble,
+   126→   126→  },
+   127→   127→  {
+   128→   128→    title: 'Réservation',
+   129→   129→    href: '/booking',
+   130→   130→    description: 'Réservez votre séjour en ligne',
+   131→   131→    icon: CalendarDays,
+   132→   132→    gold: true,
+   133→   133→  },
+   134→   134→];
+   135→   135→
+   136→   136→const servicesLinks: LinkItem[] = [
+   137→   137→  {
+   138→   138→    title: 'Artisans BTP',
+   139→   139→    href: '/artisans',
+   140→   140→    description: 'Trouvez des artisans qualifiés',
+   141→   141→    icon: Wrench,
+   142→   142→  },
+   143→   143→  {
+   144→   144→    title: 'Notaires',
+   145→   145→    href: '/notary',
+   146→   146→    description: 'Services notariaux certifiés',
+   147→   147→    icon: Landmark,
+   148→   148→  },
+   149→   149→  {
+   150→   150→    title: 'GeoTrust',
+   151→   151→    href: '/geotrust',
+   152→   152→    description: 'Vérification géolocalisée des biens',
+   153→   153→    icon: ShieldCheck,
+   154→   154→  },
+   155→   155→  {
+   156→   156→    title: 'Escrow Sécurisé',
+   157→   157→    href: '/escrow',
+   158→   158→    description: 'Transactions protégées par escrow',
+   159→   159→    icon: Shield,
+   160→   160→  },
+   161→   161→  {
+   162→   162→    title: 'Académie',
+   163→   163→    href: '/academy',
+   164→   164→    description: 'Formations immobilières en ligne',
+   165→   165→    icon: GraduationCap,
+   166→   166→  },
+   167→   167→  {
+   168→   168→    title: 'Portefeuille',
+   169→   169→    href: '/wallet',
+   170→   170→    description: 'Gérez vos fonds et paiements',
+   171→   171→    icon: Wallet,
+   172→   172→  },
+   173→   173→];
+   174→   174→
+   175→   175→const servicesLinks2: LinkItem[] = [
+   176→   176→  {
+   177→   177→    title: 'Abonnements',
+   178→   178→    href: '/subscriptions',
+   179→   179→    icon: CreditCard,
+   180→   180→  },
+   181→   181→  {
+   182→   182→    title: 'Communauté',
+   183→   183→    href: '/community',
+   184→   184→    icon: MessageCircle,
+   185→   185→  },
+   186→   186→  {
+   187→   187→    title: 'Profils Pro',
+   188→   188→    href: '/profile',
+   189→   189→    icon: Briefcase,
+   190→   190→  },
+   191→   191→  {
+   192→   192→    title: 'Analytics',
+   193→   193→    href: '/analytics',
+   194→   194→    icon: BarChart3,
+   195→   195→  },
+   196→   196→];
+   197→   197→
+   198→   198→const companyLinks: LinkItem[] = [
+   199→   199→  {
+   200→   200→    title: 'À propos',
+   201→   201→    href: '#',
+   202→   202→    description: 'Découvrez l\'équipe AfriBayit',
+   203→   203→    icon: Users,
+   204→   204→  },
+   205→   205→  {
+   206→   206→    title: 'Nos réalisations',
+   207→   207→    href: '/our-work',
+   208→   208→    description: 'Projets immobiliers et hôteliers',
+   209→   209→    icon: GlobeIcon,
+   210→   210→    gold: true,
+   211→   211→  },
+   212→   212→  {
+   213→   213→    title: 'Témoignages',
+   214→   214→    href: '#',
+   215→   215→    description: 'Ce que nos clients disent de nous',
+   216→   216→    icon: Star,
+   217→   217→  },
+   218→   218→  {
+   219→   219→    title: 'Partenariats',
+   220→   220→    href: '#',
+   221→   221→    icon: Handshake,
+   222→   222→    description: 'Collaborez avec AfriBayit',
+   223→   223→  },
+   224→   224→];
+   225→   225→
+   226→   226→const companyLinks2: LinkItem[] = [
+   227→   227→  {
+   228→   228→    title: 'CGU',
+   229→   229→    href: '/terms',
+   230→   230→    icon: FileText,
+   231→   231→  },
+   232→   232→  {
+   233→   233→    title: 'Confidentialité',
+   234→   234→    href: '/privacy',
+   235→   235→    icon: Shield,
+   236→   236→  },
+   237→   237→  {
+   238→   238→    title: 'Remboursement',
+   239→   239→    href: '#',
+   240→   240→    icon: RotateCcw,
+   241→   241→  },
+   242→   242→  {
+   243→   243→    title: 'Blog',
+   244→   244→    href: '#',
+   245→   245→    icon: Leaf,
+   246→   246→  },
+   247→   247→  {
+   248→   248→    title: 'Aide',
+   249→   249→    href: '#',
+   250→   250→    icon: HelpCircle,
+   251→   251→  },
+   252→   252→];
+   253→   253→
+   254→   254→// ─── AfriBayit Wordmark (logo SVG) ─────────────────────────────
+   255→   255→
+   256→   256→const AfriBayitWordmark = (props: React.ComponentProps<'svg'>) => (
+   257→   257→  <svg viewBox="0 0 140 24" fill="currentColor" {...props}>
+   258→   258→    <text x="0" y="18" fontFamily="Georgia, serif" fontSize="18" fontWeight="bold" fill="currentColor">
+   259→   259→      Afri
+   260→   260→    </text>
+   261→   261→    <text x="42" y="18" fontFamily="Georgia, serif" fontSize="18" fontWeight="bold" fill="#D4AF37">
+   262→   262→      Bayit
+   263→   263→    </text>
+   264→   264→  </svg>
+   265→   265→);
+   266→   266→
+   267→   267→// ─── Main Header Component ─────────────────────────────────────
+   268→   268→
+   269→   269→interface HeaderProps {
+   270→   270→  onOpenNotifications?: () => void;
+   271→   271→  notificationCount?: number;
+   272→   272→}
+   273→   273→
+   274→   274→export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderProps) {
+   275→   275→  const [open, setOpen] = React.useState(false);
+   276→   276→  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
+   277→   277→  const scrolled = useScroll(10);
+   278→   278→  const { data: session, status } = useSession();
+   279→   279→  const isLoggedIn = !!session?.user;
+   280→   280→  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+   281→   281→
+   282→   282→  // Close profile menu on outside click
+   283→   283→  React.useEffect(() => {
+   284→   284→    const handleClick = (e: MouseEvent) => {
+   285→   285→      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+   286→   286→        setProfileMenuOpen(false);
+   287→   287→      }
+   288→   288→    };
+   289→   289→    document.addEventListener('mousedown', handleClick);
+   290→   290→    return () => document.removeEventListener('mousedown', handleClick);
+   291→   291→  }, []);
+   292→   292→
+   293→   293→  React.useEffect(() => {
+   294→   294→    if (open) {
+   295→   295→      document.body.style.overflow = 'hidden';
+   296→   296→    } else {
+   297→   297→      document.body.style.overflow = '';
+   298→   298→    }
+   299→   299→    return () => {
+   300→   300→      document.body.style.overflow = '';
+   301→   301→    };
+   302→   302→  }, [open]);
+   303→   303→
+   304→   304→  // Determine text colors based on scroll state and path
+   305→   305→  const pathname = usePathname();
+   306→   306→  const isHome = pathname === '/';
+   307→   307→  // Non-home pages always have a white bg, so text should always be dark
+   308→   308→  const textColor = isHome && !scrolled ? 'text-white' : 'text-[#2C2E2F]';
+   309→   309→  const mutedColor = isHome && !scrolled ? 'text-white/70' : 'text-gray-500';
+   310→   310→
+   311→   311→  return (
+   312→   312→    <header
+   313→   313→      className={cn('sticky top-0 z-50 w-full transition-all duration-300', {
+   314→   314→        'bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-200/60':
+   315→   315→          scrolled || !isHome,
+   316→   316→        'bg-transparent border-b border-transparent': !scrolled && isHome,
+   317→   317→      })}
+   318→   318→    >
+   319→   319→      <nav className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
+   320→   320→        <div className="flex items-center gap-5">
+   321→   321→          {/* Logo */}
+   322→   322→          <a href="/" className="rounded-md p-2 transition-colors">
+   323→   323→            <img
+   324→   324→              src="/logo.png"
+   325→   325→              alt="AfriBayit"
+   326→   326→              className={cn(
+   327→   327→                'h-10 w-auto object-contain transition-all duration-300',
+   328→   328→                !scrolled && isHome ? 'brightness-0 invert drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]' : '',
+   329→   329→              )}
+   330→   330→            />
+   331→   331→          </a>
+   332→   332→
+   333→   333→          {/* Desktop Navigation Menu */}
+   334→   334→          <NavigationMenu className="hidden lg:flex">
+   335→   335→            <NavigationMenuList>
+   336→   336→              {/* Immobilier */}
+   337→   337→              <NavigationMenuItem>
+   338→   338→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   339→   339→                  Immobilier
+   340→   340→                </NavigationMenuTrigger>
+   341→   341→                <NavigationMenuContent className="bg-background p-1 pr-1.5">
+   342→   342→                  <ul className="bg-popover grid w-lg grid-cols-2 gap-2 rounded-md border p-2 shadow">
+   343→   343→                    {immobilierLinks.map((item, i) => (
+   344→   344→                      <li key={i}>
+   345→   345→                        <ListItem {...item} />
+   346→   346→                      </li>
+   347→   347→                    ))}
+   348→   348→                  </ul>
+   349→   349→                  <div className="p-2">
+   350→   350→                    <p className="text-muted-foreground text-sm">
+   351→   351→                      Envie d&apos;investir ?{' '}
+   352→   352→                      <a href="/search?tab=investissement" className="text-[#D4AF37] font-medium hover:underline">
+   353→   353→                        Voir les opportunités
+   354→   354→                      </a>
+   355→   355→                    </p>
+   356→   356→                  </div>
+   357→   357→                </NavigationMenuContent>
+   358→   358→              </NavigationMenuItem>
+   359→   359→
+   360→   360→              {/* Hôtellerie */}
+   361→   361→              <NavigationMenuItem>
+   362→   362→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   363→   363→                  Hôtellerie
+   364→   364→                </NavigationMenuTrigger>
+   365→   365→                <NavigationMenuContent className="bg-background p-1 pr-1.5">
+   366→   366→                  <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   367→   367→                    {hospitalityLinks.map((item, i) => (
+   368→   368→                      <li key={i}>
+   369→   369→                        <ListItem {...item} />
+   370→   370→                      </li>
+   371→   371→                    ))}
+   372→   372→                  </ul>
+   373→   373→                </NavigationMenuContent>
+   374→   374→              </NavigationMenuItem>
+   375→   375→
+   376→   376→              {/* Services */}
+   377→   377→              <NavigationMenuItem>
+   378→   378→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   379→   379→                  Services
+   380→   380→                </NavigationMenuTrigger>
+   381→   381→                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+   382→   382→                  <div className="grid w-lg grid-cols-2 gap-2">
+   383→   383→                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   384→   384→                      {servicesLinks.map((item, i) => (
+   385→   385→                        <li key={i}>
+   386→   386→                          <ListItem {...item} />
+   387→   387→                        </li>
+   388→   388→                      ))}
+   389→   389→                    </ul>
+   390→   390→                    <ul className="space-y-2 p-3">
+   391→   391→                      {servicesLinks2.map((item, i) => (
+   392→   392→                        <li key={i}>
+   393→   393→                          <NavigationMenuLink
+   394→   394→                            href={item.href}
+   395→   395→                            className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
+   396→   396→                          >
+   397→   397→                            <item.icon className="text-[#003087] size-4" />
+   398→   398→                            <span className="font-medium text-sm">{item.title}</span>
+   399→   399→                          </NavigationMenuLink>
+   400→   400→                        </li>
+   401→   401→                      ))}
+   402→   402→                    </ul>
+   403→   403→                  </div>
+   404→   404→                </NavigationMenuContent>
+   405→   405→              </NavigationMenuItem>
+   406→   406→
+   407→   407→              {/* Entreprise */}
+   408→   408→              <NavigationMenuItem>
+   409→   409→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   410→   410→                  Entreprise
+   411→   411→                </NavigationMenuTrigger>
+   412→   412→                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+   413→   413→                  <div className="grid w-lg grid-cols-2 gap-2">
+   414→   414→                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   415→   415→                      {companyLinks.map((item, i) => (
+   416→   416→                        <li key={i}>
+   417→   417→                          <ListItem {...item} />
+   418→   418→                        </li>
+   419→   419→                      ))}
+   420→   420→                    </ul>
+   421→   421→                    <ul className="space-y-2 p-3">
+   422→   422→                      {companyLinks2.map((item, i) => (
+   423→   423→                        <li key={i}>
+   424→   424→                          <NavigationMenuLink
+   425→   425→                            href={item.href}
+   426→   426→                            className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
+   427→   427→                          >
+   428→   428→                            <item.icon className="text-foreground size-4" />
+   429→   429→                            <span className="font-medium text-sm">{item.title}</span>
+   430→   430→                          </NavigationMenuLink>
+   431→   431→                        </li>
+   432→   432→                      ))}
+   433→   433→                    </ul>
+   434→   434→                  </div>
+   435→   435→                </NavigationMenuContent>
+   436→   436→              </NavigationMenuItem>
+   437→   437→
+   438→   438→              {/* Pricing / Tarifs */}
+   439→   439→              <NavigationMenuLink className={cn('px-4', textColor)} asChild>
+   440→   440→                <a href="/subscriptions" className="hover:bg-accent rounded-md p-2 text-sm font-medium">
+   441→   441→                  Tarifs
+   442→   442→                </a>
+   443→   443→              </NavigationMenuLink>
+   444→   444→            </NavigationMenuList>
+   445→   445→          </NavigationMenu>
+   446→   446→        </div>
+   447→   447→
+   448→   448→        {/* Right side actions */}
+   449→   449→        <div className="hidden items-center gap-2 md:flex">
+   450→   450→          {/* Notifications */}
+   451→   451→          {onOpenNotifications && notificationCount > 0 && (
+   452→   452→            <Button
+   453→   453→              variant="ghost"
+   454→   454→              size="icon"
+   455→   455→              onClick={onOpenNotifications}
+   456→   456→              className="relative"
+   457→   457→            >
+   458→   458→              <Bell className="size-4" />
+   459→   459→              {notificationCount > 0 && (
+   460→   460→                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-[#D93025] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+   461→   461→                  {notificationCount > 9 ? '9+' : notificationCount}
+   462→   462→                </span>
+   463→   463→              )}
+   464→   464→            </Button>
+   465→   465→          )}
+   466→   466→
+   467→   467→          {/* Admin / Backoffice */}
+   468→   468→          <Button
+   469→   469→            variant="outline"
+   470→   470→            size="sm"
+   471→   471→            className={cn(
+   472→   472→              'transition-colors',
+   473→   473→              isHome && !scrolled
+   474→   474→                ? 'border-white/30 text-white hover:bg-white/10 hover:text-white'
+   475→   475→                : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5'
+   476→   476→            )}
+   477→   477→          >
+   478→   478→            <LayoutDashboard className="size-3.5 mr-1" />
+   479→   479→            Admin
+   480→   480→          </Button>
+   481→   481→
+   482→   482→          {/* Publier — Gold CTA */}
+   483→   483→          <Button
+   484→   484→            size="sm"
+   485→   485→            className="bg-[#D4AF37] hover:bg-[#b8961f] text-white shadow-sm"
+   486→   486→            onClick={() => window.location.href = '/publish'}
+   487→   487→          >
+   488→   488→            <Plus className="size-3.5 mr-1" />
+   489→   489→            Publier
+   490→   490→          </Button>
+   491→   491→
+   492→   492→          {/* Connexion / Profile */}
+   493→   493→          {status === 'loading' ? (
+   494→   494→            <div className="w-20 h-8 bg-gray-100 rounded-md animate-pulse" />
+   495→   495→          ) : !isLoggedIn ? (
+   496→   496→            <Button
+   497→   497→              variant="outline"
+   498→   498→              size="sm"
+   499→   499→              className={cn(
+   500→   500→                'transition-colors',
+   501→   501→                isHome && !scrolled
+   502→   502→                  ? 'border-white text-white hover:bg-white hover:text-[#003087]'
+   503→   503→                  : 'border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white'
+   504→   504→              )}
+   505→   505→              onClick={() => window.location.href = '/auth/login'}
+   506→   506→            >
+   507→   507→              Connexion
+   508→   508→            </Button>
+   509→   509→          ) : (
+   510→   510→            <div className="relative" ref={profileMenuRef}>
+   511→   511→              <button
+   512→   512→                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+   513→   513→                className="flex items-center gap-1.5"
+   514→   514→              >
+   515→   515→                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+   516→   516→                  <ImageWithFallback
+   517→   517→                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+   518→   518→                    alt="Profile"
+   519→   519→                    className="w-full h-full"
+   520→   520→                    fallbackType="avatar"
+   521→   521→                  />
+   522→   522→                </div>
+   523→   523→                <ChevronDown className={cn('w-3 h-3 transition-transform', profileMenuOpen ? 'rotate-180' : '', isHome && !scrolled ? 'text-white' : 'text-[#003087]')} />
+   524→   524→              </button>
+   525→   525→              {profileMenuOpen && (
+   526→   526→                <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+   527→   527→                  <div className="px-4 py-3 border-b border-gray-100">
+   528→   528→                    <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+   529→   529→                    <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+   530→   530→                  </div>
+   531→   531→                  <div className="py-1">
+   532→   532→                    <a href="/dashboard" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   533→   533→                      <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+   534→   534→                    </a>
+   535→   535→                    <a href="/profile" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   536→   536→                      <User className="w-4 h-4 text-gray-400" /> Mon profil
+   537→   537→                    </a>
+   538→   538→                    <a href="/wallet" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   539→   539→                      <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+   540→   540→                    </a>
+   541→   541→                    <a href="/settings" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   542→   542→                      <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+   543→   543→                    </a>
+   544→   544→                  </div>
+   545→   545→                  <div className="border-t border-gray-100 py-1">
+   546→   546→                    <button
+   547→   547→                      onClick={() => signOut({ callbackUrl: '/' })}
+   548→   548→                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
+   549→   549→                    >
+   550→   550→                      <LogOut className="w-4 h-4" /> Déconnexion
+   551→   551→                    </button>
+   552→   552→                  </div>
+   553→   553→                </div>
+   554→   554→              )}
+   555→   555→            </div>
+   556→   556→          )}
+   557→   557→        </div>
+   558→   558→
+   559→   559→        {/* Mobile toggle */}
+   560→   560→        <Button
+   561→   561→          size="icon"
+   562→   562→          variant="outline"
+   563→   563→          onClick={() => setOpen(!open)}
+   564→   564→          className={cn(
+   565→   565→            'md:hidden transition-colors',
+   566→   566→            isHome && !scrolled
+   567→   567→              ? 'border-white/20 text-white hover:bg-white/10'
+   568→   568→              : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5',
+   569→   569→          )}
+   570→   570→          aria-expanded={open}
+   571→   571→          aria-controls="mobile-menu"
+   572→   572→          aria-label="Toggle menu"
+   573→   573→        >
+   574→   574→          <MenuToggleIcon open={open} className="size-5" duration={300} />
+   575→   575→        </Button>
+   576→   576→      </nav>
+   577→   577→
+   578→   578→      {/* Mobile Menu */}
+   579→   579→      <MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">
+   580→   580→        <NavigationMenu className="max-w-full">
+   581→   581→          <div className="flex w-full flex-col gap-y-2">
+   582→   582→            <span className="text-sm font-semibold text-[#003087]">Immobilier</span>
+   583→   583→            {immobilierLinks.map((link) => (
+   584→   584→              <ListItem key={link.title} {...link} />
+   585→   585→            ))}
+   586→   586→            <span className="text-sm font-semibold text-[#003087] mt-2">Hôtellerie</span>
+   587→   587→            {hospitalityLinks.map((link) => (
+   588→   588→              <ListItem key={link.title} {...link} />
+   589→   589→            ))}
+   590→   590→            <span className="text-sm font-semibold text-[#003087] mt-2">Services</span>
+   591→   591→            {servicesLinks.map((link) => (
+   592→   592→              <ListItem key={link.title} {...link} />
+   593→   593→            ))}
+   594→   594→            {servicesLinks2.map((link) => (
+   595→   595→              <ListItem key={link.title} {...link} />
+   596→   596→            ))}
+   597→   597→            <span className="text-sm font-semibold text-[#003087] mt-2">Entreprise</span>
+   598→   598→            {companyLinks.map((link) => (
+   599→   599→              <ListItem key={link.title} {...link} />
+   600→   600→            ))}
+   601→   601→            {companyLinks2.map((link) => (
+   602→   602→              <ListItem key={link.title} {...link} />
+   603→   603→            ))}
+   604→   604→          </div>
+   605→   605→        </NavigationMenu>
+   606→   606→        <div className="flex flex-col gap-2">
+   607→   607→          {status === 'loading' ? (
+   608→   608→            <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+   609→   609→          ) : isLoggedIn ? (
+   610→   610→            <>
+   611→   611→              <div className="flex items-center gap-3 px-2 py-2 mb-1">
+   612→   612→                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+   613→   613→                  <ImageWithFallback
+   614→   614→                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+   615→   615→                    alt="Profile"
+   616→   616→                    className="w-full h-full"
+   617→   617→                    fallbackType="avatar"
+   618→   618→                  />
+   619→   619→                </div>
+   620→   620→                <div>
+   621→   621→                  <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+   622→   622→                  <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+   623→   623→                </div>
+   624→   624→              </div>
+   625→   625→              <a href="/dashboard" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   626→   626→                <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+   627→   627→              </a>
+   628→   628→              <a href="/profile" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   629→   629→                <User className="w-4 h-4 text-gray-400" /> Mon profil
+   630→   630→              </a>
+   631→   631→              <a href="/wallet" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   632→   632→                <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+   633→   633→              </a>
+   634→   634→              <a href="/settings" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   635→   635→                <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+   636→   636→              </a>
+   637→   637→              <Button
+   638→   638→                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+   639→   639→                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+   640→   640→              >
+   641→   641→                <Plus className="size-4 mr-1" />
+   642→   642→                Publier une annonce
+   643→   643→              </Button>
+   644→   644→              <Button
+   645→   645→                variant="outline"
+   646→   646→                className="w-full bg-transparent border-red-200 text-red-500 hover:bg-red-50"
+   647→   647→                onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
+   648→   648→              >
+   649→   649→                <LogOut className="size-4 mr-1" />
+   650→   650→                Déconnexion
+   651→   651→              </Button>
+   652→   652→            </>
+   653→   653→          ) : (
+   654→   654→            <>
+   655→   655→              <Button
+   656→   656→                variant="outline"
+   657→   657→                className="w-full bg-transparent border-[#003087] text-[#003087]"
+   658→   658→                onClick={() => { window.location.href = '/auth/login'; setOpen(false); }}
+   659→   659→              >
+   660→   660→                Connexion
+   661→   661→              </Button>
+   662→   662→              <Button
+   663→   663→                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+   664→   664→                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+   665→   665→              >
+   666→   666→                <Plus className="size-4 mr-1" />
+   667→   667→                Publier une annonce
+   668→   668→              </Button>
+   669→   669→            </>
+   670→   670→          )}
+   671→   671→        </div>
+   672→   672→      </MobileMenu>
+   673→   673→    </header>
+   674→   674→  );
+   675→   675→}
+   676→   676→
+   677→   677→// ─── Mobile Menu Portal ────────────────────────────────────────
+   678→   678→
+   679→   679→type MobileMenuProps = React.ComponentProps<'div'> & {
+   680→   680→  open: boolean;
+   681→   681→};
+   682→   682→
+   683→   683→function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
+   684→   684→  if (!open || typeof window === 'undefined') return null;
+   685→   685→
+   686→   686→  return createPortal(
+   687→   687→    <div
+   688→   688→      id="mobile-menu"
+   689→   689→      className={cn(
+   690→   690→        'bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-lg',
+   691→   691→        'fixed top-16 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden',
+   692→   692→      )}
+   693→   693→    >
+   694→   694→      <div
+   695→   695→        data-slot={open ? 'open' : 'closed'}
+   696→   696→        className={cn(
+   697→   697→          'data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out',
+   698→   698→          'size-full p-4',
+   699→   699→          className,
+   700→   700→        )}
+   701→   701→        {...props}
+   702→   702→      >
+   703→   703→        {children}
+   704→   704→      </div>
+   705→   705→    </div>,
+   706→   706→    document.body,
+   707→   707→  );
+   708→   708→}
+   709→   709→
+   710→   710→// ─── List Item for Navigation ──────────────────────────────────
+   711→   711→
+   712→   712→function ListItem({
+   713→   713→  title,
+   714→   714→  description,
+   715→   715→  icon: Icon,
+   716→   716→  className,
+   717→   717→  href,
+   718→   718→  gold,
+   719→   719→  ...props
+   720→   720→}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
+   721→   721→  return (
+   722→   722→    <NavigationMenuLink
+   723→   723→      className={cn(
+   724→   724→        'w-full flex flex-row gap-x-2',
+   725→   725→        'data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground',
+   726→   726→        'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+   727→   727→        'rounded-sm p-2',
+   728→   728→        gold && 'text-[#D4AF37]',
+   729→   729→        className,
+   730→   730→      )}
+   731→   731→      {...props}
+   732→   732→      asChild
+   733→   733→    >
+   734→   734→      <a href={href}>
+   735→   735→        <div className={cn(
+   736→   736→          'flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm',
+   737→   737→          gold ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20' : 'bg-background/40',
+   738→   738→        )}>
+   739→   739→          <Icon className={cn('size-5', gold ? 'text-[#D4AF37]' : 'text-[#003087]')} />
+   740→   740→        </div>
+   741→   741→        <div className="flex flex-col items-start justify-center">
+   742→   742→          <span className={cn('font-medium', gold && 'text-[#D4AF37]')}>{title}</span>
+   743→   743→          <span className="text-muted-foreground text-xs">{description}</span>
+   744→   744→        </div>
+   745→   745→      </a>
+   746→   746→    </NavigationMenuLink>
+   747→   747→  );
+   748→   748→}
+   749→   749→

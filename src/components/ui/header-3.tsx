@@ -335,7 +335,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             <NavigationMenuList>
               {/* Immobilier */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('!bg-transparent hover:!bg-white/10', textColor, isHome && !scrolled ? 'hover:text-white data-[state=open]:text-white data-[state=open]:!bg-white/10' : 'hover:text-[#003087] data-[state=open]:text-[#003087] data-[state=open]:!bg-[#003087]/5')}>
                   Immobilier
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5">
@@ -359,7 +359,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Hôtellerie */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('!bg-transparent hover:!bg-white/10', textColor, isHome && !scrolled ? 'hover:text-white data-[state=open]:text-white data-[state=open]:!bg-white/10' : 'hover:text-[#003087] data-[state=open]:text-[#003087] data-[state=open]:!bg-[#003087]/5')}>
                   Hôtellerie
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5">
@@ -375,7 +375,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Services */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('!bg-transparent hover:!bg-white/10', textColor, isHome && !scrolled ? 'hover:text-white data-[state=open]:text-white data-[state=open]:!bg-white/10' : 'hover:text-[#003087] data-[state=open]:text-[#003087] data-[state=open]:!bg-[#003087]/5')}>
                   Services
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
@@ -406,7 +406,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Entreprise */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('!bg-transparent hover:!bg-white/10', textColor, isHome && !scrolled ? 'hover:text-white data-[state=open]:text-white data-[state=open]:!bg-white/10' : 'hover:text-[#003087] data-[state=open]:text-[#003087] data-[state=open]:!bg-[#003087]/5')}>
                   Entreprise
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
@@ -436,8 +436,8 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               </NavigationMenuItem>
 
               {/* Pricing / Tarifs */}
-              <NavigationMenuLink className={cn('px-4', textColor)} asChild>
-                <a href="/subscriptions" className="hover:bg-accent rounded-md p-2 text-sm font-medium">
+              <NavigationMenuLink className={cn('px-4 !bg-transparent', textColor, isHome && !scrolled ? 'hover:text-white hover:!bg-white/10' : 'hover:text-[#003087] hover:!bg-[#003087]/5')} asChild>
+                <a href="/subscriptions" className="rounded-md p-2 text-sm font-medium">
                   Tarifs
                 </a>
               </NavigationMenuLink>

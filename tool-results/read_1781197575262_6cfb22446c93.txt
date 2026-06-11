@@ -1,0 +1,1055 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useMemo } from 'react';
+     4→import {
+     5→  CalendarDays,
+     6→  Search,
+     7→  Plus,
+     8→  Home,
+     9→  Star,
+    10→  MapPin,
+    11→  MoreHorizontal,
+    12→  Eye,
+    13→  Edit,
+    14→  Trash2,
+    15→  Ban,
+    16→  ChevronLeft,
+    17→  ChevronRight,
+    18→  TrendingUp,
+    19→  DollarSign,
+    20→} from 'lucide-react';
+    21→import { cn } from '@/lib/utils';
+    22→import { Input } from '@/components/ui/input';
+    23→import { Button } from '@/components/ui/button';
+    24→import { Badge } from '@/components/ui/badge';
+    25→import { Card, CardContent } from '@/components/ui/card';
+    26→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    27→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    28→import {
+    29→  Table,
+    30→  TableBody,
+    31→  TableCell,
+    32→  TableHead,
+    33→  TableHeader,
+    34→  TableRow,
+    35→} from '@/components/ui/table';
+    36→import {
+    37→  DropdownMenu,
+    38→  DropdownMenuContent,
+    39→  DropdownMenuItem,
+    40→  DropdownMenuLabel,
+    41→  DropdownMenuSeparator,
+    42→  DropdownMenuTrigger,
+    43→} from '@/components/ui/dropdown-menu';
+    44→
+    45→// ── Design tokens ──────────────────────────────────────────────────────────
+    46→const NAVY = '#003087';
+    47→const GOLD = '#D4AF37';
+    48→const BLUE = '#009CDE';
+    49→const GREEN = '#00A651';
+    50→const RED = '#D93025';
+    51→
+    52→// ── Countries ──────────────────────────────────────────────────────────────
+    53→const COUNTRIES = [
+    54→  { value: '', label: 'Tous les pays' },
+    55→  { value: 'BJ', label: '\u{1F1E7}\u{1F1EF} Bénin' },
+    56→  { value: 'CI', label: "\u{1F1E8}\u{1F1EE} Côte d'Ivoire" },
+    57→  { value: 'BF', label: '\u{1F1E7}\u{1F1EB} Burkina Faso' },
+    58→  { value: 'TG', label: '\u{1F1F9}\u{1F1EC} Togo' },
+    59→  { value: 'SN', label: '\u{1F1F8}\u{1F1F3} Sénégal' },
+    60→  { value: 'ML', label: '\u{1F1F2}\u{1F1F1} Mali' },
+    61→];
+    62→
+    63→const COUNTRY_LABELS: Record<string, string> = {
+    64→  BJ: 'Bénin',
+    65→  CI: "Côte d'Ivoire",
+    66→  BF: 'Burkina Faso',
+    67→  TG: 'Togo',
+    68→  SN: 'Sénégal',
+    69→  ML: 'Mali',
+    70→};
+    71→
+    72→// ── Status configs ─────────────────────────────────────────────────────────
+    73→const ANNONCE_STATUS_OPTIONS = [
+    74→  { value: '', label: 'Tous les statuts' },
+    75→  { value: 'active', label: 'Active' },
+    76→  { value: 'pending', label: 'En attente' },
+    77→  { value: 'suspended', label: 'Suspendue' },
+    78→];
+    79→
+    80→const RESERVATION_STATUS_OPTIONS = [
+    81→  { value: '', label: 'Tous les statuts' },
+    82→  { value: 'confirmed', label: 'Confirmée' },
+    83→  { value: 'pending', label: 'En attente' },
+    84→  { value: 'cancelled', label: 'Annulée' },
+    85→  { value: 'completed', label: 'Terminée' },
+    86→];
+    87→
+    88→const annonceStatusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+    89→  active: { label: 'Active', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+    90→  pending: { label: 'En attente', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
+    91→  suspended: { label: 'Suspendue', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    92→};
+    93→
+    94→const reservationStatusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+    95→  confirmed: { label: 'Confirmée', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+    96→  pending: { label: 'En attente', bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
+    97→  cancelled: { label: 'Annulée', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500' },
+    98→  completed: { label: 'Terminée', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
+    99→};
+   100→
+   101→// ── Helpers ────────────────────────────────────────────────────────────────
+   102→const formatXOF = (n: number) =>
+   103→  new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
+   104→
+   105→const formatDate = (d: string) =>
+   106→  new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+   107→
+   108→// ── Mock data: Annonces ───────────────────────────────────────────────────
+   109→interface Annonce {
+   110→  id: string;
+   111→  title: string;
+   112→  location: string;
+   113→  country: string;
+   114→  owner: string;
+   115→  pricePerNight: number;
+   116→  rating: number;
+   117→  reviewCount: number;
+   118→  status: 'active' | 'pending' | 'suspended';
+   119→  image: string;
+   120→  featured: boolean;
+   121→}
+   122→
+   123→const MOCK_ANNONCES: Annonce[] = [
+   124→  {
+   125→    id: 'STR-001',
+   126→    title: 'Appartement moderne Plateau',
+   127→    location: 'Plateau, Cotonou',
+   128→    country: 'BJ',
+   129→    owner: 'Adjovi Mensah',
+   130→    pricePerNight: 35000,
+   131→    rating: 4.8,
+   132→    reviewCount: 124,
+   133→    status: 'active',
+   134→    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=80&h=80&fit=crop',
+   135→    featured: true,
+   136→  },
+   137→  {
+   138→    id: 'STR-002',
+   139→    title: 'Villa avec piscine Cocody',
+   140→    location: 'Cocody, Abidjan',
+   141→    country: 'CI',
+   142→    owner: 'Koné Ibrahim',
+   143→    pricePerNight: 75000,
+   144→    rating: 4.9,
+   145→    reviewCount: 89,
+   146→    status: 'active',
+   147→    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=80&h=80&fit=crop',
+   148→    featured: true,
+   149→  },
+   150→  {
+   151→    id: 'STR-003',
+   152→    title: 'Studio meublé Ouaga 2000',
+   153→    location: 'Ouaga 2000, Ouagadougou',
+   154→    country: 'BF',
+   155→    owner: 'Sawadogo Aminata',
+   156→    pricePerNight: 18000,
+   157→    rating: 4.3,
+   158→    reviewCount: 56,
+   159→    status: 'active',
+   160→    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=80&h=80&fit=crop',
+   161→    featured: false,
+   162→  },
+   163→  {
+   164→    id: 'STR-004',
+   165→    title: 'Loft design Almadies',
+   166→    location: 'Almadies, Dakar',
+   167→    country: 'SN',
+   168→    owner: 'Diop Fatou',
+   169→    pricePerNight: 55000,
+   170→    rating: 4.7,
+   171→    reviewCount: 203,
+   172→    status: 'pending',
+   173→    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=80&h=80&fit=crop',
+   174→    featured: false,
+   175→  },
+   176→  {
+   177→    id: 'STR-005',
+   178→    title: 'Maison traditionnelle Lomé',
+   179→    location: 'Tokoin, Lomé',
+   180→    country: 'TG',
+   181→    owner: 'Agbéko Kofi',
+   182→    pricePerNight: 15000,
+   183→    rating: 4.1,
+   184→    reviewCount: 34,
+   185→    status: 'active',
+   186→    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=80&h=80&fit=crop',
+   187→    featured: false,
+   188→  },
+   189→  {
+   190→    id: 'STR-006',
+   191→    title: 'Penthouse vue lagune',
+   192→    location: 'Marcory, Abidjan',
+   193→    country: 'CI',
+   194→    owner: 'Bamba Moussa',
+   195→    pricePerNight: 95000,
+   196→    rating: 4.6,
+   197→    reviewCount: 67,
+   198→    status: 'suspended',
+   199→    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=80&h=80&fit=crop',
+   200→    featured: false,
+   201→  },
+   202→  {
+   203→    id: 'STR-007',
+   204→    title: 'Chambre d\'hôte Fidjrossè',
+   205→    location: 'Fidjrossè, Cotonou',
+   206→    country: 'BJ',
+   207→    owner: 'Houénou Sylvie',
+   208→    pricePerNight: 22000,
+   209→    rating: 4.5,
+   210→    reviewCount: 91,
+   211→    status: 'active',
+   212→    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=80&h=80&fit=crop',
+   213→    featured: true,
+   214→  },
+   215→  {
+   216→    id: 'STR-008',
+   217→    title: 'Appartement Bamako Kati',
+   218→    location: 'Kati, Bamako',
+   219→    country: 'ML',
+   220→    owner: 'Traoré Amadou',
+   221→    pricePerNight: 12500,
+   222→    rating: 3.9,
+   223→    reviewCount: 18,
+   224→    status: 'pending',
+   225→    image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=80&h=80&fit=crop',
+   226→    featured: false,
+   227→  },
+   228→  {
+   229→    id: 'STR-009',
+   230→    title: 'Résidence sécurisée Zone 4',
+   231→    location: 'Zone 4, Abidjan',
+   232→    country: 'CI',
+   233→    owner: 'Konan Yao',
+   234→    pricePerNight: 42000,
+   235→    rating: 4.4,
+   236→    reviewCount: 142,
+   237→    status: 'active',
+   238→    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=80&h=80&fit=crop',
+   239→    featured: false,
+   240→  },
+   241→  {
+   242→    id: 'STR-010',
+   243→    title: 'T2 meublé Godomey',
+   244→    location: 'Godomey, Cotonou',
+   245→    country: 'BJ',
+   246→    owner: 'Dossou Patrick',
+   247→    pricePerNight: 20000,
+   248→    rating: 4.2,
+   249→    reviewCount: 47,
+   250→    status: 'suspended',
+   251→    image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=80&h=80&fit=crop',
+   252→    featured: false,
+   253→  },
+   254→];
+   255→
+   256→// ── Mock data: Réservations ───────────────────────────────────────────────
+   257→interface Reservation {
+   258→  id: string;
+   259→  tenant: string;
+   260→  annonceTitle: string;
+   261→  annonceId: string;
+   262→  checkIn: string;
+   263→  checkOut: string;
+   264→  amount: number;
+   265→  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+   266→}
+   267→
+   268→const MOCK_RESERVATIONS: Reservation[] = [
+   269→  {
+   270→    id: 'RES-1001',
+   271→    tenant: 'Kouassi Marie',
+   272→    annonceTitle: 'Appartement moderne Plateau',
+   273→    annonceId: 'STR-001',
+   274→    checkIn: '2026-06-15',
+   275→    checkOut: '2026-06-20',
+   276→    amount: 175000,
+   277→    status: 'confirmed',
+   278→  },
+   279→  {
+   280→    id: 'RES-1002',
+   281→    tenant: 'N\'Guessan Yves',
+   282→    annonceTitle: 'Villa avec piscine Cocody',
+   283→    annonceId: 'STR-002',
+   284→    checkIn: '2026-06-18',
+   285→    checkOut: '2026-06-25',
+   286→    amount: 525000,
+   287→    status: 'confirmed',
+   288→  },
+   289→  {
+   290→    id: 'RES-1003',
+   291→    tenant: 'Zongo Pascal',
+   292→    annonceTitle: 'Studio meublé Ouaga 2000',
+   293→    annonceId: 'STR-003',
+   294→    checkIn: '2026-06-20',
+   295→    checkOut: '2026-06-22',
+   296→    amount: 36000,
+   297→    status: 'pending',
+   298→  },
+   299→  {
+   300→    id: 'RES-1004',
+   301→    tenant: 'Sow Aïssatou',
+   302→    annonceTitle: 'Loft design Almadies',
+   303→    annonceId: 'STR-004',
+   304→    checkIn: '2026-06-10',
+   305→    checkOut: '2026-06-14',
+   306→    amount: 220000,
+   307→    status: 'completed',
+   308→  },
+   309→  {
+   310→    id: 'RES-1005',
+   311→    tenant: 'Amevor Kossi',
+   312→    annonceTitle: 'Maison traditionnelle Lomé',
+   313→    annonceId: 'STR-005',
+   314→    checkIn: '2026-06-22',
+   315→    checkOut: '2026-06-28',
+   316→    amount: 90000,
+   317→    status: 'pending',
+   318→  },
+   319→  {
+   320→    id: 'RES-1006',
+   321→    tenant: 'Cissé Fatoumata',
+   322→    annonceTitle: 'Penthouse vue lagune',
+   323→    annonceId: 'STR-006',
+   324→    checkIn: '2026-05-28',
+   325→    checkOut: '2026-06-02',
+   326→    amount: 475000,
+   327→    status: 'cancelled',
+   328→  },
+   329→  {
+   330→    id: 'RES-1007',
+   331→    tenant: 'Dossou Gérard',
+   332→    annonceTitle: 'Chambre d\'hôte Fidjrossè',
+   333→    annonceId: 'STR-007',
+   334→    checkIn: '2026-06-12',
+   335→    checkOut: '2026-06-15',
+   336→    amount: 66000,
+   337→    status: 'confirmed',
+   338→  },
+   339→  {
+   340→    id: 'RES-1008',
+   341→    tenant: 'Keita Modibo',
+   342→    annonceTitle: 'Appartement Bamako Kati',
+   343→    annonceId: 'STR-008',
+   344→    checkIn: '2026-06-25',
+   345→    checkOut: '2026-06-30',
+   346→    amount: 62500,
+   347→    status: 'pending',
+   348→  },
+   349→  {
+   350→    id: 'RES-1009',
+   351→    tenant: 'Konan Aya',
+   352→    annonceTitle: 'Résidence sécurisée Zone 4',
+   353→    annonceId: 'STR-009',
+   354→    checkIn: '2026-06-08',
+   355→    checkOut: '2026-06-12',
+   356→    amount: 168000,
+   357→    status: 'completed',
+   358→  },
+   359→  {
+   360→    id: 'RES-1010',
+   361→    tenant: 'Agossou Rachida',
+   362→    annonceTitle: 'T2 meublé Godomey',
+   363→    annonceId: 'STR-010',
+   364→    checkIn: '2026-05-20',
+   365→    checkOut: '2026-05-25',
+   366→    amount: 100000,
+   367→    status: 'completed',
+   368→  },
+   369→  {
+   370→    id: 'RES-1011',
+   371→    tenant: 'Ouattara Dramane',
+   372→    annonceTitle: 'Villa avec piscine Cocody',
+   373→    annonceId: 'STR-002',
+   374→    checkIn: '2026-07-01',
+   375→    checkOut: '2026-07-10',
+   376→    amount: 675000,
+   377→    status: 'pending',
+   378→  },
+   379→  {
+   380→    id: 'RES-1012',
+   381→    tenant: 'Lawani Bilkiss',
+   382→    annonceTitle: 'Appartement moderne Plateau',
+   383→    annonceId: 'STR-001',
+   384→    checkIn: '2026-06-05',
+   385→    checkOut: '2026-06-08',
+   386→    amount: 105000,
+   387→    status: 'cancelled',
+   388→  },
+   389→];
+   390→
+   391→// ── Stat card data ────────────────────────────────────────────────────────
+   392→const STATS = [
+   393→  {
+   394→    label: 'Total annonces',
+   395→    value: '247',
+   396→    change: '+12%',
+   397→    icon: Home,
+   398→    color: NAVY,
+   399→    bgColor: 'bg-[#003087]/8',
+   400→    iconColor: 'text-[#003087]',
+   401→    borderColor: 'border-[#003087]/15',
+   402→  },
+   403→  {
+   404→    label: 'Réservations actives',
+   405→    value: '38',
+   406→    change: '+8%',
+   407→    icon: CalendarDays,
+   408→    color: BLUE,
+   409→    bgColor: 'bg-[#009CDE]/8',
+   410→    iconColor: 'text-[#009CDE]',
+   411→    borderColor: 'border-[#009CDE]/15',
+   412→  },
+   413→  {
+   414→    label: 'Revenus du mois',
+   415→    value: '4.2M XOF',
+   416→    change: '+23%',
+   417→    icon: DollarSign,
+   418→    color: GREEN,
+   419→    bgColor: 'bg-[#00A651]/8',
+   420→    iconColor: 'text-[#00A651]',
+   421→    borderColor: 'border-[#00A651]/15',
+   422→  },
+   423→  {
+   424→    label: "Taux d'occupation",
+   425→    value: '72%',
+   426→    change: '+5%',
+   427→    icon: TrendingUp,
+   428→    color: GOLD,
+   429→    bgColor: 'bg-[#D4AF37]/8',
+   430→    iconColor: 'text-[#D4AF37]',
+   431→    borderColor: 'border-[#D4AF37]/15',
+   432→  },
+   433→];
+   434→
+   435→// ── Status badge component ────────────────────────────────────────────────
+   436→type StatusConfig = Record<string, { label: string; bg: string; text: string; dot: string }>;
+   437→
+   438→function StatusBadge({ status, config }: { status: string; config: StatusConfig }) {
+   439→  const s = config[status];
+   440→  if (!s) return null;
+   441→  return (
+   442→    <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', s.bg, s.text)}>
+   443→      <span className={cn('size-1.5 rounded-full', s.dot)} />
+   444→      {s.label}
+   445→    </span>
+   446→  );
+   447→}
+   448→
+   449→// ── Star rating component ─────────────────────────────────────────────────
+   450→function StarRating({ rating, count }: { rating: number; count: number }) {
+   451→  return (
+   452→    <div className="flex items-center gap-1.5">
+   453→      <div className="flex items-center gap-0.5">
+   454→        <Star className="size-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+   455→        <span className="text-sm font-semibold text-gray-900">{rating}</span>
+   456→      </div>
+   457→      <span className="text-xs text-gray-500">({count})</span>
+   458→    </div>
+   459→  );
+   460→}
+   461→
+   462→// ── Pagination component ──────────────────────────────────────────────────
+   463→function Pagination({
+   464→  page,
+   465→  totalPages,
+   466→  onPageChange,
+   467→}: {
+   468→  page: number;
+   469→  totalPages: number;
+   470→  onPageChange: (p: number) => void;
+   471→}) {
+   472→  return (
+   473→    <div className="flex items-center justify-between pt-4">
+   474→      <p className="text-sm text-gray-500">
+   475→        Page {page} sur {totalPages}
+   476→      </p>
+   477→      <div className="flex items-center gap-1">
+   478→        <Button
+   479→          variant="outline"
+   480→          size="sm"
+   481→          disabled={page <= 1}
+   482→          onClick={() => onPageChange(page - 1)}
+   483→          className="h-8 w-8 p-0"
+   484→        >
+   485→          <ChevronLeft className="size-4" />
+   486→        </Button>
+   487→        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+   488→          <Button
+   489→            key={p}
+   490→            variant={p === page ? 'default' : 'outline'}
+   491→            size="sm"
+   492→            onClick={() => onPageChange(p)}
+   493→            className={cn(
+   494→              'h-8 w-8 p-0',
+   495→              p === page && 'bg-[#003087] hover:bg-[#003087]/90'
+   496→            )}
+   497→          >
+   498→            {p}
+   499→          </Button>
+   500→        ))}
+   501→        <Button
+   502→          variant="outline"
+   503→          size="sm"
+   504→          disabled={page >= totalPages}
+   505→          onClick={() => onPageChange(page + 1)}
+   506→          className="h-8 w-8 p-0"
+   507→        >
+   508→          <ChevronRight className="size-4" />
+   509→        </Button>
+   510→      </div>
+   511→    </div>
+   512→  );
+   513→}
+   514→
+   515→// ══════════════════════════════════════════════════════════════════════════
+   516→// Main page
+   517→// ══════════════════════════════════════════════════════════════════════════
+   518→export default function ShortTermRentalsPage() {
+   519→  const [activeTab, setActiveTab] = useState('annonces');
+   520→
+   521→  // ── Annonce filters ───────────────────────────────────────────────────
+   522→  const [annonceSearch, setAnnonceSearch] = useState('');
+   523→  const [annonceCountry, setAnnonceCountry] = useState('');
+   524→  const [annonceStatus, setAnnonceStatus] = useState('');
+   525→  const [annoncePage, setAnnoncePage] = useState(1);
+   526→  const ITEMS_PER_PAGE = 6;
+   527→
+   528→  // ── Reservation filters ───────────────────────────────────────────────
+   529→  const [reservationSearch, setReservationSearch] = useState('');
+   530→  const [reservationCountry, setReservationCountry] = useState('');
+   531→  const [reservationStatus, setReservationStatus] = useState('');
+   532→  const [reservationPage, setReservationPage] = useState(1);
+   533→
+   534→  // ── Filtered annonces ────────────────────────────────────────────────
+   535→  const filteredAnnonces = useMemo(() => {
+   536→    return MOCK_ANNONCES.filter((a) => {
+   537→      const matchSearch =
+   538→        !annonceSearch ||
+   539→        a.title.toLowerCase().includes(annonceSearch.toLowerCase()) ||
+   540→        a.owner.toLowerCase().includes(annonceSearch.toLowerCase()) ||
+   541→        a.location.toLowerCase().includes(annonceSearch.toLowerCase());
+   542→      const matchCountry = !annonceCountry || a.country === annonceCountry;
+   543→      const matchStatus = !annonceStatus || a.status === annonceStatus;
+   544→      return matchSearch && matchCountry && matchStatus;
+   545→    });
+   546→  }, [annonceSearch, annonceCountry, annonceStatus]);
+   547→
+   548→  const annonceTotalPages = Math.max(1, Math.ceil(filteredAnnonces.length / ITEMS_PER_PAGE));
+   549→  const paginatedAnnonces = filteredAnnonces.slice(
+   550→    (annoncePage - 1) * ITEMS_PER_PAGE,
+   551→    annoncePage * ITEMS_PER_PAGE
+   552→  );
+   553→
+   554→  // ── Filtered reservations ────────────────────────────────────────────
+   555→  const filteredReservations = useMemo(() => {
+   556→    return MOCK_RESERVATIONS.filter((r) => {
+   557→      const matchSearch =
+   558→        !reservationSearch ||
+   559→        r.tenant.toLowerCase().includes(reservationSearch.toLowerCase()) ||
+   560→        r.annonceTitle.toLowerCase().includes(reservationSearch.toLowerCase()) ||
+   561→        r.id.toLowerCase().includes(reservationSearch.toLowerCase());
+   562→      const matchCountry =
+   563→        !reservationCountry ||
+   564→        MOCK_ANNONCES.find((a) => a.id === r.annonceId)?.country === reservationCountry;
+   565→      const matchStatus = !reservationStatus || r.status === reservationStatus;
+   566→      return matchSearch && matchCountry && matchStatus;
+   567→    });
+   568→  }, [reservationSearch, reservationCountry, reservationStatus]);
+   569→
+   570→  const reservationTotalPages = Math.max(1, Math.ceil(filteredReservations.length / ITEMS_PER_PAGE));
+   571→  const paginatedReservations = filteredReservations.slice(
+   572→    (reservationPage - 1) * ITEMS_PER_PAGE,
+   573→    reservationPage * ITEMS_PER_PAGE
+   574→  );
+   575→
+   576→  // ── Reset page when filters change ───────────────────────────────────
+   577→  const handleAnnonceFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (val: string) => {
+   578→    setter(val);
+   579→    setAnnoncePage(1);
+   580→  };
+   581→  const handleReservationFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (val: string) => {
+   582→    setter(val);
+   583→    setReservationPage(1);
+   584→  };
+   585→
+   586→  // ══════════════════════════════════════════════════════════════════════
+   587→  return (
+   588→    <div className="space-y-6">
+   589→      {/* ── Page header ─────────────────────────────────────────────────── */}
+   590→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   591→        <div>
+   592→          <h1 className="text-2xl font-bold tracking-tight text-[#003087]">
+   593→            Locations Courte Durée
+   594→          </h1>
+   595→          <p className="mt-1 text-sm text-gray-500">
+   596→            Gérez les annonces de location temporaire et les réservations
+   597→          </p>
+   598→        </div>
+   599→        <Button
+   600→          className="gap-2 bg-[#D4AF37] text-white shadow-md hover:bg-[#D4AF37]/90"
+   601→          size="default"
+   602→        >
+   603→          <Plus className="size-4" />
+   604→          Ajouter une annonce
+   605→        </Button>
+   606→      </div>
+   607→
+   608→      {/* ── Stats row ───────────────────────────────────────────────────── */}
+   609→      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+   610→        {STATS.map((stat) => {
+   611→          const Icon = stat.icon;
+   612→          return (
+   613→            <Card
+   614→              key={stat.label}
+   615→              className={cn(
+   616→                'relative overflow-hidden border py-0 shadow-sm transition-shadow hover:shadow-md',
+   617→                stat.borderColor
+   618→              )}
+   619→            >
+   620→              <CardContent className="p-5">
+   621→                <div className="flex items-start justify-between">
+   622→                  <div className="space-y-2">
+   623→                    <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+   624→                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+   625→                    <div className="flex items-center gap-1">
+   626→                      <TrendingUp className="size-3.5 text-[#00A651]" />
+   627→                      <span className="text-xs font-medium text-[#00A651]">{stat.change}</span>
+   628→                      <span className="text-xs text-gray-400">vs mois dernier</span>
+   629→                    </div>
+   630→                  </div>
+   631→                  <div className={cn('flex size-11 items-center justify-center rounded-xl', stat.bgColor)}>
+   632→                    <Icon className={cn('size-5', stat.iconColor)} />
+   633→                  </div>
+   634→                </div>
+   635→              </CardContent>
+   636→            </Card>
+   637→          );
+   638→        })}
+   639→      </div>
+   640→
+   641→      {/* ── Tabs ────────────────────────────────────────────────────────── */}
+   642→      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+   643→        <TabsList className="bg-gray-100 p-1">
+   644→          <TabsTrigger
+   645→            value="annonces"
+   646→            className={cn(
+   647→              'data-[state=active]:bg-white data-[state=active]:shadow-sm',
+   648→              activeTab === 'annonces' && 'text-[#003087]'
+   649→            )}
+   650→          >
+   651→            <Home className="mr-1.5 size-4" />
+   652→            Annonces
+   653→          </TabsTrigger>
+   654→          <TabsTrigger
+   655→            value="reservations"
+   656→            className={cn(
+   657→              'data-[state=active]:bg-white data-[state=active]:shadow-sm',
+   658→              activeTab === 'reservations' && 'text-[#003087]'
+   659→            )}
+   660→          >
+   661→            <CalendarDays className="mr-1.5 size-4" />
+   662→            Réservations
+   663→          </TabsTrigger>
+   664→        </TabsList>
+   665→
+   666→        {/* ════════════════════════════════════════════════════════════════
+   667→            Annonces tab
+   668→            ════════════════════════════════════════════════════════════════ */}
+   669→        <TabsContent value="annonces" className="space-y-4">
+   670→          {/* ── Filters ─────────────────────────────────────────────────── */}
+   671→          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+   672→            <div className="relative flex-1">
+   673→              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+   674→              <Input
+   675→                placeholder="Rechercher par titre, propriétaire ou lieu..."
+   676→                value={annonceSearch}
+   677→                onChange={(e) => handleAnnonceFilterChange(setAnnonceSearch)(e.target.value)}
+   678→                className="pl-9 h-9 bg-white"
+   679→              />
+   680→            </div>
+   681→            <Select value={annonceCountry} onValueChange={handleAnnonceFilterChange(setAnnonceCountry)}>
+   682→              <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white">
+   683→                <SelectValue placeholder="Tous les pays" />
+   684→              </SelectTrigger>
+   685→              <SelectContent>
+   686→                {COUNTRIES.map((c) => (
+   687→                  <SelectItem key={c.value || 'all'} value={c.value || 'all'}>
+   688→                    {c.label}
+   689→                  </SelectItem>
+   690→                ))}
+   691→              </SelectContent>
+   692→            </Select>
+   693→            <Select value={annonceStatus} onValueChange={handleAnnonceFilterChange(setAnnonceStatus)}>
+   694→              <SelectTrigger className="w-full sm:w-[170px] h-9 bg-white">
+   695→                <SelectValue placeholder="Tous les statuts" />
+   696→              </SelectTrigger>
+   697→              <SelectContent>
+   698→                {ANNONCE_STATUS_OPTIONS.map((s) => (
+   699→                  <SelectItem key={s.value || 'all'} value={s.value || 'all'}>
+   700→                    {s.label}
+   701→                  </SelectItem>
+   702→                ))}
+   703→              </SelectContent>
+   704→            </Select>
+   705→          </div>
+   706→
+   707→          {/* ── Table ───────────────────────────────────────────────────── */}
+   708→          <Card className="border shadow-sm">
+   709→            <CardContent className="p-0">
+   710→              <Table>
+   711→                <TableHeader>
+   712→                  <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
+   713→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   714→                      Annonce
+   715→                    </TableHead>
+   716→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   717→                      Propriétaire
+   718→                    </TableHead>
+   719→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   720→                      Pays
+   721→                    </TableHead>
+   722→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   723→                      Prix/nuit
+   724→                    </TableHead>
+   725→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   726→                      Note
+   727→                    </TableHead>
+   728→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   729→                      Statut
+   730→                    </TableHead>
+   731→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
+   732→                      Actions
+   733→                    </TableHead>
+   734→                  </TableRow>
+   735→                </TableHeader>
+   736→                <TableBody>
+   737→                  {paginatedAnnonces.length === 0 ? (
+   738→                    <TableRow>
+   739→                      <TableCell colSpan={7} className="h-32 text-center">
+   740→                        <div className="flex flex-col items-center gap-2 text-gray-400">
+   741→                          <Home className="size-8" />
+   742→                          <p>Aucune annonce trouvée</p>
+   743→                        </div>
+   744→                      </TableCell>
+   745→                    </TableRow>
+   746→                  ) : (
+   747→                    paginatedAnnonces.map((annonce) => (
+   748→                      <TableRow key={annonce.id} className="group transition-colors">
+   749→                        {/* Annonce (image + title + location) */}
+   750→                        <TableCell>
+   751→                          <div className="flex items-center gap-3">
+   752→                            <div className="relative size-12 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+   753→                              <img
+   754→                                src={annonce.image}
+   755→                                alt={annonce.title}
+   756→                                className="size-12 rounded-lg object-cover"
+   757→                              />
+   758→                              {annonce.featured && (
+   759→                                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-[#D4AF37]">
+   760→                                  <Star className="size-2.5 fill-white text-white" />
+   761→                                </span>
+   762→                              )}
+   763→                            </div>
+   764→                            <div className="min-w-0">
+   765→                              <p className="truncate text-sm font-semibold text-gray-900 max-w-[200px]">
+   766→                                {annonce.title}
+   767→                              </p>
+   768→                              <div className="flex items-center gap-1 text-xs text-gray-500">
+   769→                                <MapPin className="size-3 flex-shrink-0" />
+   770→                                <span className="truncate">{annonce.location}</span>
+   771→                              </div>
+   772→                            </div>
+   773→                          </div>
+   774→                        </TableCell>
+   775→
+   776→                        {/* Propriétaire */}
+   777→                        <TableCell>
+   778→                          <span className="text-sm text-gray-700">{annonce.owner}</span>
+   779→                        </TableCell>
+   780→
+   781→                        {/* Pays */}
+   782→                        <TableCell>
+   783→                          <span className="text-sm text-gray-700">
+   784→                            {COUNTRY_LABELS[annonce.country] || annonce.country}
+   785→                          </span>
+   786→                        </TableCell>
+   787→
+   788→                        {/* Prix/nuit */}
+   789→                        <TableCell>
+   790→                          <span className="text-sm font-semibold text-gray-900">
+   791→                            {formatXOF(annonce.pricePerNight)}
+   792→                          </span>
+   793→                        </TableCell>
+   794→
+   795→                        {/* Note */}
+   796→                        <TableCell>
+   797→                          <StarRating rating={annonce.rating} count={annonce.reviewCount} />
+   798→                        </TableCell>
+   799→
+   800→                        {/* Statut */}
+   801→                        <TableCell>
+   802→                          <StatusBadge status={annonce.status} config={annonceStatusConfig} />
+   803→                        </TableCell>
+   804→
+   805→                        {/* Actions */}
+   806→                        <TableCell className="text-right">
+   807→                          <DropdownMenu>
+   808→                            <DropdownMenuTrigger asChild>
+   809→                              <Button
+   810→                                variant="ghost"
+   811→                                size="sm"
+   812→                                className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+   813→                              >
+   814→                                <MoreHorizontal className="size-4" />
+   815→                              </Button>
+   816→                            </DropdownMenuTrigger>
+   817→                            <DropdownMenuContent align="end" className="w-48">
+   818→                              <DropdownMenuLabel className="text-xs text-gray-500">
+   819→                                Actions
+   820→                              </DropdownMenuLabel>
+   821→                              <DropdownMenuSeparator />
+   822→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+   823→                                <Eye className="size-4 text-[#009CDE]" />
+   824→                                <span>Voir les détails</span>
+   825→                              </DropdownMenuItem>
+   826→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+   827→                                <Edit className="size-4 text-[#003087]" />
+   828→                                <span>Modifier</span>
+   829→                              </DropdownMenuItem>
+   830→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+   831→                                <Star className="size-4 text-[#D4AF37]" />
+   832→                                <span>
+   833→                                  {annonce.featured ? 'Retirer la une' : 'Mettre en avant'}
+   834→                                </span>
+   835→                              </DropdownMenuItem>
+   836→                              <DropdownMenuSeparator />
+   837→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+   838→                                <Ban className="size-4 text-amber-500" />
+   839→                                <span>
+   840→                                  {annonce.status === 'suspended' ? 'Réactiver' : 'Suspendre'}
+   841→                                </span>
+   842→                              </DropdownMenuItem>
+   843→                              <DropdownMenuItem className="gap-2 cursor-pointer text-[#D93025] focus:text-[#D93025]">
+   844→                                <Trash2 className="size-4" />
+   845→                                <span>Supprimer</span>
+   846→                              </DropdownMenuItem>
+   847→                            </DropdownMenuContent>
+   848→                          </DropdownMenu>
+   849→                        </TableCell>
+   850→                      </TableRow>
+   851→                    ))
+   852→                  )}
+   853→                </TableBody>
+   854→              </Table>
+   855→            </CardContent>
+   856→          </Card>
+   857→
+   858→          <Pagination
+   859→            page={annoncePage}
+   860→            totalPages={annonceTotalPages}
+   861→            onPageChange={setAnnoncePage}
+   862→          />
+   863→        </TabsContent>
+   864→
+   865→        {/* ════════════════════════════════════════════════════════════════
+   866→            Réservations tab
+   867→            ════════════════════════════════════════════════════════════════ */}
+   868→        <TabsContent value="reservations" className="space-y-4">
+   869→          {/* ── Filters ─────────────────────────────────────────────────── */}
+   870→          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+   871→            <div className="relative flex-1">
+   872→              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+   873→              <Input
+   874→                placeholder="Rechercher par locataire, annonce ou ID..."
+   875→                value={reservationSearch}
+   876→                onChange={(e) => handleReservationFilterChange(setReservationSearch)(e.target.value)}
+   877→                className="pl-9 h-9 bg-white"
+   878→              />
+   879→            </div>
+   880→            <Select value={reservationCountry} onValueChange={handleReservationFilterChange(setReservationCountry)}>
+   881→              <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white">
+   882→                <SelectValue placeholder="Tous les pays" />
+   883→              </SelectTrigger>
+   884→              <SelectContent>
+   885→                {COUNTRIES.map((c) => (
+   886→                  <SelectItem key={c.value || 'all'} value={c.value || 'all'}>
+   887→                    {c.label}
+   888→                  </SelectItem>
+   889→                ))}
+   890→              </SelectContent>
+   891→            </Select>
+   892→            <Select value={reservationStatus} onValueChange={handleReservationFilterChange(setReservationStatus)}>
+   893→              <SelectTrigger className="w-full sm:w-[170px] h-9 bg-white">
+   894→                <SelectValue placeholder="Tous les statuts" />
+   895→              </SelectTrigger>
+   896→              <SelectContent>
+   897→                {RESERVATION_STATUS_OPTIONS.map((s) => (
+   898→                  <SelectItem key={s.value || 'all'} value={s.value || 'all'}>
+   899→                    {s.label}
+   900→                  </SelectItem>
+   901→                ))}
+   902→              </SelectContent>
+   903→            </Select>
+   904→          </div>
+   905→
+   906→          {/* ── Table ───────────────────────────────────────────────────── */}
+   907→          <Card className="border shadow-sm">
+   908→            <CardContent className="p-0">
+   909→              <Table>
+   910→                <TableHeader>
+   911→                  <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
+   912→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   913→                      ID
+   914→                    </TableHead>
+   915→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   916→                      Locataire
+   917→                    </TableHead>
+   918→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   919→                      Annonce
+   920→                    </TableHead>
+   921→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   922→                      Arrivée
+   923→                    </TableHead>
+   924→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   925→                      Départ
+   926→                    </TableHead>
+   927→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   928→                      Montant
+   929→                    </TableHead>
+   930→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+   931→                      Statut
+   932→                    </TableHead>
+   933→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
+   934→                      Actions
+   935→                    </TableHead>
+   936→                  </TableRow>
+   937→                </TableHeader>
+   938→                <TableBody>
+   939→                  {paginatedReservations.length === 0 ? (
+   940→                    <TableRow>
+   941→                      <TableCell colSpan={8} className="h-32 text-center">
+   942→                        <div className="flex flex-col items-center gap-2 text-gray-400">
+   943→                          <CalendarDays className="size-8" />
+   944→                          <p>Aucune réservation trouvée</p>
+   945→                        </div>
+   946→                      </TableCell>
+   947→                    </TableRow>
+   948→                  ) : (
+   949→                    paginatedReservations.map((res) => (
+   950→                      <TableRow key={res.id} className="group transition-colors">
+   951→                        {/* ID */}
+   952→                        <TableCell>
+   953→                          <span className="font-mono text-sm font-medium text-[#003087]">
+   954→                            {res.id}
+   955→                          </span>
+   956→                        </TableCell>
+   957→
+   958→                        {/* Locataire */}
+   959→                        <TableCell>
+   960→                          <span className="text-sm text-gray-700">{res.tenant}</span>
+   961→                        </TableCell>
+   962→
+   963→                        {/* Annonce */}
+   964→                        <TableCell>
+   965→                          <span className="max-w-[180px] truncate text-sm font-medium text-gray-900 block">
+   966→                            {res.annonceTitle}
+   967→                          </span>
+   968→                        </TableCell>
+   969→
+   970→                        {/* Arrivée */}
+   971→                        <TableCell>
+   972→                          <span className="text-sm text-gray-700">{formatDate(res.checkIn)}</span>
+   973→                        </TableCell>
+   974→
+   975→                        {/* Départ */}
+   976→                        <TableCell>
+   977→                          <span className="text-sm text-gray-700">{formatDate(res.checkOut)}</span>
+   978→                        </TableCell>
+   979→
+   980→                        {/* Montant */}
+   981→                        <TableCell>
+   982→                          <span className="text-sm font-semibold text-gray-900">
+   983→                            {formatXOF(res.amount)}
+   984→                          </span>
+   985→                        </TableCell>
+   986→
+   987→                        {/* Statut */}
+   988→                        <TableCell>
+   989→                          <StatusBadge status={res.status} config={reservationStatusConfig} />
+   990→                        </TableCell>
+   991→
+   992→                        {/* Actions */}
+   993→                        <TableCell className="text-right">
+   994→                          <DropdownMenu>
+   995→                            <DropdownMenuTrigger asChild>
+   996→                              <Button
+   997→                                variant="ghost"
+   998→                                size="sm"
+   999→                                className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+  1000→                              >
+  1001→                                <MoreHorizontal className="size-4" />
+  1002→                              </Button>
+  1003→                            </DropdownMenuTrigger>
+  1004→                            <DropdownMenuContent align="end" className="w-48">
+  1005→                              <DropdownMenuLabel className="text-xs text-gray-500">
+  1006→                                Actions
+  1007→                              </DropdownMenuLabel>
+  1008→                              <DropdownMenuSeparator />
+  1009→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+  1010→                                <Eye className="size-4 text-[#009CDE]" />
+  1011→                                <span>Voir les détails</span>
+  1012→                              </DropdownMenuItem>
+  1013→                              <DropdownMenuItem className="gap-2 cursor-pointer">
+  1014→                                <Edit className="size-4 text-[#003087]" />
+  1015→                                <span>Modifier</span>
+  1016→                              </DropdownMenuItem>
+  1017→                              {res.status === 'pending' && (
+  1018→                                <DropdownMenuItem className="gap-2 cursor-pointer">
+  1019→                                  <CalendarDays className="size-4 text-[#00A651]" />
+  1020→                                  <span>Confirmer</span>
+  1021→                                </DropdownMenuItem>
+  1022→                              )}
+  1023→                              <DropdownMenuSeparator />
+  1024→                              {(res.status === 'confirmed' || res.status === 'pending') && (
+  1025→                                <DropdownMenuItem className="gap-2 cursor-pointer text-[#D93025] focus:text-[#D93025]">
+  1026→                                  <Ban className="size-4" />
+  1027→                                  <span>Annuler</span>
+  1028→                                </DropdownMenuItem>
+  1029→                              )}
+  1030→                              <DropdownMenuItem className="gap-2 cursor-pointer text-[#D93025] focus:text-[#D93025]">
+  1031→                                <Trash2 className="size-4" />
+  1032→                                <span>Supprimer</span>
+  1033→                              </DropdownMenuItem>
+  1034→                            </DropdownMenuContent>
+  1035→                          </DropdownMenu>
+  1036→                        </TableCell>
+  1037→                      </TableRow>
+  1038→                    ))
+  1039→                  )}
+  1040→                </TableBody>
+  1041→              </Table>
+  1042→            </CardContent>
+  1043→          </Card>
+  1044→
+  1045→          <Pagination
+  1046→            page={reservationPage}
+  1047→            totalPages={reservationTotalPages}
+  1048→            onPageChange={setReservationPage}
+  1049→          />
+  1050→        </TabsContent>
+  1051→      </Tabs>
+  1052→    </div>
+  1053→  );
+  1054→}
+  1055→

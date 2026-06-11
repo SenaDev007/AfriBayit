@@ -1,0 +1,829 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect } from 'react';
+     4→import { useParams, useRouter } from 'next/navigation';
+     5→import { motion, AnimatePresence } from 'framer-motion';
+     6→import {
+     7→  ArrowLeft,
+     8→  Play,
+     9→  BookOpen,
+    10→  Clock,
+    11→  Users,
+    12→  Award,
+    13→  Star,
+    14→  CheckCircle2,
+    15→  FileText,
+    16→  Video,
+    17→  ChevronDown,
+    18→  ChevronUp,
+    19→  Shield,
+    20→  Zap,
+    21→  AlertTriangle,
+    22→} from 'lucide-react';
+    23→import { useAuthStore } from '@/stores/authStore';
+    24→import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+    25→import { toast } from '@/hooks/use-toast';
+    26→import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+    27→import CourseLessonViewer from '@/components/afribayit/CourseLessonViewer';
+    28→import QuizTaker from '@/components/afribayit/QuizTaker';
+    29→import type { QuizQuestion } from '@/lib/quiz/types';
+    30→
+    31→// ─── Types ────────────────────────────────────────────────────────
+    32→
+    33→interface ModuleItem {
+    34→  id?: string;
+    35→  title: string;
+    36→  duration?: string;
+    37→  videoUrl?: string;
+    38→  content?: string;
+    39→  type?: 'video' | 'text' | 'quiz';
+    40→}
+    41→
+    42→interface CourseData {
+    43→  id: string;
+    44→  title: string;
+    45→  slug?: string;
+    46→  category: string;
+    47→  country: string;
+    48→  instructorId: string;
+    49→  instructor: string;
+    50→  description?: string;
+    51→  duration: string;
+    52→  price: number;
+    53→  currency: string;
+    54→  level: string;
+    55→  certificate: boolean;
+    56→  rating: number;
+    57→  students: number;
+    58→  image?: string;
+    59→  videoUrl?: string;
+    60→  published: boolean;
+    61→  modules: ModuleItem[] | null;
+    62→  createdAt: string;
+    63→  enrollments: EnrollmentData[];
+    64→  quizzes: QuizData[];
+    65→  certificates_rel: CertificateData[];
+    66→}
+    67→
+    68→interface EnrollmentData {
+    69→  id: string;
+    70→  userId: string;
+    71→  progress: number;
+    72→  completed: boolean;
+    73→  completedModules?: string; // JSON string
+    74→  enrolledAt: string;
+    75→  completedAt?: string;
+    76→}
+    77→
+    78→interface QuizData {
+    79→  id: string;
+    80→  title: string;
+    81→  timeLimit: number;
+    82→  passingScore: number;
+    83→  maxAttempts: number;
+    84→  _count: { attempts: number };
+    85→}
+    86→
+    87→interface CertificateData {
+    88→  id: string;
+    89→  certificateId: string;
+    90→  userId: string;
+    91→}
+    92→
+    93→interface QuizDisplayData {
+    94→  id: string;
+    95→  courseId: string;
+    96→  title: string;
+    97→  description: string;
+    98→  timeLimitMinutes: number;
+    99→  passingScorePercent: number;
+   100→  maxAttempts: number;
+   101→  questions: Omit<QuizQuestion, 'correctAnswer' | 'explanation'>[];
+   102→}
+   103→
+   104→// ─── Constants ────────────────────────────────────────────────────
+   105→
+   106→const levelLabels: Record<string, string> = {
+   107→  debutant: 'Débutant',
+   108→  intermediaire: 'Intermédiaire',
+   109→  avance: 'Avancé',
+   110→  expert: 'Expert',
+   111→};
+   112→
+   113→const categoryLabels: Record<string, string> = {
+   114→  immobilier: 'Immobilier',
+   115→  droit_foncier: 'Droit Foncier',
+   116→  investissement: 'Investissement',
+   117→  construction: 'Construction',
+   118→  finance: 'Finance',
+   119→  certification: 'Certification',
+   120→};
+   121→
+   122→const easeOut = [0.16, 1, 0.3, 1] as const;
+   123→
+   124→// ─── Page Component ───────────────────────────────────────────────
+   125→
+   126→export default function CourseDetailPage() {
+   127→  const params = useParams();
+   128→  const router = useRouter();
+   129→  const { user } = useAuthStore();
+   130→
+   131→  const courseId = params.id as string;
+   132→
+   133→  const [course, setCourse] = useState<CourseData | null>(null);
+   134→  const [isLoading, setIsLoading] = useState(true);
+   135→  const [error, setError] = useState<string | null>(null);
+   136→  const [enrollment, setEnrollment] = useState<EnrollmentData | null>(null);
+   137→  const [isEnrolling, setIsEnrolling] = useState(false);
+   138→  const [activeTab, setActiveTab] = useState<'overview' | 'lessons' | 'quiz'>(
+   139→    'overview'
+   140→  );
+   141→  const [expandedModules, setExpandedModules] = useState(true);
+   142→  const [quizData, setQuizData] = useState<QuizDisplayData | null>(null);
+   143→  const [quizTotalAttempts, setQuizTotalAttempts] = useState(0);
+   144→  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+   145→  const [userCertificate, setUserCertificate] =
+   146→    useState<CertificateData | null>(null);
+   147→
+   148→  // ─── Fetch course ────────────────────────────────────────────
+   149→
+   150→  useEffect(() => {
+   151→    async function fetchCourse() {
+   152→      try {
+   153→        setIsLoading(true);
+   154→        const data = await apiFetch<CourseData>(`/api/courses/${courseId}`);
+   155→        setCourse(data);
+   156→
+   157→        // Check if user is enrolled
+   158→        if (user) {
+   159→          const userEnrollment = data.enrollments?.find(
+   160→            (e) => e.userId === user.id
+   161→          );
+   162→          if (userEnrollment) {
+   163→            setEnrollment(userEnrollment);
+   164→          }
+   165→
+   166→          // Check for certificate
+   167→          const userCert = data.certificates_rel?.find(
+   168→            (c) => c.userId === user.id
+   169→          );
+   170→          if (userCert) {
+   171→            setUserCertificate(userCert);
+   172→          }
+   173→        }
+   174→      } catch (err) {
+   175→        setError(
+   176→          err instanceof Error ? err.message : 'Erreur de chargement.'
+   177→        );
+   178→      } finally {
+   179→        setIsLoading(false);
+   180→      }
+   181→    }
+   182→    fetchCourse();
+   183→  }, [courseId, user]);
+   184→
+   185→  // ─── Enroll handler ──────────────────────────────────────────
+   186→
+   187→  const handleEnroll = async () => {
+   188→    if (!user) {
+   189→      toast({
+   190→        title: 'Connexion requise',
+   191→        description:
+   192→          'Veuillez vous connecter pour vous inscrire à cette formation.',
+   193→      });
+   194→      router.push('/auth/login');
+   195→      return;
+   196→    }
+   197→
+   198→    setIsEnrolling(true);
+   199→    try {
+   200→      const res = await apiPost<{ data: EnrollmentData }>(
+   201→        '/api/courses/enrollments',
+   202→        { courseId, userId: user.id }
+   203→      );
+   204→      setEnrollment(res.data);
+   205→      toast({
+   206→        title: 'Inscription réussie !',
+   207→        description: 'Vous êtes maintenant inscrit à cette formation.',
+   208→      });
+   209→    } catch (err) {
+   210→      toast({
+   211→        title: 'Erreur',
+   212→        description:
+   213→          err instanceof Error
+   214→            ? err.message
+   215→            : "Impossible de s'inscrire à la formation.",
+   216→        variant: 'destructive',
+   217→      });
+   218→    } finally {
+   219→      setIsEnrolling(false);
+   220→    }
+   221→  };
+   222→
+   223→  // ─── Load quiz ───────────────────────────────────────────────
+   224→
+   225→  const handleLoadQuiz = async () => {
+   226→    if (!course?.quizzes?.length) return;
+   227→
+   228→    setIsLoadingQuiz(true);
+   229→    try {
+   230→      const res = await apiFetch<{
+   231→        quiz: QuizDisplayData;
+   232→        totalAttempts: number;
+   233→      }>(`/api/academy/quiz/${courseId}`);
+   234→      setQuizData(res.quiz);
+   235→      setQuizTotalAttempts(res.totalAttempts);
+   236→      setActiveTab('quiz');
+   237→    } catch (err) {
+   238→      toast({
+   239→        title: 'Erreur',
+   240→        description:
+   241→          err instanceof Error
+   242→            ? err.message
+   243→            : 'Impossible de charger le quiz.',
+   244→        variant: 'destructive',
+   245→      });
+   246→    } finally {
+   247→      setIsLoadingQuiz(false);
+   248→    }
+   249→  };
+   250→
+   251→  // ─── Progress update from lesson viewer ──────────────────────
+   252→
+   253→  const handleProgressUpdate = (progress: number) => {
+   254→    if (enrollment) {
+   255→      setEnrollment({
+   256→        ...enrollment,
+   257→        progress,
+   258→        completed: progress >= 100,
+   259→      });
+   260→    }
+   261→  };
+   262→
+   263→  // ─── Loading state ───────────────────────────────────────────
+   264→
+   265→  if (isLoading) {
+   266→    return (
+   267→      <div className="min-h-screen pt-20 bg-gray-50/30">
+   268→        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+   269→          <div className="animate-pulse space-y-6">
+   270→            <div className="h-6 w-32 bg-gray-200 rounded" />
+   271→            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+   272→              <div className="lg:col-span-2 space-y-4">
+   273→                <div className="h-64 bg-gray-200 rounded-2xl" />
+   274→                <div className="h-8 w-3/4 bg-gray-200 rounded" />
+   275→                <div className="h-4 w-1/2 bg-gray-100 rounded" />
+   276→              </div>
+   277→              <div className="h-96 bg-gray-200 rounded-2xl" />
+   278→            </div>
+   279→          </div>
+   280→        </div>
+   281→      </div>
+   282→    );
+   283→  }
+   284→
+   285→  // ─── Error state ─────────────────────────────────────────────
+   286→
+   287→  if (error || !course) {
+   288→    return (
+   289→      <div className="min-h-screen pt-20 bg-gray-50/30 flex items-center justify-center">
+   290→        <div className="text-center">
+   291→          <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+   292→          <h2 className="text-lg font-semibold text-gray-700 mb-1">
+   293→            Cours introuvable
+   294→          </h2>
+   295→          <p className="text-sm text-gray-500 mb-4">
+   296→            {error || "Ce cours n'existe pas ou n'est plus disponible."}
+   297→          </p>
+   298→          <button
+   299→            onClick={() => router.push('/academy')}
+   300→            className="px-6 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+   301→          >
+   302→            Retour à l&apos;académie
+   303→          </button>
+   304→        </div>
+   305→      </div>
+   306→    );
+   307→  }
+   308→
+   309→  // ─── Derived data ────────────────────────────────────────────
+   310→
+   311→  const isEnrolled = !!enrollment;
+   312→  const isCompleted = enrollment?.completed || false;
+   313→  const hasQuiz = course.quizzes && course.quizzes.length > 0;
+   314→  const moduleList = course.modules || [];
+   315→  const totalModules = moduleList.length;
+   316→
+   317→  return (
+   318→    <div className="min-h-screen pt-20 pb-16 bg-gray-50/30">
+   319→      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+   320→        {/* ─── Back button ──────────────────────────────────────── */}
+   321→        <motion.button
+   322→          initial={{ opacity: 0, x: -10 }}
+   323→          animate={{ opacity: 1, x: 0 }}
+   324→          onClick={() => router.push('/academy')}
+   325→          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-6 mt-2"
+   326→        >
+   327→          <ArrowLeft className="w-4 h-4" />
+   328→          Retour aux formations
+   329→        </motion.button>
+   330→
+   331→        {/* ─── Hero + Sidebar grid ─────────────────────────────── */}
+   332→        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+   333→          {/* ─── Left: Main content ─────────────────────────────── */}
+   334→          <div className="lg:col-span-2 space-y-6">
+   335→            {/* Course hero image / video */}
+   336→            <motion.div
+   337→              initial={{ opacity: 0, y: 20 }}
+   338→              animate={{ opacity: 1, y: 0 }}
+   339→              transition={{ duration: 0.5, ease: easeOut }}
+   340→              className="rounded-2xl overflow-hidden shadow-sm border"
+   341→            >
+   342→              {course.videoUrl && isEnrolled ? (
+   343→                <div className="aspect-video bg-black">
+   344→                  <video
+   345→                    controls
+   346→                    className="w-full h-full"
+   347→                    preload="metadata"
+   348→                  >
+   349→                    <source src={course.videoUrl} type="video/mp4" />
+   350→                    Votre navigateur ne supporte pas la lecture vidéo.
+   351→                  </video>
+   352→                </div>
+   353→              ) : (
+   354→                <div className="relative aspect-[16/9]">
+   355→                  <ImageWithFallback
+   356→                    src={course.image || ''}
+   357→                    alt={course.title}
+   358→                    className="w-full h-full"
+   359→                    fallbackType="course"
+   360→                  />
+   361→                  {/* Overlay gradient */}
+   362→                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+   363→                  <div className="absolute bottom-4 left-4 right-4">
+   364→                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#003087] text-white text-[10px] font-bold rounded-full mb-2">
+   365→                      {levelLabels[course.level] || course.level}
+   366→                    </span>
+   367→                    {course.certificate && (
+   368→                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full ml-1.5">
+   369→                        <Award className="w-3 h-3" /> Certifiant
+   370→                      </span>
+   371→                    )}
+   372→                  </div>
+   373→                </div>
+   374→              )}
+   375→            </motion.div>
+   376→
+   377→            {/* ─── Tab navigation ──────────────────────────────── */}
+   378→            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+   379→              {(
+   380→                [
+   381→                  { key: 'overview', label: 'Aperçu', icon: BookOpen },
+   382→                  ...(isEnrolled
+   383→                    ? [
+   384→                        {
+   385→                          key: 'lessons',
+   386→                          label: `Modules (${totalModules})`,
+   387→                          icon: Video,
+   388→                        },
+   389→                      ]
+   390→                    : []),
+   391→                  ...(isEnrolled && hasQuiz
+   392→                    ? [{ key: 'quiz', label: 'Quiz', icon: FileText }]
+   393→                    : []),
+   394→                ] as const
+   395→              ).map(({ key, label, icon: Icon }) => (
+   396→                <button
+   397→                  key={key}
+   398→                  onClick={() => setActiveTab(key as typeof activeTab)}
+   399→                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+   400→                    activeTab === key
+   401→                      ? 'bg-white shadow-sm text-[#003087]'
+   402→                      : 'text-gray-500 hover:text-gray-700'
+   403→                  }`}
+   404→                >
+   405→                  <Icon className="w-4 h-4" />
+   406→                  <span className="hidden sm:inline">{label}</span>
+   407→                </button>
+   408→              ))}
+   409→            </div>
+   410→
+   411→            {/* ─── Tab content ─────────────────────────────────── */}
+   412→            <AnimatePresence mode="wait">
+   413→              {/* OVERVIEW TAB */}
+   414→              {activeTab === 'overview' && (
+   415→                <motion.div
+   416→                  key="overview"
+   417→                  initial={{ opacity: 0, y: 10 }}
+   418→                  animate={{ opacity: 1, y: 0 }}
+   419→                  exit={{ opacity: 0 }}
+   420→                  className="space-y-6"
+   421→                >
+   422→                  {/* Course info */}
+   423→                  <div className="bg-white rounded-2xl border shadow-sm p-6">
+   424→                    <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+   425→                      {course.title}
+   426→                    </h1>
+   427→                    <p className="text-gray-500 mb-4">
+   428→                      Par{' '}
+   429→                      <span className="font-medium text-[#003087]">
+   430→                        {course.instructor}
+   431→                      </span>
+   432→                    </p>
+   433→
+   434→                    {/* Quick stats */}
+   435→                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+   436→                      <span className="flex items-center gap-1">
+   437→                        <Star className="w-4 h-4 text-[#D4AF37]" />
+   438→                        {course.rating.toFixed(1)}
+   439→                      </span>
+   440→                      <span className="flex items-center gap-1">
+   441→                        <Users className="w-4 h-4" />
+   442→                        {course.students} étudiants
+   443→                      </span>
+   444→                      <span className="flex items-center gap-1">
+   445→                        <Clock className="w-4 h-4" />
+   446→                        {course.duration}
+   447→                      </span>
+   448→                      <span className="flex items-center gap-1">
+   449→                        <BookOpen className="w-4 h-4" />
+   450→                        {categoryLabels[course.category] || course.category}
+   451→                      </span>
+   452→                    </div>
+   453→
+   454→                    {/* Description */}
+   455→                    {course.description && (
+   456→                      <div className="prose prose-sm max-w-none text-gray-700 border-t pt-4">
+   457→                        <p>{course.description}</p>
+   458→                      </div>
+   459→                    )}
+   460→                  </div>
+   461→
+   462→                  {/* Module list (preview) */}
+   463→                  {totalModules > 0 && (
+   464→                    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+   465→                      <button
+   466→                        onClick={() => setExpandedModules(!expandedModules)}
+   467→                        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+   468→                      >
+   469→                        <h3 className="font-semibold text-[#2C2E2F] flex items-center gap-2">
+   470→                          <BookOpen className="w-5 h-5 text-[#003087]" />
+   471→                          Programme ({totalModules} modules)
+   472→                        </h3>
+   473→                        {expandedModules ? (
+   474→                          <ChevronUp className="w-5 h-5 text-gray-400" />
+   475→                        ) : (
+   476→                          <ChevronDown className="w-5 h-5 text-gray-400" />
+   477→                        )}
+   478→                      </button>
+   479→
+   480→                      <AnimatePresence>
+   481→                        {expandedModules && (
+   482→                          <motion.div
+   483→                            initial={{ height: 0, opacity: 0 }}
+   484→                            animate={{ height: 'auto', opacity: 1 }}
+   485→                            exit={{ height: 0, opacity: 0 }}
+   486→                            transition={{ duration: 0.3 }}
+   487→                            className="border-t max-h-96 overflow-y-auto"
+   488→                          >
+   489→                            {moduleList.map((mod, idx) => {
+   490→                              const modType = mod.type || 'video';
+   491→                              return (
+   492→                                <div
+   493→                                  key={mod.id || idx}
+   494→                                  className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50/50"
+   495→                                >
+   496→                                  <div className="w-8 h-8 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+   497→                                    {modType === 'video' ? (
+   498→                                      <Play className="w-3.5 h-3.5 text-[#003087]" />
+   499→                                    ) : modType === 'text' ? (
+   500→                                      <FileText className="w-3.5 h-3.5 text-[#003087]" />
+   501→                                    ) : (
+   502→                                      <Zap className="w-3.5 h-3.5 text-[#003087]" />
+   503→                                    )}
+   504→                                  </div>
+   505→                                  <div className="flex-1 min-w-0">
+   506→                                    <p className="text-sm font-medium text-[#2C2E2F] truncate">
+   507→                                      {idx + 1}. {mod.title}
+   508→                                    </p>
+   509→                                  </div>
+   510→                                  {mod.duration && (
+   511→                                    <span className="text-xs text-gray-400 flex-shrink-0">
+   512→                                      {mod.duration}
+   513→                                    </span>
+   514→                                  )}
+   515→                                </div>
+   516→                              );
+   517→                            })}
+   518→                          </motion.div>
+   519→                        )}
+   520→                      </AnimatePresence>
+   521→                    </div>
+   522→                  )}
+   523→
+   524→                  {/* Quiz availability card */}
+   525→                  {hasQuiz && !isEnrolled && (
+   526→                    <div className="bg-gradient-to-r from-[#003087]/5 to-[#009CDE]/5 rounded-2xl border border-[#003087]/10 p-5 flex items-start gap-4">
+   527→                      <div className="w-10 h-10 rounded-xl bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+   528→                        <FileText className="w-5 h-5 text-[#003087]" />
+   529→                      </div>
+   530→                      <div>
+   531→                        <h4 className="font-semibold text-[#2C2E2F] text-sm">
+   532→                          Quiz de validation
+   533→                        </h4>
+   534→                        <p className="text-xs text-gray-500 mt-0.5">
+   535→                          Ce cours comporte un quiz (
+   536→                          {course.quizzes[0]?.passingScore}% de réussite
+   537→                          requis). Inscrivez-vous pour y accéder.
+   538→                        </p>
+   539→                      </div>
+   540→                    </div>
+   541→                  )}
+   542→
+   543→                  {/* Certificate availability card */}
+   544→                  {course.certificate && !isEnrolled && (
+   545→                    <div className="bg-gradient-to-r from-[#D4AF37]/5 to-[#D4AF37]/10 rounded-2xl border border-[#D4AF37]/20 p-5 flex items-start gap-4">
+   546→                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0">
+   547→                        <Award className="w-5 h-5 text-[#D4AF37]" />
+   548→                      </div>
+   549→                      <div>
+   550→                        <h4 className="font-semibold text-[#2C2E2F] text-sm">
+   551→                          Certificat de réussite
+   552→                        </h4>
+   553→                        <p className="text-xs text-gray-500 mt-0.5">
+   554→                          Obtenez un certificat officiel AfriBayit en réussissant
+   555→                          cette formation.
+   556→                        </p>
+   557→                      </div>
+   558→                    </div>
+   559→                  )}
+   560→                </motion.div>
+   561→              )}
+   562→
+   563→              {/* LESSONS TAB */}
+   564→              {activeTab === 'lessons' && isEnrolled && (
+   565→                <motion.div
+   566→                  key="lessons"
+   567→                  initial={{ opacity: 0, y: 10 }}
+   568→                  animate={{ opacity: 1, y: 0 }}
+   569→                  exit={{ opacity: 0 }}
+   570→                >
+   571→                  <CourseLessonViewer
+   572→                    courseId={course.id}
+   573→                    enrollmentId={enrollment!.id}
+   574→                    modules={moduleList}
+   575→                    videoUrl={course.videoUrl}
+   576→                    currentProgress={enrollment!.progress}
+   577→                    completedModules={
+   578→                      enrollment!.completedModules
+   579→                        ? JSON.parse(enrollment!.completedModules)
+   580→                        : []
+   581→                    }
+   582→                    onProgressUpdate={handleProgressUpdate}
+   583→                  />
+   584→                </motion.div>
+   585→              )}
+   586→
+   587→              {/* QUIZ TAB */}
+   588→              {activeTab === 'quiz' && isEnrolled && hasQuiz && (
+   589→                <motion.div
+   590→                  key="quiz"
+   591→                  initial={{ opacity: 0, y: 10 }}
+   592→                  animate={{ opacity: 1, y: 0 }}
+   593→                  exit={{ opacity: 0 }}
+   594→                >
+   595→                  {quizData && user ? (
+   596→                    <QuizTaker
+   597→                      courseId={course.id}
+   598→                      quiz={quizData}
+   599→                      userId={user.id}
+   600→                      totalAttempts={quizTotalAttempts}
+   601→                      onCertificateRequest={() =>
+   602→                        setActiveTab('overview')
+   603→                      }
+   604→                    />
+   605→                  ) : (
+   606→                    <div className="bg-white rounded-2xl border shadow-sm p-8 text-center">
+   607→                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+   608→                        <FileText className="w-6 h-6 text-gray-400" />
+   609→                      </div>
+   610→                      <h3 className="font-semibold text-[#2C2E2F] mb-1">
+   611→                        Quiz de validation
+   612→                      </h3>
+   613→                      <p className="text-sm text-gray-500 mb-4">
+   614→                        Testez vos connaissances et validez votre formation.
+   615→                      </p>
+   616→                      <button
+   617→                        onClick={handleLoadQuiz}
+   618→                        disabled={isLoadingQuiz}
+   619→                        className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+   620→                      >
+   621→                        {isLoadingQuiz
+   622→                          ? 'Chargement...'
+   623→                          : 'Commencer le quiz'}
+   624→                      </button>
+   625→                    </div>
+   626→                  )}
+   627→                </motion.div>
+   628→              )}
+   629→            </AnimatePresence>
+   630→          </div>
+   631→
+   632→          {/* ─── Right: Sidebar ──────────────────────────────────── */}
+   633→          <motion.div
+   634→            initial={{ opacity: 0, x: 20 }}
+   635→            animate={{ opacity: 1, x: 0 }}
+   636→            transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
+   637→            className="space-y-5"
+   638→          >
+   639→            {/* Price & Enroll card */}
+   640→            <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-24">
+   641→              {/* Price */}
+   642→              <div className="mb-4">
+   643→                {course.price > 0 ? (
+   644→                  <p className="text-3xl font-bold text-[#D4AF37]">
+   645→                    {new Intl.NumberFormat('fr-FR').format(course.price)}{' '}
+   646→                    <span className="text-sm font-normal text-gray-400">
+   647→                      {course.currency}
+   648→                    </span>
+   649→                  </p>
+   650→                ) : (
+   651→                  <p className="text-3xl font-bold text-[#00A651]">Gratuit</p>
+   652→                )}
+   653→              </div>
+   654→
+   655→              {/* CTA button */}
+   656→              {!isEnrolled ? (
+   657→                <button
+   658→                  onClick={handleEnroll}
+   659→                  disabled={isEnrolling}
+   660→                  className="w-full py-3.5 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+   661→                >
+   662→                  {isEnrolling ? (
+   663→                    <>
+   664→                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+   665→                      Inscription...
+   666→                    </>
+   667→                  ) : (
+   668→                    <>
+   669→                      <CheckCircle2 className="w-5 h-5" />
+   670→                      S&apos;inscrire
+   671→                    </>
+   672→                  )}
+   673→                </button>
+   674→              ) : isCompleted ? (
+   675→                <div className="space-y-3">
+   676→                  <div className="flex items-center gap-2 p-3 bg-[#00A651]/10 rounded-xl">
+   677→                    <CheckCircle2 className="w-5 h-5 text-[#00A651]" />
+   678→                    <span className="text-sm font-semibold text-[#00A651]">
+   679→                      Formation terminée !
+   680→                    </span>
+   681→                  </div>
+   682→                  <button
+   683→                    onClick={() => setActiveTab('lessons')}
+   684→                    className="w-full py-3 bg-gray-100 text-[#003087] rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+   685→                  >
+   686→                    <Play className="w-4 h-4" />
+   687→                    Revoir les modules
+   688→                  </button>
+   689→                  {hasQuiz && (
+   690→                    <button
+   691→                      onClick={handleLoadQuiz}
+   692→                      disabled={isLoadingQuiz}
+   693→                      className="w-full py-3 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+   694→                    >
+   695→                      <FileText className="w-4 h-4" />
+   696→                      Passer le quiz
+   697→                    </button>
+   698→                  )}
+   699→                  {userCertificate && (
+   700→                    <a
+   701→                      href={`/api/academy/certificates/generate?download=true&certificateId=${userCertificate.certificateId}`}
+   702→                      target="_blank"
+   703→                      rel="noopener noreferrer"
+   704→                      className="w-full py-3 bg-[#D4AF37] text-white rounded-xl font-semibold hover:bg-[#c9a22e] transition-colors flex items-center justify-center gap-2"
+   705→                    >
+   706→                      <Award className="w-4 h-4" />
+   707→                      Télécharger le certificat
+   708→                    </a>
+   709→                  )}
+   710→                </div>
+   711→              ) : (
+   712→                <div className="space-y-3">
+   713→                  <button
+   714→                    onClick={() => setActiveTab('lessons')}
+   715→                    className="w-full py-3.5 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors flex items-center justify-center gap-2"
+   716→                  >
+   717→                    <Play className="w-4 h-4" />
+   718→                    Continuer
+   719→                  </button>
+   720→                  {hasQuiz && (
+   721→                    <button
+   722→                      onClick={handleLoadQuiz}
+   723→                      disabled={isLoadingQuiz}
+   724→                      className="w-full py-3 bg-gray-100 text-[#003087] rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+   725→                    >
+   726→                      <FileText className="w-4 h-4" />
+   727→                      Passer le quiz
+   728→                    </button>
+   729→                  )}
+   730→                </div>
+   731→              )}
+   732→
+   733→              {/* Course details list */}
+   734→              <div className="mt-5 space-y-3 border-t pt-5">
+   735→                {[
+   736→                  {
+   737→                    icon: BookOpen,
+   738→                    label: 'Niveau',
+   739→                    value: levelLabels[course.level] || course.level,
+   740→                  },
+   741→                  {
+   742→                    icon: Clock,
+   743→                    label: 'Durée',
+   744→                    value: course.duration,
+   745→                  },
+   746→                  {
+   747→                    icon: Users,
+   748→                    label: 'Étudiants',
+   749→                    value: `${course.students} inscrits`,
+   750→                  },
+   751→                  {
+   752→                    icon: Star,
+   753→                    label: 'Note',
+   754→                    value: `${course.rating.toFixed(1)} / 5`,
+   755→                  },
+   756→                  {
+   757→                    icon: Shield,
+   758→                    label: 'Certificat',
+   759→                    value: course.certificate ? 'Oui' : 'Non',
+   760→                  },
+   761→                ].map(({ icon: Icon, label, value }) => (
+   762→                  <div
+   763→                    key={label}
+   764→                    className="flex items-center justify-between text-sm"
+   765→                  >
+   766→                    <span className="flex items-center gap-2 text-gray-500">
+   767→                      <Icon className="w-4 h-4" />
+   768→                      {label}
+   769→                    </span>
+   770→                    <span className="font-medium text-[#2C2E2F]">{value}</span>
+   771→                  </div>
+   772→                ))}
+   773→              </div>
+   774→
+   775→              {/* Progress bar (enrolled) */}
+   776→              {isEnrolled && !isCompleted && (
+   777→                <div className="mt-5 border-t pt-5">
+   778→                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+   779→                    <span>Votre progression</span>
+   780→                    <span className="font-semibold text-[#003087]">
+   781→                      {Math.round(enrollment.progress)}%
+   782→                    </span>
+   783→                  </div>
+   784→                  <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+   785→                    <motion.div
+   786→                      className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-full"
+   787→                      initial={{ width: 0 }}
+   788→                      animate={{
+   789→                        width: `${Math.round(enrollment.progress)}%`,
+   790→                      }}
+   791→                      transition={{ duration: 0.6, ease: 'easeOut' }}
+   792→                    />
+   793→                  </div>
+   794→                  <p className="text-[10px] text-gray-400 mt-1">
+   795→                    Inscrit le{' '}
+   796→                    {new Date(enrollment.enrolledAt).toLocaleDateString(
+   797→                      'fr-FR'
+   798→                    )}
+   799→                  </p>
+   800→                </div>
+   801→              )}
+   802→            </div>
+   803→
+   804→            {/* Instructor card */}
+   805→            <div className="bg-white rounded-2xl border shadow-sm p-5">
+   806→              <h4 className="text-sm font-semibold text-[#2C2E2F] mb-3">
+   807→                Instructeur
+   808→              </h4>
+   809→              <div className="flex items-center gap-3">
+   810→                <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
+   811→                  {course.instructor.charAt(0).toUpperCase()}
+   812→                </div>
+   813→                <div>
+   814→                  <p className="font-semibold text-[#2C2E2F] text-sm">
+   815→                    {course.instructor}
+   816→                  </p>
+   817→                  <p className="text-xs text-gray-500">
+   818→                    Formateur certifié AfriBayit
+   819→                  </p>
+   820→                </div>
+   821→              </div>
+   822→            </div>
+   823→          </motion.div>
+   824→        </div>
+   825→      </div>
+   826→    </div>
+   827→  );
+   828→}
+   829→
