@@ -52,3 +52,27 @@ Stage Summary:
 - UserDashboard shows real active listings count from DB
 - All TypeScript errors in modified files resolved
 - Changes deployed to Vercel via GitHub push
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix critical AfriBayit issues — OAuth, Dashboard, Navbar, /our-work page
+
+Work Log:
+- Analyzed all critical files: AuthPages.tsx, header-3.tsx, UserDashboard.tsx, auth.ts, .env, GeoTrustModule.tsx
+- Identified root causes: GOOGLE_CLIENT_SECRET and FACEBOOK_CLIENT_SECRET empty in .env, fragile manual CSRF+POST OAuth flow, no provider availability detection
+- Fixed AuthPages.tsx: Replaced manual CSRF+POST OAuth handlers with signIn() from next-auth/react, added provider availability detection via /api/auth/providers, conditional OAuth button rendering, removed unused in-app browser detection code
+- Fixed header-3.tsx: Added session status loading state handling, replaced window.location.pathname with usePathname() for SSR safety, added loading skeleton for auth buttons on desktop and mobile
+- Fixed UserDashboard.tsx: Better empty states for wallet and KPI cards, added useMemo-based activeTab from current pathname, added welcome onboarding banner for new users, added placeholder email profile completion notice
+- Created /our-work page with projects showcase, stats, services, and CTA sections
+- Updated header-3.tsx company links: Added "Nos réalisations" link to /our-work, fixed CGU and Confidentialité links to actual pages
+- Verified GeoTrust already uses geoServiceLabel() for all code displays
+- Build passes successfully, lint clean
+
+Stage Summary:
+- AuthPages OAuth: ✅ Simplified with signIn(), provider detection, conditional buttons
+- Navbar session: ✅ Loading state, SSR-safe pathname, skeleton placeholders
+- UserDashboard: ✅ Better empty states, reactive sidebar, onboarding banner
+- /our-work page: ✅ Created with 5 projects, stats, services, CTA
+- Nav links: ✅ Added /our-work link, fixed CGU/Privacy hrefs
+- GeoTrust IDs: ✅ Already uses geoServiceLabel() everywhere
+- NOTE: GOOGLE_CLIENT_SECRET and FACEBOOK_CLIENT_SECRET still need to be configured in .env/Vercel

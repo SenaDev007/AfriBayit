@@ -5,49 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { Check, Drama, Key, Loader2, Mail, ShieldCheck, User } from 'lucide-react';
 
-/**
- * Detect if the user is in an embedded/in-app browser (WebView).
- * Google OAuth blocks these with "disallowed_useragent" error.
- * Returns the browser type or null if it's a standard browser.
- */
-function detectInAppBrowser(): string | null {
-  if (typeof navigator === 'undefined') return null;
-  const ua = navigator.userAgent || '';
-  const wa = (navigator as unknown as { whatsapp?: unknown }).whatsapp;
-
-  // WhatsApp in-app browser
-  if (/WhatsApp/i.test(ua) || wa) return 'WhatsApp';
-  // Facebook / Instagram in-app browser
-  if (/FBAN|FBAV|FBIOS|FB4A/i.test(ua)) return 'Facebook';
-  if (/Instagram/i.test(ua)) return 'Instagram';
-  // Twitter/X in-app browser
-  if (/Twitter/i.test(ua)) return 'Twitter';
-  // LinkedIn in-app browser
-  if (/LinkedInApp/i.test(ua)) return 'LinkedIn';
-  // Snapchat
-  if (/Snapchat/i.test(ua)) return 'Snapchat';
-  // Generic Android WebView
-  if (/; wv\)/i.test(ua)) return 'Android WebView';
-  // iOS WKWebView (but not Safari)
-  if (/(iPhone|iPad).*AppleWebKit(?!.*Safari)/i.test(ua)) return 'iOS WebView';
-
-  return null;
-}
-
-/**
- * Open a URL in the system browser, bypassing in-app browsers.
- * On most mobile browsers, window.open with _system target or
- * direct location.href change will open the system browser.
- */
-function openInSystemBrowser(url: string) {
-  // Try opening with the system browser
-  const newWindow = window.open(url, '_system');
-  // Fallback: if window.open was blocked or didn't work, use location.href
-  if (!newWindow || newWindow.closed) {
-    window.location.href = url;
-  }
-}
-
 interface AuthPagesProps {
   mode: 'login' | 'register';
   onClose: () => void;
@@ -115,10 +72,6 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
-
-  // OAuth providers are always available for login/register (configured in NextAuth)
-  // The /api/auth/oauth-status endpoint is only for authenticated users checking linked providers
-  // So we always show the OAuth buttons on the auth pages
 
   // Check for OAuth errors in URL params (e.g. ?error=OAuthAccountNotLinked)
   useEffect(() => {
@@ -326,12 +279,19 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     }
   };
 
-  // In-app browser detection state
-  const [inAppBrowser, setInAppBrowser] = useState<string | null>(null);
-  const [showInAppWarning, setShowInAppWarning] = useState(false);
+  // OAuth provider availability detection
+  const [availableProviders, setAvailableProviders] = useState<{ google: boolean; facebook: boolean }>({ google: false, facebook: false });
 
   useEffect(() => {
-    setInAppBrowser(detectInAppBrowser());
+    fetch('/api/auth/providers')
+      .then(res => res.json())
+      .then(providers => {
+        setAvailableProviders({
+          google: !!providers.google,
+          facebook: !!providers.facebook,
+        });
+      })
+      .catch(() => {});
   }, []);
 
   //  Social login handlers 
@@ -339,40 +299,22 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setLoginError('');
     setOauthLoading('google');
     try {
-      const csrfRes = await fetch('/api/auth/csrf');
-      if (!csrfRes.ok) throw new Error('CSRF fetch failed');
-      const { csrfToken } = await csrfRes.json();
-
-      const signinRes = await fetch('/api/auth/signin/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
-      });
-
-      if (!signinRes.ok) {
-        throw new Error(`Signin request failed: ${signinRes.status}`);
+      const result = await signIn('google', { callbackUrl: '/dashboard', redirect: false });
+      if (result?.error) {
+        const errorMessages: Record<string, string> = {
+          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
+          OAuthSignin: 'Erreur lors de la connexion via Google. Veuillez réessayer.',
+          OAuthCallback: 'Erreur lors du traitement de la réponse Google. Veuillez réessayer.',
+          Configuration: 'La connexion Google n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
+          Default: 'Erreur lors de la connexion Google.',
+        };
+        setLoginError(errorMessages[result.error] || errorMessages.Default);
+      } else if (result?.ok) {
+        onSuccess();
       }
-
-      const data = await signinRes.json();
-
-      if (data.url) {
-        // Open the Google OAuth URL directly — this bypasses in-app browser restrictions
-        if (inAppBrowser) {
-          openInSystemBrowser(data.url);
-          setOauthLoading(null);
-        } else {
-          window.location.href = data.url;
-        }
-      } else if (data.error) {
-        setLoginError('Erreur lors de la connexion Google. Veuillez réessayer.');
-        setOauthLoading(null);
-      } else {
-        setLoginError('Réponse inattendue du serveur. Veuillez réessayer.');
-        setOauthLoading(null);
-      }
-    } catch (err) {
-      console.error('[Google OAuth] Error:', err);
-      setLoginError('Erreur de connexion au serveur. Vérifiez votre connexion et réessayez.');
+    } catch {
+      setLoginError('Erreur de connexion au serveur.');
+    } finally {
       setOauthLoading(null);
     }
   };
@@ -381,39 +323,22 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setLoginError('');
     setOauthLoading('facebook');
     try {
-      const csrfRes = await fetch('/api/auth/csrf');
-      if (!csrfRes.ok) throw new Error('CSRF fetch failed');
-      const { csrfToken } = await csrfRes.json();
-
-      const signinRes = await fetch('/api/auth/signin/facebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `csrfToken=${csrfToken}&callbackUrl=${encodeURIComponent(window.location.origin + '/dashboard')}&json=true`,
-      });
-
-      if (!signinRes.ok) {
-        throw new Error(`Facebook signin request failed: ${signinRes.status}`);
+      const result = await signIn('facebook', { callbackUrl: '/dashboard', redirect: false });
+      if (result?.error) {
+        const errorMessages: Record<string, string> = {
+          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
+          OAuthSignin: 'Erreur lors de la connexion via Facebook. Veuillez réessayer.',
+          OAuthCallback: 'Erreur lors du traitement de la réponse Facebook. Veuillez réessayer.',
+          Configuration: 'La connexion Facebook n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
+          Default: 'Erreur lors de la connexion Facebook.',
+        };
+        setLoginError(errorMessages[result.error] || errorMessages.Default);
+      } else if (result?.ok) {
+        onSuccess();
       }
-
-      const data = await signinRes.json();
-
-      if (data.url) {
-        if (inAppBrowser) {
-          openInSystemBrowser(data.url);
-          setOauthLoading(null);
-        } else {
-          window.location.href = data.url;
-        }
-      } else if (data.error) {
-        setLoginError('Erreur lors de la connexion Facebook. Vérifiez la configuration ou réessayez.');
-        setOauthLoading(null);
-      } else {
-        setLoginError('Réponse inattendue du serveur. Veuillez réessayer.');
-        setOauthLoading(null);
-      }
-    } catch (err) {
-      console.error('[Facebook OAuth] Error:', err);
-      setLoginError('Erreur de connexion au serveur. Vérifiez votre connexion et réessayez.');
+    } catch {
+      setLoginError('Erreur de connexion au serveur.');
+    } finally {
       setOauthLoading(null);
     }
   };
@@ -824,29 +749,6 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           {loginLoading ? 'Connexion...' : 'Se connecter'}
                         </motion.button>
 
-                        {/* In-App Browser Warning */}
-                        {inAppBrowser && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-700"
-                          >
-                            <p className="font-semibold mb-1">Navigateur {inAppBrowser} detecte</p>
-                            <p>Pour une connexion securisee, ouvrez ce site dans Chrome ou Safari : copiez le lien ci-dessous et ouvrez-le dans votre navigateur.</p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard?.writeText(window.location.href);
-                                setShowInAppWarning(true);
-                                setTimeout(() => setShowInAppWarning(false), 2000);
-                              }}
-                              className="mt-2 px-3 py-1.5 bg-amber-600 text-white rounded-full text-xs font-medium hover:bg-amber-700 transition-colors"
-                            >
-                              {showInAppWarning ? 'Lien copie !' : 'Copier le lien'}
-                            </button>
-                          </motion.div>
-                        )}
-
                     </form>
                     </>
                   ) : (
@@ -921,7 +823,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   )}
 
                   {/* Social Login — shown below both login and 2FA forms */}
-                  {!show2FA && (
+                  {!show2FA && (availableProviders.google || availableProviders.facebook) && (
                     <>
                       <div className="relative my-4">
                         <div className="absolute inset-0 flex items-center">
@@ -932,8 +834,8 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        {(
+                      <div className={`grid ${availableProviders.google && availableProviders.facebook ? 'grid-cols-2' : ''} gap-3`}>
+                        {availableProviders.google && (
                           <button
                             type="button"
                             onClick={handleGoogleLogin}
@@ -965,7 +867,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                             {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
                           </button>
                         )}
-                        {(
+                        {availableProviders.facebook && (
                           <button
                             type="button"
                             onClick={handleFacebookLogin}
@@ -1227,66 +1129,70 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   </div>
 
                   {/* Social Login — register form */}
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
-                    </div>
-                  </div>
+                  {(availableProviders.google || availableProviders.facebook) && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+                        </div>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    {(
-                      <button
-                        type="button"
-                        onClick={handleGoogleLogin}
-                        disabled={!!oauthLoading}
-                        className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {oauthLoading === 'google' ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                        <svg className="w-4 h-4" viewBox="0 0 24 24">
-                          <path
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                            fill="#4285F4"
-                          />
-                          <path
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                            fill="#34A853"
-                          />
-                          <path
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                            fill="#FBBC05"
-                          />
-                          <path
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                            fill="#EA4335"
-                          />
-                        </svg>
+                      <div className={`grid ${availableProviders.google && availableProviders.facebook ? 'grid-cols-2' : ''} gap-3`}>
+                        {availableProviders.google && (
+                          <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            disabled={!!oauthLoading}
+                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {oauthLoading === 'google' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+                              <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                                fill="#4285F4"
+                              />
+                              <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853"
+                              />
+                              <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05"
+                              />
+                              <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335"
+                              />
+                            </svg>
+                            )}
+                            {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
+                          </button>
                         )}
-                        {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
-                      </button>
-                    )}
-                    {(
-                      <button
-                        type="button"
-                        onClick={handleFacebookLogin}
-                        disabled={!!oauthLoading}
-                        className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {oauthLoading === 'facebook' ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
-                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                        </svg>
+                        {availableProviders.facebook && (
+                          <button
+                            type="button"
+                            onClick={handleFacebookLogin}
+                            disabled={!!oauthLoading}
+                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {oauthLoading === 'facebook' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                            )}
+                            {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
+                          </button>
                         )}
-                        {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
-                      </button>
-                    )}
-                  </div>
+                      </div>
+                    </>
+                  )}
 
                   <p className="text-center text-sm text-gray-500 mt-4 pb-6">
                     Déjà inscrit ?{' '}

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/navigation-menu';
 import { LucideIcon } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Home,
@@ -202,6 +203,13 @@ const companyLinks: LinkItem[] = [
     icon: Users,
   },
   {
+    title: 'Nos réalisations',
+    href: '/our-work',
+    description: 'Projets immobiliers et hôteliers',
+    icon: GlobeIcon,
+    gold: true,
+  },
+  {
     title: 'Témoignages',
     href: '#',
     description: 'Ce que nos clients disent de nous',
@@ -218,12 +226,12 @@ const companyLinks: LinkItem[] = [
 const companyLinks2: LinkItem[] = [
   {
     title: 'CGU',
-    href: '#',
+    href: '/terms',
     icon: FileText,
   },
   {
     title: 'Confidentialité',
-    href: '#',
+    href: '/privacy',
     icon: Shield,
   },
   {
@@ -267,7 +275,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   const [open, setOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
   const scrolled = useScroll(10);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const isLoggedIn = !!session?.user;
   const profileMenuRef = React.useRef<HTMLDivElement>(null);
 
@@ -294,7 +302,8 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   }, [open]);
 
   // Determine text colors based on scroll state and path
-  const isHome = typeof window !== 'undefined' && window.location.pathname === '/';
+  const pathname = usePathname();
+  const isHome = pathname === '/';
   const textColor = scrolled ? 'text-[#2C2E2F]' : (isHome ? 'text-white' : 'text-[#2C2E2F]');
   const mutedColor = scrolled ? 'text-gray-500' : (isHome ? 'text-white/70' : 'text-gray-500');
 
@@ -476,7 +485,9 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           </Button>
 
           {/* Connexion / Profile */}
-          {!isLoggedIn ? (
+          {status === 'loading' ? (
+            <div className="w-20 h-8 bg-gray-100 rounded-md animate-pulse" />
+          ) : !isLoggedIn ? (
             <Button
               variant="outline"
               size="sm"
@@ -583,7 +594,9 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           </div>
         </NavigationMenu>
         <div className="flex flex-col gap-2">
-          {isLoggedIn ? (
+          {status === 'loading' ? (
+            <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+          ) : isLoggedIn ? (
             <>
               <div className="flex items-center gap-3 px-2 py-2 mb-1">
                 <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#D4AF37]">

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useWallet } from '@/hooks/useWallet';
@@ -57,8 +57,14 @@ function formatPrice(price: number): string {
 }
 
 export default function UserDashboard({ onNavigate, onLogout }: UserDashboardProps) {
-  const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Derive activeTab from the current URL pathname
+  const activeTab = useMemo(() => {
+    const matchingItem = sideNavItems.find(item => item.href === pathname);
+    return matchingItem ? matchingItem.key : 'overview';
+  }, [pathname]);
 
   // Use NextAuth session as the primary source of truth for auth state
   // AppShell syncs session → authStore, so both are available after OAuth
@@ -157,6 +163,11 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
                     <userKyc.Icon className="w-3 h-3 inline" /> {userKyc.name}
                   </span>
+                  {user?.email?.endsWith('@placeholder.afribayit.com') && (
+                    <a href="/profile" className="text-[10px] text-amber-600 hover:underline block mt-1">
+                      Complétez votre profil →
+                    </a>
+                  )}
                 </div>
               </div>
               <nav className="space-y-1">
@@ -166,7 +177,6 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                     <button
                       key={item.key}
                       onClick={() => {
-                        setActiveTab(item.key);
                         router.push(item.href);
                       }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
@@ -191,6 +201,31 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
+            {/* Welcome / Onboarding for new users */}
+            {activeListingsCount === 0 && transactions.length === 0 && !walletLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative z-10">
+                  <h3 className="font-display text-xl font-bold mb-2">Bienvenue sur AfriBayit ! 🏠</h3>
+                  <p className="text-white/70 text-sm mb-4">
+                    Commencez par compléter votre profil et vérifier votre identité pour accéder à toutes les fonctionnalités.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <a href="/kyc" className="px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors">
+                      Vérifier mon identité
+                    </a>
+                    <a href="/publish" className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors">
+                      Publier une annonce
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {walletLoading ? (
@@ -205,9 +240,27 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   </div>
                 ))
               ) : walletError ? (
-                <div className="col-span-4 bg-red-50 rounded-2xl p-4 text-center">
-                  <p className="text-sm text-[#D93025]">Erreur lors du chargement des données du wallet</p>
-                </div>
+                [
+                  { label: 'Annonces actives', value: '0', icon: <Home className="w-4 h-4" />, color: '#003087' },
+                  { label: 'Transactions', value: '0', icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
+                  { label: 'Solde wallet', value: '0 FCFA', icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
+                  { label: 'Score AfriBayit', value: '0/100', icon: null, color: '#009CDE' },
+                ].map((kpi, i) => (
+                  <motion.div
+                    key={kpi.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                    className="bg-white rounded-2xl p-4 shadow-sm border"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl">{kpi.icon}</span>
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
+                    </div>
+                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                  </motion.div>
+                ))
               ) : (
                 [
                   { label: 'Annonces actives', value: String(activeListingsCount), icon: <Home className="w-4 h-4" />, color: '#003087' },
@@ -245,9 +298,35 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 </div>
               </div>
             ) : walletError ? (
-              <div className="bg-red-50 rounded-3xl p-6 mb-6 border border-red-200 text-center">
-                <p className="text-sm text-[#D93025]">Impossible de charger les données du portefeuille</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
+                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                      <Wallet className="w-6 h-6 text-[#D4AF37]" />
+                    </div>
+                    <div>
+                      <p className="font-display text-lg font-bold">Bienvenue !</p>
+                      <p className="text-white/60 text-xs">Portefeuille AfriBayit</p>
+                    </div>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Votre portefeuille sera disponible après la vérification KYC.
+                  </p>
+                  <a
+                    href="/kyc"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    Vérifier mon identité
+                  </a>
+                </div>
+              </motion.div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
