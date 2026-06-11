@@ -85,7 +85,11 @@ export default function AdminRevenuePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analyse des Revenus</h1>
+          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <DollarSign className="w-6 h-6 text-[#003087]" />
+            Analyse des Revenus
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">Suivi des revenus par source et par pays</p>
         </div>
         <div className="flex items-center gap-2">
@@ -108,49 +112,49 @@ export default function AdminRevenuePage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
             <DollarSign className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Revenu total</p>
-            <p className="text-lg font-bold text-gray-900">{formatXOF(totalRevenue)}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{formatXOF(totalRevenue)}</p>
             <p className="text-[11px] text-green-600 flex items-center gap-0.5">
               <ArrowUpRight className="w-3 h-3" /> +{avgGrowth.toFixed(1)}%
             </p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
             <Users className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Abonnements actifs</p>
-            <p className="text-lg font-bold text-gray-900">22,750</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">22,750</p>
             <p className="text-[11px] text-green-600 flex items-center gap-0.5">
               <ArrowUpRight className="w-3 h-3" /> +8.3%
             </p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#00A651]/10 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-[#00A651]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Revenu mensuel moyen</p>
-            <p className="text-lg font-bold text-gray-900">{formatXOF(totalRevenue / 12)}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{formatXOF(totalRevenue / 12)}</p>
             <p className="text-[11px] text-green-600 flex items-center gap-0.5">
               <ArrowUpRight className="w-3 h-3" /> +5.7%
             </p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
             <CreditCard className="w-5 h-5 text-purple-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Commission moyenne</p>
-            <p className="text-lg font-bold text-gray-900">2.8%</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">2.8%</p>
             <p className="text-[11px] text-red-500 flex items-center gap-0.5">
               <ArrowDownRight className="w-3 h-3" /> -0.3%
             </p>

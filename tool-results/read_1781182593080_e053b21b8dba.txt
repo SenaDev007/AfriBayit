@@ -1,0 +1,757 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import React, { useState, useCallback, useMemo } from 'react';
+     4→     4→import {
+     5→     5→  Search,
+     6→     6→  Filter,
+     7→     7→  ChevronLeft,
+     8→     8→  ChevronRight,
+     9→     9→  Download,
+    10→    10→  FileText,
+    11→    11→  ChevronDown,
+    12→    12→  ChevronUp,
+    13→    13→  Shield,
+    14→    14→  X,
+    15→    15→} from 'lucide-react';
+    16→    16→import { Input } from '@/components/ui/input';
+    17→    17→import { Button } from '@/components/ui/button';
+    18→    18→import { Badge } from '@/components/ui/badge';
+    19→    19→import { Skeleton } from '@/components/ui/skeleton';
+    20→    20→import {
+    21→    21→  Select,
+    22→    22→  SelectContent,
+    23→    23→  SelectItem,
+    24→    24→  SelectTrigger,
+    25→    25→  SelectValue,
+    26→    26→} from '@/components/ui/select';
+    27→    27→import {
+    28→    28→  Table,
+    29→    29→  TableBody,
+    30→    30→  TableCell,
+    31→    31→  TableHead,
+    32→    32→  TableHeader,
+    33→    33→  TableRow,
+    34→    34→} from '@/components/ui/table';
+    35→    35→import {
+    36→    36→  Dialog,
+    37→    37→  DialogContent,
+    38→    38→  DialogHeader,
+    39→    39→  DialogTitle,
+    40→    40→} from '@/components/ui/dialog';
+    41→    41→import { cn } from '@/lib/utils';
+    42→    42→import {
+    43→    43→  useAdminAuditLogs,
+    44→    44→  type AdminAuditLog,
+    45→    45→  type AdminAuditLogFilters,
+    46→    46→} from '@/hooks/useAdmin';
+    47→    47→
+    48→    48→const COUNTRY_FLAGS: Record<string, string> = {
+    49→    49→  BJ: '🇧🇯',
+    50→    50→  CI: '🇨🇮',
+    51→    51→  BF: '🇧🇫',
+    52→    52→  TG: '🇹🇬',
+    53→    53→  SN: '🇸🇳',
+    54→    54→};
+    55→    55→
+    56→    56→const ACTION_CATEGORIES: Record<string, { label: string; color: string }> = {
+    57→    57→  // Destructive actions (red)
+    58→    58→  delete: { label: 'Suppression', color: 'bg-red-50 text-red-700 border-red-200' },
+    59→    59→  remove: { label: 'Retrait', color: 'bg-red-50 text-red-700 border-red-200' },
+    60→    60→  ban: { label: 'Bannissement', color: 'bg-red-50 text-red-700 border-red-200' },
+    61→    61→  reject: { label: 'Rejet', color: 'bg-red-50 text-red-700 border-red-200' },
+    62→    62→  cancel: { label: 'Annulation', color: 'bg-red-50 text-red-700 border-red-200' },
+    63→    63→  dispute: { label: 'Litige', color: 'bg-red-50 text-red-700 border-red-200' },
+    64→    64→  refund: { label: 'Remboursement', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+    65→    65→  // Create actions (green)
+    66→    66→  create: { label: 'Création', color: 'bg-green-50 text-green-700 border-green-200' },
+    67→    67→  publish: { label: 'Publication', color: 'bg-green-50 text-green-700 border-green-200' },
+    68→    68→  register: { label: 'Inscription', color: 'bg-green-50 text-green-700 border-green-200' },
+    69→    69→  enroll: { label: 'Inscription', color: 'bg-green-50 text-green-700 border-green-200' },
+    70→    70→  fund: { label: 'Financement', color: 'bg-green-50 text-green-700 border-green-200' },
+    71→    71→  validate: { label: 'Validation', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    72→    72→  verify: { label: 'Vérification', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    73→    73→  approve: { label: 'Approbation', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    74→    74→  certify: { label: 'Certification', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    75→    75→  // Update actions (blue/teal)
+    76→    76→  update: { label: 'Mise à jour', color: 'bg-sky-50 text-sky-700 border-sky-200' },
+    77→    77→  change: { label: 'Modification', color: 'bg-sky-50 text-sky-700 border-sky-200' },
+    78→    78→  assign: { label: 'Assignation', color: 'bg-sky-50 text-sky-700 border-sky-200' },
+    79→    79→  release: { label: 'Libération', color: 'bg-teal-50 text-teal-700 border-teal-200' },
+    80→    80→  // System actions (gray)
+    81→    81→  system: { label: 'Système', color: 'bg-gray-50 text-gray-700 border-gray-200' },
+    82→    82→  login: { label: 'Connexion', color: 'bg-gray-50 text-gray-700 border-gray-200' },
+    83→    83→  logout: { label: 'Déconnexion', color: 'bg-gray-50 text-gray-700 border-gray-200' },
+    84→    84→};
+    85→    85→
+    86→    86→const TARGET_TYPE_LABELS: Record<string, string> = {
+    87→    87→  user: 'Utilisateur',
+    88→    88→  property: 'Propriété',
+    89→    89→  kyc_document: 'Doc KYC',
+    90→    90→  transaction: 'Transaction',
+    91→    91→  escrow: 'Escrow',
+    92→    92→  subscription: 'Abonnement',
+    93→    93→  course: 'Formation',
+    94→    94→  hotel: 'Hôtel',
+    95→    95→  guesthouse: 'Guesthouse',
+    96→    96→  review: 'Avis',
+    97→    97→  community: 'Communauté',
+    98→    98→  notification: 'Notification',
+    99→    99→  artisan: 'Artisan',
+   100→   100→  notary: 'Notaire',
+   101→   101→  geometer: 'Géomètre',
+   102→   102→};
+   103→   103→
+   104→   104→function getActionCategory(action: string) {
+   105→   105→  const actionLower = action.toLowerCase();
+   106→   106→  for (const [key, value] of Object.entries(ACTION_CATEGORIES)) {
+   107→   107→    if (actionLower.includes(key)) return value;
+   108→   108→  }
+   109→   109→  return { label: action, color: 'bg-gray-50 text-gray-600 border-gray-200' };
+   110→   110→}
+   111→   111→
+   112→   112→function formatDate(dateStr: string) {
+   113→   113→  const d = new Date(dateStr);
+   114→   114→  return d.toLocaleDateString('fr-FR', {
+   115→   115→    day: '2-digit',
+   116→   116→    month: '2-digit',
+   117→   117→    year: 'numeric',
+   118→   118→    hour: '2-digit',
+   119→   119→    minute: '2-digit',
+   120→   120→    second: '2-digit',
+   121→   121→  });
+   122→   122→}
+   123→   123→
+   124→   124→function formatRelativeTime(dateStr: string) {
+   125→   125→  const d = new Date(dateStr);
+   126→   126→  const now = new Date();
+   127→   127→  const diffMs = now.getTime() - d.getTime();
+   128→   128→  const diffMin = Math.floor(diffMs / 60000);
+   129→   129→  const diffH = Math.floor(diffMin / 60);
+   130→   130→  const diffD = Math.floor(diffH / 24);
+   131→   131→
+   132→   132→  if (diffMin < 1) return 'À l\'instant';
+   133→   133→  if (diffMin < 60) return `Il y a ${diffMin} min`;
+   134→   134→  if (diffH < 24) return `Il y a ${diffH}h`;
+   135→   135→  if (diffD < 7) return `Il y a ${diffD}j`;
+   136→   136→  return formatDate(dateStr);
+   137→   137→}
+   138→   138→
+   139→   139→export default function AdminAuditLogsPage() {
+   140→   140→  const [filters, setFilters] = useState<AdminAuditLogFilters>({ page: 1, limit: 25 });
+   141→   141→  const [searchAction, setSearchAction] = useState('');
+   142→   142→  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+   143→   143→  const [detailLog, setDetailLog] = useState<AdminAuditLog | null>(null);
+   144→   144→
+   145→   145→  const { data, isLoading } = useAdminAuditLogs(filters);
+   146→   146→  const logs = data?.data || [];
+   147→   147→  const pagination = data?.pagination;
+   148→   148→
+   149→   149→  const handleSearch = useCallback(() => {
+   150→   150→    setFilters((prev) => ({ ...prev, action: searchAction || undefined, page: 1 }));
+   151→   151→  }, [searchAction]);
+   152→   152→
+   153→   153→  const clearFilters = useCallback(() => {
+   154→   154→    setFilters({ page: 1, limit: 25 });
+   155→   155→    setSearchAction('');
+   156→   156→  }, []);
+   157→   157→
+   158→   158→  const hasActiveFilters = useMemo(() => {
+   159→   159→    return !!(filters.action || filters.targetType || filters.country || filters.dateFrom || filters.dateTo || filters.actorId);
+   160→   160→  }, [filters]);
+   161→   161→
+   162→   162→  // Compute action stats for quick filters
+   163→   163→  const actionStats = useMemo(() => {
+   164→   164→    const stats: Record<string, number> = {};
+   165→   165→    logs.forEach((log) => {
+   166→   166→      const cat = getActionCategory(log.action);
+   167→   167→      stats[cat.label] = (stats[cat.label] || 0) + 1;
+   168→   168→    });
+   169→   169→    return stats;
+   170→   170→  }, [logs]);
+   171→   171→
+   172→   172→  return (
+   173→   173→    <div className="space-y-6">
+   174→   174→      {/* Page header */}
+   175→   175→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+   176→   176→        <div>
+   177→   177→          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+   178→   178→            <Shield className="w-6 h-6 text-[#003087]" />
+   179→   179→            Journaux d&apos;audit
+   180→   180→          </h1>
+   181→   181→          <p className="text-sm text-gray-500 mt-0.5">
+   182→   182→            {pagination ? `${pagination.total} entrées au total` : 'Chargement...'}
+   183→   183→          </p>
+   184→   184→        </div>
+   185→   185→        <div className="flex items-center gap-2">
+   186→   186→          <Button variant="outline" size="sm" className="text-xs">
+   187→   187→            <Download className="w-3.5 h-3.5 mr-1.5" />
+   188→   188→            Exporter CSV
+   189→   189→          </Button>
+   190→   190→        </div>
+   191→   191→      </div>
+   192→   192→
+   193→   193→      {/* Filters */}
+   194→   194→      <div className="bg-white rounded-xl border border-gray-200 p-4">
+   195→   195→        <div className="flex flex-col lg:flex-row gap-3">
+   196→   196→          {/* Search by action */}
+   197→   197→          <div className="relative flex-1">
+   198→   198→            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+   199→   199→            <Input
+   200→   200→              placeholder="Rechercher par action (ex: user.update_role)..."
+   201→   201→              value={searchAction}
+   202→   202→              onChange={(e) => setSearchAction(e.target.value)}
+   203→   203→              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+   204→   204→              className="pl-10 h-9 text-sm"
+   205→   205→            />
+   206→   206→          </div>
+   207→   207→
+   208→   208→          {/* Filter dropdowns */}
+   209→   209→          <div className="flex flex-wrap gap-2">
+   210→   210→            <Select
+   211→   211→              value={filters.targetType || 'all'}
+   212→   212→              onValueChange={(v) =>
+   213→   213→                setFilters((prev) => ({ ...prev, targetType: v === 'all' ? undefined : v, page: 1 }))
+   214→   214→              }
+   215→   215→            >
+   216→   216→              <SelectTrigger className="w-[150px] h-9 text-xs">
+   217→   217→                <SelectValue placeholder="Type de cible" />
+   218→   218→              </SelectTrigger>
+   219→   219→              <SelectContent>
+   220→   220→                <SelectItem value="all">Tous les types</SelectItem>
+   221→   221→                <SelectItem value="user">Utilisateur</SelectItem>
+   222→   222→                <SelectItem value="property">Propriété</SelectItem>
+   223→   223→                <SelectItem value="kyc_document">Doc KYC</SelectItem>
+   224→   224→                <SelectItem value="transaction">Transaction</SelectItem>
+   225→   225→                <SelectItem value="escrow">Escrow</SelectItem>
+   226→   226→                <SelectItem value="subscription">Abonnement</SelectItem>
+   227→   227→                <SelectItem value="course">Formation</SelectItem>
+   228→   228→                <SelectItem value="hotel">Hôtel</SelectItem>
+   229→   229→                <SelectItem value="guesthouse">Guesthouse</SelectItem>
+   230→   230→                <SelectItem value="review">Avis</SelectItem>
+   231→   231→                <SelectItem value="notary">Notaire</SelectItem>
+   232→   232→                <SelectItem value="geometer">Géomètre</SelectItem>
+   233→   233→              </SelectContent>
+   234→   234→            </Select>
+   235→   235→
+   236→   236→            <Select
+   237→   237→              value={filters.country || 'all'}
+   238→   238→              onValueChange={(v) =>
+   239→   239→                setFilters((prev) => ({ ...prev, country: v === 'all' ? undefined : v, page: 1 }))
+   240→   240→              }
+   241→   241→            >
+   242→   242→              <SelectTrigger className="w-[140px] h-9 text-xs">
+   243→   243→                <SelectValue placeholder="Pays" />
+   244→   244→              </SelectTrigger>
+   245→   245→              <SelectContent>
+   246→   246→                <SelectItem value="all">Tous les pays</SelectItem>
+   247→   247→                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+   248→   248→                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
+   249→   249→                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+   250→   250→                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+   251→   251→                <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+   252→   252→              </SelectContent>
+   253→   253→            </Select>
+   254→   254→
+   255→   255→            {/* Date from */}
+   256→   256→            <Input
+   257→   257→              type="date"
+   258→   258→              value={filters.dateFrom || ''}
+   259→   259→              onChange={(e) =>
+   260→   260→                setFilters((prev) => ({ ...prev, dateFrom: e.target.value || undefined, page: 1 }))
+   261→   261→              }
+   262→   262→              className="w-[140px] h-9 text-xs"
+   263→   263→              placeholder="Date début"
+   264→   264→            />
+   265→   265→
+   266→   266→            {/* Date to */}
+   267→   267→            <Input
+   268→   268→              type="date"
+   269→   269→              value={filters.dateTo || ''}
+   270→   270→              onChange={(e) =>
+   271→   271→                setFilters((prev) => ({ ...prev, dateTo: e.target.value || undefined, page: 1 }))
+   272→   272→              }
+   273→   273→              className="w-[140px] h-9 text-xs"
+   274→   274→              placeholder="Date fin"
+   275→   275→            />
+   276→   276→
+   277→   277→            <Button
+   278→   278→              variant="outline"
+   279→   279→              size="sm"
+   280→   280→              className="h-9 text-xs"
+   281→   281→              onClick={handleSearch}
+   282→   282→            >
+   283→   283→              <Filter className="w-3.5 h-3.5 mr-1" />
+   284→   284→              Filtrer
+   285→   285→            </Button>
+   286→   286→
+   287→   287→            {hasActiveFilters && (
+   288→   288→              <Button
+   289→   289→                variant="ghost"
+   290→   290→                size="sm"
+   291→   291→                className="h-9 text-xs text-red-600 hover:text-red-700"
+   292→   292→                onClick={clearFilters}
+   293→   293→              >
+   294→   294→                <X className="w-3.5 h-3.5 mr-1" />
+   295→   295→                Réinitialiser
+   296→   296→              </Button>
+   297→   297→            )}
+   298→   298→          </div>
+   299→   299→        </div>
+   300→   300→
+   301→   301→        {/* Active filter pills */}
+   302→   302→        {hasActiveFilters && (
+   303→   303→          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
+   304→   304→            {filters.targetType && (
+   305→   305→              <Badge variant="outline" className="text-[11px] gap-1 pr-1">
+   306→   306→                Type: {TARGET_TYPE_LABELS[filters.targetType] || filters.targetType}
+   307→   307→                <X
+   308→   308→                  className="w-3 h-3 cursor-pointer hover:text-red-500"
+   309→   309→                  onClick={() => setFilters((prev) => ({ ...prev, targetType: undefined, page: 1 }))}
+   310→   310→                />
+   311→   311→              </Badge>
+   312→   312→            )}
+   313→   313→            {filters.country && (
+   314→   314→              <Badge variant="outline" className="text-[11px] gap-1 pr-1">
+   315→   315→                Pays: {COUNTRY_FLAGS[filters.country] || ''} {filters.country}
+   316→   316→                <X
+   317→   317→                  className="w-3 h-3 cursor-pointer hover:text-red-500"
+   318→   318→                  onClick={() => setFilters((prev) => ({ ...prev, country: undefined, page: 1 }))}
+   319→   319→                />
+   320→   320→              </Badge>
+   321→   321→            )}
+   322→   322→            {filters.action && (
+   323→   323→              <Badge variant="outline" className="text-[11px] gap-1 pr-1">
+   324→   324→                Action: {filters.action}
+   325→   325→                <X
+   326→   326→                  className="w-3 h-3 cursor-pointer hover:text-red-500"
+   327→   327→                  onClick={() => {
+   328→   328→                    setFilters((prev) => ({ ...prev, action: undefined, page: 1 }));
+   329→   329→                    setSearchAction('');
+   330→   330→                  }}
+   331→   331→                />
+   332→   332→              </Badge>
+   333→   333→            )}
+   334→   334→            {filters.dateFrom && (
+   335→   335→              <Badge variant="outline" className="text-[11px] gap-1 pr-1">
+   336→   336→                Du: {filters.dateFrom}
+   337→   337→                <X
+   338→   338→                  className="w-3 h-3 cursor-pointer hover:text-red-500"
+   339→   339→                  onClick={() => setFilters((prev) => ({ ...prev, dateFrom: undefined, page: 1 }))}
+   340→   340→                />
+   341→   341→              </Badge>
+   342→   342→            )}
+   343→   343→            {filters.dateTo && (
+   344→   344→              <Badge variant="outline" className="text-[11px] gap-1 pr-1">
+   345→   345→                Au: {filters.dateTo}
+   346→   346→                <X
+   347→   347→                  className="w-3 h-3 cursor-pointer hover:text-red-500"
+   348→   348→                  onClick={() => setFilters((prev) => ({ ...prev, dateTo: undefined, page: 1 }))}
+   349→   349→                />
+   350→   350→              </Badge>
+   351→   351→            )}
+   352→   352→          </div>
+   353→   353→        )}
+   354→   354→      </div>
+   355→   355→
+   356→   356→      {/* Data Table */}
+   357→   357→      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+   358→   358→        {isLoading ? (
+   359→   359→          <div className="p-4 space-y-3">
+   360→   360→            {[...Array(8)].map((_, i) => (
+   361→   361→              <div key={i} className="flex items-center gap-3">
+   362→   362→                <Skeleton className="h-4 w-36" />
+   363→   363→                <Skeleton className="h-4 w-24" />
+   364→   364→                <Skeleton className="h-4 w-40" />
+   365→   365→                <Skeleton className="h-4 w-28" />
+   366→   366→                <Skeleton className="h-4 w-16" />
+   367→   367→                <Skeleton className="h-4 w-24" />
+   368→   368→              </div>
+   369→   369→            ))}
+   370→   370→          </div>
+   371→   371→        ) : logs.length === 0 ? (
+   372→   372→          <div className="flex flex-col items-center justify-center py-16 text-center">
+   373→   373→            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+   374→   374→              <FileText className="w-8 h-8 text-gray-400" />
+   375→   375→            </div>
+   376→   376→            <p className="text-lg font-medium text-gray-900">Aucun journal d&apos;audit trouvé</p>
+   377→   377→            <p className="text-sm text-gray-500 mt-1">
+   378→   378→              Essayez de modifier vos filtres de recherche
+   379→   379→            </p>
+   380→   380→          </div>
+   381→   381→        ) : (
+   382→   382→          <>
+   383→   383→            <div className="overflow-x-auto">
+   384→   384→              <Table>
+   385→   385→                <TableHeader>
+   386→   386→                  <TableRow className="bg-gray-50/80">
+   387→   387→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[160px]">
+   388→   388→                      Date
+   389→   389→                    </TableHead>
+   390→   390→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[120px]">
+   391→   391→                      Acteur
+   392→   392→                    </TableHead>
+   393→   393→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[160px]">
+   394→   394→                      Action
+   395→   395→                    </TableHead>
+   396→   396→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[140px]">
+   397→   397→                      Cible
+   398→   398→                    </TableHead>
+   399→   399→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[80px]">
+   400→   400→                      Pays
+   401→   401→                    </TableHead>
+   402→   402→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[100px]">
+   403→   403→                      Détails
+   404→   404→                    </TableHead>
+   405→   405→                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[110px]">
+   406→   406→                      IP
+   407→   407→                    </TableHead>
+   408→   408→                  </TableRow>
+   409→   409→                </TableHeader>
+   410→   410→                <TableBody>
+   411→   411→                  {logs.map((log) => (
+   412→   412→                    <AuditLogRow
+   413→   413→                      key={log.id}
+   414→   414→                      log={log}
+   415→   415→                      isExpanded={expandedLogId === log.id}
+   416→   416→                      onToggleExpand={() =>
+   417→   417→                        setExpandedLogId((prev) => (prev === log.id ? null : log.id))
+   418→   418→                      }
+   419→   419→                      onViewDetail={() => setDetailLog(log)}
+   420→   420→                    />
+   421→   421→                  ))}
+   422→   422→                </TableBody>
+   423→   423→              </Table>
+   424→   424→            </div>
+   425→   425→
+   426→   426→            {/* Pagination */}
+   427→   427→            {pagination && pagination.pages > 1 && (
+   428→   428→              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+   429→   429→                <p className="text-xs text-gray-500">
+   430→   430→                  {(pagination.page - 1) * pagination.limit + 1}–
+   431→   431→                  {Math.min(pagination.page * pagination.limit, pagination.total)} sur{' '}
+   432→   432→                  {pagination.total}
+   433→   433→                </p>
+   434→   434→                <div className="flex items-center gap-1">
+   435→   435→                  <Button
+   436→   436→                    variant="outline"
+   437→   437→                    size="sm"
+   438→   438→                    className="h-8 w-8 p-0"
+   439→   439→                    disabled={pagination.page <= 1}
+   440→   440→                    onClick={() =>
+   441→   441→                      setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))
+   442→   442→                    }
+   443→   443→                  >
+   444→   444→                    <ChevronLeft className="w-4 h-4" />
+   445→   445→                  </Button>
+   446→   446→                  {generatePageNumbers(pagination.page, pagination.pages).map((pageNum, idx) =>
+   447→   447→                    pageNum === '...' ? (
+   448→   448→                      <span key={`dots-${idx}`} className="px-1 text-xs text-gray-400">
+   449→   449→                        ...
+   450→   450→                      </span>
+   451→   451→                    ) : (
+   452→   452→                      <Button
+   453→   453→                        key={pageNum}
+   454→   454→                        variant={pageNum === pagination.page ? 'default' : 'outline'}
+   455→   455→                        size="sm"
+   456→   456→                        className={cn(
+   457→   457→                          'h-8 w-8 p-0 text-xs',
+   458→   458→                          pageNum === pagination.page && 'bg-[#003087] hover:bg-[#002a70]'
+   459→   459→                        )}
+   460→   460→                        onClick={() =>
+   461→   461→                          setFilters((prev) => ({ ...prev, page: pageNum as number }))
+   462→   462→                        }
+   463→   463→                      >
+   464→   464→                        {pageNum}
+   465→   465→                      </Button>
+   466→   466→                    )
+   467→   467→                  )}
+   468→   468→                  <Button
+   469→   469→                    variant="outline"
+   470→   470→                    size="sm"
+   471→   471→                    className="h-8 w-8 p-0"
+   472→   472→                    disabled={pagination.page >= pagination.pages}
+   473→   473→                    onClick={() =>
+   474→   474→                      setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))
+   475→   475→                    }
+   476→   476→                  >
+   477→   477→                    <ChevronRight className="w-4 h-4" />
+   478→   478→                  </Button>
+   479→   479→                </div>
+   480→   480→              </div>
+   481→   481→            )}
+   482→   482→          </>
+   483→   483→        )}
+   484→   484→      </div>
+   485→   485→
+   486→   486→      {/* Detail Dialog */}
+   487→   487→      <Dialog open={!!detailLog} onOpenChange={(open) => !open && setDetailLog(null)}>
+   488→   488→        <DialogContent className="max-w-2xl">
+   489→   489→          <DialogHeader>
+   490→   490→            <DialogTitle className="flex items-center gap-2">
+   491→   491→              <Shield className="w-5 h-5 text-[#003087]" />
+   492→   492→              Détail du journal d&apos;audit
+   493→   493→            </DialogTitle>
+   494→   494→          </DialogHeader>
+   495→   495→          {detailLog && (
+   496→   496→            <div className="space-y-4">
+   497→   497→              {/* Meta info */}
+   498→   498→              <div className="grid grid-cols-2 gap-3 text-sm">
+   499→   499→                <div>
+   500→   500→                  <span className="text-gray-500 text-xs">ID</span>
+   501→   501→                  <p className="font-mono text-xs mt-0.5">{detailLog.id}</p>
+   502→   502→                </div>
+   503→   503→                <div>
+   504→   504→                  <span className="text-gray-500 text-xs">Date</span>
+   505→   505→                  <p className="text-xs mt-0.5">{formatDate(detailLog.createdAt)}</p>
+   506→   506→                </div>
+   507→   507→                <div>
+   508→   508→                  <span className="text-gray-500 text-xs">Acteur</span>
+   509→   509→                  <p className="text-xs mt-0.5">
+   510→   510→                    {detailLog.actorId || 'Système'}
+   511→   511→                    {detailLog.actorRole && (
+   512→   512→                      <Badge variant="outline" className="ml-1 text-[10px]">
+   513→   513→                        {detailLog.actorRole}
+   514→   514→                      </Badge>
+   515→   515→                    )}
+   516→   516→                  </p>
+   517→   517→                </div>
+   518→   518→                <div>
+   519→   519→                  <span className="text-gray-500 text-xs">Action</span>
+   520→   520→                  <p className="mt-0.5">
+   521→   521→                    <Badge className={cn('text-[11px]', getActionCategory(detailLog.action).color)}>
+   522→   522→                      {detailLog.action}
+   523→   523→                    </Badge>
+   524→   524→                  </p>
+   525→   525→                </div>
+   526→   526→                <div>
+   527→   527→                  <span className="text-gray-500 text-xs">Cible</span>
+   528→   528→                  <p className="text-xs mt-0.5">
+   529→   529→                    {detailLog.targetType
+   530→   530→                      ? `${TARGET_TYPE_LABELS[detailLog.targetType] || detailLog.targetType}`
+   531→   531→                      : '—'}
+   532→   532→                    {detailLog.targetId && (
+   533→   533→                      <span className="text-gray-400 font-mono ml-1">
+   534→   534→                        ({detailLog.targetId.slice(0, 12)}...)
+   535→   535→                      </span>
+   536→   536→                    )}
+   537→   537→                  </p>
+   538→   538→                </div>
+   539→   539→                <div>
+   540→   540→                  <span className="text-gray-500 text-xs">Pays</span>
+   541→   541→                  <p className="text-xs mt-0.5">
+   542→   542→                    {detailLog.country
+   543→   543→                      ? `${COUNTRY_FLAGS[detailLog.country] || ''} ${detailLog.country}`
+   544→   544→                      : '—'}
+   545→   545→                  </p>
+   546→   546→                </div>
+   547→   547→                <div>
+   548→   548→                  <span className="text-gray-500 text-xs">Adresse IP</span>
+   549→   549→                  <p className="font-mono text-xs mt-0.5">{detailLog.ipAddress || '—'}</p>
+   550→   550→                </div>
+   551→   551→                <div>
+   552→   552→                  <span className="text-gray-500 text-xs">User Agent</span>
+   553→   553→                  <p className="text-xs mt-0.5 truncate max-w-[250px]" title={detailLog.userAgent || ''}>
+   554→   554→                    {detailLog.userAgent || '—'}
+   555→   555→                  </p>
+   556→   556→                </div>
+   557→   557→              </div>
+   558→   558→
+   559→   559→              {/* JSON details */}
+   560→   560→              {detailLog.details && (
+   561→   561→                <div>
+   562→   562→                  <span className="text-gray-500 text-xs">Détails (JSON)</span>
+   563→   563→                  <div className="mt-1 bg-gray-50 rounded-lg border border-gray-200 p-3 max-h-80 overflow-y-auto custom-scrollbar-thin">
+   564→   564→                    <JsonViewer data={detailLog.details} />
+   565→   565→                  </div>
+   566→   566→                </div>
+   567→   567→              )}
+   568→   568→            </div>
+   569→   569→          )}
+   570→   570→        </DialogContent>
+   571→   571→      </Dialog>
+   572→   572→    </div>
+   573→   573→  );
+   574→   574→}
+   575→   575→
+   576→   576→function AuditLogRow({
+   577→   577→  log,
+   578→   578→  isExpanded,
+   579→   579→  onToggleExpand,
+   580→   580→  onViewDetail,
+   581→   581→}: {
+   582→   582→  log: AdminAuditLog;
+   583→   583→  isExpanded: boolean;
+   584→   584→  onToggleExpand: () => void;
+   585→   585→  onViewDetail: () => void;
+   586→   586→}) {
+   587→   587→  const category = getActionCategory(log.action);
+   588→   588→
+   589→   589→  return (
+   590→   590→    <>
+   591→   591→      <TableRow className="hover:bg-gray-50/50 cursor-pointer" onClick={onToggleExpand}>
+   592→   592→        <TableCell>
+   593→   593→          <div className="text-xs text-gray-900 font-medium">
+   594→   594→            {formatRelativeTime(log.createdAt)}
+   595→   595→          </div>
+   596→   596→          <div className="text-[10px] text-gray-400">{formatDate(log.createdAt)}</div>
+   597→   597→        </TableCell>
+   598→   598→        <TableCell>
+   599→   599→          <div className="flex items-center gap-1.5">
+   600→   600→            <div className="w-6 h-6 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+   601→   601→              <span className="text-[10px] font-bold text-[#003087]">
+   602→   602→                {log.actorId ? log.actorId.slice(0, 2).toUpperCase() : 'SY'}
+   603→   603→              </span>
+   604→   604→            </div>
+   605→   605→            <div className="min-w-0">
+   606→   606→              <p className="text-xs font-mono text-gray-700 truncate">
+   607→   607→                {log.actorId ? log.actorId.slice(0, 12) + '...' : 'Système'}
+   608→   608→              </p>
+   609→   609→              {log.actorRole && (
+   610→   610→                <p className="text-[10px] text-gray-400">{log.actorRole}</p>
+   611→   611→              )}
+   612→   612→            </div>
+   613→   613→          </div>
+   614→   614→        </TableCell>
+   615→   615→        <TableCell>
+   616→   616→          <Badge className={cn('text-[11px] font-medium', category.color)}>
+   617→   617→            {log.action}
+   618→   618→          </Badge>
+   619→   619→        </TableCell>
+   620→   620→        <TableCell>
+   621→   621→          <div className="text-xs">
+   622→   622→            {log.targetType ? (
+   623→   623→              <span className="text-gray-700">
+   624→   624→                {TARGET_TYPE_LABELS[log.targetType] || log.targetType}
+   625→   625→              </span>
+   626→   626→            ) : (
+   627→   627→              <span className="text-gray-400">—</span>
+   628→   628→            )}
+   629→   629→            {log.targetId && (
+   630→   630→              <p className="text-[10px] text-gray-400 font-mono truncate max-w-[120px]">
+   631→   631→                {log.targetId.slice(0, 16)}...
+   632→   632→              </p>
+   633→   633→            )}
+   634→   634→          </div>
+   635→   635→        </TableCell>
+   636→   636→        <TableCell>
+   637→   637→          <span className="text-xs">
+   638→   638→            {log.country ? `${COUNTRY_FLAGS[log.country] || ''} ${log.country}` : '—'}
+   639→   639→          </span>
+   640→   640→        </TableCell>
+   641→   641→        <TableCell>
+   642→   642→          {log.details ? (
+   643→   643→            <Button
+   644→   644→              variant="ghost"
+   645→   645→              size="sm"
+   646→   646→              className="h-7 text-[11px] text-[#003087] hover:text-[#002a70] px-2"
+   647→   647→              onClick={(e) => {
+   648→   648→                e.stopPropagation();
+   649→   649→                onViewDetail();
+   650→   650→              }}
+   651→   651→            >
+   652→   652→              <FileText className="w-3 h-3 mr-1" />
+   653→   653→              Voir
+   654→   654→            </Button>
+   655→   655→          ) : (
+   656→   656→            <span className="text-[11px] text-gray-400">—</span>
+   657→   657→          )}
+   658→   658→        </TableCell>
+   659→   659→        <TableCell>
+   660→   660→          <span className="text-[11px] font-mono text-gray-500">
+   661→   661→            {log.ipAddress || '—'}
+   662→   662→          </span>
+   663→   663→        </TableCell>
+   664→   664→      </TableRow>
+   665→   665→
+   666→   666→      {/* Expanded row - inline details */}
+   667→   667→      {isExpanded && (
+   668→   668→        <TableRow className="bg-gray-50/30">
+   669→   669→          <TableCell colSpan={7} className="p-0">
+   670→   670→            <div className="px-6 py-3 border-l-4 border-[#D4AF37]">
+   671→   671→              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-2">
+   672→   672→                <div>
+   673→   673→                  <span className="text-gray-500">ID:</span>{' '}
+   674→   674→                  <span className="font-mono">{log.id}</span>
+   675→   675→                </div>
+   676→   676→                <div>
+   677→   677→                  <span className="text-gray-500">Acteur ID:</span>{' '}
+   678→   678→                  <span className="font-mono">{log.actorId || 'Système'}</span>
+   679→   679→                </div>
+   680→   680→                <div>
+   681→   681→                  <span className="text-gray-500">User Agent:</span>{' '}
+   682→   682→                  <span className="truncate block max-w-[200px]" title={log.userAgent || ''}>
+   683→   683→                    {log.userAgent || '—'}
+   684→   684→                  </span>
+   685→   685→                </div>
+   686→   686→                <div>
+   687→   687→                  <span className="text-gray-500">Cible ID:</span>{' '}
+   688→   688→                  <span className="font-mono">{log.targetId || '—'}</span>
+   689→   689→                </div>
+   690→   690→              </div>
+   691→   691→              {log.details && (
+   692→   692→                <div className="mt-2">
+   693→   693→                  <span className="text-gray-500 text-xs">Détails:</span>
+   694→   694→                  <div className="mt-1 bg-white rounded border border-gray-200 p-2 max-h-40 overflow-y-auto custom-scrollbar-thin">
+   695→   695→                    <JsonViewer data={log.details} />
+   696→   696→                  </div>
+   697→   697→                </div>
+   698→   698→              )}
+   699→   699→              <div className="flex items-center gap-2 mt-2">
+   700→   700→                <Button
+   701→   701→                  variant="outline"
+   702→   702→                  size="sm"
+   703→   703→                  className="h-7 text-[11px]"
+   704→   704→                  onClick={onViewDetail}
+   705→   705→                >
+   706→   706→                  Voir le détail complet
+   707→   707→                </Button>
+   708→   708→                {isExpanded ? (
+   709→   709→                  <ChevronUp className="w-3 h-3 text-gray-400" />
+   710→   710→                ) : (
+   711→   711→                  <ChevronDown className="w-3 h-3 text-gray-400" />
+   712→   712→                )}
+   713→   713→              </div>
+   714→   714→            </div>
+   715→   715→          </TableCell>
+   716→   716→        </TableRow>
+   717→   717→      )}
+   718→   718→    </>
+   719→   719→  );
+   720→   720→}
+   721→   721→
+   722→   722→function JsonViewer({ data }: { data: string }) {
+   723→   723→  let parsed: unknown;
+   724→   724→  try {
+   725→   725→    parsed = JSON.parse(data);
+   726→   726→  } catch {
+   727→   727→    return <pre className="text-xs text-gray-700 whitespace-pre-wrap">{data}</pre>;
+   728→   728→  }
+   729→   729→
+   730→   730→  return (
+   731→   731→    <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+   732→   732→      {JSON.stringify(parsed, null, 2)}
+   733→   733→    </pre>
+   734→   734→  );
+   735→   735→}
+   736→   736→
+   737→   737→function generatePageNumbers(current: number, total: number): (number | string)[] {
+   738→   738→  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+   739→   739→
+   740→   740→  const pages: (number | string)[] = [];
+   741→   741→  pages.push(1);
+   742→   742→
+   743→   743→  if (current > 3) pages.push('...');
+   744→   744→
+   745→   745→  const start = Math.max(2, current - 1);
+   746→   746→  const end = Math.min(total - 1, current + 1);
+   747→   747→
+   748→   748→  for (let i = start; i <= end; i++) {
+   749→   749→    pages.push(i);
+   750→   750→  }
+   751→   751→
+   752→   752→  if (current < total - 2) pages.push('...');
+   753→   753→
+   754→   754→  pages.push(total);
+   755→   755→  return pages;
+   756→   756→}
+   757→   757→

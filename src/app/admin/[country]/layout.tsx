@@ -251,7 +251,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f9fc]">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
         {sidebar}
@@ -335,7 +335,10 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
         )}
       >
         {/* Country header bar */}
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-3 sticky top-0 z-30">
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
+          {/* Branding accent */}
+          <div className="h-1 bg-gradient-to-r from-[#003087] via-[#D4AF37] to-[#009CDE]" />
+          <div className="flex items-center px-4 lg:px-6 h-12 gap-3">
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(true)}
@@ -360,13 +363,14 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
           </button>
 
           <div className="flex items-center gap-2">
-            <Avatar className="w-7 h-7">
+            <Avatar className="w-7 h-7 ring-2 ring-[#003087]/10">
               <AvatarFallback className="bg-[#003087] text-white text-[10px] font-bold">A</AvatarFallback>
             </Avatar>
             <span className="text-xs text-gray-600 hidden md:inline">Admin</span>
           </div>
+          </div>
         </header>
-        <main className="p-4 lg:p-6 min-h-[calc(100vh-4rem)]">{children}</main>
+        <main className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4.5rem)]">{children}</main>
       </div>
     </div>
   );

@@ -229,8 +229,8 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden sm:m-4 lg:m-8 rounded-3xl">
-      <div className="max-w-7xl mx-auto p-8 sm:p-14 z-40 relative">
+    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden mt-16">
+      <div className="max-w-7xl mx-auto px-6 sm:px-12 py-12 sm:py-16 z-40 relative">
         {/* Brand + Contact Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pb-10">
           {/* Brand section */}
@@ -420,9 +420,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Text hover effect — AfriBayit branding (large) */}
-      <div className="lg:flex hidden h-[36rem] -mt-40 -mb-28">
-        <TextHoverEffect text="AfriBayit" className="z-50" />
+      {/* Text hover effect — AfriBayit branding (subtle) */}
+      <div className="lg:flex hidden h-[14rem] -mt-10 -mb-4">
+        <TextHoverEffect text="AfriBayit" className="z-50 opacity-60" />
       </div>
 
       <FooterBackgroundGradient />

@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeftRight, Download, Eye, Flag, Filter, Search,
-  TrendingUp, DollarSign, Hash, AlertTriangle,
+  TrendingUp, DollarSign, Hash, AlertTriangle, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api';
@@ -135,7 +135,11 @@ export default function AdminTransactionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <ArrowLeftRight className="w-6 h-6 text-[#003087]" />
+            Transactions
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">Suivi financier et supervision des transactions</p>
         </div>
         <Button onClick={exportCSV} variant="outline" className="gap-2">
@@ -151,15 +155,13 @@ export default function AdminTransactionsPage() {
           { label: 'Montant moyen', value: fo?.totalTransactions ? formatXOF(Math.round((fo.totalAmount || 0) / fo.totalTransactions)) : '0 XOF', icon: Hash, color: 'bg-[#009CDE]/10 text-[#009CDE]' },
           { label: 'Nombre de transactions', value: fo?.totalTransactions?.toLocaleString('fr-FR') || '0', icon: ArrowLeftRight, color: 'bg-[#00A651]/10 text-[#00A651]' },
         ].map((card) => (
-          <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{card.label}</p>
-                <p className="mt-2 text-2xl font-bold text-gray-900">{card.value}</p>
-              </div>
-              <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', card.color)}>
-                <card.icon className="w-5 h-5" />
-              </div>
+          <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', card.color)}>
+              <card.icon className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase">{card.label}</p>
+              <p className="text-2xl font-bold text-gray-900 font-display">{card.value}</p>
             </div>
           </div>
         ))}
@@ -172,7 +174,7 @@ export default function AdminTransactionsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Rechercher référence, paiement..."
-              className="pl-10"
+              className="pl-10 h-9 text-sm"
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
             />
@@ -205,10 +207,12 @@ export default function AdminTransactionsPage() {
             ))}
           </div>
         ) : !data?.transactions.length ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <ArrowLeftRight className="w-12 h-12 mb-3" />
-            <p className="text-sm font-medium">Aucune transaction trouvée</p>
-            <p className="text-xs mt-1">Modifiez les filtres pour voir plus de résultats</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <ArrowLeftRight className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">Aucune transaction trouvée</p>
+            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -275,14 +279,34 @@ export default function AdminTransactionsPage() {
         {data && data.pagination.pages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
-              {data.pagination.total} résultat(s) — Page {data.pagination.page}/{data.pagination.pages}
+              {(data.pagination.page - 1) * data.pagination.limit + 1}–
+              {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} sur {data.pagination.total}
             </p>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" disabled={filters.page <= 1} onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}>
-                Précédent
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={filters.page <= 1} onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}>
+                <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="sm" disabled={filters.page >= data.pagination.pages} onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}>
-                Suivant
+              {Array.from({ length: data.pagination.pages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === data.pagination.pages || Math.abs(p - filters.page) <= 1)
+                .map((p, idx, arr) => {
+                  const prev = arr[idx - 1];
+                  const showDots = prev && p - prev > 1;
+                  return (
+                    <React.Fragment key={p}>
+                      {showDots && <span className="px-1 text-xs text-gray-400">...</span>}
+                      <Button
+                        variant={p === filters.page ? 'default' : 'outline'}
+                        size="sm"
+                        className={cn('h-8 w-8 p-0 text-xs', p === filters.page && 'bg-[#003087] hover:bg-[#002a70]')}
+                        onClick={() => setFilters((f) => ({ ...f, page: p }))}
+                      >
+                        {p}
+                      </Button>
+                    </React.Fragment>
+                  );
+                })}
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={filters.page >= data.pagination.pages} onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}>
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>

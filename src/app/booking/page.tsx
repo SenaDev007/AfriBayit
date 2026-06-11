@@ -203,7 +203,7 @@ export default function BookingPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero search bar */}
       <div className="bg-[#003087] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1400px] mx-auto">
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -217,7 +217,7 @@ export default function BookingPage() {
             </p>
 
             {/* Search bar */}
-            <div className="bg-white rounded-2xl p-3 shadow-2xl">
+            <div className="bg-white rounded-xl p-3 shadow-2xl">
               <div className="flex flex-col lg:flex-row gap-2">
                 {/* Destination */}
                 <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
@@ -308,7 +308,7 @@ export default function BookingPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filter Sidebar */}
           <motion.aside
@@ -317,7 +317,7 @@ export default function BookingPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 shrink-0`}
           >
-            <Card className="rounded-3xl card-shadow sticky top-20">
+            <Card className="rounded-xl card-shadow sticky top-20">
               <CardContent className="p-6 space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -491,8 +491,8 @@ export default function BookingPage() {
             {(hotelsLoading || ghLoading) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse rounded-3xl">
-                    <div className="aspect-[4/3] bg-gray-200 rounded-t-3xl" />
+                  <Card key={i} className="animate-pulse rounded-2xl">
+                    <div className="aspect-[4/3] bg-gray-200 rounded-t-2xl" />
                     <CardContent className="p-4 space-y-2">
                       <div className="h-5 bg-gray-200 rounded w-3/4" />
                       <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -502,7 +502,7 @@ export default function BookingPage() {
                 ))}
               </div>
             ) : allListings.length === 0 ? (
-              <Card className="p-8 text-center text-gray-400 rounded-3xl">
+              <Card className="p-8 text-center text-gray-400 rounded-2xl">
                 <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium text-lg mb-1">Aucun établissement trouvé</p>
                 <p className="text-sm mb-4">Essayez de modifier vos critères de recherche</p>
@@ -524,7 +524,7 @@ export default function BookingPage() {
                     transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.5), ease: easeOut }}
                   >
                     <Link href={`/booking/${listing.id}`}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
+                      <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-2xl card-shadow border-0">
                         {/* Image area */}
                         <div className="relative aspect-[4/3] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10 overflow-hidden">
                           {listing.image ? (

@@ -130,7 +130,11 @@ export default function AdminEscrowPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion Escrow</h1>
+          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Lock className="w-6 h-6 text-[#003087]" />
+            Gestion Escrow
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Suivi des comptes escrow et résolution des litiges
           </p>
@@ -139,40 +143,40 @@ export default function AdminEscrowPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
             <Wallet className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Total détenu</p>
-            <p className="text-lg font-bold text-gray-900">{formatXOF(summary?.totalHeld ?? 0)}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{formatXOF(summary?.totalHeld ?? 0)}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Litiges actifs</p>
-            <p className="text-lg font-bold text-gray-900">{summary?.activeDisputes ?? 0}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.activeDisputes ?? 0}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Libérés aujourd&apos;hui</p>
-            <p className="text-lg font-bold text-gray-900">{summary?.releasedToday ?? 0}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.releasedToday ?? 0}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Temps moyen détenu</p>
-            <p className="text-lg font-bold text-gray-900">{summary?.avgHoldTimeHours ?? 0}h</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.avgHoldTimeHours ?? 0}h</p>
           </div>
         </div>
       </div>
@@ -308,9 +312,25 @@ export default function AdminEscrowPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-xs text-gray-500 px-2">
-                    {pagination.page} / {pagination.pages}
-                  </span>
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === pagination.pages || Math.abs(p - pagination.page) <= 1)
+                    .map((p, idx, arr) => {
+                      const prev = arr[idx - 1];
+                      const showDots = prev && p - prev > 1;
+                      return (
+                        <React.Fragment key={p}>
+                          {showDots && <span className="px-1 text-xs text-gray-400">...</span>}
+                          <Button
+                            variant={p === pagination.page ? 'default' : 'outline'}
+                            size="sm"
+                            className={cn('h-8 w-8 p-0 text-xs', p === pagination.page && 'bg-[#003087] hover:bg-[#002a70]')}
+                            onClick={() => setFilters((prev) => ({ ...prev, page: p }))}
+                          >
+                            {p}
+                          </Button>
+                        </React.Fragment>
+                      );
+                    })}
                   <Button
                     variant="outline"
                     size="sm"

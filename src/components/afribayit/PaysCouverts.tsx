@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { Globe } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -42,23 +43,23 @@ export default function PaysCouverts() {
   });
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-50/50">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-24 bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="text-center mb-14"
+          className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4 font-body">
+          <Badge className="bg-[#003087]/5 text-[#003087] border-[#003087]/10 text-xs font-semibold uppercase tracking-wider mb-3">
             Présence Régionale
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
             Pays <span className="text-[#003087]">couverts</span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-xl mx-auto font-body">
+          <p className="text-gray-500 max-w-2xl mx-auto text-base">
             Déjà opérationnel dans 4 pays d&apos;Afrique de l&apos;Ouest, avec des équipes locales et des partenaires certifiés.
           </p>
         </motion.div>
@@ -77,7 +78,7 @@ export default function PaysCouverts() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
                 whileHover={{ y: -6, transition: { duration: 0.3 } }}
-                className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 hover:border-[#003087]/20 card-shadow hover:shadow-xl transition-all text-center cursor-pointer"
+                className="group relative p-6 sm:p-8 rounded-2xl bg-white border border-gray-100 hover:shadow-lg hover:border-[#003087]/10 transition-all duration-300 text-center cursor-pointer"
               >
                 {/* Flag */}
                 <div className="text-5xl sm:text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -113,7 +114,7 @@ export default function PaysCouverts() {
                 </div>
 
                 {/* Hover accent */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#003087] rounded-b-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#003087] rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.div>
             );
           })}

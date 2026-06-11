@@ -1,0 +1,855 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import React, { useState, useCallback, useMemo } from 'react';
+     4→     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→     5→import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+     6→     6→import { useCreateProperty } from '@/hooks/useProperties';
+     7→     7→import { Home, Building2, Map, Landmark, Store, BedDouble, Coins, Key, TrendingUp, ClipboardList, PenTool, Camera, FileText, Bot, CheckCircle, PartyPopper, Send, User, Hourglass, Check, X, Lightbulb, AlertTriangle } from 'lucide-react';
+     8→     8→import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/legal-docs';
+     9→     9→
+    10→    10→interface ModuleProps {
+    11→    11→  onNavigate?: (section: string) => void;
+    12→    12→}
+    13→    13→
+    14→    14→const easeOut = [0.16, 1, 0.3, 1] as const;
+    15→    15→
+    16→    16→// Static config — property types
+    17→    17→const propertyTypes = [
+    18→    18→  { value: 'villa', label: 'Villa', icon: <Home className="w-5 h-5" /> },
+    19→    19→  { value: 'appartement', label: 'Appartement', icon: <Building2 className="w-5 h-5" /> },
+    20→    20→  { value: 'terrain', label: 'Terrain', icon: <Map className="w-5 h-5" /> },
+    21→    21→  { value: 'bureau', label: 'Bureau', icon: <Landmark className="w-5 h-5" /> },
+    22→    22→  { value: 'commerce', label: 'Commerce', icon: <Store className="w-5 h-5" /> },
+    23→    23→  { value: 'chambre', label: 'Studio/Chambre', icon: <BedDouble className="w-5 h-5" /> },
+    24→    24→];
+    25→    25→
+    26→    26→// Static config — transaction types
+    27→    27→const transactionTypes = [
+    28→    28→  { value: 'achat', label: 'À vendre', icon: <Coins className="w-5 h-5" /> },
+    29→    29→  { value: 'location', label: 'À louer', icon: <Key className="w-5 h-5" /> },
+    30→    30→  { value: 'investissement', label: 'Investissement', icon: <TrendingUp className="w-5 h-5" /> },
+    31→    31→];
+    32→    32→
+    33→    33→// Static config — cities with country codes
+    34→    34→const cities = [
+    35→    35→  { value: 'cotonou', label: 'Cotonou', countryCode: 'BJ', country: 'Bénin' },
+    36→    36→  { value: 'abidjan', label: 'Abidjan', countryCode: 'CI', country: "Côte d'Ivoire" },
+    37→    37→  { value: 'lome', label: 'Lomé', countryCode: 'TG', country: 'Togo' },
+    38→    38→  { value: 'ouagadougou', label: 'Ouagadougou', countryCode: 'BF', country: 'Burkina Faso' },
+    39→    39→  { value: 'porto-novo', label: 'Porto-Novo', countryCode: 'BJ', country: 'Bénin' },
+    40→    40→  { value: 'yamoussoukro', label: 'Yamoussoukro', countryCode: 'CI', country: "Côte d'Ivoire" },
+    41→    41→];
+    42→    42→
+    43→    43→// Static config — features list
+    44→    44→const featuresList = [
+    45→    45→  'Piscine', 'Jardin', 'Climatisation', 'Garage', 'Alarme', 'Wi-Fi',
+    46→    46→  'Meublé', 'Vue panoramique', 'Parking', 'Sécurité 24/7',
+    47→    47→  'Cuisine équipée', 'Terrasse', 'Balcon', 'Forage', 'Dépendance',
+    48→    48→];
+    49→    49→
+    50→    50→// Publish steps — CDC §5.0.2: Saisie → Upload Documents → Vérification IA → Validation → Publication
+    51→    51→const publishSteps = [
+    52→    52→  { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: <ClipboardList className="w-4 h-4" /> },
+    53→    53→  { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: <PenTool className="w-4 h-4" /> },
+    54→    54→  { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: <Camera className="w-4 h-4" /> },
+    55→    55→  { step: 4, title: 'Documents', desc: 'Upload documents légaux requis', icon: <FileText className="w-4 h-4" /> },
+    56→    56→  { step: 5, title: 'Vérification IA', desc: 'Validation automatique des documents', icon: <Bot className="w-4 h-4" /> },
+    57→    57→  { step: 6, title: 'Validation', desc: 'Révision et soumission', icon: <CheckCircle className="w-4 h-4" /> },
+    58→    58→  { step: 7, title: 'Publication', desc: 'Mise en ligne du bien', icon: <PartyPopper className="w-4 h-4" /> },
+    59→    59→];
+    60→    60→
+    61→    61→interface FormData {
+    62→    62→  propertyType: string;
+    63→    63→  transactionType: string;
+    64→    64→  price: string;
+    65→    65→  surface: string;
+    66→    66→  rooms: string;
+    67→    67→  bedrooms: string;
+    68→    68→  bathrooms: string;
+    69→    69→  city: string;
+    70→    70→  quartier: string;
+    71→    71→  title: string;
+    72→    72→  description: string;
+    73→    73→  features: string[];
+    74→    74→  photos: string[];
+    75→    75→  legalDocs: { type: string; file: string; status: string }[];
+    76→    76→}
+    77→    77→
+    78→    78→const initialFormData: FormData = {
+    79→    79→  propertyType: '',
+    80→    80→  transactionType: '',
+    81→    81→  price: '',
+    82→    82→  surface: '',
+    83→    83→  rooms: '',
+    84→    84→  bedrooms: '',
+    85→    85→  bathrooms: '',
+    86→    86→  city: '',
+    87→    87→  quartier: '',
+    88→    88→  title: '',
+    89→    89→  description: '',
+    90→    90→  features: [],
+    91→    91→  photos: [],
+    92→    92→  legalDocs: [],
+    93→    93→};
+    94→    94→
+    95→    95→export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
+    96→    96→  const [currentStep, setCurrentStep] = useState(1);
+    97→    97→  const [formData, setFormData] = useState<FormData>(initialFormData);
+    98→    98→  const [submitted, setSubmitted] = useState(false);
+    99→    99→  const [submitError, setSubmitError] = useState<string | null>(null);
+   100→   100→
+   101→   101→  const createPropertyMutation = useCreateProperty();
+   102→   102→
+   103→   103→  const selectedCity = cities.find(c => c.value === formData.city);
+   104→   104→  const selectedCountryCode = selectedCity?.countryCode || '';
+   105→   105→  const selectedCountryName = selectedCity?.country || '';
+   106→   106→
+   107→   107→  // Use legal-docs.ts to get required docs based on country + property type
+   108→   108→  const requiredDocs = useMemo(() => {
+   109→   109→    if (!selectedCountryCode || !formData.propertyType) return [];
+   110→   110→    return getRequiredDocs(selectedCountryCode, formData.propertyType);
+   111→   111→  }, [selectedCountryCode, formData.propertyType]);
+   112→   112→
+   113→   113→  const updateField = useCallback((field: keyof FormData, value: string | string[]) => {
+   114→   114→    setFormData(prev => ({ ...prev, [field]: value }));
+   115→   115→  }, []);
+   116→   116→
+   117→   117→  const toggleFeature = useCallback((feature: string) => {
+   118→   118→    setFormData(prev => ({
+   119→   119→      ...prev,
+   120→   120→      features: prev.features.includes(feature)
+   121→   121→        ? prev.features.filter(f => f !== feature)
+   122→   122→        : [...prev.features, feature],
+   123→   123→    }));
+   124→   124→  }, []);
+   125→   125→
+   126→   126→  const addPhoto = useCallback(() => {
+   127→   127→    const mockUrl = `https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop&q=${Math.random()}`;
+   128→   128→    setFormData(prev => ({
+   129→   129→      ...prev,
+   130→   130→      photos: prev.photos.length < 20 ? [...prev.photos, mockUrl] : prev.photos,
+   131→   131→    }));
+   132→   132→  }, []);
+   133→   133→
+   134→   134→  const addLegalDoc = useCallback((docType: string) => {
+   135→   135→    setFormData(prev => ({
+   136→   136→      ...prev,
+   137→   137→      legalDocs: prev.legalDocs.find(d => d.type === docType)
+   138→   138→        ? prev.legalDocs
+   139→   139→        : [...prev.legalDocs, { type: docType, file: 'uploaded', status: 'pending_verification' }],
+   140→   140→    }));
+   141→   141→  }, []);
+   142→   142→
+   143→   143→  const removeLegalDoc = useCallback((docType: string) => {
+   144→   144→    setFormData(prev => ({
+   145→   145→      ...prev,
+   146→   146→      legalDocs: prev.legalDocs.filter(d => d.type !== docType),
+   147→   147→    }));
+   148→   148→  }, []);
+   149→   149→
+   150→   150→  // Check if all required docs are uploaded
+   151→   151→  const allRequiredDocsUploaded = useMemo(() => {
+   152→   152→    if (requiredDocs.length === 0) return false;
+   153→   153→    return requiredDocs.every(docType =>
+   154→   154→      formData.legalDocs.some(d => d.type === docType)
+   155→   155→    );
+   156→   156→  }, [requiredDocs, formData.legalDocs]);
+   157→   157→
+   158→   158→  const canProceed = (): boolean => {
+   159→   159→    switch (currentStep) {
+   160→   160→      case 1: return !!(formData.propertyType && formData.transactionType && formData.price && formData.surface && formData.city);
+   161→   161→      case 2: return !!(formData.title && formData.description);
+   162→   162→      case 3: return formData.photos.length > 0;
+   163→   163→      case 4: return allRequiredDocsUploaded;
+   164→   164→      case 5: return true; // AI verification is automatic
+   165→   165→      case 6: return true; // Review step
+   166→   166→      case 7: return true; // Publication
+   167→   167→      default: return false;
+   168→   168→    }
+   169→   169→  };
+   170→   170→
+   171→   171→  const handleSubmit = async () => {
+   172→   172→    setSubmitError(null);
+   173→   173→    try {
+   174→   174→      await createPropertyMutation.mutateAsync({
+   175→   175→        propertyType: formData.propertyType,
+   176→   176→        transactionType: formData.transactionType,
+   177→   177→        price: Number(formData.price),
+   178→   178→        surface: Number(formData.surface),
+   179→   179→        rooms: Number(formData.rooms) || 0,
+   180→   180→        bedrooms: Number(formData.bedrooms) || 0,
+   181→   181→        bathrooms: Number(formData.bathrooms) || 0,
+   182→   182→        city: selectedCity?.label || formData.city,
+   183→   183→        country: selectedCountryName,
+   184→   184→        quartier: formData.quartier,
+   185→   185→        title: formData.title,
+   186→   186→        description: formData.description,
+   187→   187→        features: formData.features,
+   188→   188→        images: formData.photos,
+   189→   189→        legalDocs: formData.legalDocs,
+   190→   190→      });
+   191→   191→      setSubmitted(true);
+   192→   192→    } catch (err) {
+   193→   193→      setSubmitError(err instanceof Error ? err.message : 'Erreur lors de la soumission');
+   194→   194→    }
+   195→   195→  };
+   196→   196→
+   197→   197→  if (submitted) {
+   198→   198→    return (
+   199→   199→      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+   200→   200→        <div className="max-w-lg mx-auto px-4 sm:px-6">
+   201→   201→          <motion.div
+   202→   202→            initial={{ opacity: 0, scale: 0.9 }}
+   203→   203→            animate={{ opacity: 1, scale: 1 }}
+   204→   204→            className="bg-white rounded-3xl p-8 shadow-sm border text-center mt-12"
+   205→   205→          >
+   206→   206→            <motion.div
+   207→   207→              initial={{ scale: 0 }}
+   208→   208→              animate={{ scale: 1 }}
+   209→   209→              transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+   210→   210→              className="w-20 h-20 rounded-full bg-[#00A651] flex items-center justify-center mx-auto mb-4"
+   211→   211→            >
+   212→   212→              <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+   213→   213→                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+   214→   214→              </svg>
+   215→   215→            </motion.div>
+   216→   216→            <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">Annonce soumise !</h3>
+   217→   217→            <p className="text-sm text-gray-500 mb-6">
+   218→   218→              Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.
+   219→   219→            </p>
+   220→   220→
+   221→   221→            {/* Publication Timeline */}
+   222→   222→            <div className="text-left space-y-3 mb-6">
+   223→   223→              {[
+   224→   224→                { step: 'Soumission', status: 'completed', icon: <Send className="w-4 h-4" /> },
+   225→   225→                { step: 'Vérification IA documents', status: 'in_progress', icon: <Bot className="w-4 h-4" /> },
+   226→   226→                { step: 'Validation humaine', status: 'pending', icon: <User className="w-4 h-4" /> },
+   227→   227→                { step: 'Publication', status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
+   228→   228→              ].map((vs, i) => (
+   229→   229→                <div key={i} className="flex items-center gap-3">
+   230→   230→                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
+   231→   231→                    vs.status === 'completed' ? 'bg-[#00A651] text-white' :
+   232→   232→                    vs.status === 'in_progress' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' :
+   233→   233→                    'bg-gray-100 text-gray-400'
+   234→   234→                  }`}>
+   235→   235→                    {vs.status === 'completed' ? <Check className="w-3 h-3" /> : vs.status === 'in_progress' ? <Hourglass className="w-3 h-3" /> : (i + 1)}
+   236→   236→                  </div>
+   237→   237→                  <div>
+   238→   238→                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#2C2E2F]'}`}>
+   239→   239→                      {vs.icon} {vs.step}
+   240→   240→                    </p>
+   241→   241→                  </div>
+   242→   242→                </div>
+   243→   243→              ))}
+   244→   244→            </div>
+   245→   245→
+   246→   246→            <button
+   247→   247→              onClick={() => { setSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}
+   248→   248→              className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+   249→   249→            >
+   250→   250→              Publier un autre bien
+   251→   251→            </button>
+   252→   252→          </motion.div>
+   253→   253→        </div>
+   254→   254→      </section>
+   255→   255→    );
+   256→   256→  }
+   257→   257→
+   258→   258→  return (
+   259→   259→    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+   260→   260→      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+   261→   261→        {/* Header */}
+   262→   262→        <motion.div
+   263→   263→          initial={{ opacity: 0, y: 20 }}
+   264→   264→          animate={{ opacity: 1, y: 0 }}
+   265→   265→          className="text-center mb-8"
+   266→   266→        >
+   267→   267→          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+   268→   268→            <PenTool className="w-4 h-4" /> Publier un bien — CDC §5.0.2
+   269→   269→          </span>
+   270→   270→          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+   271→   271→            Nouvelle <span className="text-[#003087]">Annonce</span>
+   272→   272→          </h1>
+   273→   273→        </motion.div>
+   274→   274→
+   275→   275→        {/* Stepper — Updated with 7 steps per CDC §5.0.2 */}
+   276→   276→        <div className="flex items-center gap-0.5 mb-8 overflow-x-auto pb-2">
+   277→   277→          {publishSteps.map((s, i) => (
+   278→   278→            <div key={s.step} className="flex items-center flex-1 min-w-0">
+   279→   279→              <div className="flex flex-col items-center flex-1">
+   280→   280→                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+   281→   281→                  currentStep > s.step ? 'bg-[#00A651] text-white' :
+   282→   282→                  currentStep === s.step ? 'bg-[#003087] text-white' :
+   283→   283→                  'bg-gray-100 text-gray-400'
+   284→   284→                }`}>
+   285→   285→                  {currentStep > s.step ? <Check className="w-3 h-3" /> : s.step}
+   286→   286→                </div>
+   287→   287→                <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
+   288→   288→                  currentStep >= s.step ? 'text-[#003087]' : 'text-gray-400'
+   289→   289→                }`}>
+   290→   290→                  {s.title}
+   291→   291→                </p>
+   292→   292→              </div>
+   293→   293→              {i < publishSteps.length - 1 && (
+   294→   294→                <div className={`h-0.5 flex-1 mx-0.5 rounded ${
+   295→   295→                  currentStep > s.step ? 'bg-[#00A651]' : 'bg-gray-200'
+   296→   296→                }`} />
+   297→   297→              )}
+   298→   298→            </div>
+   299→   299→          ))}
+   300→   300→        </div>
+   301→   301→
+   302→   302→        {/* Form Content */}
+   303→   303→        <div className="bg-white rounded-3xl p-6 shadow-sm border">
+   304→   304→          <AnimatePresence mode="wait">
+   305→   305→            {/* Step 1: Property Info */}
+   306→   306→            {currentStep === 1 && (
+   307→   307→              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   308→   308→                <div>
+   309→   309→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Informations du bien</h2>
+   310→   310→                  <p className="text-xs text-gray-500">Type de bien, transaction, prix et localisation</p>
+   311→   311→                </div>
+   312→   312→
+   313→   313→                {/* Property Type */}
+   314→   314→                <div>
+   315→   315→                  <label className="text-xs text-gray-500 mb-2 block">Type de bien *</label>
+   316→   316→                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+   317→   317→                    {propertyTypes.map(pt => (
+   318→   318→                      <button
+   319→   319→                        key={pt.value}
+   320→   320→                        onClick={() => updateField('propertyType', pt.value)}
+   321→   321→                        className={`p-3 rounded-2xl border-2 text-center transition-all ${
+   322→   322→                          formData.propertyType === pt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
+   323→   323→                        }`}
+   324→   324→                      >
+   325→   325→                        <span className="flex items-center justify-center mb-1">{pt.icon}</span>
+   326→   326→                        <span className="text-[10px] font-medium">{pt.label}</span>
+   327→   327→                      </button>
+   328→   328→                    ))}
+   329→   329→                  </div>
+   330→   330→                </div>
+   331→   331→
+   332→   332→                {/* Transaction Type */}
+   333→   333→                <div>
+   334→   334→                  <label className="text-xs text-gray-500 mb-2 block">Type de transaction *</label>
+   335→   335→                  <div className="grid grid-cols-3 gap-2">
+   336→   336→                    {transactionTypes.map(tt => (
+   337→   337→                      <button
+   338→   338→                        key={tt.value}
+   339→   339→                        onClick={() => updateField('transactionType', tt.value)}
+   340→   340→                        className={`p-3 rounded-2xl border-2 text-center transition-all ${
+   341→   341→                          formData.transactionType === tt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
+   342→   342→                        }`}
+   343→   343→                      >
+   344→   344→                        <span className="flex items-center justify-center mb-1">{tt.icon}</span>
+   345→   345→                        <span className="text-xs font-medium">{tt.label}</span>
+   346→   346→                      </button>
+   347→   347→                    ))}
+   348→   348→                  </div>
+   349→   349→                </div>
+   350→   350→
+   351→   351→                {/* Price & Surface */}
+   352→   352→                <div className="grid grid-cols-2 gap-3">
+   353→   353→                  <div>
+   354→   354→                    <label className="text-xs text-gray-500 mb-1 block">Prix (FCFA) *</label>
+   355→   355→                    <input
+   356→   356→                      type="number"
+   357→   357→                      value={formData.price}
+   358→   358→                      onChange={e => updateField('price', e.target.value)}
+   359→   359→                      placeholder="0"
+   360→   360→                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-mono font-bold focus:outline-none focus:border-[#003087]"
+   361→   361→                    />
+   362→   362→                  </div>
+   363→   363→                  <div>
+   364→   364→                    <label className="text-xs text-gray-500 mb-1 block">Surface (m²) *</label>
+   365→   365→                    <input
+   366→   366→                      type="number"
+   367→   367→                      value={formData.surface}
+   368→   368→                      onChange={e => updateField('surface', e.target.value)}
+   369→   369→                      placeholder="0"
+   370→   370→                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-mono font-bold focus:outline-none focus:border-[#003087]"
+   371→   371→                    />
+   372→   372→                  </div>
+   373→   373→                </div>
+   374→   374→
+   375→   375→                {/* Rooms */}
+   376→   376→                <div className="grid grid-cols-3 gap-3">
+   377→   377→                  <div>
+   378→   378→                    <label className="text-xs text-gray-500 mb-1 block">Pièces</label>
+   379→   379→                    <input type="number" value={formData.rooms} onChange={e => updateField('rooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+   380→   380→                  </div>
+   381→   381→                  <div>
+   382→   382→                    <label className="text-xs text-gray-500 mb-1 block">Chambres</label>
+   383→   383→                    <input type="number" value={formData.bedrooms} onChange={e => updateField('bedrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+   384→   384→                  </div>
+   385→   385→                  <div>
+   386→   386→                    <label className="text-xs text-gray-500 mb-1 block">SDB</label>
+   387→   387→                    <input type="number" value={formData.bathrooms} onChange={e => updateField('bathrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+   388→   388→                  </div>
+   389→   389→                </div>
+   390→   390→
+   391→   391→                {/* City & Quartier */}
+   392→   392→                <div className="grid grid-cols-2 gap-3">
+   393→   393→                  <div>
+   394→   394→                    <label className="text-xs text-gray-500 mb-1 block">Ville *</label>
+   395→   395→                    <select value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white">
+   396→   396→                      <option value="">Sélectionner</option>
+   397→   397→                      {cities.map(c => <option key={c.value} value={c.value}>{c.label} ({c.country})</option>)}
+   398→   398→                    </select>
+   399→   399→                  </div>
+   400→   400→                  <div>
+   401→   401→                    <label className="text-xs text-gray-500 mb-1 block">Quartier</label>
+   402→   402→                    <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder="Ex: Ganhi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+   403→   403→                  </div>
+   404→   404→                </div>
+   405→   405→
+   406→   406→                {/* Legal doc preview */}
+   407→   407→                {selectedCountryCode && formData.propertyType && (
+   408→   408→                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
+   409→   409→                    <p className="text-xs font-semibold text-[#D4AF37] mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Documents requis détectés</p>
+   410→   410→                    <p className="text-[10px] text-gray-500">
+   411→   411→                      Pour {COUNTRY_NAMES[selectedCountryCode] || selectedCountryCode} — {propertyTypes.find(p => p.value === formData.propertyType)?.label} :
+   412→   412→                      {' '}{requiredDocs.map(d => getDocLabel(d)).join(', ')}
+   413→   413→                    </p>
+   414→   414→                    <p className="text-[10px] text-gray-400 mt-1">Vous pourrez les télécharger à l&apos;étape 4</p>
+   415→   415→                  </div>
+   416→   416→                )}
+   417→   417→              </motion.div>
+   418→   418→            )}
+   419→   419→
+   420→   420→            {/* Step 2: Description & Features */}
+   421→   421→            {currentStep === 2 && (
+   422→   422→              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   423→   423→                <div>
+   424→   424→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Description & Caractéristiques</h2>
+   425→   425→                  <p className="text-xs text-gray-500">Décrivez votre bien et sélectionnez ses atouts</p>
+   426→   426→                </div>
+   427→   427→
+   428→   428→                <div>
+   429→   429→                  <label className="text-xs text-gray-500 mb-1 block">Titre de l&apos;annonce *</label>
+   430→   430→                  <input
+   431→   431→                    type="text"
+   432→   432→                    value={formData.title}
+   433→   433→                    onChange={e => updateField('title', e.target.value)}
+   434→   434→                    placeholder="Ex: Villa Prestige Les Cocotiers"
+   435→   435→                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+   436→   436→                  />
+   437→   437→                </div>
+   438→   438→
+   439→   439→                <div>
+   440→   440→                  <label className="text-xs text-gray-500 mb-1 block">Description détaillée *</label>
+   441→   441→                  <textarea
+   442→   442→                    value={formData.description}
+   443→   443→                    onChange={e => updateField('description', e.target.value)}
+   444→   444→                    placeholder="Décrivez votre bien en détail..."
+   445→   445→                    rows={5}
+   446→   446→                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] resize-none"
+   447→   447→                  />
+   448→   448→                </div>
+   449→   449→
+   450→   450→                <div>
+   451→   451→                  <label className="text-xs text-gray-500 mb-2 block">Caractéristiques</label>
+   452→   452→                  <div className="flex flex-wrap gap-2">
+   453→   453→                    {featuresList.map(feature => (
+   454→   454→                      <button
+   455→   455→                        key={feature}
+   456→   456→                        onClick={() => toggleFeature(feature)}
+   457→   457→                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+   458→   458→                          formData.features.includes(feature)
+   459→   459→                            ? 'bg-[#003087] text-white'
+   460→   460→                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+   461→   461→                        }`}
+   462→   462→                      >
+   463→   463→                        {feature}
+   464→   464→                      </button>
+   465→   465→                    ))}
+   466→   466→                  </div>
+   467→   467→                </div>
+   468→   468→              </motion.div>
+   469→   469→            )}
+   470→   470→
+   471→   471→            {/* Step 3: Photos */}
+   472→   472→            {currentStep === 3 && (
+   473→   473→              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   474→   474→                <div>
+   475→   475→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Photos du bien</h2>
+   476→   476→                  <p className="text-xs text-gray-500">Ajoutez jusqu&apos;à 20 photos. La première sera la photo principale.</p>
+   477→   477→                </div>
+   478→   478→
+   479→   479→                {/* Drop Zone */}
+   480→   480→                <button
+   481→   481→                  onClick={addPhoto}
+   482→   482→                  disabled={formData.photos.length >= 20}
+   483→   483→                  className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#003087]/30 hover:bg-[#003087]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+   484→   484→                >
+   485→   485→                  <svg className="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+   486→   486→                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m-4 4h8m-9 6h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+   487→   487→                  </svg>
+   488→   488→                  <p className="text-sm font-semibold text-gray-600">Glissez-déposez vos photos ici</p>
+   489→   489→                  <p className="text-xs text-gray-400 mt-1">ou cliquez pour sélectionner · {formData.photos.length}/20</p>
+   490→   490→                </button>
+   491→   491→
+   492→   492→                {/* Photo Grid */}
+   493→   493→                {formData.photos.length > 0 && (
+   494→   494→                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+   495→   495→                    {formData.photos.map((photo, i) => (
+   496→   496→                      <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
+   497→   497→                        <ImageWithFallback src={photo} alt={`Photo ${i + 1}`} className="w-full h-full" fallbackType="property" />
+   498→   498→                        {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">Principale</span>}
+   499→   499→                        <button
+   500→   500→                          onClick={() => setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, idx) => idx !== i) }))}
+   501→   501→                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+   502→   502→                        >
+   503→   503→                          ×
+   504→   504→                        </button>
+   505→   505→                      </div>
+   506→   506→                    ))}
+   507→   507→                  </div>
+   508→   508→                )}
+   509→   509→              </motion.div>
+   510→   510→            )}
+   511→   511→
+   512→   512→            {/* Step 4: Legal Documents — Using legal-docs.ts */}
+   513→   513→            {currentStep === 4 && (
+   514→   514→              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   515→   515→                <div>
+   516→   516→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Documents légaux requis</h2>
+   517→   517→                  <p className="text-xs text-gray-500">
+   518→   518→                    {selectedCountryCode && formData.propertyType
+   519→   519→                      ? `Documents requis pour ${COUNTRY_NAMES[selectedCountryCode] || selectedCountryName} — ${propertyTypes.find(p => p.value === formData.propertyType)?.label}`
+   520→   520→                      : "Sélectionnez d'abord une ville et un type de bien"}
+   521→   521→                  </p>
+   522→   522→                </div>
+   523→   523→
+   524→   524→                {selectedCountryCode && formData.propertyType ? (
+   525→   525→                  <>
+   526→   526→                    {/* Required docs list */}
+   527→   527→                    <div className="space-y-3">
+   528→   528→                      {requiredDocs.map((docType, i) => {
+   529→   529→                        const isUploaded = formData.legalDocs.find(d => d.type === docType);
+   530→   530→                        const docLabel = getDocLabel(docType);
+   531→   531→                        const docDesc = getDocDescription(docType);
+   532→   532→                        return (
+   533→   533→                          <motion.div
+   534→   534→                            key={docType}
+   535→   535→                            initial={{ opacity: 0, y: 10 }}
+   536→   536→                            animate={{ opacity: 1, y: 0 }}
+   537→   537→                            transition={{ delay: i * 0.05 }}
+   538→   538→                            className={`p-4 rounded-2xl border-2 transition-all ${
+   539→   539→                              isUploaded ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-gray-100'
+   540→   540→                            }`}
+   541→   541→                          >
+   542→   542→                            <div className="flex items-start gap-3">
+   543→   543→                              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+   544→   544→                                isUploaded ? 'bg-[#00A651]/10' : 'bg-gray-100'
+   545→   545→                              }`}>
+   546→   546→                                {isUploaded ? (
+   547→   547→                                  <svg className="w-5 h-5 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+   548→   548→                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+   549→   549→                                  </svg>
+   550→   550→                                ) : (
+   551→   551→                                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+   552→   552→                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+   553→   553→                                  </svg>
+   554→   554→                                )}
+   555→   555→                              </div>
+   556→   556→                              <div className="flex-1 min-w-0">
+   557→   557→                                <div className="flex items-center gap-2">
+   558→   558→                                  <p className="text-sm font-semibold text-[#2C2E2F]">{docLabel}</p>
+   559→   559→                                  <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">REQUIS</span>
+   560→   560→                                </div>
+   561→   561→                                {docDesc && <p className="text-[10px] text-gray-400 mt-0.5">{docDesc}</p>}
+   562→   562→                                <p className="text-[10px] text-gray-400 mt-0.5">PDF, JPG, PNG — max 10 Mo</p>
+   563→   563→                                {/* Upload zone */}
+   564→   564→                                {!isUploaded ? (
+   565→   565→                                  <button
+   566→   566→                                    onClick={() => addLegalDoc(docType)}
+   567→   567→                                    className="mt-2 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+   568→   568→                                  >
+   569→   569→                                    <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Télécharger le document</span>
+   570→   570→                                  </button>
+   571→   571→                                ) : (
+   572→   572→                                  <div className="mt-2 flex items-center gap-2">
+   573→   573→                                    <span className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-semibold rounded-full">
+   574→   574→                                      <span className="flex items-center gap-1"><Hourglass className="w-3 h-3" /> Documents en attente de vérification</span>
+   575→   575→                                    </span>
+   576→   576→                                    <button
+   577→   577→                                      onClick={() => removeLegalDoc(docType)}
+   578→   578→                                      className="text-[10px] text-[#D93025] hover:underline"
+   579→   579→                                    >
+   580→   580→                                      Supprimer
+   581→   581→                                    </button>
+   582→   582→                                  </div>
+   583→   583→                                )}
+   584→   584→                              </div>
+   585→   585→                            </div>
+   586→   586→                          </motion.div>
+   587→   587→                        );
+   588→   588→                      })}
+   589→   589→                    </div>
+   590→   590→
+   591→   591→                    {/* Upload progress summary */}
+   592→   592→                    <div className={`p-4 rounded-2xl ${
+   593→   593→                      allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'
+   594→   594→                    }`}>
+   595→   595→                      <div className="flex items-center justify-between mb-2">
+   596→   596→                        <p className={`text-sm font-semibold ${
+   597→   597→                          allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'
+   598→   598→                        }`}>
+   599→   599→                          {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents requis sont téléchargés</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> Documents en attente de vérification</span>}
+   600→   600→                        </p>
+   601→   601→                      </div>
+   602→   602→                      <div className="w-full bg-gray-200 rounded-full h-2">
+   603→   603→                        <div
+   604→   604→                          className={`h-2 rounded-full transition-all ${
+   605→   605→                            allRequiredDocsUploaded ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
+   606→   606→                          }`}
+   607→   607→                          style={{ width: `${(formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length / Math.max(requiredDocs.length, 1)) * 100}%` }}
+   608→   608→                        />
+   609→   609→                      </div>
+   610→   610→                      <p className="text-[10px] text-gray-500 mt-1">
+   611→   611→                        {formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length} / {requiredDocs.length} documents requis
+   612→   612→                      </p>
+   613→   613→                    </div>
+   614→   614→
+   615→   615→                    {/* AI Verification Notice */}
+   616→   616→                    <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
+   617→   617→                      <div className="flex items-center gap-2 mb-2">
+   618→   618→                        <Bot className="w-5 h-5 text-[#009CDE]" />
+   619→   619→                        <p className="text-sm font-semibold text-[#009CDE]">Vérification IA automatique</p>
+   620→   620→                      </div>
+   621→   621→                      <p className="text-xs text-gray-500">
+   622→   622→                        Après soumission, nos algorithmes vérifieront automatiquement l&apos;authenticité
+   623→   623→                        et la conformité de vos documents selon les exigences légales de {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}.
+   624→   624→                      </p>
+   625→   625→                    </div>
+   626→   626→                  </>
+   627→   627→                ) : (
+   628→   628→                  <div className="text-center p-8 bg-gray-50 rounded-2xl">
+   629→   629→                    <p className="text-sm text-gray-400">Veuillez d&apos;abord sélectionner une ville et un type de bien aux étapes précédentes</p>
+   630→   630→                    <button
+   631→   631→                      onClick={() => setCurrentStep(1)}
+   632→   632→                      className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold"
+   633→   633→                    >
+   634→   634→                      Retour à l&apos;étape 1
+   635→   635→                    </button>
+   636→   636→                  </div>
+   637→   637→                )}
+   638→   638→              </motion.div>
+   639→   639→            )}
+   640→   640→
+   641→   641→            {/* Step 5: AI Verification (auto) */}
+   642→   642→            {currentStep === 5 && (
+   643→   643→              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   644→   644→                <div>
+   645→   645→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Vérification IA des documents</h2>
+   646→   646→                  <p className="text-xs text-gray-500">Nos algorithmes analysent vos documents en temps réel</p>
+   647→   647→                </div>
+   648→   648→
+   649→   649→                {/* Simulated AI verification */}
+   650→   650→                <div className="space-y-3">
+   651→   651→                  {requiredDocs.map((docType, i) => {
+   652→   652→                    const doc = formData.legalDocs.find(d => d.type === docType);
+   653→   653→                    const isVerified = doc?.status === 'ai_verified';
+   654→   654→                    // Simulate AI verification progress
+   655→   655→                    const simulatedScore = 70 + Math.floor(Math.random() * 28);
+   656→   656→                    return (
+   657→   657→                      <div key={docType} className="p-4 bg-gray-50 rounded-2xl">
+   658→   658→                        <div className="flex items-center justify-between mb-2">
+   659→   659→                          <p className="text-sm font-semibold text-[#2C2E2F]">{getDocLabel(docType)}</p>
+   660→   660→                          {doc ? (
+   661→   661→                            <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
+   662→   662→                              {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> Vérifié</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> En attente</span>}
+   663→   663→                            </span>
+   664→   664→                          ) : (
+   665→   665→                            <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">Manquant</span>
+   666→   666→                          )}
+   667→   667→                        </div>
+   668→   668→                        {doc && (
+   669→   669→                          <div className="flex items-center gap-2">
+   670→   670→                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+   671→   671→                              <div
+   672→   672→                                className="h-1.5 rounded-full bg-[#009CDE] transition-all"
+   673→   673→                                style={{ width: `${simulatedScore}%` }}
+   674→   674→                              />
+   675→   675→                            </div>
+   676→   676→                            <span className="text-[10px] text-gray-500 font-mono">{simulatedScore}%</span>
+   677→   677→                          </div>
+   678→   678→                        )}
+   679→   679→                      </div>
+   680→   680→                    );
+   681→   681→                  })}
+   682→   682→                </div>
+   683→   683→
+   684→   684→                <div className="p-3 bg-[#009CDE]/5 rounded-xl text-xs text-[#009CDE]">
+   685→   685→                  <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> La vérification IA analyse l&apos;authenticité des documents, la cohérence des données,</span>
+   686→   686→                  et la conformité avec les exigences légales locales. Une validation humaine suivra.
+   687→   687→                </div>
+   688→   688→              </motion.div>
+   689→   689→            )}
+   690→   690→
+   691→   691→            {/* Step 6: Validation / Review */}
+   692→   692→            {currentStep === 6 && (
+   693→   693→              <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+   694→   694→                <div>
+   695→   695→                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Révision & Validation</h2>
+   696→   696→                  <p className="text-xs text-gray-500">Vérifiez les informations avant de publier</p>
+   697→   697→                </div>
+   698→   698→
+   699→   699→                {/* Error */}
+   700→   700→                {submitError && (
+   701→   701→                  <div className="p-3 bg-[#D93025]/5 rounded-2xl flex items-center gap-2">
+   702→   702→                    <AlertTriangle className="w-4 h-4 text-[#D93025]" />
+   703→   703→                    <p className="text-xs text-[#D93025]">{submitError}</p>
+   704→   704→                  </div>
+   705→   705→                )}
+   706→   706→
+   707→   707→                {/* Summary */}
+   708→   708→                <div className="space-y-3">
+   709→   709→                  <div className="p-4 bg-gray-50 rounded-2xl">
+   710→   710→                    <p className="text-[10px] text-gray-400 mb-1">Bien</p>
+   711→   711→                    <p className="text-sm font-bold text-[#2C2E2F]">{formData.title || 'Sans titre'}</p>
+   712→   712→                    <p className="text-xs text-gray-500">
+   713→   713→                      {propertyTypes.find(p => p.value === formData.propertyType)?.label} ·
+   714→   714→                      {' '}{transactionTypes.find(t => t.value === formData.transactionType)?.label}
+   715→   715→                    </p>
+   716→   716→                  </div>
+   717→   717→                  <div className="grid grid-cols-3 gap-3">
+   718→   718→                    <div className="p-3 bg-gray-50 rounded-xl text-center">
+   719→   719→                      <p className="text-[10px] text-gray-400">Prix</p>
+   720→   720→                      <p className="font-mono text-sm font-bold text-[#D4AF37]">{formData.price ? new Intl.NumberFormat('fr-FR').format(Number(formData.price)) : '—'} FCFA</p>
+   721→   721→                    </div>
+   722→   722→                    <div className="p-3 bg-gray-50 rounded-xl text-center">
+   723→   723→                      <p className="text-[10px] text-gray-400">Surface</p>
+   724→   724→                      <p className="font-mono text-sm font-bold text-[#2C2E2F]">{formData.surface || '—'} m²</p>
+   725→   725→                    </div>
+   726→   726→                    <div className="p-3 bg-gray-50 rounded-xl text-center">
+   727→   727→                      <p className="text-[10px] text-gray-400">Localisation</p>
+   728→   728→                      <p className="text-sm font-bold text-[#2C2E2F]">{selectedCity?.label || '—'}</p>
+   729→   729→                    </div>
+   730→   730→                  </div>
+   731→   731→                  <div className="p-3 bg-gray-50 rounded-xl">
+   732→   732→                    <p className="text-[10px] text-gray-400 mb-1">Description</p>
+   733→   733→                    <p className="text-xs text-gray-600 line-clamp-3">{formData.description || 'Aucune description'}</p>
+   734→   734→                  </div>
+   735→   735→                  <div className="flex flex-wrap gap-1.5">
+   736→   736→                    {formData.features.map(f => (
+   737→   737→                      <span key={f} className="px-2 py-0.5 bg-[#009CDE]/5 text-[#009CDE] rounded-full text-[10px] font-medium">{f}</span>
+   738→   738→                    ))}
+   739→   739→                  </div>
+   740→   740→                  <div className="grid grid-cols-2 gap-3">
+   741→   741→                    <div className="p-3 bg-gray-50 rounded-xl">
+   742→   742→                      <p className="text-[10px] text-gray-400">Photos</p>
+   743→   743→                      <p className="text-sm font-bold text-[#2C2E2F]">{formData.photos.length}/20</p>
+   744→   744→                    </div>
+   745→   745→                    <div className={`p-3 rounded-xl ${allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'}`}>
+   746→   746→                      <p className="text-[10px] text-gray-400">Documents légaux</p>
+   747→   747→                      <p className={`text-sm font-bold ${allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
+   748→   748→                        {formData.legalDocs.length} / {requiredDocs.length} requis
+   749→   749→                      </p>
+   750→   750→                    </div>
+   751→   751→                  </div>
+   752→   752→                  {/* Legal docs detail */}
+   753→   753→                  {selectedCountryCode && (
+   754→   754→                    <div className="p-3 bg-gray-50 rounded-xl">
+   755→   755→                      <p className="text-[10px] text-gray-400 mb-2">Documents légaux — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
+   756→   756→                      <div className="space-y-1.5">
+   757→   757→                        {requiredDocs.map(docType => {
+   758→   758→                          const isUploaded = formData.legalDocs.some(d => d.type === docType);
+   759→   759→                          return (
+   760→   760→                            <div key={docType} className="flex items-center gap-2 text-xs">
+   761→   761→                              <span className={isUploaded ? 'text-[#00A651]' : 'text-[#D93025]'}>
+   762→   762→                                {isUploaded ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+   763→   763→                              </span>
+   764→   764→                              <span className={isUploaded ? 'text-[#2C2E2F]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
+   765→   765→                            </div>
+   766→   766→                          );
+   767→   767→                        })}
+   768→   768→                      </div>
+   769→   769→                    </div>
+   770→   770→                  )}
+   771→   771→                </div>
+   772→   772→
+   773→   773→                {/* Publication Timeline */}
+   774→   774→                <div className="p-4 bg-[#003087]/5 rounded-2xl">
+   775→   775→                  <p className="text-xs font-semibold text-[#003087] mb-2">Processus après soumission</p>
+   776→   776→                  <div className="space-y-2">
+   777→   777→                    {[
+   778→   778→                      { icon: <Send className="w-4 h-4" />, text: 'Soumission de l\'annonce' },
+   779→   779→                      { icon: <Bot className="w-4 h-4" />, text: 'Vérification IA documents' },
+   780→   780→                      { icon: <User className="w-4 h-4" />, text: 'Validation humaine' },
+   781→   781→                      { icon: <PartyPopper className="w-4 h-4" />, text: 'Publication' },
+   782→   782→                    ].map((item, i) => (
+   783→   783→                      <div key={i} className="flex items-center gap-2">
+   784→   784→                        <span className="text-xs">{item.icon}</span>
+   785→   785→                        <span className="text-xs text-gray-600">{item.text}</span>
+   786→   786→                      </div>
+   787→   787→                    ))}
+   788→   788→                  </div>
+   789→   789→                </div>
+   790→   790→              </motion.div>
+   791→   791→            )}
+   792→   792→
+   793→   793→            {/* Step 7: Publication Confirmation */}
+   794→   794→            {currentStep === 7 && (
+   795→   795→              <motion.div key="step7" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="text-center py-6">
+   796→   796→                <motion.div
+   797→   797→                  initial={{ scale: 0 }}
+   798→   798→                  animate={{ scale: 1 }}
+   799→   799→                  transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+   800→   800→                  className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4"
+   801→   801→                >
+   802→   802→                  <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+   803→   803→                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+   804→   804→                  </svg>
+   805→   805→                </motion.div>
+   806→   806→                <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Prêt à publier ?</h3>
+   807→   807→                <p className="text-sm text-gray-500 mb-6">
+   808→   808→                  Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.
+   809→   809→                </p>
+   810→   810→                {allRequiredDocsUploaded ? (
+   811→   811→                  <div className="p-3 bg-[#00A651]/5 rounded-xl mb-4">
+   812→   812→                    <p className="text-xs text-[#00A651] font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents légaux requis sont fournis</p>
+   813→   813→                  </div>
+   814→   814→                ) : (
+   815→   815→                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
+   816→   816→                    <p className="text-xs text-[#D4AF37] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Certains documents requis sont manquants</p>
+   817→   817→                    <p className="text-[10px] text-gray-500 mt-1">Vous pouvez quand même soumettre, mais la publication sera retardée</p>
+   818→   818→                  </div>
+   819→   819→                )}
+   820→   820→              </motion.div>
+   821→   821→            )}
+   822→   822→          </AnimatePresence>
+   823→   823→
+   824→   824→          {/* Navigation Buttons */}
+   825→   825→          <div className="flex gap-3 mt-6 pt-4 border-t">
+   826→   826→            {currentStep > 1 && (
+   827→   827→              <button
+   828→   828→                onClick={() => setCurrentStep(currentStep - 1)}
+   829→   829→                className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+   830→   830→              >
+   831→   831→                Retour
+   832→   832→              </button>
+   833→   833→            )}
+   834→   834→            <motion.button
+   835→   835→              whileHover={{ scale: 1.01 }}
+   836→   836→              whileTap={{ scale: 0.99 }}
+   837→   837→              onClick={() => {
+   838→   838→                if (currentStep < 7) setCurrentStep(currentStep + 1);
+   839→   839→                else handleSubmit();
+   840→   840→              }}
+   841→   841→              disabled={!canProceed() || createPropertyMutation.isPending}
+   842→   842→              className="flex-1 py-2.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+   843→   843→            >
+   844→   844→              {createPropertyMutation.isPending
+   845→   845→                ? 'Soumission en cours...'
+   846→   846→                : currentStep === 7 ? "Soumettre l'annonce" : 'Continuer'
+   847→   847→              }
+   848→   848→            </motion.button>
+   849→   849→          </div>
+   850→   850→        </div>
+   851→   851→      </div>
+   852→   852→    </section>
+   853→   853→  );
+   854→   854→}
+   855→   855→

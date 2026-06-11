@@ -74,7 +74,11 @@ export default function AdminOtaPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuration OTA</h1>
+          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Cable className="w-6 h-6 text-[#003087]" />
+            Configuration OTA
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">Gestion des canaux de distribution hôtelière</p>
         </div>
         <div className="flex items-center gap-3">
@@ -114,40 +118,40 @@ export default function AdminOtaPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
             <Cable className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Fournisseurs connectés</p>
-            <p className="text-lg font-bold text-gray-900">{otaProviders.filter(p => p.status === 'connected').length}/{otaProviders.length}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{otaProviders.filter(p => p.status === 'connected').length}/{otaProviders.length}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
             <Hotel className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Hôtels mappés</p>
-            <p className="text-lg font-bold text-gray-900">{hotelMappings.length}</p>
+            <p className="text-2xl font-bold text-gray-900 font-display">{hotelMappings.length}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Surréservations</p>
-            <p className="text-lg font-bold text-red-600">{overbookingAlerts.length}</p>
+            <p className="text-2xl font-bold text-red-600 font-display">{overbookingAlerts.length}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
             <AlertCircle className="w-5 h-5 text-amber-500" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Erreurs sync</p>
-            <p className="text-lg font-bold text-amber-600">{otaProviders.reduce((s, p) => s + p.syncErrors, 0)}</p>
+            <p className="text-2xl font-bold text-amber-600 font-display">{otaProviders.reduce((s, p) => s + p.syncErrors, 0)}</p>
           </div>
         </div>
       </div>

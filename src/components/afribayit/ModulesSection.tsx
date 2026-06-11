@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -70,23 +71,23 @@ const modules = [
 
 export default function ModulesSection() {
   return (
-    <section className="py-16 sm:py-24 bg-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="text-center mb-14"
+          className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+          <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20 text-xs font-semibold uppercase tracking-wider mb-3">
             Écosystème Complet
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
             Nos <span className="text-[#003087]">modules</span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-xl mx-auto font-body">
+          <p className="text-gray-500 max-w-2xl mx-auto text-base">
             Une plateforme tout-en-un pour l&apos;immobilier en Afrique. Chaque module est conçu pour répondre à un besoin spécifique.
           </p>
         </motion.div>
@@ -101,7 +102,7 @@ export default function ModulesSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: easeOut }}
               whileHover={{ y: -6, transition: { duration: 0.3 } }}
-              className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 hover:border-gray-200 card-shadow hover:shadow-xl transition-all"
+              className="group relative p-6 sm:p-8 rounded-2xl bg-white border border-gray-100 hover:shadow-lg hover:border-[#003087]/10 transition-all duration-300 cursor-pointer"
             >
               {/* Icon */}
               <div

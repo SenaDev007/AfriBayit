@@ -61,22 +61,29 @@ function StatCard({
   const iconBgMap = { blue: 'bg-[#009CDE]/10 text-[#009CDE]', green: 'bg-[#00A651]/10 text-[#00A651]', gold: 'bg-[#D4AF37]/10 text-[#D4AF37]', red: 'bg-red-50 text-red-500', navy: 'bg-[#003087]/10 text-[#003087]' };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{title}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="mt-1 text-xs text-gray-400">{subtitle}</p>}
-          {trend && trendLabel && (
-            <div className="mt-2 flex items-center gap-1">
-              {trend === 'up' && <ArrowUpRight className="w-3 h-3 text-green-500" />}
-              {trend === 'down' && <ArrowDownRight className="w-3 h-3 text-red-500" />}
-              <span className={cn('text-xs font-semibold', trend === 'up' && 'text-green-600', trend === 'down' && 'text-red-600', trend === 'neutral' && 'text-gray-500')}>{trendLabel}</span>
-            </div>
-          )}
-        </div>
-        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', iconBgMap[color])}>
-          <Icon className="w-5 h-5" />
+    <div className="relative group rounded-xl">
+      {/* Gold left border accent on hover */}
+      <div className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg transition-shadow group-hover:border-gray-300">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{title}</p>
+            {trend === 'up' && (
+              <span className="mt-1 block w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+            )}
+            <p className="mt-2 text-2xl font-bold font-display text-gray-900">{value}</p>
+            {subtitle && <p className="mt-1 text-xs text-gray-400">{subtitle}</p>}
+            {trend && trendLabel && (
+              <div className="mt-2 flex items-center gap-1">
+                {trend === 'up' && <ArrowUpRight className="w-3 h-3 text-green-500" />}
+                {trend === 'down' && <ArrowDownRight className="w-3 h-3 text-red-500" />}
+                <span className={cn('text-xs font-semibold', trend === 'up' && 'text-green-600', trend === 'down' && 'text-red-600', trend === 'neutral' && 'text-gray-500')}>{trendLabel}</span>
+              </div>
+            )}
+          </div>
+          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', iconBgMap[color])}>
+            <Icon className="w-5 h-5" />
+          </div>
         </div>
       </div>
     </div>
@@ -85,17 +92,22 @@ function StatCard({
 
 function MiniBarChart({ data, labels, colors }: { data: number[]; labels: string[]; colors?: string[] }) {
   const max = Math.max(...data, 1);
+  const maxIndex = data.indexOf(max);
   return (
     <div className="flex items-end gap-2 h-32">
       {data.map((v, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+        <div key={i} className="flex-1 flex flex-col items-center gap-1 group/bar">
           <span className="text-[10px] text-gray-500 font-medium">{v > 0 ? (v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v >= 1000 ? `${(v/1000).toFixed(0)}K` : v) : '0'}</span>
           <div
-            className="w-full rounded-t-md transition-all duration-500"
+            className={cn(
+              "w-full rounded-t-md transition-all duration-500",
+              "group-hover/bar:brightness-110",
+              i === maxIndex && "ring-2 ring-[#D4AF37]/40 ring-offset-1"
+            )}
             style={{
               height: `${Math.max((v / max) * 100, 4)}%`,
-              backgroundColor: colors?.[i] || '#003087',
-              opacity: 0.85,
+              backgroundColor: i === maxIndex ? '#D4AF37' : (colors?.[i] || '#003087'),
+              opacity: i === maxIndex ? 1 : 0.85,
             }}
           />
           <span className="text-[10px] text-gray-400">{labels[i]}</span>
@@ -152,6 +164,9 @@ export default function GlobalAdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Navy gradient accent line */}
+      <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37]" />
+
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -219,7 +234,8 @@ export default function GlobalAdminDashboard() {
       {/* Revenue comparison + Country cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Revenue by country */}
-        <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-5">
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 border-l-4 border-l-[#D4AF37]/30 pl-5">
           <h2 className="text-base font-semibold text-gray-900 mb-4">Revenus par pays</h2>
           <div className="space-y-3">
             {countryComp.map((c) => {
@@ -239,6 +255,7 @@ export default function GlobalAdminDashboard() {
               );
             })}
           </div>
+          </div>
         </div>
 
         {/* Country quick access cards */}
@@ -249,7 +266,7 @@ export default function GlobalAdminDashboard() {
               const comp = countryComp.find((c) => c.code === country.code);
               return (
                 <Link key={country.code} href={`/admin/${country.code}/dashboard`} className="block">
-                  <Card className="rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer">
+                  <Card className="rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-[#003087]/30 transition-all duration-300 group cursor-pointer">
                     <div className="h-1.5 bg-gradient-to-r from-[#003087] to-[#D4AF37]" />
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-3">

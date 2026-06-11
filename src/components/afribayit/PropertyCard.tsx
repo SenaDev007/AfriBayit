@@ -28,7 +28,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: easeOut }}
       whileHover={{ y: -4, transition: { duration: 0.25 } }}
-      className="group cursor-pointer rounded-3xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all"
+      className="group cursor-pointer rounded-2xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-lg hover:border-[#003087]/10 transition-all duration-300"
       onClick={() => onSelect(property.id)}
     >
       {/* Image */}

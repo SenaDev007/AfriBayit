@@ -73,6 +73,7 @@ export default function CountriesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
+          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Globe className="w-6 h-6 text-[#003087]" />
             Pays & Backoffices

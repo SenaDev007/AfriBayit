@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import PropertyCard from './PropertyCard';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
@@ -26,7 +27,7 @@ const filterTabs = [
 
 function PropertyCardSkeleton() {
   return (
-    <div className="rounded-3xl bg-white border border-gray-100 overflow-hidden">
+    <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="p-5 space-y-3">
         <div className="flex items-center gap-2">
@@ -74,34 +75,39 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   }, [baseProperties, activeFilter]);
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-50/50">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-24 bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="flex flex-col sm:flex-row sm:items-end justify-between mb-8"
+          className="text-center mb-12 md:mb-16"
         >
-          <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
-              Sélection Premium
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
-              Biens <span className="text-[#003087]">en vedette</span>
-            </h2>
-          </div>
+          <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20 text-xs font-semibold uppercase tracking-wider mb-3">
+            Sélection Premium
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
+            Biens <span className="text-[#003087]">en vedette</span>
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto text-base">
+            Découvrez notre sélection de propriétés premium et vérifiées en Afrique de l&apos;Ouest.
+          </p>
+        </motion.div>
+
+        {/* View all link */}
+        <div className="flex justify-end mb-4">
           <motion.button
             whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="mt-4 sm:mt-0 text-[#003087] text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all font-body"
+            className="text-[#003087] text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all font-body"
           >
             Voir tous les biens
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
-        </motion.div>
+        </div>
 
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">

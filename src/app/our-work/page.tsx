@@ -17,6 +17,7 @@ import {
   Star,
   BarChart3,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -123,12 +124,12 @@ export default function OurWorkPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="pt-28 pb-20 bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -171,19 +172,22 @@ export default function OurWorkPage() {
       </section>
 
       {/* Projects Section */}
-      <section className="py-16 sm:py-24 bg-gray-50/30">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-24 bg-gray-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: easeOut }}
-            className="text-center mb-12"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="font-display text-3xl font-bold text-[#2C2E2F] mb-4">
+            <Badge className="bg-[#003087]/5 text-[#003087] border-[#003087]/10 text-xs font-semibold uppercase tracking-wider mb-3">
+              Réalisations
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
               Projets Phares
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">
+            <p className="text-gray-500 max-w-2xl mx-auto text-base">
               Des projets immobiliers et hôteliers qui illustrent notre engagement pour des
               transactions transparentes et sécurisées en Afrique de l&apos;Ouest.
             </p>
@@ -197,7 +201,7 @@ export default function OurWorkPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl shadow-sm border overflow-hidden"
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:border-[#003087]/10 transition-all duration-300"
               >
                 <div className="flex flex-col lg:flex-row">
                   {/* Image */}
@@ -284,19 +288,22 @@ export default function OurWorkPage() {
       </section>
 
       {/* Services Section */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: easeOut }}
-            className="text-center mb-12"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="font-display text-3xl font-bold text-[#2C2E2F] mb-4">
+            <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/20 text-xs font-semibold uppercase tracking-wider mb-3">
+              Notre Approche
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
               Notre Approche
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">
+            <p className="text-gray-500 max-w-2xl mx-auto text-base">
               Une technologie propriétaire au service de la confiance immobilière en Afrique de
               l&apos;Ouest. Chaque transaction bénéficie d&apos;un écosystème de vérification et
               sécurité complet.
@@ -311,7 +318,7 @@ export default function OurWorkPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:border-[#003087]/10 transition-all duration-300 cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-2xl bg-[#003087]/10 flex items-center justify-center mb-4">
                   <service.icon className="w-6 h-6 text-[#003087]" />
@@ -329,11 +336,11 @@ export default function OurWorkPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-24 bg-gradient-to-r from-[#003087] to-[#001f5c] relative overflow-hidden">
+      <section className="py-16 md:py-24 bg-gradient-to-r from-[#003087] to-[#001f5c] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] rounded-full blur-3xl" />
         </div>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
