@@ -82,7 +82,7 @@ export default function AdminRevenuePage() {
   const avgGrowth = revenueByCountry.reduce((sum, r) => sum + r.growth, 0) / revenueByCountry.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />

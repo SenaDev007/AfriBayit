@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             selectedCountry={selectedCountry}
             onCountryChange={handleCountryChange}
           />
-          <main className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4.5rem)]">{children}</main>
+          <main className="p-4 sm:p-5 lg:p-6">{children}</main>
         </div>
       </div>
     </SessionProvider>

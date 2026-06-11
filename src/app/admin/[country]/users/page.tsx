@@ -50,7 +50,7 @@ export default function CountryUsersPage() {
   const roleColors: Record<string, string> = { admin: 'bg-red-50 text-red-700', agent: 'bg-blue-50 text-blue-700', buyer: 'bg-green-50 text-green-700', seller: 'bg-purple-50 text-purple-700' };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">

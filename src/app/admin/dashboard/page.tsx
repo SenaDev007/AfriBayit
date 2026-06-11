@@ -132,7 +132,7 @@ export default function GlobalAdminDashboard() {
 
   if (statsLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
@@ -163,7 +163,7 @@ export default function GlobalAdminDashboard() {
   const countryComp = analytics?.countryComparison || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Navy gradient accent line */}
       <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37]" />
 

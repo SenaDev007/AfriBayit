@@ -67,7 +67,7 @@ export default function CountryHospitalityPage() {
   const certColors: Record<string, string> = { pending: 'bg-amber-50 text-amber-700', certified: 'bg-green-50 text-green-700', rejected: 'bg-red-50 text-red-700', expired: 'bg-gray-50 text-gray-600' };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
