@@ -113,17 +113,14 @@ export default function HowItWorks() {
                 />
               </motion.div>
 
-              {/* Connecting line (between items on large screens) */}
-              {i < steps.length - 1 && (
-                <div className="hidden lg:flex items-center justify-center absolute" />
-              )}
+              {/* Connecting line (between items on large screens) — handled by the dashed line below */}
             </React.Fragment>
           ))}
         </div>
 
         {/* Connecting line for desktop */}
-        <div className="hidden lg:block relative mt-[-200px] mb-[200px] pointer-events-none">
-          <div className="absolute top-1/2 left-[12%] right-[12%] h-px border-t-2 border-dashed border-gray-200" />
+        <div className="hidden lg:block relative -mt-[240px] mb-[240px] pointer-events-none z-0">
+          <div className="absolute top-1/2 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-gray-200" />
         </div>
       </div>
     </section>

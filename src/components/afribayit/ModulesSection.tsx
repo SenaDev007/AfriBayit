@@ -116,7 +116,7 @@ export default function ModulesSection() {
 
               {/* Hover arrow */}
               <div
-                className="mt-4 flex items-center gap-1 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+                className="mt-4 flex items-center gap-1 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity font-body"
                 style={{ color: mod.color }}
               >
                 Explorer

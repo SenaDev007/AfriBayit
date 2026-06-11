@@ -116,8 +116,8 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
             <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-3">
               Bienvenue sur AfriBayit
             </h2>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Connectez-vous pour acceder a votre tableau de bord, gerer vos transactions et suivre vos activites immobilieres.
+            <p className="text-gray-500 mb-6 max-w-md mx-auto font-body">
+              Connectez-vous pour accéder à votre tableau de bord, gérer vos transactions et suivre vos activités immobilières.
             </p>
             <div className="flex items-center justify-center gap-3">
               <a
@@ -130,7 +130,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 href="/auth/register"
                 className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-full text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
               >
-                Creer un compte
+                Créer un compte
               </a>
             </div>
           </div>

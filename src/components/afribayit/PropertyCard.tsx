@@ -42,7 +42,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         {/* Left Badges: Sponsorisé, Premium, Transaction type */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           {(property.boostLevel && property.boostLevel > 0) && (
-            <span className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1">
+            <span className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
               </svg>
@@ -50,14 +50,14 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
             </span>
           )}
           {property.premium && (
-            <span className="px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1">
+            <span className="px-3 py-1 bg-[#D4AF37] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 1l2.928 5.856L19 7.82l-4.39 4.317L15.856 19 10 16.072 4.144 19l1.246-6.863L1 7.82l6.072-.964L10 1z" clipRule="evenodd" />
               </svg>
               Premium
             </span>
           )}
-          <span className={`px-3 py-1 text-[10px] font-bold rounded-full shadow-sm ${
+          <span className={`px-3 py-1 text-[11px] font-bold rounded-full shadow-sm ${
             property.transaction === 'achat'
               ? 'bg-[#003087] text-white'
               : property.transaction === 'location'
@@ -70,7 +70,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         {/* Right Badges: Documents Vérifiés, GeoTrust */}
         <div className="absolute top-3 right-3 flex flex-col gap-1.5">
           {property.verified && (
-            <span className="px-2.5 py-1 bg-[#00A651] text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-lg">
+            <span className="px-2.5 py-1 bg-[#00A651] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -78,7 +78,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
             </span>
           )}
           {property.geoTrust && (
-            <span className="px-2.5 py-1 bg-[#009CDE] text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-lg">
+            <span className="px-2.5 py-1 bg-[#009CDE] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
               </svg>
@@ -100,11 +100,11 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       {/* Content */}
       <div className={compact ? 'p-4' : 'p-5'}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-medium text-[#003087] bg-[#003087]/5 px-2 py-0.5 rounded-full">
+          <span className="text-[11px] font-medium text-[#003087] bg-[#003087]/5 px-2 py-0.5 rounded-full">
             {getPropertyTypeLabel(property.type)}
           </span>
-          <span className="text-[10px] text-gray-400">•</span>
-          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+          <span className="text-[11px] text-gray-400">•</span>
+          <span className="text-[11px] text-gray-400 flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -113,8 +113,8 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
           </span>
           {property.createdAt && (
             <>
-              <span className="text-[10px] text-gray-400">•</span>
-              <span className="text-[10px] text-gray-400">Publié {timeAgo(property.createdAt)}</span>
+              <span className="text-[11px] text-gray-400">•</span>
+              <span className="text-[11px] text-gray-400">Publié {timeAgo(property.createdAt)}</span>
             </>
           )}
         </div>

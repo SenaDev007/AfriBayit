@@ -229,7 +229,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden m-4 sm:m-8 rounded-3xl">
+    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden sm:m-4 lg:m-8 rounded-3xl">
       <div className="max-w-7xl mx-auto p-8 sm:p-14 z-40 relative">
         {/* Brand + Contact Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pb-10">

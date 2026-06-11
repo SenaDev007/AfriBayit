@@ -123,7 +123,7 @@ export default function OurWorkPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="pt-28 pb-16 bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] relative overflow-hidden">
+      <section className="pt-28 pb-20 bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
@@ -171,7 +171,7 @@ export default function OurWorkPage() {
       </section>
 
       {/* Projects Section */}
-      <section className="py-20 bg-gray-50/30">
+      <section className="py-16 sm:py-24 bg-gray-50/30">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -284,7 +284,7 @@ export default function OurWorkPage() {
       </section>
 
       {/* Services Section */}
-      <section className="py-20">
+      <section className="py-16 sm:py-24">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -329,7 +329,7 @@ export default function OurWorkPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#003087] to-[#001f5c] relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-gradient-to-r from-[#003087] to-[#001f5c] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] rounded-full blur-3xl" />
         </div>

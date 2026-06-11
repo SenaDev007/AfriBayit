@@ -221,7 +221,7 @@ function AvailabilityCalendar({
       </div>
       <div className="flex items-center gap-4 mt-4 text-[10px] text-gray-500">
         <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#00A651]/10 rounded" /> Disponible</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#D93025]/10 rounded" /> Reserve</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#D93025]/10 rounded" /> Réservé</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#D4AF37] rounded" /> Selection</span>
       </div>
     </div>
@@ -268,7 +268,7 @@ function BookingFlowModal({
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Reserver : {rental.title}</h3>
+            <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Réserver : {rental.title}</h3>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100"><X className="w-5 h-5 text-gray-500" /></button>
           </div>
 
@@ -298,11 +298,11 @@ function BookingFlowModal({
                 onNextMonth={() => setCalMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1))} />
               <div className="mt-4 p-3 bg-gray-50 rounded-2xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Arrivee</span>
+                  <span className="text-sm text-gray-500">Arrivée</span>
                   <span className="text-sm font-semibold text-[#2C2E2F]">{bookingForm.checkIn || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-sm text-gray-500">Depart</span>
+                  <span className="text-sm text-gray-500">Départ</span>
                   <span className="text-sm font-semibold text-[#2C2E2F]">{bookingForm.checkOut || '—'}</span>
                 </div>
                 {nights > 0 && <p className="text-xs text-[#003087] font-semibold mt-2">{nights} nuit{nights > 1 ? 's' : ''}</p>}
@@ -328,17 +328,17 @@ function BookingFlowModal({
                 </div>
               </div>
               <div className="mb-4">
-                <label className="text-xs text-gray-500 mb-1.5 block">Demandes speciales (optionnel)</label>
+                <label className="text-xs text-gray-500 mb-1.5 block">Demandes spéciales (optionnel)</label>
                 <textarea value={bookingForm.specialRequests} onChange={(e) => setBookingForm((f) => ({ ...f, specialRequests: e.target.value }))}
                   className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] resize-none h-20" placeholder="Heure d'arrivee, preferences..." />
               </div>
 
               {/* Pricing Summary */}
               <div className="p-4 bg-gray-50 rounded-2xl mb-4">
-                <h4 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><Calculator className="w-4 h-4" /> Recapitulatif</h4>
+                <h4 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><Calculator className="w-4 h-4" /> Récapitulatif</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-gray-500">{formatPrice(rental.pricePerNight)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span className="font-mono font-semibold">{formatPrice(subtotal)} FCFA</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de menage</span><span className="font-mono font-semibold">{formatPrice(cleaningFee)} FCFA</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de ménage</span><span className="font-mono font-semibold">{formatPrice(cleaningFee)} FCFA</span></div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de service (12%)</span><span className="font-mono font-semibold">{formatPrice(serviceFee)} FCFA</span></div>
                   <div className="border-t pt-2 flex justify-between"><span className="text-sm font-bold text-[#2C2E2F]">Total</span><span className="font-mono text-lg font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
                 </div>
@@ -379,7 +379,7 @@ function BookingFlowModal({
 
               <div className="flex items-center gap-2 p-3 bg-[#00A651]/5 rounded-2xl mb-4">
                 <Shield className="w-5 h-5 text-[#00A651]" />
-                <div><p className="text-xs font-semibold text-[#00A651]">Paiement securise</p><p className="text-[10px] text-gray-500">Vos fonds sont en escrow jusqu&apos;a votre check-in</p></div>
+                <div><p className="text-xs font-semibold text-[#00A651]">Paiement sécurisé</p><p className="text-[10px] text-gray-500">Vos fonds sont en escrow jusqu&apos;à votre check-in</p></div>
               </div>
 
               <div className="flex gap-3">
@@ -398,8 +398,8 @@ function BookingFlowModal({
               <div className="w-16 h-16 bg-[#00A651]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-[#00A651]" />
               </div>
-              <h4 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Reservation confirmee !</h4>
-              <p className="text-sm text-gray-500 mb-4">Votre reservation a ete enregistree. Un QR code sera genere pour votre check-in digital.</p>
+              <h4 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Réservation confirmée !</h4>
+              <p className="text-sm text-gray-500 mb-4">Votre réservation a été enregistrée. Un QR code sera généré pour votre check-in digital.</p>
 
               {/* Digital Check-in Card */}
               <div className="p-5 bg-gradient-to-br from-[#003087] to-[#001a4d] rounded-2xl text-white text-left mb-4">
@@ -411,8 +411,8 @@ function BookingFlowModal({
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Arrivee</p><p className="font-mono font-bold">{bookingForm.checkIn}</p></div>
-                  <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Depart</p><p className="font-mono font-bold">{bookingForm.checkOut}</p></div>
+                  <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Arrivée</p><p className="font-mono font-bold">{bookingForm.checkIn}</p></div>
+                  <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Départ</p><p className="font-mono font-bold">{bookingForm.checkOut}</p></div>
                   <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Voyageurs</p><p className="font-mono font-bold">{bookingForm.guests}</p></div>
                   <div className="p-2 bg-white/10 rounded-xl"><p className="text-white/60">Ref.</p><p className="font-mono font-bold">AB-{Math.random().toString(36).slice(2, 8).toUpperCase()}</p></div>
                 </div>
@@ -496,11 +496,11 @@ export default function ShortTermRentalModule() {
     mutationFn: (data: { rentalId: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) =>
       apiPost(`/api/short-term/${data.rentalId}/bookings`, data),
     onSuccess: () => {
-      toast.success('Reservation confirmee', { description: 'Votre reservation a ete enregistree avec succes.' });
+      toast.success('Réservation confirmée', { description: 'Votre réservation a été enregistrée avec succès.' });
       queryClient.invalidateQueries({ queryKey: ['short-term-rental-bookings'] });
     },
     onError: (err: Error) => {
-      toast.error('Erreur', { description: err.message || 'Impossible de creer la reservation.' });
+      toast.error('Erreur', { description: err.message || 'Impossible de créer la réservation.' });
     },
   });
 
@@ -563,13 +563,13 @@ export default function ShortTermRentalModule() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            <Home className="w-4 h-4" /> Location Courte Duree
+            <Home className="w-4 h-4" /> Location Courte Durée
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
-            Locations <span className="text-[#D4AF37]">Vacances</span> & Sejours
+            Locations <span className="text-[#D4AF37]">Vacances</span> & Séjours
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Appartements, villas et maisons entieres pour vos sejours en Afrique de l&apos;Ouest. Check-in digital et paiement Mobile Money.
+            Appartements, villas et maisons entières pour vos séjours en Afrique de l&apos;Ouest. Check-in digital et paiement Mobile Money.
           </p>
         </motion.div>
 
@@ -625,7 +625,7 @@ export default function ShortTermRentalModule() {
                       ))}
                     </div></div>
                 </div>
-                {activeFilterCount > 0 && <div className="flex justify-end mt-3"><button onClick={clearFilters} className="text-xs text-[#D93025] font-medium hover:underline">Reinitialiser les filtres</button></div>}
+                {activeFilterCount > 0 && <div className="flex justify-end mt-3"><button onClick={clearFilters} className="text-xs text-[#D93025] font-medium hover:underline">Réinitialiser les filtres</button></div>}
               </motion.div>
             )}
           </AnimatePresence>
@@ -697,7 +697,7 @@ export default function ShortTermRentalModule() {
                     )}
                     <button onClick={(e) => { e.stopPropagation(); handleOpenBooking(rental.id); }}
                       className="w-full mt-3 py-2.5 bg-[#D4AF37] text-white rounded-2xl text-sm font-semibold hover:bg-[#c4a030] transition-colors flex items-center justify-center gap-2">
-                      <Calendar className="w-4 h-4" /> Reserver
+                      <Calendar className="w-4 h-4" /> Réserver
                     </button>
                   </div>
                 </motion.div>
@@ -725,7 +725,7 @@ export default function ShortTermRentalModule() {
                 <div className="flex items-center justify-between p-4 bg-[#D4AF37]/5 rounded-2xl">
                   <div><span className="font-mono text-2xl font-bold text-[#D4AF37]">{formatPrice((rentalDetail as RentalApiItem).pricePerNight)}</span><span className="text-sm text-gray-500 ml-1">FCFA/nuit</span></div>
                   <button onClick={() => handleOpenBooking((rentalDetail as RentalApiItem).id)} className="px-6 py-3 bg-[#003087] text-white rounded-2xl font-semibold text-sm hover:bg-[#0047b3] transition-colors flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Reserver maintenant
+                    <Calendar className="w-4 h-4" /> Réserver maintenant
                   </button>
                 </div>
               </div>

@@ -202,8 +202,8 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero search bar */}
-      <div className="bg-[#003087] pt-20 pb-8 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-[#003087] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -308,7 +308,7 @@ export default function BookingPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filter Sidebar */}
           <motion.aside

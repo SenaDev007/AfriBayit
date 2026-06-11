@@ -85,7 +85,7 @@ export default function TrustSection() {
                 {pillar.icon}
               </div>
               <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">{pillar.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{pillar.description}</p>
+              <p className="text-sm text-gray-500 leading-relaxed font-body">{pillar.description}</p>
 
               {/* Decorative corner */}
               <div

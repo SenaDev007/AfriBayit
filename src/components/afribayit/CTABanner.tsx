@@ -11,7 +11,7 @@ interface CTABannerProps {
 
 export default function CTABanner({ onNavigate }: CTABannerProps) {
   return (
-    <section className="py-0">
+    <section className="py-16 sm:py-24">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -21,7 +21,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
           className="relative rounded-3xl overflow-hidden"
         >
           {/* Full-width gradient banner */}
-          <div className="bg-navy-gradient noise-overlay relative p-10 sm:p-16 lg:p-20">
+          <div className="bg-navy-gradient noise-overlay relative p-8 sm:p-12 lg:p-16">
             {/* Decorative gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/20 via-transparent to-[#D4AF37]/10 pointer-events-none" />
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#009CDE]/5 rounded-full blur-3xl pointer-events-none" />
