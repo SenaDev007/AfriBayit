@@ -54,6 +54,17 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   ota: 'OTA',
   countries: 'Pays',
   hospitality: 'Hôtellerie',
+  disputes: 'Litiges',
+  payouts: 'Payouts',
+  artisans: 'Artisans BTP',
+  notaries: 'Notaires',
+  geotrust: 'GeoTrust',
+  'short-term-rentals': 'Locations courte durée',
+  bookings: 'Réservations',
+  reviews: 'Avis',
+  ambassadors: 'Ambassadeurs',
+  notifications: 'Notifications',
+  content: 'Contenu',
 };
 
 interface AdminHeaderProps {
