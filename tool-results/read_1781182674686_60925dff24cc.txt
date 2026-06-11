@@ -1,0 +1,739 @@
+     1→'use client';
+     2→import React from 'react';
+     3→import { Button } from '@/components/ui/button';
+     4→import { cn } from '@/lib/utils';
+     5→import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
+     6→import { createPortal } from 'react-dom';
+     7→import {
+     8→  NavigationMenu,
+     9→  NavigationMenuContent,
+    10→  NavigationMenuItem,
+    11→  NavigationMenuList,
+    12→  NavigationMenuTrigger,
+    13→  NavigationMenuLink,
+    14→} from '@/components/ui/navigation-menu';
+    15→import { LucideIcon } from 'lucide-react';
+    16→import { useSession, signOut } from 'next-auth/react';
+    17→import { usePathname } from 'next/navigation';
+    18→import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+    19→import {
+    20→  Home,
+    21→  Key,
+    22→  TrendingUp,
+    23→  CalendarDays,
+    24→  Hotel,
+    25→  BedDouble,
+    26→  Wrench,
+    27→  Landmark,
+    28→  ShieldCheck,
+    29→  GraduationCap,
+    30→  Shield,
+    31→  Wallet,
+    32→  CreditCard,
+    33→  MessageCircle,
+    34→  Briefcase,
+    35→  BarChart3,
+    36→  Users,
+    37→  Star,
+    38→  FileText,
+    39→  RotateCcw,
+    40→  Handshake,
+    41→  HelpCircle,
+    42→  Leaf,
+    43→  GlobeIcon,
+    44→  LayersIcon,
+    45→  UserPlusIcon,
+    46→  PlugIcon,
+    47→  CodeIcon,
+    48→  Bell,
+    49→  Plus,
+    50→  LayoutDashboard,
+    51→  LogOut,
+    52→  Languages,
+    53→  User,
+    54→  Settings,
+    55→  ChevronDown,
+    56→} from 'lucide-react';
+    57→
+    58→type LinkItem = {
+    59→  title: string;
+    60→  href: string;
+    61→  icon: LucideIcon;
+    62→  description?: string;
+    63→  gold?: boolean;
+    64→};
+    65→
+    66→function useScroll(threshold: number) {
+    67→  const [scrolled, setScrolled] = React.useState(false);
+    68→
+    69→  const onScroll = React.useCallback(() => {
+    70→    setScrolled(window.scrollY > threshold);
+    71→  }, [threshold]);
+    72→
+    73→  React.useEffect(() => {
+    74→    window.addEventListener('scroll', onScroll);
+    75→    return () => window.removeEventListener('scroll', onScroll);
+    76→  }, [onScroll]);
+    77→
+    78→  React.useEffect(() => {
+    79→    onScroll();
+    80→  }, [onScroll]);
+    81→
+    82→  return scrolled;
+    83→}
+    84→
+    85→// ─── AfriBayit Navigation Links ────────────────────────────────
+    86→
+    87→const immobilierLinks: LinkItem[] = [
+    88→  {
+    89→    title: 'Acheter',
+    90→    href: '/search?tab=achat',
+    91→    description: 'Villas, appartements, terrains à vendre',
+    92→    icon: Home,
+    93→  },
+    94→  {
+    95→    title: 'Louer',
+    96→    href: '/search?tab=location',
+    97→    description: 'Location longue durée dans 5 pays',
+    98→    icon: Key,
+    99→  },
+   100→  {
+   101→    title: 'Investir',
+   102→    href: '/search?tab=investissement',
+   103→    description: 'Opportunités de rendement immobilier',
+   104→    icon: TrendingUp,
+   105→  },
+   106→  {
+   107→    title: 'Location courte durée',
+   108→    href: '/short-term',
+   109→    description: 'Séjours et locations temporaires',
+   110→    icon: CalendarDays,
+   111→  },
+   112→];
+   113→
+   114→const hospitalityLinks: LinkItem[] = [
+   115→  {
+   116→    title: 'Hôtels',
+   117→    href: '/hospitality',
+   118→    description: 'Réservez des hôtels vérifiés',
+   119→    icon: Hotel,
+   120→  },
+   121→  {
+   122→    title: 'Guesthouses',
+   123→    href: '/guesthouse',
+   124→    description: 'Séjournez chez l\'habitant',
+   125→    icon: BedDouble,
+   126→  },
+   127→  {
+   128→    title: 'Réservation',
+   129→    href: '/booking',
+   130→    description: 'Réservez votre séjour en ligne',
+   131→    icon: CalendarDays,
+   132→    gold: true,
+   133→  },
+   134→];
+   135→
+   136→const servicesLinks: LinkItem[] = [
+   137→  {
+   138→    title: 'Artisans BTP',
+   139→    href: '/artisans',
+   140→    description: 'Trouvez des artisans qualifiés',
+   141→    icon: Wrench,
+   142→  },
+   143→  {
+   144→    title: 'Notaires',
+   145→    href: '/notary',
+   146→    description: 'Services notariaux certifiés',
+   147→    icon: Landmark,
+   148→  },
+   149→  {
+   150→    title: 'GeoTrust',
+   151→    href: '/geotrust',
+   152→    description: 'Vérification géolocalisée des biens',
+   153→    icon: ShieldCheck,
+   154→  },
+   155→  {
+   156→    title: 'Escrow Sécurisé',
+   157→    href: '/escrow',
+   158→    description: 'Transactions protégées par escrow',
+   159→    icon: Shield,
+   160→  },
+   161→  {
+   162→    title: 'Académie',
+   163→    href: '/academy',
+   164→    description: 'Formations immobilières en ligne',
+   165→    icon: GraduationCap,
+   166→  },
+   167→  {
+   168→    title: 'Portefeuille',
+   169→    href: '/wallet',
+   170→    description: 'Gérez vos fonds et paiements',
+   171→    icon: Wallet,
+   172→  },
+   173→];
+   174→
+   175→const servicesLinks2: LinkItem[] = [
+   176→  {
+   177→    title: 'Abonnements',
+   178→    href: '/subscriptions',
+   179→    icon: CreditCard,
+   180→  },
+   181→  {
+   182→    title: 'Communauté',
+   183→    href: '/community',
+   184→    icon: MessageCircle,
+   185→  },
+   186→  {
+   187→    title: 'Profils Pro',
+   188→    href: '/profile',
+   189→    icon: Briefcase,
+   190→  },
+   191→  {
+   192→    title: 'Analytics',
+   193→    href: '/analytics',
+   194→    icon: BarChart3,
+   195→  },
+   196→];
+   197→
+   198→const companyLinks: LinkItem[] = [
+   199→  {
+   200→    title: 'À propos',
+   201→    href: '#',
+   202→    description: 'Découvrez l\'équipe AfriBayit',
+   203→    icon: Users,
+   204→  },
+   205→  {
+   206→    title: 'Nos réalisations',
+   207→    href: '/our-work',
+   208→    description: 'Projets immobiliers et hôteliers',
+   209→    icon: GlobeIcon,
+   210→    gold: true,
+   211→  },
+   212→  {
+   213→    title: 'Témoignages',
+   214→    href: '#',
+   215→    description: 'Ce que nos clients disent de nous',
+   216→    icon: Star,
+   217→  },
+   218→  {
+   219→    title: 'Partenariats',
+   220→    href: '#',
+   221→    icon: Handshake,
+   222→    description: 'Collaborez avec AfriBayit',
+   223→  },
+   224→];
+   225→
+   226→const companyLinks2: LinkItem[] = [
+   227→  {
+   228→    title: 'CGU',
+   229→    href: '/terms',
+   230→    icon: FileText,
+   231→  },
+   232→  {
+   233→    title: 'Confidentialité',
+   234→    href: '/privacy',
+   235→    icon: Shield,
+   236→  },
+   237→  {
+   238→    title: 'Remboursement',
+   239→    href: '#',
+   240→    icon: RotateCcw,
+   241→  },
+   242→  {
+   243→    title: 'Blog',
+   244→    href: '#',
+   245→    icon: Leaf,
+   246→  },
+   247→  {
+   248→    title: 'Aide',
+   249→    href: '#',
+   250→    icon: HelpCircle,
+   251→  },
+   252→];
+   253→
+   254→// ─── AfriBayit Wordmark (logo SVG) ─────────────────────────────
+   255→
+   256→const AfriBayitWordmark = (props: React.ComponentProps<'svg'>) => (
+   257→  <svg viewBox="0 0 140 24" fill="currentColor" {...props}>
+   258→    <text x="0" y="18" fontFamily="Georgia, serif" fontSize="18" fontWeight="bold" fill="currentColor">
+   259→      Afri
+   260→    </text>
+   261→    <text x="42" y="18" fontFamily="Georgia, serif" fontSize="18" fontWeight="bold" fill="#D4AF37">
+   262→      Bayit
+   263→    </text>
+   264→  </svg>
+   265→);
+   266→
+   267→// ─── Main Header Component ─────────────────────────────────────
+   268→
+   269→interface HeaderProps {
+   270→  onOpenNotifications?: () => void;
+   271→  notificationCount?: number;
+   272→}
+   273→
+   274→export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderProps) {
+   275→  const [open, setOpen] = React.useState(false);
+   276→  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
+   277→  const scrolled = useScroll(10);
+   278→  const { data: session, status } = useSession();
+   279→  const isLoggedIn = !!session?.user;
+   280→  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+   281→
+   282→  // Close profile menu on outside click
+   283→  React.useEffect(() => {
+   284→    const handleClick = (e: MouseEvent) => {
+   285→      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+   286→        setProfileMenuOpen(false);
+   287→      }
+   288→    };
+   289→    document.addEventListener('mousedown', handleClick);
+   290→    return () => document.removeEventListener('mousedown', handleClick);
+   291→  }, []);
+   292→
+   293→  React.useEffect(() => {
+   294→    if (open) {
+   295→      document.body.style.overflow = 'hidden';
+   296→    } else {
+   297→      document.body.style.overflow = '';
+   298→    }
+   299→    return () => {
+   300→      document.body.style.overflow = '';
+   301→    };
+   302→  }, [open]);
+   303→
+   304→  // Determine text colors based on scroll state and path
+   305→  const pathname = usePathname();
+   306→  const isHome = pathname === '/';
+   307→  const textColor = scrolled ? 'text-[#2C2E2F]' : (isHome ? 'text-white' : 'text-[#2C2E2F]');
+   308→  const mutedColor = scrolled ? 'text-gray-500' : (isHome ? 'text-white/70' : 'text-gray-500');
+   309→
+   310→  return (
+   311→    <header
+   312→      className={cn('sticky top-0 z-50 w-full border-b border-transparent transition-all duration-300', {
+   313→        'bg-background/95 supports-[backdrop-filter]:bg-background/50 border-border backdrop-blur-lg shadow-sm':
+   314→          scrolled,
+   315→        'bg-transparent': !scrolled,
+   316→      })}
+   317→    >
+   318→      <nav className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
+   319→        <div className="flex items-center gap-5">
+   320→          {/* Logo */}
+   321→          <a href="/" className="hover:bg-accent rounded-md p-2 transition-colors">
+   322→            <img
+   323→              src="/logo.png"
+   324→              alt="AfriBayit"
+   325→              className={cn(
+   326→                'h-10 w-auto object-contain transition-all duration-300',
+   327→                !scrolled && isHome ? 'brightness-0 invert drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]' : '',
+   328→              )}
+   329→            />
+   330→          </a>
+   331→
+   332→          {/* Desktop Navigation Menu */}
+   333→          <NavigationMenu className="hidden lg:flex">
+   334→            <NavigationMenuList>
+   335→              {/* Immobilier */}
+   336→              <NavigationMenuItem>
+   337→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   338→                  Immobilier
+   339→                </NavigationMenuTrigger>
+   340→                <NavigationMenuContent className="bg-background p-1 pr-1.5">
+   341→                  <ul className="bg-popover grid w-lg grid-cols-2 gap-2 rounded-md border p-2 shadow">
+   342→                    {immobilierLinks.map((item, i) => (
+   343→                      <li key={i}>
+   344→                        <ListItem {...item} />
+   345→                      </li>
+   346→                    ))}
+   347→                  </ul>
+   348→                  <div className="p-2">
+   349→                    <p className="text-muted-foreground text-sm">
+   350→                      Envie d&apos;investir ?{' '}
+   351→                      <a href="/search?tab=investissement" className="text-[#D4AF37] font-medium hover:underline">
+   352→                        Voir les opportunités
+   353→                      </a>
+   354→                    </p>
+   355→                  </div>
+   356→                </NavigationMenuContent>
+   357→              </NavigationMenuItem>
+   358→
+   359→              {/* Hôtellerie */}
+   360→              <NavigationMenuItem>
+   361→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   362→                  Hôtellerie
+   363→                </NavigationMenuTrigger>
+   364→                <NavigationMenuContent className="bg-background p-1 pr-1.5">
+   365→                  <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   366→                    {hospitalityLinks.map((item, i) => (
+   367→                      <li key={i}>
+   368→                        <ListItem {...item} />
+   369→                      </li>
+   370→                    ))}
+   371→                  </ul>
+   372→                </NavigationMenuContent>
+   373→              </NavigationMenuItem>
+   374→
+   375→              {/* Services */}
+   376→              <NavigationMenuItem>
+   377→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   378→                  Services
+   379→                </NavigationMenuTrigger>
+   380→                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+   381→                  <div className="grid w-lg grid-cols-2 gap-2">
+   382→                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   383→                      {servicesLinks.map((item, i) => (
+   384→                        <li key={i}>
+   385→                          <ListItem {...item} />
+   386→                        </li>
+   387→                      ))}
+   388→                    </ul>
+   389→                    <ul className="space-y-2 p-3">
+   390→                      {servicesLinks2.map((item, i) => (
+   391→                        <li key={i}>
+   392→                          <NavigationMenuLink
+   393→                            href={item.href}
+   394→                            className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
+   395→                          >
+   396→                            <item.icon className="text-[#003087] size-4" />
+   397→                            <span className="font-medium text-sm">{item.title}</span>
+   398→                          </NavigationMenuLink>
+   399→                        </li>
+   400→                      ))}
+   401→                    </ul>
+   402→                  </div>
+   403→                </NavigationMenuContent>
+   404→              </NavigationMenuItem>
+   405→
+   406→              {/* Entreprise */}
+   407→              <NavigationMenuItem>
+   408→                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+   409→                  Entreprise
+   410→                </NavigationMenuTrigger>
+   411→                <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
+   412→                  <div className="grid w-lg grid-cols-2 gap-2">
+   413→                    <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+   414→                      {companyLinks.map((item, i) => (
+   415→                        <li key={i}>
+   416→                          <ListItem {...item} />
+   417→                        </li>
+   418→                      ))}
+   419→                    </ul>
+   420→                    <ul className="space-y-2 p-3">
+   421→                      {companyLinks2.map((item, i) => (
+   422→                        <li key={i}>
+   423→                          <NavigationMenuLink
+   424→                            href={item.href}
+   425→                            className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
+   426→                          >
+   427→                            <item.icon className="text-foreground size-4" />
+   428→                            <span className="font-medium text-sm">{item.title}</span>
+   429→                          </NavigationMenuLink>
+   430→                        </li>
+   431→                      ))}
+   432→                    </ul>
+   433→                  </div>
+   434→                </NavigationMenuContent>
+   435→              </NavigationMenuItem>
+   436→
+   437→              {/* Pricing / Tarifs */}
+   438→              <NavigationMenuLink className={cn('px-4', textColor)} asChild>
+   439→                <a href="/subscriptions" className="hover:bg-accent rounded-md p-2 text-sm font-medium">
+   440→                  Tarifs
+   441→                </a>
+   442→              </NavigationMenuLink>
+   443→            </NavigationMenuList>
+   444→          </NavigationMenu>
+   445→        </div>
+   446→
+   447→        {/* Right side actions */}
+   448→        <div className="hidden items-center gap-2 md:flex">
+   449→          {/* Notifications */}
+   450→          {onOpenNotifications && notificationCount > 0 && (
+   451→            <Button
+   452→              variant="ghost"
+   453→              size="icon"
+   454→              onClick={onOpenNotifications}
+   455→              className="relative"
+   456→            >
+   457→              <Bell className="size-4" />
+   458→              {notificationCount > 0 && (
+   459→                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-[#D93025] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+   460→                  {notificationCount > 9 ? '9+' : notificationCount}
+   461→                </span>
+   462→              )}
+   463→            </Button>
+   464→          )}
+   465→
+   466→          {/* Admin / Backoffice */}
+   467→          <Button
+   468→            variant="outline"
+   469→            size="sm"
+   470→            onClick={() => window.location.href = '/admin'}
+   471→            className="border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5"
+   472→          >
+   473→            <LayoutDashboard className="size-3.5 mr-1" />
+   474→            Admin
+   475→          </Button>
+   476→
+   477→          {/* Publier — Gold CTA */}
+   478→          <Button
+   479→            size="sm"
+   480→            className="bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+   481→            onClick={() => window.location.href = '/publish'}
+   482→          >
+   483→            <Plus className="size-3.5 mr-1" />
+   484→            Publier
+   485→          </Button>
+   486→
+   487→          {/* Connexion / Profile */}
+   488→          {status === 'loading' ? (
+   489→            <div className="w-20 h-8 bg-gray-100 rounded-md animate-pulse" />
+   490→          ) : !isLoggedIn ? (
+   491→            <Button
+   492→              variant="outline"
+   493→              size="sm"
+   494→              className="border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white"
+   495→              onClick={() => window.location.href = '/auth/login'}
+   496→            >
+   497→              Connexion
+   498→            </Button>
+   499→          ) : (
+   500→            <div className="relative" ref={profileMenuRef}>
+   501→              <button
+   502→                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+   503→                className="flex items-center gap-1.5"
+   504→              >
+   505→                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+   506→                  <ImageWithFallback
+   507→                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+   508→                    alt="Profile"
+   509→                    className="w-full h-full"
+   510→                    fallbackType="avatar"
+   511→                  />
+   512→                </div>
+   513→                <ChevronDown className={`w-3 h-3 text-[#003087] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+   514→              </button>
+   515→              {profileMenuOpen && (
+   516→                <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+   517→                  <div className="px-4 py-3 border-b border-gray-100">
+   518→                    <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+   519→                    <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+   520→                  </div>
+   521→                  <div className="py-1">
+   522→                    <a href="/dashboard" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   523→                      <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+   524→                    </a>
+   525→                    <a href="/profile" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   526→                      <User className="w-4 h-4 text-gray-400" /> Mon profil
+   527→                    </a>
+   528→                    <a href="/wallet" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   529→                      <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+   530→                    </a>
+   531→                    <a href="/settings" className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors">
+   532→                      <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+   533→                    </a>
+   534→                  </div>
+   535→                  <div className="border-t border-gray-100 py-1">
+   536→                    <button
+   537→                      onClick={() => signOut({ callbackUrl: '/' })}
+   538→                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
+   539→                    >
+   540→                      <LogOut className="w-4 h-4" /> Déconnexion
+   541→                    </button>
+   542→                  </div>
+   543→                </div>
+   544→              )}
+   545→            </div>
+   546→          )}
+   547→        </div>
+   548→
+   549→        {/* Mobile toggle */}
+   550→        <Button
+   551→          size="icon"
+   552→          variant="outline"
+   553→          onClick={() => setOpen(!open)}
+   554→          className={cn(
+   555→            'md:hidden',
+   556→            !scrolled && isHome
+   557→              ? 'border-white/20 text-white hover:bg-white/10'
+   558→              : 'border-[#003087]/20 text-[#003087]',
+   559→          )}
+   560→          aria-expanded={open}
+   561→          aria-controls="mobile-menu"
+   562→          aria-label="Toggle menu"
+   563→        >
+   564→          <MenuToggleIcon open={open} className="size-5" duration={300} />
+   565→        </Button>
+   566→      </nav>
+   567→
+   568→      {/* Mobile Menu */}
+   569→      <MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">
+   570→        <NavigationMenu className="max-w-full">
+   571→          <div className="flex w-full flex-col gap-y-2">
+   572→            <span className="text-sm font-semibold text-[#003087]">Immobilier</span>
+   573→            {immobilierLinks.map((link) => (
+   574→              <ListItem key={link.title} {...link} />
+   575→            ))}
+   576→            <span className="text-sm font-semibold text-[#003087] mt-2">Hôtellerie</span>
+   577→            {hospitalityLinks.map((link) => (
+   578→              <ListItem key={link.title} {...link} />
+   579→            ))}
+   580→            <span className="text-sm font-semibold text-[#003087] mt-2">Services</span>
+   581→            {servicesLinks.map((link) => (
+   582→              <ListItem key={link.title} {...link} />
+   583→            ))}
+   584→            {servicesLinks2.map((link) => (
+   585→              <ListItem key={link.title} {...link} />
+   586→            ))}
+   587→            <span className="text-sm font-semibold text-[#003087] mt-2">Entreprise</span>
+   588→            {companyLinks.map((link) => (
+   589→              <ListItem key={link.title} {...link} />
+   590→            ))}
+   591→            {companyLinks2.map((link) => (
+   592→              <ListItem key={link.title} {...link} />
+   593→            ))}
+   594→          </div>
+   595→        </NavigationMenu>
+   596→        <div className="flex flex-col gap-2">
+   597→          {status === 'loading' ? (
+   598→            <div className="h-10 bg-gray-100 rounded-md animate-pulse" />
+   599→          ) : isLoggedIn ? (
+   600→            <>
+   601→              <div className="flex items-center gap-3 px-2 py-2 mb-1">
+   602→                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+   603→                  <ImageWithFallback
+   604→                    src={session?.user?.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face'}
+   605→                    alt="Profile"
+   606→                    className="w-full h-full"
+   607→                    fallbackType="avatar"
+   608→                  />
+   609→                </div>
+   610→                <div>
+   611→                  <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+   612→                  <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+   613→                </div>
+   614→              </div>
+   615→              <a href="/dashboard" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   616→                <BarChart3 className="w-4 h-4 text-gray-400" /> Dashboard
+   617→              </a>
+   618→              <a href="/profile" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   619→                <User className="w-4 h-4 text-gray-400" /> Mon profil
+   620→              </a>
+   621→              <a href="/wallet" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   622→                <Wallet className="w-4 h-4 text-gray-400" /> Portefeuille
+   623→              </a>
+   624→              <a href="/settings" className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+   625→                <Settings className="w-4 h-4 text-gray-400" /> Paramètres
+   626→              </a>
+   627→              <Button
+   628→                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+   629→                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+   630→              >
+   631→                <Plus className="size-4 mr-1" />
+   632→                Publier une annonce
+   633→              </Button>
+   634→              <Button
+   635→                variant="outline"
+   636→                className="w-full bg-transparent border-red-200 text-red-500 hover:bg-red-50"
+   637→                onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
+   638→              >
+   639→                <LogOut className="size-4 mr-1" />
+   640→                Déconnexion
+   641→              </Button>
+   642→            </>
+   643→          ) : (
+   644→            <>
+   645→              <Button
+   646→                variant="outline"
+   647→                className="w-full bg-transparent border-[#003087] text-[#003087]"
+   648→                onClick={() => { window.location.href = '/auth/login'; setOpen(false); }}
+   649→              >
+   650→                Connexion
+   651→              </Button>
+   652→              <Button
+   653→                className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white"
+   654→                onClick={() => { window.location.href = '/publish'; setOpen(false); }}
+   655→              >
+   656→                <Plus className="size-4 mr-1" />
+   657→                Publier une annonce
+   658→              </Button>
+   659→            </>
+   660→          )}
+   661→        </div>
+   662→      </MobileMenu>
+   663→    </header>
+   664→  );
+   665→}
+   666→
+   667→// ─── Mobile Menu Portal ────────────────────────────────────────
+   668→
+   669→type MobileMenuProps = React.ComponentProps<'div'> & {
+   670→  open: boolean;
+   671→};
+   672→
+   673→function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
+   674→  if (!open || typeof window === 'undefined') return null;
+   675→
+   676→  return createPortal(
+   677→    <div
+   678→      id="mobile-menu"
+   679→      className={cn(
+   680→        'bg-background/95 supports-[backdrop-filter]:bg-background/50 backdrop-blur-lg',
+   681→        'fixed top-16 right-0 bottom-0 left-0 z-40 flex flex-col overflow-hidden border-y md:hidden',
+   682→      )}
+   683→    >
+   684→      <div
+   685→        data-slot={open ? 'open' : 'closed'}
+   686→        className={cn(
+   687→          'data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out',
+   688→          'size-full p-4',
+   689→          className,
+   690→        )}
+   691→        {...props}
+   692→      >
+   693→        {children}
+   694→      </div>
+   695→    </div>,
+   696→    document.body,
+   697→  );
+   698→}
+   699→
+   700→// ─── List Item for Navigation ──────────────────────────────────
+   701→
+   702→function ListItem({
+   703→  title,
+   704→  description,
+   705→  icon: Icon,
+   706→  className,
+   707→  href,
+   708→  gold,
+   709→  ...props
+   710→}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
+   711→  return (
+   712→    <NavigationMenuLink
+   713→      className={cn(
+   714→        'w-full flex flex-row gap-x-2',
+   715→        'data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground',
+   716→        'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+   717→        'rounded-sm p-2',
+   718→        gold && 'text-[#D4AF37]',
+   719→        className,
+   720→      )}
+   721→      {...props}
+   722→      asChild
+   723→    >
+   724→      <a href={href}>
+   725→        <div className={cn(
+   726→          'flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm',
+   727→          gold ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20' : 'bg-background/40',
+   728→        )}>
+   729→          <Icon className={cn('size-5', gold ? 'text-[#D4AF37]' : 'text-[#003087]')} />
+   730→        </div>
+   731→        <div className="flex flex-col items-start justify-center">
+   732→          <span className={cn('font-medium', gold && 'text-[#D4AF37]')}>{title}</span>
+   733→          <span className="text-muted-foreground text-xs">{description}</span>
+   734→        </div>
+   735→      </a>
+   736→    </NavigationMenuLink>
+   737→  );
+   738→}
+   739→

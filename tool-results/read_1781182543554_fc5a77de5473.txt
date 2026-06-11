@@ -1,0 +1,935 @@
+     1→'use client';
+     2→
+     3→import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+     4→import { motion, useInView } from 'framer-motion';
+     5→import { useQuery } from '@tanstack/react-query';
+     6→import { apiFetch } from '@/lib/api';
+     7→import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
+     8→import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
+     9→import {
+    10→  Building2, Home, Hotel, MapPin, Key, TrendingUp,
+    11→  ShieldCheck, BedDouble, Landmark, Wrench,
+    12→  Castle, DoorOpen, Trees, Bath, ChefHat,
+    13→  Warehouse, Store, Tent, Building,
+    14→} from 'lucide-react';
+    15→
+    16→interface HeroSectionProps {
+    17→  onNavigate: (section: string) => void;
+    18→  onOpenRebecca: () => void;
+    19→}
+    20→
+    21→interface StatsData {
+    22→  properties: number;
+    23→  transactions: number;
+    24→  countries: number;
+    25→  agents: number;
+    26→  satisfaction: number;
+    27→  artisans: number;
+    28→  courses: number;
+    29→  hotels: number;
+    30→  guesthouses: number;
+    31→  bookings: number;
+    32→}
+    33→
+    34→interface FeaturedProperty {
+    35→  id: string;
+    36→  title: string;
+    37→  slug: string;
+    38→  type: string;
+    39→  transaction: string;
+    40→  price: number;
+    41→  currency: string;
+    42→  city: string;
+    43→  country: string;
+    44→  quartier: string;
+    45→  image: string | null;
+    46→  verified: boolean;
+    47→  premium: boolean;
+    48→  bedrooms: number | null;
+    49→  surface: number | null;
+    50→}
+    51→
+    52→const easeOut = [0.16, 1, 0.3, 1] as const;
+    53→
+    54→// Animated counter component
+    55→function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number; suffix?: string; duration?: number }) {
+    56→  const [count, setCount] = useState(0);
+    57→  const ref = useRef<HTMLSpanElement>(null);
+    58→  const isInView = useInView(ref, { once: true });
+    59→
+    60→  useEffect(() => {
+    61→    if (!isInView || target === 0) return;
+    62→
+    63→    let start = 0;
+    64→    const increment = target / (duration * 60);
+    65→    const timer = setInterval(() => {
+    66→      start += increment;
+    67→      if (start >= target) {
+    68→        setCount(target);
+    69→        clearInterval(timer);
+    70→      } else {
+    71→        setCount(Math.floor(start));
+    72→      }
+    73→    }, 1000 / 60);
+    74→
+    75→    return () => clearInterval(timer);
+    76→  }, [isInView, target, duration]);
+    77→
+    78→  return (
+    79→    <span ref={ref}>
+    80→      {target > 0 ? (
+    81→        <>
+    82→          {new Intl.NumberFormat('fr-FR').format(count)}
+    83→          {suffix}
+    84→        </>
+    85→      ) : (
+    86→        '—'
+    87→      )}
+    88→    </span>
+    89→  );
+    90→}
+    91→
+    92→// Real estate & hospitality icons — embedded into the 3D spinning background layers
+    93→const BACKGROUND_ICONS_LAYER_1 = [
+    94→  { Icon: Building2, color: '#009CDE', size: 28 },
+    95→  { Icon: Home, color: '#D4AF37', size: 24 },
+    96→  { Icon: Hotel, color: '#003087', size: 26 },
+    97→  { Icon: Key, color: '#D4AF37', size: 22 },
+    98→  { Icon: BedDouble, color: '#00A651', size: 24 },
+    99→  { Icon: Landmark, color: '#009CDE', size: 22 },
+   100→  { Icon: Wrench, color: '#D4AF37', size: 20 },
+   101→  { Icon: Store, color: '#009CDE', size: 22 },
+   102→  { Icon: Warehouse, color: '#003087', size: 24 },
+   103→  { Icon: DoorOpen, color: '#D4AF37', size: 22 },
+   104→  { Icon: Trees, color: '#00A651', size: 26 },
+   105→  { Icon: Bath, color: '#009CDE', size: 20 },
+   106→];
+   107→
+   108→const BACKGROUND_ICONS_LAYER_2 = [
+   109→  { Icon: Castle, color: '#D4AF37', size: 30 },
+   110→  { Icon: TrendingUp, color: '#009CDE', size: 22 },
+   111→  { Icon: ShieldCheck, color: '#003087', size: 24 },
+   112→  { Icon: MapPin, color: '#00A651', size: 22 },
+   113→  { Icon: ChefHat, color: '#D4AF37', size: 24 },
+   114→  { Icon: Building, color: '#009CDE', size: 26 },
+   115→  { Icon: Tent, color: '#00A651', size: 22 },
+   116→  { Icon: Home, color: '#D4AF37', size: 28 },
+   117→  { Icon: Hotel, color: '#003087', size: 22 },
+   118→  { Icon: Key, color: '#D4AF37', size: 20 },
+   119→  { Icon: BedDouble, color: '#009CDE', size: 22 },
+   120→  { Icon: Landmark, color: '#00A651', size: 24 },
+   121→];
+   122→
+   123→const BACKGROUND_ICONS_LAYER_3 = [
+   124→  { Icon: Building2, color: '#D4AF37', size: 24 },
+   125→  { Icon: Home, color: '#009CDE', size: 22 },
+   126→  { Icon: Warehouse, color: '#00A651', size: 26 },
+   127→  { Icon: ShieldCheck, color: '#003087', size: 20 },
+   128→  { Icon: Hotel, color: '#D4AF37', size: 22 },
+   129→  { Icon: Trees, color: '#00A651', size: 24 },
+   130→  { Icon: DoorOpen, color: '#009CDE', size: 22 },
+   131→  { Icon: Castle, color: '#D4AF37', size: 28 },
+   132→  { Icon: MapPin, color: '#003087', size: 20 },
+   133→  { Icon: Key, color: '#00A651', size: 22 },
+   134→  { Icon: ChefHat, color: '#D4AF37', size: 24 },
+   135→  { Icon: Building, color: '#009CDE', size: 22 },
+   136→];
+   137→
+   138→// Property type label mapping
+   139→const TYPE_LABELS: Record<string, string> = {
+   140→  villa: 'Villa',
+   141→  appartement: 'Appart.',
+   142→  terrain: 'Terrain',
+   143→  bureau: 'Bureau',
+   144→  commerce: 'Commerce',
+   145→  chambre: 'Chambre',
+   146→  guesthouse: 'Séjour',
+   147→  hotel: 'Hôtel',
+   148→};
+   149→
+   150→const TRANSACTION_LABELS: Record<string, string> = {
+   151→  achat: 'Achat',
+   152→  location: 'Location',
+   153→  investissement: 'Invest.',
+   154→  location_courte_duree: 'Nuitée',
+   155→};
+   156→
+   157→// Format price for mini cards — compact display
+   158→function formatMiniPrice(price: number, currency: string, transaction: string): string {
+   159→  if (price >= 1_000_000) {
+   160→    const millions = price / 1_000_000;
+   161→    const formatted = millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1);
+   162→    const suffix = transaction === 'location_courte_duree' ? '/nuit' : transaction === 'location' ? '/mois' : '';
+   163→    return `${formatted}M ${currency}${suffix}`;
+   164→  }
+   165→  if (price >= 1_000) {
+   166→    const thousands = price / 1_000;
+   167→    const formatted = thousands % 1 === 0 ? thousands.toFixed(0) : thousands.toFixed(1);
+   168→    const suffix = transaction === 'location_courte_duree' ? '/nuit' : transaction === 'location' ? '/mois' : '';
+   169→    return `${formatted}K ${currency}${suffix}`;
+   170→  }
+   171→  const suffix = transaction === 'location_courte_duree' ? '/nuit' : transaction === 'location' ? '/mois' : '';
+   172→  return `${new Intl.NumberFormat('fr-FR').format(price)} ${currency}${suffix}`;
+   173→}
+   174→
+   175→export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionProps) {
+   176→  const [searchType, setSearchType] = useState('achat');
+   177→  const [searchCountry, setSearchCountry] = useState('all');
+   178→  const [searchQuery, setSearchQuery] = useState('');
+   179→  const searchInputRef = useRef<HTMLInputElement>(null);
+   180→
+   181→  // Detect mobile viewport for responsive ring radii
+   182→  const [isMobile, setIsMobile] = useState(false);
+   183→  const [isTablet, setIsTablet] = useState(false);
+   184→
+   185→  useEffect(() => {
+   186→    const checkViewport = () => {
+   187→      setIsMobile(window.innerWidth < 640);
+   188→      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024);
+   189→    };
+   190→    checkViewport();
+   191→    window.addEventListener('resize', checkViewport);
+   192→    return () => window.removeEventListener('resize', checkViewport);
+   193→  }, []);
+   194→
+   195→  // Handle voice transcript
+   196→  const handleVoiceTranscript = useCallback((text: string) => {
+   197→    setSearchQuery(text);
+   198→    if (searchInputRef.current) {
+   199→      searchInputRef.current.focus();
+   200→    }
+   201→  }, []);
+   202→
+   203→  // Fetch stats from API
+   204→  const { data: stats } = useQuery<StatsData>({
+   205→    queryKey: ['stats'],
+   206→    queryFn: () => apiFetch<StatsData>('/api/stats'),
+   207→    staleTime: 5 * 60 * 1000,
+   208→  });
+   209→
+   210→  // Fetch featured properties from database
+   211→  const { data: featuredProperties = [] } = useQuery<FeaturedProperty[]>({
+   212→    queryKey: ['featured-properties'],
+   213→    queryFn: () => apiFetch<FeaturedProperty[]>('/api/properties/featured?limit=8'),
+   214→    staleTime: 5 * 60 * 1000,
+   215→  });
+   216→
+   217→  const statsItems = [
+   218→    { value: stats?.properties ?? 250, suffix: '+', label: 'Biens listés' },
+   219→    { value: stats?.transactions ?? 150, suffix: '+', label: 'Transactions' },
+   220→    { value: (stats?.hotels ?? 0) + (stats?.guesthouses ?? 0) || 40, suffix: '+', label: 'Hôtels & Séjours' },
+   221→    { value: stats?.countries ?? 4, suffix: '', label: 'Pays couverts' },
+   222→    { value: stats?.bookings ?? 80, suffix: '+', label: 'Réservations' },
+   223→    { value: stats?.satisfaction ?? 98, suffix: '%', label: 'Avis positifs' },
+   224→  ];
+   225→
+   226→  // Distribute featured properties into the 3 spinning layers
+   227→  // On mobile, use fewer properties to reduce DOM load
+   228→  const propsLayer1 = useMemo(() => featuredProperties.slice(0, isMobile ? 2 : 3), [featuredProperties, isMobile]);
+   229→  const propsLayer2 = useMemo(() => featuredProperties.slice(3, isMobile ? 4 : 5), [featuredProperties, isMobile]);
+   230→  const propsLayer3 = useMemo(() => isMobile ? [] : featuredProperties.slice(5, 8), [featuredProperties, isMobile]);
+   231→
+   232→  // Responsive ring radii — scale down for mobile/tablet
+   233→  const scaleFactor = isMobile ? 0.42 : isTablet ? 0.65 : 1;
+   234→  const iconScale = isMobile ? 0.65 : isTablet ? 0.8 : 1;
+   235→
+   236→  // Layer radii (icons)
+   237→  const layer1IconRadius = Math.round(240 * scaleFactor);
+   238→  const layer2IconRadius = Math.round(380 * scaleFactor);
+   239→  const layer3IconRadius = Math.round(700 * scaleFactor);
+   240→
+   241→  // Layer radii (property cards)
+   242→  const layer1PropRadius = Math.round(340 * scaleFactor);
+   243→  const layer2PropRadius = Math.round(500 * scaleFactor);
+   244→  const layer3PropRadius = Math.round(900 * scaleFactor);
+   245→
+   246→  // Ring image sizes
+   247→  const ring1Size = Math.round(800 * scaleFactor);
+   248→  const ring2Size = Math.round(1000 * scaleFactor);
+   249→  const ring3Size = Math.round(2000 * scaleFactor);
+   250→
+   251→  // Number of icons per layer (fewer on mobile for performance)
+   252→  const iconsLayer1 = isMobile ? BACKGROUND_ICONS_LAYER_1.slice(0, 6) : BACKGROUND_ICONS_LAYER_1;
+   253→  const iconsLayer2 = isMobile ? BACKGROUND_ICONS_LAYER_2.slice(0, 6) : BACKGROUND_ICONS_LAYER_2;
+   254→  const iconsLayer3 = isMobile ? [] : BACKGROUND_ICONS_LAYER_3;
+   255→
+   256→  // Generate icon positions on a circular ring for each layer
+   257→  function getIconPositions(count: number, radius: number) {
+   258→    const positions = [];
+   259→    for (let i = 0; i < count; i++) {
+   260→      const angle = (i / count) * 360;
+   261→      const rad = (angle * Math.PI) / 180;
+   262→      const x = Math.cos(rad) * radius;
+   263→      const y = Math.sin(rad) * radius;
+   264→      positions.push({ x, y, angle });
+   265→    }
+   266→    return positions;
+   267→  }
+   268→
+   269→  // Generate property card positions on a circular ring
+   270→  function getPropertyPositions(count: number, radius: number, offsetAngle: number = 0) {
+   271→    const positions = [];
+   272→    for (let i = 0; i < count; i++) {
+   273→      const angle = offsetAngle + (i / count) * 360;
+   274→      const rad = (angle * Math.PI) / 180;
+   275→      const x = Math.cos(rad) * radius;
+   276→      const y = Math.sin(rad) * radius;
+   277→      positions.push({ x, y, angle });
+   278→    }
+   279→    return positions;
+   280→  }
+   281→
+   282→  return (
+   283→    <section className="relative w-full min-h-screen overflow-hidden" style={{ backgroundColor: '#001440' }}>
+   284→      {/* ═══════════════════════════════════════════════════════════
+   285→          3D ANIMATED BACKGROUND — Spinning Layers with Icons & Property Cards
+   286→          Fully responsive: scales down on mobile/tablet
+   287→      ═══════════════════════════════════════════════════════════ */}
+   288→      <style>{`
+   289→        @keyframes hero-spin-slow {
+   290→          from { transform: rotate(0deg); }
+   291→          to { transform: rotate(360deg); }
+   292→        }
+   293→        @keyframes hero-spin-slow-reverse {
+   294→          from { transform: rotate(0deg); }
+   295→          to { transform: rotate(-360deg); }
+   296→        }
+   297→        .hero-spin-slow {
+   298→          animation: hero-spin-slow 90s linear infinite;
+   299→        }
+   300→        .hero-spin-slow-reverse {
+   301→          animation: hero-spin-slow-reverse 75s linear infinite;
+   302→        }
+   303→        .hero-spin-medium {
+   304→          animation: hero-spin-slow 60s linear infinite;
+   305→        }
+   306→        /* Faster spinning on mobile for visual appeal despite smaller scale */
+   307→        @media (max-width: 639px) {
+   308→          .hero-spin-slow {
+   309→            animation-duration: 70s;
+   310→          }
+   311→          .hero-spin-slow-reverse {
+   312→            animation-duration: 55s;
+   313→          }
+   314→          .hero-spin-medium {
+   315→            animation-duration: 45s;
+   316→          }
+   317→        }
+   318→        @media (min-width: 640px) and (max-width: 1023px) {
+   319→          .hero-spin-slow {
+   320→            animation-duration: 80s;
+   321→          }
+   322→          .hero-spin-slow-reverse {
+   323→            animation-duration: 65s;
+   324→          }
+   325→          .hero-spin-medium {
+   326→            animation-duration: 52s;
+   327→          }
+   328→        }
+   329→        @keyframes hero-float-gentle {
+   330→          0%, 100% { transform: translateY(0px); }
+   331→          50% { transform: translateY(-6px); }
+   332→        }
+   333→        @keyframes hero-pulse-ring {
+   334→          0% { transform: scale(1); opacity: 0.4; }
+   335→          50% { transform: scale(1.05); opacity: 0.7; }
+   336→          100% { transform: scale(1); opacity: 0.4; }
+   337→        }
+   338→        .hero-pulse-ring {
+   339→          animation: hero-pulse-ring 4s ease-in-out infinite;
+   340→        }
+   341→        @keyframes hero-icon-pulse {
+   342→          0%, 100% { opacity: 0.25; transform: scale(1); }
+   343→          50% { opacity: 0.5; transform: scale(1.1); }
+   344→        }
+   345→        .hero-icon-pulse {
+   346→          animation: hero-icon-pulse 4s ease-in-out infinite;
+   347→        }
+   348→        @keyframes hero-card-glow {
+   349→          0%, 100% { box-shadow: 0 0 10px rgba(212, 175, 55, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3); }
+   350→          50% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), 0 4px 16px rgba(0, 0, 0, 0.4); }
+   351→        }
+   352→        .hero-card-glow {
+   353→          animation: hero-card-glow 5s ease-in-out infinite;
+   354→        }
+   355→        /* Accessibility: respect reduced motion preference */
+   356→        @media (prefers-reduced-motion: reduce) {
+   357→          .hero-spin-slow,
+   358→          .hero-spin-slow-reverse,
+   359→          .hero-spin-medium,
+   360→          .hero-icon-pulse,
+   361→          .hero-card-glow,
+   362→          .hero-pulse-ring {
+   363→            animation: none !important;
+   364→          }
+   365→        }
+   366→      `}</style>
+   367→
+   368→      {/* Background Decorative Layer — 3D perspective with spinning layers */}
+   369→      <div
+   370→        className="absolute inset-0 w-full h-full pointer-events-none"
+   371→        style={{
+   372→          perspective: isMobile ? "800px" : "1200px",
+   373→          transform: `perspective(${isMobile ? '800' : '1200'}px) rotateX(${isMobile ? 8 : 15}deg)`,
+   374→          transformOrigin: "center bottom",
+   375→        }}
+   376→      >
+   377→        {/* ══ Layer 3 (Back) — Large outer ring: Geometric shape + Icons + Property cards ══ */}
+   378→        {/* Hidden entirely on mobile for performance — outermost layer is least visible anyway */}
+   379→        {!isMobile && (
+   380→          <div className="absolute inset-0 hero-spin-slow">
+   381→            {/* Original geometric ring image */}
+   382→            <div
+   383→              className="absolute top-1/2 left-1/2"
+   384→              style={{
+   385→                width: `${ring3Size}px`,
+   386→                height: `${ring3Size}px`,
+   387→                transform: "translate(-50%, -50%) rotate(279.05deg)",
+   388→                zIndex: 0,
+   389→              }}
+   390→            >
+   391→              <img
+   392→                src="https://framerusercontent.com/images/oqZEqzDEgSLygmUDuZAYNh2XQ9U.png?scale-down-to=2048"
+   393→                alt=""
+   394→                className="w-full h-full object-cover opacity-30"
+   395→                loading="lazy"
+   396→              />
+   397→            </div>
+   398→
+   399→            {/* Real Estate Icons scattered on this layer */}
+   400→            <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 1 }}>
+   401→              {getIconPositions(iconsLayer3.length, layer3IconRadius).map((pos, i) => {
+   402→                const icon = iconsLayer3[i];
+   403→                return (
+   404→                  <div
+   405→                    key={`l3-icon-${i}`}
+   406→                    className="absolute hero-icon-pulse"
+   407→                    style={{
+   408→                      left: pos.x,
+   409→                      top: pos.y,
+   410→                      transform: 'translate(-50%, -50%)',
+   411→                      animationDelay: `${i * 0.3}s`,
+   412→                    }}
+   413→                  >
+   414→                    <div
+   415→                      className="flex items-center justify-center rounded-xl backdrop-blur-sm border border-white/5"
+   416→                      style={{
+   417→                        width: Math.round((icon.size + 16) * iconScale),
+   418→                        height: Math.round((icon.size + 16) * iconScale),
+   419→                        backgroundColor: `${icon.color}15`,
+   420→                      }}
+   421→                    >
+   422→                      <icon.Icon
+   423→                        className="opacity-30"
+   424→                        style={{ color: icon.color, width: Math.round(icon.size * iconScale), height: Math.round(icon.size * iconScale) }}
+   425→                      />
+   426→                    </div>
+   427→                  </div>
+   428→                );
+   429→              })}
+   430→            </div>
+   431→
+   432→            {/* Property cards on this layer (outermost ring) */}
+   433→            <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 2 }}>
+   434→              {getPropertyPositions(propsLayer3.length, layer3PropRadius, 45).map((pos, i) => {
+   435→                const prop = propsLayer3[i];
+   436→                if (!prop) return null;
+   437→                return (
+   438→                  <div
+   439→                    key={`l3-prop-${prop.id}`}
+   440→                    className="absolute hero-card-glow"
+   441→                    style={{
+   442→                      left: pos.x,
+   443→                      top: pos.y,
+   444→                      transform: 'translate(-50%, -50%)',
+   445→                      animationDelay: `${i * 1.2}s`,
+   446→                    }}
+   447→                  >
+   448→                    <div className={`${isTablet ? 'w-28' : 'w-36'} rounded-xl overflow-hidden bg-black/60 backdrop-blur-md border border-white/10`}>
+   449→                      <div className={`relative ${isTablet ? 'h-12' : 'h-16'}`}>
+   450→                        {prop.image && (
+   451→                          <img
+   452→                            src={prop.image}
+   453→                            alt={prop.title}
+   454→                            className="w-full h-full object-cover opacity-60"
+   455→                            loading="lazy"
+   456→                          />
+   457→                        )}
+   458→                        <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-[#D4AF37]/80 text-white text-[7px] font-bold rounded-full font-body">
+   459→                          {TYPE_LABELS[prop.type] || prop.type}
+   460→                        </div>
+   461→                      </div>
+   462→                      <div className="p-1.5">
+   463→                        <h4 className="font-display text-[9px] font-bold text-white/80 truncate">
+   464→                          {prop.title}
+   465→                        </h4>
+   466→                        <p className="text-[7px] text-white/40 truncate font-body">
+   467→                          {prop.city}, {prop.country}
+   468→                        </p>
+   469→                        <p className="font-mono-data text-[8px] font-bold text-[#D4AF37]/70 mt-0.5">
+   470→                          {formatMiniPrice(prop.price, prop.currency, prop.transaction)}
+   471→                        </p>
+   472→                      </div>
+   473→                    </div>
+   474→                  </div>
+   475→                );
+   476→              })}
+   477→            </div>
+   478→          </div>
+   479→        )}
+   480→
+   481→        {/* ══ Layer 2 (Middle) — Medium ring + Icons + Property cards ══ */}
+   482→        <div className="absolute inset-0 hero-spin-slow-reverse">
+   483→          {/* Original geometric ring image */}
+   484→          <div
+   485→            className="absolute top-1/2 left-1/2"
+   486→            style={{
+   487→              width: `${ring2Size}px`,
+   488→              height: `${ring2Size}px`,
+   489→              transform: "translate(-50%, -50%) rotate(304.42deg)",
+   490→              zIndex: 0,
+   491→            }}
+   492→          >
+   493→            <img
+   494→              src="https://framerusercontent.com/images/UbucGYsHDAUHfaGZNjwyCzViw8.png?scale-down-to=1024"
+   495→              alt=""
+   496→              className="w-full h-full object-cover opacity-35"
+   497→              loading="lazy"
+   498→            />
+   499→          </div>
+   500→
+   501→          {/* Real Estate Icons scattered on this layer */}
+   502→          <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 1 }}>
+   503→            {getIconPositions(iconsLayer2.length, layer2IconRadius).map((pos, i) => {
+   504→              const icon = iconsLayer2[i];
+   505→              return (
+   506→                <div
+   507→                  key={`l2-icon-${i}`}
+   508→                  className="absolute hero-icon-pulse"
+   509→                  style={{
+   510→                    left: pos.x,
+   511→                    top: pos.y,
+   512→                    transform: 'translate(-50%, -50%)',
+   513→                    animationDelay: `${i * 0.35}s`,
+   514→                  }}
+   515→                >
+   516→                  <div
+   517→                    className="flex items-center justify-center rounded-xl backdrop-blur-sm border border-white/5"
+   518→                    style={{
+   519→                      width: Math.round((icon.size + 14) * iconScale),
+   520→                      height: Math.round((icon.size + 14) * iconScale),
+   521→                      backgroundColor: `${icon.color}12`,
+   522→                    }}
+   523→                  >
+   524→                    <icon.Icon
+   525→                      className="opacity-35"
+   526→                      style={{ color: icon.color, width: Math.round(icon.size * iconScale), height: Math.round(icon.size * iconScale) }}
+   527→                    />
+   528→                  </div>
+   529→                </div>
+   530→              );
+   531→            })}
+   532→          </div>
+   533→
+   534→          {/* Property cards on this layer (middle ring) */}
+   535→          <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 2 }}>
+   536→            {getPropertyPositions(propsLayer2.length, layer2PropRadius, 120).map((pos, i) => {
+   537→              const prop = propsLayer2[i];
+   538→              if (!prop) return null;
+   539→              return (
+   540→                <div
+   541→                  key={`l2-prop-${prop.id}`}
+   542→                  className="absolute hero-card-glow"
+   543→                  style={{
+   544→                    left: pos.x,
+   545→                    top: pos.y,
+   546→                    transform: 'translate(-50%, -50%)',
+   547→                    animationDelay: `${i * 1.5}s`,
+   548→                  }}
+   549→                >
+   550→                  <div className={`${isMobile ? 'w-28' : isTablet ? 'w-32' : 'w-40'} rounded-xl overflow-hidden bg-black/60 backdrop-blur-md border border-white/10`}>
+   551→                    <div className={`relative ${isMobile ? 'h-12' : isTablet ? 'h-16' : 'h-20'}`}>
+   552→                      {prop.image && (
+   553→                        <img
+   554→                          src={prop.image}
+   555→                          alt={prop.title}
+   556→                          className="w-full h-full object-cover opacity-65"
+   557→                          loading="lazy"
+   558→                        />
+   559→                      )}
+   560→                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-[#D4AF37]/80 text-white text-[7px] font-bold rounded-full font-body">
+   561→                        {TYPE_LABELS[prop.type] || prop.type}
+   562→                      </div>
+   563→                      {prop.verified && !isMobile && (
+   564→                        <div className="absolute top-1.5 right-1.5">
+   565→                          <ShieldCheck className="w-3 h-3 text-[#00A651] opacity-70" />
+   566→                        </div>
+   567→                      )}
+   568→                    </div>
+   569→                    <div className={`${isMobile ? 'p-1' : 'p-2'}`}>
+   570→                      <h4 className={`font-display ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold text-white/80 truncate`}>
+   571→                        {prop.title}
+   572→                      </h4>
+   573→                      <p className="text-[7px] text-white/40 truncate font-body">
+   574→                        {prop.city}, {prop.country}
+   575→                      </p>
+   576→                      <p className={`font-mono-data ${isMobile ? 'text-[7px]' : 'text-[9px]'} font-bold text-[#D4AF37]/80 mt-0.5`}>
+   577→                        {formatMiniPrice(prop.price, prop.currency, prop.transaction)}
+   578→                      </p>
+   579→                    </div>
+   580→                  </div>
+   581→                </div>
+   582→              );
+   583→            })}
+   584→          </div>
+   585→        </div>
+   586→
+   587→        {/* ══ Layer 1 (Front) — Small inner ring + Icons + Property cards ══ */}
+   588→        <div className="absolute inset-0 hero-spin-medium">
+   589→          {/* Original geometric ring image */}
+   590→          <div
+   591→            className="absolute top-1/2 left-1/2"
+   592→            style={{
+   593→              width: `${ring1Size}px`,
+   594→              height: `${ring1Size}px`,
+   595→              transform: "translate(-50%, -50%) rotate(48.33deg)",
+   596→              zIndex: 0,
+   597→            }}
+   598→          >
+   599→            <img
+   600→              src="https://framerusercontent.com/images/Ans5PAxtJfg3CwxlrPMSshx2Pqc.png"
+   601→              alt=""
+   602→              className="w-full h-full object-cover opacity-40"
+   603→              loading="lazy"
+   604→            />
+   605→          </div>
+   606→
+   607→          {/* Real Estate Icons scattered on this layer (inner ring) */}
+   608→          <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 1 }}>
+   609→            {getIconPositions(iconsLayer1.length, layer1IconRadius).map((pos, i) => {
+   610→              const icon = iconsLayer1[i];
+   611→              return (
+   612→                <div
+   613→                  key={`l1-icon-${i}`}
+   614→                  className="absolute hero-icon-pulse"
+   615→                  style={{
+   616→                    left: pos.x,
+   617→                    top: pos.y,
+   618→                    transform: 'translate(-50%, -50%)',
+   619→                    animationDelay: `${i * 0.25}s`,
+   620→                  }}
+   621→                >
+   622→                  <div
+   623→                    className="flex items-center justify-center rounded-lg backdrop-blur-sm border border-white/8"
+   624→                    style={{
+   625→                      width: Math.round((icon.size + 12) * iconScale),
+   626→                      height: Math.round((icon.size + 12) * iconScale),
+   627→                      backgroundColor: `${icon.color}18`,
+   628→                    }}
+   629→                  >
+   630→                    <icon.Icon
+   631→                      className="opacity-40"
+   632→                      style={{ color: icon.color, width: Math.round(icon.size * iconScale), height: Math.round(icon.size * iconScale) }}
+   633→                    />
+   634→                  </div>
+   635→                </div>
+   636→              );
+   637→            })}
+   638→          </div>
+   639→
+   640→          {/* Property cards on this layer (inner ring) */}
+   641→          <div className="absolute top-1/2 left-1/2" style={{ width: 0, height: 0, zIndex: 2 }}>
+   642→            {getPropertyPositions(propsLayer1.length, layer1PropRadius, 200).map((pos, i) => {
+   643→              const prop = propsLayer1[i];
+   644→              if (!prop) return null;
+   645→              return (
+   646→                <div
+   647→                  key={`l1-prop-${prop.id}`}
+   648→                  className="absolute hero-card-glow"
+   649→                  style={{
+   650→                    left: pos.x,
+   651→                    top: pos.y,
+   652→                    transform: 'translate(-50%, -50%)',
+   653→                    animationDelay: `${i * 1.8}s`,
+   654→                  }}
+   655→                >
+   656→                  <div className={`${isMobile ? 'w-32' : isTablet ? 'w-36' : 'w-44'} rounded-xl overflow-hidden bg-black/60 backdrop-blur-md border border-white/10`}>
+   657→                    <div className={`relative ${isMobile ? 'h-14' : isTablet ? 'h-18' : 'h-22'}`}>
+   658→                      {prop.image && (
+   659→                        <img
+   660→                          src={prop.image}
+   661→                          alt={prop.title}
+   662→                          className="w-full h-full object-cover opacity-70"
+   663→                          loading="lazy"
+   664→                        />
+   665→                      )}
+   666→                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-[#D4AF37]/80 text-white text-[7px] font-bold rounded-full font-body">
+   667→                        {TYPE_LABELS[prop.type] || prop.type}
+   668→                      </div>
+   669→                      {prop.premium && !isMobile && (
+   670→                        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-[#003087]/80 text-[#D4AF37] text-[7px] font-bold rounded-full font-body">
+   671→                          Premium
+   672→                        </div>
+   673→                      )}
+   674→                      {prop.verified && !isMobile && (
+   675→                        <div className="absolute bottom-1.5 right-1.5">
+   676→                          <ShieldCheck className="w-3.5 h-3.5 text-[#00A651] opacity-80" />
+   677→                        </div>
+   678→                      )}
+   679→                    </div>
+   680→                    <div className={`${isMobile ? 'p-1.5' : 'p-2'}`}>
+   681→                      <h4 className={`font-display ${isMobile ? 'text-[9px]' : 'text-[11px]'} font-bold text-white/85 truncate`}>
+   682→                        {prop.title}
+   683→                      </h4>
+   684→                      <p className="text-[7px] text-white/45 truncate font-body">
+   685→                        {prop.quartier || prop.city}, {prop.country}
+   686→                      </p>
+   687→                      <div className="flex items-center justify-between mt-0.5">
+   688→                        <p className={`font-mono-data ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold text-[#D4AF37]`}>
+   689→                          {formatMiniPrice(prop.price, prop.currency, prop.transaction)}
+   690→                        </p>
+   691→                        {prop.bedrooms && !isMobile && (
+   692→                          <span className="text-[7px] text-white/40 font-body">
+   693→                            {prop.bedrooms} ch.
+   694→                          </span>
+   695→                        )}
+   696→                      </div>
+   697→                    </div>
+   698→                  </div>
+   699→                </div>
+   700→              );
+   701→            })}
+   702→          </div>
+   703→        </div>
+   704→      </div>
+   705→
+   706→      {/* Gradient Overlay — Navy to transparent */}
+   707→      <div
+   708→        className="absolute inset-0 z-10 pointer-events-none"
+   709→        style={{
+   710→          background: `linear-gradient(to top, #001440 5%, rgba(0, 20, 64, 0.88) 25%, rgba(0, 31, 92, 0.65) 50%, rgba(0, 48, 135, 0.4) 75%, rgba(0, 48, 135, 0.25) 100%)`,
+   711→        }}
+   712→      />
+   713→
+   714→      {/* Animated mesh gradient accents — smaller on mobile */}
+   715→      <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
+   716→        <motion.div
+   717→          animate={{
+   718→            x: [0, 30, -20, 0],
+   719→            y: [0, -40, 20, 0],
+   720→            scale: [1, 1.1, 0.95, 1],
+   721→          }}
+   722→          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+   723→          className={`absolute top-20 right-0 ${isMobile ? 'w-48 h-48' : 'w-96 h-96'} bg-[#009CDE]/10 rounded-full blur-3xl`}
+   724→        />
+   725→        <motion.div
+   726→          animate={{
+   727→            x: [0, -30, 20, 0],
+   728→            y: [0, 30, -30, 0],
+   729→            scale: [1, 0.9, 1.1, 1],
+   730→          }}
+   731→          transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+   732→          className={`absolute bottom-0 left-0 ${isMobile ? 'w-40 h-40' : 'w-80 h-80'} bg-[#D4AF37]/10 rounded-full blur-3xl`}
+   733→        />
+   734→      </div>
+   735→
+   736→      {/* ═══ Main Content ═══ */}
+   737→      <div className="relative z-20 w-full h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+   738→        <div className="max-w-[1400px] w-full mx-auto flex flex-col items-center text-center">
+   739→
+   740→          {/* AfriBayit Logo Icon */}
+   741→          <motion.div
+   742→            initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
+   743→            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+   744→            transition={{ duration: 0.6, ease: easeOut }}
+   745→            className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-2xl shadow-lg overflow-hidden mb-4 ring-2 ring-[#D4AF37]/30 hero-pulse-ring`}
+   746→          >
+   747→            <div className="w-full h-full bg-gradient-to-br from-[#003087] to-[#009CDE] flex items-center justify-center">
+   748→              <Building2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} text-white`} />
+   749→            </div>
+   750→          </motion.div>
+   751→
+   752→          {/* Badge */}
+   753→          <motion.div
+   754→            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+   755→            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+   756→            transition={{ duration: 0.6, delay: 0.1, ease: easeOut }}
+   757→            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full glass border border-white/20 mb-4 sm:mb-6"
+   758→          >
+   759→            <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
+   760→            <span className="text-white/90 text-xs sm:text-sm font-medium font-body">Plateforme N°1 en Afrique de l&apos;Ouest</span>
+   761→          </motion.div>
+   762→
+   763→          {/* H1 Title */}
+   764→          <motion.h1
+   765→            initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
+   766→            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+   767→            transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
+   768→            className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[72px] font-bold text-white leading-[1.05] mb-4 sm:mb-6"
+   769→          >
+   770→            Où l&apos;Afrique<br />
+   771→            <span className="text-[#D4AF37]">trouve sa maison</span>
+   772→          </motion.h1>
+   773→
+   774→          {/* Subtitle */}
+   775→          <motion.p
+   776→            initial={{ opacity: 0, y: 20 }}
+   777→            animate={{ opacity: 1, y: 0 }}
+   778→            transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
+   779→            className="text-white/70 text-sm sm:text-base md:text-lg max-w-xl mb-6 sm:mb-10 leading-relaxed font-body px-2"
+   780→          >
+   781→            Où les rêves deviennent adresses. Achetez, louez, investissez en toute confiance
+   782→            avec escrow sécurisé et documents vérifiés dans 4 pays africains.
+   783→          </motion.p>
+   784→
+   785→          {/* ═══ Search Bar — Glassmorphism Style ═══ */}
+   786→          <motion.div
+   787→            initial={{ opacity: 0, y: 25 }}
+   788→            animate={{ opacity: 1, y: 0 }}
+   789→            transition={{ duration: 0.7, delay: 0.4, ease: easeOut }}
+   790→            className="w-full max-w-2xl mb-6 sm:mb-12"
+   791→          >
+   792→            <div className="relative">
+   793→              {/* Gradient border glow */}
+   794→              <div className="absolute -inset-[1px] rounded-[1.6rem] bg-gradient-to-r from-[#009CDE]/40 via-[#D4AF37]/30 to-[#009CDE]/40 animate-pulse" />
+   795→              <div className="relative flex flex-col sm:flex-row gap-2 p-2 bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-2xl">
+   796→                {/* Search Input */}
+   797→                <div className="flex-1 flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3">
+   798→                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#003087] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+   799→                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+   800→                  </svg>
+   801→                  <input
+   802→                    ref={searchInputRef}
+   803→                    type="text"
+   804→                    value={searchQuery}
+   805→                    onChange={(e) => setSearchQuery(e.target.value)}
+   806→                    placeholder="Ville, quartier, type de bien..."
+   807→                    className="flex-1 text-xs sm:text-sm text-[#2C2E2F] placeholder-gray-400 outline-none bg-transparent font-body"
+   808→                  />
+   809→                  {/* Voice Search Button */}
+   810→                  <VoiceSearchButton
+   811→                    onTranscript={handleVoiceTranscript}
+   812→                    currentQuery={searchQuery}
+   813→                  />
+   814→                </div>
+   815→
+   816→                {/* Divider */}
+   817→                <div className="hidden sm:block w-px bg-gray-200 my-2" />
+   818→
+   819→                {/* Transaction Type Selector */}
+   820→                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-0">
+   821→                  <select
+   822→                    value={searchType}
+   823→                    onChange={(e) => setSearchType(e.target.value)}
+   824→                    className="text-xs sm:text-sm text-[#2C2E2F] bg-transparent outline-none font-body cursor-pointer"
+   825→                  >
+   826→                    <option value="achat">Acheter</option>
+   827→                    <option value="location">Louer</option>
+   828→                    <option value="investissement">Investir</option>
+   829→                    <option value="sejour">Séjour</option>
+   830→                  </select>
+   831→                </div>
+   832→
+   833→                {/* Divider */}
+   834→                <div className="hidden sm:block w-px bg-gray-200 my-2" />
+   835→
+   836→                {/* Country Selector - hidden on very small mobile */}
+   837→                <div className={`items-center gap-2 px-3 sm:px-4 py-2 sm:py-0 ${isMobile ? 'hidden' : 'flex'}`}>
+   838→                  <svg className="w-4 h-4 text-[#009CDE] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+   839→                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+   840→                  </svg>
+   841→                  <select
+   842→                    value={searchCountry}
+   843→                    onChange={(e) => setSearchCountry(e.target.value)}
+   844→                    className="text-xs sm:text-sm text-[#2C2E2F] bg-transparent outline-none font-body cursor-pointer"
+   845→                  >
+   846→                    <option value="all">Tous les pays</option>
+   847→                    {COUNTRIES_CONFIG.map((c) => (
+   848→                      <option key={c.code} value={c.code}>{c.name}</option>
+   849→                    ))}
+   850→                  </select>
+   851→                </div>
+   852→
+   853→                {/* Search Button */}
+   854→                <motion.button
+   855→                  whileHover={{ scale: 1.02 }}
+   856→                  whileTap={{ scale: 0.98 }}
+   857→                  onClick={() => searchType === 'sejour' ? window.location.href = '/booking' : onNavigate('search')}
+   858→                  className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#003087] hover:bg-[#0047b3] text-white rounded-[1.2rem] text-xs sm:text-sm font-semibold transition-colors font-body"
+   859→                >
+   860→                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+   861→                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+   862→                  </svg>
+   863→                  Rechercher
+   864→                </motion.button>
+   865→              </div>
+   866→            </div>
+   867→          </motion.div>
+   868→
+   869→          {/* ═══ Real Estate & Hospitality Icons Row ═══ */}
+   870→          <motion.div
+   871→            initial={{ opacity: 0, y: 15 }}
+   872→            animate={{ opacity: 1, y: 0 }}
+   873→            transition={{ duration: 0.6, delay: 0.55, ease: easeOut }}
+   874→            className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-10"
+   875→          >
+   876→            {[
+   877→              { Icon: Building2, label: 'Immobilier', color: '#009CDE' },
+   878→              { Icon: Home, label: 'Villas', color: '#D4AF37' },
+   879→              { Icon: Hotel, label: 'Hôtels', color: '#003087' },
+   880→              { Icon: MapPin, label: '5 Pays', color: '#00A651' },
+   881→              { Icon: Key, label: 'Location', color: '#D4AF37' },
+   882→              { Icon: TrendingUp, label: 'Investir', color: '#009CDE' },
+   883→              { Icon: ShieldCheck, label: 'Escrow', color: '#003087' },
+   884→              { Icon: BedDouble, label: 'Guesthouses', color: '#00A651' },
+   885→              ...(isMobile ? [] : [
+   886→                { Icon: Landmark, label: 'Notaires', color: '#009CDE' },
+   887→                { Icon: Wrench, label: 'Artisans', color: '#D4AF37' },
+   888→              ]),
+   889→            ].map((item, i) => (
+   890→              <motion.div
+   891→                key={item.label}
+   892→                initial={{ opacity: 0, y: 10 }}
+   893→                animate={{ opacity: 1, y: 0 }}
+   894→                transition={{ duration: 0.4, delay: 0.6 + i * 0.06, ease: easeOut }}
+   895→                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm"
+   896→              >
+   897→                <item.Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: item.color }} />
+   898→                <span className="text-white/60 text-[10px] sm:text-xs font-body font-medium">{item.label}</span>
+   899→              </motion.div>
+   900→            ))}
+   901→          </motion.div>
+   902→
+   903→          {/* ═══ Stats Bar with Animated Counters ═══ */}
+   904→          <motion.div
+   905→            initial={{ opacity: 0, y: 20 }}
+   906→            animate={{ opacity: 1, y: 0 }}
+   907→            transition={{ duration: 0.6, delay: 0.7, ease: easeOut }}
+   908→            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-10"
+   909→          >
+   910→            {/* On mobile, show only 4 stats instead of 6 */}
+   911→            {(isMobile ? statsItems.slice(0, 4) : statsItems).map((stat, i) => (
+   912→              <motion.div
+   913→                key={i}
+   914→                initial={{ opacity: 0, y: 15 }}
+   915→                animate={{ opacity: 1, y: 0 }}
+   916→                transition={{ duration: 0.5, delay: 0.8 + i * 0.1, ease: easeOut }}
+   917→                className="text-center"
+   918→              >
+   919→                <div className="font-mono-data text-lg sm:text-xl md:text-2xl font-bold text-white">
+   920→                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+   921→                </div>
+   922→                <div className="text-white/50 text-[10px] sm:text-xs md:text-sm font-body">{stat.label}</div>
+   923→              </motion.div>
+   924→            ))}
+   925→          </motion.div>
+   926→
+   927→        </div>
+   928→      </div>
+   929→
+   930→      {/* Bottom wave/gradient transition */}
+   931→      <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-white to-transparent z-10" />
+   932→    </section>
+   933→  );
+   934→}
+   935→

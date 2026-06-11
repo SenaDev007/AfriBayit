@@ -1,0 +1,1215 @@
+     1→'use client';
+     2→
+     3→import React, { useState, useEffect } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import { signIn } from 'next-auth/react';
+     6→import { Check, Drama, Key, Loader2, Mail, ShieldCheck, User } from 'lucide-react';
+     7→
+     8→interface AuthPagesProps {
+     9→  mode: 'login' | 'register';
+    10→  onClose: () => void;
+    11→  onSwitch: (mode: 'login' | 'register') => void;
+    12→  onSuccess: () => void;
+    13→}
+    14→
+    15→const easeOut = [0.16, 1, 0.3, 1] as const;
+    16→
+    17→const registerSteps = [
+    18→  { key: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
+    19→  { key: 'profile', label: 'Profil', icon: <User className="w-4 h-4" /> },
+    20→  { key: 'role', label: 'Rôle', icon: <Drama className="w-4 h-4" /> },
+    21→];
+    22→
+    23→const COUNTRIES = [
+    24→  { value: 'BJ', label: 'Bénin' },
+    25→  { value: 'CI', label: "Côte d'Ivoire" },
+    26→  { value: 'BF', label: 'Burkina Faso' },
+    27→  { value: 'TG', label: 'Togo' },
+    28→  { value: 'SN', label: 'Sénégal' },
+    29→];
+    30→
+    31→const CITIES_BY_COUNTRY: Record<string, string[]> = {
+    32→  BJ: ['Cotonou', 'Porto-Novo', 'Parakou', 'Abomey-Calavi', 'Bohicon'],
+    33→  CI: ['Abidjan', 'Bouaké', 'Daloa', 'San-Pédro', 'Yamoussoukro'],
+    34→  BF: ['Ouagadougou', 'Bobo-Dioulasso', 'Koudougou', 'Banfora', 'Ouahigouya'],
+    35→  TG: ['Lomé', 'Sokodé', 'Kara', 'Atakpamé', 'Dapaong'],
+    36→  SN: ['Dakar', 'Saint-Louis', 'Thiès', 'Kaolack', 'Ziguinchor'],
+    37→};
+    38→
+    39→const ROLES = [
+    40→  { value: 'buyer', label: 'Acheteur', desc: 'Je cherche un bien immobilier' },
+    41→  { value: 'seller', label: 'Vendeur', desc: 'Je veux vendre mon bien' },
+    42→  { value: 'agent', label: 'Agent immobilier', desc: 'Je suis agent immobilier certifié' },
+    43→  { value: 'investor', label: 'Investisseur', desc: 'Je souhaite investir' },
+    44→  { value: 'tourist', label: 'Touriste', desc: 'Je cherche un hébergement' },
+    45→  { value: 'artisan', label: 'Artisan BTP', desc: 'Je suis artisan du bâtiment' },
+    46→  { value: 'hotelier', label: 'Hôtelier / Guesthouse', desc: 'Je gère un hôtel ou une guesthouse' },
+    47→  { value: 'trainer', label: 'Formateur', desc: 'Je souhaite publier des cours' },
+    48→];
+    49→
+    50→export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPagesProps) {
+    51→  //  Login state 
+    52→  const [loginEmail, setLoginEmail] = useState('');
+    53→  const [loginPassword, setLoginPassword] = useState('');
+    54→  const [loginError, setLoginError] = useState('');
+    55→  const [loginLoading, setLoginLoading] = useState(false);
+    56→  const [oauthLoading, setOauthLoading] = useState<string | null>(null); // 'google' | 'facebook' | null
+    57→  const [showForgotPassword, setShowForgotPassword] = useState(false);
+    58→
+    59→  // 2FA Login state
+    60→  const [show2FA, setShow2FA] = useState(false);
+    61→  const [twoFACode, setTwoFACode] = useState('');
+    62→  const [twoFALoading, setTwoFALoading] = useState(false);
+    63→  const [twoFAError, setTwoFAError] = useState('');
+    64→  const [twoFAUserId, setTwoFAUserId] = useState('');
+    65→
+    66→  // Forgot password state
+    67→  const [forgotLoading, setForgotLoading] = useState(false);
+    68→  const [forgotSuccess, setForgotSuccess] = useState(false);
+    69→  const [forgotError, setForgotError] = useState('');
+    70→  const [forgotOtpCode, setForgotOtpCode] = useState('');
+    71→  const [forgotNewPassword, setForgotNewPassword] = useState('');
+    72→  const [resetLoading, setResetLoading] = useState(false);
+    73→  const [resetError, setResetError] = useState('');
+    74→  const [resetSuccess, setResetSuccess] = useState(false);
+    75→
+    76→  // Check for OAuth errors in URL params (e.g. ?error=OAuthAccountNotLinked)
+    77→  useEffect(() => {
+    78→    if (typeof window !== 'undefined') {
+    79→      const params = new URLSearchParams(window.location.search);
+    80→      const error = params.get('error');
+    81→      if (error) {
+    82→        const errorMessages: Record<string, string> = {
+    83→          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion. Veuillez utiliser la même méthode que lors de votre inscription.',
+    84→          OAuthSignin: 'Erreur lors de la connexion via le fournisseur. Veuillez réessayer.',
+    85→          OAuthCallback: 'Erreur lors du traitement de la réponse du fournisseur. Veuillez réessayer.',
+    86→          OAuthCreateAccount: 'Impossible de créer votre compte. Veuillez réessayer.',
+    87→          Callback: 'Erreur de connexion. Veuillez réessayer.',
+    88→          Default: 'Une erreur est survenue lors de la connexion.',
+    89→        };
+    90→        setLoginError(errorMessages[error] || errorMessages.Default || 'Erreur de connexion.');
+    91→        // Clean the URL
+    92→        window.history.replaceState({}, '', window.location.pathname);
+    93→      }
+    94→    }
+    95→  }, []);
+    96→
+    97→  //  Register state 
+    98→  const [registerStep, setRegisterStep] = useState(0);
+    99→  const [registerLoading, setRegisterLoading] = useState(false);
+   100→  const [registerError, setRegisterError] = useState('');
+   101→  const [formData, setFormData] = useState({
+   102→    email: '',
+   103→    phone: '',
+   104→    password: '',
+   105→    confirmPassword: '',
+   106→    name: '',
+   107→    country: 'BJ',
+   108→    city: 'Cotonou',
+   109→    role: 'buyer',
+   110→  });
+   111→
+   112→  const updateFormField = (field: string, value: string) => {
+   113→    setFormData((prev) => ({ ...prev, [field]: value }));
+   114→    // Reset city when country changes
+   115→    if (field === 'country') {
+   116→      const cities = CITIES_BY_COUNTRY[value] || [];
+   117→      setFormData((prev) => ({ ...prev, city: cities[0] || '' }));
+   118→    }
+   119→  };
+   120→
+   121→  //  Login handler 
+   122→  const handleLogin = async (e: React.FormEvent) => {
+   123→    e.preventDefault();
+   124→    setLoginError('');
+   125→
+   126→    if (!loginEmail.trim() || !loginPassword.trim()) {
+   127→      setLoginError('Email et mot de passe requis');
+   128→      return;
+   129→    }
+   130→
+   131→    setLoginLoading(true);
+   132→    try {
+   133→      const result = await signIn('credentials', {
+   134→        email: loginEmail.trim(),
+   135→        password: loginPassword,
+   136→        redirect: false,
+   137→      });
+   138→
+   139→      if (result?.error) {
+   140→        // Check if 2FA is required
+   141→        if (result.error.includes('2FA_REQUIRED')) {
+   142→          // Extract userId from error message (format: '2FA_REQUIRED:userId')
+   143→          const userId = result.error.includes(':') ? result.error.split(':').slice(1).join(':') : '';
+   144→          setTwoFAUserId(userId);
+   145→          setShow2FA(true);
+   146→          setLoginError('');
+   147→        } else if (result.error.includes('2FA_INVALID')) {
+   148→          setTwoFAError('Code de vérification invalide');
+   149→        } else {
+   150→          setLoginError('Email ou mot de passe incorrect');
+   151→        }
+   152→      } else if (result?.ok) {
+   153→        onSuccess();
+   154→      } else {
+   155→        setLoginError('Une erreur est survenue');
+   156→      }
+   157→    } catch {
+   158→      setLoginError('Erreur de connexion au serveur');
+   159→    } finally {
+   160→      setLoginLoading(false);
+   161→    }
+   162→  };
+   163→
+   164→  //  2FA Verification handler
+   165→  const handle2FAVerify = async (e: React.FormEvent) => {
+   166→    e.preventDefault();
+   167→    setTwoFAError('');
+   168→
+   169→    if (!twoFACode || twoFACode.length !== 6) {
+   170→      setTwoFAError('Veuillez entrer un code à 6 chiffres');
+   171→      return;
+   172→    }
+   173→
+   174→    setTwoFALoading(true);
+   175→    try {
+   176→      // Verify the TOTP code via the 2FA API
+   177→      const verifyRes = await fetch('/api/auth/2fa/verify', {
+   178→        method: 'POST',
+   179→        headers: { 'Content-Type': 'application/json' },
+   180→        body: JSON.stringify({ userId: twoFAUserId, token: twoFACode }),
+   181→      });
+   182→
+   183→      const verifyData = await verifyRes.json();
+   184→
+   185→      if (!verifyRes.ok) {
+   186→        setTwoFAError(verifyData.error || 'Code de vérification invalide');
+   187→        setTwoFALoading(false);
+   188→        return;
+   189→      }
+   190→
+   191→      // 2FA verified — now establish the NextAuth session by signing in with the TOTP code
+   192→      const result = await signIn('credentials', {
+   193→        email: loginEmail.trim(),
+   194→        password: loginPassword,
+   195→        totpCode: twoFACode,
+   196→        redirect: false,
+   197→      });
+   198→
+   199→      if (result?.ok) {
+   200→        onSuccess();
+   201→      } else if (result?.error) {
+   202→        setTwoFAError('Erreur lors de la connexion. Veuillez réessayer.');
+   203→      } else {
+   204→        setTwoFAError('Erreur lors de la connexion');
+   205→      }
+   206→    } catch {
+   207→      setTwoFAError('Erreur de connexion au serveur');
+   208→    } finally {
+   209→      setTwoFALoading(false);
+   210→    }
+   211→  };
+   212→
+   213→  //  Forgot password handler
+   214→  const handleForgotPasswordSubmit = async () => {
+   215→    setForgotError('');
+   216→    setForgotSuccess(false);
+   217→
+   218→    if (!loginEmail.trim()) {
+   219→      setForgotError('Veuillez entrer votre email');
+   220→      return;
+   221→    }
+   222→
+   223→    setForgotLoading(true);
+   224→    try {
+   225→      const res = await fetch('/api/auth/forgot-password', {
+   226→        method: 'POST',
+   227→        headers: { 'Content-Type': 'application/json' },
+   228→        body: JSON.stringify({ email: loginEmail.trim() }),
+   229→      });
+   230→      const data = await res.json();
+   231→
+   232→      if (res.ok) {
+   233→        setForgotSuccess(true);
+   234→      } else {
+   235→        setForgotError(data.error || "Erreur lors de l'envoi de l'email");
+   236→      }
+   237→    } catch {
+   238→      setForgotError('Erreur de connexion au serveur');
+   239→    } finally {
+   240→      setForgotLoading(false);
+   241→    }
+   242→  };
+   243→
+   244→  //  Reset password handler
+   245→  const handleResetPassword = async () => {
+   246→    setResetError('');
+   247→
+   248→    if (!forgotOtpCode || forgotOtpCode.length !== 6) {
+   249→      setResetError('Veuillez entrer le code de vérification à 6 chiffres');
+   250→      return;
+   251→    }
+   252→    if (!forgotNewPassword || forgotNewPassword.length < 8) {
+   253→      setResetError('Le mot de passe doit contenir au moins 8 caractères');
+   254→      return;
+   255→    }
+   256→
+   257→    setResetLoading(true);
+   258→    try {
+   259→      const res = await fetch('/api/auth/reset-password', {
+   260→        method: 'POST',
+   261→        headers: { 'Content-Type': 'application/json' },
+   262→        body: JSON.stringify({
+   263→          email: loginEmail.trim(),
+   264→          code: forgotOtpCode,
+   265→          newPassword: forgotNewPassword,
+   266→        }),
+   267→      });
+   268→      const data = await res.json();
+   269→
+   270→      if (res.ok) {
+   271→        setResetSuccess(true);
+   272→      } else {
+   273→        setResetError(data.error || 'Erreur lors de la réinitialisation');
+   274→      }
+   275→    } catch {
+   276→      setResetError('Erreur de connexion au serveur');
+   277→    } finally {
+   278→      setResetLoading(false);
+   279→    }
+   280→  };
+   281→
+   282→  // OAuth provider availability detection
+   283→  const [availableProviders, setAvailableProviders] = useState<{ google: boolean; facebook: boolean }>({ google: false, facebook: false });
+   284→
+   285→  useEffect(() => {
+   286→    fetch('/api/auth/providers')
+   287→      .then(res => res.json())
+   288→      .then(providers => {
+   289→        setAvailableProviders({
+   290→          google: !!providers.google,
+   291→          facebook: !!providers.facebook,
+   292→        });
+   293→      })
+   294→      .catch(() => {});
+   295→  }, []);
+   296→
+   297→  //  Social login handlers 
+   298→  const handleGoogleLogin = async () => {
+   299→    setLoginError('');
+   300→    setOauthLoading('google');
+   301→    try {
+   302→      const result = await signIn('google', { callbackUrl: '/dashboard', redirect: false });
+   303→      if (result?.error) {
+   304→        const errorMessages: Record<string, string> = {
+   305→          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
+   306→          OAuthSignin: 'Erreur lors de la connexion via Google. Veuillez réessayer.',
+   307→          OAuthCallback: 'Erreur lors du traitement de la réponse Google. Veuillez réessayer.',
+   308→          Configuration: 'La connexion Google n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
+   309→          Default: 'Erreur lors de la connexion Google.',
+   310→        };
+   311→        setLoginError(errorMessages[result.error] || errorMessages.Default);
+   312→      } else if (result?.ok) {
+   313→        onSuccess();
+   314→      }
+   315→    } catch {
+   316→      setLoginError('Erreur de connexion au serveur.');
+   317→    } finally {
+   318→      setOauthLoading(null);
+   319→    }
+   320→  };
+   321→
+   322→  const handleFacebookLogin = async () => {
+   323→    setLoginError('');
+   324→    setOauthLoading('facebook');
+   325→    try {
+   326→      const result = await signIn('facebook', { callbackUrl: '/dashboard', redirect: false });
+   327→      if (result?.error) {
+   328→        const errorMessages: Record<string, string> = {
+   329→          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
+   330→          OAuthSignin: 'Erreur lors de la connexion via Facebook. Veuillez réessayer.',
+   331→          OAuthCallback: 'Erreur lors du traitement de la réponse Facebook. Veuillez réessayer.',
+   332→          Configuration: 'La connexion Facebook n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
+   333→          Default: 'Erreur lors de la connexion Facebook.',
+   334→        };
+   335→        setLoginError(errorMessages[result.error] || errorMessages.Default);
+   336→      } else if (result?.ok) {
+   337→        onSuccess();
+   338→      }
+   339→    } catch {
+   340→      setLoginError('Erreur de connexion au serveur.');
+   341→    } finally {
+   342→      setOauthLoading(null);
+   343→    }
+   344→  };
+   345→
+   346→  //  Register step validation 
+   347→  const canGoNext = (): boolean => {
+   348→    if (registerStep === 0) {
+   349→      return (
+   350→        formData.email.trim() !== '' &&
+   351→        formData.password.length >= 8 &&
+   352→        formData.password === formData.confirmPassword
+   353→      );
+   354→    }
+   355→    if (registerStep === 1) {
+   356→      return formData.name.trim() !== '' && formData.city.trim() !== '';
+   357→    }
+   358→    return true;
+   359→  };
+   360→
+   361→  //  Register final submit 
+   362→  const handleRegisterSubmit = async () => {
+   363→    setRegisterError('');
+   364→
+   365→    if (!canGoNext()) {
+   366→      setRegisterError('Veuillez remplir tous les champs');
+   367→      return;
+   368→    }
+   369→
+   370→    setRegisterLoading(true);
+   371→    try {
+   372→      // Call the register API
+   373→      const res = await fetch('/api/auth/register', {
+   374→        method: 'POST',
+   375→        headers: { 'Content-Type': 'application/json' },
+   376→        body: JSON.stringify({
+   377→          email: formData.email.trim(),
+   378→          password: formData.password,
+   379→          name: formData.name.trim(),
+   380→          phone: formData.phone.trim() || undefined,
+   381→          country: formData.country,
+   382→          city: formData.city,
+   383→          role: formData.role,
+   384→        }),
+   385→      });
+   386→
+   387→      const data = await res.json();
+   388→
+   389→      if (!res.ok) {
+   390→        setRegisterError(data.error || 'Erreur lors de la création du compte');
+   391→        setRegisterLoading(false);
+   392→        return;
+   393→      }
+   394→
+   395→      // Auto sign-in after successful registration
+   396→      const result = await signIn('credentials', {
+   397→        email: formData.email.trim(),
+   398→        password: formData.password,
+   399→        redirect: false,
+   400→      });
+   401→
+   402→      if (result?.ok) {
+   403→        onSuccess();
+   404→      } else {
+   405→        // Registration succeeded but auto-login failed — redirect to login
+   406→        onSwitch('login');
+   407→      }
+   408→    } catch {
+   409→      setRegisterError('Erreur de connexion au serveur');
+   410→    } finally {
+   411→      setRegisterLoading(false);
+   412→    }
+   413→  };
+   414→
+   415→  const handleRegisterNext = () => {
+   416→    if (registerStep < registerSteps.length - 1) {
+   417→      if (!canGoNext()) {
+   418→        setRegisterError('Veuillez remplir tous les champs correctement');
+   419→        return;
+   420→      }
+   421→      setRegisterError('');
+   422→      setRegisterStep(registerStep + 1);
+   423→    } else {
+   424→      handleRegisterSubmit();
+   425→    }
+   426→  };
+   427→
+   428→  //  Forgot password handler 
+   429→  const handleForgotPassword = () => {
+   430→    setShowForgotPassword(true);
+   431→  };
+   432→
+   433→  return (
+   434→    <AnimatePresence>
+   435→      <motion.div
+   436→        initial={{ opacity: 0 }}
+   437→        animate={{ opacity: 1 }}
+   438→        exit={{ opacity: 0 }}
+   439→        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+   440→        onClick={onClose}
+   441→      >
+   442→        <motion.div
+   443→          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+   444→          animate={{ opacity: 1, scale: 1, y: 0 }}
+   445→          exit={{ opacity: 0, scale: 0.9, y: 30 }}
+   446→          transition={{ duration: 0.4, ease: easeOut }}
+   447→          className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
+   448→          onClick={(e) => e.stopPropagation()}
+   449→        >
+   450→          {/* Forgot Password Modal */}
+   451→          {showForgotPassword && (
+   452→            <div className="p-6">
+   453→              <div className="flex items-center justify-between mb-6">
+   454→                <h2 className="font-display text-xl font-bold text-[#2C2E2F]">
+   455→                  Mot de passe oublié
+   456→                </h2>
+   457→                <button
+   458→                  onClick={() => {
+   459→                    setShowForgotPassword(false);
+   460→                    setForgotSuccess(false);
+   461→                    setForgotError('');
+   462→                    setResetSuccess(false);
+   463→                    setResetError('');
+   464→                    setForgotOtpCode('');
+   465→                    setForgotNewPassword('');
+   466→                  }}
+   467→                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+   468→                >
+   469→                  <svg
+   470→                    className="w-5 h-5 text-gray-400"
+   471→                    fill="none"
+   472→                    viewBox="0 0 24 24"
+   473→                    stroke="currentColor"
+   474→                    strokeWidth={2}
+   475→                  >
+   476→                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+   477→                  </svg>
+   478→                </button>
+   479→              </div>
+   480→
+   481→              {!resetSuccess ? (
+   482→                <>
+   483→                  {!forgotSuccess ? (
+   484→                    <>
+   485→                      {/* Step 1: Enter email and send OTP */}
+   486→                      <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+   487→                        <Key className="w-8 h-8 text-[#003087]" />
+   488→                      </div>
+   489→                      <p className="text-sm text-gray-600 text-center mb-4">
+   490→                        Entrez votre email pour recevoir un code de vérification
+   491→                      </p>
+   492→
+   493→                      {forgotError && (
+   494→                        <motion.div
+   495→                          initial={{ opacity: 0, y: -10 }}
+   496→                          animate={{ opacity: 1, y: 0 }}
+   497→                          className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+   498→                        >
+   499→                          {forgotError}
+   500→                        </motion.div>
+   501→                      )}
+   502→
+   503→                      <div>
+   504→                        <label className="text-xs font-medium text-gray-500 mb-1.5 block">Email</label>
+   505→                        <input
+   506→                          type="email"
+   507→                          value={loginEmail}
+   508→                          onChange={(e) => {
+   509→                            setLoginEmail(e.target.value);
+   510→                            setForgotError('');
+   511→                          }}
+   512→                          placeholder="votre@email.com"
+   513→                          className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   514→                        />
+   515→                      </div>
+   516→                      <motion.button
+   517→                        whileHover={{ scale: forgotLoading ? 1 : 1.01 }}
+   518→                        whileTap={{ scale: forgotLoading ? 1 : 0.99 }}
+   519→                        onClick={handleForgotPasswordSubmit}
+   520→                        disabled={forgotLoading}
+   521→                        className="w-full mt-4 py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+   522→                      >
+   523→                        {forgotLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+   524→                        {forgotLoading ? 'Envoi en cours...' : 'Envoyer le code'}
+   525→                      </motion.button>
+   526→                    </>
+   527→                  ) : (
+   528→                    <>
+   529→                      {/* Step 2: Enter OTP code and new password */}
+   530→                      <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+   531→                        <Mail className="w-8 h-8 text-green-600" />
+   532→                      </div>
+   533→                      <motion.div
+   534→                        initial={{ opacity: 0, y: -10 }}
+   535→                        animate={{ opacity: 1, y: 0 }}
+   536→                        className="mb-4 p-3 rounded-2xl bg-green-50 border border-green-200 text-sm text-green-700 text-center"
+   537→                      >
+   538→                        Un code de vérification a été envoyé à votre email
+   539→                      </motion.div>
+   540→
+   541→                      {resetError && (
+   542→                        <motion.div
+   543→                          initial={{ opacity: 0, y: -10 }}
+   544→                          animate={{ opacity: 1, y: 0 }}
+   545→                          className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+   546→                        >
+   547→                          {resetError}
+   548→                        </motion.div>
+   549→                      )}
+   550→
+   551→                      <div className="space-y-4">
+   552→                        <div>
+   553→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   554→                            Code de vérification
+   555→                          </label>
+   556→                          <input
+   557→                            type="text"
+   558→                            inputMode="numeric"
+   559→                            maxLength={6}
+   560→                            value={forgotOtpCode}
+   561→                            onChange={(e) => {
+   562→                              setForgotOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+   563→                              setResetError('');
+   564→                            }}
+   565→                            placeholder="000000"
+   566→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-center tracking-[0.5em] font-mono outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   567→                          />
+   568→                        </div>
+   569→                        <div>
+   570→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   571→                            Nouveau mot de passe
+   572→                          </label>
+   573→                          <input
+   574→                            type="password"
+   575→                            value={forgotNewPassword}
+   576→                            onChange={(e) => {
+   577→                              setForgotNewPassword(e.target.value);
+   578→                              setResetError('');
+   579→                            }}
+   580→                            placeholder="8 caractères minimum"
+   581→                            autoComplete="new-password"
+   582→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   583→                          />
+   584→                          {forgotNewPassword && forgotNewPassword.length < 8 && (
+   585→                            <p className="text-xs text-amber-600 mt-1">
+   586→                              Le mot de passe doit contenir au moins 8 caractères
+   587→                            </p>
+   588→                          )}
+   589→                        </div>
+   590→                        <motion.button
+   591→                          whileHover={{ scale: resetLoading ? 1 : 1.01 }}
+   592→                          whileTap={{ scale: resetLoading ? 1 : 0.99 }}
+   593→                          onClick={handleResetPassword}
+   594→                          disabled={resetLoading}
+   595→                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+   596→                        >
+   597→                          {resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+   598→                          {resetLoading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
+   599→                        </motion.button>
+   600→                      </div>
+   601→                    </>
+   602→                  )}
+   603→                </>
+   604→              ) : (
+   605→                <>
+   606→                  {/* Step 3: Password reset success */}
+   607→                  <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+   608→                    <Check className="w-8 h-8 text-green-600" />
+   609→                  </div>
+   610→                  <motion.div
+   611→                    initial={{ opacity: 0, y: -10 }}
+   612→                    animate={{ opacity: 1, y: 0 }}
+   613→                    className="mb-4 p-3 rounded-2xl bg-green-50 border border-green-200 text-sm text-green-700 text-center"
+   614→                  >
+   615→                    Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.
+   616→                  </motion.div>
+   617→                  <button
+   618→                    onClick={() => {
+   619→                      setShowForgotPassword(false);
+   620→                      setForgotSuccess(false);
+   621→                      setResetSuccess(false);
+   622→                      setForgotOtpCode('');
+   623→                      setForgotNewPassword('');
+   624→                    }}
+   625→                    className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors"
+   626→                  >
+   627→                    Se connecter
+   628→                  </button>
+   629→                </>
+   630→              )}
+   631→
+   632→              <button
+   633→                onClick={() => {
+   634→                  setShowForgotPassword(false);
+   635→                  setForgotSuccess(false);
+   636→                  setForgotError('');
+   637→                  setResetSuccess(false);
+   638→                  setResetError('');
+   639→                  setForgotOtpCode('');
+   640→                  setForgotNewPassword('');
+   641→                }}
+   642→                className="w-full mt-2 py-3 text-sm text-gray-500 hover:text-gray-700"
+   643→              >
+   644→                Retour à la connexion
+   645→              </button>
+   646→            </div>
+   647→          )}
+   648→
+   649→          {/* Main Auth Content */}
+   650→          {!showForgotPassword && (
+   651→            <div className="p-6 pb-0">
+   652→              {/* Header */}
+   653→              <div className="flex items-center justify-between mb-6">
+   654→                <div className="flex items-center gap-2">
+   655→                  <img src="/logo.svg" alt="AfriBayit" className="h-9 w-auto" />
+   656→                  <span className="font-display text-lg font-bold text-[#003087]">
+   657→                    Afri<span className="text-[#D4AF37]">Bayit</span>
+   658→                  </span>
+   659→                </div>
+   660→                <button
+   661→                  onClick={onClose}
+   662→                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+   663→                >
+   664→                  <svg
+   665→                    className="w-5 h-5 text-gray-400"
+   666→                    fill="none"
+   667→                    viewBox="0 0 24 24"
+   668→                    stroke="currentColor"
+   669→                    strokeWidth={2}
+   670→                  >
+   671→                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+   672→                  </svg>
+   673→                </button>
+   674→              </div>
+   675→
+   676→              {mode === 'login' ? (
+   677→                <>
+   678→                  {!show2FA ? (
+   679→                    <>
+   680→                      {/*  LOGIN FORM  */}
+   681→                      <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
+   682→                        Bon retour !
+   683→                      </h2>
+   684→                      <p className="text-sm text-gray-500 mb-6">
+   685→                        Connectez-vous à votre compte AfriBayit
+   686→                      </p>
+   687→
+   688→                      <form onSubmit={handleLogin} className="space-y-4">
+   689→                        {/* Error message */}
+   690→                        {loginError && (
+   691→                          <motion.div
+   692→                            initial={{ opacity: 0, y: -10 }}
+   693→                            animate={{ opacity: 1, y: 0 }}
+   694→                            className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+   695→                          >
+   696→                            {loginError}
+   697→                          </motion.div>
+   698→                        )}
+   699→
+   700→                        <div>
+   701→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   702→                            Email
+   703→                          </label>
+   704→                          <input
+   705→                            type="email"
+   706→                            value={loginEmail}
+   707→                            onChange={(e) => {
+   708→                              setLoginEmail(e.target.value);
+   709→                              setLoginError('');
+   710→                            }}
+   711→                            placeholder="votre@email.com"
+   712→                            autoComplete="email"
+   713→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   714→                          />
+   715→                        </div>
+   716→                        <div>
+   717→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   718→                            Mot de passe
+   719→                          </label>
+   720→                          <input
+   721→                            type="password"
+   722→                            value={loginPassword}
+   723→                            onChange={(e) => {
+   724→                              setLoginPassword(e.target.value);
+   725→                              setLoginError('');
+   726→                            }}
+   727→                            placeholder="••••••••"
+   728→                            autoComplete="current-password"
+   729→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   730→                          />
+   731→                        </div>
+   732→
+   733→                        <button
+   734→                          type="button"
+   735→                          onClick={handleForgotPassword}
+   736→                          className="text-xs text-[#003087] font-medium hover:underline"
+   737→                        >
+   738→                          Mot de passe oublié ?
+   739→                        </button>
+   740→
+   741→                        <motion.button
+   742→                          whileHover={{ scale: loginLoading ? 1 : 1.01 }}
+   743→                          whileTap={{ scale: loginLoading ? 1 : 0.99 }}
+   744→                          type="submit"
+   745→                          disabled={loginLoading}
+   746→                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+   747→                        >
+   748→                          {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+   749→                          {loginLoading ? 'Connexion...' : 'Se connecter'}
+   750→                        </motion.button>
+   751→
+   752→                    </form>
+   753→                    </>
+   754→                  ) : (
+   755→                    <>
+   756→                      {/*  2FA VERIFICATION FORM  */}
+   757→                      <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+   758→                        <ShieldCheck className="w-8 h-8 text-[#003087]" />
+   759→                      </div>
+   760→                      <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1 text-center">
+   761→                        Vérification 2FA
+   762→                      </h2>
+   763→                      <p className="text-sm text-gray-500 mb-6 text-center">
+   764→                        Entrez le code de votre application d&apos;authentification
+   765→                      </p>
+   766→
+   767→                      <form onSubmit={handle2FAVerify} className="space-y-4">
+   768→                        {/* 2FA Error message */}
+   769→                        {twoFAError && (
+   770→                          <motion.div
+   771→                            initial={{ opacity: 0, y: -10 }}
+   772→                            animate={{ opacity: 1, y: 0 }}
+   773→                            className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+   774→                          >
+   775→                            {twoFAError}
+   776→                          </motion.div>
+   777→                        )}
+   778→
+   779→                        <div>
+   780→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block text-center">
+   781→                            Code à 6 chiffres
+   782→                          </label>
+   783→                          <input
+   784→                            type="text"
+   785→                            inputMode="numeric"
+   786→                            maxLength={6}
+   787→                            value={twoFACode}
+   788→                            onChange={(e) => {
+   789→                              setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6));
+   790→                              setTwoFAError('');
+   791→                            }}
+   792→                            placeholder="000000"
+   793→                            autoFocus
+   794→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-center tracking-[0.5em] font-mono outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+   795→                          />
+   796→                        </div>
+   797→
+   798→                        <motion.button
+   799→                          whileHover={{ scale: twoFALoading ? 1 : 1.01 }}
+   800→                          whileTap={{ scale: twoFALoading ? 1 : 0.99 }}
+   801→                          type="submit"
+   802→                          disabled={twoFALoading}
+   803→                          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+   804→                        >
+   805→                          {twoFALoading && <Loader2 className="w-4 h-4 animate-spin" />}
+   806→                          {twoFALoading ? 'Vérification...' : 'Vérifier'}
+   807→                        </motion.button>
+   808→
+   809→                        <button
+   810→                          type="button"
+   811→                          onClick={() => {
+   812→                            setShow2FA(false);
+   813→                            setTwoFACode('');
+   814→                            setTwoFAError('');
+   815→                            setTwoFAUserId('');
+   816→                          }}
+   817→                          className="w-full py-3 text-sm text-gray-500 hover:text-gray-700"
+   818→                        >
+   819→                          Retour
+   820→                        </button>
+   821→                      </form>
+   822→                    </>
+   823→                  )}
+   824→
+   825→                  {/* Social Login — shown below both login and 2FA forms */}
+   826→                  {!show2FA && (availableProviders.google || availableProviders.facebook) && (
+   827→                    <>
+   828→                      <div className="relative my-4">
+   829→                        <div className="absolute inset-0 flex items-center">
+   830→                          <div className="w-full border-t" />
+   831→                        </div>
+   832→                        <div className="relative flex justify-center text-xs">
+   833→                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+   834→                        </div>
+   835→                      </div>
+   836→
+   837→                      <div className={`grid ${availableProviders.google && availableProviders.facebook ? 'grid-cols-2' : ''} gap-3`}>
+   838→                        {availableProviders.google && (
+   839→                          <button
+   840→                            type="button"
+   841→                            onClick={handleGoogleLogin}
+   842→                            disabled={!!oauthLoading}
+   843→                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+   844→                          >
+   845→                            {oauthLoading === 'google' ? (
+   846→                              <Loader2 className="w-4 h-4 animate-spin" />
+   847→                            ) : (
+   848→                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+   849→                              <path
+   850→                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+   851→                                fill="#4285F4"
+   852→                              />
+   853→                              <path
+   854→                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+   855→                                fill="#34A853"
+   856→                              />
+   857→                              <path
+   858→                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+   859→                                fill="#FBBC05"
+   860→                              />
+   861→                              <path
+   862→                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+   863→                                fill="#EA4335"
+   864→                              />
+   865→                            </svg>
+   866→                            )}
+   867→                            {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
+   868→                          </button>
+   869→                        )}
+   870→                        {availableProviders.facebook && (
+   871→                          <button
+   872→                            type="button"
+   873→                            onClick={handleFacebookLogin}
+   874→                            disabled={!!oauthLoading}
+   875→                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+   876→                          >
+   877→                            {oauthLoading === 'facebook' ? (
+   878→                              <Loader2 className="w-4 h-4 animate-spin" />
+   879→                            ) : (
+   880→                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+   881→                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+   882→                            </svg>
+   883→                            )}
+   884→                            {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
+   885→                          </button>
+   886→                        )}
+   887→                      </div>
+   888→                    </>
+   889→                  )}
+   890→
+   891→                  <p className="text-center text-sm text-gray-500 mt-6 pb-6">
+   892→                    Pas encore de compte ?{' '}
+   893→                    <button
+   894→                      onClick={() => onSwitch('register')}
+   895→                      className="text-[#003087] font-semibold hover:underline"
+   896→                    >
+   897→                      Créer un compte
+   898→                    </button>
+   899→                  </p>
+   900→                </>
+   901→              ) : (
+   902→                <>
+   903→                  {/*  REGISTER FORM  */}
+   904→                  {/* Stepper */}
+   905→                  <div className="flex items-center gap-1 mb-6">
+   906→                    {registerSteps.map((step, i) => (
+   907→                      <div key={step.key} className="flex items-center flex-1">
+   908→                        <div
+   909→                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+   910→                            i <= registerStep
+   911→                              ? 'bg-[#003087] text-white'
+   912→                              : 'bg-gray-100 text-gray-400'
+   913→                          }`}
+   914→                        >
+   915→                          {i < registerStep ? <Check className="w-4 h-4" /> : step.icon}
+   916→                        </div>
+   917→                        {i < registerSteps.length - 1 && (
+   918→                          <div
+   919→                            className={`flex-1 h-0.5 mx-1 rounded transition-colors ${
+   920→                              i < registerStep ? 'bg-[#003087]' : 'bg-gray-200'
+   921→                            }`}
+   922→                          />
+   923→                        )}
+   924→                      </div>
+   925→                    ))}
+   926→                  </div>
+   927→
+   928→                  <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">
+   929→                    {registerSteps[registerStep].label}
+   930→                  </h2>
+   931→                  <p className="text-sm text-gray-500 mb-4">
+   932→                    Étape {registerStep + 1} sur {registerSteps.length}
+   933→                  </p>
+   934→
+   935→                  {/* Error message */}
+   936→                  {registerError && (
+   937→                    <motion.div
+   938→                      initial={{ opacity: 0, y: -10 }}
+   939→                      animate={{ opacity: 1, y: 0 }}
+   940→                      className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
+   941→                    >
+   942→                      {registerError}
+   943→                    </motion.div>
+   944→                  )}
+   945→
+   946→                  <div className="space-y-4">
+   947→                    {/* Step 0: Email & Password */}
+   948→                    {registerStep === 0 && (
+   949→                      <>
+   950→                        <div>
+   951→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   952→                            Email
+   953→                          </label>
+   954→                          <input
+   955→                            type="email"
+   956→                            value={formData.email}
+   957→                            onChange={(e) => updateFormField('email', e.target.value)}
+   958→                            placeholder="votre@email.com"
+   959→                            autoComplete="email"
+   960→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+   961→                          />
+   962→                        </div>
+   963→                        <div>
+   964→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   965→                            Téléphone
+   966→                          </label>
+   967→                          <input
+   968→                            type="tel"
+   969→                            value={formData.phone}
+   970→                            onChange={(e) => updateFormField('phone', e.target.value)}
+   971→                            placeholder="+229 97 00 00 00"
+   972→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+   973→                          />
+   974→                        </div>
+   975→                        <div>
+   976→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   977→                            Mot de passe
+   978→                          </label>
+   979→                          <input
+   980→                            type="password"
+   981→                            value={formData.password}
+   982→                            onChange={(e) => updateFormField('password', e.target.value)}
+   983→                            placeholder="8 caractères minimum"
+   984→                            autoComplete="new-password"
+   985→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+   986→                          />
+   987→                          {formData.password && formData.password.length < 8 && (
+   988→                            <p className="text-xs text-amber-600 mt-1">
+   989→                              Le mot de passe doit contenir au moins 8 caractères
+   990→                            </p>
+   991→                          )}
+   992→                        </div>
+   993→                        <div>
+   994→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+   995→                            Confirmer le mot de passe
+   996→                          </label>
+   997→                          <input
+   998→                            type="password"
+   999→                            value={formData.confirmPassword}
+  1000→                            onChange={(e) => updateFormField('confirmPassword', e.target.value)}
+  1001→                            placeholder="Confirmez votre mot de passe"
+  1002→                            autoComplete="new-password"
+  1003→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+  1004→                          />
+  1005→                          {formData.confirmPassword &&
+  1006→                            formData.password !== formData.confirmPassword && (
+  1007→                              <p className="text-xs text-red-500 mt-1">
+  1008→                                Les mots de passe ne correspondent pas
+  1009→                              </p>
+  1010→                            )}
+  1011→                        </div>
+  1012→                      </>
+  1013→                    )}
+  1014→
+  1015→                    {/* Step 1: Profile */}
+  1016→                    {registerStep === 1 && (
+  1017→                      <>
+  1018→                        <div>
+  1019→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+  1020→                            Nom complet
+  1021→                          </label>
+  1022→                          <input
+  1023→                            type="text"
+  1024→                            value={formData.name}
+  1025→                            onChange={(e) => updateFormField('name', e.target.value)}
+  1026→                            placeholder="Kouamé Jean-Marc"
+  1027→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10"
+  1028→                          />
+  1029→                        </div>
+  1030→                        <div>
+  1031→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+  1032→                            Pays
+  1033→                          </label>
+  1034→                          <select
+  1035→                            value={formData.country}
+  1036→                            onChange={(e) => updateFormField('country', e.target.value)}
+  1037→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] bg-white"
+  1038→                          >
+  1039→                            {COUNTRIES.map((c) => (
+  1040→                              <option key={c.value} value={c.value}>
+  1041→                                {c.label}
+  1042→                              </option>
+  1043→                            ))}
+  1044→                          </select>
+  1045→                        </div>
+  1046→                        <div>
+  1047→                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+  1048→                            Ville
+  1049→                          </label>
+  1050→                          <select
+  1051→                            value={formData.city}
+  1052→                            onChange={(e) => updateFormField('city', e.target.value)}
+  1053→                            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] bg-white"
+  1054→                          >
+  1055→                            {(CITIES_BY_COUNTRY[formData.country] || []).map((city) => (
+  1056→                              <option key={city} value={city}>
+  1057→                                {city}
+  1058→                              </option>
+  1059→                            ))}
+  1060→                          </select>
+  1061→                        </div>
+  1062→                      </>
+  1063→                    )}
+  1064→
+  1065→                    {/* Step 2: Role */}
+  1066→                    {registerStep === 2 && (
+  1067→                      <div className="space-y-2">
+  1068→                        {ROLES.map((r) => (
+  1069→                          <button
+  1070→                            key={r.value}
+  1071→                            type="button"
+  1072→                            onClick={() => updateFormField('role', r.value)}
+  1073→                            className={`w-full py-3 px-4 rounded-2xl border text-sm text-left transition-colors flex items-center gap-3 ${
+  1074→                              formData.role === r.value
+  1075→                                ? 'border-[#003087] bg-[#003087]/5 ring-1 ring-[#003087]/20'
+  1076→                                : 'border-gray-200 hover:bg-gray-50'
+  1077→                            }`}
+  1078→                          >
+  1079→                            <div
+  1080→                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+  1081→                                formData.role === r.value
+  1082→                                  ? 'border-[#003087]'
+  1083→                                  : 'border-gray-300'
+  1084→                              }`}
+  1085→                            >
+  1086→                              {formData.role === r.value && (
+  1087→                                <div className="w-2.5 h-2.5 rounded-full bg-[#003087]" />
+  1088→                              )}
+  1089→                            </div>
+  1090→                            <div>
+  1091→                              <p className="font-medium text-gray-700">{r.label}</p>
+  1092→                              <p className="text-xs text-gray-400">{r.desc}</p>
+  1093→                            </div>
+  1094→                          </button>
+  1095→                        ))}
+  1096→                      </div>
+  1097→                    )}
+  1098→
+  1099→                    {/* Navigation buttons */}
+  1100→                    <div className="flex gap-3 pt-2">
+  1101→                      {registerStep > 0 && (
+  1102→                        <button
+  1103→                          type="button"
+  1104→                          onClick={() => {
+  1105→                            setRegisterError('');
+  1106→                            setRegisterStep(registerStep - 1);
+  1107→                          }}
+  1108→                          className="flex-1 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+  1109→                        >
+  1110→                          Retour
+  1111→                        </button>
+  1112→                      )}
+  1113→                      <motion.button
+  1114→                        whileHover={{ scale: registerLoading ? 1 : 1.01 }}
+  1115→                        whileTap={{ scale: registerLoading ? 1 : 0.99 }}
+  1116→                        type="button"
+  1117→                        onClick={handleRegisterNext}
+  1118→                        disabled={registerLoading}
+  1119→                        className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+  1120→                      >
+  1121→                        {registerLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+  1122→                        {registerLoading
+  1123→                          ? 'Création...'
+  1124→                          : registerStep === registerSteps.length - 1
+  1125→                          ? 'Créer mon compte'
+  1126→                          : 'Continuer'}
+  1127→                      </motion.button>
+  1128→                    </div>
+  1129→                  </div>
+  1130→
+  1131→                  {/* Social Login — register form */}
+  1132→                  {(availableProviders.google || availableProviders.facebook) && (
+  1133→                    <>
+  1134→                      <div className="relative my-4">
+  1135→                        <div className="absolute inset-0 flex items-center">
+  1136→                          <div className="w-full border-t" />
+  1137→                        </div>
+  1138→                        <div className="relative flex justify-center text-xs">
+  1139→                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+  1140→                        </div>
+  1141→                      </div>
+  1142→
+  1143→                      <div className={`grid ${availableProviders.google && availableProviders.facebook ? 'grid-cols-2' : ''} gap-3`}>
+  1144→                        {availableProviders.google && (
+  1145→                          <button
+  1146→                            type="button"
+  1147→                            onClick={handleGoogleLogin}
+  1148→                            disabled={!!oauthLoading}
+  1149→                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+  1150→                          >
+  1151→                            {oauthLoading === 'google' ? (
+  1152→                              <Loader2 className="w-4 h-4 animate-spin" />
+  1153→                            ) : (
+  1154→                            <svg className="w-4 h-4" viewBox="0 0 24 24">
+  1155→                              <path
+  1156→                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+  1157→                                fill="#4285F4"
+  1158→                              />
+  1159→                              <path
+  1160→                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+  1161→                                fill="#34A853"
+  1162→                              />
+  1163→                              <path
+  1164→                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+  1165→                                fill="#FBBC05"
+  1166→                              />
+  1167→                              <path
+  1168→                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+  1169→                                fill="#EA4335"
+  1170→                              />
+  1171→                            </svg>
+  1172→                            )}
+  1173→                            {oauthLoading === 'google' ? 'Connexion...' : 'Google'}
+  1174→                          </button>
+  1175→                        )}
+  1176→                        {availableProviders.facebook && (
+  1177→                          <button
+  1178→                            type="button"
+  1179→                            onClick={handleFacebookLogin}
+  1180→                            disabled={!!oauthLoading}
+  1181→                            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+  1182→                          >
+  1183→                            {oauthLoading === 'facebook' ? (
+  1184→                              <Loader2 className="w-4 h-4 animate-spin" />
+  1185→                            ) : (
+  1186→                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#1877F2">
+  1187→                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+  1188→                            </svg>
+  1189→                            )}
+  1190→                            {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
+  1191→                          </button>
+  1192→                        )}
+  1193→                      </div>
+  1194→                    </>
+  1195→                  )}
+  1196→
+  1197→                  <p className="text-center text-sm text-gray-500 mt-4 pb-6">
+  1198→                    Déjà inscrit ?{' '}
+  1199→                    <button
+  1200→                      onClick={() => onSwitch('login')}
+  1201→                      className="text-[#003087] font-semibold hover:underline"
+  1202→                    >
+  1203→                      Se connecter
+  1204→                    </button>
+  1205→                  </p>
+  1206→                </>
+  1207→              )}
+  1208→            </div>
+  1209→          )}
+  1210→        </motion.div>
+  1211→      </motion.div>
+  1212→    </AnimatePresence>
+  1213→  );
+  1214→}
+  1215→
