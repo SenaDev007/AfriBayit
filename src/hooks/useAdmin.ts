@@ -626,3 +626,566 @@ export function useAdminAuditLogs(filters: AdminAuditLogFilters = {}) {
     queryFn: () => apiFetch<AdminAuditLogsResponse>(`/api/admin/audit-logs?${params.toString()}`),
   });
 }
+
+// ============ Short Term Rentals Hooks ============
+
+export interface AdminShortTermRentalFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  tab?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useAdminShortTermRentals(filters: AdminShortTermRentalFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.tab) params.set('tab', filters.tab);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery({
+    queryKey: ['admin-short-term-rentals', filters],
+    queryFn: () => apiFetch(`/api/admin/short-term-rentals?${params.toString()}`),
+  });
+}
+
+// ============ Bookings Hooks ============
+
+export interface AdminBookingFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  tab?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useAdminBookings(filters: AdminBookingFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.tab) params.set('tab', filters.tab);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery({
+    queryKey: ['admin-bookings', filters],
+    queryFn: () => apiFetch(`/api/admin/bookings?${params.toString()}`),
+  });
+}
+
+// ============ Disputes Hooks ============
+
+export interface AdminDisputeFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useAdminDisputes(filters: AdminDisputeFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery({
+    queryKey: ['admin-disputes', filters],
+    queryFn: () => apiFetch(`/api/admin/disputes?${params.toString()}`),
+  });
+}
+
+export function useResolveDispute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: string; buyerPercentage: number; sellerPercentage: number; resolution: string }) =>
+      apiPatch(`/api/admin/disputes/${data.id}`, {
+        action: 'resolve',
+        buyerPercentage: data.buyerPercentage,
+        sellerPercentage: data.sellerPercentage,
+        resolution: data.resolution,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-disputes'] });
+    },
+  });
+}
+
+export function useEscalateDispute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiPatch(`/api/admin/disputes/${data.id}`, { action: 'escalate' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-disputes'] });
+    },
+  });
+}
+
+// ============ Payouts Hooks ============
+
+export interface AdminPayoutFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export function useAdminPayouts(filters: AdminPayoutFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery({
+    queryKey: ['admin-payouts', filters],
+    queryFn: () => apiFetch(`/api/admin/payouts?${params.toString()}`),
+  });
+}
+
+export function useProcessPayout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: string; action: string; reason?: string }) =>
+      apiPatch(`/api/admin/payouts/${data.id}`, { action: data.action, reason: data.reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-payouts'] });
+    },
+  });
+}
+
+// ============ Content Hooks ============
+
+export interface AdminContentFilters {
+  country?: string;
+}
+
+export function useAdminContent(filters: AdminContentFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.country) params.set('country', filters.country);
+
+  return useQuery({
+    queryKey: ['admin-content', filters],
+    queryFn: () => apiFetch(`/api/admin/content?${params.toString()}`),
+  });
+}
+
+export function useUpdateContent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sectionKey: string; itemKey: string; value: string; country?: string }) =>
+      apiPatch('/api/admin/content', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-content'] });
+    },
+  });
+}
+
+// ============ Revenue Hooks ============
+
+export interface AdminRevenueResponse {
+  totalRevenue: number;
+  totalCommission: number;
+  transactionCount: number;
+  byCountry: Array<{ country: string | null; revenue: number; count: number }>;
+  monthlyTrend: Array<{ month: string; revenue: number; commission: number }>;
+  bySource: Array<{ source: string; revenue: number }>;
+  topAgents: Array<{ agentId: string; agentName: string; revenue: number; commission: number }>;
+  subscriptionTiers: Array<{ tier: string | null; count: number; revenue: number }>;
+}
+
+export function useAdminRevenue(filters: { period?: string; country?: string } = {}) {
+  const params = new URLSearchParams();
+  if (filters.period) params.set('period', filters.period);
+  if (filters.country) params.set('country', filters.country);
+  return useQuery<AdminRevenueResponse>({
+    queryKey: ['admin-revenue', filters],
+    queryFn: () => apiFetch<AdminRevenueResponse>(`/api/admin/revenue?${params.toString()}`),
+  });
+}
+
+// ============ OTA Hooks ============
+
+export interface AdminOtaProvidersResponse {
+  providers: Array<{
+    id: string;
+    name: string;
+    status: string;
+    hotelsConnected: number;
+    lastSync: string | null;
+  }>;
+  summary: {
+    totalProviders: number;
+    totalSyncLogs: number;
+    lastSyncAt: string | null;
+    parityViolations: number;
+  };
+}
+
+export interface AdminOtaSyncLog {
+  id: string;
+  hotelId: string;
+  ota: string;
+  operation: string;
+  status: string;
+  roomsUpdated: number | null;
+  errorMessage: string | null;
+  executedAt: string;
+  hotel: { id: string; name: string; country: string | null };
+}
+
+export interface AdminOtaSyncLogsResponse {
+  syncLogs: AdminOtaSyncLog[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: {
+    totalProviders: number;
+    totalSyncLogs: number;
+    lastSyncAt: string | null;
+    parityViolations: number;
+  };
+}
+
+export interface AdminOtaHotel {
+  id: string;
+  name: string;
+  city: string | null;
+  country: string | null;
+  otaRefs: string | null;
+  channelInventory: unknown[];
+}
+
+export interface AdminOtaMappingsResponse {
+  hotels: AdminOtaHotel[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: {
+    totalProviders: number;
+    totalSyncLogs: number;
+    lastSyncAt: string | null;
+    parityViolations: number;
+  };
+}
+
+export interface AdminOtaParityViolation {
+  roomId: string;
+  roomType: string;
+  hotelId: string;
+  hotelName: string;
+  country: string;
+  rates: Array<{ ota: string; rateXof: number | null }>;
+}
+
+export interface AdminOtaParityResponse {
+  violations: AdminOtaParityViolation[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: {
+    totalProviders: number;
+    totalSyncLogs: number;
+    lastSyncAt: string | null;
+    parityViolations: number;
+  };
+}
+
+export function useAdminOta(filters: { tab?: string; country?: string; status?: string; page?: number; limit?: number } = {}) {
+  const params = new URLSearchParams();
+  if (filters.tab) params.set('tab', filters.tab);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.status) params.set('status', filters.status);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 25));
+  return useQuery({
+    queryKey: ['admin-ota', filters],
+    queryFn: () => apiFetch(`/api/admin/ota?${params.toString()}`),
+  });
+}
+
+// ============ Artisans Hooks ============
+
+export interface AdminArtisanFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminArtisanResponse {
+  artisans: Array<{
+    id: string;
+    name: string;
+    avatar: string | null;
+    specialty: string;
+    country: string;
+    city: string;
+    rating: number;
+    verified: boolean;
+    status: string;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { total: number; verified: number; pending: number; byCountry: Record<string, number> };
+}
+
+export function useAdminArtisans(filters: AdminArtisanFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminArtisanResponse>({
+    queryKey: ['admin-artisans', filters],
+    queryFn: () => apiFetch<AdminArtisanResponse>(`/api/admin/artisans?${params.toString()}`),
+  });
+}
+
+export function useVerifyArtisan(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { verified?: boolean; status?: string }) =>
+      apiPatch(`/api/artisans/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-artisans'] });
+    },
+  });
+}
+
+// ============ Notaries Hooks ============
+
+export interface AdminNotaryFilters {
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminNotaryResponse {
+  notaries: Array<{
+    id: string;
+    name: string;
+    avatar: string | null;
+    license: string;
+    specializations: string[];
+    country: string;
+    city: string;
+    rating: number;
+    verified: boolean;
+    status: string;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { total: number; verified: number; pending: number; avgRating: number };
+}
+
+export function useAdminNotaries(filters: AdminNotaryFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminNotaryResponse>({
+    queryKey: ['admin-notaries', filters],
+    queryFn: () => apiFetch<AdminNotaryResponse>(`/api/admin/notaries?${params.toString()}`),
+  });
+}
+
+// ============ GeoTrust Hooks ============
+
+export interface AdminGeotrustFilters {
+  tab?: string;
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminGeotrustResponse {
+  geometers: Array<{
+    id: string;
+    name: string;
+    license: string;
+    country: string;
+    specializations: string[];
+    verified: boolean;
+    missionsCount: number;
+  }>;
+  missions: Array<{
+    id: string;
+    propertyTitle: string;
+    geometerName: string;
+    status: string;
+    scheduledDate: string;
+    completedDate: string | null;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { totalGeometers: number; missionsInProgress: number; missionsCompleted: number; completionRate: number };
+}
+
+export function useAdminGeotrust(filters: AdminGeotrustFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.tab) params.set('tab', filters.tab);
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminGeotrustResponse>({
+    queryKey: ['admin-geotrust', filters],
+    queryFn: () => apiFetch<AdminGeotrustResponse>(`/api/admin/geotrust?${params.toString()}`),
+  });
+}
+
+// ============ Reviews Hooks ============
+
+export interface AdminReviewFilters {
+  country?: string;
+  rating?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminReviewResponse {
+  reviews: Array<{
+    id: string;
+    userName: string;
+    propertyTitle: string;
+    rating: number;
+    comment: string;
+    country: string;
+    createdAt: string;
+    flagged: boolean;
+    hidden: boolean;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { total: number; avgRating: number; fiveStars: number; flagged: number };
+}
+
+export function useAdminReviews(filters: AdminReviewFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.country) params.set('country', filters.country);
+  if (filters.rating) params.set('rating', filters.rating);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminReviewResponse>({
+    queryKey: ['admin-reviews', filters],
+    queryFn: () => apiFetch<AdminReviewResponse>(`/api/admin/reviews?${params.toString()}`),
+  });
+}
+
+// ============ Ambassadors Hooks ============
+
+export interface AdminAmbassadorFilters {
+  tab?: string;
+  tier?: string;
+  status?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminAmbassadorResponse {
+  ambassadors: Array<{
+    id: string;
+    name: string;
+    email: string;
+    country: string;
+    tier: string;
+    referrals: number;
+    earnings: number;
+    status: string;
+  }>;
+  commissions: Array<{
+    id: string;
+    ambassadorName: string;
+    referralName: string;
+    amount: number;
+    status: string;
+    date: string;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { totalAmbassadors: number; totalCommissions: number; totalEarnings: number; byTier: Record<string, number> };
+}
+
+export function useAdminAmbassadors(filters: AdminAmbassadorFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.tab) params.set('tab', filters.tab);
+  if (filters.tier) params.set('tier', filters.tier);
+  if (filters.status) params.set('status', filters.status);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminAmbassadorResponse>({
+    queryKey: ['admin-ambassadors', filters],
+    queryFn: () => apiFetch<AdminAmbassadorResponse>(`/api/admin/ambassadors?${params.toString()}`),
+  });
+}
+
+// ============ Notifications Hooks ============
+
+export interface AdminNotificationFilters {
+  type?: string;
+  country?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminNotificationResponse {
+  notifications: Array<{
+    id: string;
+    recipientName: string;
+    type: string;
+    title: string;
+    message: string;
+    country: string;
+    read: boolean;
+    createdAt: string;
+  }>;
+  pagination: { page: number; limit: number; total: number; pages: number };
+  summary: { total: number; unread: number; byType: Record<string, number> };
+}
+
+export function useAdminNotifications(filters: AdminNotificationFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.type) params.set('type', filters.type);
+  if (filters.country) params.set('country', filters.country);
+  if (filters.search) params.set('search', filters.search);
+  params.set('page', String(filters.page || 1));
+  params.set('limit', String(filters.limit || 20));
+
+  return useQuery<AdminNotificationResponse>({
+    queryKey: ['admin-notifications', filters],
+    queryFn: () => apiFetch<AdminNotificationResponse>(`/api/admin/notifications?${params.toString()}`),
+  });
+}
+
+export function useCreateNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { userId?: string; type: string; title: string; message: string; country?: string }) =>
+      apiPost('/api/admin/notifications', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+    },
+  });
+}

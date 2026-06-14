@@ -139,7 +139,7 @@ export default function AdminUserDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Skeleton className="w-10 h-10" />
           <Skeleton className="h-8 w-48" />
@@ -232,7 +232,7 @@ export default function AdminUserDetailPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Breadcrumb + Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">

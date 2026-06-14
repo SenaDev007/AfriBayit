@@ -108,15 +108,11 @@ export default function AdminKycPage() {
   }, []);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-[#003087]" />
-            Vérifications KYC
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Vérifications KYC</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Examiner et valider les documents d&apos;identité
           </p>
@@ -143,31 +139,31 @@ export default function AdminKycPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">En attente</p>
-            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.pending ?? 0}</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5 text-blue-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Score IA moyen</p>
-            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.avgAiScore ?? 0}%</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.avgAiScore ?? 0}%</p>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase">Validés aujourd&apos;hui</p>
-            <p className="text-2xl font-bold text-gray-900 font-display">{summary?.validatedToday ?? 0}</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.validatedToday ?? 0}</p>
           </div>
         </div>
       </div>
@@ -290,50 +286,28 @@ export default function AdminKycPage() {
 
       {/* Pagination */}
       {pagination && pagination.pages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white rounded-xl">
-          <p className="text-xs text-gray-500">
-            {(pagination.page - 1) * pagination.limit + 1}–
-            {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              disabled={pagination.page <= 1}
-              onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            {Array.from({ length: pagination.pages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === pagination.pages || Math.abs(p - pagination.page) <= 1)
-              .map((p, idx, arr) => {
-                const prev = arr[idx - 1];
-                const showDots = prev && p - prev > 1;
-                return (
-                  <React.Fragment key={p}>
-                    {showDots && <span className="px-1 text-xs text-gray-400">...</span>}
-                    <Button
-                      variant={p === pagination.page ? 'default' : 'outline'}
-                      size="sm"
-                      className={cn('h-8 w-8 p-0 text-xs', p === pagination.page && 'bg-[#003087] hover:bg-[#002a70]')}
-                      onClick={() => setFilters((prev) => ({ ...prev, page: p }))}
-                    >
-                      {p}
-                    </Button>
-                  </React.Fragment>
-                );
-              })}
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              disabled={pagination.page >= pagination.pages}
-              onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            disabled={pagination.page <= 1}
+            onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-xs text-gray-500 px-2">
+            {pagination.page} / {pagination.pages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            disabled={pagination.page >= pagination.pages}
+            onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       )}
     </div>

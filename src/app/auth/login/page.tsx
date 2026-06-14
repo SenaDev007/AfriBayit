@@ -18,7 +18,9 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSuccess = () => {
-    router.push('/dashboard');
+    // Redirect to landing page after successful login
+    // (not /dashboard — users should land on the main page)
+    router.push('/');
   };
 
   const handleClose = () => {

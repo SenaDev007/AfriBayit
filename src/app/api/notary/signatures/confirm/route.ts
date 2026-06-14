@@ -4,23 +4,23 @@ import { confirmSignature, trackSignatureStatus } from '@/lib/notary/e-signature
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { documentId, signerId, signatureData, ipAddress, userAgent } = body as {
-      documentId: string;
+    const { requestId, signerId, signatureData, ipAddress, userAgent } = body as {
+      requestId: string;
       signerId: string;
       signatureData: string;
       ipAddress?: string;
       userAgent?: string;
     };
 
-    if (!documentId || !signerId || !signatureData) {
+    if (!requestId || !signerId || !signatureData) {
       return NextResponse.json(
-        { error: 'documentId, signerId et signatureData sont requis' },
+        { error: 'requestId, signerId et signatureData sont requis' },
         { status: 400 }
       );
     }
 
-    const confirmation = confirmSignature(
-      documentId,
+    const confirmation = await confirmSignature(
+      requestId,
       signerId,
       signatureData,
       ipAddress || '127.0.0.1',
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Get updated status
-    const status = trackSignatureStatus(documentId);
+    const status = await trackSignatureStatus(requestId);
 
     return NextResponse.json({
       success: true,

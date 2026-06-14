@@ -107,7 +107,7 @@ export default function AdminUsersPage() {
   }, [searchInput]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

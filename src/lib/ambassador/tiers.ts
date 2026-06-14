@@ -14,10 +14,10 @@ export const AMBASSADOR_TIERS: Record<string, AmbassadorTier> = {
   bronze: {
     name: 'Bronze Ambassador',
     nameFr: 'Ambassadeur Bronze',
-    commissionRate: 0.05,
+    commissionRate: 0.02,
     benefits: [
       'Lien de parrainage personnalisé',
-      'Commission de 5% sur chaque filleul actif',
+      'Commission de 2% sur chaque filleul actif',
       'Accès au tableau de bord ambassadeur',
       'Support par email',
     ],
@@ -32,10 +32,10 @@ export const AMBASSADOR_TIERS: Record<string, AmbassadorTier> = {
   silver: {
     name: 'Silver Ambassador',
     nameFr: 'Ambassadeur Argent',
-    commissionRate: 0.10,
+    commissionRate: 0.03,
     benefits: [
       'Tous les avantages Bronze',
-      'Commission de 10% sur chaque filleul actif',
+      'Commission de 3% sur chaque filleul actif',
       'Page d\'atterrissage personnalisée',
       'Support prioritaire',
       'Accès aux événements exclusifs',
@@ -53,10 +53,10 @@ export const AMBASSADOR_TIERS: Record<string, AmbassadorTier> = {
   gold: {
     name: 'Gold Ambassador',
     nameFr: 'Ambassadeur Or',
-    commissionRate: 0.15,
+    commissionRate: 0.04,
     benefits: [
       'Tous les avantages Argent',
-      'Commission de 15% sur chaque filleul actif',
+      'Commission de 4% sur chaque filleul actif',
       'Événements co-brandés',
       'Accès VIP aux formations',
       'Mise en avant sur la plateforme',

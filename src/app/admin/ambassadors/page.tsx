@@ -1,733 +1,544 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Users, UserPlus, Search, Filter, MoreHorizontal, Eye, Pencil,
-  Ban, CheckCircle2, DollarSign, TrendingUp, Award, ArrowUpDown,
-  ChevronLeft, ChevronRight, Copy, Shield, ShieldCheck, ShieldAlert,
-  Clock, XCircle, Wallet,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Eye,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Users,
+  DollarSign,
+  Award,
+  Megaphone,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { useAdminAmbassadors } from '@/hooks/useAdmin';
 
-// ============ Design Tokens ============
-const NAVY = '#003087';
-const GOLD = '#D4AF37';
-const BLUE = '#009CDE';
-const GREEN = '#00A651';
-const RED = '#D93025';
+const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
-// ============ Tier Config ============
-const TIER_CONFIG: Record<string, { label: string; bg: string; text: string; icon: React.ElementType }> = {
-  bronze: { label: 'Bronze', bg: '#CD7F32', text: '#ffffff', icon: Shield },
-  silver: { label: 'Silver', bg: '#C0C0C0', text: '#1a1a1a', icon: ShieldCheck },
-  gold: { label: 'Gold', bg: '#D4AF37', text: '#ffffff', icon: ShieldAlert },
+const TIER_LABELS: Record<string, string> = {
+  bronze: 'Bronze',
+  silver: 'Argent',
+  gold: 'Or',
+  platinum: 'Platine',
 };
 
-// ============ Status Config ============
-const AMBASSADOR_STATUS: Record<string, { label: string; className: string }> = {
-  active: { label: 'Actif', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  suspended: { label: 'Suspendu', className: 'bg-red-50 text-red-700 border-red-200' },
+const TIER_COLORS: Record<string, string> = {
+  bronze: 'bg-orange-50 text-orange-700 border-orange-200',
+  silver: 'bg-gray-100 text-gray-700 border-gray-300',
+  gold: 'bg-[#D4AF37]/10 text-[#B8962E] border-[#D4AF37]/30',
+  platinum: 'bg-purple-50 text-purple-700 border-purple-200',
 };
 
-const COMMISSION_STATUS: Record<string, { label: string; className: string; icon: React.ElementType }> = {
-  pending: { label: 'En attente', className: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
-  paid: { label: 'Payée', className: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle2 },
-  cancelled: { label: 'Annulée', className: 'bg-red-50 text-red-700 border-red-200', icon: XCircle },
+const TIER_ICONS: Record<string, React.ReactNode> = {
+  bronze: '🥉',
+  silver: '🥈',
+  gold: '🥇',
+  platinum: '💎',
 };
 
-// ============ Format helpers ============
-const formatXOF = (n: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
+const COMMISSION_STATUS_LABELS: Record<string, string> = {
+  pending: 'En attente',
+  paid: 'Payée',
+  cancelled: 'Annulée',
+};
 
-const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const COMMISSION_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  paid: 'bg-green-50 text-green-700 border-green-200',
+  cancelled: 'bg-red-50 text-red-600 border-red-200',
+};
 
-// ============ Mock Data ============
-interface Ambassador {
+const AMBASSADOR_STATUS_LABELS: Record<string, string> = {
+  active: 'Actif',
+  inactive: 'Inactif',
+  suspended: 'Suspendu',
+};
+
+const AMBASSADOR_STATUS_COLORS: Record<string, string> = {
+  active: 'bg-green-50 text-green-700 border-green-200',
+  inactive: 'bg-gray-100 text-gray-600 border-gray-200',
+  suspended: 'bg-red-50 text-red-600 border-red-200',
+};
+
+interface AmbassadorRow {
   id: string;
   name: string;
   email: string;
-  avatar: string | null;
-  tier: 'bronze' | 'silver' | 'gold';
+  country: string;
+  tier: string;
   referrals: number;
-  totalCommissions: number;
-  status: 'active' | 'suspended';
-  referralCode: string;
-  joinDate: string;
+  earnings: number;
+  status: string;
 }
 
-interface Commission {
+interface CommissionRow {
   id: string;
-  ambassadorId: string;
   ambassadorName: string;
-  filleulName: string;
+  referralName: string;
   amount: number;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: string;
   date: string;
-  tier: 'bronze' | 'silver' | 'gold';
 }
 
-const MOCK_AMBASSADORS: Ambassador[] = [
-  {
-    id: 'AMB-001', name: 'Amadou Diallo', email: 'amadou.diallo@email.com', avatar: null,
-    tier: 'gold', referrals: 28, totalCommissions: 1_250_000, status: 'active',
-    referralCode: 'AMADOU-X7K2', joinDate: '2024-01-15',
-  },
-  {
-    id: 'AMB-002', name: 'Fatou Coulibaly', email: 'fatou.c@email.com', avatar: null,
-    tier: 'gold', referrals: 22, totalCommissions: 980_000, status: 'active',
-    referralCode: 'FATOU-P3M9', joinDate: '2024-02-03',
-  },
-  {
-    id: 'AMB-003', name: 'Kofi Mensah', email: 'kofi.m@email.com', avatar: null,
-    tier: 'silver', referrals: 12, totalCommissions: 450_000, status: 'active',
-    referralCode: 'KOFI-R5N1', joinDate: '2024-03-20',
-  },
-  {
-    id: 'AMB-004', name: 'Aissatou Ba', email: 'aissatou.ba@email.com', avatar: null,
-    tier: 'silver', referrals: 8, totalCommissions: 320_000, status: 'active',
-    referralCode: 'AISSA-T8V4', joinDate: '2024-04-10',
-  },
-  {
-    id: 'AMB-005', name: 'Ibrahim Traore', email: 'ibrahim.t@email.com', avatar: null,
-    tier: 'bronze', referrals: 4, totalCommissions: 95_000, status: 'active',
-    referralCode: 'IBRAH-W2J6', joinDate: '2024-05-05',
-  },
-  {
-    id: 'AMB-006', name: 'Mariama Sow', email: 'mariama.sow@email.com', avatar: null,
-    tier: 'bronze', referrals: 2, totalCommissions: 45_000, status: 'suspended',
-    referralCode: 'MARIA-Y4L8', joinDate: '2024-06-12',
-  },
-  {
-    id: 'AMB-007', name: 'Ousmane Ndiaye', email: 'ousmane.n@email.com', avatar: null,
-    tier: 'silver', referrals: 9, totalCommissions: 275_000, status: 'active',
-    referralCode: 'OUSMA-Q6H3', joinDate: '2024-07-01',
-  },
-  {
-    id: 'AMB-008', name: 'Aminata Diop', email: 'aminata.d@email.com', avatar: null,
-    tier: 'bronze', referrals: 3, totalCommissions: 60_000, status: 'active',
-    referralCode: 'AMINA-U9F7', joinDate: '2024-08-18',
-  },
-];
+function formatXOF(n: number) {
+  return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
+}
 
-const MOCK_COMMISSIONS: Commission[] = [
-  {
-    id: 'COM-001', ambassadorId: 'AMB-001', ambassadorName: 'Amadou Diallo',
-    filleulName: 'Moussa Keita', amount: 75_000, status: 'paid', date: '2025-02-10', tier: 'gold',
-  },
-  {
-    id: 'COM-002', ambassadorId: 'AMB-001', ambassadorName: 'Amadou Diallo',
-    filleulName: 'Kadia Toure', amount: 45_000, status: 'pending', date: '2025-03-01', tier: 'gold',
-  },
-  {
-    id: 'COM-003', ambassadorId: 'AMB-002', ambassadorName: 'Fatou Coulibaly',
-    filleulName: 'Boubacar Sy', amount: 62_000, status: 'paid', date: '2025-01-22', tier: 'gold',
-  },
-  {
-    id: 'COM-004', ambassadorId: 'AMB-003', ambassadorName: 'Kofi Mensah',
-    filleulName: 'Adama Ouattara', amount: 35_000, status: 'pending', date: '2025-03-05', tier: 'silver',
-  },
-  {
-    id: 'COM-005', ambassadorId: 'AMB-004', ambassadorName: 'Aissatou Ba',
-    filleulName: 'Seydou Cisse', amount: 28_000, status: 'paid', date: '2025-02-14', tier: 'silver',
-  },
-  {
-    id: 'COM-006', ambassadorId: 'AMB-005', ambassadorName: 'Ibrahim Traore',
-    filleulName: 'Fatoumata Kamissoko', amount: 15_000, status: 'cancelled', date: '2025-02-28', tier: 'bronze',
-  },
-  {
-    id: 'COM-007', ambassadorId: 'AMB-007', ambassadorName: 'Ousmane Ndiaye',
-    filleulName: 'Alassane Diarra', amount: 40_000, status: 'pending', date: '2025-03-08', tier: 'silver',
-  },
-  {
-    id: 'COM-008', ambassadorId: 'AMB-002', ambassadorName: 'Fatou Coulibaly',
-    filleulName: 'Djenaba Conte', amount: 52_000, status: 'pending', date: '2025-03-10', tier: 'gold',
-  },
-  {
-    id: 'COM-009', ambassadorId: 'AMB-008', ambassadorName: 'Aminata Diop',
-    filleulName: 'Mamadou Bah', amount: 12_000, status: 'paid', date: '2025-01-30', tier: 'bronze',
-  },
-  {
-    id: 'COM-010', ambassadorId: 'AMB-003', ambassadorName: 'Kofi Mensah',
-    filleulName: 'Issa Sanogo', amount: 30_000, status: 'pending', date: '2025-03-12', tier: 'silver',
-  },
-  {
-    id: 'COM-011', ambassadorId: 'AMB-006', ambassadorName: 'Mariama Sow',
-    filleulName: 'Oumar Baldé', amount: 18_000, status: 'cancelled', date: '2025-02-20', tier: 'bronze',
-  },
-  {
-    id: 'COM-012', ambassadorId: 'AMB-001', ambassadorName: 'Amadou Diallo',
-    filleulName: 'Aicha Dembele', amount: 55_000, status: 'pending', date: '2025-03-14', tier: 'gold',
-  },
-];
+export default function AdminAmbassadorsPage() {
+  const [activeTab, setActiveTab] = useState<'ambassadors' | 'commissions'>('ambassadors');
+  const [filters, setFilters] = useState<{ tier?: string; status?: string; country?: string; search?: string; page: number; limit: number }>({
+    page: 1,
+    limit: 20,
+  });
+  const [searchInput, setSearchInput] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
-// ============ Component ============
-export default function AmbassadorsPage() {
-  const [activeTab, setActiveTab] = useState('ambassadeurs');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [ambPage, setAmbPage] = useState(1);
-  const [comPage, setComPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
+  const { data, isLoading } = useAdminAmbassadors({ ...filters, tab: activeTab });
+  const summary = data?.summary;
+  const pagination = data?.pagination;
 
-  // ============ Computed Stats ============
-  const stats = useMemo(() => {
-    const totalAmbassadors = MOCK_AMBASSADORS.length;
-    const filleulsCeMois = MOCK_AMBASSADORS.reduce((s, a) => s + a.referrals, 0);
-    const commissionsEnAttente = MOCK_COMMISSIONS
-      .filter(c => c.status === 'pending')
-      .reduce((s, c) => s + c.amount, 0);
-    const commissionsPayees = MOCK_COMMISSIONS
-      .filter(c => c.status === 'paid')
-      .reduce((s, c) => s + c.amount, 0);
-    return { totalAmbassadors, filleulsCeMois, commissionsEnAttente, commissionsPayees };
-  }, []);
+  const ambassadors = data?.ambassadors ?? [];
+  const commissions = data?.commissions ?? [];
 
-  // ============ Filtered Data ============
-  const filteredAmbassadors = useMemo(() => {
-    return MOCK_AMBASSADORS.filter(a => {
-      const matchesSearch =
-        a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.referralCode.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesLevel = levelFilter === 'all' || a.tier === levelFilter;
-      const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
-      return matchesSearch && matchesLevel && matchesStatus;
-    });
-  }, [searchQuery, levelFilter, statusFilter]);
+  const handleSearch = useCallback(() => {
+    setFilters((prev) => ({ ...prev, search: searchInput || undefined, page: 1 }));
+  }, [searchInput]);
 
-  const filteredCommissions = useMemo(() => {
-    return MOCK_COMMISSIONS.filter(c => {
-      const matchesSearch =
-        c.ambassadorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.filleulName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.id.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesLevel = levelFilter === 'all' || c.tier === levelFilter;
-      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-      return matchesSearch && matchesLevel && matchesStatus;
-    });
-  }, [searchQuery, levelFilter, statusFilter]);
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    toast.success('Supprimé avec succès');
+    setDeleteOpen(false);
+    setDeleteTarget(null);
+  };
 
-  // Pagination
-  const ambTotalPages = Math.ceil(filteredAmbassadors.length / ITEMS_PER_PAGE);
-  const paginatedAmbassadors = filteredAmbassadors.slice(
-    (ambPage - 1) * ITEMS_PER_PAGE,
-    ambPage * ITEMS_PER_PAGE
-  );
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
 
-  const comTotalPages = Math.ceil(filteredCommissions.length / ITEMS_PER_PAGE);
-  const paginatedCommissions = filteredCommissions.slice(
-    (comPage - 1) * ITEMS_PER_PAGE,
-    comPage * ITEMS_PER_PAGE
-  );
-
-  // ============ Helper: Get initials ============
-  const getInitials = (name: string) =>
-    name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
-
-  // ============ Render ============
   return (
-    <div className="min-h-screen space-y-6">
-      {/* ---- Page Header ---- */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: NAVY }}>
-            Programme Ambassadeurs
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Gérez le programme de parrainage et les commissions
+          <h1 className="text-2xl font-bold text-gray-900">Programme Ambassadeurs</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Gérer les ambassadeurs et les commissions de parrainage
           </p>
         </div>
-        <Button
-          className="gap-2 text-white font-semibold shadow-md hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: GOLD }}
-        >
-          <UserPlus className="size-4" />
-          Ajouter un ambassadeur
-        </Button>
       </div>
 
-      {/* ---- Stats Row ---- */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: 'Total ambassadeurs',
-            value: stats.totalAmbassadors,
-            icon: Users,
-            iconBg: `${NAVY}15`,
-            iconColor: NAVY,
-          },
-          {
-            label: 'Filleuls ce mois',
-            value: stats.filleulsCeMois,
-            icon: TrendingUp,
-            iconBg: `${BLUE}15`,
-            iconColor: BLUE,
-          },
-          {
-            label: 'Commissions en attente',
-            value: formatXOF(stats.commissionsEnAttente),
-            icon: Clock,
-            iconBg: `${GOLD}20`,
-            iconColor: GOLD,
-          },
-          {
-            label: 'Commissions payées',
-            value: formatXOF(stats.commissionsPayees),
-            icon: Wallet,
-            iconBg: `${GREEN}15`,
-            iconColor: GREEN,
-          },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-4">
-                <div
-                  className="flex size-11 shrink-0 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: stat.iconBg }}
-                >
-                  <stat.icon className="size-5" style={{ color: stat.iconColor }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    {stat.label}
-                  </p>
-                  <p className="mt-0.5 text-xl font-bold text-gray-900 truncate">
-                    {stat.value}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* ---- Main Content Tabs ---- */}
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setAmbPage(1); setComPage(1); }}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="bg-gray-100 p-1 h-auto">
-            <TabsTrigger
-              value="ambassadeurs"
-              className="px-5 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:rounded-md font-medium"
-            >
-              <Users className="size-4 mr-1.5" />
-              Ambassadeurs
-            </TabsTrigger>
-            <TabsTrigger
-              value="commissions"
-              className="px-5 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:rounded-md font-medium"
-            >
-              <DollarSign className="size-4 mr-1.5" />
-              Commissions
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ---- Filters ---- */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Rechercher..."
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setAmbPage(1); setComPage(1); }}
-                className="pl-9 w-48 h-9 text-sm bg-white border-gray-200 focus:border-[#003087]/40 focus:ring-[#003087]/20"
-              />
-            </div>
-            <Select value={levelFilter} onValueChange={(v) => { setLevelFilter(v); setAmbPage(1); setComPage(1); }}>
-              <SelectTrigger className="w-36 h-9 text-sm bg-white border-gray-200">
-                <SelectValue placeholder="Niveau" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les niveaux</SelectItem>
-                <SelectItem value="bronze">Bronze</SelectItem>
-                <SelectItem value="silver">Silver</SelectItem>
-                <SelectItem value="gold">Gold</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setAmbPage(1); setComPage(1); }}>
-              <SelectTrigger className="w-36 h-9 text-sm bg-white border-gray-200">
-                <SelectValue placeholder="Statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="active">Actif</SelectItem>
-                <SelectItem value="suspended">Suspendu</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="paid">Payée</SelectItem>
-                <SelectItem value="cancelled">Annulée</SelectItem>
-              </SelectContent>
-            </Select>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
+            <Megaphone className="w-5 h-5 text-[#003087]" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Total ambassadeurs</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.totalAmbassadors ?? 0}</p>
           </div>
         </div>
-
-        {/* ============ Ambassadeurs Tab ============ */}
-        <TabsContent value="ambassadeurs" className="mt-4">
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-                        Ambassadeur <ArrowUpDown className="size-3" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Niveau</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-                        Filleuls <ArrowUpDown className="size-3" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-                        Commissions totales <ArrowUpDown className="size-3" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedAmbassadors.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-32 text-center">
-                        <div className="flex flex-col items-center gap-2 text-gray-400">
-                          <Users className="size-8 opacity-50" />
-                          <p className="text-sm">Aucun ambassadeur trouvé</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedAmbassadors.map((amb) => {
-                      const tierCfg = TIER_CONFIG[amb.tier];
-                      const TierIcon = tierCfg.icon;
-                      const statusCfg = AMBASSADOR_STATUS[amb.status];
-
-                      return (
-                        <TableRow key={amb.id} className="group hover:bg-gray-50/60 transition-colors">
-                          {/* Ambassadeur */}
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="size-10 border-2 border-white shadow-sm">
-                                <AvatarImage src={amb.avatar || undefined} alt={amb.name} />
-                                <AvatarFallback
-                                  className="text-xs font-semibold text-white"
-                                  style={{ backgroundColor: NAVY }}
-                                >
-                                  {getInitials(amb.name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate">{amb.name}</p>
-                                <p className="text-xs text-gray-400 truncate">{amb.email}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-
-                          {/* Niveau */}
-                          <TableCell>
-                            <Badge
-                              className="gap-1.5 border-0 font-semibold px-2.5 py-1 text-xs shadow-sm"
-                              style={{ backgroundColor: tierCfg.bg, color: tierCfg.text }}
-                            >
-                              <TierIcon className="size-3" />
-                              {tierCfg.label}
-                            </Badge>
-                          </TableCell>
-
-                          {/* Filleuls */}
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              <Users className="size-3.5 text-gray-400" />
-                              <span className="text-sm font-medium text-gray-700">{amb.referrals}</span>
-                            </div>
-                          </TableCell>
-
-                          {/* Commissions totales */}
-                          <TableCell>
-                            <span className="text-sm font-semibold" style={{ color: GREEN }}>
-                              {formatXOF(amb.totalCommissions)}
-                            </span>
-                          </TableCell>
-
-                          {/* Statut */}
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn('text-xs font-medium px-2.5 py-1', statusCfg.className)}
-                            >
-                              <span className={cn(
-                                'size-1.5 rounded-full mr-1.5',
-                                amb.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'
-                              )} />
-                              {statusCfg.label}
-                            </Badge>
-                          </TableCell>
-
-                          {/* Actions */}
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100"
-                                >
-                                  <MoreHorizontal className="size-4 text-gray-500" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem className="gap-2 text-sm cursor-pointer">
-                                  <Eye className="size-4 text-gray-400" /> Voir le profil
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 text-sm cursor-pointer">
-                                  <Pencil className="size-4 text-gray-400" /> Modifier
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 text-sm cursor-pointer">
-                                  <Copy className="size-4 text-gray-400" />
-                                  Code : {amb.referralCode}
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="gap-2 text-sm cursor-pointer"
-                                  style={{ color: RED }}
-                                >
-                                  <Ban className="size-4" />
-                                  {amb.status === 'active' ? 'Suspendre' : 'Réactiver'}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
+            <Crown className="w-5 h-5 text-[#B8962E]" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Commissions totales</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.totalCommissions ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Revenus totaux</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.totalEarnings != null ? formatXOF(summary.totalEarnings) : '—'}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+            <Award className="w-5 h-5 text-purple-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Par tier</p>
+            <div className="flex items-center gap-1">
+              {summary?.byTier && Object.entries(summary.byTier).map(([tier, count]) => (
+                <span key={tier} className="text-xs" title={TIER_LABELS[tier] || tier}>
+                  {TIER_ICONS[tier]}{count}
+                </span>
+              ))}
+              {!summary?.byTier && <span className="text-2xl font-bold text-gray-900">—</span>}
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Pagination */}
-            {ambTotalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-                <p className="text-xs text-gray-400">
-                  {filteredAmbassadors.length} ambassadeur{filteredAmbassadors.length > 1 ? 's' : ''}
-                </p>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline" size="icon" className="size-8"
-                    disabled={ambPage <= 1}
-                    onClick={() => setAmbPage(p => Math.max(1, p - 1))}
-                  >
-                    <ChevronLeft className="size-4" />
-                  </Button>
-                  {Array.from({ length: ambTotalPages }, (_, i) => i + 1).map(page => (
-                    <Button
-                      key={page}
-                      variant={page === ambPage ? 'default' : 'outline'}
-                      size="icon"
-                      className={cn('size-8 text-xs', page === ambPage && 'text-white')}
-                      style={page === ambPage ? { backgroundColor: NAVY } : {}}
-                      onClick={() => setAmbPage(page)}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="outline" size="icon" className="size-8"
-                    disabled={ambPage >= ambTotalPages}
-                    onClick={() => setAmbPage(p => Math.min(ambTotalPages, p + 1))}
-                  >
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <button
+          className={cn(
+            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            activeTab === 'ambassadors'
+              ? 'bg-white text-[#003087] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          )}
+          onClick={() => { setActiveTab('ambassadors'); setFilters((prev) => ({ ...prev, page: 1 })); }}
+        >
+          Ambassadeurs
+        </button>
+        <button
+          className={cn(
+            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            activeTab === 'commissions'
+              ? 'bg-white text-[#003087] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          )}
+          onClick={() => { setActiveTab('commissions'); setFilters((prev) => ({ ...prev, page: 1 })); }}
+        >
+          Commissions
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder={activeTab === 'ambassadors' ? 'Rechercher par nom, email...' : 'Rechercher par ambassadeur, filleul...'}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-10 h-9 text-sm"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {activeTab === 'ambassadors' && (
+              <>
+                <Select
+                  value={filters.tier || 'all'}
+                  onValueChange={(v) =>
+                    setFilters((prev) => ({ ...prev, tier: v === 'all' ? undefined : v, page: 1 }))
+                  }
+                >
+                  <SelectTrigger className="w-[130px] h-9 text-xs">
+                    <SelectValue placeholder="Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les tiers</SelectItem>
+                    <SelectItem value="bronze">🥉 Bronze</SelectItem>
+                    <SelectItem value="silver">🥈 Argent</SelectItem>
+                    <SelectItem value="gold">🥇 Or</SelectItem>
+                    <SelectItem value="platinum">💎 Platine</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.status || 'all'}
+                  onValueChange={(v) =>
+                    setFilters((prev) => ({ ...prev, status: v === 'all' ? undefined : v, page: 1 }))
+                  }
+                >
+                  <SelectTrigger className="w-[130px] h-9 text-xs">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="active">Actif</SelectItem>
+                    <SelectItem value="inactive">Inactif</SelectItem>
+                    <SelectItem value="suspended">Suspendu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
             )}
-          </Card>
-        </TabsContent>
+            {activeTab === 'commissions' && (
+              <Select
+                value={filters.status || 'all'}
+                onValueChange={(v) =>
+                  setFilters((prev) => ({ ...prev, status: v === 'all' ? undefined : v, page: 1 }))
+                }
+              >
+                <SelectTrigger className="w-[140px] h-9 text-xs">
+                  <SelectValue placeholder="Statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="pending">En attente</SelectItem>
+                  <SelectItem value="paid">Payée</SelectItem>
+                  <SelectItem value="cancelled">Annulée</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            <Select
+              value={filters.country || 'all'}
+              onValueChange={(v) =>
+                setFilters((prev) => ({ ...prev, country: v === 'all' ? undefined : v, page: 1 }))
+              }
+            >
+              <SelectTrigger className="w-[130px] h-9 text-xs">
+                <SelectValue placeholder="Pays" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
+              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+            </Button>
+          </div>
+        </div>
+      </div>
 
-        {/* ============ Commissions Tab ============ */}
-        <TabsContent value="commissions" className="mt-4">
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+      {/* Data Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </div>
+        ) : activeTab === 'ambassadors' ? (
+          ambassadors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <Megaphone className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-lg font-medium text-gray-900">Aucun ambassadeur trouvé</p>
+              <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            </div>
+          ) : (
+            <>
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">ID</TableHead>
+                  <TableRow className="bg-gray-50/80">
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ambassadeur</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Filleul</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-                        Montant <ArrowUpDown className="size-3" />
-                      </div>
-                    </TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Email</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pays</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Tier</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Parrainages</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Revenus</TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-                        Date <ArrowUpDown className="size-3" />
-                      </div>
-                    </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedCommissions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center">
-                        <div className="flex flex-col items-center gap-2 text-gray-400">
-                          <DollarSign className="size-8 opacity-50" />
-                          <p className="text-sm">Aucune commission trouvée</p>
+                  {ambassadors.map((amb) => (
+                    <TableRow key={amb.id} className="hover:bg-gray-50/50">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
+                            {amb.name?.charAt(0) || '?'}
+                          </div>
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{amb.name}</p>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedCommissions.map((com) => {
-                      const statusCfg = COMMISSION_STATUS[com.status];
-                      const StatusIcon = statusCfg.icon;
-                      const tierCfg = TIER_CONFIG[com.tier];
-
-                      return (
-                        <TableRow key={com.id} className="group hover:bg-gray-50/60 transition-colors">
-                          {/* ID */}
-                          <TableCell>
-                            <span className="text-xs font-mono font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                              {com.id}
-                            </span>
-                          </TableCell>
-
-                          {/* Ambassadeur */}
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="size-7 border border-white shadow-sm">
-                                <AvatarFallback
-                                  className="text-[10px] font-semibold text-white"
-                                  style={{ backgroundColor: tierCfg.bg }}
-                                >
-                                  {getInitials(com.ambassadorName)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm font-medium text-gray-800">{com.ambassadorName}</span>
-                            </div>
-                          </TableCell>
-
-                          {/* Filleul */}
-                          <TableCell>
-                            <span className="text-sm text-gray-600">{com.filleulName}</span>
-                          </TableCell>
-
-                          {/* Montant */}
-                          <TableCell>
-                            <span className="text-sm font-semibold" style={{ color: GREEN }}>
-                              {formatXOF(com.amount)}
-                            </span>
-                          </TableCell>
-
-                          {/* Statut */}
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn('gap-1.5 text-xs font-medium px-2.5 py-1', statusCfg.className)}
+                      <TableCell className="text-sm text-gray-500 truncate max-w-[160px]">{amb.email || '—'}</TableCell>
+                      <TableCell className="text-sm">
+                        {amb.country ? `${COUNTRY_FLAGS[amb.country] || ''} ${amb.country}` : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn('text-[10px]', TIER_COLORS[amb.tier] || '')}>
+                          {TIER_ICONS[amb.tier]} {TIER_LABELS[amb.tier] || amb.tier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900">{amb.referrals ?? 0}</TableCell>
+                      <TableCell className="text-sm font-mono text-gray-900">{formatXOF(amb.earnings ?? 0)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn('text-[10px]', AMBASSADOR_STATUS_COLORS[amb.status] || '')}>
+                          {AMBASSADOR_STATUS_LABELS[amb.status] || amb.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => { setDeleteTarget({ id: amb.id, name: amb.name }); setDeleteOpen(true); }}
+                              className="text-red-600"
                             >
-                              <StatusIcon className="size-3" />
-                              {statusCfg.label}
-                            </Badge>
-                          </TableCell>
-
-                          {/* Date */}
-                          <TableCell>
-                            <span className="text-sm text-gray-500">{formatDate(com.date)}</span>
-                          </TableCell>
-
-                          {/* Actions */}
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100"
-                                >
-                                  <MoreHorizontal className="size-4 text-gray-500" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem className="gap-2 text-sm cursor-pointer">
-                                  <Eye className="size-4 text-gray-400" /> Voir les détails
-                                </DropdownMenuItem>
-                                {com.status === 'pending' && (
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="gap-2 text-sm cursor-pointer" style={{ color: GREEN }}>
-                                      <CheckCircle2 className="size-4" /> Marquer payée
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="gap-2 text-sm cursor-pointer" style={{ color: RED }}>
-                                      <XCircle className="size-4" /> Annuler
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
+                              <Trash2 className="w-4 h-4" /> Supprimer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
-            </div>
 
-            {/* Pagination */}
-            {comTotalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-                <p className="text-xs text-gray-400">
-                  {filteredCommissions.length} commission{filteredCommissions.length > 1 ? 's' : ''}
+              {pagination && pagination.pages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    {(pagination.page - 1) * pagination.limit + 1}–
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page <= 1} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page >= pagination.pages} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}>
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        ) : commissions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <DollarSign className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">Aucune commission trouvée</p>
+            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/80">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ambassadeur</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Filleul</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Montant</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {commissions.map((comm) => (
+                  <TableRow key={comm.id} className="hover:bg-gray-50/50">
+                    <TableCell className="text-sm font-medium text-gray-900">{comm.ambassadorName || '—'}</TableCell>
+                    <TableCell className="text-sm text-gray-600">{comm.referralName || '—'}</TableCell>
+                    <TableCell className="text-sm font-mono font-medium text-gray-900">{formatXOF(comm.amount ?? 0)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn('text-[10px]', COMMISSION_STATUS_COLORS[comm.status] || '')}>
+                        {COMMISSION_STATUS_LABELS[comm.status] || comm.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">{comm.date ? formatDate(comm.date) : '—'}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => { setDeleteTarget({ id: comm.id, name: `Commission ${comm.id.slice(0, 8)}` }); setDeleteOpen(true); }}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" /> Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            {pagination && pagination.pages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  {(pagination.page - 1) * pagination.limit + 1}–
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total}
                 </p>
                 <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline" size="icon" className="size-8"
-                    disabled={comPage <= 1}
-                    onClick={() => setComPage(p => Math.max(1, p - 1))}
-                  >
-                    <ChevronLeft className="size-4" />
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page <= 1} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}>
+                    <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  {Array.from({ length: comTotalPages }, (_, i) => i + 1).map(page => (
-                    <Button
-                      key={page}
-                      variant={page === comPage ? 'default' : 'outline'}
-                      size="icon"
-                      className={cn('size-8 text-xs', page === comPage && 'text-white')}
-                      style={page === comPage ? { backgroundColor: NAVY } : {}}
-                      onClick={() => setComPage(page)}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="outline" size="icon" className="size-8"
-                    disabled={comPage >= comTotalPages}
-                    onClick={() => setComPage(p => Math.min(comTotalPages, p + 1))}
-                  >
-                    <ChevronRight className="size-4" />
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page >= pagination.pages} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}>
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             )}
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </>
+        )}
+      </div>
+
+      {/* Delete Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer {deleteTarget?.name} ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Annuler</Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

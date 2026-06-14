@@ -1,220 +1,113 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ---------------------------------------------------------------------------
-// In-memory content store (simulates database)
-// ---------------------------------------------------------------------------
-
-interface ContentItem {
-  id: string;
-  label: string;
-  value: string;
-  lastModified: string;
-}
-
-interface ContentSection {
-  id: string;
-  title: string;
-  description: string;
-  items: ContentItem[];
-}
-
-const contentStore: ContentSection[] = [
+// Hardcoded content sections since there's no ContentItem model
+const CONTENT_SECTIONS = [
   {
-    id: 'accueil',
-    title: "Page d'accueil",
-    description: "Gérez le contenu principal de la page d'accueil",
+    id: 'homepage',
+    label: 'Homepage',
     items: [
-      {
-        id: 'hero-titre',
-        label: 'Hero titre',
-        value: "Trouvez votre bien immobilier en Afrique de l'Ouest",
-        lastModified: '2025-12-10T14:30:00',
-      },
-      {
-        id: 'hero-sous-titre',
-        label: 'Hero sous-titre',
-        value:
-          "La première plateforme immobilière vérifiée et sécurisée pour l'Afrique de l'Ouest",
-        lastModified: '2025-12-10T14:30:00',
-      },
-      {
-        id: 'section-confiance',
-        label: 'Section confiance',
-        value:
-          'Plus de 10\u00a0000 biens vérifiés • 500+ notaires partenaires • Présent dans 8 pays',
-        lastModified: '2025-11-28T09:15:00',
-      },
-      {
-        id: 'section-comment-ca-marche',
-        label: 'Section comment ça marche',
-        value:
-          '1. Recherchez • 2. Vérifiez • 3. Visitez • 4. Signez en toute sécurité',
-        lastModified: '2025-11-20T16:45:00',
-      },
-      {
-        id: 'section-temoignages',
-        label: 'Section témoignages',
-        value:
-          "Découvrez les témoignages de nos utilisateurs qui ont réalisé leur projet immobilier avec AfriBayit.",
-        lastModified: '2025-11-15T11:00:00',
-      },
-      {
-        id: 'cta-banniere',
-        label: 'CTA bannière',
-        value:
-          "Prêt à trouver votre bien\u00a0? Commencez votre recherche dès maintenant.",
-        lastModified: '2025-11-05T08:30:00',
-      },
+      { key: 'hero_title', label: 'Hero Title', value: 'Find Your Dream Property in Africa', country: '*' },
+      { key: 'hero_subtitle', label: 'Hero Subtitle', value: 'Trusted real estate platform across West Africa', country: '*' },
+      { key: 'cta_button', label: 'CTA Button Text', value: 'Start Searching', country: '*' },
     ],
   },
   {
-    id: 'legales',
-    title: 'Pages légales',
-    description: 'Modifiez les documents juridiques et politiques',
+    id: 'about',
+    label: 'About',
     items: [
-      {
-        id: 'politique-confidentialite',
-        label: 'Politique de confidentialité',
-        value:
-          "AfriBayit s'engage à protéger la vie privée de ses utilisateurs. Cette politique décrit les données collectées, leur utilisation et vos droits...",
-        lastModified: '2025-10-22T10:00:00',
-      },
-      {
-        id: 'cgu',
-        label: 'CGU',
-        value:
-          "En utilisant la plateforme AfriBayit, vous acceptez les présentes conditions générales d'utilisation...",
-        lastModified: '2025-10-22T10:00:00',
-      },
-      {
-        id: 'remboursement',
-        label: 'Remboursement',
-        value:
-          "Notre politique de remboursement s'applique aux transactions effectuées via le service de sécurisation AfriEscrow...",
-        lastModified: '2025-09-15T14:20:00',
-      },
-      {
-        id: 'suppression-donnees',
-        label: 'Suppression de données',
-        value:
-          'Conformément aux réglementations en vigueur, vous pouvez demander la suppression de vos données personnelles...',
-        lastModified: '2025-09-15T14:20:00',
-      },
+      { key: 'mission_statement', label: 'Mission Statement', value: 'Making African real estate accessible and transparent', country: '*' },
+      { key: 'vision_statement', label: 'Vision Statement', value: 'The leading real estate platform in Africa', country: '*' },
     ],
   },
   {
-    id: 'realisations',
-    title: 'Nos Réalisations',
-    description: 'Gérez le contenu de la section réalisations',
+    id: 'legal',
+    label: 'Legal',
     items: [
-      {
-        id: 'realisations-description',
-        label: 'Description',
-        value:
-          "Découvrez les projets réalisés grâce à AfriBayit. Des milliers de familles ont trouvé leur logement idéal.",
-        lastModified: '2025-12-01T16:00:00',
-      },
-      {
-        id: 'realisations-statistiques',
-        label: 'Statistiques',
-        value:
-          '2\u00a0500+ transactions réussies • 98% de satisfaction • 8 pays couverts • 500+ partenaires notariaux',
-        lastModified: '2025-12-01T16:00:00',
-      },
-      {
-        id: 'realisations-projets',
-        label: 'Projets',
-        value:
-          'Résidence Les Palmiers – Cotonou • Villa Horizon – Lomé • Appartements Baobab – Dakar',
-        lastModified: '2025-11-18T09:45:00',
-      },
+      { key: 'terms_of_service', label: 'Terms of Service', value: 'Standard terms apply', country: '*' },
+      { key: 'privacy_policy', label: 'Privacy Policy', value: 'We respect your data', country: '*' },
     ],
   },
   {
-    id: 'seo',
-    title: 'SEO & Meta',
-    description: 'Configurez les balises méta et le référencement',
+    id: 'footer',
+    label: 'Footer',
     items: [
-      {
-        id: 'seo-title',
-        label: 'Title',
-        value:
-          "AfriBayit – Plateforme immobilière vérifiée en Afrique de l'Ouest",
-        lastModified: '2025-11-30T12:00:00',
-      },
-      {
-        id: 'seo-description',
-        label: 'Description',
-        value:
-          "Achetez, vendez et louez des biens immobiliers vérifiés en Afrique de l'Ouest. Transactions sécurisées, notaires partenaires, vérification géolocalisée.",
-        lastModified: '2025-11-30T12:00:00',
-      },
-      {
-        id: 'seo-keywords',
-        label: 'Keywords',
-        value:
-          'immobilier afrique, achat maison afrique, location appartement, bien vérifié, notaire, transaction sécurisée',
-        lastModified: '2025-11-30T12:00:00',
-      },
+      { key: 'contact_email', label: 'Contact Email', value: 'support@afribayit.com', country: '*' },
+      { key: 'phone_number', label: 'Phone Number', value: '+229 90 00 00 00', country: '*' },
     ],
   },
 ];
 
-// ---------------------------------------------------------------------------
-// GET /api/admin/content — Fetch all content sections
-// ---------------------------------------------------------------------------
+// Country-specific overrides
+const COUNTRY_OVERRIDES: Record<string, Record<string, Record<string, string>>> = {
+  BJ: {
+    homepage: { hero_subtitle: 'La plateforme immobilière de confiance au Bénin' },
+  },
+  CI: {
+    homepage: { hero_subtitle: 'La plateforme immobilière de confiance en Côte d\'Ivoire' },
+  },
+  BF: {
+    homepage: { hero_subtitle: 'La plateforme immobilière de confiance au Burkina Faso' },
+  },
+  TG: {
+    homepage: { hero_subtitle: 'La plateforme immobilière de confiance au Togo' },
+  },
+};
 
-export async function GET() {
-  return NextResponse.json({ sections: contentStore });
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sectionId = searchParams.get('section') || '';
+    const country = searchParams.get('country') || '';
+
+    let sections = CONTENT_SECTIONS;
+
+    if (sectionId) {
+      sections = sections.filter((s) => s.id === sectionId);
+    }
+
+    // Apply country-specific overrides
+    if (country && COUNTRY_OVERRIDES[country]) {
+      const overrides = COUNTRY_OVERRIDES[country];
+      sections = sections.map((section) => {
+        const sectionOverrides = overrides[section.id] || {};
+        const items = section.items.map((item) => {
+          if (item.country === '*' && sectionOverrides[item.key]) {
+            return { ...item, value: sectionOverrides[item.key], country };
+          }
+          return item;
+        });
+        return { ...section, items };
+      });
+    }
+
+    return NextResponse.json({ sections });
+  } catch (error) {
+    console.error('Admin content error:', error);
+    return NextResponse.json({ error: 'Failed to fetch content' }, { status: 500 });
+  }
 }
 
-// ---------------------------------------------------------------------------
-// PUT /api/admin/content — Update a specific content item
-// ---------------------------------------------------------------------------
-
-export async function PUT(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sectionId, itemId, value } = body as {
-      sectionId: string;
-      itemId: string;
-      value: string;
-    };
+    const { sectionId, itemKey, country, value } = body;
 
-    if (!sectionId || !itemId || value === undefined) {
+    if (!sectionId || !itemKey || !value) {
       return NextResponse.json(
-        { error: 'sectionId, itemId et value sont requis' },
-        { status: 400 },
+        { error: 'Missing required fields: sectionId, itemKey, value' },
+        { status: 400 }
       );
     }
 
-    const section = contentStore.find((s) => s.id === sectionId);
-    if (!section) {
-      return NextResponse.json(
-        { error: 'Section non trouvée' },
-        { status: 404 },
-      );
-    }
-
-    const item = section.items.find((it) => it.id === itemId);
-    if (!item) {
-      return NextResponse.json(
-        { error: 'Élément non trouvé' },
-        { status: 404 },
-      );
-    }
-
-    item.value = value;
-    item.lastModified = new Date().toISOString();
-
+    // Since there's no DB table for content, this is a placeholder
+    // In production, you'd save to a ContentItem table or CMS
     return NextResponse.json({
       success: true,
-      item,
+      message: `Content item "${itemKey}" in section "${sectionId}" updated for country "${country || '*'}"`,
+      updatedItem: { sectionId, itemKey, country: country || '*', value },
     });
-  } catch {
-    return NextResponse.json(
-      { error: 'Requête invalide' },
-      { status: 400 },
-    );
+  } catch (error) {
+    console.error('Admin content update error:', error);
+    return NextResponse.json({ error: 'Failed to update content' }, { status: 500 });
   }
 }

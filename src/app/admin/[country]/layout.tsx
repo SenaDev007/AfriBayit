@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
 import { SessionProvider } from 'next-auth/react';
-import { ArrowLeft, ArrowLeftRight, BarChart3, Bell, Building2, ChevronDown, ChevronRight, Globe, Home, Hotel, Landmark, LayoutDashboard, LogOut, Menu, Plus, RefreshCw, Search, Settings, ShieldCheck, Star, UserPlus, User, Users, Wrench, FileText, CalendarDays } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, BarChart3, Bell, Building2, ChevronDown, ChevronRight, Globe, Home, Hotel, LayoutDashboard, LogOut, Search, Settings, ShieldCheck, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,219 +45,23 @@ function getNavGroups(country: string): NavGroup[] {
         { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
         { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
         { label: 'Transactions', href: `${base}/transactions`, icon: ArrowLeftRight },
-        { label: 'Artisans BTP', href: `${base}/artisans`, icon: Wrench },
-        { label: 'Notaires', href: `${base}/notaries`, icon: Landmark },
-        { label: 'GeoTrust', href: `${base}/geotrust`, icon: ShieldCheck },
       ],
     },
     {
-      label: 'HÔTELLERIE & SÉJOURS',
+      label: 'HÔTELLERIE',
       items: [
         { label: 'Hôtels & Séjours', href: `${base}/hospitality`, icon: Hotel },
         { label: 'Guesthouses', href: `${base}/hospitality?tab=guesthouses`, icon: Home },
-        { label: 'Locations courte durée', href: `${base}/short-term-rentals`, icon: CalendarDays },
-        { label: 'Réservations', href: `${base}/bookings`, icon: CalendarDays },
-      ],
-    },
-    {
-      label: 'COMMUNAUTÉ',
-      items: [
-        { label: 'Avis', href: `${base}/reviews`, icon: Star },
-        { label: 'Ambassadeurs', href: `${base}/ambassadors`, icon: UserPlus },
-        { label: 'Notifications', href: `${base}/notifications`, icon: Bell },
       ],
     },
     {
       label: 'ADMINISTRATION',
       items: [
         { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
-        { label: 'Contenu', href: `${base}/content`, icon: FileText },
         { label: 'Paramètres', href: `${base}/dashboard?tab=settings`, icon: Settings },
       ],
     },
   ];
-}
-
-const BREADCRUMB_LABELS: Record<string, string> = {
-  dashboard: 'Tableau de bord',
-  users: 'Utilisateurs',
-  properties: 'Propriétés',
-  transactions: 'Transactions',
-  hospitality: 'Hôtellerie',
-  accreditations: 'Accréditations',
-  analytics: 'Analytics',
-  settings: 'Paramètres',
-  artisans: 'Artisans BTP',
-  notaries: 'Notaires',
-  geotrust: 'GeoTrust',
-  'short-term-rentals': 'Locations courte durée',
-  bookings: 'Réservations',
-  reviews: 'Avis',
-  ambassadors: 'Ambassadeurs',
-  notifications: 'Notifications',
-  content: 'Contenu',
-};
-
-function CountryHeader({
-  country,
-  config,
-  onMobileMenuToggle,
-}: {
-  country: string;
-  config: { name: string; flag: string };
-  onMobileMenuToggle: () => void;
-}) {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setShowUserMenu(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const userName = session?.user?.name || 'Admin';
-  const userRole = (session?.user as Record<string, unknown>)?.role as string || 'admin';
-  const userAvatar = (session?.user as Record<string, unknown>)?.image as string || null;
-  const initials = userName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-
-  // Build breadcrumb segments
-  const segments = pathname.split('/').filter(Boolean).slice(2); // Remove 'admin' and country code
-
-  return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shrink-0">
-      {/* Branding accent */}
-      <div className="h-1 bg-gradient-to-r from-[#003087] via-[#D4AF37] to-[#009CDE]" />
-
-      <div className="flex items-center px-4 lg:px-6 h-14 gap-3">
-        {/* Mobile menu toggle */}
-        <button
-          onClick={onMobileMenuToggle}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label="Toggle sidebar"
-        >
-          <Menu className="w-5 h-5 text-gray-600" />
-        </button>
-
-        {/* Breadcrumb */}
-        <nav className="hidden sm:flex items-center gap-1.5 text-xs min-w-0 flex-1">
-          <Link href={`/admin/${country}/dashboard`} className="text-gray-400 hover:text-[#003087] transition-colors shrink-0">
-            <Home className="w-3.5 h-3.5" />
-          </Link>
-          <span className="text-gray-300 shrink-0">/</span>
-          <span className="text-[#003087] font-semibold">{config.flag} {config.name}</span>
-          {segments.map((segment, idx) => {
-            const isLast = idx === segments.length - 1;
-            const label = BREADCRUMB_LABELS[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
-            return (
-              <React.Fragment key={idx}>
-                <ChevronRight className="w-3 h-3 text-gray-300 shrink-0" />
-                {isLast ? (
-                  <span className="text-gray-900 font-medium truncate">{label}</span>
-                ) : (
-                  <span className="text-gray-400 truncate">{label}</span>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </nav>
-
-        {/* Mobile: country name */}
-        <div className="sm:hidden flex items-center gap-2 flex-1">
-          <span className="text-lg">{config.flag}</span>
-          <span className="text-sm font-bold text-[#003087]">{config.name}</span>
-          <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold border-0">
-            {country}
-          </Badge>
-        </div>
-
-        {/* Search bar — desktop only */}
-        <div className="hidden md:flex items-center max-w-xs flex-1">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher..."
-              className="w-full pl-9 pr-4 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Quick actions */}
-        <div className="hidden lg:flex items-center gap-1.5">
-          <Link
-            href={`/admin/${country}/accreditations`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#003087] text-white text-sm font-medium hover:bg-[#002a70] transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Accréditer</span>
-          </Link>
-        </div>
-
-        {/* Notification bell */}
-        <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-          <Bell className="w-5 h-5 text-gray-600" />
-        </button>
-
-        {/* User menu */}
-        <div ref={userMenuRef} className="relative">
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2.5 pl-2 pr-1.5 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <Avatar className="w-8 h-8 ring-2 ring-[#003087]/10">
-              <AvatarImage src={userAvatar || undefined} />
-              <AvatarFallback className="bg-[#003087] text-white text-xs font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="hidden md:block text-left">
-              <p className="text-sm font-medium text-gray-900 leading-tight">{userName}</p>
-              <p className="text-[11px] text-gray-500 leading-tight capitalize">{userRole}</p>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden md:block" />
-          </button>
-
-          {showUserMenu && (
-            <div className="absolute right-0 mt-1 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50 overflow-hidden">
-              <div className="px-3 py-2.5 border-b border-gray-100">
-                <p className="text-sm font-medium text-gray-900">{userName}</p>
-                <p className="text-xs text-gray-500 capitalize">{userRole}</p>
-              </div>
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                <User className="w-4 h-4 text-gray-400" />
-                Mon profil
-              </button>
-              <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                <Settings className="w-4 h-4 text-gray-400" />
-                Paramètres
-              </button>
-              <div className="border-t border-gray-100 mt-1 pt-1">
-                <button
-                  onClick={() => signOut({ callbackUrl: '/auth/login' })}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Déconnexion
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
-  );
 }
 
 interface CountryLayoutProps {
@@ -448,7 +251,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc]">
+    <div className="min-h-screen bg-gray-50">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
         {sidebar}
@@ -532,12 +335,38 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
         )}
       >
         {/* Country header bar */}
-        <CountryHeader
-          country={country}
-          config={config}
-          onMobileMenuToggle={() => setMobileMenuOpen(true)}
-        />
-        <main className="p-4 sm:p-5 lg:p-6">{children}</main>
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-3 sticky top-0 z-30">
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <span className="text-xl">{config.flag}</span>
+          <h2 className="text-sm font-bold text-[#003087]">Backoffice {config.name}</h2>
+          <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold border-0 hover:bg-[#D4AF37]/20">
+            {country}
+          </Badge>
+
+          <div className="flex-1" />
+
+          {/* Header actions */}
+          <button className="p-2 rounded-lg hover:bg-gray-100 relative">
+            <Bell className="w-4 h-4 text-gray-600" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            <Avatar className="w-7 h-7">
+              <AvatarFallback className="bg-[#003087] text-white text-[10px] font-bold">A</AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-gray-600 hidden md:inline">Admin</span>
+          </div>
+        </header>
+        <main className="p-4 lg:p-6 min-h-[calc(100vh-4rem)]">{children}</main>
       </div>
     </div>
   );

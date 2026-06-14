@@ -68,3 +68,4 @@ server.log
 # Caddy
 Caddyfile.env
 .env
+tool-results/

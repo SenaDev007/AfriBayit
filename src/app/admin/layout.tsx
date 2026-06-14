@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-[#f8f9fc]">
+      <div className="min-h-screen bg-gray-50">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar
@@ -69,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             selectedCountry={selectedCountry}
             onCountryChange={handleCountryChange}
           />
-          <main className="p-4 sm:p-5 lg:p-6">{children}</main>
+          <main className="p-4 lg:p-6 min-h-[calc(100vh-4rem)]">{children}</main>
         </div>
       </div>
     </SessionProvider>

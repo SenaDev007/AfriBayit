@@ -216,7 +216,12 @@ function fallbackMiddleware(request: NextRequest): NextResponse {
       );
     }
     const loginUrl = new URL('/auth/login', request.url);
-    loginUrl.searchParams.set('callbackUrl', pathname);
+    // Only set callbackUrl for non-admin protected routes
+    // Admin routes should NOT be saved as callbackUrl since regular users
+    // would be redirected back to a page they can't access
+    if (!isAdminRoute(pathname)) {
+      loginUrl.searchParams.set('callbackUrl', pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 

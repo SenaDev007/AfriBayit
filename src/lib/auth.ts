@@ -189,59 +189,10 @@ if (hasFacebook) {
   } as unknown as NextAuthOptions['providers'][number]);
 }
 
-// Conditionally add Apple provider
-// Apple Sign-In requires: APPLE_CLIENT_ID (Services ID), APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY
-const hasApple =
-  process.env.APPLE_CLIENT_ID &&
-  process.env.APPLE_CLIENT_ID !== 'placeholder-apple-client-id' &&
-  process.env.APPLE_TEAM_ID &&
-  process.env.APPLE_KEY_ID &&
-  process.env.APPLE_PRIVATE_KEY;
-
-if (hasApple) {
-  // Apple uses OAuth 2.0 with JWT client secret
-  // See: https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js
-  providers.push({
-    id: 'apple',
-    name: 'Apple',
-    type: 'oauth',
-    clientId: process.env.APPLE_CLIENT_ID!,
-    clientSecret: '', // Generated dynamically below
-    wellKnown: 'https://appleid.apple.com/.well-known/openid-configuration',
-    authorization: {
-      url: 'https://appleid.apple.com/auth/authorize',
-      params: {
-        scope: 'name email',
-        response_mode: 'form_post',
-      },
-    },
-    token: {
-      url: 'https://appleid.apple.com/auth/token',
-      // Apple requires a JWT client secret generated from the private key
-      // This is handled by next-auth if using @next-auth/apple provider
-      // For now, we use the generic OAuth provider with manual secret generation
-    },
-    userinfo: {
-      url: 'https://appleid.apple.com/auth/userinfo',
-      // Apple only provides user info on first authorization
-      // Subsequent logins only return the ID token with the sub claim
-    },
-    profile(profile: Record<string, unknown>) {
-      return {
-        id: String(profile.sub || profile.id || ''),
-        name: (profile.name as string) || '',
-        email: (profile.email as string) || null,
-        image: null, // Apple doesn't provide profile pictures
-      };
-    },
-  } as unknown as NextAuthOptions['providers'][number]);
-}
-
 // Export OAuth availability for frontend consumption
 export const oauthProviders = {
   google: !!hasGoogle,
   facebook: !!hasFacebook,
-  apple: !!hasApple,
 };
 
 export const authOptions: NextAuthOptions = {
@@ -504,20 +455,47 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async redirect({ url, baseUrl }) {
-      // After OAuth sign-in, redirect to:
-      // 1. The callbackUrl if provided and valid
-      // 2. /dashboard as default
+    async redirect({ url, baseUrl, token }) {
+      // After sign-in, redirect to:
+      // 1. The callbackUrl if provided and valid (user must have access)
+      // 2. / (landing page) as default
       // Note: If the user needs profile completion (no country set), the dashboard
       // page will detect this and redirect to /auth/complete-profile
 
-      // If the url is relative, make it absolute
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      // If url is on the same origin, it's safe to redirect there
-      if (new URL(url).origin === baseUrl) return url;
+      // Helper: check if a path requires admin role
+      const isAdminPath = (pathname: string) =>
+        pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
 
-      // Default redirect after sign-in
-      return baseUrl + '/dashboard';
+      const userRole = (token as Record<string, unknown>)?.role as string | undefined;
+      const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string | undefined;
+      const isAdmin = userRole === 'admin' || accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN';
+
+      // If the url is relative, validate access before redirecting
+      if (url.startsWith('/')) {
+        const pathname = url.split('?')[0];
+        // Non-admin users should NEVER be redirected to admin routes
+        if (isAdminPath(pathname) && !isAdmin) {
+          return baseUrl + '/';
+        }
+        return `${baseUrl}${url}`;
+      }
+
+      // If url is on the same origin, validate access
+      try {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.origin === baseUrl) {
+          const pathname = parsedUrl.pathname;
+          if (isAdminPath(pathname) && !isAdmin) {
+            return baseUrl + '/';
+          }
+          return url;
+        }
+      } catch {
+        // Invalid URL, fall through to default
+      }
+
+      // Default redirect after sign-in: landing page
+      return baseUrl + '/';
     },
   },
   pages: {

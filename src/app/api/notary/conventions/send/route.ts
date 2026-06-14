@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
 interface ConventionRequest {
   transactionId: string;
@@ -6,18 +7,6 @@ interface ConventionRequest {
   conventionType: string;
   signers: { id: string; fullName: string; email: string; role: string }[];
 }
-
-// In-memory store for demo
-const conventions = new Map<string, {
-  id: string;
-  transactionId: string;
-  notaryId: string;
-  conventionType: string;
-  status: 'sent' | 'viewed' | 'signed' | 'expired';
-  signers: { id: string; fullName: string; role: string; status: string; signedAt?: string }[];
-  sentAt: string;
-  expiresAt: string;
-}>();
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +40,27 @@ export async function POST(request: NextRequest) {
       expiresAt: expiresAt.toISOString(),
     };
 
-    conventions.set(id, convention);
+    // Persist as a TransactionTimeline entry
+    await db.transactionTimeline.create({
+      data: {
+        transactionId,
+        fromStatus: 'convention_sent',
+        toStatus: 'convention_sent',
+        actorType: 'notary',
+        actorId: notaryId,
+        description: `Convention notariale envoyée (${convention.conventionType}) — ${signers.length} signataire(s)`,
+        metadata: JSON.stringify({
+          type: 'convention_sent',
+          conventionId: id,
+          conventionType: convention.conventionType,
+          notaryId,
+          signers: convention.signers,
+          status: 'sent',
+          sentAt: convention.sentAt,
+          expiresAt: convention.expiresAt,
+        }),
+      },
+    });
 
     return NextResponse.json({
       success: true,

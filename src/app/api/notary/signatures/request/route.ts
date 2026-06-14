@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const signatureRequest = requestSignature(
+    const signatureRequest = await requestSignature(
       documentId,
       deedId || documentId,
       transactionId,

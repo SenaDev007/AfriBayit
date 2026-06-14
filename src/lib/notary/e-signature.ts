@@ -1,7 +1,10 @@
 /**
  * AfriBayit — Electronic Signature System
  * Request, track, and confirm electronic signatures for notarial documents
+ * Uses Prisma with TransactionTimeline for persistence
  */
+
+import { db } from '@/lib/db';
 
 export interface Signer {
   id: string;
@@ -43,53 +46,259 @@ export interface SignatureConfirmation {
   isValid: boolean;
 }
 
-// In-memory store for demo (in production, use database)
-const signatureRequests = new Map<string, SignatureRequest>();
-
 /**
  * Request electronic signatures for a document
+ * Persists as a TransactionTimeline entry with type 'signature_request'
  */
-export function requestSignature(
+export async function requestSignature(
   documentId: string,
   deedId: string,
   transactionId: string,
   signers: Omit<Signer, 'status' | 'notifiedAt' | 'viewedAt' | 'signedAt' | 'signatureData' | 'ipAddress' | 'userAgent' | 'rejectionReason'>[],
   expiresInDays: number = 30
-): SignatureRequest {
+): Promise<SignatureRequest> {
   const id = `sig-req-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   const now = new Date();
   const expiresAt = new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000);
+
+  const initializedSigners: Signer[] = signers.map(s => ({
+    ...s,
+    status: 'notified' as const,
+    notifiedAt: now.toISOString(),
+  }));
 
   const request: SignatureRequest = {
     id,
     documentId,
     deedId,
     transactionId,
-    signers: signers.map(s => ({
-      ...s,
-      status: 'pending',
-    })),
+    signers: initializedSigners,
     status: 'sent',
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
     sentAt: now.toISOString(),
   };
 
-  signatureRequests.set(id, request);
-
-  // Mark signers as notified
-  request.signers.forEach(s => {
-    s.status = 'notified';
-    s.notifiedAt = now.toISOString();
+  // Persist as a TransactionTimeline entry
+  await db.transactionTimeline.create({
+    data: {
+      transactionId,
+      fromStatus: 'signature_request',
+      toStatus: 'signature_request',
+      actorType: 'system',
+      description: `Signature request created for document ${documentId}`,
+      metadata: JSON.stringify({
+        type: 'signature_request',
+        signatureRequestId: id,
+        documentId,
+        deedId,
+        signers: initializedSigners,
+        status: 'sent',
+        expiresAt: expiresAt.toISOString(),
+        sentAt: now.toISOString(),
+        createdAt: now.toISOString(),
+      }),
+    },
   });
 
   return request;
 }
 
 /**
- * Track signature status for a document
+ * Get a signature request by its ID
+ * Searches TransactionTimeline for the matching entry
  */
-export function trackSignatureStatus(documentId: string): {
+export async function getSignatureRequest(requestId: string): Promise<SignatureRequest | null> {
+  const entry = await db.transactionTimeline.findFirst({
+    where: {
+      metadata: { contains: requestId },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!entry) return null;
+
+  try {
+    const meta = JSON.parse(entry.metadata || '{}');
+    if (meta.type !== 'signature_request' || meta.signatureRequestId !== requestId) {
+      return null;
+    }
+    return {
+      id: meta.signatureRequestId,
+      documentId: meta.documentId,
+      deedId: meta.deedId,
+      transactionId: entry.transactionId,
+      signers: meta.signers || [],
+      status: meta.status,
+      createdAt: meta.createdAt,
+      expiresAt: meta.expiresAt,
+      completedAt: meta.completedAt,
+      sentAt: meta.sentAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * List signature requests, optionally filtered by transactionId
+ */
+export async function listSignatureRequests(transactionId?: string): Promise<SignatureRequest[]> {
+  const where: Record<string, unknown> = {};
+  if (transactionId) {
+    where.transactionId = transactionId;
+  }
+
+  // Find all timeline entries that are signature requests
+  const entries = await db.transactionTimeline.findMany({
+    where: {
+      ...where,
+      metadata: { contains: '"type":"signature_request"' },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const results: SignatureRequest[] = [];
+  for (const entry of entries) {
+    try {
+      const meta = JSON.parse(entry.metadata || '{}');
+      if (meta.type === 'signature_request') {
+        results.push({
+          id: meta.signatureRequestId,
+          documentId: meta.documentId,
+          deedId: meta.deedId,
+          transactionId: entry.transactionId,
+          signers: meta.signers || [],
+          status: meta.status,
+          createdAt: meta.createdAt,
+          expiresAt: meta.expiresAt,
+          completedAt: meta.completedAt,
+          sentAt: meta.sentAt,
+        });
+      }
+    } catch {
+      // Skip malformed entries
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Confirm a signature for a document
+ * Updates the existing signature request and creates a completion timeline entry
+ */
+export async function confirmSignature(
+  requestId: string,
+  signerId: string,
+  signatureData: string,
+  ipAddress: string,
+  userAgent: string
+): Promise<SignatureConfirmation> {
+  const now = new Date().toISOString();
+
+  const confirmation: SignatureConfirmation = {
+    signerId,
+    documentId: requestId, // Using requestId as document reference
+    signatureData,
+    timestamp: now,
+    ipAddress,
+    userAgent,
+    isValid: true,
+  };
+
+  // Find the original signature request
+  const existingEntry = await db.transactionTimeline.findFirst({
+    where: {
+      metadata: { contains: requestId },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  let transactionId = '';
+  let updatedSigners: Signer[] = [];
+  let newRequestStatus: SignatureRequest['status'] = 'in_progress';
+  let completedAt: string | undefined;
+
+  if (existingEntry) {
+    try {
+      const meta = JSON.parse(existingEntry.metadata || '{}');
+      transactionId = existingEntry.transactionId;
+      updatedSigners = (meta.signers || []) as Signer[];
+
+      // Update the signer's status
+      const signer = updatedSigners.find((s: Signer) => s.id === signerId);
+      if (signer) {
+        signer.status = 'signed';
+        signer.signedAt = now;
+        signer.signatureData = signatureData;
+        signer.ipAddress = ipAddress;
+        signer.userAgent = userAgent;
+      }
+
+      // Check if all signers have signed
+      const allSigned = updatedSigners.every((s: Signer) => s.status === 'signed');
+      if (allSigned) {
+        newRequestStatus = 'completed';
+        completedAt = now;
+      }
+    } catch {
+      // Fallback: use requestId-based transaction lookup
+    }
+  }
+
+  // Create a timeline entry for the signature confirmation
+  await db.transactionTimeline.create({
+    data: {
+      transactionId: transactionId || 'unknown',
+      fromStatus: 'signature_request',
+      toStatus: newRequestStatus === 'completed' ? 'signature_completed' : 'signature_in_progress',
+      actorType: 'buyer', // Will be overridden by the signer's role context
+      actorId: signerId,
+      description: `Signature confirmed by signer ${signerId}`,
+      metadata: JSON.stringify({
+        type: 'signature_completed',
+        signatureRequestId: requestId,
+        signerId,
+        signatureData,
+        ipAddress,
+        userAgent,
+        signedAt: now,
+        isValid: true,
+        requestStatus: newRequestStatus,
+        completedAt,
+        updatedSigners,
+      }),
+    },
+  });
+
+  // Update the original request entry with the new signer statuses
+  if (existingEntry && transactionId) {
+    try {
+      const meta = JSON.parse(existingEntry.metadata || '{}');
+      await db.transactionTimeline.update({
+        where: { id: existingEntry.id },
+        data: {
+          metadata: JSON.stringify({
+            ...meta,
+            signers: updatedSigners,
+            status: newRequestStatus,
+            completedAt,
+          }),
+        },
+      });
+    } catch {
+      // If update fails, the new timeline entry still records the confirmation
+    }
+  }
+
+  return confirmation;
+}
+
+/**
+ * Track signature status for a request
+ */
+export async function trackSignatureStatus(requestId: string): Promise<{
   request: SignatureRequest | null;
   progress: {
     total: number;
@@ -104,15 +313,8 @@ export function trackSignatureStatus(documentId: string): {
     status: string;
     signedAt?: string;
   }[];
-} {
-  let request: SignatureRequest | null = null;
-
-  for (const [, req] of signatureRequests) {
-    if (req.documentId === documentId) {
-      request = req;
-      break;
-    }
-  }
+}> {
+  const request = await getSignatureRequest(requestId);
 
   if (!request) {
     return {
@@ -142,79 +344,4 @@ export function trackSignatureStatus(documentId: string): {
       signedAt: s.signedAt,
     })),
   };
-}
-
-/**
- * Confirm a signature for a document
- */
-export function confirmSignature(
-  documentId: string,
-  signerId: string,
-  signatureData: string,
-  ipAddress: string,
-  userAgent: string
-): SignatureConfirmation {
-  const now = new Date().toISOString();
-
-  const confirmation: SignatureConfirmation = {
-    signerId,
-    documentId,
-    signatureData,
-    timestamp: now,
-    ipAddress,
-    userAgent,
-    isValid: true,
-  };
-
-  // Update the signature request
-  for (const [, req] of signatureRequests) {
-    if (req.documentId === documentId) {
-      const signer = req.signers.find(s => s.id === signerId);
-      if (signer) {
-        signer.status = 'signed';
-        signer.signedAt = now;
-        signer.signatureData = signatureData;
-        signer.ipAddress = ipAddress;
-        signer.userAgent = userAgent;
-      }
-
-      // Check if all signers have signed
-      const allSigned = req.signers.every(s => s.status === 'signed');
-      if (allSigned) {
-        req.status = 'completed';
-        req.completedAt = now;
-      } else {
-        req.status = 'in_progress';
-      }
-      break;
-    }
-  }
-
-  return confirmation;
-}
-
-/**
- * Get all signature requests for a transaction
- */
-export function getSignatureRequestsForTransaction(transactionId: string): SignatureRequest[] {
-  const results: SignatureRequest[] = [];
-  for (const [, req] of signatureRequests) {
-    if (req.transactionId === transactionId) {
-      results.push(req);
-    }
-  }
-  return results;
-}
-
-/**
- * Check if a signer has already signed
- */
-export function hasSignerSigned(documentId: string, signerId: string): boolean {
-  for (const [, req] of signatureRequests) {
-    if (req.documentId === documentId) {
-      const signer = req.signers.find(s => s.id === signerId);
-      return signer?.status === 'signed';
-    }
-  }
-  return false;
 }

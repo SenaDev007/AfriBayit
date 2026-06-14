@@ -2,6 +2,7 @@
 
 import { db } from '@/lib/db';
 import { AMBASSADOR_TIERS, generateReferralCode } from './tiers';
+import { COMMISSION_TIERS } from './commission-engine';
 
 // Re-export commission engine (CDC §5.7.5)
 export {
@@ -98,7 +99,7 @@ export async function applyAsAmbassador(userId: string): Promise<AmbassadorStatu
       tier: 'bronze',
       referralCode,
       referralLink,
-      commissionRate: 0.05,
+      commissionRate: COMMISSION_TIERS.bronze.commissionRate,
       status: 'active',
       approvedAt: new Date(),
     },

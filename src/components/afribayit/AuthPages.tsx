@@ -299,7 +299,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setLoginError('');
     setOauthLoading('google');
     try {
-      const result = await signIn('google', { callbackUrl: '/dashboard', redirect: false });
+      const result = await signIn('google', { callbackUrl: '/', redirect: false });
       if (result?.error) {
         const errorMessages: Record<string, string> = {
           OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
@@ -323,7 +323,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setLoginError('');
     setOauthLoading('facebook');
     try {
-      const result = await signIn('facebook', { callbackUrl: '/dashboard', redirect: false });
+      const result = await signIn('facebook', { callbackUrl: '/', redirect: false });
       if (result?.error) {
         const errorMessages: Record<string, string> = {
           OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',

@@ -22,17 +22,19 @@ import {
   DollarSign,
   Cable,
   ScrollText,
-  FileText,
+  Hammer,
   Scale,
-  Wrench,
-  Landmark,
-  Shield,
-  CalendarDays,
   Star,
-  Megaphone,
-  Heart,
+  AlertTriangle,
+  FileText,
+  CalendarDays,
+  Wallet,
+  Banknote,
+  Lock,
+  Award,
   Bell,
-  UserPlus,
+  CreditCard,
+  GraduationCap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -62,54 +64,37 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
       { label: 'Tableau de bord', href: '/admin/dashboard', icon: LayoutDashboard },
       { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { label: 'Revenus', href: '/admin/revenue', icon: DollarSign },
+      { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: Award },
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
     ],
   },
   {
-    label: 'IMMOBILIER',
+    label: 'MODÉRATION',
     items: [
-      { label: 'Propriétés', href: '/admin/properties', icon: Building2 },
-      { label: 'Utilisateurs', href: '/admin/users', icon: Users },
-      { label: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
-      { label: 'KYC', href: '/admin/kyc', icon: Shield },
-      { label: 'Escrow', href: '/admin/escrow', icon: DollarSign },
-      { label: 'Litiges', href: '/admin/disputes', icon: Scale },
-      { label: 'Payouts', href: '/admin/payouts', icon: DollarSign },
-      { label: 'Portefeuilles', href: '/admin/wallets', icon: DollarSign },
-    ],
-  },
-  {
-    label: 'SERVICES',
-    items: [
-      { label: 'Artisans BTP', href: '/admin/artisans', icon: Wrench },
-      { label: 'Notaires', href: '/admin/notaries', icon: Landmark },
+      { label: 'Artisans', href: '/admin/artisans', icon: Hammer },
+      { label: 'Notaires', href: '/admin/notaries', icon: Scale },
       { label: 'GeoTrust', href: '/admin/geotrust', icon: ShieldCheck },
-      { label: 'Abonnements', href: '/admin/subscriptions', icon: KeyRound },
+      { label: 'Avis', href: '/admin/reviews', icon: Star },
+      { label: 'Litiges', href: '/admin/disputes', icon: AlertTriangle },
+      { label: 'Contenu', href: '/admin/content', icon: FileText },
     ],
   },
   {
-    label: 'HÔTELLERIE & SÉJOURS',
+    label: 'HÔTELLERIE',
     items: [
       { label: 'Hôtels', href: '/admin/hotels', icon: Hotel },
       { label: 'Guesthouses', href: '/admin/guesthouses', icon: Home },
-      { label: 'Locations courte durée', href: '/admin/short-term-rentals', icon: CalendarDays },
+      { label: 'Locations courte durée', href: '/admin/short-term-rentals', icon: KeyRound },
       { label: 'Réservations', href: '/admin/bookings', icon: CalendarDays },
-      { label: 'OTA Config', href: '/admin/ota', icon: Cable },
     ],
   },
   {
-    label: 'COMMUNAUTÉ',
+    label: 'FINANCES',
     items: [
-      { label: 'Académie', href: '/admin/courses', icon: BarChart3 },
-      { label: 'Communauté', href: '/admin/community', icon: Users },
-      { label: 'Avis', href: '/admin/reviews', icon: Star },
-      { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: UserPlus },
-    ],
-  },
-  {
-    label: 'COMMUNICATION',
-    items: [
-      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
-      { label: 'Gestion du Contenu', href: '/admin/content', icon: FileText },
+      { label: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
+      { label: 'Portefeuilles', href: '/admin/wallets', icon: Wallet },
+      { label: 'Paiements', href: '/admin/payouts', icon: Banknote },
+      { label: 'Escrow', href: '/admin/escrow', icon: Lock },
     ],
   },
   {
@@ -117,7 +102,12 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
+      { label: 'OTA Config', href: '/admin/ota', icon: Cable },
       { label: "Journaux d'audit", href: '/admin/audit-logs', icon: ScrollText },
+      { label: 'KYC', href: '/admin/kyc', icon: ShieldCheck },
+      { label: 'Communauté', href: '/admin/community', icon: Users },
+      { label: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
+      { label: 'Académie', href: '/admin/courses', icon: GraduationCap },
     ],
   },
 ];
@@ -137,32 +127,18 @@ function getCountryNavGroups(country: string): NavGroup[] {
         { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
         { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
         { label: 'Transactions', href: `${base}/transactions`, icon: ArrowLeftRight },
-        { label: 'Artisans BTP', href: `${base}/artisans`, icon: Wrench },
-        { label: 'Notaires', href: `${base}/notaries`, icon: Landmark },
-        { label: 'GeoTrust', href: `${base}/geotrust`, icon: ShieldCheck },
       ],
     },
     {
-      label: `${country} — HÔTELLERIE & SÉJOURS`,
+      label: `${country} — HÔTELLERIE`,
       items: [
         { label: 'Hôtels & Guesthouses', href: `${base}/hospitality`, icon: Hotel },
-        { label: 'Locations courte durée', href: `${base}/short-term-rentals`, icon: CalendarDays },
-        { label: 'Réservations', href: `${base}/bookings`, icon: CalendarDays },
-      ],
-    },
-    {
-      label: `${country} — COMMUNAUTÉ`,
-      items: [
-        { label: 'Avis', href: `${base}/reviews`, icon: Star },
-        { label: 'Ambassadeurs', href: `${base}/ambassadors`, icon: UserPlus },
-        { label: 'Notifications', href: `${base}/notifications`, icon: Bell },
       ],
     },
     {
       label: `${country} — ADMINISTRATION`,
       items: [
         { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
-        { label: 'Contenu', href: `${base}/content`, icon: FileText },
       ],
     },
   ];
@@ -248,13 +224,11 @@ export default function AdminSidebar({
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-[#D4AF37] flex items-center justify-center shrink-0">
-            <img src="/logo.png" alt="AfriBayit" className="h-6 w-auto object-contain brightness-0 invert" />
-          </div>
+          <img src="/logo.png" alt="AfriBayit" className="h-12 w-auto object-contain shrink-0" />
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="text-base font-bold tracking-tight truncate">AfriBayit</h1>
-              <p className="text-[10px] text-[#D4AF37]/80 uppercase tracking-widest">Admin Console</p>
+              <p className="text-[10px] text-white/60 uppercase tracking-widest">Admin Console</p>
             </div>
           )}
         </div>

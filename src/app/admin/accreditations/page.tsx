@@ -148,16 +148,15 @@ export default function GlobalAccreditationsPage() {
   const countryAdminCount = activeAccreditations.filter((a) => a.role === 'COUNTRY_ADMIN').length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <KeyRound className="w-6 h-6 text-[#003087]" />
+            <KeyRound className="w-6 h-6 text-[#D4AF37]" />
             Accréditations — Global
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-1">
             Gestion centralisée des accès administrateurs pour tous les pays
           </p>
         </div>
@@ -273,53 +272,61 @@ export default function GlobalAccreditationsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Actives</p>
-            <p className="text-2xl font-bold text-green-600 font-display">{activeAccreditations.length}</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-red-600" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Super Admins</p>
-            <p className="text-2xl font-bold text-red-600 font-display">{superAdminCount}</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-            <KeyRound className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Admins Pays</p>
-            <p className="text-2xl font-bold text-blue-600 font-display">{countryAdminCount}</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
-            <ShieldX className="w-5 h-5 text-gray-500" />
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Révoquées</p>
-            <p className="text-2xl font-bold text-gray-500 font-display">{revokedAccreditations.length}</p>
-          </div>
-        </div>
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-green-600">{activeAccreditations.length}</p>
+              <p className="text-xs text-gray-500">Actives</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-red-600">{superAdminCount}</p>
+              <p className="text-xs text-gray-500">Super Admins</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <KeyRound className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-blue-600">{countryAdminCount}</p>
+              <p className="text-xs text-gray-500">Admins Pays</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
+              <ShieldX className="w-5 h-5 text-gray-500" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-500">{revokedAccreditations.length}</p>
+              <p className="text-xs text-gray-500">Révoquées</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Active accreditations */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
-          <h2 className="text-base font-semibold flex items-center gap-2">
+      <Card className="rounded-2xl overflow-hidden">
+        <CardHeader className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+          <CardTitle className="text-base flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-green-600" />
             Accréditations actives ({activeAccreditations.length})
-          </h2>
-        </div>
-        <div className="p-0">
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50/50">
@@ -405,8 +412,8 @@ export default function GlobalAccreditationsPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

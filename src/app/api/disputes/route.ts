@@ -1,60 +1,106 @@
 // AfriBayit — GET /api/disputes
-// List disputes with optional status filter
+// List disputes (Transactions where disputeReason is NOT null)
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
-export async function GET(request: Request) {
+// Map transaction status to dispute step number
+function statusToStep(status: string): number {
+  const map: Record<string, number> = {
+    DISPUTED: 1,
+    DISPUTED_EVIDENCE: 2,
+    DISPUTED_MEDIATION: 3,
+    DISPUTED_ADMIN: 4,
+    DISPUTED_DECIDED: 5,
+    DISPUTED_RESOLVED: 6,
+  };
+  return map[status] ?? 1;
+}
+
+// Map transaction status to a human-readable dispute status
+function statusToDisputeStatus(status: string): string {
+  const map: Record<string, string> = {
+    DISPUTED: 'open',
+    DISPUTED_EVIDENCE: 'evidence',
+    DISPUTED_MEDIATION: 'mediation',
+    DISPUTED_ADMIN: 'admin_review',
+    DISPUTED_DECIDED: 'decided',
+    DISPUTED_RESOLVED: 'resolved',
+  };
+  return map[status] ?? 'open';
+}
+
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const country = searchParams.get('country');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
 
-    // Demo disputes data
-    const disputes = [
-      {
-        id: 'disp_demo_001',
-        transactionId: 'txn_demo_001',
-        transactionRef: 'TXN-2025-001',
-        amount: 15000000,
-        currency: 'XOF',
-        buyerId: 'user_buyer_1',
-        buyerName: 'Amadou Diallo',
-        sellerId: 'user_seller_1',
-        sellerName: 'Marie Koffi',
-        currentStep: 3,
-        status: 'mediation',
-        reason: 'Description du bien non conforme aux photos de l\'annonce',
-        evidence: [
-          { id: 'ev_1', party: 'buyer', fileName: 'contrat_achat.pdf', uploadedAt: '2025-12-14T10:00:00Z', type: 'Contrat', fileSize: 245000, mimeType: 'application/pdf' },
-          { id: 'ev_2', party: 'seller', fileName: 'rapport_inspection.jpg', uploadedAt: '2025-12-14T12:00:00Z', type: 'Photo', fileSize: 1800000, mimeType: 'image/jpeg' },
-          { id: 'ev_3', party: 'buyer', fileName: 'releve_bancaire.pdf', uploadedAt: '2025-12-14T14:00:00Z', type: 'Financier', fileSize: 89000, mimeType: 'application/pdf' },
-        ],
-        messages: [
-          { id: 'msg_1', sender: 'system', content: 'Litige ouvert automatiquement. Les fonds sont gelés en escrow.', timestamp: '2025-12-14T09:00:00Z', type: 'message' },
-          { id: 'msg_2', sender: 'buyer', content: 'Je conteste l\'état du bien. Les photos ne correspondent pas à la description.', timestamp: '2025-12-14T09:15:00Z', type: 'message' },
-          { id: 'msg_3', sender: 'seller', content: 'Le bien était en bon état lors de la visite. Les photos sont anciennes.', timestamp: '2025-12-14T09:30:00Z', type: 'message' },
-        ],
-        mediationProposal: {
-          proposedBy: 'system' as const,
-          buyerPercentage: 60,
-          sellerPercentage: 40,
-          message: 'Proposition de médiation automatique basée sur l\'analyse des preuves.',
-          status: 'pending' as const,
+    const where: Record<string, unknown> = {
+      disputeReason: { not: null },
+    };
+
+    if (status) {
+      where.status = status;
+    }
+    if (country) {
+      where.country = country;
+    }
+
+    const [total, transactions] = await Promise.all([
+      db.transaction.count({ where }),
+      db.transaction.findMany({
+        where,
+        include: {
+          property: { select: { id: true, title: true, country: true } },
+          buyer: { select: { id: true, name: true, email: true } },
+          escrowAccount: { select: { id: true, balance: true, heldAmount: true, status: true } },
         },
-        timeline: [
-          { step: 1, label: 'Déclaration', completedAt: '2025-12-14T09:00:00Z', isActive: false },
-          { step: 2, label: 'Collection de preuves', completedAt: '2025-12-14T14:00:00Z', isActive: false },
-          { step: 3, label: 'Tentative de médiation', isActive: true },
-          { step: 4, label: 'Intervention admin pays' },
-          { step: 5, label: 'Décision d\'arbitrage' },
-          { step: 6, label: 'Exécution' },
-        ],
-        createdAt: '2025-12-14T09:00:00Z',
-        updatedAt: '2025-12-14T14:00:00Z',
-      },
-    ];
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
 
-    const filtered = status ? disputes.filter(d => d.status === status) : disputes;
-    return NextResponse.json({ disputes: filtered });
+    // Fetch sellers in a second query (no seller relation on Transaction)
+    const sellerIds = [...new Set(transactions.map((t) => t.sellerId))];
+    const sellers = await db.user.findMany({
+      where: { id: { in: sellerIds } },
+      select: { id: true, name: true, email: true },
+    });
+    const sellerMap = new Map(sellers.map((s) => [s.id, s]));
+
+    const disputes = transactions.map((txn) => {
+      const seller = sellerMap.get(txn.sellerId);
+      return {
+        id: txn.id,
+        transactionId: txn.id,
+        transactionRef: txn.escrowReference || `TXN-${txn.id.slice(-6)}`,
+        amount: txn.amount,
+        currency: txn.currency,
+        buyerId: txn.buyerId,
+        buyerName: txn.buyer.name,
+        sellerId: txn.sellerId,
+        sellerName: seller?.name || 'Inconnu',
+        currentStep: statusToStep(txn.status),
+        status: statusToDisputeStatus(txn.status),
+        reason: txn.disputeReason,
+        createdAt: txn.createdAt,
+        updatedAt: txn.updatedAt,
+      };
+    });
+
+    return NextResponse.json({
+      disputes,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch disputes';
     return NextResponse.json({ error: message }, { status: 500 });

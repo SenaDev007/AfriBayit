@@ -4,16 +4,16 @@ import { db } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const country = searchParams.get('country');
+    const country = searchParams.get('country') || '';
     const search = searchParams.get('search') || '';
-    const skip = parseInt(searchParams.get('skip') || '0');
-    const take = parseInt(searchParams.get('take') || '20');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
 
-    if (!country) {
-      return NextResponse.json({ error: 'Country parameter is required' }, { status: 400 });
+    const where: Record<string, unknown> = {};
+    if (country) {
+      where.country = country;
     }
-
-    const where: Record<string, unknown> = { country };
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -29,13 +29,24 @@ export async function GET(request: NextRequest) {
           overallRating: true, certificationStatus: true, status: true,
         },
         skip,
-        take,
+        take: limit,
         orderBy: { createdAt: 'desc' },
       }),
       db.guesthouse.count({ where }),
     ]);
 
-    return NextResponse.json({ data: guesthouses, total });
+    const pages = Math.ceil(total / limit);
+
+    const [certified, pending] = await Promise.all([
+      db.guesthouse.count({ where: { ...where, certificationStatus: 'certified' } }),
+      db.guesthouse.count({ where: { ...where, status: 'pending' } }),
+    ]);
+
+    return NextResponse.json({
+      guesthouses,
+      pagination: { page, limit, total, pages },
+      summary: { total, certified, pending },
+    });
   } catch (error) {
     console.error('Admin guesthouses error:', error);
     return NextResponse.json({ error: 'Failed to fetch guesthouses' }, { status: 500 });

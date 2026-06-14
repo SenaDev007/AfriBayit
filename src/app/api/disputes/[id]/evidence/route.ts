@@ -1,39 +1,80 @@
 // AfriBayit — POST /api/disputes/[id]/evidence
 // Upload evidence for a dispute
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-    const party = formData.get('party') as string;
-    const type = formData.get('type') as string;
+    const body = await request.json();
+    const { party, fileName, fileType, fileSize, mimeType } = body as {
+      party: 'buyer' | 'seller';
+      fileName: string;
+      fileType?: string;
+      fileSize?: number;
+      mimeType?: string;
+    };
 
-    if (!file) {
-      return NextResponse.json({ error: 'Fichier requis' }, { status: 400 });
+    if (!party || !fileName) {
+      return NextResponse.json(
+        { error: 'party et fileName sont requis' },
+        { status: 400 }
+      );
     }
 
-    // In production, upload to R2/S3 and return URL
-    const evidenceId = `ev_${Date.now()}`;
-    const newEvidence = {
+    // Verify the dispute exists
+    const transaction = await db.transaction.findUnique({
+      where: { id },
+    });
+
+    if (!transaction || !transaction.disputeReason) {
+      return NextResponse.json({ error: 'Litige non trouvé' }, { status: 404 });
+    }
+
+    // Create a timeline entry to store the evidence metadata
+    const evidenceId = `ev_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const now = new Date();
+
+    const timelineEntry = await db.transactionTimeline.create({
+      data: {
+        transactionId: id,
+        fromStatus: transaction.status,
+        toStatus: transaction.status,
+        actorType: party,
+        actorId: party === 'buyer' ? transaction.buyerId : transaction.sellerId,
+        description: `Evidence uploaded by ${party}: ${fileName}`,
+        metadata: JSON.stringify({
+          type: 'evidence',
+          evidenceId,
+          party,
+          fileName,
+          fileType: fileType || 'Document',
+          fileSize: fileSize || 0,
+          mimeType: mimeType || 'application/octet-stream',
+          uploadedAt: now.toISOString(),
+        }),
+      },
+    });
+
+    const evidence = {
       id: evidenceId,
-      party: party === 'buyer' ? 'buyer' : 'seller',
-      fileName: file.name,
-      uploadedAt: new Date().toISOString(),
-      type: type || 'Document',
-      fileSize: file.size,
-      mimeType: file.type,
+      party,
+      fileName,
+      uploadedAt: now.toISOString(),
+      type: fileType || 'Document',
+      fileSize: fileSize || 0,
+      mimeType: mimeType || 'application/octet-stream',
     };
 
     return NextResponse.json({
       success: true,
-      evidence: newEvidence,
+      evidence,
       disputeId: id,
+      timelineEntryId: timelineEntry.id,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to upload evidence';

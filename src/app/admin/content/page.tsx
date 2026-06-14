@@ -2,592 +2,324 @@
 
 import React, { useState, useCallback } from 'react';
 import {
-  FileText,
-  Shield,
-  Globe,
-  Edit,
-  Eye,
-  Save,
-  X,
   Search,
-  Home,
-  Star,
-  BookOpen,
+  Pencil,
+  ChevronRight,
+  FileText,
+  Layout,
+  Building2,
+  Hotel,
+  Hammer,
+  Scale,
+  Globe,
+  Clock,
+  Layers,
+  Save,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { useAdminContent, useUpdateContent } from '@/hooks/useAdmin';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+const SECTION_CONFIG = [
+  { key: 'homepage', label: 'Homepage', icon: Layout, color: 'bg-[#003087]/10 text-[#003087]' },
+  { key: 'properties', label: 'Propriétés', icon: Building2, color: 'bg-[#D4AF37]/10 text-[#D4AF37]' },
+  { key: 'hotels', label: 'Hôtellerie', icon: Hotel, color: 'bg-green-50 text-green-600' },
+  { key: 'artisans', label: 'Artisans', icon: Hammer, color: 'bg-purple-50 text-purple-600' },
+  { key: 'legal', label: 'Légal', icon: Scale, color: 'bg-amber-50 text-amber-700' },
+  { key: 'footer', label: 'Footer', icon: Globe, color: 'bg-blue-50 text-blue-700' },
+] as const;
 
 interface ContentItem {
-  id: string;
+  key: string;
   label: string;
   value: string;
-  lastModified: string;
+  updatedAt: string;
 }
 
 interface ContentSection {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  accentColor: string;
-  accentBg: string;
+  key: string;
+  label: string;
   items: ContentItem[];
 }
 
-// ---------------------------------------------------------------------------
-// Data
-// ---------------------------------------------------------------------------
-
-const initialSections: ContentSection[] = [
-  {
-    id: 'accueil',
-    title: "Page d'accueil",
-    description: 'Gérez le contenu principal de la page d\u2019accueil',
-    icon: <Home className="size-5" />,
-    accentColor: 'text-[#003087]',
-    accentBg: 'bg-[#003087]/10',
-    items: [
-      {
-        id: 'hero-titre',
-        label: 'Hero titre',
-        value:
-          'Trouvez votre bien immobilier en Afrique de l\u2019Ouest',
-        lastModified: '2025-12-10T14:30:00',
-      },
-      {
-        id: 'hero-sous-titre',
-        label: 'Hero sous-titre',
-        value:
-          'La premi\u00e8re plateforme immobili\u00e8re v\u00e9rifi\u00e9e et s\u00e9curis\u00e9e pour l\u2019Afrique de l\u2019Ouest',
-        lastModified: '2025-12-10T14:30:00',
-      },
-      {
-        id: 'section-confiance',
-        label: 'Section confiance',
-        value:
-          'Plus de 10\u00a0000 biens v\u00e9rifi\u00e9s \u2022 500+ notaires partenaires \u2022 Pr\u00e9sent dans 8 pays',
-        lastModified: '2025-11-28T09:15:00',
-      },
-      {
-        id: 'section-comment-ca-marche',
-        label: 'Section comment \u00e7a marche',
-        value:
-          '1. Recherchez \u2022 2. V\u00e9rifiez \u2022 3. Visitez \u2022 4. Signez en toute s\u00e9curit\u00e9',
-        lastModified: '2025-11-20T16:45:00',
-      },
-      {
-        id: 'section-temoignages',
-        label: 'Section t\u00e9moignages',
-        value:
-          'D\u00e9couvrez les t\u00e9moignages de nos utilisateurs qui ont r\u00e9alis\u00e9 leur projet immobilier avec AfriBayit.',
-        lastModified: '2025-11-15T11:00:00',
-      },
-      {
-        id: 'cta-banniere',
-        label: 'CTA banni\u00e8re',
-        value:
-          'Pr\u00eat \u00e0 trouver votre bien\u00a0? Commencez votre recherche d\u00e8s maintenant.',
-        lastModified: '2025-11-05T08:30:00',
-      },
-    ],
-  },
-  {
-    id: 'legales',
-    title: 'Pages l\u00e9gales',
-    description: 'Modifiez les documents juridiques et politiques',
-    icon: <Shield className="size-5" />,
-    accentColor: 'text-[#D4AF37]',
-    accentBg: 'bg-[#D4AF37]/10',
-    items: [
-      {
-        id: 'politique-confidentialite',
-        label: 'Politique de confidentialit\u00e9',
-        value:
-          'AfriBayit s\u2019engage \u00e0 prot\u00e9ger la vie priv\u00e9e de ses utilisateurs. Cette politique d\u00e9crit les donn\u00e9es collect\u00e9es, leur utilisation et vos droits...',
-        lastModified: '2025-10-22T10:00:00',
-      },
-      {
-        id: 'cgu',
-        label: 'CGU',
-        value:
-          'En utilisant la plateforme AfriBayit, vous acceptez les pr\u00e9sentes conditions g\u00e9n\u00e9rales d\u2019utilisation...',
-        lastModified: '2025-10-22T10:00:00',
-      },
-      {
-        id: 'remboursement',
-        label: 'Remboursement',
-        value:
-          'Notre politique de remboursement s\u2019applique aux transactions effectu\u00e9es via le service de s\u00e9curisation AfriEscrow...',
-        lastModified: '2025-09-15T14:20:00',
-      },
-      {
-        id: 'suppression-donnees',
-        label: 'Suppression de donn\u00e9es',
-        value:
-          'Conform\u00e9ment aux r\u00e9glementations en vigueur, vous pouvez demander la suppression de vos donn\u00e9es personnelles...',
-        lastModified: '2025-09-15T14:20:00',
-      },
-    ],
-  },
-  {
-    id: 'realisations',
-    title: 'Nos R\u00e9alisations',
-    description: 'G\u00e9rez le contenu de la section r\u00e9alisations',
-    icon: <Star className="size-5" />,
-    accentColor: 'text-[#00A651]',
-    accentBg: 'bg-[#00A651]/10',
-    items: [
-      {
-        id: 'realisations-description',
-        label: 'Description',
-        value:
-          'D\u00e9couvrez les projets r\u00e9alis\u00e9s gr\u00e2ce \u00e0 AfriBayit. Des milliers de familles ont trouv\u00e9 leur logement id\u00e9al.',
-        lastModified: '2025-12-01T16:00:00',
-      },
-      {
-        id: 'realisations-statistiques',
-        label: 'Statistiques',
-        value:
-          '2\u00a0500+ transactions r\u00e9ussies \u2022 98% de satisfaction \u2022 8 pays couverts \u2022 500+ partenaires notariaux',
-        lastModified: '2025-12-01T16:00:00',
-      },
-      {
-        id: 'realisations-projets',
-        label: 'Projets',
-        value:
-          'R\u00e9sidence Les Palmiers \u2013 Cotonou \u2022 Villa Horizon \u2013 Lom\u00e9 \u2022 Appartements Baobab \u2013 Dakar',
-        lastModified: '2025-11-18T09:45:00',
-      },
-    ],
-  },
-  {
-    id: 'seo',
-    title: 'SEO & Meta',
-    description: 'Configurez les balises m\u00e9ta et le r\u00e9f\u00e9rencement',
-    icon: <Globe className="size-5" />,
-    accentColor: 'text-[#009CDE]',
-    accentBg: 'bg-[#009CDE]/10',
-    items: [
-      {
-        id: 'seo-title',
-        label: 'Title',
-        value:
-          'AfriBayit \u2013 Plateforme immobili\u00e8re v\u00e9rifi\u00e9e en Afrique de l\u2019Ouest',
-        lastModified: '2025-11-30T12:00:00',
-      },
-      {
-        id: 'seo-description',
-        label: 'Description',
-        value:
-          'Achetez, vendez et louez des biens immobiliers v\u00e9rifi\u00e9s en Afrique de l\u2019Ouest. Transactions s\u00e9curis\u00e9es, notaires partenaires, v\u00e9rification g\u00e9olocalis\u00e9e.',
-        lastModified: '2025-11-30T12:00:00',
-      },
-      {
-        id: 'seo-keywords',
-        label: 'Keywords',
-        value:
-          'immobilier afrique, achat maison afrique, location appartement, bien v\u00e9rifi\u00e9, notaire, transaction s\u00e9curis\u00e9e',
-        lastModified: '2025-11-30T12:00:00',
-      },
-    ],
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function truncate(str: string, len: number): string {
-  if (str.length <= len) return str;
-  return str.slice(0, len) + '...';
-}
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
-export default function ContentManagementPage() {
-  const [sections, setSections] = useState<ContentSection[]>(initialSections);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Edit modal state
-  const [editOpen, setEditOpen] = useState(false);
-  const [editingSection, setEditingSection] = useState<ContentSection | null>(null);
-  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+export default function AdminContentPage() {
+  const [country, setCountry] = useState<string>('');
+  const [editOpen, setEditOpen] = useState<{ sectionKey: string; itemKey: string } | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
 
-  // View modal state
-  const [viewOpen, setViewOpen] = useState(false);
-  const [viewingItem, setViewingItem] = useState<ContentItem | null>(null);
-  const [viewingSection, setViewingSection] = useState<ContentSection | null>(null);
+  const { data, isLoading } = useAdminContent({ country: country || undefined });
+  const sections = (data?.sections as ContentSection[]) || [];
+  const summary = data?.summary as {
+    totalSections: number;
+    totalItems: number;
+    lastModified: string;
+  } | undefined;
 
-  // ---------------------------------------------------------------------------
-  // Handlers
-  // ---------------------------------------------------------------------------
+  const updateContent = useUpdateContent();
 
-  const handleEdit = useCallback((section: ContentSection, item: ContentItem) => {
-    setEditingSection(section);
-    setEditingItem(item);
-    setEditValue(item.value);
-    setEditOpen(true);
-  }, []);
+  const handleEdit = (sectionKey: string, itemKey: string, currentValue: string) => {
+    setEditOpen({ sectionKey, itemKey });
+    setEditValue(currentValue);
+  };
 
-  const handleView = useCallback((section: ContentSection, item: ContentItem) => {
-    setViewingSection(section);
-    setViewingItem(item);
-    setViewOpen(true);
-  }, []);
-
-  const handleSave = useCallback(async () => {
-    if (!editingSection || !editingItem) return;
-    setIsSaving(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 600));
-    setSections((prev) =>
-      prev.map((s) => {
-        if (s.id !== editingSection.id) return s;
-        return {
-          ...s,
-          items: s.items.map((it) => {
-            if (it.id !== editingItem.id) return it;
-            return {
-              ...it,
-              value: editValue,
-              lastModified: new Date().toISOString(),
-            };
-          }),
-        };
-      }),
+  const handleSave = () => {
+    if (!editOpen) return;
+    updateContent.mutate(
+      {
+        sectionKey: editOpen.sectionKey,
+        itemKey: editOpen.itemKey,
+        value: editValue,
+        country: country || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Contenu mis à jour avec succès');
+          setEditOpen(null);
+          setEditValue('');
+        },
+        onError: () => toast.error('Erreur lors de la mise à jour'),
+      }
     );
-    setIsSaving(false);
-    setEditOpen(false);
-  }, [editingSection, editingItem, editValue]);
+  };
 
-  const handleCancel = useCallback(() => {
-    setEditOpen(false);
-    setEditValue('');
-    setEditingSection(null);
-    setEditingItem(null);
-  }, []);
-
-  // ---------------------------------------------------------------------------
-  // Filtering
-  // ---------------------------------------------------------------------------
-
-  const filteredSections = React.useMemo(() => {
-    if (!searchQuery.trim()) return sections;
-    const q = searchQuery.toLowerCase();
-    return sections
-      .map((s) => ({
-        ...s,
-        items: s.items.filter(
-          (it) =>
-            it.label.toLowerCase().includes(q) ||
-            it.value.toLowerCase().includes(q),
-        ),
-      }))
-      .filter((s) => s.items.length > 0 || s.title.toLowerCase().includes(q));
-  }, [sections, searchQuery]);
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
+  const getSectionConfig = (key: string) => {
+    return SECTION_CONFIG.find((s) => s.key === key) || { key, label: key, icon: FileText, color: 'bg-gray-100 text-gray-600' };
+  };
 
   return (
     <div className="space-y-6">
-      {/* ----------------------------------------------------------------- */}
-      {/* Page Header                                                        */}
-      {/* ----------------------------------------------------------------- */}
-      <div>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#003087]">
-              Gestion du Contenu
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Modifiez le contenu des pages et sections de la plateforme
-            </p>
-          </div>
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion du contenu</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Gérer le contenu et les textes de la plateforme
+          </p>
         </div>
-
-        {/* Search bar */}
-        <div className="mt-4 relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher du contenu..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-gray-400" />
+          <Select
+            value={country || 'all'}
+            onValueChange={(v) => setCountry(v === 'all' ? '' : v)}
+          >
+            <SelectTrigger className="w-[180px] h-9 text-xs">
+              <SelectValue placeholder="Tous les pays (défaut)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">🌐 Par défaut (global)</SelectItem>
+              <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+              <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
+              <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+              <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <Separator />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
+            <Layers className="w-5 h-5 text-[#003087]" />
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-500 uppercase">Total sections</p>
+            <p className="text-xl font-bold text-gray-900">{summary?.totalSections ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
+            <FileText className="w-5 h-5 text-[#D4AF37]" />
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-500 uppercase">Total éléments</p>
+            <p className="text-xl font-bold text-gray-900">{summary?.totalItems ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+            <Clock className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-500 uppercase">Dernière modification</p>
+            <p className="text-sm font-bold text-gray-900">
+              {summary?.lastModified
+                ? new Date(summary.lastModified).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '—'}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      {/* ----------------------------------------------------------------- */}
-      {/* Content Sections Grid                                              */}
-      {/* ----------------------------------------------------------------- */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {filteredSections.map((section) => (
-          <Card
-            key={section.id}
-            className="overflow-hidden border hover:shadow-md transition-shadow"
-          >
-            {/* Section header with accent bar */}
-            <CardHeader className="relative pb-3">
-              <div
-                className={cn(
-                  'absolute top-0 left-0 h-1 w-full rounded-t-xl',
-                  section.id === 'accueil' && 'bg-[#003087]',
-                  section.id === 'legales' && 'bg-[#D4AF37]',
-                  section.id === 'realisations' && 'bg-[#00A651]',
-                  section.id === 'seo' && 'bg-[#009CDE]',
-                )}
-              />
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    'flex size-10 shrink-0 items-center justify-center rounded-lg',
-                    section.accentBg,
-                  )}
-                >
-                  <span className={section.accentColor}>{section.icon}</span>
-                </div>
-                <div className="min-w-0">
-                  <CardTitle className="text-base text-[#003087]">
-                    {section.title}
-                  </CardTitle>
-                  <CardDescription className="mt-0.5">
-                    {section.description}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
+      {/* Country override indicator */}
+      {country && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-amber-600" />
+          <span className="text-sm text-amber-700">
+            Affichage des remplacements de contenu pour <strong>{country}</strong>
+          </span>
+        </div>
+      )}
 
-            <CardContent className="pt-0 pb-2">
-              <div className="space-y-2">
-                {section.items.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic py-4 text-center">
-                    Aucun r\u00e9sultat trouv\u00e9
-                  </p>
-                )}
-                {section.items.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      'group flex items-start justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-muted/50',
-                      idx < section.items.length - 1 && '',
-                    )}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="size-3.5 shrink-0 text-muted-foreground" />
-                        <span className="text-sm font-medium text-foreground">
-                          {item.label}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                        {truncate(item.value, 100)}
-                      </p>
-                      <p className="mt-1 text-[11px] text-muted-foreground/70">
-                        Modifi\u00e9 le {formatDate(item.lastModified)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs text-[#009CDE] hover:text-[#009CDE] hover:bg-[#009CDE]/10"
-                        onClick={() => handleView(section, item)}
-                      >
-                        <Eye className="size-3.5 mr-1" />
-                        Voir
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs text-[#003087] hover:text-[#003087] hover:bg-[#003087]/10"
-                        onClick={() => handleEdit(section, item)}
-                      >
-                        <Edit className="size-3.5 mr-1" />
-                        Modifier
-                      </Button>
-                    </div>
+      {/* Content Sections */}
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6">
+              <Skeleton className="h-5 w-32 mb-4" />
+              <div className="space-y-3">
+                {[...Array(3)].map((_, j) => (
+                  <div key={j} className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-8 w-8" />
                   </div>
                 ))}
               </div>
-            </CardContent>
+            </div>
+          ))}
+        </div>
+      ) : sections.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <FileText className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-lg font-medium text-gray-900">Aucun contenu trouvé</p>
+          <p className="text-sm text-gray-500 mt-1">Sélectionnez un pays ou consultez le contenu par défaut</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {sections.map((section) => {
+            const config = getSectionConfig(section.key);
+            const IconComponent = config.icon;
+            return (
+              <div key={section.key} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* Section header */}
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', config.color)}>
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">{section.label || config.label}</h3>
+                      <p className="text-[11px] text-gray-400">{section.items?.length || 0} éléments</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-[10px]">
+                    {section.key}
+                  </Badge>
+                </div>
 
-            <CardFooter className="border-t pt-4 pb-4">
-              <div className="flex w-full items-center justify-between">
-                <Badge variant="secondary" className="text-xs">
-                  {section.items.length}{' '}
-                  {section.items.length > 1 ? '\u00e9l\u00e9ments' : '\u00e9l\u00e9ment'}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => {
-                    if (section.items.length > 0) {
-                      handleEdit(section, section.items[0]);
-                    }
-                  }}
-                >
-                  <Edit className="size-3.5 mr-1" />
-                  Modifier la section
-                </Button>
+                {/* Section items */}
+                <div className="divide-y divide-gray-50">
+                  {section.items?.map((item) => (
+                    <div
+                      key={item.key}
+                      className="px-6 py-3 flex items-center gap-4 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                            {item.label}
+                          </span>
+                          <span className="text-[10px] text-gray-300 font-mono">{item.key}</span>
+                        </div>
+                        <p className="text-sm text-gray-900 truncate mt-0.5 max-w-[600px]">
+                          {item.value || <span className="text-gray-300 italic">Non défini</span>}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {item.updatedAt && (
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(item.updatedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                          </span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleEdit(section.key, item.key, item.value)}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-gray-400" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {(!section.items || section.items.length === 0) && (
+                    <div className="px-6 py-6 text-center text-sm text-gray-400">
+                      Aucun élément dans cette section
+                    </div>
+                  )}
+                </div>
               </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* ----------------------------------------------------------------- */}
-      {/* View Modal                                                         */}
-      {/* ----------------------------------------------------------------- */}
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Edit Dialog */}
+      <Dialog open={!!editOpen} onOpenChange={() => setEditOpen(null)}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[#003087]">
-              <Eye className="size-5" />
-              {viewingItem?.label}
-            </DialogTitle>
+            <DialogTitle>Modifier le contenu</DialogTitle>
             <DialogDescription>
-              Section : {viewingSection?.title}
+              Modifier la valeur de <strong>{editOpen?.itemKey}</strong> dans <strong>{editOpen?.sectionKey}</strong>
+              {country && (
+                <span className="block mt-1 text-amber-600">
+                  Remplacement pour {country}
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-lg border bg-muted/30 p-4">
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">
-              {viewingItem?.value}
-            </p>
-          </div>
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-muted-foreground">
-              Derni\u00e8re modification :{' '}
-              {viewingItem ? formatDate(viewingItem.lastModified) : ''}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (viewingSection && viewingItem) {
-                  setViewOpen(false);
-                  handleEdit(viewingSection, viewingItem);
-                }
-              }}
-            >
-              <Edit className="size-3.5 mr-1" />
-              Modifier
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ----------------------------------------------------------------- */}
-      {/* Edit Modal                                                         */}
-      {/* ----------------------------------------------------------------- */}
-      <Dialog open={editOpen} onOpenChange={(open) => {
-        if (!open) handleCancel();
-        else setEditOpen(true);
-      }}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-[#003087]">
-              <Edit className="size-5" />
-              Modifier : {editingItem?.label}
-            </DialogTitle>
-            <DialogDescription>
-              Section : {editingSection?.title} \u2014 Modifiez le contenu ci-dessous puis
-              enregistrez.
-            </DialogDescription>
-          </DialogHeader>
-
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                Contenu
+            <div>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Clé
+              </label>
+              <p className="text-sm font-mono text-gray-900 mt-0.5">{editOpen?.sectionKey}.{editOpen?.itemKey}</p>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Valeur
               </label>
               <Textarea
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="min-h-[180px] resize-y"
-                placeholder="Saisissez le contenu ici..."
+                rows={6}
+                className="mt-1 font-mono text-sm"
+                placeholder="Entrez le contenu..."
               />
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <FileText className="size-3.5" />
-              <span>
-                Derni\u00e8re modification :{' '}
-                {editingItem ? formatDate(editingItem.lastModified) : ''}
-              </span>
-              <span className="ml-auto">
-                {editValue.length} caract\u00e8re{editValue.length !== 1 ? 's' : ''}
-              </span>
-            </div>
           </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(null)}>Annuler</Button>
             <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSaving}
-            >
-              <X className="size-4 mr-1" />
-              Annuler
-            </Button>
-            <Button
+              className="bg-[#003087] hover:bg-[#003087]/90"
               onClick={handleSave}
-              disabled={isSaving || editValue === editingItem?.value}
-              className="bg-[#003087] hover:bg-[#003087]/90 text-white"
+              disabled={updateContent.isPending}
             >
-              {isSaving ? (
-                <>
-                  <span className="size-4 mr-1 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Enregistrement...
-                </>
-              ) : (
-                <>
-                  <Save className="size-4 mr-1" />
-                  Enregistrer
-                </>
-              )}
+              <Save className="w-4 h-4 mr-1" />
+              {updateContent.isPending ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </DialogFooter>
         </DialogContent>

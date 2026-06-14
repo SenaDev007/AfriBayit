@@ -1,31 +1,27 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  ShieldCheck,
   Search,
-  Plus,
-  MapPin,
-  Plane,
-  Crosshair,
-  FileWarning,
+  Filter,
   MoreHorizontal,
   Eye,
+  CheckCircle2,
+  XCircle,
+  Trash2,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  ShieldCheck,
+  ClipboardCheck,
+  TrendingUp,
   Users,
-  ClipboardList,
-  AlertTriangle,
-  FileCheck,
-  Star,
-  Filter,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -42,975 +38,447 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useAdminGeotrust } from '@/hooks/useAdmin';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
-type GeometreStatus = 'actif' | 'en_mission' | 'suspendu' | 'inactif';
-type MissionType = 'GPS' | 'Drone' | '3D' | 'Inspection terrain';
-type MissionStatus = 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
+const MISSION_STATUS_LABELS: Record<string, string> = {
+  scheduled: 'Planifiée',
+  in_progress: 'En cours',
+  completed: 'Terminée',
+  cancelled: 'Annulée',
+};
 
-interface Geometre {
+const MISSION_STATUS_COLORS: Record<string, string> = {
+  scheduled: 'bg-blue-50 text-blue-700 border-blue-200',
+  in_progress: 'bg-amber-50 text-amber-700 border-amber-200',
+  completed: 'bg-green-50 text-green-700 border-green-200',
+  cancelled: 'bg-red-50 text-red-600 border-red-200',
+};
+
+interface GeometerRow {
   id: string;
-  nom: string;
-  prenom: string;
-  specialite: string;
-  pays: string;
-  codePays: string;
-  licence: string;
-  missions: number;
-  note: number;
-  statut: GeometreStatus;
+  name: string;
+  license: string;
+  country: string;
+  specializations: string[];
+  verified: boolean;
+  missionsCount: number;
 }
 
-interface Mission {
+interface MissionRow {
   id: string;
-  propriete: string;
-  geometre: string;
-  type: MissionType;
-  statut: MissionStatus;
-  conflits: number;
-  date: string;
+  propertyTitle: string;
+  geometerName: string;
+  status: string;
+  scheduledDate: string;
+  completedDate: string | null;
 }
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-
-const GEOMETRES: Geometre[] = [
-  {
-    id: 'GEO-001',
-    nom: 'Diallo',
-    prenom: 'Amadou',
-    specialite: 'Topographie foncière',
-    pays: 'Guinée',
-    codePays: 'GN',
-    licence: 'L-GUI-2024-0142',
-    missions: 28,
-    note: 4.8,
-    statut: 'actif',
-  },
-  {
-    id: 'GEO-002',
-    nom: 'Koné',
-    prenom: 'Fatoumata',
-    specialite: 'Levé GPS & SIG',
-    pays: 'Côte d\'Ivoire',
-    codePays: 'CI',
-    licence: 'L-CIV-2024-0087',
-    missions: 35,
-    note: 4.9,
-    statut: 'en_mission',
-  },
-  {
-    id: 'GEO-003',
-    nom: 'Okafor',
-    prenom: 'Chukwuemeka',
-    specialite: 'Photogrammétrie drone',
-    pays: 'Nigeria',
-    codePays: 'NG',
-    licence: 'L-NIG-2024-0315',
-    missions: 19,
-    note: 4.5,
-    statut: 'actif',
-  },
-  {
-    id: 'GEO-004',
-    nom: 'Mensah',
-    prenom: 'Kofi',
-    specialite: 'Arpentage cadastral',
-    pays: 'Ghana',
-    codePays: 'GH',
-    licence: 'L-GHA-2024-0098',
-    missions: 42,
-    note: 4.7,
-    statut: 'actif',
-  },
-  {
-    id: 'GEO-005',
-    nom: 'Traoré',
-    prenom: 'Seydou',
-    specialite: 'Scanning 3D laser',
-    pays: 'Mali',
-    codePays: 'ML',
-    licence: 'L-MLI-2024-0054',
-    missions: 15,
-    note: 4.3,
-    statut: 'suspendu',
-  },
-  {
-    id: 'GEO-006',
-    nom: 'Ndiaye',
-    prenom: 'Aïssatou',
-    specialite: 'Inspection terrain',
-    pays: 'Sénégal',
-    codePays: 'SN',
-    licence: 'L-SEN-2024-0211',
-    missions: 31,
-    note: 4.6,
-    statut: 'en_mission',
-  },
-  {
-    id: 'GEO-007',
-    nom: 'Agossou',
-    prenom: 'Hervé',
-    specialite: 'Géodésie & nivellement',
-    pays: 'Bénin',
-    codePays: 'BJ',
-    licence: 'L-BEN-2024-0076',
-    missions: 22,
-    note: 4.4,
-    statut: 'actif',
-  },
-  {
-    id: 'GEO-008',
-    nom: 'Ouédraogo',
-    prenom: 'Paul',
-    specialite: 'Cartographie numérique',
-    pays: 'Burkina Faso',
-    codePays: 'BF',
-    licence: 'L-BFA-2024-0129',
-    missions: 17,
-    note: 4.1,
-    statut: 'inactif',
-  },
-  {
-    id: 'GEO-009',
-    nom: 'Adjo',
-    prenom: 'Kodjo',
-    specialite: 'Topographie foncière',
-    pays: 'Togo',
-    codePays: 'TG',
-    licence: 'L-TGO-2024-0043',
-    missions: 26,
-    note: 4.6,
-    statut: 'actif',
-  },
-  {
-    id: 'GEO-010',
-    nom: 'Keita',
-    prenom: 'Mariam',
-    specialite: 'Levé GPS & SIG',
-    pays: 'Mali',
-    codePays: 'ML',
-    licence: 'L-MLI-2024-0088',
-    missions: 12,
-    note: 4.2,
-    statut: 'en_mission',
-  },
-];
-
-const MISSIONS: Mission[] = [
-  {
-    id: 'MIS-2024-0401',
-    propriete: 'Lot 17, Cocody Riviera',
-    geometre: 'Koné Fatoumata',
-    type: 'GPS',
-    statut: 'En cours',
-    conflits: 1,
-    date: '2024-12-15',
-  },
-  {
-    id: 'MIS-2024-0402',
-    propriete: 'Parcelle A-224, Almadies',
-    geometre: 'Diallo Amadou',
-    type: 'Drone',
-    statut: 'Planifiée',
-    conflits: 0,
-    date: '2024-12-18',
-  },
-  {
-    id: 'MIS-2024-0403',
-    propriete: 'Terrain 45, Osu RE',
-    geometre: 'Mensah Kofi',
-    type: 'Inspection terrain',
-    statut: 'Terminée',
-    conflits: 2,
-    date: '2024-12-10',
-  },
-  {
-    id: 'MIS-2024-0404',
-    propriete: 'Villa Les Palmiers, Lomé',
-    geometre: 'Adjo Kodjo',
-    type: '3D',
-    statut: 'En cours',
-    conflits: 0,
-    date: '2024-12-14',
-  },
-  {
-    id: 'MIS-2024-0405',
-    propriete: 'Prop. Doumassè, Cotonou',
-    geometre: 'Agossou Hervé',
-    type: 'GPS',
-    statut: 'Planifiée',
-    conflits: 0,
-    date: '2024-12-20',
-  },
-  {
-    id: 'MIS-2024-0406',
-    propriete: 'Lot 8 Zone Rés., Bamako',
-    geometre: 'Keita Mariam',
-    type: 'Inspection terrain',
-    statut: 'Annulée',
-    conflits: 3,
-    date: '2024-12-08',
-  },
-  {
-    id: 'MIS-2024-0407',
-    propriete: 'Terrain IFAN, Dakar-Fann',
-    geometre: 'Ndiaye Aïssatou',
-    type: 'Drone',
-    statut: 'En cours',
-    conflits: 1,
-    date: '2024-12-16',
-  },
-  {
-    id: 'MIS-2024-0408',
-    propriete: 'Parcelle 339, Victoria Is.',
-    geometre: 'Okafor Chukwuemeka',
-    type: '3D',
-    statut: 'Terminée',
-    conflits: 0,
-    date: '2024-12-05',
-  },
-  {
-    id: 'MIS-2024-0409',
-    propriete: 'Lot 12, Ouagadougou 2000',
-    geometre: 'Ouédraogo Paul',
-    type: 'GPS',
-    statut: 'Planifiée',
-    conflits: 0,
-    date: '2024-12-22',
-  },
-  {
-    id: 'MIS-2024-0410',
-    propriete: 'Prop. Hamdallaye, Conakry',
-    geometre: 'Diallo Amadou',
-    type: 'Inspection terrain',
-    statut: 'En cours',
-    conflits: 2,
-    date: '2024-12-13',
-  },
-];
-
-const COUNTRIES = [
-  { value: 'ALL', label: 'Tous les pays' },
-  { value: 'BJ', label: 'Bénin' },
-  { value: 'BF', label: 'Burkina Faso' },
-  { value: 'CI', label: 'Côte d\'Ivoire' },
-  { value: 'GH', label: 'Ghana' },
-  { value: 'GN', label: 'Guinée' },
-  { value: 'ML', label: 'Mali' },
-  { value: 'NG', label: 'Nigeria' },
-  { value: 'SN', label: 'Sénégal' },
-  { value: 'TG', label: 'Togo' },
-];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const GEOMETRE_STATUS_CONFIG: Record<
-  GeometreStatus,
-  { label: string; color: string; dotColor: string }
-> = {
-  actif: {
-    label: 'Actif',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    dotColor: 'bg-emerald-500',
-  },
-  en_mission: {
-    label: 'En mission',
-    color: 'bg-blue-50 text-blue-700 border-blue-200',
-    dotColor: 'bg-blue-500',
-  },
-  suspendu: {
-    label: 'Suspendu',
-    color: 'bg-red-50 text-red-700 border-red-200',
-    dotColor: 'bg-red-500',
-  },
-  inactif: {
-    label: 'Inactif',
-    color: 'bg-gray-50 text-gray-600 border-gray-200',
-    dotColor: 'bg-gray-400',
-  },
-};
-
-const MISSION_STATUS_CONFIG: Record<
-  MissionStatus,
-  { label: string; color: string; dotColor: string }
-> = {
-  Planifiée: {
-    label: 'Planifiée',
-    color: 'bg-amber-50 text-amber-700 border-amber-200',
-    dotColor: 'bg-amber-500',
-  },
-  'En cours': {
-    label: 'En cours',
-    color: 'bg-blue-50 text-blue-700 border-blue-200',
-    dotColor: 'bg-blue-500',
-  },
-  Terminée: {
-    label: 'Terminée',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    dotColor: 'bg-emerald-500',
-  },
-  Annulée: {
-    label: 'Annulée',
-    color: 'bg-red-50 text-red-600 border-red-200',
-    dotColor: 'bg-red-500',
-  },
-};
-
-const MISSION_TYPE_CONFIG: Record<MissionType, { icon: React.ReactNode; color: string }> = {
-  GPS: {
-    icon: <Crosshair className="size-3.5" />,
-    color: 'bg-sky-50 text-sky-700 border-sky-200',
-  },
-  Drone: {
-    icon: <Plane className="size-3.5" />,
-    color: 'bg-violet-50 text-violet-700 border-violet-200',
-  },
-  '3D': {
-    icon: <MapPin className="size-3.5" />,
-    color: 'bg-orange-50 text-orange-700 border-orange-200',
-  },
-  'Inspection terrain': {
-    icon: <ShieldCheck className="size-3.5" />,
-    color: 'bg-teal-50 text-teal-700 border-teal-200',
-  },
-};
-
-function getInitials(prenom: string, nom: string) {
-  return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
-}
-
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+export default function AdminGeotrustPage() {
+  const [activeTab, setActiveTab] = useState<'geometers' | 'missions'>('geometers');
+  const [filters, setFilters] = useState<{ status?: string; country?: string; search?: string; page: number; limit: number }>({
+    page: 1,
+    limit: 20,
   });
-}
+  const [searchInput, setSearchInput] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
-function renderStars(note: number) {
-  return (
-    <div className="flex items-center gap-1">
-      <Star className="size-3.5 fill-amber-400 text-amber-400" />
-      <span className="text-sm font-medium text-gray-700">{note.toFixed(1)}</span>
-    </div>
-  );
-}
+  const { data, isLoading } = useAdminGeotrust({ ...filters, tab: activeTab });
+  const summary = data?.summary;
+  const pagination = data?.pagination;
 
-// ─── Stat Card Component ─────────────────────────────────────────────────────
+  const geometers = data?.geometers ?? [];
+  const missions = data?.missions ?? [];
 
-function StatCard({
-  icon,
-  label,
-  value,
-  iconBg,
-  iconColor,
-  borderColor,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  iconBg: string;
-  iconColor: string;
-  borderColor: string;
-}) {
-  return (
-    <Card className={cn('py-4 border-t-2', borderColor)}>
-      <CardContent className="flex items-center gap-4 px-5">
-        <div
-          className={cn(
-            'flex size-11 shrink-0 items-center justify-center rounded-lg',
-            iconBg
-          )}
-        >
-          <div className={iconColor}>{icon}</div>
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm text-gray-500 truncate">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+  const handleSearch = useCallback(() => {
+    setFilters((prev) => ({ ...prev, search: searchInput || undefined, page: 1 }));
+  }, [searchInput]);
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    toast.success('Supprimé avec succès');
+    setDeleteOpen(false);
+    setDeleteTarget(null);
+  };
 
-export default function GeoTrustPage() {
-  const [activeTab, setActiveTab] = useState('geometres');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [countryFilter, setCountryFilter] = useState('ALL');
-  const [geometreStatusFilter, setGeometreStatusFilter] = useState('ALL');
-  const [missionStatusFilter, setMissionStatusFilter] = useState('ALL');
-  const [missionTypeFilter, setMissionTypeFilter] = useState('ALL');
-
-  // ─── Computed Stats ──────────────────────────────────────────────────────
-
-  const stats = useMemo(() => {
-    const actifs = GEOMETRES.filter(
-      (g) => g.statut === 'actif' || g.statut === 'en_mission'
-    ).length;
-    const enCours = MISSIONS.filter((m) => m.statut === 'En cours').length;
-    const conflits = MISSIONS.reduce((sum, m) => sum + m.conflits, 0);
-    const validees = MISSIONS.filter((m) => m.statut === 'Terminée').length;
-    return { actifs, enCours, conflits, validees };
-  }, []);
-
-  // ─── Filtered Data ──────────────────────────────────────────────────────
-
-  const filteredGeometres = useMemo(() => {
-    return GEOMETRES.filter((g) => {
-      const matchesSearch =
-        searchQuery === '' ||
-        `${g.prenom} ${g.nom}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.specialite.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.licence.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCountry =
-        countryFilter === 'ALL' || g.codePays === countryFilter;
-      const matchesStatus =
-        geometreStatusFilter === 'ALL' || g.statut === geometreStatusFilter;
-      return matchesSearch && matchesCountry && matchesStatus;
-    });
-  }, [searchQuery, countryFilter, geometreStatusFilter]);
-
-  const filteredMissions = useMemo(() => {
-    return MISSIONS.filter((m) => {
-      const matchesSearch =
-        searchQuery === '' ||
-        m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.propriete.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.geometre.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        missionStatusFilter === 'ALL' || m.statut === missionStatusFilter;
-      const matchesType =
-        missionTypeFilter === 'ALL' || m.type === missionTypeFilter;
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }, [searchQuery, missionStatusFilter, missionTypeFilter]);
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* ─── Page Header ──────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-[#003087]">
-              <ShieldCheck className="size-5 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              GeoTrust — Géomètres &amp; Inspections
-            </h1>
-          </div>
-          <p className="text-sm text-gray-500 max-w-2xl">
-            Supervisez les missions de vérification géolocalisée et la détection de conflits
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            <span className="text-[#003087]">Geo</span>
+            <span className="text-[#D4AF37]">Trust</span> — Géomètres &amp; Missions
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Gérer les géomètres et les missions de vérification terrain
           </p>
         </div>
-        <Button
-          className="bg-[#D4AF37] hover:bg-[#C4A030] text-white font-medium shadow-sm shrink-0"
-          size="default"
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center">
+            <Users className="w-5 h-5 text-[#003087]" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Total géomètres</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.totalGeometers ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Missions en cours</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.missionsInProgress ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+            <ClipboardCheck className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Missions terminées</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.missionsCompleted ?? 0}</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-[#B8962E]" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase">Taux de complétion</p>
+            <p className="text-2xl font-bold text-gray-900">{summary?.completionRate != null ? `${summary.completionRate}%` : '—'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <button
+          className={cn(
+            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            activeTab === 'geometers'
+              ? 'bg-white text-[#003087] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          )}
+          onClick={() => { setActiveTab('geometers'); setFilters((prev) => ({ ...prev, page: 1 })); }}
         >
-          <Plus className="size-4" />
-          Nouvelle mission
-        </Button>
+          Géomètres
+        </button>
+        <button
+          className={cn(
+            'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+            activeTab === 'missions'
+              ? 'bg-white text-[#003087] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          )}
+          onClick={() => { setActiveTab('missions'); setFilters((prev) => ({ ...prev, page: 1 })); }}
+        >
+          Missions
+        </button>
       </div>
 
-      {/* ─── Stats Row ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={<Users className="size-5" />}
-          label="Géomètres actifs"
-          value={stats.actifs}
-          iconBg="bg-blue-50"
-          iconColor="text-[#009CDE]"
-          borderColor="border-t-[#009CDE]"
-        />
-        <StatCard
-          icon={<ClipboardList className="size-5" />}
-          label="Missions en cours"
-          value={stats.enCours}
-          iconBg="bg-amber-50"
-          iconColor="text-[#D4AF37]"
-          borderColor="border-t-[#D4AF37]"
-        />
-        <StatCard
-          icon={<AlertTriangle className="size-5" />}
-          label="Conflits détectés"
-          value={stats.conflits}
-          iconBg="bg-red-50"
-          iconColor="text-[#D93025]"
-          borderColor="border-t-[#D93025]"
-        />
-        <StatCard
-          icon={<FileCheck className="size-5" />}
-          label="Rapports validés"
-          value={stats.validees}
-          iconBg="bg-emerald-50"
-          iconColor="text-[#00A651]"
-          borderColor="border-t-[#00A651]"
-        />
-      </div>
-
-      {/* ─── Tabs ─────────────────────────────────────────────────────────── */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="bg-gray-100/80 p-1 h-auto">
-            <TabsTrigger
-              value="geometres"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2 text-sm font-medium"
-            >
-              <Users className="size-4 mr-1.5" />
-              Géomètres
-            </TabsTrigger>
-            <TabsTrigger
-              value="missions"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2 text-sm font-medium"
-            >
-              <ClipboardList className="size-4 mr-1.5" />
-              Missions &amp; Inspections
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ─── Search & Filters ──────────────────────────────────────────── */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Rechercher..."
-                className="pl-9 h-9 w-[200px] bg-white text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-
-            <Select value={countryFilter} onValueChange={setCountryFilter}>
-              <SelectTrigger className="h-9 w-[150px] bg-white text-sm">
-                <MapPin className="size-3.5 mr-1 text-gray-400" />
-                <SelectValue placeholder="Pays" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {activeTab === 'geometres' && (
+      {/* Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex flex-col lg:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder={activeTab === 'geometers' ? 'Rechercher par nom, licence...' : 'Rechercher par propriété, géomètre...'}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-10 h-9 text-sm"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {activeTab === 'missions' && (
               <Select
-                value={geometreStatusFilter}
-                onValueChange={setGeometreStatusFilter}
+                value={filters.status || 'all'}
+                onValueChange={(v) =>
+                  setFilters((prev) => ({ ...prev, status: v === 'all' ? undefined : v, page: 1 }))
+                }
               >
-                <SelectTrigger className="h-9 w-[140px] bg-white text-sm">
-                  <Filter className="size-3.5 mr-1 text-gray-400" />
+                <SelectTrigger className="w-[160px] h-9 text-xs">
                   <SelectValue placeholder="Statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Tous les statuts</SelectItem>
-                  <SelectItem value="actif">Actif</SelectItem>
-                  <SelectItem value="en_mission">En mission</SelectItem>
-                  <SelectItem value="suspendu">Suspendu</SelectItem>
-                  <SelectItem value="inactif">Inactif</SelectItem>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="scheduled">Planifiée</SelectItem>
+                  <SelectItem value="in_progress">En cours</SelectItem>
+                  <SelectItem value="completed">Terminée</SelectItem>
+                  <SelectItem value="cancelled">Annulée</SelectItem>
                 </SelectContent>
               </Select>
             )}
-
-            {activeTab === 'missions' && (
-              <>
-                <Select
-                  value={missionStatusFilter}
-                  onValueChange={setMissionStatusFilter}
-                >
-                  <SelectTrigger className="h-9 w-[140px] bg-white text-sm">
-                    <SelectValue placeholder="Statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tous les statuts</SelectItem>
-                    <SelectItem value="Planifiée">Planifiée</SelectItem>
-                    <SelectItem value="En cours">En cours</SelectItem>
-                    <SelectItem value="Terminée">Terminée</SelectItem>
-                    <SelectItem value="Annulée">Annulée</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={missionTypeFilter}
-                  onValueChange={setMissionTypeFilter}
-                >
-                  <SelectTrigger className="h-9 w-[140px] bg-white text-sm">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Tous les types</SelectItem>
-                    <SelectItem value="GPS">GPS</SelectItem>
-                    <SelectItem value="Drone">Drone</SelectItem>
-                    <SelectItem value="3D">3D</SelectItem>
-                    <SelectItem value="Inspection terrain">
-                      Inspection terrain
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </>
-            )}
+            <Select
+              value={filters.country || 'all'}
+              onValueChange={(v) =>
+                setFilters((prev) => ({ ...prev, country: v === 'all' ? undefined : v, page: 1 }))
+              }
+            >
+              <SelectTrigger className="w-[130px] h-9 text-xs">
+                <SelectValue placeholder="Pays" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
+              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+            </Button>
           </div>
         </div>
+      </div>
 
-        {/* ─── Géomètres Tab ──────────────────────────────────────────────── */}
-        <TabsContent value="geometres" className="mt-4">
-          <Card className="py-0 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Géomètre
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Pays
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Licence
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
-                        Missions
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Note
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Statut
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredGeometres.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          className="h-32 text-center text-gray-400"
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="size-8 text-gray-300" />
-                            <p>Aucun géomètre trouvé</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredGeometres.map((geo) => {
-                        const statusCfg = GEOMETRE_STATUS_CONFIG[geo.statut];
-                        return (
-                          <TableRow key={geo.id} className="group">
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Avatar className="size-9 border border-gray-200">
-                                  <AvatarFallback className="bg-[#003087]/5 text-[#003087] text-xs font-semibold">
-                                    {getInitials(geo.prenom, geo.nom)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0">
-                                  <p className="font-medium text-gray-900 truncate">
-                                    {geo.prenom} {geo.nom}
-                                  </p>
-                                  <p className="text-xs text-gray-500 truncate">
-                                    {geo.specialite}
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-gray-700">
-                                {geo.pays}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <code className="rounded bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-600">
-                                {geo.licence}
-                              </code>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <span className="inline-flex size-7 items-center justify-center rounded-full bg-[#003087]/5 text-sm font-semibold text-[#003087]">
-                                {geo.missions}
-                              </span>
-                            </TableCell>
-                            <TableCell>{renderStars(geo.note)}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  'gap-1.5 font-medium text-xs',
-                                  statusCfg.color
-                                )}
-                              >
-                                <span
-                                  className={cn(
-                                    'size-1.5 rounded-full',
-                                    statusCfg.dotColor
-                                  )}
-                                />
-                                {statusCfg.label}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <MoreHorizontal className="size-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    <Eye className="size-4" />
-                                    Voir le profil
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <ClipboardList className="size-4" />
-                                    Voir les missions
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem>
-                                    <ShieldCheck className="size-4" />
-                                    Valider la licence
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem variant="destructive">
-                                    <FileWarning className="size-4" />
-                                    Suspendre
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+      {/* Data Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
               </div>
+            ))}
+          </div>
+        ) : activeTab === 'geometers' ? (
+          geometers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <Users className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-lg font-medium text-gray-900">Aucun géomètre trouvé</p>
+              <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80">
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Géomètre</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Licence</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pays</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Spécialisations</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Vérifié</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Missions</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {geometers.map((geo) => (
+                    <TableRow key={geo.id} className="hover:bg-gray-50/50">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
+                            {geo.name?.charAt(0) || '?'}
+                          </div>
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-[160px]">{geo.name}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm font-mono text-gray-600">{geo.license || '—'}</TableCell>
+                      <TableCell className="text-sm">
+                        {geo.country ? `${COUNTRY_FLAGS[geo.country] || ''} ${geo.country}` : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {(geo.specializations || []).slice(0, 2).map((spec) => (
+                            <Badge key={spec} variant="outline" className="text-[10px]">{spec}</Badge>
+                          ))}
+                          {(geo.specializations || []).length > 2 && (
+                            <Badge variant="outline" className="text-[10px]">+{geo.specializations.length - 2}</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {geo.verified ? (
+                          <ShieldCheck className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-gray-300" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900">{geo.missionsCount ?? 0}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                            <DropdownMenuItem disabled={geo.verified}>
+                              <CheckCircle2 className="w-4 h-4" /> Vérifier
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => { setDeleteTarget({ id: geo.id, name: geo.name }); setDeleteOpen(true); }}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4" /> Supprimer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
 
-              {/* ─── Pagination ─────────────────────────────────────────────── */}
-              <div className="flex items-center justify-between border-t bg-gray-50/50 px-4 py-3">
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">
-                    {filteredGeometres.length}
-                  </span>{' '}
-                  géomètre{filteredGeometres.length > 1 ? 's' : ''} trouvé
-                  {filteredGeometres.length > 1 ? 's' : ''}
+              {pagination && pagination.pages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    {(pagination.page - 1) * pagination.limit + 1}–
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page <= 1} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page >= pagination.pages} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}>
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        ) : missions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <MapPin className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">Aucune mission trouvée</p>
+            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/80">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Propriété</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Géomètre</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date planifiée</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date complétée</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {missions.map((mission) => (
+                  <TableRow key={mission.id} className="hover:bg-gray-50/50">
+                    <TableCell className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                      {mission.propertyTitle || '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">{mission.geometerName || '—'}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn('text-[10px]', MISSION_STATUS_COLORS[mission.status] || '')}>
+                        {MISSION_STATUS_LABELS[mission.status] || mission.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {mission.scheduledDate ? formatDate(mission.scheduledDate) : '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {mission.completedDate ? formatDate(mission.completedDate) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => { setDeleteTarget({ id: mission.id, name: mission.propertyTitle }); setDeleteOpen(true); }}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" /> Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            {pagination && pagination.pages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  {(pagination.page - 1) * pagination.limit + 1}–
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} sur {pagination.total}
                 </p>
                 <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" className="size-8" disabled>
-                    <ChevronLeft className="size-4" />
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page <= 1} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page - 1 }))}>
+                    <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    className="size-8 bg-[#003087] hover:bg-[#002a75]"
-                  >
-                    1
-                  </Button>
-                  <Button variant="outline" size="icon" className="size-8" disabled>
-                    <ChevronRight className="size-4" />
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled={pagination.page >= pagination.pages} onClick={() => setFilters((prev) => ({ ...prev, page: pagination.page + 1 }))}>
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            )}
+          </>
+        )}
+      </div>
 
-        {/* ─── Missions Tab ───────────────────────────────────────────────── */}
-        <TabsContent value="missions" className="mt-4">
-          <Card className="py-0 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Mission ID
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Propriété
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Géomètre
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Type
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Statut
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
-                        Conflits
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Date
-                      </TableHead>
-                      <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMissions.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={8}
-                          className="h-32 text-center text-gray-400"
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="size-8 text-gray-300" />
-                            <p>Aucune mission trouvée</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredMissions.map((mission) => {
-                        const statusCfg = MISSION_STATUS_CONFIG[mission.statut];
-                        const typeCfg = MISSION_TYPE_CONFIG[mission.type];
-                        return (
-                          <TableRow key={mission.id} className="group">
-                            <TableCell>
-                              <code className="rounded bg-[#003087]/5 px-2 py-0.5 text-xs font-mono font-semibold text-[#003087]">
-                                {mission.id}
-                              </code>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm font-medium text-gray-900 truncate max-w-[200px] block">
-                                {mission.propriete}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-gray-700">
-                                {mission.geometre}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  'gap-1 font-medium text-xs',
-                                  typeCfg.color
-                                )}
-                              >
-                                {typeCfg.icon}
-                                {mission.type}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  'gap-1.5 font-medium text-xs',
-                                  statusCfg.color
-                                )}
-                              >
-                                <span
-                                  className={cn(
-                                    'size-1.5 rounded-full',
-                                    statusCfg.dotColor
-                                  )}
-                                />
-                                {statusCfg.label}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {mission.conflits > 0 ? (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#D93025]/10 px-2 py-0.5 text-xs font-semibold text-[#D93025]">
-                                  <FileWarning className="size-3" />
-                                  {mission.conflits}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-gray-400">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-gray-600">
-                                {formatDate(mission.date)}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <MoreHorizontal className="size-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    <Eye className="size-4" />
-                                    Voir les détails
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <FileCheck className="size-4" />
-                                    Voir le rapport
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem>
-                                    <Crosshair className="size-4" />
-                                    Relancer l&apos;inspection
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem variant="destructive">
-                                    <FileWarning className="size-4" />
-                                    Annuler la mission
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* ─── Pagination ─────────────────────────────────────────────── */}
-              <div className="flex items-center justify-between border-t bg-gray-50/50 px-4 py-3">
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">
-                    {filteredMissions.length}
-                  </span>{' '}
-                  mission{filteredMissions.length > 1 ? 's' : ''} trouvé
-                  {filteredMissions.length > 1 ? 'es' : 'e'}
-                </p>
-                <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" className="size-8" disabled>
-                    <ChevronLeft className="size-4" />
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    className="size-8 bg-[#003087] hover:bg-[#002a75]"
-                  >
-                    1
-                  </Button>
-                  <Button variant="outline" size="icon" className="size-8" disabled>
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Delete Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer {deleteTarget?.name} ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Annuler</Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

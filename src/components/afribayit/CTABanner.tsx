@@ -11,14 +11,14 @@ interface CTABannerProps {
 
 export default function CTABanner({ onNavigate }: CTABannerProps) {
   return (
-    <section className="py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 sm:py-24">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: easeOut }}
-          className="relative rounded-2xl overflow-hidden"
+          className="relative rounded-3xl overflow-hidden"
         >
           {/* Full-width gradient banner */}
           <div className="bg-navy-gradient noise-overlay relative p-8 sm:p-12 lg:p-16">

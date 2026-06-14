@@ -147,13 +147,9 @@ export default function AdminCommunityPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <div className="h-1 w-24 rounded-full bg-gradient-to-r from-[#003087] to-[#D4AF37] mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <MessageSquare className="w-6 h-6 text-[#003087]" />
-          Communauté
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900">Communauté</h1>
         <p className="text-sm text-gray-500 mt-0.5">Modération du contenu communautaire</p>
       </div>
 
@@ -173,12 +169,9 @@ export default function AdminCommunityPage() {
             {isLoading ? (
               <div className="p-6 space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />)}</div>
             ) : !data?.data?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <MessageSquare className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900">Aucune publication trouvée</p>
-                <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <MessageSquare className="w-12 h-12 mb-3" />
+                <p className="text-sm font-medium">Aucune publication trouvée</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -234,12 +227,9 @@ export default function AdminCommunityPage() {
             {isLoading ? (
               <div className="p-6 space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />)}</div>
             ) : !data?.data?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <UsersRound className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900">Aucun groupe trouvé</p>
-                <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <UsersRound className="w-12 h-12 mb-3" />
+                <p className="text-sm font-medium">Aucun groupe trouvé</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -285,12 +275,9 @@ export default function AdminCommunityPage() {
             {isLoading ? (
               <div className="p-6 space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />)}</div>
             ) : !data?.data?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <CalendarDays className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900">Aucun événement trouvé</p>
-                <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <CalendarDays className="w-12 h-12 mb-3" />
+                <p className="text-sm font-medium">Aucun événement trouvé</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -338,12 +325,9 @@ export default function AdminCommunityPage() {
             {isLoading ? (
               <div className="p-6 space-y-3">{[...Array(6)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />)}</div>
             ) : !data?.data?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <Star className="w-8 h-8 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900">Aucun avis trouvé</p>
-                <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <Star className="w-12 h-12 mb-3" />
+                <p className="text-sm font-medium">Aucun avis trouvé</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
