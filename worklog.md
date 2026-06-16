@@ -183,3 +183,23 @@ Stage Summary:
 - Stronger use of brand colors throughout (Navy + Gold gradients, white accents)
 - Added stats, badges, glow effects, animated orbs, traveling dots, corner accents
 - All sections maintain responsive design and accessibility
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix Admin and Connexion button visibility at top of landing page
+
+Work Log:
+- Identified root cause: outline Button variant from shadcn/ui includes 'bg-background' (white)
+- This white background was overriding the header's navy bg, making white button text invisible
+- Added 'bg-transparent' + 'backdrop-blur-sm' to override outline variant bg when onDarkHero
+- Applied same fix to both Admin button and Connexion button
+- Added explicit 'bg-background' to light state for clarity
+- Build passes successfully
+- Committed (9f002dd) and pushed to origin/main
+
+Stage Summary:
+- Admin and Connexion buttons now have transparent background at top of landing
+- White text is now visible against the navy hero background
+- Borders remain visible (border-white/40 for Admin, border-white for Connexion)
+- Hover states preserved (bg-white/15 for Admin, bg-white for Connexion)
