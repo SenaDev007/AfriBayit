@@ -737,18 +737,6 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
       <div className="relative z-20 w-full h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1400px] w-full mx-auto flex flex-col items-center text-center">
 
-          {/* AfriBayit Logo Icon */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.6, ease: easeOut }}
-            className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-2xl shadow-lg overflow-hidden mb-4 ring-2 ring-[#D4AF37]/30 hero-pulse-ring`}
-          >
-            <div className="w-full h-full bg-gradient-to-br from-[#003087] to-[#009CDE] flex items-center justify-center">
-              <Building2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} text-white`} />
-            </div>
-          </motion.div>
-
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}

@@ -15,6 +15,7 @@ const modules = [
     name: 'Immobilier',
     description: 'Achat, location et investissement immobilier avec documents vérifiés et escrow sécurisé.',
     color: '#003087',
+    href: '/search',
   },
   {
     icon: (
@@ -25,6 +26,7 @@ const modules = [
     name: 'Guesthouses',
     description: 'Location courte durée avec maisons d\'hôtes certifiées et réservation instantanée.',
     color: '#D4AF37',
+    href: '/guesthouse',
   },
   {
     icon: (
@@ -35,6 +37,7 @@ const modules = [
     name: 'Hôtellerie & Séjour',
     description: 'Le Booking.com africain — Réservez hôtels, guesthouses et séjours en toute confiance.',
     color: '#009CDE',
+    href: '/hospitality',
   },
   {
     icon: (
@@ -45,6 +48,7 @@ const modules = [
     name: 'Artisans BTP',
     description: 'Marketplace d\'artisans certifiés : maçons, électriciens, plombiers. Devis et suivi en ligne.',
     color: '#00A651',
+    href: '/artisans',
   },
   {
     icon: (
@@ -55,6 +59,7 @@ const modules = [
     name: 'Académie',
     description: 'Formation immobilière : droit foncier, investissement, certification agent. Apprenez des experts.',
     color: '#D4AF37',
+    href: '/academy',
   },
   {
     icon: (
@@ -65,13 +70,17 @@ const modules = [
     name: 'Communauté',
     description: 'Échangez avec investisseurs, agents et propriétaires. Événements, groupes et mentorat.',
     color: '#003087',
+    href: '/community',
   },
 ];
 
 export default function ModulesSection() {
   return (
-    <section className="py-16 sm:py-24 bg-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 sm:py-28 bg-gradient-to-b from-[#f8fafc] to-white overflow-hidden">
+      {/* Decorative top accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -80,7 +89,8 @@ export default function ModulesSection() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="text-center mb-14"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+            <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
             Écosystème Complet
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
@@ -94,29 +104,47 @@ export default function ModulesSection() {
         {/* Modules Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {modules.map((mod, i) => (
-            <motion.div
+            <motion.a
               key={mod.name}
+              href={mod.href}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: easeOut }}
               whileHover={{ y: -6, transition: { duration: 0.3 } }}
-              className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 hover:border-gray-200 card-shadow hover:shadow-xl transition-all"
+              className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 hover:border-[#003087]/30 card-shadow hover:shadow-xl transition-all overflow-hidden block"
             >
+              {/* Top accent bar */}
+              <div
+                className="absolute top-0 left-0 right-0 h-1 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+                style={{ background: `linear-gradient(to right, ${mod.color}, transparent)` }}
+              />
+
               {/* Icon */}
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
-                style={{ backgroundColor: `${mod.color}10`, color: mod.color }}
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                style={{
+                  backgroundColor: `${mod.color}10`,
+                  color: mod.color,
+                  boxShadow: `inset 0 0 0 1px ${mod.color}20`,
+                }}
               >
                 {mod.icon}
+                {/* Glow */}
+                <div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ boxShadow: `0 0 20px ${mod.color}40` }}
+                />
               </div>
 
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">{mod.name}</h3>
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2 group-hover:text-[#003087] transition-colors">
+                {mod.name}
+              </h3>
               <p className="text-sm text-gray-500 leading-relaxed font-body">{mod.description}</p>
 
               {/* Hover arrow */}
               <div
-                className="mt-4 flex items-center gap-1 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity font-body"
+                className="mt-4 flex items-center gap-1 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 font-body translate-x-[-4px] group-hover:translate-x-0"
                 style={{ color: mod.color }}
               >
                 Explorer
@@ -128,9 +156,9 @@ export default function ModulesSection() {
               {/* Decorative corner */}
               <div
                 className="absolute top-0 right-0 w-24 h-24 rounded-bl-[3rem] opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: `linear-gradient(225deg, ${mod.color}06, transparent)` }}
+                style={{ background: `linear-gradient(225deg, ${mod.color}08, transparent)` }}
               />
-            </motion.div>
+            </motion.a>
           ))}
         </div>
       </div>

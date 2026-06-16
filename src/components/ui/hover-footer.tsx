@@ -30,14 +30,14 @@ export const TextHoverEffect = ({
     }
   }, [cursor]);
 
-  // Extra-large viewBox (1200×200) for a big, bold AFRIBAYIT text
-  // Font-size 130px centered at (600, 100) — fills the footer width
+  // Extra-large viewBox (2400×360) for a massive, bold AFRIBAYIT text
+  // Font-size 260px centered at (1200, 180) — spans the full footer navy section
   return (
     <svg
       ref={svgRef}
       width="100%"
       height="100%"
-      viewBox="0 0 1200 200"
+      viewBox="0 0 2400 360"
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
@@ -85,51 +85,108 @@ export const TextHoverEffect = ({
             fill="url(#revealMask)"
           />
         </mask>
+
+        {/* Animated stroke-draw gradient (always visible) */}
+        <linearGradient
+          id="animatedStroke"
+          gradientUnits="userSpaceOnUse"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="0%"
+        >
+          <stop offset="0%" stopColor="#D4AF37">
+            <animate
+              attributeName="stop-color"
+              values="#D4AF37;#009CDE;#D4AF37"
+              dur="6s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="50%" stopColor="#009CDE">
+            <animate
+              attributeName="stop-color"
+              values="#009CDE;#D4AF37;#009CDE"
+              dur="6s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="100%" stopColor="#D4AF37">
+            <animate
+              attributeName="stop-color"
+              values="#D4AF37;#009CDE;#D4AF37"
+              dur="6s"
+              repeatCount="indefinite"
+            />
+          </stop>
+        </linearGradient>
       </defs>
-      {/* Ghost text — visible on hover as faint outline */}
+
+      {/* Ghost text — visible faint outline always (watermark effect) */}
       <text
-        x="600"
-        y="100"
+        x="1200"
+        y="180"
         textAnchor="middle"
         dominantBaseline="middle"
-        strokeWidth="0.3"
-        className="fill-transparent stroke-neutral-200 font-[helvetica] font-bold"
-        style={{ opacity: hovered ? 0.7 : 0, fontSize: "130px" }}
+        strokeWidth="0.5"
+        className="fill-transparent stroke-white/15 font-[helvetica] font-bold"
+        style={{ fontSize: "260px" }}
       >
         {text}
       </text>
-      {/* Animated stroke-draw text */}
+
+      {/* Animated stroke-draw text — always animating */}
       <motion.text
-        x="600"
-        y="100"
+        x="1200"
+        y="180"
         textAnchor="middle"
         dominantBaseline="middle"
-        strokeWidth="0.3"
-        className="fill-transparent stroke-[#D4AF37] font-[helvetica] font-bold"
-        style={{ fontSize: "130px" }}
-        initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
+        strokeWidth="0.5"
+        className="fill-transparent font-[helvetica] font-bold"
+        stroke="url(#animatedStroke)"
+        style={{ fontSize: "260px" }}
+        initial={{ strokeDashoffset: 3000, strokeDasharray: 3000 }}
         animate={{
-          strokeDashoffset: 0,
-          strokeDasharray: 1000,
+          strokeDashoffset: [3000, 0, 0, 3000],
+          strokeDasharray: 3000,
         }}
         transition={{
-          duration: 4,
+          duration: 8,
           ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "loop",
+          times: [0, 0.45, 0.55, 1],
         }}
       >
         {text}
       </motion.text>
+
+      {/* Outline text — subtle pulsing */}
+      <motion.text
+        x="1200"
+        y="180"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        strokeWidth="0.3"
+        className="fill-transparent stroke-[#D4AF37]/30 font-[helvetica] font-bold"
+        style={{ fontSize: "260px" }}
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {text}
+      </motion.text>
+
       {/* Gradient mask text — reveals on hover */}
       <text
-        x="600"
-        y="100"
+        x="1200"
+        y="180"
         textAnchor="middle"
         dominantBaseline="middle"
         stroke="url(#textGradient)"
-        strokeWidth="0.3"
+        strokeWidth="0.5"
         mask="url(#textMask)"
         className="fill-transparent font-[helvetica] font-bold"
-        style={{ fontSize: "130px" }}
+        style={{ fontSize: "260px" }}
       >
         {text}
       </text>
@@ -144,7 +201,7 @@ export const FooterBackgroundGradient = () => {
       className="absolute inset-0 z-0"
       style={{
         background:
-          "radial-gradient(125% 125% at 50% 10%, #0a0a0c99 50%, #00308744 100%)",
+          "radial-gradient(125% 125% at 50% 10%, #0a0a0c99 30%, #00308766 70%, #001440aa 100%)",
       }}
     />
   );

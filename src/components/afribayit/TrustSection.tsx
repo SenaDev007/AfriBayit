@@ -14,7 +14,7 @@ const pillars = [
     ),
     title: 'Documents Vérifiés',
     description: 'Titres fonciers, permis et actes authentifiés par nos experts juridiques',
-    color: '#003087'
+    color: '#009CDE',
   },
   {
     icon: (
@@ -24,7 +24,7 @@ const pillars = [
     ),
     title: 'Escrow Sécurisé',
     description: 'Fonds protégés via compte séquestre jusqu\'à signature notariale',
-    color: '#D4AF37'
+    color: '#D4AF37',
   },
   {
     icon: (
@@ -34,7 +34,7 @@ const pillars = [
     ),
     title: 'Agents Certifiés',
     description: 'Professionnels vérifiés avec formation continue et certification AfriBayit',
-    color: '#009CDE'
+    color: '#D4AF37',
   },
   {
     icon: (
@@ -44,27 +44,46 @@ const pillars = [
     ),
     title: 'GeoTrust Terrain',
     description: 'Géomètres certifiés pour vérification et bornage de votre terrain',
-    color: '#00A651'
+    color: '#009CDE',
   },
 ];
 
 export default function TrustSection() {
   return (
-    <section className="py-16 sm:py-24 bg-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 sm:py-28 overflow-hidden bg-[#001440]">
+      {/* Decorative gradient overlays */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#009CDE]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl" />
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="text-center mb-12"
+          className="text-center mb-14"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/5 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+            <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
             Confiance & Sécurité
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
-            Pourquoi <span className="text-[#003087]">AfriBayit</span> ?
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
+            Pourquoi <span className="text-[#D4AF37]">AfriBayit</span> ?
           </h2>
+          <p className="mt-4 text-white/60 max-w-xl mx-auto font-body">
+            Quatre piliers fondamentaux pour garantir des transactions immobilières transparentes et sécurisées en Afrique de l&apos;Ouest.
+          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -75,22 +94,34 @@ export default function TrustSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-              whileHover={{ y: -4, transition: { duration: 0.3 } }}
-              className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 hover:border-gray-200 card-shadow hover:shadow-lg transition-all"
+              whileHover={{ y: -6, transition: { duration: 0.3 } }}
+              className="group relative p-6 sm:p-8 rounded-3xl bg-white/[0.04] backdrop-blur-sm border border-white/10 hover:border-[#D4AF37]/40 transition-all overflow-hidden"
             >
+              {/* Glow on hover */}
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-colors"
-                style={{ backgroundColor: `${pillar.color}10`, color: pillar.color }}
+                className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at 50% 0%, ${pillar.color}25, transparent 70%)`,
+                }}
+              />
+
+              <div
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
+                style={{
+                  backgroundColor: `${pillar.color}20`,
+                  color: pillar.color,
+                  boxShadow: `0 0 0 1px ${pillar.color}40, 0 8px 24px ${pillar.color}20`,
+                }}
               >
                 {pillar.icon}
               </div>
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">{pillar.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed font-body">{pillar.description}</p>
+              <h3 className="relative font-display text-xl font-bold text-white mb-2">{pillar.title}</h3>
+              <p className="relative text-sm text-white/60 leading-relaxed font-body">{pillar.description}</p>
 
-              {/* Decorative corner */}
+              {/* Bottom accent line */}
               <div
-                className="absolute top-0 right-0 w-20 h-20 rounded-bl-[3rem] opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: `linear-gradient(225deg, ${pillar.color}08, transparent)` }}
+                className="absolute bottom-0 left-6 right-6 h-px origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
+                style={{ background: `linear-gradient(to right, ${pillar.color}, transparent)` }}
               />
             </motion.div>
           ))}

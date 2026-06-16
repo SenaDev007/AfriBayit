@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { Quote } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -34,7 +35,7 @@ function StarRating({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((star) => (
         <svg
           key={star}
-          className={`w-4 h-4 ${star <= rating ? 'text-[#D4AF37]' : 'text-gray-200'}`}
+          className={`w-4 h-4 ${star <= rating ? 'text-[#D4AF37]' : 'text-gray-300'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -98,8 +99,8 @@ export default function TestimonialsSection() {
     : fallbackTestimonials;
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-50/50">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 sm:py-28 bg-gradient-to-b from-white to-[#f8fafc] overflow-hidden">
+      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -108,7 +109,8 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="text-center mb-14"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+            <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
             Témoignages
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
@@ -120,7 +122,7 @@ export default function TestimonialsSection() {
         </motion.div>
 
         {/* Country Filter Badge */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center justify-center gap-2 mb-8">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
@@ -137,25 +139,33 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
               whileHover={{ y: -4, transition: { duration: 0.3 } }}
-              className="p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 card-shadow hover:shadow-lg transition-all"
+              className="group relative p-6 sm:p-8 rounded-3xl bg-white border border-gray-100 card-shadow hover:shadow-xl transition-all overflow-hidden"
             >
+              {/* Decorative quote icon */}
+              <div className="absolute top-4 right-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Quote className="w-16 h-16 text-[#003087]" fill="currentColor" />
+              </div>
+
+              {/* Top accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#003087] via-[#009CDE] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity" />
+
               {/* Stars */}
               <StarRating rating={item.rating} />
 
               {/* Comment */}
-              <p className="mt-4 text-sm text-gray-600 leading-relaxed font-body line-clamp-4">
+              <p className="relative mt-4 text-sm text-gray-600 leading-relaxed font-body line-clamp-4">
                 &ldquo;{item.comment}&rdquo;
               </p>
 
               {/* Author */}
               <div className="mt-5 flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003087] to-[#009CDE] flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#003087] to-[#009CDE] flex items-center justify-center text-white font-bold text-sm shadow-md">
                   {item.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#2C2E2F] font-body">{item.name}</p>
                   {item.reputation && (
-                    <p className="text-xs text-gray-400 font-body">{item.reputation}</p>
+                    <p className="text-xs text-[#D4AF37] font-body font-medium">{item.reputation}</p>
                   )}
                 </div>
               </div>

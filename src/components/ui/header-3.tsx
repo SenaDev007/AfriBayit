@@ -304,8 +304,11 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   // Determine text colors based on scroll state and path
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const textColor = scrolled ? 'text-[#2C2E2F]' : (isHome ? 'text-white' : 'text-[#2C2E2F]');
-  const mutedColor = scrolled ? 'text-gray-500' : (isHome ? 'text-white/70' : 'text-gray-500');
+  // When on home page and not scrolled, the navbar overlays the dark navy hero,
+  // so we use white text. Otherwise we use dark text on the light background.
+  const onDarkHero = isHome && !scrolled;
+  const textColor = onDarkHero ? 'text-white' : 'text-[#2C2E2F]';
+  const mutedColor = onDarkHero ? 'text-white/70' : 'text-gray-500';
 
   return (
     <header
@@ -314,6 +317,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           scrolled,
         'bg-transparent': !scrolled,
       })}
+      style={onDarkHero ? { backgroundColor: '#001440' } : undefined}
     >
       <nav className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-5">
@@ -468,7 +472,12 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             variant="outline"
             size="sm"
             onClick={() => window.location.href = '/admin'}
-            className="border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5"
+            className={cn(
+              'transition-colors',
+              onDarkHero
+                ? 'border-white/30 text-white hover:bg-white/10 hover:text-white'
+                : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5',
+            )}
           >
             <LayoutDashboard className="size-3.5 mr-1" />
             Admin
@@ -491,7 +500,12 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             <Button
               variant="outline"
               size="sm"
-              className="border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white"
+              className={cn(
+                'transition-colors',
+                onDarkHero
+                  ? 'border-white text-white hover:bg-white hover:text-[#003087]'
+                  : 'border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white',
+              )}
               onClick={() => window.location.href = '/auth/login'}
             >
               Connexion

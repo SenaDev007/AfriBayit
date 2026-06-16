@@ -74,8 +74,11 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   }, [baseProperties, activeFilter]);
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-50/50">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 sm:py-28 bg-gradient-to-b from-[#f8fafc] to-white overflow-hidden">
+      {/* Decorative top accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#003087]/20 to-transparent" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -84,7 +87,8 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           className="flex flex-col sm:flex-row sm:items-end justify-between mb-8"
         >
           <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
+              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
               Sélection Premium
             </span>
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
@@ -125,7 +129,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               onClick={() => setActiveFilter(tab.key)}
               className={`px-5 py-2 rounded-full text-sm font-medium transition-all font-body ${
                 activeFilter === tab.key
-                  ? 'bg-[#003087] text-white shadow-md'
+                  ? 'bg-[#003087] text-white shadow-md shadow-[#003087]/20'
                   : 'bg-white text-gray-600 border border-gray-200 hover:border-[#003087]/30 hover:text-[#003087]'
               }`}
             >

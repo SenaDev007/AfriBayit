@@ -114,3 +114,40 @@ Stage Summary:
 - Notary e-signatures now persistent in DB
 - Escrow 2FA now uses real TOTP verification
 - All sidebar links point to existing pages
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix navbar visibility + remove hero icon + redesign landing sections + enlarge footer AfriBayit watermark
+
+Work Log:
+- Fixed navbar visibility bug at top of landing page (was white-on-white)
+  * Header now uses bg-[#001440] when on home page AND not scrolled (matches hero)
+  * Admin/Connexion buttons now use white text/borders when overlaying dark hero
+  * Fixed useScroll logic to detect "onDarkHero" state properly
+- Removed stray AfriBayit Logo Icon (Building2 in gradient box) from Hero section
+  * Was appearing just before "Plateforme N°1 en Afrique de l'Ouest" badge
+- Redesigned landing page middle sections with Navy/Gold/White palette:
+  * TrustSection: now dark navy bg with glassmorphism cards, gold accents, glow effects
+  * HowItWorks: gradient line connecting step badges, gold numbered circles, top blend
+  * ModulesSection: clickable cards with top accent bars, glow effects on icons
+  * PaysCouverts: full navy bg with animated gradient orbs, glass cards with gold accents
+  * TestimonialsSection: cleaner cards with quote icons, gold reputation labels
+  * CTABanner: animated mesh gradient orbs, gold accent badge, grid pattern overlay
+  * FeaturedProperties: gradient bg, animated badge with pulse dot
+- Enlarged and animated AfriBayit footer watermark:
+  * TextHoverEffect viewBox increased from 1200x200 to 2400x360 (font 130px → 260px)
+  * Added always-on animated stroke draw (8s loop with dasharray 3000)
+  * Added color-shifting stroke gradient (gold ↔ blue over 6s)
+  * Added subtle pulsing outline text
+  * Added faint ghost watermark (white/15) always visible
+  * Footer container height increased from h-36rem to h-32rem with larger negative margins
+  * Made watermark visible on all screen sizes (removed lg:flex hidden constraint)
+  * FooterBackgroundGradient now uses stronger navy radial blend
+
+Stage Summary:
+- All navbar labels now visible at top of landing page without scrolling
+- Hero section no longer has stray building icon before the badge
+- Landing sections alternate dark navy / light backgrounds with consistent gold accents
+- Footer AfriBayit watermark now spans the navy section edge-to-edge and is continuously animated
+- Build passes successfully (npx next build)
