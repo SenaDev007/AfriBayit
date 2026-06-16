@@ -84,7 +84,9 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
           OAuthSignin: 'Erreur lors de la connexion via le fournisseur. Veuillez réessayer.',
           OAuthCallback: 'Erreur lors du traitement de la réponse du fournisseur. Veuillez réessayer.',
           OAuthCreateAccount: 'Impossible de créer votre compte. Veuillez réessayer.',
+          AccessDenied: 'Vous avez annulé la connexion via le fournisseur. Aucun compte n\'a été créé.',
           Callback: 'Erreur de connexion. Veuillez réessayer.',
+          Configuration: 'La configuration OAuth est incomplète côté serveur. Contactez l\'administrateur.',
           Default: 'Une erreur est survenue lors de la connexion.',
         };
         setLoginError(errorMessages[error] || errorMessages.Default || 'Erreur de connexion.');
@@ -294,27 +296,24 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       .catch(() => {});
   }, []);
 
-  //  Social login handlers 
+  //  Social login handlers
+  // CRITICAL: OAuth providers (Google/Facebook) MUST use redirect: true (the default).
+  // Using redirect: false forces NextAuth into a popup/iframe flow which fails because:
+  //  - Google blocks third-party cookies in iframes (popup silently fails)
+  //  - Facebook sends X-Frame-Options: DENY (iframe blocked entirely)
+  //  - The OAuth callback URL cannot be processed in a popup context
+  // With redirect: true, the browser does a full-page redirect to Google/Facebook
+  // and back to /api/auth/callback/{provider}, which is the only reliable flow.
+  // Errors are then detected via URL params (?error=...) on return to /auth/login.
   const handleGoogleLogin = async () => {
     setLoginError('');
     setOauthLoading('google');
     try {
-      const result = await signIn('google', { callbackUrl: '/', redirect: false });
-      if (result?.error) {
-        const errorMessages: Record<string, string> = {
-          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
-          OAuthSignin: 'Erreur lors de la connexion via Google. Veuillez réessayer.',
-          OAuthCallback: 'Erreur lors du traitement de la réponse Google. Veuillez réessayer.',
-          Configuration: 'La connexion Google n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
-          Default: 'Erreur lors de la connexion Google.',
-        };
-        setLoginError(errorMessages[result.error] || errorMessages.Default);
-      } else if (result?.ok) {
-        onSuccess();
-      }
+      // redirect: true (default) — full page redirect to Google
+      await signIn('google', { callbackUrl: '/' });
+      // The page will redirect away, so the loading state stays until the redirect happens
     } catch {
       setLoginError('Erreur de connexion au serveur.');
-    } finally {
       setOauthLoading(null);
     }
   };
@@ -323,22 +322,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setLoginError('');
     setOauthLoading('facebook');
     try {
-      const result = await signIn('facebook', { callbackUrl: '/', redirect: false });
-      if (result?.error) {
-        const errorMessages: Record<string, string> = {
-          OAuthAccountNotLinked: 'Cet email est déjà associé à un compte avec un autre mode de connexion.',
-          OAuthSignin: 'Erreur lors de la connexion via Facebook. Veuillez réessayer.',
-          OAuthCallback: 'Erreur lors du traitement de la réponse Facebook. Veuillez réessayer.',
-          Configuration: 'La connexion Facebook n\'est pas encore configurée. Veuillez utiliser l\'email et le mot de passe.',
-          Default: 'Erreur lors de la connexion Facebook.',
-        };
-        setLoginError(errorMessages[result.error] || errorMessages.Default);
-      } else if (result?.ok) {
-        onSuccess();
-      }
+      // redirect: true (default) — full page redirect to Facebook
+      await signIn('facebook', { callbackUrl: '/' });
+      // The page will redirect away, so the loading state stays until the redirect happens
     } catch {
       setLoginError('Erreur de connexion au serveur.');
-    } finally {
       setOauthLoading(null);
     }
   };

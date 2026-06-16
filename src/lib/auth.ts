@@ -146,24 +146,26 @@ const hasFacebook =
   process.env.FACEBOOK_CLIENT_SECRET !== 'placeholder-facebook-client-secret';
 
 if (hasFacebook) {
-  // CRITICAL: We use a custom OAuth provider instead of the built-in FacebookProvider
-  // because next-auth v4's FacebookProvider always includes 'email' in the default
-  // scope, and the override mechanisms (top-level 'scope' and 'authorization.params.scope')
-  // don't reliably override the default due to how NextAuth merges authorization objects.
-  // Our Facebook app (ID: 921931210715530) has NOT completed App Review for the 'email'
-  // permission, so sending 'email' scope causes Facebook to reject the authorization with
-  // "Invalid Scopes: email".
-  // By using a generic OAuth provider, we have full control over the authorization URL
-  // and can guarantee only 'public_profile' is sent.
-  // Once Facebook approves the email permission through App Review, switch back to:
-  // FacebookProvider({ clientId, clientSecret }) and add 'email' to the scope.
+  // CRITICAL: We use a custom OAuth2 provider (not the built-in FacebookProvider
+  // and NOT the OIDC wellKnown flow) because:
+  // 1. next-auth v4's FacebookProvider always includes 'email' in the default scope
+  // 2. The OIDC wellKnown endpoint (https://www.facebook.com/.well-known/openid-configuration/)
+  //    forces NextAuth to add 'openid' scope, which Facebook rejects with
+  //    "Cette application a besoin d'au moins supported permission" when the app
+  //    hasn't completed App Review for advanced permissions.
+  // 3. Our Facebook app (ID: 921931210715530) has NOT completed App Review for 'email'.
+  //
+  // By using a pure OAuth2 provider (no wellKnown, type: 'oauth' with version: '2.0'),
+  // we have full control and send ONLY 'public_profile' scope, which is always approved.
+  // The user's email is collected later during profile completion if missing.
   providers.push({
     id: 'facebook',
     name: 'Facebook',
     type: 'oauth',
+    version: '2.0',
     clientId: process.env.FACEBOOK_CLIENT_ID!,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    wellKnown: 'https://www.facebook.com/.well-known/openid-configuration/',
+    // NO wellKnown — prevents NextAuth from forcing OIDC/openid scope
     authorization: {
       url: 'https://www.facebook.com/v18.0/dialog/oauth',
       params: {
@@ -171,7 +173,26 @@ if (hasFacebook) {
         auth_type: 'rerequest',
       },
     },
-    token: 'https://graph.facebook.com/v18.0/oauth/access_token',
+    token: {
+      url: 'https://graph.facebook.com/v18.0/oauth/access_token',
+      conform: async (response: Response) => {
+        // Facebook returns token in URLSearchParams format, ensure correct content-type
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          const text = await response.text();
+          const params = new URLSearchParams(text);
+          const json = {
+            access_token: params.get('access_token'),
+            token_type: params.get('token_type') || 'bearer',
+            expires_in: params.get('expires_in'),
+          };
+          return new Response(JSON.stringify(json), {
+            status: response.status,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        return response;
+      },
+    },
     userinfo: {
       url: 'https://graph.facebook.com/me',
       params: { fields: 'id,name,first_name,last_name,picture.width(200).height(200)' },
