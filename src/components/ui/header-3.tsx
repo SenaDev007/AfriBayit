@@ -319,16 +319,16 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
       })}
       style={onDarkHero ? { backgroundColor: '#001440' } : undefined}
     >
-      <nav className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
+      <nav className="mx-auto flex h-20 w-full max-w-[1400px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-5">
-          {/* Logo */}
-          <a href="/" className="hover:bg-accent rounded-md p-2 transition-colors">
+          {/* Logo — enlarged for stronger brand presence */}
+          <a href="/" className="hover:bg-accent rounded-md p-1 transition-colors">
             <img
               src="/logo.png"
               alt="AfriBayit"
               className={cn(
-                'h-10 w-auto object-contain transition-all duration-300',
-                !scrolled && isHome ? 'brightness-0 invert drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]' : '',
+                'h-16 w-auto object-contain transition-all duration-300',
+                !scrolled && isHome ? 'brightness-0 invert drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]' : '',
               )}
             />
           </a>

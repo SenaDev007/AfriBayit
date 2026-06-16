@@ -239,9 +239,9 @@ export default function Footer() {
               <img
                 src="/logo.png"
                 alt="AfriBayit"
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="h-20 w-auto object-contain brightness-0 invert"
               />
-              <span className="text-white text-2xl font-bold tracking-tight">
+              <span className="text-white text-3xl font-bold tracking-tight">
                 AfriBayit
               </span>
             </div>
@@ -420,8 +420,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Text hover effect — AfriBayit branding (massive, animated, spans navy section) */}
-      <div className="h-[24rem] sm:h-[28rem] lg:h-[32rem] -mt-32 sm:-mt-40 lg:-mt-48 -mb-12 sm:-mb-16 lg:-mb-20 relative">
+      {/* Text hover effect — AfriBayit branding (massive, animated, spans navy section edge-to-edge) */}
+      <div className="h-[28rem] sm:h-[34rem] lg:h-[40rem] -mt-40 sm:-mt-48 lg:-mt-56 -mb-16 sm:-mb-20 lg:-mb-24 relative">
         <TextHoverEffect text="AfriBayit" className="z-50" />
       </div>
 

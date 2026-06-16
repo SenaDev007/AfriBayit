@@ -53,90 +53,103 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   const { selectedCountry } = useCountry();
   const { data, isLoading, isError } = useProperties({ country: selectedCountry, limit: 12 });
 
-  // Get all properties
   const allProperties = data?.properties || [];
 
-  // Filter for premium/verified properties from the API response
   const featured = allProperties
     .filter(p => p.premium || p.verified)
     .slice(0, 12);
 
-  // If no premium/verified, show the first published properties
   const baseProperties = featured.length > 0
     ? featured
     : allProperties.slice(0, 12);
 
-  // Apply client-side type filter
   const displayProperties = useMemo(() => {
     if (activeFilter === 'all') return baseProperties.slice(0, 6);
-    if (activeFilter === 'sejour') return []; // Séjours use a different model, show CTA instead
+    if (activeFilter === 'sejour') return [];
     return baseProperties.filter(p => p.type === activeFilter).slice(0, 6);
   }, [baseProperties, activeFilter]);
 
   return (
-    <section className="relative py-20 sm:py-28 bg-gradient-to-b from-[#f8fafc] to-white overflow-hidden">
-      {/* Decorative top accent */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#003087]/20 to-transparent" />
+    <section className="relative py-24 sm:py-32 bg-gradient-to-b from-white via-[#f8fafc] to-white overflow-hidden">
+      {/* Decorative top accent - bold gold line */}
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent" />
+
+      {/* Background pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #003087 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+      </div>
 
       <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Bold header with navy gradient strip */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="flex flex-col sm:flex-row sm:items-end justify-between mb-8"
+          className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4"
         >
           <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-sm font-semibold mb-4 font-body">
-              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#003087] to-[#001a4f] border border-[#D4AF37]/30 text-white text-sm font-bold mb-5 font-body uppercase tracking-wider shadow-lg shadow-[#003087]/20">
+              <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
               Sélection Premium
             </span>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2C2E2F]">
-              Biens <span className="text-[#003087]">en vedette</span>
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#2C2E2F] leading-tight">
+              Biens <span className="bg-gradient-to-r from-[#003087] to-[#009CDE] bg-clip-text text-transparent">en vedette</span>
             </h2>
+            <p className="mt-3 text-gray-500 max-w-lg font-body">
+              Une sélection rigoureuse de biens vérifiés et certifiés AfriBayit.
+            </p>
           </div>
           <motion.button
-            whileHover={{ x: 4 }}
+            whileHover={{ x: 6 }}
             onClick={() => onNavigate('search')}
-            className="mt-4 sm:mt-0 text-[#003087] text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all font-body"
+            className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#003087] hover:bg-[#001a4f] text-white text-sm font-bold shadow-lg shadow-[#003087]/25 transition-all font-body"
           >
             Voir tous les biens
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
         </motion.div>
 
-        {/* Country Filter Badge */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
-            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
-          </span>
-        </div>
+        {/* Country Filter Badge + filter pills */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Pays:</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#003087]/10 to-[#009CDE]/10 border border-[#003087]/20 text-[#003087] text-xs font-bold">
+              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
+              {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+            </span>
+          </div>
 
-        {/* Filter Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1, ease: easeOut }}
-          className="flex flex-wrap gap-2 mb-8"
-        >
-          {filterTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveFilter(tab.key)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all font-body ${
-                activeFilter === tab.key
-                  ? 'bg-[#003087] text-white shadow-md shadow-[#003087]/20'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#003087]/30 hover:text-[#003087]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1, ease: easeOut }}
+            className="flex flex-wrap gap-2"
+          >
+            {filterTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveFilter(tab.key)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all font-body ${
+                  activeFilter === tab.key
+                    ? 'bg-gradient-to-r from-[#003087] to-[#001a4f] text-white shadow-md shadow-[#003087]/25'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#D4AF37]/50 hover:text-[#003087] hover:shadow-sm'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </motion.div>
+        </div>
 
         {/* Loading State */}
         {isLoading && (
@@ -149,7 +162,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
 
         {/* Error State */}
         {isError && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
               <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
@@ -162,7 +175,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
 
         {/* Empty State */}
         {!isLoading && !isError && displayProperties.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -176,7 +189,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 </p>
                 <a
                   href="/booking"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8961f] text-white rounded-full text-sm font-bold transition-colors shadow-lg shadow-[#D4AF37]/25"
                 >
                   Voir les séjours
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
