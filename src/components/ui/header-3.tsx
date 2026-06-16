@@ -475,8 +475,8 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             className={cn(
               'transition-colors',
               onDarkHero
-                ? 'border-white/30 text-white hover:bg-white/10 hover:text-white'
-                : 'border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5',
+                ? 'bg-transparent border-white/40 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm'
+                : 'bg-background border-[#003087]/20 text-[#003087] hover:bg-[#003087]/5',
             )}
           >
             <LayoutDashboard className="size-3.5 mr-1" />
@@ -503,8 +503,8 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               className={cn(
                 'transition-colors',
                 onDarkHero
-                  ? 'border-white text-white hover:bg-white hover:text-[#003087]'
-                  : 'border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white',
+                  ? 'bg-transparent border-white text-white hover:bg-white hover:text-[#003087] backdrop-blur-sm'
+                  : 'bg-background border-[#003087] text-[#003087] hover:bg-[#003087] hover:text-white',
               )}
               onClick={() => window.location.href = '/auth/login'}
             >
