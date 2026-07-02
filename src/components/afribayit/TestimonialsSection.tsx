@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/legal-docs';
 import { Quote, Star } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -74,6 +75,7 @@ const fallbackTestimonials = [
 
 export default function TestimonialsSection() {
   const { selectedCountry } = useCountry();
+  const { t } = useTranslation();
 
   const { data: reviewsData } = useQuery<ReviewsResponse>({
     queryKey: ['reviews-landing', selectedCountry],
@@ -131,19 +133,19 @@ export default function TestimonialsSection() {
         >
           <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#003087] to-[#001a4f] border border-[#D4AF37]/30 text-white text-sm font-bold mb-5 font-body uppercase tracking-wider shadow-lg shadow-[#003087]/20">
             <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
-            Témoignages
+            {t('testimonials.badge', 'Témoignages')}
           </span>
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#2C2E2F] leading-tight">
-            Ce qu&apos;ils <span className="bg-gradient-to-r from-[#003087] to-[#009CDE] bg-clip-text text-transparent">disent</span>
+            {t('testimonials.title', "Ce qu'ils")} <span className="bg-gradient-to-r from-[#003087] to-[#009CDE] bg-clip-text text-transparent">{t('testimonials.titleAccent', 'disent')}</span>
           </h2>
           <p className="mt-4 text-gray-500 max-w-xl mx-auto font-body text-lg">
-            Des milliers d&apos;utilisateurs font confiance à AfriBayit pour leurs projets immobiliers.
+            {t('testimonials.subtitle', "Des milliers d'utilisateurs font confiance à AfriBayit pour leurs projets immobiliers.")}
           </p>
         </motion.div>
 
         {/* Country Filter Badge */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Pays:</span>
+          <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">{t('testimonials.country', 'Pays')}:</span>
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#003087]/10 to-[#009CDE]/10 border border-[#003087]/20 text-[#003087] text-xs font-bold">
             <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
@@ -194,7 +196,7 @@ export default function TestimonialsSection() {
                   <svg className="w-3 h-3 text-[#00A651]" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-[10px] text-[#00A651] font-bold uppercase">Vérifié</span>
+                  <span className="text-[10px] text-[#00A651] font-bold uppercase">{t('testimonials.verified', 'Vérifié')}</span>
                 </div>
               </div>
             </motion.div>

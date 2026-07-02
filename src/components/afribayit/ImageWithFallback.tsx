@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface ImageWithFallbackProps {
   src: string;
@@ -10,6 +11,9 @@ interface ImageWithFallbackProps {
   onClick?: () => void;
   width?: number;
   height?: number;
+  fill?: boolean; // P3.5 — support next/image fill mode
+  sizes?: string; // P3.5 — responsive sizes
+  priority?: boolean; // P3.5 — for above-the-fold images
 }
 
 const FALLBACK_IMAGES: Record<string, string> = {
@@ -24,26 +28,28 @@ const FALLBACK_IMAGES: Record<string, string> = {
 // Inline SVG data URI as ultimate fallback
 const SVG_FALLBACK = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" fill="none"><rect width="400" height="300" fill="#f0f0f0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#999" font-family="sans-serif" font-size="14">Image indisponible</text></svg>')}`;
 
-export default function ImageWithFallback({ 
-  src, 
-  alt, 
-  className = '', 
+export default function ImageWithFallback({
+  src,
+  alt,
+  className = '',
   fallbackType = 'generic',
   onClick,
   width,
-  height
+  height,
+  fill = false,
+  sizes,
+  priority = false,
 }: ImageWithFallbackProps) {
   const [imgSrc, setImgSrc] = useState(() => {
     if (!src || src.trim() === '') return FALLBACK_IMAGES[fallbackType];
     return src;
   });
   const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [usedSvgFallback, setUsedSvgFallback] = useState(false);
 
   const handleError = () => {
     if (usedSvgFallback) return; // Already at ultimate fallback
-    
+
     if (!hasError) {
       // First error: try the Unsplash fallback
       setHasError(true);
@@ -55,21 +61,36 @@ export default function ImageWithFallback({
     }
   };
 
+  // SVG data URI can't be optimized by next/image — fall back to <img> for that case
+  if (usedSvgFallback || imgSrc.startsWith('data:')) {
+    return (
+      <div className={`relative ${className}`} onClick={onClick}>
+        <img
+          src={imgSrc}
+          alt={alt}
+          width={width}
+          height={height}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  // P3.5 — use next/image for optimization (responsive srcset, lazy loading, blur placeholder)
   return (
     <div className={`relative ${className}`} onClick={onClick}>
-      {isLoading && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse rounded-inherit" />
-      )}
-      <img
+      <Image
         src={imgSrc}
         alt={alt}
-        width={width}
-        height={height}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        width={fill ? undefined : width || 400}
+        height={fill ? undefined : height || 300}
+        fill={fill}
+        sizes={sizes || (fill ? '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw' : undefined)}
+        priority={priority}
+        className={`object-cover transition-opacity duration-300 ${onClick ? 'cursor-pointer' : ''}`}
         onError={handleError}
-        onLoad={() => setIsLoading(false)}
-        loading="lazy"
-        crossOrigin="anonymous"
+        unoptimized // Allow remote images without explicit domains config
       />
     </div>
   );

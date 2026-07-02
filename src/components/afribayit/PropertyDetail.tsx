@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useAuthStore } from '@/stores/authStore';
 import dynamic from 'next/dynamic';
 import { Check, ClipboardList, Eye, Heart, Lock, Map, MapPin, MessageCircle, Share2, Star, ThumbsUp, Copy, ExternalLink } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 // Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
 const VirtualTourViewer = dynamic(
@@ -92,6 +93,7 @@ interface VirtualToursResponse {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavigate }: PropertyDetailProps) {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useProperty(propertyId);
   const [activeImage, setActiveImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
@@ -518,7 +520,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                   </div>
                   <div>
                     <span className="text-lg font-bold text-[#2C2E2F]">{property.bedrooms}</span>
-                    <span className="text-xs text-gray-500 ml-1">Chambres</span>
+                    <span className="text-xs text-gray-500 ml-1">{t('property.bedrooms', 'Chambres')}</span>
                   </div>
                 </div>
               )}
@@ -531,7 +533,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                   </div>
                   <div>
                     <span className="text-lg font-bold text-[#2C2E2F]">{property.bathrooms}</span>
-                    <span className="text-xs text-gray-500 ml-1">SdB</span>
+                    <span className="text-xs text-gray-500 ml-1">{t('property.bathroomsShort', 'SdB')}</span>
                   </div>
                 </div>
               )}
@@ -543,7 +545,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                 </div>
                 <div>
                   <span className="text-lg font-bold text-[#2C2E2F]">{property.surface}</span>
-                  <span className="text-xs text-gray-500 ml-1">m²</span>
+                  <span className="text-xs text-gray-500 ml-1">{t('property.surfaceUnit', 'm²')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -575,7 +577,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
               transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
               className="mb-6"
             >
-              <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">Description</h2>
+              <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">{t('property.descriptionTitle', 'Description')}</h2>
               <p className="text-gray-600 leading-relaxed">{property.description}</p>
             </motion.div>
 
@@ -587,7 +589,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                 transition={{ duration: 0.5, delay: 0.25, ease: easeOut }}
                 className="mb-6"
               >
-                <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">Équipements</h2>
+                <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">{t('property.featuresTitle', 'Équipements')}</h2>
                 <div className="flex flex-wrap gap-2">
                   {features.map((feature) => (
                     <span key={feature} className="px-4 py-2 bg-gray-50 rounded-xl text-sm text-gray-600 font-medium">
@@ -607,7 +609,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
             >
               <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-[#003087]" />
-                Localisation
+                {t('property.locationTitle', 'Localisation')}
               </h2>
               {property.lat && property.lng ? (
                 <div className="h-80 rounded-3xl overflow-hidden">

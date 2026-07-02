@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel, timeAgo } from '@/lib/afribayit-utils';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface PropertyCardProps {
   property: PropertyData & { boostLevel?: number };
@@ -15,6 +16,7 @@ interface PropertyCardProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export default function PropertyCard({ property, index = 0, onSelect, compact = false }: PropertyCardProps) {
+  const { t } = useTranslation();
   // Compute price label from the data
   const priceLabel = formatPrice(property.price, property.transaction);
 
@@ -46,7 +48,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
               </svg>
-              Sponsorisé
+              {t('property.sponsored', 'Sponsorisé')}
             </span>
           )}
           {property.premium && (
@@ -74,7 +76,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              Documents Vérifiés
+              {t('property.verifiedDocs', 'Documents Vérifiés')}
             </span>
           )}
           {property.geoTrust && (
@@ -90,6 +92,8 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         <button
           className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
           onClick={(e) => { e.stopPropagation(); }}
+          aria-label={t('property.addToFavorites', 'Ajouter aux favoris')}
+          aria-pressed={false}
         >
           <svg className="w-4 h-4 text-gray-400 hover:text-[#D93025] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -114,7 +118,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
           {property.createdAt && (
             <>
               <span className="text-[11px] text-gray-400">•</span>
-              <span className="text-[11px] text-gray-400">Publié {timeAgo(property.createdAt)}</span>
+              <span className="text-[11px] text-gray-400">{t('property.publishedAgo', 'Publié')} {timeAgo(property.createdAt)}</span>
             </>
           )}
         </div>
@@ -138,7 +142,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
-              {property.bedrooms} ch.
+              {property.bedrooms} {t('property.bedroomsShort', 'ch.')}
             </span>
           )}
           {property.bathrooms > 0 && (
@@ -146,14 +150,14 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {property.bathrooms} sdb
+              {property.bathrooms} {t('property.bathroomsShort', 'sdb')}
             </span>
           )}
           <span className="flex items-center gap-1">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
             </svg>
-            {property.surface} m²
+            {property.surface} {t('property.surfaceUnit', 'm²')}
           </span>
         </div>
 

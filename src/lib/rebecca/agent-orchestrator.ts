@@ -191,7 +191,7 @@ async function executeIntentClassifierNode(state: AgentState): Promise<AgentStat
 }
 
 async function executePropertySearchNodeWrapper(state: AgentState): Promise<AgentState> {
-  const updatedState = await executePropertySearchNode(state as Record<string, unknown>);
+  const updatedState = await executePropertySearchNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
     propertySearch: updatedState.propertySearch,
@@ -208,7 +208,7 @@ async function executePropertySearchNodeWrapper(state: AgentState): Promise<Agen
 }
 
 async function executeFinancialNodeWrapper(state: AgentState): Promise<AgentState> {
-  const updatedState = await executeFinancialNode(state as Record<string, unknown>);
+  const updatedState = await executeFinancialNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
     financialCalc: updatedState.financialCalc,
@@ -225,7 +225,7 @@ async function executeFinancialNodeWrapper(state: AgentState): Promise<AgentStat
 }
 
 async function executeLegalNodeWrapper(state: AgentState): Promise<AgentState> {
-  const updatedState = await executeLegalNode(state as Record<string, unknown>);
+  const updatedState = await executeLegalNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
     legalAdvice: updatedState.legalAdvice,
@@ -242,7 +242,7 @@ async function executeLegalNodeWrapper(state: AgentState): Promise<AgentState> {
 }
 
 async function executeNeighborhoodNodeWrapper(state: AgentState): Promise<AgentState> {
-  const updatedState = await executeNeighborhoodNode(state as Record<string, unknown>);
+  const updatedState = await executeNeighborhoodNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
     neighborhood: updatedState.neighborhood,
@@ -259,7 +259,7 @@ async function executeNeighborhoodNodeWrapper(state: AgentState): Promise<AgentS
 }
 
 async function executeEscrowNodeWrapper(state: AgentState): Promise<AgentState> {
-  const updatedState = await executeEscrowNode(state as Record<string, unknown>);
+  const updatedState = await executeEscrowNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
     escrowGuide: updatedState.escrowGuide,

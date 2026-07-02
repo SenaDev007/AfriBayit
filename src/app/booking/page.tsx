@@ -25,6 +25,25 @@ import {
 import Link from 'next/link';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Réservation — AfriBayit",
+  description: "Réservez votre séjour : hôtel, guesthouse, location courte durée.",
+  keywords: ["réservation", "booking", "séjour", "hôtel"],
+  openGraph: {
+    title: "Réservation — AfriBayit",
+    description: "Réservez votre séjour : hôtel, guesthouse, location courte durée.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Réservation — AfriBayit",
+    description: "Réservez votre séjour : hôtel, guesthouse, location courte durée.",
+  },
+};
+
 interface HotelData {
   id: string;
   name: string;

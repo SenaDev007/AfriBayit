@@ -55,7 +55,7 @@ interface ComparisonRow {
   label: string;
   category: string;
   getValue: (p: CompareProperty) => React.ReactNode;
-  getHighlight: (p: CompareProperty) => boolean;
+  getHighlight: (p: CompareProperty, ctx?: { lowestPrice?: number; bestPricePerSqm?: number; largestSurface?: number; highestScore?: number }) => boolean;
 }
 
 const COMPARISON_ROWS: ComparisonRow[] = [
@@ -265,7 +265,7 @@ export default function PropertyComparator({
                           {row.label}
                         </td>
                         {properties.map(p => {
-                          const isHighlight = row.getHighlight(p, ctx);
+                          const isHighlight = row.getHighlight(p, ctx as { lowestPrice?: number; bestPricePerSqm?: number; largestSurface?: number; highestScore?: number });
                           return (
                             <td
                               key={p.id}

@@ -4,6 +4,25 @@ import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Notaire électronique — AfriBayit",
+  description: "Services notariaux électroniques : deeds, e-signatures, conventions de vente.",
+  keywords: ["notaire", "acte authentique", "signature électronique"],
+  openGraph: {
+    title: "Notaire électronique — AfriBayit",
+    description: "Services notariaux électroniques : deeds, e-signatures, conventions de vente.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Notaire électronique — AfriBayit",
+    description: "Services notariaux électroniques : deeds, e-signatures, conventions de vente.",
+  },
+};
+
 const NotaryModule = dynamic(() => import('@/components/afribayit/NotaryModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

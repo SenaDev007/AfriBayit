@@ -53,6 +53,25 @@ import { useToast } from '@/hooks/use-toast';
 import SecuritySettings from '@/components/afribayit/SecuritySettings';
 import ConnectedAccounts from '@/components/afribayit/ConnectedAccounts';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Paramètres — AfriBayit",
+  description: "Paramètres de votre compte AfriBayit : notifications, sécurité, confidentialité.",
+  keywords: ["paramètres", "configuration", "préférences"],
+  openGraph: {
+    title: "Paramètres — AfriBayit",
+    description: "Paramètres de votre compte AfriBayit : notifications, sécurité, confidentialité.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Paramètres — AfriBayit",
+    description: "Paramètres de votre compte AfriBayit : notifications, sécurité, confidentialité.",
+  },
+};
+
 // Types
 interface UserProfile {
   id: string;

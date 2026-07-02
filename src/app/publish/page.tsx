@@ -8,6 +8,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Ban } from 'lucide-react';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Publier une annonce — AfriBayit",
+  description: "Publiez votre bien immobilier sur AfriBayit. Vendez ou louez votre propriété avec un escrow sécurisé.",
+  keywords: ["publier annonce", "vendre bien", "louer propriété", "dépôt annonce"],
+  openGraph: {
+    title: "Publier une annonce — AfriBayit",
+    description: "Publiez votre bien immobilier sur AfriBayit. Vendez ou louez votre propriété avec un escrow sécurisé.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Publier une annonce — AfriBayit",
+    description: "Publiez votre bien immobilier sur AfriBayit. Vendez ou louez votre propriété avec un escrow sécurisé.",
+  },
+};
+
 const PropertyPublishModule = dynamic(() => import('@/components/afribayit/PropertyPublishModule'), {
   loading: () => (
     <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">

@@ -42,7 +42,7 @@ export function validateCheckinQR(qrData: string): ValidationResult {
   }
 
   // Verify HMAC token
-  const isValid = validateToken(data.bookingId, data.propertyId, data.checkInDate);
+  const isValid = validateToken(data.bookingId, data.propertyId, data.checkInDate, data.token);
   if (!isValid) {
     return {
       valid: false,

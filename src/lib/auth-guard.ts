@@ -2,8 +2,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import { verifyAccessToken, type JWTPayload } from '@/lib/security/jwt-security';
+import type { Role } from '@/lib/security/rbac';
 
-type Role = 'buyer' | 'seller' | 'investor' | 'tourist' | 'artisan' | 'agent' | 'notary' | 'geometer' | 'admin';
+// Re-export Role for backward compatibility with existing imports
+export type { Role };
 
 interface AuthGuardOptions {
   requiredRoles?: Role[];
@@ -42,8 +44,8 @@ function extractBearerToken(request: Request): string | null {
  * Validate RS256 JWT from Authorization header.
  * Returns the decoded payload if valid, or null if invalid/missing.
  */
-function validateBearerToken(token: string): JWTPayload | null {
-  const result = verifyAccessToken(token);
+async function validateBearerToken(token: string): Promise<JWTPayload | null> {
+  const result = await verifyAccessToken(token);
   if (!result.valid || !result.payload) return null;
   return result.payload;
 }
@@ -77,7 +79,7 @@ export async function authGuard(
   if (request) {
     const bearerToken = extractBearerToken(request);
     if (bearerToken) {
-      const payload = validateBearerToken(bearerToken);
+      const payload = await validateBearerToken(bearerToken);
       if (payload) {
         // Validate role requirements
         if (guardOptions.requiredRoles && guardOptions.requiredRoles.length > 0) {

@@ -288,7 +288,7 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
 
   // Real-time notification subscription via Pusher
   const [realtimeConnected, setRealtimeConnected] = useState(false);
-  const onNewNotificationRef = useRef<(data: any) => void>();
+  const onNewNotificationRef = useRef<(data: any) => void | undefined>(undefined);
 
   onNewNotificationRef.current = (data: any) => {
     // Invalidate notification queries to trigger a refresh

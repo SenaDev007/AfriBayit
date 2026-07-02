@@ -43,14 +43,15 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* AfriBayit Custom Colors */
-  --color-navy: #003087;
-  --color-navy-light: #0047b3;
-  --color-navy-dark: #001f5c;
-  --color-blue-light: #009CDE;
-  --color-gold: #D4AF37;
-  --color-gold-light: #e6c65c;
-  --color-gold-dark: #b8961f;
+  /* AfriBayit Custom Colors — alignées sur le logo réel (juillet 2026) */
+  --color-navy: #003366;
+  --color-navy-light: #335C85;
+  --color-navy-dark: #001A3D;
+  --color-blue-light: #3399FF;
+  --color-gold: #FFCC00;
+  --color-gold-light: #FFE680;
+  --color-gold-dark: #D4AF37;  /* bronze gold conservé pour hover/accents sombres */
+  --color-gold-text: #8B6914;  /* gold plus sombre — contraste AAA sur fond blanc (P3.8 a11y) */
   --color-green-success: #00A651;
   --color-red-attention: #D93025;
   --color-gray-premium: #2C2E2F;
@@ -64,51 +65,51 @@
   --card-foreground: #2C2E2F;
   --popover: #FFFFFF;
   --popover-foreground: #2C2E2F;
-  --primary: #003087;
+  --primary: #003366;
   --primary-foreground: #FFFFFF;
   --secondary: #f0f4f8;
   --secondary-foreground: #2C2E2F;
   --muted: #f5f7fa;
   --muted-foreground: #6b7280;
-  --accent: #009CDE;
+  --accent: #3399FF;
   --accent-foreground: #FFFFFF;
   --destructive: #D93025;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #003087;
-  --chart-1: #003087;
-  --chart-2: #009CDE;
-  --chart-3: #D4AF37;
+  --ring: #003366;
+  --chart-1: #003366;
+  --chart-2: #3399FF;
+  --chart-3: #FFCC00;
   --chart-4: #00A651;
   --chart-5: #D93025;
   --sidebar: #f8fafc;
   --sidebar-foreground: #2C2E2F;
-  --sidebar-primary: #003087;
+  --sidebar-primary: #003366;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #f0f4f8;
   --sidebar-accent-foreground: #2C2E2F;
   --sidebar-border: #e2e8f0;
-  --sidebar-ring: #003087;
+  --sidebar-ring: #003366;
 
   /* ====== AfriBayit Design Tokens — CDC §2 ====== */
 
-  /* Color: Principal (Navy) */
+  /* Color: Principal (Dark Blue logo #003366) */
   --afri-color-principal-50: #e6eef9;
   --afri-color-principal-100: #c4d8f3;
   --afri-color-principal-200: #9ebfeb;
   --afri-color-principal-300: #78a6e3;
   --afri-color-principal-400: #5b8fdc;
-  --afri-color-principal-500: #003087;
-  --afri-color-principal-600: #002b78;
-  --afri-color-principal-700: #002468;
-  --afri-color-principal-800: #001f5c;
-  --afri-color-principal-900: #001440;
+  --afri-color-principal-500: #003366;
+  --afri-color-principal-600: #002b5c;
+  --afri-color-principal-700: #002452;
+  --afri-color-principal-800: #001f47;
+  --afri-color-principal-900: #001a3d;
 
-  /* Color: Gold */
-  --afri-color-gold-50: #faf6e6;
-  --afri-color-gold-100: #f2e9be;
-  --afri-color-gold-200: #e6c65c;
-  --afri-color-gold-300: #FFD700;
+  /* Color: Gold (logo #FFCC00 + bronze #D4AF37 conservé) */
+  --afri-color-gold-50: #fffbe6;
+  --afri-color-gold-100: #fff4b3;
+  --afri-color-gold-200: #ffe680;
+  --afri-color-gold-300: #FFCC00;
   --afri-color-gold-400: #D4AF37;
   --afri-color-gold-500: #b8961f;
   --afri-color-gold-600: #9c7d16;
@@ -116,17 +117,17 @@
   --afri-color-gold-800: #6b530d;
   --afri-color-gold-900: #4a3808;
 
-  /* Color: Innovation (Blue) */
-  --afri-color-innovation-50: #e6f5fc;
-  --afri-color-innovation-100: #b3e3f6;
-  --afri-color-innovation-200: #80d1f0;
-  --afri-color-innovation-300: #4dbfea;
-  --afri-color-innovation-400: #26b3e4;
-  --afri-color-innovation-500: #009CDE;
-  --afri-color-innovation-600: #008bc5;
-  --afri-color-innovation-700: #007aab;
-  --afri-color-innovation-800: #006992;
-  --afri-color-innovation-900: #004a66;
+  /* Color: Innovation (Light Blue logo #3399FF) */
+  --afri-color-innovation-50: #e6f2ff;
+  --afri-color-innovation-100: #b3d9ff;
+  --afri-color-innovation-200: #80c2ff;
+  --afri-color-innovation-300: #4daaff;
+  --afri-color-innovation-400: #1a9bff;
+  --afri-color-innovation-500: #3399FF;
+  --afri-color-innovation-600: #0077e6;
+  --afri-color-innovation-700: #0066cc;
+  --afri-color-innovation-800: #0055b3;
+  --afri-color-innovation-900: #003d80;
 
   /* Color: Validation (Green) */
   --afri-color-validation-50: #e6f7ed;
@@ -194,31 +195,31 @@
   --card-foreground: #f0f4f8;
   --popover: #1a1d24;
   --popover-foreground: #f0f4f8;
-  --primary: #009CDE;
+  --primary: #3399FF;
   --primary-foreground: #FFFFFF;
   --secondary: #1e2330;
   --secondary-foreground: #f0f4f8;
   --muted: #1e2330;
   --muted-foreground: #94a3b8;
-  --accent: #009CDE;
+  --accent: #3399FF;
   --accent-foreground: #FFFFFF;
   --destructive: #ef4444;
   --border: rgba(255,255,255,0.1);
   --input: rgba(255,255,255,0.15);
-  --ring: #009CDE;
-  --chart-1: #009CDE;
-  --chart-2: #D4AF37;
+  --ring: #3399FF;
+  --chart-1: #3399FF;
+  --chart-2: #FFCC00;
   --chart-3: #00A651;
   --chart-4: #ef4444;
   --chart-5: #8b5cf6;
   --sidebar: #0f1117;
   --sidebar-foreground: #f0f4f8;
-  --sidebar-primary: #009CDE;
+  --sidebar-primary: #3399FF;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #1e2330;
   --sidebar-accent-foreground: #f0f4f8;
   --sidebar-border: rgba(255,255,255,0.1);
-  --sidebar-ring: #009CDE;
+  --sidebar-ring: #3399FF;
 }
 
 @layer base {
@@ -281,6 +282,26 @@
   .radius-search {
     border-radius: 1.5rem;
   }
+
+  /* P3.8 a11y — Gold lisible (contraste AAA sur blanc) pour le texte court.
+     Utiliser .text-gold-readable au lieu de text-[#FFCC00] pour les petits textes. */
+  .text-gold-readable {
+    color: var(--color-gold-text);
+  }
+
+  /* P3.8 a11y — Focus visible WCAG 2.4.7 pour tous les éléments interactifs */
+  .focus-visible:focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid #003366;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 /* Float Animation for Hero Cards */
@@ -328,9 +349,9 @@
   animation: pulse-gold 2s infinite;
 }
 
-/* Navy gradient */
+/* Navy gradient — logo palette #003366 */
 .bg-navy-gradient {
-  background: linear-gradient(135deg, #003087 0%, #001f5c 50%, #001440 100%);
+  background: linear-gradient(135deg, #003366 0%, #002452 50%, #001a3d 100%);
 }
 
 /* Noise texture overlay */
@@ -362,7 +383,7 @@
 .price-display {
   font-family: var(--font-dm-mono), monospace;
   font-weight: 600;
-  color: #D4AF37;
+  color: #FFCC00;
 }
 
 /* AfriBayit transition */
@@ -426,7 +447,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #001440;
+  background: #001a3d;
 }
 
 .hero-section > .container {
@@ -564,7 +585,7 @@
 }
 
 .container-full > .container .cube .face.text p span {
-  color: #D4AF37;
+  color: #FFCC00;
   font-weight: 700;
 }
 
@@ -643,7 +664,7 @@
 }
 
 .container-reflect .cube .face.text p span {
-  color: #D4AF37;
+  color: #FFCC00;
   font-weight: 700;
 }
 
@@ -740,7 +761,7 @@
 
 /* Floating particle base */
 .particle-gold {
-  background: radial-gradient(circle, #D4AF37 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%);
+  background: radial-gradient(circle, #FFCC00 0%, rgba(255, 204, 0, 0.4) 50%, transparent 100%);
   border-radius: 50%;
 }
 

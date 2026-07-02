@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -10,6 +11,7 @@ interface CTABannerProps {
 }
 
 export default function CTABanner({ onNavigate }: CTABannerProps) {
+  const { t } = useTranslation();
   return (
     <section className="relative py-24 sm:py-32 bg-gradient-to-b from-white via-[#f8fafc] to-white overflow-hidden">
       {/* Background pattern */}
@@ -80,7 +82,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#D4AF37]/25 to-[#D4AF37]/10 border border-[#D4AF37]/50 text-[#D4AF37] text-xs font-bold mb-6 font-body uppercase tracking-wider shadow-lg shadow-[#D4AF37]/20"
                 >
                   <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
-                  Lancez-vous dès aujourd&apos;hui
+                  {t('cta.badge', "Lancez-vous dès aujourd'hui")}
                 </motion.div>
 
                 <motion.h3
@@ -90,11 +92,11 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                   transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
                   className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-5 leading-tight"
                 >
-                  Prêt à trouver votre{' '}
+                  {t('cta.title', 'Prêt à trouver votre')}{' '}
                   <span className="bg-gradient-to-r from-[#D4AF37] to-[#f0d572] bg-clip-text text-transparent">
-                    bien idéal
+                    {t('cta.titleAccent', 'bien idéal')}
                   </span>{' '}
-                  ?
+                  {t('cta.titleEnd', '?')}
                 </motion.h3>
                 <motion.p
                   initial={{ opacity: 0, y: 15 }}
@@ -103,8 +105,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                   transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
                   className="text-white/80 max-w-xl font-body text-lg sm:text-xl"
                 >
-                  Rejoignez des milliers de propriétaires et acheteurs qui font confiance à AfriBayit
-                  pour leurs transactions immobilières en Afrique de l&apos;Ouest.
+                  {t('cta.subtitle', "Rejoignez des milliers de propriétaires et acheteurs qui font confiance à AfriBayit pour leurs transactions immobilières en Afrique de l'Ouest.")}
                 </motion.p>
               </div>
 
@@ -122,7 +123,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                   onClick={() => onNavigate('search')}
                   className="px-10 py-5 bg-gradient-to-r from-[#D4AF37] to-[#b8961f] hover:from-[#e8c950] hover:to-[#a8851a] text-white rounded-full font-bold text-base shadow-2xl shadow-[#D4AF37]/40 transition-all font-body"
                 >
-                  Explorer les biens
+                  {t('cta.explore', 'Explorer les biens')}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -130,7 +131,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                   onClick={() => onNavigate('publish')}
                   className="px-10 py-5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-base border-2 border-white/40 hover:border-white/60 transition-all font-body backdrop-blur-sm"
                 >
-                  Publier une annonce
+                  {t('cta.publish', 'Publier une annonce')}
                 </motion.button>
               </motion.div>
             </div>

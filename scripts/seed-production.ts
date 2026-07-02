@@ -1,10 +1,15 @@
 // AfriBayit — Production Seed Script
 // Seeds ALL modules with comprehensive test data for Neon PostgreSQL
 // Usage: npx tsx scripts/seed-production.ts
+//
+// SECURITY (P1.4 — juillet 2026) : Le password Neon n'est plus hardcodé.
+// Vous devez définir DATABASE_URL dans votre environnement (.env ou CI/CD secrets).
 
-// Ensure DATABASE_URL is set for PostgreSQL
 if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
-  process.env.DATABASE_URL = 'postgresql://neondb_owner:npg_VPlSR7Z9UiYD@ep-polished-glitter-agic460a-pooler.c-2.eu-central-1.aws.neon.tech/AfriBayit?sslmode=require';
+  console.error('❌ DATABASE_URL must be set in environment (.env or CI/CD secret).');
+  console.error('   Get the connection string from the Neon dashboard or your vault.');
+  console.error('   The previous hardcoded password has been rotated and is no longer valid.');
+  process.exit(1);
 }
 
 import { PrismaClient } from '@prisma/client';

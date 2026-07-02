@@ -1,9 +1,9 @@
-'use client';
-
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { Check, Drama, Key, Loader2, Mail, ShieldCheck, User } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface AuthPagesProps {
   mode: 'login' | 'register';
@@ -48,6 +48,7 @@ const ROLES = [
 ];
 
 export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPagesProps) {
+  const { t } = useTranslation();
   //  Login state 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -489,8 +490,9 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                       )}
 
                       <div>
-                        <label className="text-xs font-medium text-gray-500 mb-1.5 block">Email</label>
+                        <label htmlFor="forgot-email" className="text-xs font-medium text-gray-500 mb-1.5 block">{t('auth.email', 'Email')}</label>
                         <input
+                          id="forgot-email"
                           type="email"
                           value={loginEmail}
                           onChange={(e) => {
@@ -640,7 +642,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <img src="/logo.svg" alt="AfriBayit" className="h-9 w-auto" />
+                  <Image src="/logo.svg" alt="AfriBayit" width={160} height={36} className="h-9 w-auto" priority />
                   <span className="font-display text-lg font-bold text-[#003087]">
                     Afri<span className="text-[#D4AF37]">Bayit</span>
                   </span>
@@ -667,10 +669,10 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                     <>
                       {/*  LOGIN FORM  */}
                       <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
-                        Bon retour !
+                        {t('auth.loginForm.title', 'Bon retour !')}
                       </h2>
                       <p className="text-sm text-gray-500 mb-6">
-                        Connectez-vous à votre compte AfriBayit
+                        {t('auth.loginForm.subtitle', 'Connectez-vous à votre compte AfriBayit')}
                       </p>
 
                       <form onSubmit={handleLogin} className="space-y-4">
@@ -686,10 +688,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                         )}
 
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Email
+                          <label htmlFor="login-email" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.email', 'Email')}
                           </label>
                           <input
+                            id="login-email"
                             type="email"
                             value={loginEmail}
                             onChange={(e) => {
@@ -702,10 +705,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Mot de passe
+                          <label htmlFor="login-password" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.password', 'Mot de passe')}
                           </label>
                           <input
+                            id="login-password"
                             type="password"
                             value={loginPassword}
                             onChange={(e) => {
@@ -723,7 +727,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           onClick={handleForgotPassword}
                           className="text-xs text-[#003087] font-medium hover:underline"
                         >
-                          Mot de passe oublié ?
+                          {t('auth.forgotPassword', 'Mot de passe oublié ?')}
                         </button>
 
                         <motion.button
@@ -734,7 +738,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                           {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                          {loginLoading ? 'Connexion...' : 'Se connecter'}
+                          {loginLoading ? t('auth.loginForm.submitting', 'Connexion...') : t('auth.loginForm.submit', 'Se connecter')}
                         </motion.button>
 
                     </form>
@@ -818,7 +822,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           <div className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs">
-                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+                          <span className="bg-white px-3 text-gray-400">{t('auth.orContinueWith', 'ou continuer avec')}</span>
                         </div>
                       </div>
 
@@ -936,10 +940,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                     {registerStep === 0 && (
                       <>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Email
+                          <label htmlFor="reg-email" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.email', 'Email')}
                           </label>
                           <input
+                            id="reg-email"
                             type="email"
                             value={formData.email}
                             onChange={(e) => updateFormField('email', e.target.value)}
@@ -949,10 +954,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Téléphone
+                          <label htmlFor="reg-phone" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.registerForm.phone', 'Téléphone')}
                           </label>
                           <input
+                            id="reg-phone"
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => updateFormField('phone', e.target.value)}
@@ -961,10 +967,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Mot de passe
+                          <label htmlFor="reg-password" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.password', 'Mot de passe')}
                           </label>
                           <input
+                            id="reg-password"
                             type="password"
                             value={formData.password}
                             onChange={(e) => updateFormField('password', e.target.value)}
@@ -979,10 +986,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           )}
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Confirmer le mot de passe
+                          <label htmlFor="reg-confirm-password" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.registerForm.confirm', 'Confirmer le mot de passe')}
                           </label>
                           <input
+                            id="reg-confirm-password"
                             type="password"
                             value={formData.confirmPassword}
                             onChange={(e) => updateFormField('confirmPassword', e.target.value)}
@@ -1004,10 +1012,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                     {registerStep === 1 && (
                       <>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
-                            Nom complet
+                          <label htmlFor="reg-name" className="text-xs font-medium text-gray-500 mb-1.5 block">
+                            {t('auth.registerForm.name', 'Nom complet')}
                           </label>
                           <input
+                            id="reg-name"
                             type="text"
                             value={formData.name}
                             onChange={(e) => updateFormField('name', e.target.value)}
@@ -1016,10 +1025,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                          <label htmlFor="reg-country" className="text-xs font-medium text-gray-500 mb-1.5 block">
                             Pays
                           </label>
                           <select
+                            id="reg-country"
                             value={formData.country}
                             onChange={(e) => updateFormField('country', e.target.value)}
                             className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] bg-white"
@@ -1032,10 +1042,11 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           </select>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                          <label htmlFor="reg-city" className="text-xs font-medium text-gray-500 mb-1.5 block">
                             Ville
                           </label>
                           <select
+                            id="reg-city"
                             value={formData.city}
                             onChange={(e) => updateFormField('city', e.target.value)}
                             className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] bg-white"
@@ -1108,9 +1119,9 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                       >
                         {registerLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                         {registerLoading
-                          ? 'Création...'
+                          ? t('auth.registerForm.submitting', 'Création...')
                           : registerStep === registerSteps.length - 1
-                          ? 'Créer mon compte'
+                          ? t('auth.registerForm.submit', 'Créer mon compte')
                           : 'Continuer'}
                       </motion.button>
                     </div>
@@ -1124,7 +1135,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                           <div className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs">
-                          <span className="bg-white px-3 text-gray-400">ou continuer avec</span>
+                          <span className="bg-white px-3 text-gray-400">{t('auth.orContinueWith', 'ou continuer avec')}</span>
                         </div>
                       </div>
 
@@ -1183,12 +1194,12 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   )}
 
                   <p className="text-center text-sm text-gray-500 mt-4 pb-6">
-                    Déjà inscrit ?{' '}
+                    {t('auth.registerForm.hasAccount', 'Déjà inscrit ?')}{' '}
                     <button
                       onClick={() => onSwitch('login')}
                       className="text-[#003087] font-semibold hover:underline"
                     >
-                      Se connecter
+                      {t('auth.registerForm.login', 'Se connecter')}
                     </button>
                   </p>
                 </>

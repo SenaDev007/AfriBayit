@@ -1,14 +1,20 @@
 // AfriBayit — KYC Document Submission API
 // POST /api/kyc/submit — Upload KYC documents with AI pre-analysis pipeline
+//
+// SECURITY FIX (P1.2 — juillet 2026) :
+// - IDOR fix : `userId` est désormais ignoré du body et remplacé par authGuard().userId
+// - Un utilisateur ne peut plus soumettre un KYC pour autrui
+// - Ajout de authGuard() pour exiger une session authentifiée
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { analyzeKYCDocument, type KycDocumentType, type KycAnalysisResult } from '@/lib/ai/kyc-analyzer';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 interface KycSubmitBody {
-  userId: string;
+  // `userId` retiré du body pour des raisons de sécurité (IDOR fix P1.2)
   documentType: KycDocumentType;
   imageBase64: string;
   docUrl?: string; // If already uploaded to storage
@@ -17,12 +23,13 @@ interface KycSubmitBody {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as KycSubmitBody;
-    const { userId, documentType, imageBase64, docUrl, country } = body;
+    // 🔒 Auth: require authenticated session
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+    const userId = auth.userId!;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'userId est requis' }, { status: 400 });
-    }
+    const body = await request.json() as KycSubmitBody;
+    const { documentType, imageBase64, docUrl, country } = body;
 
     if (!documentType) {
       return NextResponse.json({ error: 'documentType est requis' }, { status: 400 });

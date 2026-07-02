@@ -3,6 +3,8 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import type * as THREE from 'three';
+import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Types for virtual tour data
 export interface VirtualTourData {
@@ -80,13 +82,13 @@ function getTourTypeLabel(type: string, index: number): string {
 
 // Refs for accessing Three.js objects outside the init effect
 interface ThreeRefs {
-  scene: import('three').Scene | null;
-  camera: import('three').PerspectiveCamera | null;
-  renderer: import('three').WebGLRenderer | null;
-  controls: import('three/examples/jsm/controls/OrbitControls').OrbitControls | null;
-  sphere: import('three').Mesh | null;
-  hotspotMeshes: import('three').Mesh[];
-  ringMeshes: import('three').Mesh[];
+  scene: THREE.Scene | null;
+  camera: THREE.PerspectiveCamera | null;
+  renderer: THREE.WebGLRenderer | null;
+  controls: OrbitControlsType | null;
+  sphere: THREE.Mesh | null;
+  hotspotMeshes: THREE.Mesh[];
+  ringMeshes: THREE.Mesh[];
 }
 
 export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasVR: _hasVR, onClose }: VirtualTourViewerProps) {

@@ -1,10 +1,17 @@
 // AfriBayit — POST /api/escrow/[id]/release-2fa
 // 2FA verification for escrow fund release
 // Requires OTP code from the admin's authenticator
+//
+// SECURITY FIX (P1.1 — juillet 2026) :
+// - Supprimé le bypass `confirmationChecked: true` qui permettait de contourner le 2FA
+// - Supprimé `userId` du body (IDOR) — utilise désormais authGuard().userId
+// - Ajouté authGuard({ requiredRoles: ['SUPER_ADMIN', 'NOTARY'] }) sur la route
+// - OTP code désormais OBLIGATOIRE (plus d'alternative)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyTOTP } from '@/lib/twofa';
+import { authGuard } from '@/lib/auth-guard';
 
 // Releasable escrow statuses
 const RELEASABLE_STATUSES = ['FUNDED', 'PARTIAL_RELEASE'];
@@ -14,22 +21,23 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 🔒 Auth: require admin or notary role
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'NOTARY'] });
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
-    const { otpCode, userId, confirmationChecked } = body as {
-      otpCode?: string;
-      userId?: string;
-      confirmationChecked?: boolean;
-    };
+    const { otpCode } = body as { otpCode?: string };
 
-    if (!otpCode && !confirmationChecked) {
+    // OTP code is now MANDATORY (no more confirmationChecked bypass)
+    if (!otpCode) {
       return NextResponse.json(
-        { error: 'Code 2FA ou confirmation requis' },
+        { error: 'Code 2FA obligatoire requis' },
         { status: 400 }
       );
     }
 
-    if (otpCode && !/^\d{6}$/.test(otpCode)) {
+    if (!/^\d{6}$/.test(otpCode)) {
       return NextResponse.json(
         { error: 'Code OTP invalide (6 chiffres requis)' },
         { status: 400 }
@@ -65,37 +73,30 @@ export async function POST(
       );
     }
 
-    // Verify TOTP code if provided
-    if (otpCode) {
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'userId requis pour la vérification 2FA' },
-          { status: 400 }
-        );
-      }
+    // 🔒 Use authGuard userId (no longer from body — IDOR fix)
+    const userId = auth.userId!;
 
-      // Fetch user's 2FA secret
-      const user = await db.user.findUnique({
-        where: { id: userId },
-        select: { twoFactorEnabled: true, twoFactorSecret: true },
-      });
+    // Fetch user's 2FA secret
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { twoFactorEnabled: true, twoFactorSecret: true },
+    });
 
-      if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
-        return NextResponse.json(
-          { error: '2FA non configuré pour cet utilisateur' },
-          { status: 401 }
-        );
-      }
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      return NextResponse.json(
+        { error: '2FA non configuré pour cet utilisateur' },
+        { status: 401 }
+      );
+    }
 
-      // Verify the OTP code against the user's TOTP secret
-      const isValid = verifyTOTP(user.twoFactorSecret, otpCode);
+    // Verify the OTP code against the user's TOTP secret
+    const isValid = verifyTOTP(user.twoFactorSecret, otpCode);
 
-      if (!isValid) {
-        return NextResponse.json(
-          { error: 'Code 2FA invalide' },
-          { status: 401 }
-        );
-      }
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Code 2FA invalide' },
+        { status: 401 }
+      );
     }
 
     return NextResponse.json({

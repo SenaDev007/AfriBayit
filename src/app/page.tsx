@@ -11,6 +11,25 @@ import PaysCouverts from '@/components/afribayit/PaysCouverts';
 import TestimonialsSection from '@/components/afribayit/TestimonialsSection';
 import CTABanner from '@/components/afribayit/CTABanner';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "AfriBayit — La Plateforme Immobilière Africaine",
+  description: "Où l'Afrique trouve sa maison. Achetez, louez ou investissez dans l'immobilier en Afrique de l'Ouest : Bénin, Côte d'Ivoire, Burkina Faso, Togo.",
+  keywords: ["immobilier Afrique", "villa Bénin", "appartement Côte d'Ivoire", "terrain Burkina", "location Togo", "AfriBayit"],
+  openGraph: {
+    title: "AfriBayit — La Plateforme Immobilière Africaine",
+    description: "Où l'Afrique trouve sa maison. Achetez, louez ou investissez dans l'immobilier en Afrique de l'Ouest : Bénin, Côte d'Ivoire, Burkina Faso, Togo.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AfriBayit — La Plateforme Immobilière Africaine",
+    description: "Où l'Afrique trouve sa maison. Achetez, louez ou investissez dans l'immobilier en Afrique de l'Ouest : Bénin, Côte d'Ivoire, Burkina Faso, Togo.",
+  },
+};
+
 export default function HomePage() {
   const router = useRouter();
   const [rebeccaOpen, setRebeccaOpen] = useState(false);

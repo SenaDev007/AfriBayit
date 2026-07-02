@@ -12,7 +12,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;

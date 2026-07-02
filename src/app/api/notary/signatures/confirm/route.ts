@@ -1,20 +1,31 @@
+// SECURITY FIX (P1.2 — juillet 2026) :
+// - IDOR fix : `signerId` est désormais ignoré du body et remplacé par authGuard().userId
+// - Un utilisateur ne peut plus signer au nom de n'importe qui
+// - Ajout de authGuard() pour exiger une session authentifiée
+
 import { NextRequest, NextResponse } from 'next/server';
 import { confirmSignature, trackSignatureStatus } from '@/lib/notary/e-signature';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    // 🔒 Auth: require authenticated session
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+    // `signerId` is now derived from the authenticated session (IDOR fix)
+    const signerId = auth.userId!;
+
     const body = await request.json();
-    const { requestId, signerId, signatureData, ipAddress, userAgent } = body as {
+    const { requestId, signatureData, ipAddress, userAgent } = body as {
       requestId: string;
-      signerId: string;
       signatureData: string;
       ipAddress?: string;
       userAgent?: string;
     };
 
-    if (!requestId || !signerId || !signatureData) {
+    if (!requestId || !signatureData) {
       return NextResponse.json(
-        { error: 'requestId, signerId et signatureData sont requis' },
+        { error: 'requestId et signatureData sont requis' },
         { status: 400 }
       );
     }

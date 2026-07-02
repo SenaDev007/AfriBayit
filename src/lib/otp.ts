@@ -32,24 +32,74 @@ function getIdentifierType(identifier: string): 'email' | 'phone' {
 }
 
 /**
- * Send OTP to phone number via SMS
- * In production, integrate with Africa's Talking or Twilio
+ * Send OTP to phone number via Africa's Talking SMS API.
+ * SECURITY FIX (P2.7 — juillet 2026) : Intégration réelle Africa's Talking
+ * (was: console.log OTP en clair — security issue).
+ * Falls back to console.warn (masked) if AFRICASTALKING_API_KEY is missing.
  */
 async function sendOTPToPhone(phone: string, code: string): Promise<void> {
-  // In production, integrate with Africa's Talking SMS API
-  console.log(`[OTP] SMS to ${phone}: Your AfriBayit verification code is ${code}. Valid for ${OTP_EXPIRY_MINUTES} minutes.`);
-  
-  // TODO: Replace with actual SMS provider integration
-  // Example with Africa's Talking:
-  // const credentials = new AfricasTalking.Credentials({
-  //   apiKey: process.env.AFRICASTALKING_API_KEY,
-  //   username: process.env.AFRICASTALKING_USERNAME,
-  // });
-  // const sms = AfricasTalking.SMS(credentials);
-  // await sms.send({
-  //   to: phone,
-  //   message: `Votre code de vérification AfriBayit est ${code}. Valide ${OTP_EXPIRY_MINUTES} minutes.`,
-  // });
+  const apiKey = process.env.AFRICASTALKING_API_KEY;
+  const username = process.env.AFRICASTALKING_USERNAME || 'sandbox';
+  const senderId = process.env.AFRICASTALKING_SENDER_ID || 'AFRIBAYIT';
+
+  if (!apiKey) {
+    // P2.7 — masked log (was: full OTP in cleartext)
+    console.warn(`[OTP] AFRICASTALKING_API_KEY not configured — SMS to ${maskPhone(phone)} NOT sent.`);
+    return;
+  }
+
+  try {
+    const message = `Votre code de vérification AfriBayit est ${code}. Valide ${OTP_EXPIRY_MINUTES} minutes.`;
+
+    // Africa's Talking SMS API (https://builders.africastalking.com/docs/sms)
+    const url = username === 'sandbox'
+      ? 'https://api.sandbox.africastalking.com/version1/messaging'
+      : 'https://api.africastalking.com/version1/messaging';
+
+    const body = new URLSearchParams({
+      username,
+      to: phone,
+      message,
+      from: senderId,
+    });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'apiKey': apiKey,
+        'Accept': 'application/json',
+      },
+      body: body.toString(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[OTP] Africa's Talking API error ${response.status}: ${errorText}`);
+      return;
+    }
+
+    const data = await response.json();
+    if (data.SMSMessageData?.Recipients?.length > 0) {
+      const recipient = data.SMSMessageData.Recipients[0];
+      if (recipient.status === 'Success') {
+        console.log(`[OTP] SMS sent to ${maskPhone(phone)} via Africa's Talking (cost: ${recipient.cost || 'N/A'})`);
+      } else {
+        console.error(`[OTP] SMS delivery failed for ${maskPhone(phone)}: ${recipient.status}`);
+      }
+    }
+  } catch (error) {
+    console.error(`[OTP] Failed to send SMS to ${maskPhone(phone)}:`, error);
+    // Don't throw — the OTP is stored in the DB, user can retry
+  }
+}
+
+/**
+ * Mask a phone number for logging (e.g. "+229 97 12 34 XX")
+ */
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return '****';
+  return phone.slice(0, -4).replace(/\d/g, '*') + phone.slice(-4);
 }
 
 /**
@@ -75,12 +125,12 @@ async function sendOTPToEmail(email: string, code: string): Promise<void> {
       html: `
         <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 24px;">
           <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; color: #003087; font-size: 28px; margin: 0;">Afri<span style="color: #D4AF37;">Bayit</span></h1>
+            <h1 style="font-family: 'Cormorant Garamond', Georgia, serif; color: #003366; font-size: 28px; margin: 0;">Afri<span style="color: #FFCC00;">Bayit</span></h1>
             <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Où l'Afrique trouve sa maison</p>
           </div>
           <div style="background: #f0f4f8; border-radius: 16px; padding: 24px; text-align: center;">
             <p style="color: #2C2E2F; font-size: 14px; margin-bottom: 16px;">Votre code de vérification est :</p>
-            <div style="font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 700; color: #003087; letter-spacing: 8px; padding: 12px 0;">
+            <div style="font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 700; color: #003366; letter-spacing: 8px; padding: 12px 0;">
               ${code}
             </div>
             <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">Ce code est valable pendant ${OTP_EXPIRY_MINUTES} minutes.</p>

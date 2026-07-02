@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import {
   Building2, Home, Hotel, MapPin, Key, TrendingUp,
   ShieldCheck, BedDouble, Landmark, Wrench,
@@ -173,6 +174,7 @@ function formatMiniPrice(price: number, currency: string, transaction: string): 
 }
 
 export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionProps) {
+  const { t } = useTranslation();
   const [searchType, setSearchType] = useState('achat');
   const [searchCountry, setSearchCountry] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,7 +257,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
 
   // Generate icon positions on a circular ring for each layer
   function getIconPositions(count: number, radius: number) {
-    const positions = [];
+    const positions: Array<{ x: number; y: number; angle: number }> = [];
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * 360;
       const rad = (angle * Math.PI) / 180;
@@ -268,7 +270,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
 
   // Generate property card positions on a circular ring
   function getPropertyPositions(count: number, radius: number, offsetAngle: number = 0) {
-    const positions = [];
+    const positions: Array<{ x: number; y: number; angle: number }> = [];
     for (let i = 0; i < count; i++) {
       const angle = offsetAngle + (i / count) * 360;
       const rad = (angle * Math.PI) / 180;
@@ -745,7 +747,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full glass border border-white/20 mb-4 sm:mb-6"
           >
             <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
-            <span className="text-white/90 text-xs sm:text-sm font-medium font-body">Plateforme N°1 en Afrique de l&apos;Ouest</span>
+            <span className="text-white/90 text-xs sm:text-sm font-medium font-body">{t('hero.badge', "Plateforme N°1 en Afrique de l'Ouest")}</span>
           </motion.div>
 
           {/* H1 Title */}
@@ -755,8 +757,8 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             transition={{ duration: 0.8, delay: 0.2, ease: easeOut }}
             className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-[72px] font-bold text-white leading-[1.05] mb-4 sm:mb-6"
           >
-            Où l&apos;Afrique<br />
-            <span className="text-[#D4AF37]">trouve sa maison</span>
+            {t('hero.title', "Où l'Afrique")}<br />
+            <span className="text-[#D4AF37]">{t('hero.titleAccent', 'trouve sa maison')}</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -766,8 +768,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
             className="text-white/70 text-sm sm:text-base md:text-lg max-w-xl mb-6 sm:mb-10 leading-relaxed font-body px-2"
           >
-            Où les rêves deviennent adresses. Achetez, louez, investissez en toute confiance
-            avec escrow sécurisé et documents vérifiés dans 4 pays africains.
+            {t('hero.subtitle', "Où les rêves deviennent adresses. Achetez, louez, investissez en toute confiance avec escrow sécurisé et documents vérifiés dans 4 pays africains.")}
           </motion.p>
 
           {/* ═══ Search Bar — Glassmorphism Style ═══ */}
@@ -791,7 +792,8 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Ville, quartier, type de bien..."
+                    aria-label={t('hero.cta', 'Rechercher')}
+                    placeholder={t('hero.searchPlaceholder', 'Ville, quartier, type de bien...')}
                     className="flex-1 text-xs sm:text-sm text-[#2C2E2F] placeholder-gray-400 outline-none bg-transparent font-body"
                   />
                   {/* Voice Search Button */}
@@ -848,7 +850,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  Rechercher
+                  {t('hero.cta', 'Rechercher')}
                 </motion.button>
               </div>
             </div>

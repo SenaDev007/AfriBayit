@@ -1,7 +1,18 @@
 // AfriBayit — Design Token System
 // CDC §2 — Système de tokens de design
 //
-// All tokens from the CDC:
+// ⚠️ ALIGNEMENT LOGO RÉEL (juillet 2026) :
+// Le logo officiel AfriBayit utilise la palette PayPal + touche gold :
+//   - Dark Blue  #003366  (corps "Afri", lettre A) — équivalent PayPal Dark Blue
+//   - Light Blue #3399FF  (corps "Bayit", lettre B) — équivalent PayPal Royal Blue
+//   - Gold       #FFCC00  (pointe du A, accent)      — touche gold distinctive
+//
+// Le CDC V4 §2.1 mentionnait Navy #003087 / Gold #D4AF37 / Innovation #009CDE,
+// mais ces valeurs ne correspondent pas au logo réel.
+// Les tokens ci-dessous ont été alignés sur le logo. Le CDC §2 devrait être
+// mis à jour en conséquence (recommandation d'audit 11.8).
+//
+// Tokens :
 // - Color tokens (Principal, Gold, Innovation, Validation, Alert, Neutral)
 // - Typography scale
 // - Spacing tokens
@@ -9,47 +20,47 @@
 // - Shadow tokens
 // - Exported as both JS constants and CSS custom properties
 
-// ============ COLOR TOKENS (CDC §2.1) ============
+// ============ COLOR TOKENS (CDC §2.1 — alignés sur le logo réel) ============
 
 export const colors = {
-  /** Principal — Navy #003087 */
+  /** Principal — Dark Blue #003366 (logo lettre A, équiv. PayPal Dark Blue) */
   principal: {
     50: '#e6eef9',
     100: '#c4d8f3',
     200: '#9ebfeb',
     300: '#78a6e3',
     400: '#5b8fdc',
-    500: '#003087',
-    600: '#002b78',
-    700: '#002468',
-    800: '#001f5c',
-    900: '#001440',
+    500: '#003366',  // ← logo exact (was #003087)
+    600: '#002b5c',
+    700: '#002452',
+    800: '#001f47',
+    900: '#001a3d',
   },
-  /** Gold — #D4AF37 */
+  /** Gold — #FFCC00 (logo pointe du A, gold vif) + #D4AF37 (bronze gold conservé pour accents sombres) */
   gold: {
-    50: '#faf6e6',
-    100: '#f2e9be',
-    200: '#e6c65c',
-    300: '#FFD700',
-    400: '#D4AF37',
+    50: '#fffbe6',
+    100: '#fff4b3',
+    200: '#ffe680',
+    300: '#FFCC00',  // ← logo exact gold vif (was #FFD700)
+    400: '#D4AF37',  // bronze gold — conservé pour accents sombres / hover
     500: '#b8961f',
     600: '#9c7d16',
     700: '#80650f',
     800: '#6b530d',
     900: '#4a3808',
   },
-  /** Innovation — Blue #009CDE */
+  /** Innovation — Light Blue #3399FF (logo lettre B, équiv. PayPal Royal Blue) */
   innovation: {
-    50: '#e6f5fc',
-    100: '#b3e3f6',
-    200: '#80d1f0',
-    300: '#4dbfea',
-    400: '#26b3e4',
-    500: '#009CDE',
-    600: '#008bc5',
-    700: '#007aab',
-    800: '#006992',
-    900: '#004a66',
+    50: '#e6f2ff',
+    100: '#b3d9ff',
+    200: '#80c2ff',
+    300: '#4daaff',
+    400: '#1a9bff',
+    500: '#3399FF',  // ← logo exact (was #009CDE)
+    600: '#0077e6',
+    700: '#0066cc',
+    800: '#0055b3',
+    900: '#003d80',
   },
   /** Validation — Green #00A651 */
   validation: {
@@ -205,15 +216,17 @@ export const animation = {
 
 export const shadows = {
   /** Gold glow for premium elements */
-  goldGlow: '0 0 20px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1)',
+  goldGlow: '0 0 20px rgba(255, 204, 0, 0.35), 0 0 60px rgba(255, 204, 0, 0.12)',
   /** Card shadow for elevated cards */
   cardShadow: '0 2px 16px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.08)',
   /** Navy shadow for branded elements */
-  navyShadow: '0 4px 24px rgba(0, 48, 135, 0.12), 0 1px 4px rgba(0, 48, 135, 0.06)',
+  navyShadow: '0 4px 24px rgba(0, 51, 102, 0.18), 0 1px 4px rgba(0, 51, 102, 0.08)',
   /** Glassmorphism shadow */
   glassShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1)',
   /** Deep shadow for modals/overlays */
   deepShadow: '0 16px 48px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1)',
+  /** Light blue glow for innovation/CTA elements — uses logo light blue #3399FF */
+  innovationGlow: '0 0 20px rgba(51, 153, 255, 0.35), 0 0 60px rgba(51, 153, 255, 0.12)',
 } as const;
 
 // ============ GLASSMORPHISM TOKENS (CDC §2.6) ============
@@ -226,10 +239,10 @@ export const glassmorphism = {
     blur: '20px',
     saturate: '180%',
   },
-  /** Navy glass — dark navy background */
+  /** Navy glass — dark navy background (logo dark blue #003366) */
   navy: {
-    background: 'rgba(0, 48, 135, 0.85)',
-    border: 'rgba(255, 255, 255, 0.1)',
+    background: 'rgba(0, 51, 102, 0.85)',
+    border: 'rgba(255, 204, 0, 0.15)',
     blur: '20px',
     saturate: '180%',
   },

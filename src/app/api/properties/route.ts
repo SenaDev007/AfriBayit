@@ -153,7 +153,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     // Auth: only agents and admins can create properties
-    const auth = await authGuard({ requiredRoles: ['agent', 'admin'] });
+    const auth = await authGuard({ requiredRoles: ['CERTIFIED_AGENT', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     // Agent certification enforcement: only agents with verificationStatus = 'APPROVED' can publish

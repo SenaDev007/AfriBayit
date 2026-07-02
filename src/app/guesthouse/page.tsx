@@ -4,6 +4,25 @@ import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Guesthouses — AfriBayit",
+  description: "Découvrez les guesthouses AfriBayit en Afrique de l'Ouest. Hébergement authentique et chaleureux.",
+  keywords: ["guesthouse", "maison d'hôtes", "hébergement", "Afrique"],
+  openGraph: {
+    title: "Guesthouses — AfriBayit",
+    description: "Découvrez les guesthouses AfriBayit en Afrique de l'Ouest. Hébergement authentique et chaleureux.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Guesthouses — AfriBayit",
+    description: "Découvrez les guesthouses AfriBayit en Afrique de l'Ouest. Hébergement authentique et chaleureux.",
+  },
+};
+
 const GuesthouseModule = dynamic(() => import('@/components/afribayit/GuesthouseModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

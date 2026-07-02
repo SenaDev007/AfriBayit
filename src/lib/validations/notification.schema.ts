@@ -9,7 +9,7 @@ export const notificationCreateSchema = z.object({
   actionUrl: z.string().optional(),
   actorId: z.string().optional(),
   actorName: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   channels: z.array(z.enum(['push', 'email', 'sms', 'whatsapp'])).optional(),
 });
 

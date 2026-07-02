@@ -36,6 +36,7 @@ export interface OTABooking {
   currency: string;
   status: BookingStatus;
   specialRequests?: string;
+  hotelId?: string;
 }
 
 export interface SyncResult {

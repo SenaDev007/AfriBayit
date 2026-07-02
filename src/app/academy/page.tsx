@@ -3,6 +3,25 @@
 import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Academy — AfriBayit",
+  description: "Formations immobilières en Afrique de l'Ouest. Cours, certifications, experts.",
+  keywords: ["formation", "academy", "cours immobilier", "certification"],
+  openGraph: {
+    title: "Academy — AfriBayit",
+    description: "Formations immobilières en Afrique de l'Ouest. Cours, certifications, experts.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Academy — AfriBayit",
+    description: "Formations immobilières en Afrique de l'Ouest. Cours, certifications, experts.",
+  },
+};
+
 const AcademyModule = dynamic(() => import('@/components/afribayit/AcademyModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

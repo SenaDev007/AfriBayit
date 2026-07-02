@@ -58,9 +58,11 @@ const FedaPayIcon = ({ size = 28 }: { size?: number }) => (
   </svg>
 );
 import { FooterBackgroundGradient, TextHoverEffect } from '@/components/ui/hover-footer';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function Footer() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const navigateTo = (href: string) => {
     router.push(href);
@@ -246,14 +248,13 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm leading-relaxed text-gray-200">
-              Où l&apos;Afrique trouve sa maison. Où les rêves deviennent adresses.
-              Plateforme immobilière de référence en Afrique de l&apos;Ouest, agréée par les autorités immobilières.
+              {t('footer.tagline', "Où l'Afrique trouve sa maison. Où les rêves deviennent adresses. Plateforme immobilière de référence en Afrique de l'Ouest, agréée par les autorités immobilières.")}
             </p>
 
             {/* Countries */}
             <div className="mt-2">
               <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-2">
-                Pays couverts
+                {t('footer.countries', 'Pays couverts')}
               </p>
               <div className="flex flex-wrap gap-2">
                 {countries.map((c) => (
@@ -274,7 +275,7 @@ export default function Footer() {
           <div className="flex flex-col space-y-4">
             <h4 className="text-white text-lg font-semibold flex items-center gap-2">
               <Mail size={18} className="text-[#D4AF37]" />
-              Contactez-nous
+              {t('footer.contact', 'Contactez-nous')}
             </h4>
             <ul className="space-y-4">
               {contactInfo.map((item, i) => (
@@ -328,7 +329,7 @@ export default function Footer() {
           <div className="flex flex-col space-y-4">
             <h4 className="text-white text-lg font-semibold flex items-center gap-2">
               <Shield size={18} className="text-[#D4AF37]" />
-              Paiement & Partenaires
+              {t('footer.partners', 'Paiement & Partenaires')}
             </h4>
 
             {/* Official payment card icons */}
@@ -362,7 +363,7 @@ export default function Footer() {
             <div className="mt-4 p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30">
               <p className="text-xs text-[#D4AF37] font-medium flex items-center gap-2">
                 <Shield size={14} />
-                Transactions sécurisées par Escrow & GeoTrust
+                {t('footer.secure', 'Transactions sécurisées par Escrow & GeoTrust')}
               </p>
             </div>
           </div>
@@ -400,21 +401,21 @@ export default function Footer() {
         {/* Footer bottom */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-4 md:space-y-0">
           <p className="text-gray-300 text-xs text-center md:text-left">
-            &copy; {new Date().getFullYear()} AfriBayit. Tous droits réservés. Plateforme agréée par les autorités immobilières.
+            &copy; {new Date().getFullYear()} AfriBayit. {t('footer.rights', 'Tous droits réservés. Plateforme agréée par les autorités immobilières.')}
           </p>
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/auth/login')}
               className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
-              Espace Pro
+              {t('footer.proSpace', 'Espace Pro')}
             </button>
             <span className="text-gray-600">|</span>
             <button
               onClick={() => navigateTo('/admin')}
               className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
-              Administration
+              {t('footer.administration', 'Administration')}
             </button>
           </div>
         </div>

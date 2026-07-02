@@ -1,5 +1,10 @@
 // AfriBayit — Rebecca AI Chat Endpoint
 // POST /api/rebecca/chat — Main chat endpoint with RAG + function calling + guardrails + handoff + memory
+//
+// SECURITY FIX (P1.2 — juillet 2026) :
+// - IDOR fix : `userId` est désormais ignoré du body et remplacé par authGuard().userId
+// - Un utilisateur ne peut plus falsifier l'historique de conversation d'autrui
+// - Ajout de authGuard() pour exiger une session authentifiée
 
 import { NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
@@ -9,6 +14,7 @@ import { executeRebeccaFunction, REBECCA_FUNCTIONS } from '../functions/route';
 import { applyGuardrails, validateRebeccaResponse } from '@/lib/rebecca/guardrails';
 import { shouldHandoffToHuman, buildHandoffMessage } from '@/lib/rebecca/handoff';
 import { checkPromptInjection, validateOutputSecurity, buildProtectedSystemPrompt } from '@/lib/rebecca/prompt-injection-guard';
+import { authGuard } from '@/lib/auth-guard';
 
 import {  getConversationMemory,
   storeConversationMemory,
@@ -29,11 +35,17 @@ const failureTracker = new Map<string, number>();
 
 export async function POST(request: Request) {
   try {
+    // 🔒 Auth: require authenticated session
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+    // `userId` is now derived from the authenticated session (IDOR fix)
+    const userId = auth.userId!;
+    const userCountry = auth.country || undefined;
+
     const body = await request.json();
-    const { messages, sessionId, userId, country, city } = body as {
+    const { messages, sessionId, country, city } = body as {
       messages: ChatMessage[];
       sessionId?: string;
-      userId?: string;
       country?: string;
       city?: string;
     };
@@ -53,7 +65,7 @@ export async function POST(request: Request) {
       );
     }
 
-    //  Step 0: Apply guardrails 
+    //  Step 0: Apply guardrails
     const guardResult = applyGuardrails(lastUserMessage.content);
     if (!guardResult.allowed) {
       return NextResponse.json({

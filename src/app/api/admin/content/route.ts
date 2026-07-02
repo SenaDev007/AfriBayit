@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authGuard } from '@/lib/auth-guard';
 
 // Hardcoded content sections since there's no ContentItem model
 const CONTENT_SECTIONS = [
@@ -55,6 +56,10 @@ const COUNTRY_OVERRIDES: Record<string, Record<string, Record<string, string>>> 
 
 export async function GET(request: NextRequest) {
   try {
+    // 🔒 P1.3 — Admin authGuard (defense in depth)
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const sectionId = searchParams.get('section') || '';
     const country = searchParams.get('country') || '';
@@ -89,6 +94,10 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    // 🔒 P1.3 — Admin authGuard (defense in depth)
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { sectionId, itemKey, country, value } = body;
 

@@ -203,3 +203,105 @@ Stage Summary:
 - White text is now visible against the navy hero background
 - Borders remain visible (border-white/40 for Admin, border-white for Connexion)
 - Hover states preserved (bg-white/15 for Admin, bg-white for Connexion)
+
+---
+Task ID: 5
+Agent: Audit-Modules
+Task: Audit modules métier AfriBayit vs CDC
+
+Work Log:
+- Lu worklog.md existant (4 tâches précédentes) pour identifier les fixes déjà appliqués
+- Vérifié que tous les fixes du worklog sont en place:
+  * Disputes: db.transaction.findMany where disputeReason NOT NULL (Prisma) ✓
+  * Escrow 2FA: verifyTOTP(user.twoFactorSecret, otpCode) au lieu d'accepter tout code ✓
+  * Ambassador commissions: tiers.ts (0.02/0.03/0.04) et commission-engine.ts (0.02/0.03/0.04) alignés ✓
+  * Notary e-signature: db.transactionTimeline.create (plus Map in-memory) ✓
+- Audité les 30 modules métier en ouvrant composants + API routes + lib + DB schema pour chacun:
+  * Modules 1-5: Agents/Immobilier Core/LCD/Guesthouses/Hospitality
+  * Modules 6-10: ProMatch/Academy/Community/Notifications/Analytics
+  * Modules 11-15: Escrow/Paiements/Rebecca/AVM/Anti-fraude
+  * Modules 16-22: OCR/VR-AR/Notary/GeoTrust/KYC/Tax/Financing
+  * Modules 23-30: Investment Score/Neighborhood/Wallet/Subscriptions/Disputes/USSD/Ambassadeurs/Blockchain
+- Identifié 78 modèles Prisma, 100+ routes API, 50+ composants métier
+- Vérifié spécifiquement si chaque fonctionnalité est réelle (Prisma) ou mock (in-memory/hardcoded)
+- Découvert 5 problèmes critiques non documentés dans worklog:
+  * Analytics listing-views.ts utilise in-memory store (const viewEvents = []) — pas persisté
+  * Analytics API injecte données démo quand stats vides (totalViews: 342 hardcoded)
+  * VR/AR API retourne Unsplash démo quand pas de tours DB
+  * Neighborhood safety score = Math.random() (50 + Math.random() * 30)
+  * Blockchain: seulement un champ string blockchainHash — aucune vraie intégration Web3
+- Découvert 3 problèmes modérés:
+  * Appointments scheduler in-memory (lib/scheduling/index.ts Map<string, Appointment>)
+  * USSD sessions in-memory (sessions = new Map()) — perdues au redémarrage
+  * Artisan model manque lat/lng → proximity scoring tombe toujours sur city/country fallback
+- Produit fichier /home/z/my-project/audit-modules.md (livrable complet) avec pour chaque module:
+  * Exigences CDC résumées
+  * Implémentation réelle (fichiers + lignes de code)
+  * Fonctionnalités couvertes
+  * Écarts/manques
+  * Qualité (mock vs réel)
+  * Score de conformité % justifié
+- Tableau synthétique final avec scores par module et moyennes
+
+Stage Summary:
+- 30 modules audités exhaustivement
+- Moyenne globale conformité CDC: ~83%
+- 12 modules ≥ 90% (Escrow 95%, Paiements 95%, Rebecca 93%, Hospitality 93%, GeoTrust 93%, Ambassadeurs 93%, Immobilier Core/Guesthouses/Academy/Community/Notifications/OCR ~88-92%)
+- 11 modules 75-89% (solides/bons)
+- 3 modules 60-74% (VR/AR 65%, Neighborhood 70%, Agents 75%)
+- 2 modules critiques: Analytics 55%, Blockchain 10%
+- Tous les fixes du worklog précédent sont confirmés en place
+- 5 corrections prioritaires recommandées identifiées (Analytics persistence, Blockchain implémentation, VR/AR cleanup démo, Neighborhood safety score, Appointments DB persistence)
+- Livrable: /home/z/my-project/audit-modules.md (rapport complet structuré)
+
+---
+Task ID: 6
+Agent: Audit-Infra
+Task: Audit infra/sécurité/transverse AfriBayit
+
+Work Log:
+- Lu `/home/z/my-project/AfriBayit/worklog.md` (4 tâches antérieures documentées)
+- Analysé `package.json` (130 lignes, 90+ dépendances) + double lockfile (bun.lock avec nom template upstream "nextjs_tailwind_shadcn_ts" + package-lock.json "afribayit")
+- Audit `next.config.ts`: `ignoreBuildErrors: true` ligne 6 (critique), `reactStrictMode: false`, `images.remotePatterns: hostname: "**"` (SSRF potentiel), `output: "standalone"` manquant alors que Dockerfile l'utilise
+- Audit `Dockerfile` (28 lignes, 4 stages): incohérent (copie bun.lock puis npm ci), pas de .dockerignore, prisma engine potentiellement absent en runner
+- Audit `docker-compose.yml` (26 lignes): Postgres 16 + Redis 7, mais pas de service Caddy
+- Audit `Caddyfile` (23 lignes): écoute HTTP port 81 sans TLS, `XTransformPort` query param = SSRF potentiel vers n'importe quel port localhost
+- Audit CI/CD `.github/workflows/ci.yml` (32 lignes): build + lint, mais `npm test || echo "No tests configured yet"` — 0 test réel, pas de SAST
+- Audit `eslint.config.mjs`: 27 règles désactivées dont `no-undef: off`, `no-unreachable: off`, `@typescript-eslint/no-explicit-any: off`
+- Audit `prisma/schema.prisma` (1 678 lignes, 78 modèles): provider PostgreSQL, 17+ tables avec champ `country`
+- Audit migrations: `00000000000000_enable_postgis` (postgis + GIST indexes + set_current_tenant function), `rls.sql` (176 lignes, 9 tables RLS), `postgis_extension.sql` (doublon), `scripts/run-rls.js` (124 lignes)
+- CRITIQUE: trouvé password Neon `npg_VPlSR7Z9UiYD` hardcodé dans 3 fichiers: `.env.example:5`, `scripts/seed-production.ts:7`, `scripts/run-rls.js:3`
+- Audit multitenancy: `lib/tenant/config.ts` (468 lignes, 5 pays BJ/CI/BF/TG/SN), `lib/db-tenant.ts` (269 lignes, Prisma $extends pour auto-filter reads mais pas writes), `lib/db-rls.ts` (127 lignes, withRLSContext via transaction), `src/middleware.ts` (357 lignes, routing par subdomain + cookie), `src/contexts/CountryContext.tsx` (212 lignes, ne gère pas SN), `app/admin/[country]/layout.tsx` (382 lignes)
+- Bug multitenancy: `setCountryContext` met header `x-afribayit-country` mais `extractTenantFromRequest` cherche `x-tenant-country` — header jamais lu
+- Bug RLS: `ALTER DATABASE AfriBayit SET app.current_country = 'ALL'` (default super admin) + policy `current_setting(...) = ''` autorise tout si variable non set
+- Audit sécurité: `lib/auth.ts` (587 lignes, CredentialsProvider + Google + Facebook custom OAuth2 sans scope email), `lib/twofa.ts` (197 lignes, TOTP RFC 6238 via otpauth), `lib/otp.ts` (195 lignes, OTP 6 digits mais SMS TODO ligne 42, MAX_OTP_ATTEMPTS non appliqué)
+- Audit `lib/security/*`: rbac.ts (14 rôles, déclaratif non enforced), jwt-security.ts (595 lignes, RS256 custom, in-memory blacklist/refresh Map — serverless problem), password.ts (Argon2id OWASP), rate-limiter.ts (Redis + fallback mais non appliqué globalement), cors.ts (origines manquent sous-domaines pays), helmet.ts (complet mais applySecurityHeaders jamais appelé), anti-scraping.ts (552 lignes, in-memory + CAPTCHA jamais intégré), fraud-detector.ts (643 lignes, 5 checks), tenant-guard.ts (déclaratif), input-validation.ts (primitives Zod + custom)
+- CRITIQUE: 22/28 routes admin API sans authGuard (vérifié par grep). Routes avec authGuard: community, courses, escrow, kyc, subscriptions, wallets. Routes sans: users, properties, transactions, bookings, revenue, ota, stats, content, notifications, payouts, reviews, short-term-rentals, artisans, notaries, geotrust, guesthouses, hotels, disputes, accreditations, ambassadors, analytics, audit-logs
+- CRITIQUE: `/api/escrow/[id]/release-2fa/route.ts` lignes 50 (userId from body) + 69 (confirmationChecked bypass TOTP) — contournable, pas d'authGuard
+- Audit Sentry: 3 configs (client/server/edge), `withSentryConfig` wrap conditionnel dans next.config.ts, mais 0 appel manuel `Sentry.captureException` dans src
+- Audit PWA: `public/manifest.json` (84 lignes) + `src/app/manifest.ts` (32 lignes) = double manifest (layout.tsx référence manifest.json), `public/sw.js` (412 lignes, 4 caches, strategies network-first/SWR/cache-first, background sync, push), PWARegistration.tsx, PWAInstallPrompt.tsx, offline/page.tsx (149 lignes), `next-pwa` installé mais inutilisé
+- Audit i18n: 5 locales (fr 625 clés, en 625, wo 202, fon 200, local 45) — `lib/i18n/index.ts:56` bug `export { fr, en } from './locales/fr'`, `context.tsx:25` `VALID_LOCALES = ['fr', 'en']` bloque wo/fon, `<html lang="fr">` hardcodé, pas de RTL, `next-intl` installé mais jamais importé
+- Audit mobile: `use-mobile.ts` (19 lignes, breakpoint 768), viewport meta OK (maximumScale: 5), peu de touch gestures custom (2 occurrences), VoiceSearchButton + /api/voice-search (z-ai-web-dev-sdk ASR multilingue)
+- Audit USSD: double engine (lib/ussd/ussd-engine.ts 605 lignes + inline api/ussd/route.ts 610 lignes, menus différents), sessions in-memory Map (serverless problem), africas-talking.ts (114 lignes, sendSms + formatUssdResponse), shortcode `*XXX#` placeholder
+- Audit realtime: lib/realtime/* (5 fichiers, Pusher server/client + channels helper), /api/realtime/auth (137 lignes, authz granulaire user/escrow/chat/property), /api/realtime/sse (194 lignes, fallback SSE in-memory, Upstash REST ne supporte pas pub/sub), /api/socketio (stub, mini-service absent)
+- Audit storage: lib/storage/r2.ts (144 lignes, R2 via AWS SDK S3-compatible), /api/storage/signed-url (95 lignes, auth + Zod, mais pas de validation accès download horizontal)
+- Audit cache: lib/cache/redis.ts (232 lignes) + lib/redis.ts (176 lignes) = double client Redis, api-cache.ts (144 lignes), session-cache.ts (139 lignes)
+- Audit monitoring: 3 Sentry configs + analytics lib (4 fichiers) + audit-logs API sans authGuard (TODO ligne 39)
+- Audit dette technique: 10 TODOs explicites, 5 modules dupliqués (lockfile/manifest/redis/i18n/USSD), 5 dépendances mortes (next-pwa/next-intl/socket.io/embla/react-syntax-highlighturer), 85 console.log, prisma/dev.db (864 KB SQLite) en repo, our-work-page.json (74 KB) à la racine, replace_emojis.py (307 lignes) à la racine
+- Vérifié absence .env en repo (git ls-files), mais git history mentionne .env commit puis retiré selon worklog Task ID 1
+- Vérifié `bun-types` en devDependencies (incohérent avec npm CI)
+- Rédigé rapport final `/home/z/my-project/audit-infra.md` (15 sections A à N + scores de conformité + top 10 risques)
+
+Stage Summary:
+- Rapport audit-infra.md livré (15 sections A-N, ~900 lignes)
+- Stack CDC §3: ~80% (Next 16 + React 19 + Prisma 6 + Neon + Upstash + R2 + Sentry + Resend + Mapbox ✓; Elasticsearch absent, Stripe/Pusher/JWT env vars non documentées)
+- Sécurité CDC §10: ~60% (base solide Argon2id + TOTP + RLS + fraud detector, mais 4 risques critiques)
+- Déploiement CDC §9: ~70% (Vercel auto-deploy ✓, mais CI sans tests/SAST, Dockerfile incohérent, Caddyfile sans TLS + SSRF)
+- Multitenancy CDC §3.2: ~70% (config 5 pays + middleware routing + Prisma extends + RLS, mais header non injecté, writes non filtrés, RLS defaults permissifs)
+- 4 risques critiques identifiés:
+  1. Password Neon hardcodé dans 3 fichiers (.env.example, seed-production.ts, run-rls.js)
+  2. `ignoreBuildErrors: true` dans next.config.ts — erreurs TS ignorées au build
+  3. 22/28 routes admin API sans authGuard
+  4. Escrow 2FA release contournable (userId from body + confirmationChecked bypass)
+- 6 risques hauts/moyens: Caddyfile SSRF/no-TLS, Dockerfile incohérent, Helmet/CSP non appliqué, RLS permissive, rate limiter non appliqué + in-memory serverless, i18n bugué
+- Recommandation: bloquer mise en production jusqu'à résolution des 4 risques critiques + tests minimum + SAST en CI

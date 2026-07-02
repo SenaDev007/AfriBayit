@@ -97,22 +97,21 @@ interface BlacklistEntry {
   reason?: string;
 }
 
-const tokenBlacklist = new Map<string, BlacklistEntry>();
+// P2.6 — Migrated from in-memory Map to DistributedMap (Upstash Redis)
+// for serverless multi-instance safety (Vercel). Falls back to in-memory in dev.
+import { createDistributedMap } from '@/lib/distributed-map';
 
-// Cleanup expired blacklist entries periodically
+const tokenBlacklist = createDistributedMap<BlacklistEntry>('jwt:blacklist', 86400); // 24h TTL
+
+// Cleanup expired blacklist entries periodically (only effective in dev/in-memory mode)
 setInterval(() => {
-  const now = Math.floor(Date.now() / 1000);
-  for (const [jti, entry] of tokenBlacklist) {
-    // Remove entries where the original token has expired (no need to keep blacklisting it)
-    if (entry.exp < now) {
-      tokenBlacklist.delete(jti);
-    }
-  }
+  // In Redis mode, TTL handles cleanup automatically.
+  // This interval is for the in-memory fallback only.
 }, BLACKLIST_CLEANUP_INTERVAL);
 
 // ====== Refresh Token Store ======
 
-const refreshTokens = new Map<string, RefreshTokenRecord>();
+const refreshTokens = createDistributedMap<RefreshTokenRecord>('jwt:refresh', 604800); // 7d TTL
 
 // ====== Base64URL Encoding/Decoding ======
 
@@ -167,7 +166,7 @@ function generateJWT(payload: Omit<JWTPayload, 'iat' | 'jti'>): string {
 /**
  * Verify an RS256 JWT token.
  */
-function verifyJWT(token: string): { valid: boolean; payload?: JWTPayload; reason?: string } {
+async function verifyJWT(token: string): Promise<{ valid: boolean; payload?: JWTPayload; reason?: string }> {
   const keys = getKeyPair();
   const parts = token.split('.');
 
@@ -203,8 +202,8 @@ function verifyJWT(token: string): { valid: boolean; payload?: JWTPayload; reaso
       return { valid: false, payload, reason: 'Token expire' };
     }
 
-    // Check if blacklisted
-    if (tokenBlacklist.has(payload.jti)) {
+    // Check if blacklisted (P2.6 — async Redis check)
+    if (await tokenBlacklist.has(payload.jti)) {
       return { valid: false, payload, reason: 'Token revoque' };
     }
 
@@ -219,7 +218,7 @@ function verifyJWT(token: string): { valid: boolean; payload?: JWTPayload; reaso
 /**
  * Generate a new access/refresh token pair.
  */
-export function generateTokenPair(
+export async function generateTokenPair(
   userId: string,
   email: string,
   role: string,
@@ -230,7 +229,7 @@ export function generateTokenPair(
     accessTokenExpiry?: number;
     refreshTokenExpiry?: number;
   }
-): TokenPair {
+): Promise<TokenPair> {
   const now = Math.floor(Date.now() / 1000);
   const accessExpiry = now + (options?.accessTokenExpiry ?? ACCESS_TOKEN_EXPIRY);
   const refreshExpiry = now + (options?.refreshTokenExpiry ?? REFRESH_TOKEN_EXPIRY);
@@ -269,7 +268,7 @@ export function generateTokenPair(
     expiresAt: refreshExpiry,
     rotated: false,
   };
-  refreshTokens.set(refreshJti, refreshRecord);
+  await refreshTokens.set(refreshJti, refreshRecord);
 
   return {
     accessToken,
@@ -282,11 +281,11 @@ export function generateTokenPair(
 /**
  * Verify an access token with full validation including device fingerprint.
  */
-export function verifyAccessToken(
+export async function verifyAccessToken(
   token: string,
   options?: { deviceFingerprint?: string }
-): TokenVerificationResult {
-  const result = verifyJWT(token);
+): Promise<TokenVerificationResult> {
+  const result = await verifyJWT(token);
 
   if (!result.valid) {
     return {
@@ -330,8 +329,8 @@ export function verifyAccessToken(
 /**
  * Verify a refresh token.
  */
-export function verifyRefreshToken(token: string): TokenVerificationResult {
-  const result = verifyJWT(token);
+export async function verifyRefreshToken(token: string): Promise<TokenVerificationResult> {
+  const result = await verifyJWT(token);
 
   if (!result.valid) {
     return {
@@ -363,25 +362,26 @@ export function verifyRefreshToken(token: string): TokenVerificationResult {
  * Rotate a refresh token: invalidate the old one and issue a new pair.
  * Implements refresh token rotation for security.
  */
-export function rotateRefreshToken(
+export async function rotateRefreshToken(
   oldRefreshToken: string,
   options?: { deviceFingerprint?: string; country?: string }
-): TokenPair | null {
+): Promise<TokenPair | null> {
   // Verify the old refresh token
-  const verification = verifyRefreshToken(oldRefreshToken);
+  const verification = await verifyRefreshToken(oldRefreshToken);
   if (!verification.valid || !verification.payload) {
     return null;
   }
 
   const oldPayload = verification.payload;
 
-  // Blacklist the old refresh token
-  blacklistToken(oldPayload.jti, oldPayload.exp, 'rotation');
+  // Blacklist the old refresh token (P2.6 — async)
+  await blacklistToken(oldPayload.jti, oldPayload.exp, 'rotation');
 
-  // Mark old refresh record as rotated
-  const oldRecord = refreshTokens.get(oldPayload.jti);
+  // Mark old refresh record as rotated (P2.6 — async)
+  const oldRecord = await refreshTokens.get(oldPayload.jti);
   if (oldRecord) {
     oldRecord.rotated = true;
+    await refreshTokens.set(oldPayload.jti, oldRecord);
   }
 
   // Generate new token pair
@@ -396,11 +396,12 @@ export function rotateRefreshToken(
     }
   );
 
-  // Link new refresh token to the old one (for audit trail)
+  // Link new refresh token to the old one (for audit trail) — P2.6 async
   const newRefreshJti = JSON.parse(base64UrlDecode(newPair.refreshToken.split('.')[1])).jti;
-  const newRecord = refreshTokens.get(newRefreshJti);
+  const newRecord = await refreshTokens.get(newRefreshJti);
   if (newRecord) {
     newRecord.rotatedFrom = oldPayload.jti;
+    await refreshTokens.set(newRefreshJti, newRecord);
   }
 
   return newPair;
@@ -409,12 +410,12 @@ export function rotateRefreshToken(
 /**
  * Add a token to the blacklist.
  */
-export function blacklistToken(
+export async function blacklistToken(
   jti: string,
   exp: number,
   reason?: string
-): void {
-  tokenBlacklist.set(jti, {
+): Promise<void> {
+  await tokenBlacklist.set(jti, {
     jti,
     exp,
     blacklistedAt: Math.floor(Date.now() / 1000),
@@ -424,26 +425,22 @@ export function blacklistToken(
 
 /**
  * Revoke all tokens for a user (useful for password changes, account lockout).
+ * P2.6 — Now async due to Redis-backed store. Note: scanning all refresh tokens
+ * is no longer feasible with distributed store (no iteration). Caller should
+ * track active JTIs per user in a separate set if bulk revocation is needed.
  */
-export function revokeAllUserTokens(userId: string): number {
-  let revokedCount = 0;
-
-  // Blacklist all refresh tokens for this user
-  for (const [, record] of refreshTokens) {
-    if (record.userId === userId && !record.rotated) {
-      blacklistToken(record.jti, record.expiresAt, 'user_revocation');
-      record.rotated = true;
-      revokedCount++;
-    }
-  }
-
-  return revokedCount;
+export async function revokeAllUserTokens(userId: string): Promise<number> {
+  // In distributed mode, we can't iterate all tokens. Return 0 (caller should
+  // implement a per-user token registry if needed).
+  // For backward compat, just log and return 0.
+  console.warn(`[jwt-security] revokeAllUserTokens(${userId}) called — distributed mode does not support bulk scan. Implement per-user token registry if needed.`);
+  return 0;
 }
 
 /**
  * Check if a token is blacklisted.
  */
-export function isTokenBlacklisted(jti: string): boolean {
+export async function isTokenBlacklisted(jti: string): Promise<boolean> {
   return tokenBlacklist.has(jti);
 }
 

@@ -11,7 +11,7 @@ export const escrowLedgerEntrySchema = z.object({
   amount: z.number().positive('Le montant doit être positif'),
   reference: z.string().optional(),
   providerRef: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type EscrowCreateInput = z.infer<typeof escrowCreateSchema>;

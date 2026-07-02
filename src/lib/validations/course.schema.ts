@@ -13,7 +13,7 @@ export const courseCreateSchema = z.object({
   certificate: z.boolean().default(false),
   image: z.string().url().optional(),
   videoUrl: z.string().url().optional(),
-  modules: z.array(z.record(z.unknown())).optional(),
+  modules: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 export type CourseCreateInput = z.infer<typeof courseCreateSchema>;

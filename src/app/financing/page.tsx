@@ -2,6 +2,25 @@
 
 import FinancingSimulator from '@/components/afribayit/FinancingSimulator';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Financement — AfriBayit",
+  description: "Simulez votre financement immobilier en Afrique de l'Ouest. Prêts, taux, mensualités.",
+  keywords: ["financement", "prêt immobilier", "simulation", "mensualités"],
+  openGraph: {
+    title: "Financement — AfriBayit",
+    description: "Simulez votre financement immobilier en Afrique de l'Ouest. Prêts, taux, mensualités.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Financement — AfriBayit",
+    description: "Simulez votre financement immobilier en Afrique de l'Ouest. Prêts, taux, mensualités.",
+  },
+};
+
 export default function FinancingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#003087]/5 via-white to-white">

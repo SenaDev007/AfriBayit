@@ -6,6 +6,25 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Recherche immobilière — AfriBayit",
+  description: "Trouvez votre bien immobilier en Afrique de l'Ouest. Recherche avancée par type, prix, localisation, features.",
+  keywords: ["recherche immobilier", "annonce immobilière", "villa", "appartement", "terrain"],
+  openGraph: {
+    title: "Recherche immobilière — AfriBayit",
+    description: "Trouvez votre bien immobilier en Afrique de l'Ouest. Recherche avancée par type, prix, localisation, features.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Recherche immobilière — AfriBayit",
+    description: "Trouvez votre bien immobilier en Afrique de l'Ouest. Recherche avancée par type, prix, localisation, features.",
+  },
+};
+
 const EnhancedSearchResults = dynamic(() => import('@/components/afribayit/EnhancedSearchResults'), {
   loading: () => (
     <div className="min-h-screen flex items-center justify-center pt-20">

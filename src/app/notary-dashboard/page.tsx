@@ -4,6 +4,25 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Bot, Calendar, Check, ClipboardList, Coins, FileText, Folder, Home, PenTool, ScrollText } from 'lucide-react';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Tableau de bord notaire — AfriBayit",
+  description: "Gérez vos actes et signatures notariales sur AfriBayit.",
+  keywords: ["dashboard notaire", "actes", "signatures"],
+  openGraph: {
+    title: "Tableau de bord notaire — AfriBayit",
+    description: "Gérez vos actes et signatures notariales sur AfriBayit.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tableau de bord notaire — AfriBayit",
+    description: "Gérez vos actes et signatures notariales sur AfriBayit.",
+  },
+};
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 //  Types 

@@ -85,7 +85,7 @@ export default function EventDetailPage() {
   const eventType = String(event.eventType || '');
   const typeInfo = EVENT_TYPE_LABELS[eventType] || { label: eventType, icon: <Calendar className="w-5 h-5" />, color: '#D4AF37' };
   const isVirtual = event.isVirtual === true || event.isVirtual === 'true';
-  const isFull = event.maxAttendees && Number(event.attendees) >= Number(event.maxAttendees);
+  const isFull = !!(event.maxAttendees && Number(event.attendees) >= Number(event.maxAttendees));
 
   const eventDate = event.eventDate ? new Date(String(event.eventDate)) : null;
   const endDate = event.endDate ? new Date(String(event.endDate)) : null;
@@ -120,10 +120,8 @@ export default function EventDetailPage() {
           {/* Title */}
           <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F] mb-4">{String(event.title || '')}</h1>
 
-          {/* Description */}
-          {event.description && (
-            <p className="text-sm text-gray-600 leading-relaxed mb-5">{String(event.description)}</p>
-          )}
+          <p className="text-sm text-gray-600 leading-relaxed mb-5">{String(event.description || '')}</p>
+
 
           {/* Event details grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
@@ -184,7 +182,7 @@ export default function EventDetailPage() {
           </div>
 
           {/* Meeting URL for virtual events */}
-          {isVirtual && event.meetingUrl && (
+          {isVirtual && Boolean(event.meetingUrl) && (
             <div className="mb-5 p-3 bg-[#00A651]/5 rounded-2xl border border-[#00A651]/20">
               <p className="text-xs text-[#00A651] font-medium mb-1">Lien de connexion</p>
               <a href={String(event.meetingUrl)} target="_blank" rel="noopener noreferrer" className="text-sm text-[#003087] underline break-all">{String(event.meetingUrl)}</a>

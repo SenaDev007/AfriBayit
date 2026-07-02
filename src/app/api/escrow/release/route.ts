@@ -10,7 +10,7 @@ import { processSellerPayout } from '@/lib/payments/payout';
 
 export async function POST(request: Request) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin', 'notary'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'NOTARY'] });
     if (!auth.success) return auth.response;
 
     const body = await request.json();

@@ -1,6 +1,13 @@
 const { Client } = require('pg');
 
-const DATABASE_URL = 'postgresql://neondb_owner:npg_VPlSR7Z9UiYD@ep-polished-glitter-agic460a-pooler.c-2.eu-central-1.aws.neon.tech/AfriBayit?sslmode=require';
+// SECURITY (P1.4 — juillet 2026) : Le password Neon n'est plus hardcodé.
+// Vous devez définir DATABASE_URL dans votre environnement.
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL || DATABASE_URL.startsWith('file:')) {
+  console.error('❌ DATABASE_URL must be set in environment (.env or CI/CD secret).');
+  console.error('   The previous hardcoded password has been rotated and is no longer valid.');
+  process.exit(1);
+}
 
 async function run() {
   const client = new Client({

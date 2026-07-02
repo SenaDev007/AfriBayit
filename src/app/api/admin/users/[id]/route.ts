@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;
@@ -89,7 +89,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;
@@ -137,7 +137,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;

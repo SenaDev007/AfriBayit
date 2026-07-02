@@ -3,6 +3,25 @@
 import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Communauté — AfriBayit Connect",
+  description: "Rejoignez la communauté AfriBayit : forums, événements, networking immobilier.",
+  keywords: ["communauté", "forum", "réseau", "networking"],
+  openGraph: {
+    title: "Communauté — AfriBayit Connect",
+    description: "Rejoignez la communauté AfriBayit : forums, événements, networking immobilier.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Communauté — AfriBayit Connect",
+    description: "Rejoignez la communauté AfriBayit : forums, événements, networking immobilier.",
+  },
+};
+
 const CommunityModule = dynamic(() => import('@/components/afribayit/CommunityModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

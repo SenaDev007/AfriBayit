@@ -296,7 +296,8 @@ export async function schedulePayoutAfterRelease(
   }
 
   // Calculate seller amount (minus commission)
-  const commissionRate = transaction.commissionRate || 0.025;
+  // P1.7 — fallback 0.025 → 0.05 (default to highest tier if missing) per CDC §6.2
+  const commissionRate = transaction.commissionRate || 0.05;
   const commission = Math.round(transaction.amount * commissionRate);
   const sellerAmount = transaction.amount - commission;
 

@@ -11,6 +11,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============ ENUMS (P2.4 — typed statuses for critical models) ============
+// Note: each enum is added as a NEW column (*Enum suffix) alongside the existing
+// String column for backward compatibility. The application layer will migrate
+// reads/writes to the enum column in a subsequent session. The old String column
+// remains the source of truth until the cutover is complete.
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  EXPIRED
+  SOLD
+  RENTED
+}
+
+enum TransactionStatus {
+  PENDING
+  ESCROW_FUNDED
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+  FAILED
+  DISPUTED
+  REFUNDED
+}
+
+enum EscrowState {
+  CREATED
+  FUNDED
+  PARTIAL_RELEASE
+  RELEASED
+  DISPUTED
+  REFUNDED
+  CANCELLED
+  FAILED
+}
+
+enum KycStatus {
+  PENDING
+  AI_VALIDATED
+  HUMAN_VALIDATED
+  REJECTED
+  EXPIRED
+}
+
+enum KycLevel {
+  LEVEL_0
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+}
+
 // ============ USERS & AUTH ============
 
 model User {
@@ -27,6 +80,8 @@ model User {
   country       String?  // BJ, CI, BF, TG
   city          String?
   kycLevel      Int      @default(0) // 0=Anonyme, 1=Standard, 2=Avancé, 3=Pro
+  /// P2.4 — typed KYC level (new column; legacy `kycLevel: Int` remains in place)
+  kycLevelEnum  KycLevel @default(LEVEL_0)
   score         Int      @default(0) // 0-1000 reputation score
   reputation    String   @default("Decouvreur") // Decouvreur, Acteur, Expert, Ambassadeur
   bio           String?
@@ -48,6 +103,8 @@ model User {
   twoFactorSecret String?
   preferredLanguage String @default("fr") // fr, en, sw, ha, wo, ar
   currency      String   @default("XOF") // XOF, EUR, USD, NGN, GHS, KES
+  dateOfBirth   DateTime?
+  notificationPreferences String? // JSON: user's notification preferences
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -67,6 +124,7 @@ model User {
   endorsements     SkillEndorsement[]
   sentMessages     ChatMessage[]       @relation("SentMessages")
   conversations    ConversationParticipant[]
+  appointments     Appointment[]       // P2.9 — visitor appointments
   favorites        Favorite[]
   profileViews     ProfileView[]       @relation("ProfileViewed")
   viewerProfiles   ProfileView[]       @relation("ProfileViewer")
@@ -84,6 +142,11 @@ model User {
   geometer         Geometer?
   following         Follower[]    @relation("Following")
   followers         Follower[]    @relation("Followers")
+  groupMemberships  GroupMembership[]
+  replies           CommunityReply[]
+  artisanProfile    Artisan?
+  notarySignatures  NotarySignature[]   // P2.2 — inverse relation
+  disputesInitiated Dispute[]           // P2.2 — inverse relation
 
   @@map("users")
 }
@@ -112,6 +175,8 @@ model KycDocument {
   ocrValid      Boolean  @default(false)
   aiScore       Float?   // 0-100 AI validation score
   status        String   @default("pending") // pending, ai_validated, human_validated, rejected
+  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
+  statusEnum    KycStatus @default(PENDING)
   rejectionReason String?
   country       String?  // BJ, CI, BF, TG
   createdAt     DateTime @default(now())
@@ -119,6 +184,9 @@ model KycDocument {
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, status])       // P2.3 — admin KYC queue
+  @@index([country, status])      // P2.3 — tenant-scoped KYC lookup
+  @@index([createdAt])
   @@map("kyc_documents")
 }
 
@@ -195,6 +263,8 @@ model Property {
   hasVR        Boolean  @default(false)
   hasDroneView Boolean  @default(false)
   rejectionReason String?
+  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
+  statusEnum   PropertyStatus @default(DRAFT)
   publishedAt  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -209,7 +279,14 @@ model Property {
   favorites_rel Favorite[]
   comparisons   PropertyComparison[]  @relation("PropertyA")
   comparisons2  PropertyComparison[]  @relation("PropertyB")
+  appointments  Appointment[]                        // P2.9 — property visits
 
+  @@index([country, status, createdAt])  // P2.3 — most common public query
+  @@index([agentId, status])             // P2.3 — agent dashboard
+  @@index([type, status])                // P2.3 — filter by type (was propertyType)
+  @@index([price])                       // P2.3 — price range queries
+  @@index([city, status])                // P2.3 — city filter
+  @@index([statusEnum, createdAt])       // P2.4 — typed status queries
   @@map("properties")
 }
 
@@ -247,6 +324,7 @@ model PropertyLegalDoc {
   docType     String   // titre_foncier, acd, permis_construire, decision_parcelle, lettre_attribution, arrete_concession, puh, acte_cession, certificat_propriete_andf
   docUrl      String
   ocrValid    Boolean  @default(false)
+  ocrResult   String?  // JSON: OCR extracted data
   aiScore     Float?   // 0-100 AI validation
   status      String   @default("pending") // pending, ai_validated, human_validated, rejected
   country     String   // BJ, CI, BF, TG — determines required docs
@@ -327,6 +405,8 @@ model Transaction {
   currency        String   @default("XOF")
   country         String   @default("BJ") // BJ, CI, BF, TG — pays de la transaction
   status          String   @default("CREATED") // CREATED, FUNDED, DOCS_VALIDATED, GEOTRUST_VALIDATED, NOTARY_ASSIGNED, NOTARY_IN_PROGRESS, DEED_SIGNED, ANDF_REGISTERED, RELEASED, DISPUTED, REFUNDED, EXPIRED
+  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
+  statusEnum      TransactionStatus @default(PENDING)
   escrowReference String?
   paymentProvider String?
   paymentRef      String?
@@ -348,7 +428,14 @@ model Transaction {
   buyer           User     @relation(fields: [buyerId], references: [id])
   escrowAccount   EscrowAccount?
   timelineEvents  TransactionTimeline[]
+  notarySignatures NotarySignature[]   // P2.2 — inverse relation
+  disputes         Dispute[]           // P2.2 — inverse relation
 
+  @@index([country, status, createdAt])  // P2.3 — admin transaction list
+  @@index([buyerId, status])             // P2.3 — buyer dashboard
+  @@index([sellerId, status])            // P2.3 — seller dashboard
+  @@index([status, createdAt])           // P2.3 — admin queue
+  @@index([statusEnum, createdAt])       // P2.4 — typed status queries
   @@map("transactions")
 }
 
@@ -361,6 +448,8 @@ model EscrowAccount {
   refundedAmount  Float    @default(0)
   currency        String   @default("XOF")
   status          String   @default("EMPTY") // EMPTY, FUNDED, PARTIAL_RELEASE, FULL_RELEASE, REFUNDED, DISPUTED
+  /// P2.4 — typed state (new column; legacy `status: String` remains in place)
+  stateEnum       EscrowState @default(CREATED)
   fundedAt        DateTime?
   releasedAt      DateTime?
   refundedAt      DateTime?
@@ -370,6 +459,7 @@ model EscrowAccount {
   transaction     Transaction @relation(fields: [transactionId], references: [id])
   ledger          EscrowLedger[]
 
+  @@index([stateEnum])                  // P2.4 — typed state queries
   @@map("escrow_accounts")
 }
 
@@ -421,6 +511,8 @@ model WalletTransaction {
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt])         // P2.3 — wallet history
+  @@index([status, createdAt])          // P2.3 — pending payouts queue
   @@map("wallet_transactions")
 }
 
@@ -485,6 +577,7 @@ model Course {
   image         String?
   videoUrl      String?
   published     Boolean  @default(false)
+  status        String   @default("draft") // draft, published, archived
   modules       String?  // JSON array of module objects
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -563,6 +656,7 @@ model CommunityReply {
   updatedAt   DateTime @updatedAt
 
   post        CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("community_replies")
 }
@@ -594,6 +688,7 @@ model GroupMembership {
   joinedAt  DateTime @default(now())
 
   group     CommunityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@map("group_memberships")
@@ -659,6 +754,9 @@ model Notification {
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, read, createdAt])    // P2.3 — unread notification badge
+  @@index([userId, category, createdAt]) // P2.3 — notification filter by category
+  @@index([country, createdAt])         // P2.3 — tenant-scoped broadcast
   @@map("notifications")
 }
 
@@ -689,6 +787,7 @@ model Artisan {
 
   services    ArtisanService[]
   quotes      ArtisanQuote[]
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("artisans")
 }
@@ -1299,6 +1398,8 @@ model ChatMessage {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation("SentMessages", fields: [senderId], references: [id])
 
+  @@index([conversationId, createdAt])  // P2.3 — chat history
+  @@index([senderId, createdAt])        // P2.3 — user's sent messages
   @@map("chat_messages")
 }
 
@@ -1675,4 +1776,110 @@ model AuditLog {
   @@index([country])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============ WEBHOOK EVENT (P2.1 — idempotency for Stripe/FedaPay webhooks) ============
+
+model WebhookEvent {
+  id              String   @id @default(cuid())
+  provider        String   // "stripe" | "fedapay" | "booking_com" | "expedia"
+  externalEventId String   @unique // provider's event ID (e.g. evt_xxx from Stripe)
+  eventType       String   // e.g. "payment_intent.succeeded", "payout.paid"
+  payload         String   // raw JSON body (for audit/debugging)
+  signature       String?  // signature header value (for verification audit)
+  status          String   @default("received") // "received" | "processed" | "failed" | "ignored"
+  processedAt     DateTime?
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+
+  @@index([provider, externalEventId])
+  @@index([provider, eventType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("webhook_events")
+}
+
+// ============ APPOINTMENT (P2.9 — persist appointments) ============
+
+model Appointment {
+  id          String   @id @default(cuid())
+  propertyId  String
+  userId      String   // the visitor (buyer/tenant)
+  agentId     String?  // the agent/owner (nullable for direct-to-owner)
+  scheduledAt DateTime
+  duration    Int      @default(60) // minutes
+  status      String   @default("pending") // "pending" | "confirmed" | "cancelled" | "completed" | "no_show"
+  notes       String?
+  country     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, scheduledAt])
+  @@index([userId, scheduledAt])
+  @@index([agentId, scheduledAt])
+  @@index([status])
+  @@map("appointments")
+}
+
+// ============ NOTARY SIGNATURE (P2.2 — dedicated table for notarial signatures) ============
+// Previously stored as JSON in TransactionTimeline.metadata. Promoted to a first-class
+// model so signatures can be queried, audited, and revoked independently of the timeline.
+// Schema migration: data backfill from TransactionTimeline.metadata will be performed in
+// a subsequent application-level migration session.
+
+model NotarySignature {
+  id              String   @id @default(cuid())
+  requestId       String   @unique // signature request identifier
+  transactionId   String
+  documentId      String   // deed/document being signed
+  signerId        String   // user signing
+  signerRole      String   // buyer, seller, notary, witness
+  signatureData   String   // base64 signature image or cryptographic signature
+  ipAddress       String?
+  userAgent       String?
+  isValid         Boolean  @default(true)
+  signedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  signer     User         @relation(fields: [signerId], references: [id])
+
+  @@index([transactionId])
+  @@index([signerId])
+  @@index([requestId])
+  @@map("notary_signatures")
+}
+
+// ============ DISPUTE (P2.2 — dedicated table for transaction disputes) ============
+// Previously stored as JSON in TransactionTimeline.metadata. Promoted to a first-class
+// model so disputes can be tracked, mediated, and resolved with proper audit trail.
+// Schema migration: data backfill from TransactionTimeline.metadata will be performed in
+// a subsequent application-level migration session.
+
+model Dispute {
+  id              String   @id @default(cuid())
+  transactionId   String
+  initiatedBy     String   // userId who opened the dispute
+  reason          String   // item_not_as_described, payment_issue, fraud_suspected, other
+  description     String
+  status          String   @default("open") // open, evidence_collection, mediation, resolved, rejected
+  evidenceUrls    String?  // JSON array of evidence file URLs
+  mediatorId      String?  // admin/notary assigned
+  mediatorNotes   String?
+  resolution      String?  // refund, partial_refund, release_to_seller, escalation
+  resolvedAt      DateTime?
+  resolutionAmount Float?  // amount if partial refund
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  initiator   User         @relation(fields: [initiatedBy], references: [id])
+
+  @@index([transactionId])
+  @@index([status, createdAt])
+  @@index([initiatedBy])
+  @@map("disputes")
 }

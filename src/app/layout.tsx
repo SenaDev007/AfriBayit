@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
@@ -34,7 +35,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#003087",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#003366" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1117" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -88,18 +92,25 @@ export default function RootLayout({
       <body
         className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable} font-body antialiased bg-background text-foreground`}
       >
-        <NextAuthProvider>
-          <ReactQueryProvider>
-            <LocaleProvider>
-              <AppShell>
-                {children}
-              </AppShell>
-              <Toaster />
-              <PWAInstallPrompt />
-              <PWARegistration />
-            </LocaleProvider>
-          </ReactQueryProvider>
-        </NextAuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NextAuthProvider>
+            <ReactQueryProvider>
+              <LocaleProvider>
+                <AppShell>
+                  {children}
+                </AppShell>
+                <Toaster />
+                <PWAInstallPrompt />
+                <PWARegistration />
+              </LocaleProvider>
+            </ReactQueryProvider>
+          </NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

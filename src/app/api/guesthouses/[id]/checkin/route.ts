@@ -21,7 +21,7 @@ export async function POST(
 ) {
   try {
     const { id: guesthouseId } = await params;
-    const auth = await authGuard({ requiredRoles: ['admin', 'agent', 'seller'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'CERTIFIED_AGENT', 'SELLER'] });
     if (!auth.success) return auth.response;
 
     const body = await request.json();
@@ -65,7 +65,7 @@ export async function GET(
 ) {
   try {
     const { id: guesthouseId } = await params;
-    const auth = await authGuard({ requiredRoles: ['admin', 'agent', 'seller'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'CERTIFIED_AGENT', 'SELLER'] });
     if (!auth.success) return auth.response;
 
     const { searchParams } = new URL(request.url);

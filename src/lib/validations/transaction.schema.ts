@@ -7,7 +7,7 @@ export const transactionCreateSchema = z.object({
   amount: z.number().positive('Le montant doit être positif'),
   commission: z.number().min(0).default(0),
   currency: z.string().default('XOF'),
-  conditions: z.record(z.unknown()).optional(),
+  conditions: z.record(z.string(), z.unknown()).optional(),
   notaryId: z.string().optional(),
   geometerId: z.string().optional(),
 });

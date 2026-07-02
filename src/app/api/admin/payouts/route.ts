@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: NextRequest) {
   try {
+    // 🔒 P1.3 — Admin authGuard (defense in depth)
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const country = searchParams.get('country') || '';
@@ -72,6 +77,10 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    // 🔒 P1.3 — Admin authGuard (defense in depth)
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { payoutId, action } = body;
 

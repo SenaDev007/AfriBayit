@@ -10,6 +10,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useMyProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge, BarChart3, Building2, CheckCircle, ClipboardList, Coins, CreditCard, Crown, Home, LogOut, RefreshCw, Settings, ShieldCheck, User, Wallet } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface UserDashboardProps {
   onNavigate: (section: string) => void;
@@ -57,6 +58,7 @@ function formatPrice(price: number): string {
 }
 
 export default function UserDashboard({ onNavigate, onLogout }: UserDashboardProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -114,23 +116,23 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               <Home className="w-10 h-10 text-[#003087]" />
             </div>
             <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-3">
-              Bienvenue sur AfriBayit
+              {t('dashboard.welcomeGuest', 'Bienvenue sur AfriBayit')}
             </h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto font-body">
-              Connectez-vous pour accéder à votre tableau de bord, gérer vos transactions et suivre vos activités immobilières.
+              {t('dashboard.guestPrompt', 'Connectez-vous pour accéder à votre tableau de bord, gérer vos transactions et suivre vos activités immobilières.')}
             </p>
             <div className="flex items-center justify-center gap-3">
               <a
                 href="/auth/login"
                 className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
               >
-                Se connecter
+                {t('dashboard.login', 'Se connecter')}
               </a>
               <a
                 href="/auth/register"
                 className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-full text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
               >
-                Créer un compte
+                {t('dashboard.register', 'Créer un compte')}
               </a>
             </div>
           </div>
@@ -193,7 +195,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#D93025] hover:bg-red-50 transition-all"
                 >
                   <LogOut className="w-5 h-5" />
-                  Déconnexion
+                  {t('dashboard.logout', 'Déconnexion')}
                 </button>
               </nav>
             </div>
@@ -210,16 +212,16 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               >
                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="relative z-10">
-                  <h3 className="font-display text-xl font-bold mb-2">Bienvenue sur AfriBayit ! 🏠</h3>
+                  <h3 className="font-display text-xl font-bold mb-2">{t('dashboard.welcomeBack', 'Bienvenue sur AfriBayit !')} 🏠</h3>
                   <p className="text-white/70 text-sm mb-4">
-                    Commencez par compléter votre profil et vérifier votre identité pour accéder à toutes les fonctionnalités.
+                    {t('dashboard.onboardTitle', 'Commencez par compléter votre profil et vérifier votre identité pour accéder à toutes les fonctionnalités.')}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <a href="/kyc" className="px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors">
-                      Vérifier mon identité
+                      {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
                     </a>
                     <a href="/publish" className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors">
-                      Publier une annonce
+                      {t('dashboard.publishAd', 'Publier une annonce')}
                     </a>
                   </div>
                 </div>
@@ -241,10 +243,10 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 ))
               ) : walletError ? (
                 [
-                  { label: 'Annonces actives', value: '0', icon: <Home className="w-4 h-4" />, color: '#003087' },
-                  { label: 'Transactions', value: '0', icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
-                  { label: 'Solde wallet', value: '0 FCFA', icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
-                  { label: 'Score AfriBayit', value: '0/100', icon: null, color: '#009CDE' },
+                  { label: t('dashboard.activeListings', 'Annonces actives'), value: '0', icon: <Home className="w-4 h-4" />, color: '#003087' },
+                  { label: t('dashboard.transactions', 'Transactions'), value: '0', icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
+                  { label: t('dashboard.wallet', 'Solde wallet'), value: '0 FCFA', icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
+                  { label: t('dashboard.score', 'Score AfriBayit'), value: '0/100', icon: null, color: '#009CDE' },
                 ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
@@ -263,10 +265,10 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 ))
               ) : (
                 [
-                  { label: 'Annonces actives', value: String(activeListingsCount), icon: <Home className="w-4 h-4" />, color: '#003087' },
-                  { label: 'Transactions', value: String(transactions.length), icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
-                  { label: 'Solde wallet', value: formatPrice(walletBalance), icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
-                  { label: 'Score AfriBayit', value: `${userScore}/100`, icon: null, color: '#009CDE' },
+                  { label: t('dashboard.activeListings', 'Annonces actives'), value: String(activeListingsCount), icon: <Home className="w-4 h-4" />, color: '#003087' },
+                  { label: t('dashboard.transactions', 'Transactions'), value: String(transactions.length), icon: <BarChart3 className="w-4 h-4" />, color: '#00A651' },
+                  { label: t('dashboard.wallet', 'Solde wallet'), value: formatPrice(walletBalance), icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
+                  { label: t('dashboard.score', 'Score AfriBayit'), value: `${userScore}/100`, icon: null, color: '#009CDE' },
                 ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
@@ -311,19 +313,19 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       <Wallet className="w-6 h-6 text-[#D4AF37]" />
                     </div>
                     <div>
-                      <p className="font-display text-lg font-bold">Bienvenue !</p>
-                      <p className="text-white/60 text-xs">Portefeuille AfriBayit</p>
+                      <p className="font-display text-lg font-bold">{t('dashboard.welcome', 'Bienvenue !')}</p>
+                      <p className="text-white/60 text-xs">{t('dashboard.walletSubtitle', 'Portefeuille AfriBayit')}</p>
                     </div>
                   </div>
                   <p className="text-white/70 text-sm mb-4">
-                    Votre portefeuille sera disponible après la vérification KYC.
+                    {t('dashboard.walletPending', 'Votre portefeuille sera disponible après la vérification KYC.')}
                   </p>
                   <a
                     href="/kyc"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors"
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    Vérifier mon identité
+                    {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
                   </a>
                 </div>
               </motion.div>
@@ -338,7 +340,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-white/60 text-xs mb-1">Portefeuille AfriBayit</p>
+                      <p className="text-white/60 text-xs mb-1">{t('dashboard.walletSubtitle', 'Portefeuille AfriBayit')}</p>
                       <p className="font-mono-data text-3xl sm:text-4xl font-bold text-white">
                         {new Intl.NumberFormat('fr-FR').format(walletBalance)} <span className="text-sm text-white/60">FCFA</span>
                       </p>
@@ -372,7 +374,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               transition={{ duration: 0.5, delay: 0.4, ease: easeOut }}
               className="bg-white rounded-3xl p-6 shadow-sm border"
             >
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions récentes</h3>
+              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">{t('dashboard.recentTransactions', 'Transactions récentes')}</h3>
               {txnLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -391,11 +393,11 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 </div>
               ) : txnError ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-[#D93025]">Erreur lors du chargement des transactions</p>
+                  <p className="text-sm text-[#D93025]">{t('dashboard.errorTransactions', 'Erreur lors du chargement des transactions')}</p>
                 </div>
               ) : transactions.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-gray-500">Aucune transaction trouvée</p>
+                  <p className="text-sm text-gray-500">{t('dashboard.noTransactions', 'Aucune transaction trouvée')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -437,8 +439,8 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               className="bg-white rounded-3xl p-6 shadow-sm border mt-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Niveau KYC</h3>
-                <a href="/kyc" className="text-xs font-semibold text-[#003087] hover:underline">Vérifier mon identité →</a>
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">{t('dashboard.kycLevel', 'Niveau KYC')}</h3>
+                <a href="/kyc" className="text-xs font-semibold text-[#003087] hover:underline">{t('dashboard.verifyIdentity', 'Vérifier mon identité')} →</a>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {kycLevels.map((level) => (

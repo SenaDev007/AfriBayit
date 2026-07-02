@@ -14,6 +14,7 @@ import PropertyComparator from './PropertyComparator';
 import FinancingSimulator from './FinancingSimulator';
 import type { PropertyData } from '@/lib/afribayit-utils';
 import { Check, Coins } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface EnhancedSearchResultsProps {
   initialTab?: string;
@@ -82,6 +83,7 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
 }
 
 export default function EnhancedSearchResults({ initialTab = 'achat', onSelectProperty }: EnhancedSearchResultsProps) {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<SearchFilters>({
     transaction: [initialTab as SearchFilters['transaction'] extends (infer T)[] ? T : never],
     sortBy: 'newest',
@@ -186,10 +188,10 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">
-                Rechercher un bien
+                {t('search.title', 'Rechercher un bien')}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                {isLoading ? 'Chargement...' : `${totalResults} bien${totalResults !== 1 ? 's' : ''} trouvé${totalResults !== 1 ? 's' : ''}`}
+                {isLoading ? t('search.loadingResults', 'Chargement...') : `${totalResults} ${t('search.resultsFound', 'bien(s) trouvé(s)')}`}
               </p>
             </div>
             <div className="flex gap-2">
@@ -200,7 +202,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                Filtres
+                {t('search.filters', 'Filtres')}
                 {activeFilterCount > 0 && (
                   <span className="px-1.5 py-0.5 bg-[#003087] text-white text-[10px] font-bold rounded-full">
                     {activeFilterCount}
@@ -221,7 +223,8 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Rechercher par ville, quartier, mot-clé..."
+                aria-label={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
+                placeholder={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
                 className="flex-1 text-sm outline-none bg-transparent"
               />
             </div>
@@ -229,7 +232,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
               onClick={handleSearch}
               className="px-5 py-2 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
-              Rechercher
+              {t('hero.cta', 'Rechercher')}
             </button>
           </div>
 
@@ -252,7 +255,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 onClick={() => setFilters({ sortBy: 'newest', page: 1, limit: 24 })}
                 className="px-3 py-1 text-[11px] text-red-500 hover:bg-red-50 rounded-full transition-colors"
               >
-                Tout effacer
+                {t('search.clearAll', 'Tout effacer')}
               </button>
             </div>
           )}
@@ -347,8 +350,8 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                   </svg>
                 </div>
-                <h3 className="font-display text-xl font-bold text-gray-400 mb-2">Erreur de chargement</h3>
-                <p className="text-sm text-gray-400">Impossible de charger les résultats. Veuillez réessayer.</p>
+                <h3 className="font-display text-xl font-bold text-gray-400 mb-2">{t('search.errorLoading', 'Erreur de chargement')}</h3>
+                <p className="text-sm text-gray-400">{t('search.errorLoadingHint', 'Impossible de charger les résultats. Veuillez réessayer.')}</p>
               </div>
             )}
 
@@ -368,8 +371,8 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
-                    <h3 className="font-display text-xl font-bold text-gray-400 mb-2">Aucun bien trouvé</h3>
-                    <p className="text-sm text-gray-400">Essayez de modifier vos critères de recherche</p>
+                    <h3 className="font-display text-xl font-bold text-gray-400 mb-2">{t('search.noResults', 'Aucun bien trouvé')}</h3>
+                    <p className="text-sm text-gray-400">{t('search.noResultsHint', 'Essayez de modifier vos critères de recherche')}</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -406,8 +409,9 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                         <button
                           onClick={(e) => { e.stopPropagation(); openFinancing(property.price); }}
                           className="absolute bottom-4 right-4 z-10 px-2 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-medium text-[#003087] hover:bg-white transition-colors shadow-sm border"
+                          aria-label={t('search.financing', 'Simuler')}
                         >
-                          <Coins className="w-4 h-4" /> Simuler
+                          <Coins className="w-4 h-4" /> {t('search.financing', 'Simuler')}
                         </button>
                       </div>
                     ))}
@@ -422,9 +426,9 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
-                  className="px-3 py-2 rounded-xl text-xs font-medium bg-white border hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className={`px-3 py-2 rounded-xl text-xs font-medium bg-white border hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors`}
                 >
-                  Précédent
+                  {t('search.previous', 'Précédent')}
                 </button>
                 {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => {
                   const pageNum = pagination.page <= 3 ? i + 1 : pagination.page - 2 + i;
@@ -448,7 +452,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                   disabled={pagination.page >= pagination.pages}
                   className="px-3 py-2 rounded-xl text-xs font-medium bg-white border hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  Suivant
+                  {t('search.next', 'Suivant')}
                 </button>
               </div>
             )}
@@ -486,14 +490,14 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                   onClick={() => setCompareIds([])}
                   className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-500 transition-colors"
                 >
-                  Annuler
+                  {t('search.cancel', 'Annuler')}
                 </button>
                 <button
                   onClick={() => setShowComparator(true)}
                   disabled={compareIds.length < 2}
                   className="px-4 py-1.5 bg-[#D4AF37] text-white text-xs font-semibold rounded-xl hover:bg-[#c9a02e] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Comparer ({compareIds.length})
+                  {t('search.compare', 'Comparer')} ({compareIds.length})
                 </button>
               </div>
             </div>

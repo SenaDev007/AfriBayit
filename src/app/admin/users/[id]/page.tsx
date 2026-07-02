@@ -174,11 +174,11 @@ export default function AdminUserDetailPage() {
     .toUpperCase()
     .slice(0, 2);
 
-  const kycDocs = (user as Record<string, unknown>).kycDocuments as Array<Record<string, unknown>> || [];
-  const properties = (user as Record<string, unknown>).properties as Array<Record<string, unknown>> || [];
-  const transactions = (user as Record<string, unknown>).transactions as Array<Record<string, unknown>> || [];
-  const subscriptions = (user as Record<string, unknown>).subscriptions as Array<Record<string, unknown>> || [];
-  const counts = (user as Record<string, unknown>)._count as Record<string, number> | undefined;
+  const kycDocs = (user as unknown as Record<string, unknown>).kycDocuments as Array<Record<string, unknown>> || [];
+  const properties = (user as unknown as Record<string, unknown>).properties as Array<Record<string, unknown>> || [];
+  const transactions = (user as unknown as Record<string, unknown>).transactions as Array<Record<string, unknown>> || [];
+  const subscriptions = (user as unknown as Record<string, unknown>).subscriptions as Array<Record<string, unknown>> || [];
+  const counts = (user as unknown as Record<string, unknown>)._count as Record<string, number> | undefined;
 
   const handleUpdateRole = () => {
     updateUser.mutate(

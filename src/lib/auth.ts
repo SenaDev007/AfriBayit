@@ -36,13 +36,13 @@ if (hasRSAKeys) {
     const country = (token.country as string) || undefined;
     const kycLevel = (token.kycLevel as number) || 0;
 
-    const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+    const pair = await generateTokenPair(userId, email, role, { country, kycLevel });
     return pair.refreshToken;
   };
 
   jwtConfig.decode = async ({ token }) => {
     if (!token) return null;
-    const result = verifyRefreshToken(token);
+    const result = await verifyRefreshToken(token);
     if (!result.valid || !result.payload) return null;
     const payload = result.payload;
     // Return as JWT type expected by NextAuth

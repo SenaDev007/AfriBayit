@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { useCountry, type CountryCode } from '@/contexts/CountryContext';
 import { useLocale } from '@/lib/i18n/context';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
@@ -108,6 +110,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
 
   const { selectedCountry, setSelectedCountry } = useCountry();
   const { locale, setLocale } = useLocale();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -210,6 +213,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        aria-label="Menu principal"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled ? 'glass shadow-lg' : 'bg-transparent'
         }`}
@@ -371,7 +375,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
-                {isLoggedIn && isAdmin ? 'Backoffice' : 'Admin'}
+                {isLoggedIn && isAdmin ? 'Backoffice' : t('nav.admin', 'Admin')}
               </motion.button>
               {/* Dashboard button for non-admin logged-in users */}
               {isLoggedIn && !isAdmin && (
@@ -386,7 +390,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   }`}
                 >
                   <BarChart3 className="w-4 h-4" />
-                  Dashboard
+                  {t('nav.dashboard', 'Dashboard')}
                 </motion.button>
               )}
 
@@ -400,7 +404,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     scrolled ? 'text-[#003087] hover:bg-blue-50' : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  Connexion
+                  {t('nav.login', 'Connexion')}
                 </motion.button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -410,6 +414,9 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                      aria-haspopup="true"
+                      aria-expanded={profileMenuOpen}
+                      aria-label="Menu du profil"
                       className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#D4AF37]"
                     >
                       <ImageWithFallback
@@ -494,7 +501,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                             className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
-                            Déconnexion
+                            {t('nav.logout', 'Déconnexion')}
                           </button>
                         </div>
                       </motion.div>
@@ -511,7 +518,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     }`}
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    Déconnexion
+                    {t('nav.logout', 'Déconnexion')}
                   </motion.button>
                 </div>
               )}
@@ -524,13 +531,16 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 onClick={() => navigate(isLoggedIn ? '/publish' : '/auth/register')}
               >
                 <Plus className="w-4 h-4" />
-                Publier
+                {t('nav.publish', 'Publier')}
               </motion.button>
 
               {/* Mobile Menu Toggle */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-expanded={mobileMenuOpen}
+                aria-haspopup="true"
+                aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-[#2C2E2F]' : 'text-white'}`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -560,7 +570,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
             >
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                <img src="/logo.png" alt="AfriBayit" className="h-10 w-auto object-contain" />
+                <Image src="/logo.png" alt="AfriBayit" width={160} height={40} className="h-10 w-auto object-contain" priority />
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
@@ -714,14 +724,14 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
-                        Publier une annonce
+                        {t('dashboard.publishAd', 'Publier une annonce')}
                       </button>
                       <button
                         onClick={() => signOut({ callbackUrl: '/' })}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl text-sm font-medium transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
-                        Déconnexion
+                        {t('nav.logout', 'Déconnexion')}
                       </button>
                     </div>
                   </>
@@ -731,7 +741,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       onClick={() => navigate('/auth/login')}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002060] transition-colors"
                     >
-                      Connexion
+                      {t('nav.login', 'Connexion')}
                     </button>
                     <button
                       onClick={() => navigate('/admin')}
@@ -744,7 +754,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       onClick={() => navigate('/auth/register')}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                     >
-                      Créer un compte
+                      {t('nav.register', 'Créer un compte')}
                     </button>
                   </div>
                 )}
@@ -776,27 +786,36 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
       </AnimatePresence>
 
       {/* ──────────── Mobile Bottom Navigation ──────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden glass border-t border-white/20 safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden glass border-t border-white/20 safe-area-bottom" aria-label="Navigation mobile">
         <div className="flex items-center justify-around py-2 px-2">
           {MOBILE_BOTTOM_ITEMS.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            const labelMap: Record<string, string> = {
+              home: t('nav.home', 'Accueil'),
+              search: t('nav.search', 'Rechercher'),
+              artisans: t('nav.artisans', 'Artisans'),
+              academy: t('nav.academy', 'Académie'),
+              dashboard: t('nav.profile', 'Profil'),
+            };
             return (
               <button
                 key={item.key}
                 onClick={() => navigate(item.href)}
+                aria-label={labelMap[item.key] || item.label}
+                aria-current={isActive ? 'page' : undefined}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all ${
                   isActive ? 'text-[#003087]' : 'text-gray-400'
                 }`}
               >
                 <item.Icon className={`w-5 h-5 ${isActive ? 'text-[#003087]' : ''}`} strokeWidth={isActive ? 2.5 : 1.5} />
                 <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                  {item.label}
+                  {labelMap[item.key] || item.label}
                 </span>
               </button>
             );
           })}
         </div>
-      </div>
+      </nav>
     </>
   );
 }

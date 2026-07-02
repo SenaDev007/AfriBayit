@@ -4,7 +4,7 @@ import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { searchParams } = new URL(request.url);

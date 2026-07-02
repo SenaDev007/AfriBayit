@@ -16,7 +16,7 @@ import type { PaymentMethod } from '@/lib/payments/types';
 
 export async function POST(request: Request) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const body = await request.json();
@@ -237,7 +237,7 @@ export async function POST(request: Request) {
  */
 export async function GET(request: Request) {
   try {
-    const auth = await authGuard({ requiredRoles: ['admin'] });
+    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { searchParams } = new URL(request.url);

@@ -3,6 +3,25 @@
 import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Hôtellerie — AfriBayit Hospitality",
+  description: "Gérez votre hôtel sur AfriBayit : PMS, OTA channel manager, réservations, pricing dynamique.",
+  keywords: ["hôtellerie", "hôtel", "PMS", "channel manager", "réservation"],
+  openGraph: {
+    title: "Hôtellerie — AfriBayit Hospitality",
+    description: "Gérez votre hôtel sur AfriBayit : PMS, OTA channel manager, réservations, pricing dynamique.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hôtellerie — AfriBayit Hospitality",
+    description: "Gérez votre hôtel sur AfriBayit : PMS, OTA channel manager, réservations, pricing dynamique.",
+  },
+};
+
 const HospitalityModule = dynamic(() => import('@/components/afribayit/HospitalityModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

@@ -124,12 +124,64 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
   }, []);
 
   const addPhoto = useCallback(() => {
-    const mockUrl = `https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop&q=${Math.random()}`;
-    setFormData(prev => ({
-      ...prev,
-      photos: prev.photos.length < 20 ? [...prev.photos, mockUrl] : prev.photos,
-    }));
-  }, []);
+    // SECURITY FIX (P3.6 — juillet 2026) : Replaced Unsplash mock URL injection
+    // with a real <input type="file"> picker that uploads to Cloudflare R2.
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp,image/heic';
+    input.multiple = true;
+    input.onchange = async (e) => {
+      const target = e.target as HTMLInputElement;
+      const files = target.files;
+      if (!files || files.length === 0) return;
+
+      for (const file of Array.from(files)) {
+        // 20-photo limit
+        if (formData.photos.length >= 20) {
+          alert('Vous avez atteint la limite de 20 photos par annonce.');
+          break;
+        }
+
+        // 10 MB max per photo
+        if (file.size > 10 * 1024 * 1024) {
+          alert(`La photo "${file.name}" dépasse 10 Mo et n'a pas été ajoutée.`);
+          continue;
+        }
+
+        try {
+          // 1. Get a signed PUT URL from our storage API
+          const signedUrlRes = await fetch('/api/storage/signed-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              filename: `properties/${Date.now()}-${file.name}`,
+              contentType: file.type,
+            }),
+          });
+          if (!signedUrlRes.ok) throw new Error('Failed to get signed URL');
+          const { url: uploadUrl, publicUrl } = await signedUrlRes.json();
+
+          // 2. Upload file directly to R2 via PUT
+          const uploadRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': file.type },
+            body: file,
+          });
+          if (!uploadRes.ok) throw new Error('Upload failed');
+
+          // 3. Add public URL to form data
+          setFormData(prev => ({
+            ...prev,
+            photos: [...prev.photos, publicUrl],
+          }));
+        } catch (err) {
+          console.error('[PropertyPublish] Photo upload failed:', err);
+          alert(`Échec de l'upload de "${file.name}". Réessayez.`);
+        }
+      }
+    };
+    input.click();
+  }, [formData.photos.length]);
 
   const addLegalDoc = useCallback((docType: string) => {
     setFormData(prev => ({

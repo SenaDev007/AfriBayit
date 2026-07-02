@@ -4,6 +4,25 @@ import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Artisans BTP — AfriBayit ProMatch",
+  description: "Trouvez des artisans certifiés BTP en Afrique de l'Ouest. Maçons, électriciens, plombiers, peintres.",
+  keywords: ["artisan BTP", "ProMatch", "maçon", "électricien", "plombier"],
+  openGraph: {
+    title: "Artisans BTP — AfriBayit ProMatch",
+    description: "Trouvez des artisans certifiés BTP en Afrique de l'Ouest. Maçons, électriciens, plombiers, peintres.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Artisans BTP — AfriBayit ProMatch",
+    description: "Trouvez des artisans certifiés BTP en Afrique de l'Ouest. Maçons, électriciens, plombiers, peintres.",
+  },
+};
+
 const ArtisansMarketplace = dynamic(() => import('@/components/afribayit/ArtisansMarketplace'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

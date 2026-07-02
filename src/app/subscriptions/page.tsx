@@ -4,6 +4,25 @@ import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Abonnements — AfriBayit",
+  description: "Abonnements agents et professionnels AfriBayit : Premium, Pro, Enterprise.",
+  keywords: ["abonnement", "premium", "pro", "subscription"],
+  openGraph: {
+    title: "Abonnements — AfriBayit",
+    description: "Abonnements agents et professionnels AfriBayit : Premium, Pro, Enterprise.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Abonnements — AfriBayit",
+    description: "Abonnements agents et professionnels AfriBayit : Premium, Pro, Enterprise.",
+  },
+};
+
 const SubscriptionsModule = dynamic(() => import('@/components/afribayit/SubscriptionsModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

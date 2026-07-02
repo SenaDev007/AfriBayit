@@ -12,8 +12,12 @@ import type { OTAProvider } from '@/lib/ota/types';
 // ─── Webhook Signature Verification ───────────────────────────────────────
 
 /**
- * Verify Booking.com webhook signature.
- * In production, Booking.com signs webhooks with a shared secret.
+ * Verify Booking.com webhook signature using HMAC-SHA256.
+ * SECURITY FIX (P2.8 — juillet 2026) : implémentation réelle du HMAC verification
+ * (was: TODO ligne 36, acceptait tous les webhooks en prod).
+ *
+ * Booking.com signs webhooks with a shared secret using HMAC-SHA256.
+ * The signature is sent in the `X-Booking-Signature` header as a hex string.
  */
 function verifyWebhookSignature(request: NextRequest, body: string): boolean {
   const signature = request.headers.get('X-Booking-Signature');
@@ -23,22 +27,33 @@ function verifyWebhookSignature(request: NextRequest, body: string): boolean {
       console.warn('[Webhook:Booking.com] No signature — allowing in sandbox mode');
       return true;
     }
+    console.error('[Webhook:Booking.com] No signature header — rejecting in production');
     return false;
   }
 
-  // In production, verify HMAC signature
   const secret = process.env.BOOKING_COM_WEBHOOK_SECRET;
   if (!secret) {
-    console.warn('[Webhook:Booking.com] WEBHOOK_SECRET not configured');
-    return true; // Allow if secret not configured (dev mode)
+    console.error('[Webhook:Booking.com] BOOKING_COM_WEBHOOK_SECRET not configured — rejecting');
+    return false;
   }
 
-  // TODO: Implement proper HMAC verification
-  // const crypto = require('crypto');
-  // const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
-  // return signature === expectedSignature;
+  // P2.8 — real HMAC-SHA256 verification
+  const crypto = require('crypto');
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
 
-  return true;
+  // Use timingSafeEqual to prevent timing attacks
+  const signatureBuffer = Buffer.from(signature, 'hex');
+  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+
+  if (signatureBuffer.length !== expectedBuffer.length) {
+    console.error('[Webhook:Booking.com] Signature length mismatch — rejecting');
+    return false;
+  }
+
+  return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 }
 
 // ─── Webhook Handler ──────────────────────────────────────────────────────

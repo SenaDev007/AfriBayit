@@ -232,6 +232,10 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ duration: 0.3, ease: easeOut }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="rebecca-chat-title"
+            aria-label="Chat Rebecca IA"
             className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-[420px] h-[560px] sm:h-[640px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200"
             style={{ maxHeight: 'calc(100vh - 120px)' }}
           >
@@ -242,7 +246,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   <span className="text-white text-sm font-bold">R</span>
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold text-sm">Rebecca IA</h3>
+                  <h3 id="rebecca-chat-title" className="text-white font-semibold text-sm">Rebecca IA</h3>
                   <div className="flex items-center gap-1">
                     <motion.span
                       className="w-2 h-2 bg-[#00A651] rounded-full"
@@ -438,6 +442,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && input.trim() && !isSending) sendMessage(input.trim()); }}
+                  aria-label="Posez votre question à Rebecca"
                   placeholder="Posez votre question à Rebecca..."
                   disabled={isSending}
                   className="flex-1 text-sm outline-none bg-transparent disabled:opacity-50 placeholder:text-gray-400"

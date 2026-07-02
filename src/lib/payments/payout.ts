@@ -2,17 +2,28 @@
 // Handles payouts via Mobile Money and bank transfer
 // Uses the Payment Abstraction Layer (FedaPayProvider) for actual transfers
 // + J+1 Auto-Payout for escrow releases via Mobile Money
+//
+// SECURITY FIX (P1.7 — juillet 2026) : Commission rates aligned with escrow-engine.ts (CDC §6.2)
+// Old rates were 5/3.5/2.5/2% — new rates are 5/4/3/2% to match escrow-engine.ts and CDC §11.
 
 import { db } from '@/lib/db';
 import { getProvider, selectBestProvider } from './index';
+import { calculateCommissionByType } from './escrow-engine';
 import type { PaymentMethod, PayoutRequest, PayoutResponse } from './types';
 import { MOBILE_MONEY_METHODS } from './types';
 
-/** Commission rates by transaction amount range */
+/**
+ * Commission rates by transaction amount range — aligned with escrow-engine.ts (P1.7)
+ * Per CDC §6.2 / §11:
+ * - ≤ 5M XOF: 5%
+ * - 5M–20M XOF: 4%
+ * - 20M–50M XOF: 3%
+ * - > 50M XOF: 2%
+ */
 const COMMISSION_RATES = [
-  { maxAmount: 5_000_000, rate: 0.05 },    // 5% for amounts up to 5M FCFA
-  { maxAmount: 20_000_000, rate: 0.035 },   // 3.5% for 5M-20M FCFA
-  { maxAmount: 50_000_000, rate: 0.025 },   // 2.5% for 20M-50M FCFA
+  { maxAmount: 5_000_000, rate: 0.05 },     // 5% for amounts up to 5M FCFA
+  { maxAmount: 20_000_000, rate: 0.04 },    // 4% for 5M-20M FCFA (was 3.5%)
+  { maxAmount: 50_000_000, rate: 0.03 },    // 3% for 20M-50M FCFA (was 2.5%)
   { maxAmount: Infinity, rate: 0.02 },       // 2% for amounts above 50M FCFA
 ];
 
@@ -647,7 +658,8 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
   }
 
   const escrow = transaction.escrowAccount;
-  const commissionRate = transaction.commissionRate || 0.025;
+  // P1.7 — fallback 0.025 → 0.05 (default to highest tier if missing) per CDC §6.2
+  const commissionRate = transaction.commissionRate || 0.05;
   const commission = Math.round(transaction.amount * commissionRate);
   const sellerAmount = transaction.amount - commission;
 

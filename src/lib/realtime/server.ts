@@ -105,7 +105,7 @@ export function initRealtimeServer(httpServer: any) {
       }
 
       // Verify JWT
-      const result = verifyAccessToken(token);
+      const result = await verifyAccessToken(token);
       if (!result.valid || !result.payload) {
         console.warn(`[Socket.io] Invalid token for connection: ${socket.id}`);
         return next(new Error('Authentication failed: invalid token'));
@@ -152,7 +152,7 @@ export function initRealtimeServer(httpServer: any) {
 
       // JWT-based authentication
       if (authData.token) {
-        const result = verifyAccessToken(authData.token);
+        const result = await verifyAccessToken(authData.token);
         if (!result.valid || !result.payload) {
           socket.emit('auth:error', { message: 'Invalid or expired token' });
           return;

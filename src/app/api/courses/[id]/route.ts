@@ -82,7 +82,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard(request, { requiredRoles: ['admin', 'trainer'] });
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'TRAINER'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;

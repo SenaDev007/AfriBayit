@@ -251,7 +251,7 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
   // Dynamically import next-auth middleware
   const { withAuth } = await import('next-auth/middleware');
 
-  return withAuth({
+  const authMiddleware = withAuth({
     pages: {
       signIn: '/auth/login',
     },
@@ -283,7 +283,8 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
         return true;
       },
     },
-  })(request as unknown as Parameters<ReturnType<typeof withAuth>>[0]) as NextResponse;
+  });
+  return (authMiddleware as unknown as (req: NextRequest) => NextResponse | Promise<NextResponse>)(request);
 }
 
 // ============================================================================

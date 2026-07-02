@@ -3,6 +3,25 @@
 import { useEffect, useState } from 'react';
 import { WifiOff, RefreshCw, Home, Search, MessageCircle, CheckCircle } from 'lucide-react';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Hors ligne — AfriBayit",
+  description: "Vous êtes hors ligne. AfriBayit continuera de fonctionner grâce au mode PWA.",
+  keywords: ["hors ligne", "offline", "PWA"],
+  openGraph: {
+    title: "Hors ligne — AfriBayit",
+    description: "Vous êtes hors ligne. AfriBayit continuera de fonctionner grâce au mode PWA.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hors ligne — AfriBayit",
+    description: "Vous êtes hors ligne. AfriBayit continuera de fonctionner grâce au mode PWA.",
+  },
+};
+
 export default function OfflinePage() {
   const [isRetrying, setIsRetrying] = useState(false);
   const [isOnline, setIsOnline] = useState(false);

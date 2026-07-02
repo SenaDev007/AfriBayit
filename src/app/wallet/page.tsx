@@ -4,6 +4,25 @@ import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Portefeuille — AfriBayit",
+  description: "Gérez votre portefeuille AfriBayit : solde, transactions, payouts, AfriPoints.",
+  keywords: ["portefeuille", "wallet", "solde", "transactions"],
+  openGraph: {
+    title: "Portefeuille — AfriBayit",
+    description: "Gérez votre portefeuille AfriBayit : solde, transactions, payouts, AfriPoints.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portefeuille — AfriBayit",
+    description: "Gérez votre portefeuille AfriBayit : solde, transactions, payouts, AfriPoints.",
+  },
+};
+
 const WalletModule = dynamic(() => import('@/components/afribayit/WalletModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

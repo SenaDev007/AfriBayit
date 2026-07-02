@@ -196,6 +196,7 @@ export default function PropertyMap({
     if (mapRef.current && onBoundsChange) {
       const map = mapRef.current.getMap();
       const bounds = map.getBounds();
+      if (!bounds) return;
       onBoundsChange({
         north: bounds.getNorth(),
         south: bounds.getSouth(),
@@ -346,7 +347,7 @@ export default function PropertyMap({
                 {/* Price marker */}
                 <div
                   className={`px-2.5 py-1.5 rounded-full text-white text-[11px] font-bold shadow-lg border-2 border-white transition-all group-hover:scale-110 ${isSelected ? 'scale-110 ring-2 ring-offset-1' : ''}`}
-                  style={{ backgroundColor: color, ringColor: color }}
+                  style={{ backgroundColor: color }}
                 >
                   {property.price >= 1000000
                     ? `${(property.price / 1000000).toFixed(0)}M`
