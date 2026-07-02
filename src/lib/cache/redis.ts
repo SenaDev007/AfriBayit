@@ -104,7 +104,7 @@ export async function expire(key: string, ttlSeconds: number): Promise<boolean> 
   if (redis) {
     try {
       const result = await redis.expire(key, ttlSeconds);
-      return result;
+      return Boolean(result);
     } catch (error) {
       console.error('Redis EXPIRE error:', error);
       return false;
@@ -141,8 +141,8 @@ export async function incr(key: string): Promise<number> {
 export async function sadd(key: string, ...members: string[]): Promise<number> {
   if (redis) {
     try {
-      const result = await redis.sadd(key, ...members);
-      return result;
+      const result = await redis.sadd(key, members);
+      return Number(result) || 0;
     } catch (error) {
       console.error('Redis SADD error, falling back to memory:', error);
     }
@@ -167,7 +167,7 @@ export async function sismember(key: string, member: string): Promise<boolean> {
   if (redis) {
     try {
       const result = await redis.sismember(key, member);
-      return result === 1 || result === true;
+      return Boolean(result);
     } catch (error) {
       console.error('Redis SISMEMBER error, falling back to memory:', error);
     }

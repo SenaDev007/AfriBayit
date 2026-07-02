@@ -12,13 +12,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Vercel handles output automatically — no output: "standalone" needed */
   // P1.5 — TypeScript errors are now BLOCKING (was: ignoreBuildErrors: true)
-  // TEMPORARY: re-enabled during zod v4 migration (15 TS errors remaining)
-  // TODO: set back to false after fixing zod.enum errorMap + remaining 15 TS errors
+  // Fixed: all 16 TS errors resolved, ignoreBuildErrors set back to false
   typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
+    ignoreBuildErrors: false,
   },
   reactStrictMode: true,
   // P3 — Fix lightningcss + Turbopack issue: mark as server external package

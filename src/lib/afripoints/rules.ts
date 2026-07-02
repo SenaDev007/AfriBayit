@@ -68,8 +68,8 @@ export type LevelName = (typeof LEVELS)[number]['name'];
 /**
  * Retourne le niveau correspondant à un solde de points
  */
-export function getLevelForPoints(points: number) {
-  let level = LEVELS[0];
+export function getLevelForPoints(points: number): typeof LEVELS[number] {
+  let level: typeof LEVELS[number] = LEVELS[0];
   for (const l of LEVELS) {
     if (points >= l.minPoints) {
       level = l;

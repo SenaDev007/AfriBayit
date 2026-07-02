@@ -55,7 +55,7 @@ export async function analyzeDocument(
           content: [
             { type: 'text', text: `Analyse ce document de type ${documentType}.` },
             { type: 'image_url', image_url: { url: imageUrl } },
-          ],
+          ] as any,
         },
       ],
       temperature: 0.2,

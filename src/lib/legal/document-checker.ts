@@ -137,6 +137,7 @@ export function checkCompleteness(
       transaction,
       overallComplete: false,
       completenessPercentage: 0,
+      verificationBadge: null,
       mandatoryResults: [],
       optionalResults: [],
       missingDocs: [],

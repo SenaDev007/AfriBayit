@@ -5,7 +5,7 @@ import type { NotificationDeliveryResult, NotificationChannel } from '../types';
 
 interface WhatsAppMessageOptions {
   to: string;
-  templateName: string;
+  templateName?: string;
   templateLanguage?: string;
   parameters?: string[];
   textBody?: string; // for simple text messages

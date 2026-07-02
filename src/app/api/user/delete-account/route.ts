@@ -10,7 +10,7 @@ import { z } from 'zod';
 const deleteAccountSchema = z.object({
   password: z.string().min(1, 'Mot de passe requis pour supprimer le compte'),
   confirmation: z.literal('SUPPRIMER', {
-    errorMap: () => ({ message: 'Tapez SUPPRIMER pour confirmer' }),
+    error: 'Tapez SUPPRIMER pour confirmer',
   }),
 });
 

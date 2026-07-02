@@ -157,7 +157,7 @@ export async function findNearbyProperties(
       ...(filters?.maxSurface !== undefined ? [filters.maxSurface] : [])
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       lat: r.lat,
@@ -233,7 +233,7 @@ export async function findNearbyHotels(
       ...(filters?.maxPrice !== undefined ? [filters.maxPrice] : [])
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       lat: r.lat,
@@ -306,7 +306,7 @@ export async function findNearbyGuesthouses(
       ...(filters?.quartier ? [filters.quartier] : [])
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       lat: r.lat,
@@ -437,10 +437,10 @@ export async function findWithinBoundingBox(
     );
 
     return [
-      ...properties.map((r) => ({ ...r, distanceKm: 0 })),
-      ...hotels.map((r) => ({ ...r, distanceKm: 0 })),
-      ...guesthouses.map((r) => ({ ...r, distanceKm: 0 })),
-    ];
+      ...properties.map((r: any) => ({ ...r, distanceKm: 0 })),
+      ...hotels.map((r: any) => ({ ...r, distanceKm: 0 })),
+      ...guesthouses.map((r: any) => ({ ...r, distanceKm: 0 })),
+    ] as any[];
   } catch (error) {
     console.info('[PostGIS] findWithinBoundingBox échoué, repli lat/lng :', error);
     return findWithinBoundingBoxFallback(swLat, swLng, neLat, neLng, country);
@@ -505,7 +505,7 @@ export async function detectSpatialConflicts(
       propertyId
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       title: r.title,
       type: r.type,
@@ -581,7 +581,7 @@ export async function findNearby(
       model
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       lat: r.lat,
@@ -945,7 +945,7 @@ export async function findWithinPolygon(
       model
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       lat: r.lat,
@@ -1004,7 +1004,7 @@ export async function detectOverlaps(
       model
     );
 
-    return results.map((r) => ({
+    return results.map((r: any) => ({
       id: r.id,
       name: r.name,
       overlapArea: Math.round(r.overlap_area_sqm),

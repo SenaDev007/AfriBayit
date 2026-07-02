@@ -454,7 +454,7 @@ export async function transition(
         // Release funds: debit escrow, account for commission using CDC §11 rates
         const commissionCalc = calculateTransactionCommission({
           amount: transaction.amount,
-          type: transaction.type || undefined,
+          type: (transaction as any).type || undefined,
         });
         const commission = commissionCalc.commission;
         const sellerPayout = transaction.amount - commission;

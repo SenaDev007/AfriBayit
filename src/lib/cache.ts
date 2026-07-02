@@ -36,8 +36,8 @@ export const cache = {
    */
   async get<T = unknown>(key: string): Promise<T | null> {
     try {
-      const raw = await redis.get(key);
-      if (raw === null) return null;
+      const raw = await redis.get(key) as string | null;
+      if (raw === null || raw === undefined) return null;
       try {
         return JSON.parse(raw) as T;
       } catch {

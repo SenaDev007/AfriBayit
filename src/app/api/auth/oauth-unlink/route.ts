@@ -8,7 +8,7 @@ import { db } from '@/lib/db';
 import { z } from 'zod';
 
 const unlinkSchema = z.object({
-  provider: z.enum(['google', 'facebook'], { errorMap: () => ({ message: 'Fournisseur invalide' }) }),
+  provider: z.enum(['google', 'facebook'], { error: 'Fournisseur invalide' }),
   password: z.string().min(1, 'Mot de passe requis pour dissocier'),
 });
 
