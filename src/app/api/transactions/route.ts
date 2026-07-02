@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         amount: validated.amount,
         commission: validated.commission,
         currency: validated.currency,
-        country: validated.country || 'BJ',
+        country: (validated as any).country || 'BJ',
         status: 'CREATED',
         notaryId: validated.notaryId,
         geometerId: validated.geometerId,

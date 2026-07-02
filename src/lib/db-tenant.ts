@@ -92,11 +92,12 @@ function createTenantClient(countryCode: string): TenantClient {
             TENANT_SCOPED_MODELS.has(model) &&
             FILTERABLE_OPERATIONS.has(operation)
           ) {
-            if (!args.where) {
-              args.where = {};
+            const argsRecord = args as Record<string, unknown>;
+            if (!argsRecord.where) {
+              argsRecord.where = {};
             }
 
-            const where = args.where as Record<string, unknown>;
+            const where = argsRecord.where as Record<string, unknown>;
 
             // Only inject filter if the caller hasn't already specified a country filter.
             // This allows explicit country overrides (e.g., admin viewing all countries).
@@ -141,18 +142,18 @@ function createTenantClient(countryCode: string): TenantClient {
  * const allProperties = await tenantDb.property.findMany({ where: { country: 'CI' } });
  * // → SQL: SELECT * FROM properties WHERE country = 'CI' (override respected)
  */
-export function getTenantDb(countryCode: string): TenantClient {
+export function getTenantDb(countryCode: string): typeof db {
   const upperCountry = validateCountryCode(countryCode);
 
   // Return cached client if available
   const cached = tenantClients.get(upperCountry);
-  if (cached) return cached;
+  if (cached) return cached as unknown as typeof db;
 
   // Create and cache new client
   const client = createTenantClient(upperCountry);
   tenantClients.set(upperCountry, client);
 
-  return client;
+  return client as unknown as typeof db;
 }
 
 // ─── Public API: setTenantSession ─────────────────────────────────────────────────

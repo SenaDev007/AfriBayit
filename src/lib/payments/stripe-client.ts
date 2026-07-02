@@ -13,7 +13,7 @@ function getStripeClient(): Stripe {
     const secretKey = process.env.STRIPE_SECRET_KEY || '';
     stripeClient = new Stripe(secretKey, {
       typescript: true,
-      apiVersion: '2025-04-30.basil',
+      apiVersion: '2026-05-27.dahlia' as any,
     });
   }
   return stripeClient;
@@ -180,7 +180,7 @@ export async function processRefund(params: RefundParams): Promise<RefundResult>
 
     const refundParams: Stripe.RefundCreateParams = {
       charge: charge.id,
-      reason: params.reason,
+      reason: params.reason as Stripe.RefundCreateParams.Reason,
     };
 
     if (params.amount) {

@@ -194,8 +194,8 @@ export default function BookingDetailPage() {
     `Séjournez au ${name}, un établissement de qualité situé à ${city}, ${COUNTRY_FLAGS[country] || ''} ${country}. Profitez d'un confort exceptionnel et d'un service irréprochable.`;
   const reviewCount = hotel?._count?.reviews_hotel || guesthouse?.reviewCount || 0;
   const address = guesthouse?.address || guesthouse?.quartier ? `${guesthouse?.quartier || ''}, ${city}` : city;
-  const lat = hotel?.lat || guesthouse?.lat || null;
-  const lng = hotel?.lng || guesthouse?.lng || null;
+  const lat = (hotel as any)?.lat || (guesthouse as any)?.lat || null;
+  const lng = (hotel as any)?.lng || (guesthouse as any)?.lng || null;
   const rooms = hotel?.rooms || guesthouse?.rooms || [];
   const reviews = hotel?.reviews_hotel || [];
 

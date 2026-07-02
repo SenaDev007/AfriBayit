@@ -145,9 +145,9 @@ export async function distributedIncrement(
   if (!isRedisConfigured || !redis) {
     // In-memory fallback
     const fullKey = `${namespace}:${key}`;
-    const current = parseInt(memoryFallback.get(fullKey) || '0', 10);
+    const current = parseInt((await memoryFallback.get(fullKey)) || '0', 10);
     const newValue = current + 1;
-    memoryFallback.set(fullKey, String(newValue), ttlSeconds);
+    await memoryFallback.set(fullKey, String(newValue), { ex: ttlSeconds });
     return newValue;
   }
 

@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       where: { status: 'active' },
     });
 
-    let matchingHotel = null;
+    let matchingHotel: Awaited<ReturnType<typeof db.hotel.findMany>>[number] | null = null;
     for (const hotel of hotels) {
       if (hotel.otaRefs) {
         try {
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       received: true,
       processed: true,
-      eventType,
+      eventType: event_type,
       hotelId: matchingHotel.id,
       processingTimeMs: Date.now() - startTime,
     });

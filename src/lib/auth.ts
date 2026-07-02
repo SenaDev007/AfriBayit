@@ -267,7 +267,7 @@ export const authOptions: NextAuthOptions = {
         const kycLevel = (token.kycLevel as number) || 0;
 
         if (userId && email) {
-          const pair = generateTokenPair(userId, email, role, { country, kycLevel });
+          const pair = await generateTokenPair(userId, email, role, { country, kycLevel });
           (token as Record<string, unknown>).accessToken = pair.accessToken;
         }
       }
@@ -476,7 +476,7 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async redirect({ url, baseUrl, token }) {
+    async redirect({ url, baseUrl }) {
       // After sign-in, redirect to:
       // 1. The callbackUrl if provided and valid (user must have access)
       // 2. / (landing page) as default
@@ -487,8 +487,10 @@ export const authOptions: NextAuthOptions = {
       const isAdminPath = (pathname: string) =>
         pathname.startsWith('/admin') || pathname.startsWith('/api/admin');
 
-      const userRole = (token as Record<string, unknown>)?.role as string | undefined;
-      const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string | undefined;
+      // P2.6 — token no longer available in redirect callback; use session via cookie check instead
+      // For simplicity, allow all relative URLs (admin access is enforced by middleware + authGuard)
+      const userRole: string | undefined = undefined;
+      const accreditationRole: string | undefined = undefined;
       const isAdmin = userRole === 'admin' || accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN';
 
       // If the url is relative, validate access before redirecting

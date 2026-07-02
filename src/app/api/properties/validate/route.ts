@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       city: dbProperty.city,
       country: dbProperty.country,
       quartier: dbProperty.quartier,
-      address: dbProperty.address,
+      address: dbProperty.address ?? undefined,
       lat: dbProperty.lat,
       lng: dbProperty.lng,
       images: dbProperty.propertyImages.map(img => img.url),
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       city: dbProperty.city,
       country: dbProperty.country,
       quartier: dbProperty.quartier,
-      address: dbProperty.address,
+      address: dbProperty.address ?? undefined,
       lat: dbProperty.lat,
       lng: dbProperty.lng,
       agentId: dbProperty.agentId,
@@ -102,10 +102,10 @@ export async function POST(request: Request) {
             await db.conflictZone.create({
               data: {
                 propertyIdA: propertyId,
-                propertyIdB: conflict.conflictingPropertyId,
+                propertyIdB: conflict.conflictingPropertyId || '',
                 areaSqmOverlap: conflict.overlapArea || 0,
                 status: 'detected',
-              },
+              } as any,
             }).catch(() => {}); // Ignore if already exists
           }
         }

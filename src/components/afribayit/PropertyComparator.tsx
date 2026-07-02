@@ -104,20 +104,20 @@ const COMPARISON_ROWS: ComparisonRow[] = [
     label: 'Prix',
     category: 'Prix',
     getValue: (p) => <span className="font-bold text-[#D4AF37]">{formatPrice(p.price, p.transaction)}</span>,
-    getHighlight: (p, ctx) => p.price === ctx.lowestPrice,
+    getHighlight: (p, ctx) => p.price === ctx?.lowestPrice,
   },
   {
     label: 'Prix/m²',
     category: 'Prix',
     getValue: (p) => `${p.pricePerSqm.toLocaleString('fr-FR')} FCFA/m²`,
-    getHighlight: (p, ctx) => p.pricePerSqm === ctx.bestPricePerSqm,
+    getHighlight: (p, ctx) => p.pricePerSqm === ctx?.bestPricePerSqm,
   },
   // Size & Rooms
   {
     label: 'Surface',
     category: 'Caractéristiques',
     getValue: (p) => `${p.surface} m²`,
-    getHighlight: (p, ctx) => p.surface === ctx.largestSurface,
+    getHighlight: (p, ctx) => p.surface === ctx?.largestSurface,
   },
   {
     label: 'Pièces',
@@ -177,7 +177,7 @@ const COMPARISON_ROWS: ComparisonRow[] = [
       const { label, color } = getInvestmentScoreLabel(p.investmentScore);
       return <span className={`font-bold ${color}`}>{p.investmentScore}/100 ({label})</span>;
     },
-    getHighlight: (p, ctx) => p.investmentScore === ctx.highestScore,
+    getHighlight: (p, ctx) => p.investmentScore === ctx?.highestScore,
   },
   {
     label: 'Vues',

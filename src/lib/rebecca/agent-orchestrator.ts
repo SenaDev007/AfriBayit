@@ -194,7 +194,7 @@ async function executePropertySearchNodeWrapper(state: AgentState): Promise<Agen
   const updatedState = await executePropertySearchNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
-    propertySearch: updatedState.propertySearch,
+    propertySearch: updatedState.propertySearch as Record<string, unknown> | undefined,
     executedNodes: [...state.executedNodes, 'property_search'],
     agentSteps: [
       ...state.agentSteps,
@@ -211,7 +211,7 @@ async function executeFinancialNodeWrapper(state: AgentState): Promise<AgentStat
   const updatedState = await executeFinancialNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
-    financialCalc: updatedState.financialCalc,
+    financialCalc: updatedState.financialCalc as Record<string, unknown> | undefined,
     executedNodes: [...state.executedNodes, 'financial_calculator'],
     agentSteps: [
       ...state.agentSteps,
@@ -228,7 +228,7 @@ async function executeLegalNodeWrapper(state: AgentState): Promise<AgentState> {
   const updatedState = await executeLegalNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
-    legalAdvice: updatedState.legalAdvice,
+    legalAdvice: updatedState.legalAdvice as Record<string, unknown> | undefined,
     executedNodes: [...state.executedNodes, 'legal_advisor'],
     agentSteps: [
       ...state.agentSteps,
@@ -245,7 +245,7 @@ async function executeNeighborhoodNodeWrapper(state: AgentState): Promise<AgentS
   const updatedState = await executeNeighborhoodNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
-    neighborhood: updatedState.neighborhood,
+    neighborhood: updatedState.neighborhood as Record<string, unknown> | undefined,
     executedNodes: [...state.executedNodes, 'neighborhood_analyzer'],
     agentSteps: [
       ...state.agentSteps,
@@ -262,7 +262,7 @@ async function executeEscrowNodeWrapper(state: AgentState): Promise<AgentState> 
   const updatedState = await executeEscrowNode(state as unknown as Record<string, unknown>);
   return {
     ...state,
-    escrowGuide: updatedState.escrowGuide,
+    escrowGuide: updatedState.escrowGuide as Record<string, unknown> | undefined,
     executedNodes: [...state.executedNodes, 'escrow_guide'],
     agentSteps: [
       ...state.agentSteps,

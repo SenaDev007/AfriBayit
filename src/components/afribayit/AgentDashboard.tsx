@@ -86,7 +86,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
   const createSubscription = useCreateSubscription();
   const deleteProperty = useDeleteProperty();
 
-  const properties = (propertiesData?.properties ?? []) as Record<string, unknown>[];
+  const properties = (propertiesData?.properties ?? []) as unknown as Record<string, unknown>[];
   const subscriptions = (Array.isArray(subscriptionsData) ? subscriptionsData : (subscriptionsData as Record<string, unknown>)?.subscriptions ?? []) as Record<string, unknown>[];
 
   const activeListings = properties.filter(p => p.status === 'published').length;

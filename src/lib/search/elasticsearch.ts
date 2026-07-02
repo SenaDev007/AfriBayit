@@ -41,9 +41,14 @@ export interface SearchFilters {
   minPrice?: number;
   maxPrice?: number;
   features?: string[];
-  sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'relevance';
+  sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'relevance' | 'rating' | 'popular';
   page?: number;
   limit?: number;
+  // Extended filters used by multi-model search routes
+  stars?: number;
+  certified?: boolean;
+  category?: string;
+  level?: string;
 }
 
 export interface SearchResult {
@@ -58,6 +63,9 @@ export interface SearchResult {
     countries: { value: string; count: number }[];
     priceRange: { min: number; max: number };
   };
+  // Optional grouped results (used by multi-model search routes)
+  groupedByType?: Record<string, SearchDocument[]>;
+  typeCounts?: Record<string, number>;
 }
 
 // ─── Elasticsearch Index Mappings ──────────────────────────────────────────
@@ -547,7 +555,7 @@ async function searchWithElasticsearch(
   }
 
   // Sort
-  let sort: object[] = [];
+  let sort: (string | object)[] = [];
   switch (filters.sortBy) {
     case 'price_asc':
       sort = [{ price: 'asc' }];

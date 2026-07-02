@@ -237,7 +237,7 @@ export async function sendPush(
     const wp = await getWebPush();
 
     const result = await wp.sendNotification(
-      subscription as webPush.PushSubscription,
+      subscription as unknown as import('web-push').PushSubscription,
       JSON.stringify(payload)
     );
 
@@ -410,4 +410,3 @@ export async function pushPriceAlert(
   });
 }
 
-export type { PushSubscriptionData, PushNotificationPayload };

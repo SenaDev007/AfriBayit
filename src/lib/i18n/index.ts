@@ -24,7 +24,7 @@ export const translations: Record<string, Record<string, any>> = { fr, en, wo, f
  * Get translations for a specific locale.
  * Falls back to French if the locale is not found.
  */
-export function getTranslations(locale: Locale): typeof fr {
+export function getTranslations(locale: Locale): Record<string, any> {
   return translations[locale] || translations.fr;
 }
 
@@ -53,8 +53,8 @@ export function translate(locale: Locale, key: string): string {
   return typeof result === 'string' ? result : key;
 }
 
-export { fr, en } from './locales/fr';
+export { fr } from './locales/fr';
+export { en } from './locales/en';
 export { wo } from './locales/wo';
 export { fon } from './locales/fon';
 export { local } from './locales/local';
-export type { Translations } from './locales/fr';

@@ -23,7 +23,7 @@ export async function GET(
     }
 
     // Fetch seller (property owner)
-    let seller = null;
+    let seller: { id: string; name: string; email: string; avatar: string | null } | null = null;
     if (transaction.property.agentId) {
       seller = await db.user.findUnique({
         where: { id: transaction.property.agentId },

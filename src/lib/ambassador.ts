@@ -84,6 +84,7 @@ export async function getCommissionHistory(
     status?: string;
     page?: number;
     limit?: number;
+    offset?: number;
   }
 ) {
   const page = options?.page || 1;

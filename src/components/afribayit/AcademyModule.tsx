@@ -810,7 +810,7 @@ function CourseDetailDialog({
                 {courseData.rating} ({courseData.students} étudiants)
               </span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {courseData.duration}</span>
-              {courseData.lessons > 0 && <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {courseData.lessons} leçons</span>}
+              {(courseData.lessons ?? 0) > 0 && <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {courseData.lessons} leçons</span>}
               <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {courseData.students} inscrits</span>
               <span className="text-[#009CDE] bg-[#009CDE]/5 px-2 py-0.5 rounded-full font-medium">{courseData.category}</span>
             </div>

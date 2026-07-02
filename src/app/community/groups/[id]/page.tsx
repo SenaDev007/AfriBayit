@@ -118,7 +118,7 @@ export default function GroupDetailPage() {
                       <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> Public</span>
                     )}
                   </span>
-                  {group.type && (
+                  {Boolean(group.type) && (
                     <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-[10px] font-bold">
                       {TYPE_LABELS[String(group.type)] || String(group.type)}
                     </span>
@@ -129,15 +129,15 @@ export default function GroupDetailPage() {
           </div>
 
           {/* Description */}
-          {group.description && (
+          {Boolean(group.description) && (
             <p className="text-sm text-gray-600 leading-relaxed mb-4">{String(group.description)}</p>
           )}
 
           {/* Stats */}
           <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
             <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {membershipCount} membre{membershipCount !== 1 ? 's' : ''}</span>
-            {group.city && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {String(group.city)}</span>}
-            {group.country && <span>{String(group.country)}</span>}
+            {Boolean(group.city) && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {String(group.city)}</span>}
+            {Boolean(group.country) && <span>{String(group.country)}</span>}
           </div>
 
           {/* Join button */}

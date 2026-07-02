@@ -69,7 +69,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'hotelId et rates[] requis' }, { status: 400 });
     }
 
-    const results = [];
+    const results: Array<Record<string, unknown>> = [];
 
     for (const rate of rates) {
       const { roomId, date, priceOverride, channelRates } = rate;

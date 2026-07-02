@@ -184,7 +184,7 @@ export function useAdminProperties(filters: AdminPropertyFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-properties', filters],
-    queryFn: () => apiFetch(`/api/admin/properties?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/properties?${params.toString()}`),
   });
 }
 
@@ -324,7 +324,7 @@ export function useAdminCommunity(filters: AdminCommunityFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-community', filters],
-    queryFn: () => apiFetch(`/api/admin/community?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/community?${params.toString()}`),
   });
 }
 
@@ -649,7 +649,7 @@ export function useAdminShortTermRentals(filters: AdminShortTermRentalFilters = 
 
   return useQuery({
     queryKey: ['admin-short-term-rentals', filters],
-    queryFn: () => apiFetch(`/api/admin/short-term-rentals?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/short-term-rentals?${params.toString()}`),
   });
 }
 
@@ -675,7 +675,7 @@ export function useAdminBookings(filters: AdminBookingFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-bookings', filters],
-    queryFn: () => apiFetch(`/api/admin/bookings?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/bookings?${params.toString()}`),
   });
 }
 
@@ -699,7 +699,7 @@ export function useAdminDisputes(filters: AdminDisputeFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-disputes', filters],
-    queryFn: () => apiFetch(`/api/admin/disputes?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/disputes?${params.toString()}`),
   });
 }
 
@@ -750,7 +750,7 @@ export function useAdminPayouts(filters: AdminPayoutFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-payouts', filters],
-    queryFn: () => apiFetch(`/api/admin/payouts?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/payouts?${params.toString()}`),
   });
 }
 
@@ -777,7 +777,7 @@ export function useAdminContent(filters: AdminContentFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-content', filters],
-    queryFn: () => apiFetch(`/api/admin/content?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/content?${params.toString()}`),
   });
 }
 

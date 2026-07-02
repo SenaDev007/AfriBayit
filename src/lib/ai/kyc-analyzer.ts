@@ -150,6 +150,7 @@ function buildClaimedData(
     phone: string | null;
     country: string | null;
     city: string | null;
+    dateOfBirth?: string | null;
   } | null,
   documentType: KycDocumentType
 ): Record<string, string> {

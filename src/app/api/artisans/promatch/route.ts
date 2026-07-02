@@ -103,10 +103,10 @@ function formatScoredArtisan(scored: ScoredArtisan): Record<string, unknown> {
           scored.scores.availability >= 0.5 ? 'Partiellement' : 'Indisponible',
       },
       trust: {
-        score: scored.scores.trust,
+        score: scored.scores.trust ?? 0,
         weight: '15%',
-        label: scored.scores.trust >= 0.8 ? 'Très fiable' :
-          scored.scores.trust >= 0.5 ? 'Fiable' : 'Nouveau',
+        label: (scored.scores.trust ?? 0) >= 0.8 ? 'Très fiable' :
+          (scored.scores.trust ?? 0) >= 0.5 ? 'Fiable' : 'Nouveau',
       },
     },
   };

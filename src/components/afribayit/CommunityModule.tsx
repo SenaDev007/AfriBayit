@@ -241,9 +241,9 @@ export default function CommunityModule() {
     };
   });
 
-  const currentUserScore = (user as Record<string, unknown> & { reputationScore?: number })?.reputationScore ? Number((user as Record<string, unknown> & { reputationScore?: number }).reputationScore) : 0;
+  const currentUserScore = (user as unknown as Record<string, unknown> & { reputationScore?: number })?.reputationScore ? Number((user as unknown as Record<string, unknown> & { reputationScore?: number }).reputationScore) : 0;
   const userRepLevel = reputationLevels.find(l => currentUserScore >= l.min && currentUserScore < l.max) || reputationLevels[0];
-  const userAfriPoints = (user as Record<string, unknown> & { afriPoints?: number })?.afriPoints ? Number((user as Record<string, unknown> & { afriPoints?: number }).afriPoints) : 0;
+  const userAfriPoints = (user as unknown as Record<string, unknown> & { afriPoints?: number })?.afriPoints ? Number((user as unknown as Record<string, unknown> & { afriPoints?: number }).afriPoints) : 0;
   const afriLevel = afriPointLevels.filter(l => userAfriPoints >= l.min).pop() || afriPointLevels[0];
   const nextLevel = afriPointLevels.find(l => l.min > userAfriPoints);
 
@@ -1035,9 +1035,9 @@ function PostDetailDialog({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {postData?.category && (
+                  {Boolean(postData?.category) && (
                     <span className="px-2.5 py-0.5 bg-gray-100 rounded-full text-[10px] font-medium text-gray-600">
-                      {String(postData.category)}
+                      {String(postData?.category)}
                     </span>
                   )}
                   <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
@@ -1048,9 +1048,9 @@ function PostDetailDialog({
               <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">
                 {postData?.title ? String(postData.title) : 'Discussion'}
               </h2>
-              {postData?.content && (
+              {Boolean(postData?.content) && (
                 <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {String(postData.content)}
+                  {String(postData?.content)}
                 </p>
               )}
               <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
@@ -1211,8 +1211,8 @@ function GroupDetailDialog({
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${String(groupData?.type) === 'Premium' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-[#003087]/10 text-[#003087]'}`}>
                       {String(groupData?.type ?? 'Privé')}
                     </span>
-                    {groupData?.city && (
-                      <span className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{String(groupData.city)}</span>
+                    {Boolean(groupData?.city) && (
+                      <span className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{String(groupData?.city)}</span>
                     )}
                   </div>
                 </div>
@@ -1220,8 +1220,8 @@ function GroupDetailDialog({
                   <X className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
-              {groupData?.description && (
-                <p className="text-sm text-gray-600">{String(groupData.description)}</p>
+              {Boolean(groupData?.description) && (
+                <p className="text-sm text-gray-600">{String(groupData?.description)}</p>
               )}
               <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                 <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {Number(groupData?.members ?? members.length)} membres</span>

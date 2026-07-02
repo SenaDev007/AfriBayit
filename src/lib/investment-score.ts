@@ -495,7 +495,7 @@ export async function batchCalculateInvestmentScores() {
     take: 50,
   });
 
-  const results = [];
+  const results: Array<{ id: string; score: number; grade: InvestmentGrade }> = [];
   for (const prop of properties) {
     const score = await calculateInvestmentScore(prop);
     await db.property.update({

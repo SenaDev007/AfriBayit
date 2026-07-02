@@ -96,7 +96,13 @@ export async function syncAllProviders(
 ) {
   const config = { ...DEFAULT_SYNC_CONFIG, ...syncConfig };
   const providers = await getHotelProviders(hotelId);
-  const results = [];
+  const results: Array<{
+    provider: string;
+    success: boolean;
+    bookingsImported: number;
+    availabilityUpdated: number;
+    errors: string[];
+  }> = [];
 
   for (const provider of providers) {
     if (!provider.isEnabled) continue;

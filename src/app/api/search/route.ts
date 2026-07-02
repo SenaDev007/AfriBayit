@@ -98,12 +98,14 @@ export async function GET(request: NextRequest) {
 
     // Build response with grouped results by type
     const groupedResults: Record<string, unknown> = {};
+    const groupedByType = searchResult.groupedByType || {};
+    const typeCounts = searchResult.typeCounts || {};
     for (const modelType of validTypes) {
-      const docs = searchResult.groupedByType[modelType];
+      const docs = groupedByType[modelType];
       if (docs && docs.length > 0) {
         groupedResults[modelType] = {
           label: TYPE_LABELS[modelType],
-          count: searchResult.typeCounts[modelType],
+          count: typeCounts[modelType],
           items: docs,
         };
       }
@@ -127,7 +129,7 @@ export async function GET(request: NextRequest) {
 
       // Grouped by type
       groupedByType: groupedResults,
-      typeCounts: searchResult.typeCounts,
+      typeCounts: typeCounts,
 
       // Facets for filtering UI
       facets: searchResult.facets,

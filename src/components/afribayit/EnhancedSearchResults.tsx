@@ -321,7 +321,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
             {viewMode === 'map' && (
               <div className="mb-6">
                 <PropertyMap
-                  properties={properties}
+                  properties={properties as unknown as any[]}
                   onPropertyClick={onSelectProperty}
                   onBoundsChange={handleMapBoundsChange}
                   selectedCountry={filters.country}

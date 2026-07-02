@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useSyncExternalStore } from 'react';
 
-type CountryCode = 'BJ' | 'CI' | 'BF' | 'TG';
+type CountryCode = 'BJ' | 'CI' | 'BF' | 'TG' | 'SN';
 
 interface CountryContextValue {
   selectedCountry: CountryCode;

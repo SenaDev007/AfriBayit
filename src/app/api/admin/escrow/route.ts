@@ -75,7 +75,7 @@ export async function GET(request: Request) {
     const enrichedAccounts = await Promise.all(
       accounts.map(async (account) => {
         const tx = account.transaction as Record<string, unknown> | null;
-        let seller = null;
+        let seller: { id: string; name: string; email: string } | null = null;
         if (tx && tx.sellerId) {
           seller = await db.user.findUnique({
             where: { id: tx.sellerId as string },

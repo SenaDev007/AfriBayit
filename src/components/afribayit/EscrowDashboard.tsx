@@ -229,7 +229,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
     try {
       const res = await apiPost(`/api/escrow/${transactionId}/release-2fa`, {
         otpCode: otpCode || undefined,
-        confirmationChecked,
+        confirmationChecked: confirmChecked,
       });
 
       if (res) {

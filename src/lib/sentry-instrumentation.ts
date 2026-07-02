@@ -32,7 +32,7 @@ export function clearSentryUser(): void {
 export function addBreadcrumb(
   category: string,
   message: string,
-  level: Sentry.BreadcrumbLevel = 'info',
+  level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' | 'log' = 'info',
   data?: Record<string, unknown>
 ): void {
   Sentry.addBreadcrumb({

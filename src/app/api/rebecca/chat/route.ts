@@ -155,8 +155,8 @@ export async function POST(request: Request) {
     const contextPrefix = userContext ? `\n\nContexte utilisateur: ${userContext}` : '';
     const protectedSystemPrompt = buildProtectedSystemPrompt(REBECCA_SYSTEM_PROMPT);
 
-    const conversationMessages = [
-      { role: 'system' as const, content: protectedSystemPrompt + contextPrefix },
+    const conversationMessages: ChatMessage[] = [
+      { role: 'system', content: protectedSystemPrompt + contextPrefix },
       ...memoryMessages.slice(-10),
       ...messages.slice(-5).map((m) => ({
         role: m.role as 'user' | 'assistant',
@@ -174,7 +174,7 @@ export async function POST(request: Request) {
       // First LLM call — check if function calling is needed
       const completion = await zai.chat.completions.create({
         model: 'glm-4-flash',
-        messages: conversationMessages,
+        messages: conversationMessages as any,
         temperature: 0.7,
         max_tokens: 800,
       });

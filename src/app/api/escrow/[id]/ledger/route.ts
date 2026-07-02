@@ -19,6 +19,7 @@ export async function GET(
     // Verify user is a participant in the escrow transaction
     const account = await db.escrowAccount.findUnique({
       where: { id },
+      include: { transaction: { select: { buyerId: true, sellerId: true } } },
     });
 
     if (!account) {
@@ -26,7 +27,7 @@ export async function GET(
     }
 
     // Only allow buyer, seller, or admin to view ledger
-    if (account.buyerId !== auth.userId && account.sellerId !== auth.userId && auth.role !== 'admin') {
+    if (account.transaction.buyerId !== auth.userId && account.transaction.sellerId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
@@ -67,6 +68,7 @@ export async function POST(
     // Get current escrow account to calculate balance
     const account = await db.escrowAccount.findUnique({
       where: { id },
+      include: { transaction: { select: { buyerId: true, sellerId: true } } },
     });
 
     if (!account) {
@@ -74,7 +76,7 @@ export async function POST(
     }
 
     // Only allow buyer, seller, or admin to create ledger entries
-    if (account.buyerId !== auth.userId && account.sellerId !== auth.userId && auth.role !== 'admin') {
+    if (account.transaction.buyerId !== auth.userId && account.transaction.sellerId !== auth.userId && auth.role !== 'admin') {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 

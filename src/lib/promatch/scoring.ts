@@ -52,6 +52,7 @@ export interface ScoredArtisan {
     availability: number; // 0-1, weight 20%
     rating: number;       // 0-1, weight 15%
     price: number;        // 0-1, weight 10%
+    trust?: number;       // alias for rating (used by some consumers)
   };
 }
 

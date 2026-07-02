@@ -117,7 +117,7 @@ export async function deliverNotification(
     pusherDelivered = await triggerEvent(
       channelName,
       RealtimeEvents.NOTIFICATION_NEW,
-      payload
+      payload as unknown as Record<string, unknown>
     );
   } catch (error) {
     console.error('[RealtimeDelivery] Pusher delivery failed:', error);
@@ -213,8 +213,8 @@ export async function deliverEscrowUpdate(
 
   const event = eventMap[status] || RealtimeEvents.ESCROW_STATUS_UPDATE;
 
-  await triggerEvent(channelName, event, escrowData);
-  await triggerEvent(channelName, RealtimeEvents.ESCROW_STATUS_UPDATE, escrowData);
+  await triggerEvent(channelName, event, escrowData as unknown as Record<string, unknown>);
+  await triggerEvent(channelName, RealtimeEvents.ESCROW_STATUS_UPDATE, escrowData as unknown as Record<string, unknown>);
 
   // 2. Send individual notifications to buyer and seller
   const category: NotificationCategory = 'transaction';
@@ -270,7 +270,7 @@ export async function deliverChatMessage(
   const pusherDelivered = await triggerEvent(
     channelName,
     RealtimeEvents.CHAT_MESSAGE,
-    payload
+    payload as unknown as Record<string, unknown>
   );
 
   // Also send stop-typing indicator for the sender

@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const validationAction = determineValidationAction(ocrResult);
 
     // Store the KYC document with OCR results in the database
-    let kycDocument = null;
+    let kycDocument: { id: string; status: string } | null = null;
     try {
       // Store the file URL as a placeholder — in production this would be uploaded to R2/S3
       const docUrl = `kyc-upload:${auth.userId}/${Date.now()}/${file.name}`;

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         city: dbProperty.city,
         country: dbProperty.country,
         quartier: dbProperty.quartier,
-        address: dbProperty.address,
+        address: dbProperty.address ?? undefined,
         lat: dbProperty.lat,
         lng: dbProperty.lng,
         images: dbProperty.propertyImages.map(img => img.url),

@@ -2047,7 +2047,7 @@ async function main() {
     if (txd.escrowFundedAt) {
       timelineEvents.push({ from: 'CREATED', to: 'FUNDED', desc: 'Fonds versés en escrow' });
     }
-    if (txd.notoryAssignedAt) {
+    if (txd.notaryAssignedAt) {
       timelineEvents.push({ from: 'FUNDED', to: 'NOTARY_ASSIGNED', desc: 'Notaire assigné à la transaction' });
     }
     if (txd.deedSignedAt) {

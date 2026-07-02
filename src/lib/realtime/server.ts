@@ -143,7 +143,7 @@ export function initRealtimeServer(httpServer: any) {
     }
 
     // ── Authenticate (for clients that connect without token) ──
-    socket.on('authenticate', (authData: { token?: string; userId?: string }) => {
+    socket.on('authenticate', async (authData: { token?: string; userId?: string }) => {
       // Rate limit check
       if (!checkSocketRateLimit(socket.id)) {
         socket.emit('error', { message: 'Rate limit exceeded. Slow down.' });

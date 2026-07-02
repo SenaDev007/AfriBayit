@@ -14,7 +14,7 @@
 import argon2 from 'argon2';
 
 /** Argon2id parameters — OWASP recommended defaults */
-const ARGON2ID_OPTIONS: argon2.Options & { type: argon2.Type } = {
+const ARGON2ID_OPTIONS: argon2.Options & { type: 0 | 1 | 2 } = {
   type: argon2.argon2id,
   memoryCost: 65536, // 64 MB — high memory makes GPU attacks expensive
   timeCost: 3, // 3 iterations — minimum recommended

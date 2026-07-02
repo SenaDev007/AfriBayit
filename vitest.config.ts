@@ -76,8 +76,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Disable CSS/PostCSS processing for tests
-  css: { include: [] },
+  // P3 — CSS not processed in unit tests (Vitest default, no css config needed)
   // Override postcss config to be empty (avoid Tailwind 4 + Vite conflict)
   plugins: [],
 });

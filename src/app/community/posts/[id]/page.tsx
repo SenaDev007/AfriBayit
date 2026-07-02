@@ -181,13 +181,13 @@ export default function PostDetailPage() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-[#2C2E2F]">{String(author?.name || 'Anonyme')}</p>
               <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap mt-0.5">
-                {post.category && (
+                {Boolean(post.category) && (
                   <span className="px-2 py-0.5 bg-[#003087]/10 text-[#003087] rounded-full font-medium">
                     {CATEGORY_LABELS[String(post.category)] || String(post.category)}
                   </span>
                 )}
-                {post.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{String(post.city)}</span>}
-                {post.country && <span>{String(post.country)}</span>}
+                {Boolean(post.city) && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{String(post.city)}</span>}
+                {Boolean(post.country) && <span>{String(post.country)}</span>}
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{timeAgo(String(post.createdAt || ''))}</span>
               </div>
             </div>

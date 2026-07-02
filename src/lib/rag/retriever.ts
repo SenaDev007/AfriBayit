@@ -403,7 +403,7 @@ export async function retrieve(
 
   const allResults: RetrievalResult[] = [];
 
-  const searchPromises = [];
+  const searchPromises: Promise<RetrievalResult[]>[] = [];
 
   if (enabledSources.includes('property')) {
     searchPromises.push(searchProperties(query, country));

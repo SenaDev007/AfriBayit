@@ -783,7 +783,7 @@ export async function getPayoutStatus(payoutId: string): Promise<{
     currency: tx.currency,
     method: metadata.method as string | undefined,
     destination: metadata.destination as string | undefined,
-    providerRef: tx.providerRef,
+    providerRef: tx.providerRef ?? undefined,
     retryCount: metadata.retryCount as number | undefined,
     scheduledFor: metadata.scheduledFor as string | undefined,
     error: metadata.lastError as string | undefined,

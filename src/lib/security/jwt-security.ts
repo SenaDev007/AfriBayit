@@ -385,7 +385,7 @@ export async function rotateRefreshToken(
   }
 
   // Generate new token pair
-  const newPair = generateTokenPair(
+  const newPair = await generateTokenPair(
     oldPayload.sub,
     oldPayload.email,
     oldPayload.role,
@@ -534,30 +534,20 @@ export function getTokenJti(token: string): string | null {
 
 /**
  * Get token statistics (for admin dashboards).
+ * P2.6 — Now async due to distributed store. Returns approximate counts.
  */
-export function getTokenStats(): {
+export async function getTokenStats(): Promise<{
   blacklistedTokens: number;
   activeRefreshTokens: number;
   rotatedRefreshTokens: number;
-} {
-  let activeRefresh = 0;
-  let rotatedRefresh = 0;
-  const now = Math.floor(Date.now() / 1000);
-
-  for (const [, record] of refreshTokens) {
-    if (record.expiresAt > now) {
-      if (record.rotated) {
-        rotatedRefresh++;
-      } else {
-        activeRefresh++;
-      }
-    }
-  }
-
+}> {
+  // In distributed mode, we can't iterate all tokens.
+  // Return approximate counts (0 for active/rotated, real count for blacklist).
+  const blacklistedCount = await tokenBlacklist.size();
   return {
-    blacklistedTokens: tokenBlacklist.size,
-    activeRefreshTokens: activeRefresh,
-    rotatedRefreshTokens: rotatedRefresh,
+    blacklistedTokens: blacklistedCount,
+    activeRefreshTokens: 0, // Not trackable in distributed mode
+    rotatedRefreshTokens: 0, // Not trackable in distributed mode
   };
 }
 

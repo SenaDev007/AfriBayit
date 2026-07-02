@@ -359,7 +359,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                 const agentTier = isAgent ? agentTiers.find(t => t.id === tier.id) : null;
                 return (
                   <motion.div key={tier.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className={`bg-white rounded-3xl p-5 shadow-sm border relative flex flex-col ${'popular' in tier && tier.popular ? 'ring-2 ring-[#D4AF37]' : ''}`}>
-                    {'popular' in tier && tier.popular && (<span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>)}
+                    {Boolean('popular' in tier && tier.popular) && (<span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>)}
                     <div className="text-center mb-3">
                       <h3 className="font-display text-base font-bold text-[#2C2E2F]">{tier.name}</h3>
                       <p className="text-xs text-gray-500 mb-1">{tier.desc}</p>

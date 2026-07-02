@@ -150,7 +150,7 @@ async function handleMultiModelSearch(
     typeof body.query === 'string' ? body.query : '',
     {
       query: typeof body.query === 'string' ? body.query : undefined,
-      type: types,
+      type: types.length === 1 ? types[0] : (types as unknown as string),
       country: typeof body.country === 'string' ? body.country : undefined,
       city: typeof body.city === 'string' ? body.city : undefined,
       minPrice: typeof body.priceMin === 'number' ? body.priceMin : undefined,
@@ -168,11 +168,13 @@ async function handleMultiModelSearch(
 
   // Build grouped response
   const groupedResults: Record<string, unknown> = {};
+  const groupedByType = searchResult.groupedByType || {};
+  const typeCounts = searchResult.typeCounts || {};
   for (const type of types) {
-    const docs = searchResult.groupedByType[type];
+    const docs = groupedByType[type];
     groupedResults[type] = {
       label: TYPE_LABELS[type],
-      count: searchResult.typeCounts[type],
+      count: typeCounts[type],
       items: docs || [],
     };
   }
@@ -187,7 +189,7 @@ async function handleMultiModelSearch(
 
     // Grouped by type
     groupedByType: groupedResults,
-    typeCounts: searchResult.typeCounts,
+    typeCounts: typeCounts,
 
     // Facets for filtering UI
     facets: searchResult.facets,

@@ -64,7 +64,7 @@ export default function AdminCommunityPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-community', activeTab, filters],
-    queryFn: () => apiFetch(`/api/admin/community?${params.toString()}`),
+    queryFn: () => apiFetch<any>(`/api/admin/community?${params.toString()}`),
   });
 
   const postMutation = useMutation({

@@ -317,7 +317,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     verified: property.verified,
     geoTrust: property.geoTrust,
     investmentScore: null,
-    address: property.address || `${property.quartier}, ${property.city}`,
+    address: (property as any).address || `${property.quartier}, ${property.city}`,
   }] : [];
 
   return (
@@ -557,7 +557,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                   <span className="text-xs text-gray-500 ml-1">Vues</span>
                 </div>
               </div>
-              {property.favorites > 0 && (
+              {(property.favorites ?? 0) > 0 && (
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
                     <Heart className="w-5 h-5 text-red-400" />
@@ -898,7 +898,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
                           className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-xl border p-2 z-50"
                         >
                           {/* Native Share (mobile) */}
-                          {typeof navigator !== 'undefined' && navigator.share && (
+                          {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
                             <button
                               onClick={() => handleShare('Native')}
                               className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-left"
