@@ -5,24 +5,6 @@ import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Escrow — AfriBayit",
-  description: "Transactions sécurisées via escrow AfriBayit. Fonds protégés jusqu'à validation notariale.",
-  keywords: ["escrow", "sécurité transaction", "fonds protégés"],
-  openGraph: {
-    title: "Escrow — AfriBayit",
-    description: "Transactions sécurisées via escrow AfriBayit. Fonds protégés jusqu'à validation notariale.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Escrow — AfriBayit",
-    description: "Transactions sécurisées via escrow AfriBayit. Fonds protégés jusqu'à validation notariale.",
-  },
-};
-
 const EscrowFlow = dynamic(() => import('@/components/afribayit/EscrowFlow'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

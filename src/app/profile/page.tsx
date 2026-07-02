@@ -5,24 +5,6 @@ import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Profil — AfriBayit",
-  description: "Gérez votre profil AfriBayit : informations, KYC, sécurité, préférences.",
-  keywords: ["profil", "compte", "paramètres"],
-  openGraph: {
-    title: "Profil — AfriBayit",
-    description: "Gérez votre profil AfriBayit : informations, KYC, sécurité, préférences.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Profil — AfriBayit",
-    description: "Gérez votre profil AfriBayit : informations, KYC, sécurité, préférences.",
-  },
-};
-
 const ProfessionalProfileModule = dynamic(() => import('@/components/afribayit/ProfessionalProfileModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

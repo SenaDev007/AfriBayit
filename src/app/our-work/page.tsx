@@ -4,24 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Nos réalisations — AfriBayit",
-  description: "Découvrez les projets et réalisations AfriBayit en Afrique de l'Ouest.",
-  keywords: ["réalisations", "projets", "portfolio"],
-  openGraph: {
-    title: "Nos réalisations — AfriBayit",
-    description: "Découvrez les projets et réalisations AfriBayit en Afrique de l'Ouest.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Nos réalisations — AfriBayit",
-    description: "Découvrez les projets et réalisations AfriBayit en Afrique de l'Ouest.",
-  },
-};
-
 import {
   Home,
   Building2,

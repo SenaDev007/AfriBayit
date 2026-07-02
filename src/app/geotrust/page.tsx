@@ -4,24 +4,6 @@ import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "GeoTrust — AfriBayit",
-  description: "Vérification terrain géolocalisée GeoTrust : GPS, bornage, drone, conflits.",
-  keywords: ["GeoTrust", "vérification terrain", "bornage", "géomètre"],
-  openGraph: {
-    title: "GeoTrust — AfriBayit",
-    description: "Vérification terrain géolocalisée GeoTrust : GPS, bornage, drone, conflits.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GeoTrust — AfriBayit",
-    description: "Vérification terrain géolocalisée GeoTrust : GPS, bornage, drone, conflits.",
-  },
-};
-
 const GeoTrustModule = dynamic(() => import('@/components/afribayit/GeoTrustModule'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

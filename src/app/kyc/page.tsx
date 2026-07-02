@@ -5,24 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Vérification KYC — AfriBayit",
-  description: "Soumettez vos documents KYC pour débloquer toutes les fonctionnalités AfriBayit.",
-  keywords: ["KYC", "vérification identité", "certification"],
-  openGraph: {
-    title: "Vérification KYC — AfriBayit",
-    description: "Soumettez vos documents KYC pour débloquer toutes les fonctionnalités AfriBayit.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Vérification KYC — AfriBayit",
-    description: "Soumettez vos documents KYC pour débloquer toutes les fonctionnalités AfriBayit.",
-  },
-};
-
 import {
   Loader2,
   Shield,

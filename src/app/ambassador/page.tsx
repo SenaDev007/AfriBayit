@@ -17,24 +17,6 @@ import {
 import { cn } from '@/lib/utils';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Ambassadeurs — AfriBayit",
-  description: "Programme ambassadeurs AfriBayit : commissions, tiers, parrainages.",
-  keywords: ["ambassadeur", "parrainage", "commission", "programme"],
-  openGraph: {
-    title: "Ambassadeurs — AfriBayit",
-    description: "Programme ambassadeurs AfriBayit : commissions, tiers, parrainages.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Ambassadeurs — AfriBayit",
-    description: "Programme ambassadeurs AfriBayit : commissions, tiers, parrainages.",
-  },
-};
-
 // ─── Easing & animation constants ───────────────────────────────────────────
 const easeOut = [0.16, 1, 0.3, 1] as const;
 

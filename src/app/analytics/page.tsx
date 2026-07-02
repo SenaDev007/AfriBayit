@@ -4,24 +4,6 @@ import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Analytics — AfriBayit",
-  description: "Statistiques et analytics de vos annonces immobilières sur AfriBayit.",
-  keywords: ["analytics", "statistiques", "performance"],
-  openGraph: {
-    title: "Analytics — AfriBayit",
-    description: "Statistiques et analytics de vos annonces immobilières sur AfriBayit.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Analytics — AfriBayit",
-    description: "Statistiques et analytics de vos annonces immobilières sur AfriBayit.",
-  },
-};
-
 const AnalyticsDashboard = dynamic(() => import('@/components/afribayit/AnalyticsDashboard'), {
   loading: () => (
     <div className="pt-20 min-h-screen bg-gray-50/30">

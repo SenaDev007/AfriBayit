@@ -5,24 +5,6 @@ import { signOut } from 'next-auth/react';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Tableau de bord agent — AfriBayit",
-  description: "Dashboard agent immobilier : annonces, leads, performance, commissions.",
-  keywords: ["agent", "dashboard", "annonces", "commissions"],
-  openGraph: {
-    title: "Tableau de bord agent — AfriBayit",
-    description: "Dashboard agent immobilier : annonces, leads, performance, commissions.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Tableau de bord agent — AfriBayit",
-    description: "Dashboard agent immobilier : annonces, leads, performance, commissions.",
-  },
-};
-
 const AgentDashboard = dynamic(() => import('@/components/afribayit/AgentDashboard'), {
   loading: () => (
     <div className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">

@@ -4,24 +4,6 @@ import dynamic from 'next/dynamic';
 import SafeModule from '@/components/safe/SafeModule';
 
 
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Location courte durée — AfriBayit",
-  description: "Locations courte durée type Airbnb en Afrique de l'Ouest.",
-  keywords: ["location courte durée", "Airbnb Afrique", "vacances"],
-  openGraph: {
-    title: "Location courte durée — AfriBayit",
-    description: "Locations courte durée type Airbnb en Afrique de l'Ouest.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Location courte durée — AfriBayit",
-    description: "Locations courte durée type Airbnb en Afrique de l'Ouest.",
-  },
-};
-
 const ShortTermRentalModule = dynamic(() => import('@/components/afribayit/ShortTermRentalModule'), {
   loading: () => (
     <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">

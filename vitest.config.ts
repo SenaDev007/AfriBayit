@@ -76,7 +76,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // P3 — CSS not processed in unit tests (Vitest default, no css config needed)
-  // Override postcss config to be empty (avoid Tailwind 4 + Vite conflict)
+  // P3 — CSS not processed in unit tests. Override postcss config to empty
+  // to avoid Tailwind 4 + Vite + PostCSS string plugin conflict.
+  css: { postcss: {} },
   plugins: [],
 });
