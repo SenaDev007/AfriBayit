@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { apiFetch, apiPost } from '@/lib/api';
+import { apiFetch, apiPost } from '@/lib/api-client';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';

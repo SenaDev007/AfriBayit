@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { api } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useNotaries(specialty?: string, zone?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -12,14 +12,14 @@ export function useNotaries(specialty?: string, zone?: string, country?: Country
 
   return useQuery({
     queryKey: ['notaries', specialty, zone, country, page, limit],
-    queryFn: () => apiFetch<{ notaries: unknown[]; pagination: unknown }>(`/api/notaries?${params.toString()}`),
+    queryFn: () => api<{ notaries: unknown[]; pagination: unknown }>(`/api/notaries?${params.toString()}`),
   });
 }
 
 export function useNotary(id: string) {
   return useQuery({
     queryKey: ['notary', id],
-    queryFn: () => apiFetch<unknown>(`/api/notaries/${id}`),
+    queryFn: () => api<unknown>(`/api/notaries/${id}`),
     enabled: !!id,
   });
 }

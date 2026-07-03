@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { Bot, Flag, Lock, MessageCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { badges, reputationLevels, afriPointLevels } from './constants';

@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api-client';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { Globe } from 'lucide-react';
 

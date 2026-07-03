@@ -3,7 +3,7 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { Activity, AlertTriangle, ArrowDownRight, ArrowLeftRight, ArrowUpRight, Building2, CheckCircle2, Clock, DollarSign, Eye, FileCheck, Globe, Home, Hotel, ShieldCheck, TrendingUp, UserPlus, Users, Wallet } from 'lucide-react';
 

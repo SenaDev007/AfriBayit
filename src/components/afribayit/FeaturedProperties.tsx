@@ -6,7 +6,7 @@ import { useProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 

@@ -13,9 +13,9 @@ import {
   Send,
   RotateCcw,
 } from 'lucide-react';
-import { apiPost } from '@/lib/api';
+import { apiPost } from '@/lib/api-client';
 import { toast } from '@/hooks/use-toast';
-import type { QuizQuestion, QuestionFeedback } from '@/lib/quiz/types';
+import type { QuizQuestion, QuestionFeedback } from '@/lib/constants';
 
 // ─── Types ────────────────────────────────────────────────────────
 

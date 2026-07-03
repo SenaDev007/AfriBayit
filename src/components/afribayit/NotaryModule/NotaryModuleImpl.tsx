@@ -7,7 +7,7 @@ import { useEscrowList } from '@/hooks/useEscrow';
 import { useCreateConversation } from '@/hooks/useChat';
 import { useCreateSubscription } from '@/hooks/useSubscriptions';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, Award, BarChart3, Camera, Circle, Coins, GraduationCap, MessageCircle, User } from 'lucide-react';
-import { geoServiceLabel } from '@/lib/geotrust/service-codes';
+import { geoServiceLabel } from '@/lib/constants';
 
 interface ProfileData {
   profile: {

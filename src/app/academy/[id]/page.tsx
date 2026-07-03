@@ -21,12 +21,12 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { apiFetch, apiPost, apiPatch } from '@/lib/api-client';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import CourseLessonViewer from '@/components/afribayit/CourseLessonViewer';
 import QuizTaker from '@/components/afribayit/QuizTaker';
-import type { QuizQuestion } from '@/lib/quiz/types';
+import type { QuizQuestion } from '@/lib/constants';
 
 // ─── Types ────────────────────────────────────────────────────────
 

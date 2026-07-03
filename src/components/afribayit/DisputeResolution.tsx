@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { apiFetch, apiPost, apiPatch } from '@/lib/api-client';
 import { toast } from 'sonner';
 import {
   ShieldAlert,

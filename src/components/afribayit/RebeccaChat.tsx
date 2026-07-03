@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiPost } from '@/lib/api';
+import { apiPost } from '@/lib/api-client';
 import { BarChart3, Bot, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, MessageCircle, HandHeart, Scale, Search, Zap } from 'lucide-react';
 
 interface RebeccaChatProps {

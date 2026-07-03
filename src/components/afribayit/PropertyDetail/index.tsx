@@ -7,7 +7,7 @@ import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProperty } from '@/hooks/useProperties';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiDelete } from '@/lib/api';
+import { apiFetch, apiPost, apiDelete } from '@/lib/api-client';
 import { formatPrice } from '@/lib/afribayit-utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useState, useCallback, useEffect } from 'react';

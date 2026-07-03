@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useAdminOta, type AdminOtaProvidersResponse, type AdminOtaSyncLogsResponse, type AdminOtaMappingsResponse, type AdminOtaParityResponse } from '@/hooks/useAdmin';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiPost } from '@/lib/api';
+import { apiPost } from '@/lib/api-client';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   active: { label: 'Connecté', color: 'bg-green-50 text-green-700 border-green-200', icon: CheckCircle2 },

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { api, apiPost, apiPatch } from '@/lib/api-client';
 
 export function useSubscriptions(userId?: string, country?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
@@ -10,7 +10,7 @@ export function useSubscriptions(userId?: string, country?: string, page = 1, li
 
   return useQuery({
     queryKey: ['subscriptions', userId, country, page, limit],
-    queryFn: () => apiFetch<{ subscriptions: unknown[]; pagination: unknown }>(`/api/subscriptions?${params.toString()}`),
+    queryFn: () => api<{ subscriptions: unknown[]; pagination: unknown }>(`/api/subscriptions?${params.toString()}`),
     enabled: !!userId,
   });
 }

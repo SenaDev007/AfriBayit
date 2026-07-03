@@ -7,7 +7,7 @@ import {
   CheckCircle2, EyeOff, Trash2, Pin, Award, Ban, XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { apiFetch, apiPatch, apiDelete } from '@/lib/api';
+import { apiFetch, apiPatch, apiDelete } from '@/lib/api-client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

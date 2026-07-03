@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGuesthouses, useGuesthouse, useGuesthouseBookings, useCreateBooking } from '@/hooks/useGuesthouses';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from 'sonner';
 import {
   Award,

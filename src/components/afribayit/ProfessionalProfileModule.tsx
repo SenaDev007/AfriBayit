@@ -8,7 +8,7 @@ import { useCreateConversation } from '@/hooks/useChat';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { apiPost, apiFetch } from '@/lib/api';
+import { apiPost, apiFetch } from '@/lib/api-client';
 import {
   AlertTriangle, Award, BarChart3, BookOpen, Camera, Check, ChevronRight,
   Circle, Clock, Copy, Eye, FileBadge, GraduationCap, Handshake,

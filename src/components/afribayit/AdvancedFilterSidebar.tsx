@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiPost, apiFetch } from '@/lib/api';
+import { apiPost, apiFetch } from '@/lib/api-client';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { toast } from 'sonner';
 import {
@@ -18,7 +18,7 @@ import {
   TRANSACTION_TYPE_OPTIONS,
   SORT_OPTIONS,
   countActiveFilters,
-} from '@/lib/search/filters';
+} from '@/lib/constants';
 import VoiceSearchButton from './VoiceSearchButton';
 
 interface AdvancedFilterSidebarProps {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useGeometers(city?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -11,7 +11,7 @@ export function useGeometers(city?: string, country?: CountryCode, page = 1, lim
 
   return useQuery({
     queryKey: ['geotrust', city, country, page, limit],
-    queryFn: () => apiFetch<{ geometers: unknown[]; pagination: unknown }>(`/api/geotrust?${params.toString()}`),
+    queryFn: () => api<{ geometers: unknown[]; pagination: unknown }>(`/api/geotrust?${params.toString()}`),
   });
 }
 
@@ -21,14 +21,14 @@ export function useGeometerMissions(propertyId?: string) {
 
   return useQuery({
     queryKey: ['geotrust-missions', propertyId],
-    queryFn: () => apiFetch<{ missions: unknown[] }>(`/api/geotrust/missions?${params.toString()}`),
+    queryFn: () => api<{ missions: unknown[] }>(`/api/geotrust/missions?${params.toString()}`),
   });
 }
 
 export function useGeometerReports(geometerId: string) {
   return useQuery({
     queryKey: ['geotrust-reports', geometerId],
-    queryFn: () => apiFetch<{ reports: unknown[] }>(`/api/geotrust/${geometerId}/reports`),
+    queryFn: () => api<{ reports: unknown[] }>(`/api/geotrust/${geometerId}/reports`),
     enabled: !!geometerId,
   });
 }

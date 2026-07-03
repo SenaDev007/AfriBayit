@@ -12,7 +12,7 @@ import {
   ArrowLeft,
   ArrowRight,
 } from 'lucide-react';
-import { apiPatch } from '@/lib/api';
+import { apiPatch } from '@/lib/api-client';
 import { toast } from '@/hooks/use-toast';
 
 // ─── Types ────────────────────────────────────────────────────────

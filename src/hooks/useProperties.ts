@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiDelete } from '@/lib/api';
+import { api, apiPost, apiDelete } from '@/lib/api-client';
 import type { PropertyData, PropertiesResponse, PropertyDetailResponse } from '@/lib/afribayit-utils';
 
 export interface PropertyFilters {
@@ -34,14 +34,14 @@ export function useProperties(filters: PropertyFilters = {}) {
 
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', filters],
-    queryFn: () => apiFetch<PropertiesResponse>(`/api/properties?${params.toString()}`),
+    queryFn: () => api<PropertiesResponse>(`/api/properties?${params.toString()}`),
   });
 }
 
 export function useProperty(id: string) {
   return useQuery<PropertyDetailResponse>({
     queryKey: ['property', id],
-    queryFn: () => apiFetch<PropertyDetailResponse>(`/api/properties/${id}`),
+    queryFn: () => api<PropertyDetailResponse>(`/api/properties/${id}`),
     enabled: !!id,
   });
 }
@@ -78,7 +78,7 @@ export function useMyProperties(userId?: string, page = 1, limit = 50) {
 
   return useQuery<PropertiesResponse>({
     queryKey: ['my-properties', userId, page, limit],
-    queryFn: () => apiFetch<PropertiesResponse>(`/api/properties?${params.toString()}`),
+    queryFn: () => api<PropertiesResponse>(`/api/properties?${params.toString()}`),
     enabled: !!userId,
   });
 }

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useCourses(category?: string, level?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -12,14 +12,14 @@ export function useCourses(category?: string, level?: string, country?: CountryC
 
   return useQuery({
     queryKey: ['courses', category, level, country, page, limit],
-    queryFn: () => apiFetch<{ courses: unknown[]; pagination: unknown }>(`/api/courses?${params.toString()}`),
+    queryFn: () => api<{ courses: unknown[]; pagination: unknown }>(`/api/courses?${params.toString()}`),
   });
 }
 
 export function useCourseDetail(id: string) {
   return useQuery({
     queryKey: ['course-detail', id],
-    queryFn: () => apiFetch<{ course: unknown }>(`/api/courses/${id}`),
+    queryFn: () => api<{ course: unknown }>(`/api/courses/${id}`),
     enabled: !!id,
   });
 }
@@ -39,7 +39,7 @@ export function useEnrollCourse() {
 export function useMyEnrollments(userId?: string) {
   return useQuery({
     queryKey: ['enrollments', userId],
-    queryFn: () => apiFetch<{ enrollments: unknown[] }>(`/api/courses/enrollments?userId=${userId}`),
+    queryFn: () => api<{ enrollments: unknown[] }>(`/api/courses/enrollments?userId=${userId}`),
     enabled: !!userId,
   });
 }
@@ -47,7 +47,7 @@ export function useMyEnrollments(userId?: string) {
 export function useMyCertificates(userId?: string) {
   return useQuery({
     queryKey: ['certificates', userId],
-    queryFn: () => apiFetch<{ certificates: unknown[] }>(`/api/academy/certificates/generate?userId=${userId}`),
+    queryFn: () => api<{ certificates: unknown[] }>(`/api/academy/certificates/generate?userId=${userId}`),
     enabled: !!userId,
   });
 }
@@ -55,7 +55,7 @@ export function useMyCertificates(userId?: string) {
 export function useCourseQuiz(courseId: string) {
   return useQuery({
     queryKey: ['course-quiz', courseId],
-    queryFn: () => apiFetch<{ quiz: unknown }>(`/api/academy/quiz/${courseId}`),
+    queryFn: () => api<{ quiz: unknown }>(`/api/academy/quiz/${courseId}`),
     enabled: !!courseId,
   });
 }

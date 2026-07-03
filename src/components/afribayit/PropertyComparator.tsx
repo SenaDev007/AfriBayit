@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice, getPropertyTypeLabel, getTransactionLabel } from '@/lib/afribayit-utils';
-import { getInvestmentScoreLabel } from '@/lib/investment-score';
+import { getInvestmentScoreLabel } from '@/lib/constants';
 import ImageWithFallback from './ImageWithFallback';
 import { CheckCircle, Star, X, XCircle } from 'lucide-react';
 

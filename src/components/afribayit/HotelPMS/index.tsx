@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { apiFetch, apiPost, apiPatch } from '@/lib/api-client';
 import { useCountry } from '@/contexts/CountryContext';
 import { toast } from 'sonner';
 import { Hotel, RefreshCw, CheckCircle } from 'lucide-react';

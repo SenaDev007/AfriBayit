@@ -3,7 +3,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import {
   Users,

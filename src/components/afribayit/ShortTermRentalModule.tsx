@@ -3,9 +3,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { apiFetch, apiPost } from '@/lib/api-client';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Skeleton } from '@/components/ui/skeleton';

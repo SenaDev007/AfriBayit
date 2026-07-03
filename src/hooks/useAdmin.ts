@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch, apiDelete } from '@/lib/api';
+import { api, apiPost, apiPatch, apiDelete } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 // ============ Types ============
@@ -111,7 +111,7 @@ export function useAdminStats(country?: CountryCode | 'ALL') {
 
   return useQuery<AdminStats>({
     queryKey: ['admin-stats', country],
-    queryFn: () => apiFetch<AdminStats>(`/api/admin/stats?${params.toString()}`),
+    queryFn: () => api<AdminStats>(`/api/admin/stats?${params.toString()}`),
     refetchInterval: 30000,
   });
 }
@@ -129,14 +129,14 @@ export function useAdminUsers(filters: AdminUserFilters = {}) {
 
   return useQuery<AdminUsersResponse>({
     queryKey: ['admin-users', filters],
-    queryFn: () => apiFetch<AdminUsersResponse>(`/api/admin/users?${params.toString()}`),
+    queryFn: () => api<AdminUsersResponse>(`/api/admin/users?${params.toString()}`),
   });
 }
 
 export function useAdminUser(id: string) {
   return useQuery<{ user: AdminUser & { properties: unknown[]; transactions: unknown[]; kycDocuments: unknown[] } }>({
     queryKey: ['admin-user', id],
-    queryFn: () => apiFetch(`/api/admin/users/${id}`),
+    queryFn: () => api(`/api/admin/users/${id}`),
     enabled: !!id,
   });
 }
@@ -184,7 +184,7 @@ export function useAdminProperties(filters: AdminPropertyFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-properties', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/properties?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/properties?${params.toString()}`),
   });
 }
 
@@ -200,7 +200,7 @@ export function useAdminTransactions(filters: AdminTransactionFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-transactions', filters],
-    queryFn: () => apiFetch(`/api/admin/transactions?${params.toString()}`),
+    queryFn: () => api(`/api/admin/transactions?${params.toString()}`),
   });
 }
 
@@ -222,7 +222,7 @@ export function useAdminWallets(filters: AdminWalletFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-wallets', filters],
-    queryFn: () => apiFetch(`/api/admin/wallets?${params.toString()}`),
+    queryFn: () => api(`/api/admin/wallets?${params.toString()}`),
   });
 }
 
@@ -246,7 +246,7 @@ export function useAdminSubscriptions(filters: AdminSubscriptionFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-subscriptions', filters],
-    queryFn: () => apiFetch(`/api/admin/subscriptions?${params.toString()}`),
+    queryFn: () => api(`/api/admin/subscriptions?${params.toString()}`),
   });
 }
 
@@ -272,7 +272,7 @@ export function useAdminHotels(filters: AdminHotelFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-hotels', filters],
-    queryFn: () => apiFetch(`/api/admin/hotels?${params.toString()}`),
+    queryFn: () => api(`/api/admin/hotels?${params.toString()}`),
   });
 }
 
@@ -296,7 +296,7 @@ export function useAdminGuesthouses(filters: AdminGuesthouseFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-guesthouses', filters],
-    queryFn: () => apiFetch(`/api/admin/guesthouses?${params.toString()}`),
+    queryFn: () => api(`/api/admin/guesthouses?${params.toString()}`),
   });
 }
 
@@ -324,7 +324,7 @@ export function useAdminCommunity(filters: AdminCommunityFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-community', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/community?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/community?${params.toString()}`),
   });
 }
 
@@ -352,7 +352,7 @@ export function useAdminCourses(filters: AdminCourseFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-courses', filters],
-    queryFn: () => apiFetch(`/api/admin/courses?${params.toString()}`),
+    queryFn: () => api(`/api/admin/courses?${params.toString()}`),
   });
 }
 
@@ -370,7 +370,7 @@ export function useAdminAnalytics(filters: AdminAnalyticsFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-analytics', filters],
-    queryFn: () => apiFetch(`/api/admin/analytics?${params.toString()}`),
+    queryFn: () => api(`/api/admin/analytics?${params.toString()}`),
     refetchInterval: 60000,
   });
 }
@@ -448,7 +448,7 @@ export function useAdminKyc(filters: AdminKycFilters = {}) {
 
   return useQuery<AdminKycResponse>({
     queryKey: ['admin-kyc', filters],
-    queryFn: () => apiFetch<AdminKycResponse>(`/api/admin/kyc?${params.toString()}`),
+    queryFn: () => api<AdminKycResponse>(`/api/admin/kyc?${params.toString()}`),
   });
 }
 
@@ -545,7 +545,7 @@ export function useAdminEscrow(filters: AdminEscrowFilters = {}) {
 
   return useQuery<AdminEscrowResponse>({
     queryKey: ['admin-escrow', filters],
-    queryFn: () => apiFetch<AdminEscrowResponse>(`/api/admin/escrow?${params.toString()}`),
+    queryFn: () => api<AdminEscrowResponse>(`/api/admin/escrow?${params.toString()}`),
   });
 }
 
@@ -623,7 +623,7 @@ export function useAdminAuditLogs(filters: AdminAuditLogFilters = {}) {
 
   return useQuery<AdminAuditLogsResponse>({
     queryKey: ['admin-audit-logs', filters],
-    queryFn: () => apiFetch<AdminAuditLogsResponse>(`/api/admin/audit-logs?${params.toString()}`),
+    queryFn: () => api<AdminAuditLogsResponse>(`/api/admin/audit-logs?${params.toString()}`),
   });
 }
 
@@ -649,7 +649,7 @@ export function useAdminShortTermRentals(filters: AdminShortTermRentalFilters = 
 
   return useQuery({
     queryKey: ['admin-short-term-rentals', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/short-term-rentals?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/short-term-rentals?${params.toString()}`),
   });
 }
 
@@ -675,7 +675,7 @@ export function useAdminBookings(filters: AdminBookingFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-bookings', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/bookings?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/bookings?${params.toString()}`),
   });
 }
 
@@ -699,7 +699,7 @@ export function useAdminDisputes(filters: AdminDisputeFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-disputes', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/disputes?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/disputes?${params.toString()}`),
   });
 }
 
@@ -750,7 +750,7 @@ export function useAdminPayouts(filters: AdminPayoutFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-payouts', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/payouts?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/payouts?${params.toString()}`),
   });
 }
 
@@ -777,7 +777,7 @@ export function useAdminContent(filters: AdminContentFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-content', filters],
-    queryFn: () => apiFetch<any>(`/api/admin/content?${params.toString()}`),
+    queryFn: () => api<any>(`/api/admin/content?${params.toString()}`),
   });
 }
 
@@ -811,7 +811,7 @@ export function useAdminRevenue(filters: { period?: string; country?: string } =
   if (filters.country) params.set('country', filters.country);
   return useQuery<AdminRevenueResponse>({
     queryKey: ['admin-revenue', filters],
-    queryFn: () => apiFetch<AdminRevenueResponse>(`/api/admin/revenue?${params.toString()}`),
+    queryFn: () => api<AdminRevenueResponse>(`/api/admin/revenue?${params.toString()}`),
   });
 }
 
@@ -905,7 +905,7 @@ export function useAdminOta(filters: { tab?: string; country?: string; status?: 
   params.set('limit', String(filters.limit || 25));
   return useQuery({
     queryKey: ['admin-ota', filters],
-    queryFn: () => apiFetch(`/api/admin/ota?${params.toString()}`),
+    queryFn: () => api(`/api/admin/ota?${params.toString()}`),
   });
 }
 
@@ -945,7 +945,7 @@ export function useAdminArtisans(filters: AdminArtisanFilters = {}) {
 
   return useQuery<AdminArtisanResponse>({
     queryKey: ['admin-artisans', filters],
-    queryFn: () => apiFetch<AdminArtisanResponse>(`/api/admin/artisans?${params.toString()}`),
+    queryFn: () => api<AdminArtisanResponse>(`/api/admin/artisans?${params.toString()}`),
   });
 }
 
@@ -997,7 +997,7 @@ export function useAdminNotaries(filters: AdminNotaryFilters = {}) {
 
   return useQuery<AdminNotaryResponse>({
     queryKey: ['admin-notaries', filters],
-    queryFn: () => apiFetch<AdminNotaryResponse>(`/api/admin/notaries?${params.toString()}`),
+    queryFn: () => api<AdminNotaryResponse>(`/api/admin/notaries?${params.toString()}`),
   });
 }
 
@@ -1045,7 +1045,7 @@ export function useAdminGeotrust(filters: AdminGeotrustFilters = {}) {
 
   return useQuery<AdminGeotrustResponse>({
     queryKey: ['admin-geotrust', filters],
-    queryFn: () => apiFetch<AdminGeotrustResponse>(`/api/admin/geotrust?${params.toString()}`),
+    queryFn: () => api<AdminGeotrustResponse>(`/api/admin/geotrust?${params.toString()}`),
   });
 }
 
@@ -1085,7 +1085,7 @@ export function useAdminReviews(filters: AdminReviewFilters = {}) {
 
   return useQuery<AdminReviewResponse>({
     queryKey: ['admin-reviews', filters],
-    queryFn: () => apiFetch<AdminReviewResponse>(`/api/admin/reviews?${params.toString()}`),
+    queryFn: () => api<AdminReviewResponse>(`/api/admin/reviews?${params.toString()}`),
   });
 }
 
@@ -1136,7 +1136,7 @@ export function useAdminAmbassadors(filters: AdminAmbassadorFilters = {}) {
 
   return useQuery<AdminAmbassadorResponse>({
     queryKey: ['admin-ambassadors', filters],
-    queryFn: () => apiFetch<AdminAmbassadorResponse>(`/api/admin/ambassadors?${params.toString()}`),
+    queryFn: () => api<AdminAmbassadorResponse>(`/api/admin/ambassadors?${params.toString()}`),
   });
 }
 
@@ -1175,7 +1175,7 @@ export function useAdminNotifications(filters: AdminNotificationFilters = {}) {
 
   return useQuery<AdminNotificationResponse>({
     queryKey: ['admin-notifications', filters],
-    queryFn: () => apiFetch<AdminNotificationResponse>(`/api/admin/notifications?${params.toString()}`),
+    queryFn: () => api<AdminNotificationResponse>(`/api/admin/notifications?${params.toString()}`),
   });
 }
 

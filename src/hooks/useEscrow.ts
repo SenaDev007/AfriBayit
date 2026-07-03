@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { api, apiPost, apiPatch } from '@/lib/api-client';
 
 export function useEscrowList(page = 1, limit = 20, country?: string) {
   const params = new URLSearchParams();
@@ -9,14 +9,14 @@ export function useEscrowList(page = 1, limit = 20, country?: string) {
 
   return useQuery({
     queryKey: ['escrow', page, limit, country],
-    queryFn: () => apiFetch<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
+    queryFn: () => api<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
   });
 }
 
 export function useEscrowDetail(id: string) {
   return useQuery({
     queryKey: ['escrow-detail', id],
-    queryFn: () => apiFetch<{ transaction: unknown }>(`/api/escrow/${id}`),
+    queryFn: () => api<{ transaction: unknown }>(`/api/escrow/${id}`),
     enabled: !!id,
   });
 }
@@ -24,7 +24,7 @@ export function useEscrowDetail(id: string) {
 export function useEscrowLedger(escrowId: string) {
   return useQuery({
     queryKey: ['escrow-ledger', escrowId],
-    queryFn: () => apiFetch<{ ledger: unknown[] }>(`/api/escrow/${escrowId}/ledger`),
+    queryFn: () => api<{ ledger: unknown[] }>(`/api/escrow/${escrowId}/ledger`),
     enabled: !!escrowId,
   });
 }

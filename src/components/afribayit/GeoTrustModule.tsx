@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGeometers, useGeometerMissions, useCreateGeotrustMission } from '@/hooks/useGeotrust';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search } from 'lucide-react';
-import { geoServiceLabel } from '@/lib/geotrust/service-codes';
+import { geoServiceLabel } from '@/lib/constants';
 
 interface Geometer {
   id: string;

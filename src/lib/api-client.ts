@@ -338,3 +338,19 @@ export const adminApi = {
 // ─── Export ───────────────────────────────────────────────────────────────
 
 export default api;
+
+// ─── Legacy compatibility exports (for hooks still using old apiFetch pattern) ─
+// These wrap the api object to match the old apiFetch/apiPost/apiPatch/apiDelete signatures
+// Paths starting with /api/ are rewritten to remove the /api/ prefix (backend doesn't use it)
+
+function rewritePath(path: string): string {
+  // Remove /api/ prefix if present (old Next.js API routes → backend API)
+  if (path.startsWith('/api/')) return path.replace('/api/', '/');
+  return path;
+}
+
+export const apiPost = (path: string, body?: any) => api.post(rewritePath(path), body);
+export const apiPatch = (path: string, body?: any) => api.patch(rewritePath(path), body);
+export const apiDelete = (path: string) => api.delete(rewritePath(path));
+export const apiGet = (path: string) => api.get(rewritePath(path));
+export const apiPut = (path: string, body?: any) => api.put(rewritePath(path), body);

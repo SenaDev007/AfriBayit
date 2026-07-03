@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiPost } from '@/lib/api';
+import { apiPost } from '@/lib/api-client';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import type { PaymentMethod, PaymentProvider } from '@/lib/payments/types';
+import type { PaymentMethod, PaymentProvider } from '@/lib/constants';
 import { CreditCard, Lock, Smartphone, Waves } from 'lucide-react';
 
 // ============ Payment Method Config ============

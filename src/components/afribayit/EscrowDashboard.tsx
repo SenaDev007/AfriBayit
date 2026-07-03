@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiPost, apiPatch, apiFetch } from '@/lib/api';
+import { apiPost, apiPatch, apiFetch } from '@/lib/api-client';
 import { useEscrowDetail, useEscrowLedger } from '@/hooks/useEscrow';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';

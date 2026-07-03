@@ -6,7 +6,7 @@ import { useArtisans, useCreateArtisanQuote } from '@/hooks/useArtisans';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import { AlertTriangle, Search, Siren, Wrench } from 'lucide-react';

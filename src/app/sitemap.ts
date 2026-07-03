@@ -1,11 +1,10 @@
 // AfriBayit — Dynamic Sitemap (P3.4)
-// Generates /sitemap.xml listing all public property/agent/academy pages
-// Reference: https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
+// Generates /sitemap.xml — fetches dynamic URLs from backend API
 
 import { MetadataRoute } from 'next';
-import { db } from '@/lib/db';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://afribayit.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,61 +46,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // 2. Dynamic property pages
+  // 2. Dynamic property pages — fetch from backend API
   try {
-    const properties = await db.property.findMany({
-      where: { status: 'published' },
-      select: { id: true, updatedAt: true },
-      take: 5000, // sitemap.xml limit safety
-    });
-    for (const p of properties) {
-      entries.push({
-        url: `${BASE_URL}/property/${p.id}`,
-        lastModified: p.updatedAt,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      });
+    const res = await fetch(`${API_URL}/properties?limit=5000`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const data = await res.json();
+      const properties = data.properties || data || [];
+      for (const p of properties) {
+        if (p.id) {
+          entries.push({
+            url: `${BASE_URL}/property/${p.id}`,
+            lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+          });
+        }
+      }
     }
   } catch {
-    // DB not available — skip dynamic entries
+    // API not available — skip dynamic entries
   }
 
-  // 3. Academy courses
+  // 3. Academy courses — fetch from backend API
   try {
-    const courses = await db.course.findMany({
-      where: { status: 'published' },
-      select: { id: true, updatedAt: true },
-      take: 500,
-    });
-    for (const c of courses) {
-      entries.push({
-        url: `${BASE_URL}/academy/${c.id}`,
-        lastModified: c.updatedAt,
-        changeFrequency: 'weekly',
-        priority: 0.6,
-      });
+    const res = await fetch(`${API_URL}/academy/courses?limit=500`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const courses = await res.json();
+      for (const c of courses) {
+        if (c.id) {
+          entries.push({
+            url: `${BASE_URL}/academy/${c.id}`,
+            lastModified: c.updatedAt ? new Date(c.updatedAt) : new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.6,
+          });
+        }
+      }
     }
   } catch {
-    // DB not available
-  }
-
-  // 4. Professional profiles
-  try {
-    const profiles = await db.professionalProfile.findMany({
-      where: { isPublic: true },
-      select: { slug: true, updatedAt: true },
-      take: 1000,
-    });
-    for (const p of profiles) {
-      entries.push({
-        url: `${BASE_URL}/pro/${p.slug}`,
-        lastModified: p.updatedAt,
-        changeFrequency: 'weekly',
-        priority: 0.5,
-      });
-    }
-  } catch {
-    // DB not available
+    // API not available
   }
 
   return entries;

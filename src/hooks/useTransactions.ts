@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { api } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useTransactions(userId?: string, country?: CountryCode, page = 1, limit = 20) {
@@ -11,7 +11,7 @@ export function useTransactions(userId?: string, country?: CountryCode, page = 1
 
   return useQuery({
     queryKey: ['transactions', userId, country, page, limit],
-    queryFn: () => apiFetch<{ transactions: unknown[]; pagination: unknown }>(`/api/transactions?${params.toString()}`),
+    queryFn: () => api<{ transactions: unknown[]; pagination: unknown }>(`/api/transactions?${params.toString()}`),
     enabled: !!userId,
   });
 }

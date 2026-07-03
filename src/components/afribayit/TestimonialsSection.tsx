@@ -3,9 +3,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api-client';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { Quote, Star } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
 

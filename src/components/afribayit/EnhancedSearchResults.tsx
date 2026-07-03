@@ -3,10 +3,10 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiPost, apiFetch } from '@/lib/api';
+import { apiPost, apiFetch } from '@/lib/api-client';
 import { formatPrice, getPropertyTypeLabel } from '@/lib/afribayit-utils';
-import type { SearchFilters, SortOption } from '@/lib/search/filters';
-import { SORT_OPTIONS, countActiveFilters, getFilterChipLabel } from '@/lib/search/filters';
+import type { SearchFilters, SortOption } from '@/lib/constants';
+import { SORT_OPTIONS, countActiveFilters, getFilterChipLabel } from '@/lib/constants';
 import PropertyCard from './PropertyCard';
 import PropertyMap from './PropertyMap';
 import AdvancedFilterSidebar from './AdvancedFilterSidebar';

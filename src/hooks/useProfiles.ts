@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useProfiles(role?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -11,14 +11,14 @@ export function useProfiles(role?: string, country?: CountryCode, page = 1, limi
 
   return useQuery({
     queryKey: ['profiles', role, country, page, limit],
-    queryFn: () => apiFetch<{ profiles: unknown[]; pagination: unknown }>(`/api/profiles?${params.toString()}`),
+    queryFn: () => api<{ profiles: unknown[]; pagination: unknown }>(`/api/profiles?${params.toString()}`),
   });
 }
 
 export function useProfile(userId: string) {
   return useQuery({
     queryKey: ['profile', userId],
-    queryFn: () => apiFetch<unknown>(`/api/profiles?userId=${userId}`),
+    queryFn: () => api<unknown>(`/api/profiles?userId=${userId}`),
     enabled: !!userId,
   });
 }

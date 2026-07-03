@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useProperties } from '@/hooks/useProperties';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { Calendar, Coins, BarChart3, Download, Eye, Users } from 'lucide-react';
 
 import { ANALYTICS_TABS, PERIOD_OPTIONS } from './tabs';

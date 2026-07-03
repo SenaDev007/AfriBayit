@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 
 export interface WalletSummary {
   balance: number;
@@ -41,7 +41,7 @@ export function useWallet(userId?: string, country?: string, page = 1, limit = 2
 
   return useQuery({
     queryKey: ['wallet', userId, country, page, limit],
-    queryFn: () => apiFetch<WalletData>(`/api/wallet?${params.toString()}`),
+    queryFn: () => api<WalletData>(`/api/wallet?${params.toString()}`),
     enabled: !!userId,
   });
 }

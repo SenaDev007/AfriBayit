@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api-client';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import VoiceSearchButton from '@/components/afribayit/VoiceSearchButton';
 import { useTranslation } from '@/lib/i18n/use-translate';

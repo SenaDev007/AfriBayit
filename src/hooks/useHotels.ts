@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 
 export interface HotelFilters {
   city?: string;
@@ -19,7 +19,7 @@ export function useHotels(city?: string, country?: string, page = 1, limit = 12)
 
   return useQuery({
     queryKey: ['hotels', city, country, page, limit],
-    queryFn: () => apiFetch<{ hotels: unknown[]; pagination: unknown }>(`/api/hotels?${params.toString()}`),
+    queryFn: () => api<{ hotels: unknown[]; pagination: unknown }>(`/api/hotels?${params.toString()}`),
   });
 }
 
@@ -34,14 +34,14 @@ export function useHotelsFiltered(filters: HotelFilters) {
 
   return useQuery({
     queryKey: ['hotels', filters.city, filters.country, filters.stars, filters.available, filters.page, filters.limit],
-    queryFn: () => apiFetch<{ hotels: unknown[]; pagination: { page: number; limit: number; total: number; pages: number } }>(`/api/hotels?${params.toString()}`),
+    queryFn: () => api<{ hotels: unknown[]; pagination: { page: number; limit: number; total: number; pages: number } }>(`/api/hotels?${params.toString()}`),
   });
 }
 
 export function useHotel(id: string) {
   return useQuery({
     queryKey: ['hotel', id],
-    queryFn: () => apiFetch<unknown>(`/api/hotels/${id}`),
+    queryFn: () => api<unknown>(`/api/hotels/${id}`),
     enabled: !!id,
   });
 }
@@ -49,7 +49,7 @@ export function useHotel(id: string) {
 export function useHotelRooms(hotelId: string) {
   return useQuery({
     queryKey: ['hotel-rooms', hotelId],
-    queryFn: () => apiFetch<unknown[]>(`/api/hotels/${hotelId}/rooms`),
+    queryFn: () => api<unknown[]>(`/api/hotels/${hotelId}/rooms`),
     enabled: !!hotelId,
   });
 }
@@ -57,7 +57,7 @@ export function useHotelRooms(hotelId: string) {
 export function useHotelReviews(hotelId: string) {
   return useQuery({
     queryKey: ['hotel-reviews', hotelId],
-    queryFn: () => apiFetch<{ reviews: unknown[] }>(`/api/hotels/${hotelId}/reviews`),
+    queryFn: () => api<{ reviews: unknown[] }>(`/api/hotels/${hotelId}/reviews`),
     enabled: !!hotelId,
   });
 }

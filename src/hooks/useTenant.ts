@@ -9,7 +9,7 @@ import {
   formatDate as _formatDate,
   type TenantConfig,
   type SupportedCountry,
-} from '@/lib/tenant/config';
+} from '@/lib/constants';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────────
 

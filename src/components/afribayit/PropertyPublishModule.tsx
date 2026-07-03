@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { useCreateProperty } from '@/hooks/useProperties';
 import { Home, Building2, Map, Landmark, Store, BedDouble, Coins, Key, TrendingUp, ClipboardList, PenTool, Camera, FileText, Bot, CheckCircle, PartyPopper, Send, User, Hourglass, Check, X, Lightbulb, AlertTriangle } from 'lucide-react';
-import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/legal-docs';
+import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/constants';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;

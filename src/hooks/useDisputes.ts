@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api';
+import { api, apiPost, apiPatch } from '@/lib/api-client';
 
 export interface DisputeEvidence {
   id: string;
@@ -72,7 +72,7 @@ export interface DisputeData {
 export function useDispute(disputeId: string) {
   return useQuery({
     queryKey: ['dispute', disputeId],
-    queryFn: () => apiFetch<DisputeData>(`/api/disputes/${disputeId}`),
+    queryFn: () => api<DisputeData>(`/api/disputes/${disputeId}`),
     enabled: !!disputeId,
   });
 }
@@ -82,7 +82,7 @@ export function useDisputes(status?: string) {
   if (status) params.set('status', status);
   return useQuery({
     queryKey: ['disputes', status],
-    queryFn: () => apiFetch<{ disputes: DisputeData[] }>(`/api/disputes?${params.toString()}`),
+    queryFn: () => api<{ disputes: DisputeData[] }>(`/api/disputes?${params.toString()}`),
   });
 }
 

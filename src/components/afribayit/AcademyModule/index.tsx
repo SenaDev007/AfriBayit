@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCourses, useEnrollCourse, useMyEnrollments, useMyCertificates } from '@/hooks/useCourses';
 import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from '@/hooks/use-toast';
 import { GraduationCap } from 'lucide-react';
 import type { Course, Enrollment, CertificateItem, AcademyTabKey } from './types';

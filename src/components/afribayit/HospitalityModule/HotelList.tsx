@@ -16,7 +16,7 @@ import {
   Star,
   X,
 } from 'lucide-react';
-import { COUNTRY_NAMES } from '@/lib/legal-docs';
+import { COUNTRY_NAMES } from '@/lib/constants';
 import { HotelCardSkeleton, StarFilter, fmtPrice } from './utils';
 import HotelCard from './HotelCard';
 import type { HotelApiItem, HotelPagination } from './types';

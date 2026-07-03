@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost } from '@/lib/api';
+import { api, apiPost } from '@/lib/api-client';
 import type { CountryCode } from '@/contexts/CountryContext';
 
 export function useArtisans(trade?: string, city?: string, country?: CountryCode, page = 1, limit = 12) {
@@ -12,14 +12,14 @@ export function useArtisans(trade?: string, city?: string, country?: CountryCode
 
   return useQuery({
     queryKey: ['artisans', trade, city, country, page, limit],
-    queryFn: () => apiFetch<{ artisans: unknown[]; pagination: unknown }>(`/api/artisans?${params.toString()}`),
+    queryFn: () => api<{ artisans: unknown[]; pagination: unknown }>(`/api/artisans?${params.toString()}`),
   });
 }
 
 export function useArtisanQuotes(artisanId: string) {
   return useQuery({
     queryKey: ['artisan-quotes', artisanId],
-    queryFn: () => apiFetch<{ quotes: unknown[] }>(`/api/artisans/${artisanId}/quotes`),
+    queryFn: () => api<{ quotes: unknown[] }>(`/api/artisans/${artisanId}/quotes`),
     enabled: !!artisanId,
   });
 }

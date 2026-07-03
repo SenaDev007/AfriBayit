@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import type { TaxCalculation, TaxLineItem } from '@/lib/tax/types';
+import type { TaxCalculation, TaxLineItem } from '@/lib/constants';
 
 const COUNTRIES = [
   { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
