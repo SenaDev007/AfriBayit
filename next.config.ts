@@ -6,9 +6,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typescript: {
-    // Temporary: frontend migration from monolith to API client in progress
-    // Will set back to false once all components use api-client.ts
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   reactStrictMode: true,
   serverExternalPackages: ['lightningcss', '@tailwindcss/node', '@tailwindcss/postcss'],

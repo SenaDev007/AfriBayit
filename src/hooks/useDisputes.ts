@@ -72,7 +72,7 @@ export interface DisputeData {
 export function useDispute(disputeId: string) {
   return useQuery({
     queryKey: ['dispute', disputeId],
-    queryFn: () => api<DisputeData>(`/api/disputes/${disputeId}`),
+    queryFn: () => api.get<DisputeData>(`/api/disputes/${disputeId}`),
     enabled: !!disputeId,
   });
 }
@@ -82,7 +82,7 @@ export function useDisputes(status?: string) {
   if (status) params.set('status', status);
   return useQuery({
     queryKey: ['disputes', status],
-    queryFn: () => api<{ disputes: DisputeData[] }>(`/api/disputes?${params.toString()}`),
+    queryFn: () => api.get<{ disputes: DisputeData[] }>(`/api/disputes?${params.toString()}`),
   });
 }
 

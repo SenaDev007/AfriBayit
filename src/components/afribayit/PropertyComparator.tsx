@@ -174,8 +174,8 @@ const COMPARISON_ROWS: ComparisonRow[] = [
     category: 'Qualité',
     getValue: (p) => {
       if (!p.investmentScore) return '—';
-      const { label, color } = getInvestmentScoreLabel(p.investmentScore);
-      return <span className={`font-bold ${color}`}>{p.investmentScore}/100 ({label})</span>;
+      const scoreLabel = getInvestmentScoreLabel(p.investmentScore || 0);
+      return <span className={`font-bold $#FFCC00`}>{p.investmentScore}/100 ({scoreLabel})</span>;
     },
     getHighlight: (p, ctx) => p.investmentScore === ctx?.highestScore,
   },

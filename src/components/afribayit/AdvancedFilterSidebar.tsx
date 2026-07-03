@@ -13,7 +13,6 @@ import {
   ChevronDown, Check
 } from 'lucide-react';
 import {
-  SearchFilters,
   PROPERTY_TYPE_OPTIONS,
   TRANSACTION_TYPE_OPTIONS,
   SORT_OPTIONS,
@@ -22,8 +21,8 @@ import {
 import VoiceSearchButton from './VoiceSearchButton';
 
 interface AdvancedFilterSidebarProps {
-  filters: SearchFilters;
-  onFiltersChange: (filters: SearchFilters) => void;
+  filters: any;
+  onFiltersChange: (filters: any) => void;
   facets?: {
     types: { value: string; count: number }[];
     transactions: { value: string; count: number }[];
@@ -92,11 +91,11 @@ export default function AdvancedFilterSidebar({
   // Saved searches
   const { data: savedSearchesData } = useQuery({
     queryKey: ['saved-searches'],
-    queryFn: () => apiFetch<{ searches: Array<{ id: string; name: string; filters: SearchFilters; newMatches?: number }> }>('/api/properties/saved-searches'),
+    queryFn: () => apiFetch<{ searches: Array<{ id: string; name: string; filters: any; newMatches?: number }> }>('/api/properties/saved-searches'),
   });
 
   const saveSearchMutation = useMutation({
-    mutationFn: (data: { name: string; filters: SearchFilters }) =>
+    mutationFn: (data: { name: string; filters: any }) =>
       apiPost('/api/properties/saved-searches', data),
     onSuccess: () => {
       toast.success('Recherche sauvegardée');
@@ -107,7 +106,7 @@ export default function AdvancedFilterSidebar({
 
   // Price alerts
   const alertMutation = useMutation({
-    mutationFn: (data: { filters: SearchFilters; targetPrice: number }) =>
+    mutationFn: (data: { filters: any; targetPrice: number }) =>
       apiPost('/api/properties/alerts', { ...data.filters, priceMax: data.targetPrice }),
     onSuccess: () => {
       toast.success('Alerte de prix créée');
@@ -121,7 +120,7 @@ export default function AdvancedFilterSidebar({
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const updateFilter = (key: keyof SearchFilters, value: unknown) => {
+  const updateFilter = (key: string, value: unknown) => {
     onFiltersChange({ ...filters, [key]: value, page: 1 });
   };
 
@@ -142,7 +141,8 @@ export default function AdvancedFilterSidebar({
   };
 
   const toggleAmenity = (key: string) => {
-    updateFilter(key as keyof SearchFilters, !filters[key as keyof SearchFilters]);
+    const current = (filters as any)[key] || false;
+    updateFilter(key, !current);
   };
 
   const resetFilters = () => {
@@ -531,11 +531,11 @@ export default function AdvancedFilterSidebar({
                   <button
                     onClick={() => toggleAmenity(key)}
                     className={`w-9 h-5 rounded-full transition-colors relative ${
-                      filters[key as keyof SearchFilters] ? 'bg-[#00A651]' : 'bg-gray-200'
+                      filters[key as keyof any] ? 'bg-[#00A651]' : 'bg-gray-200'
                     }`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
-                      filters[key as keyof SearchFilters] ? 'left-4.5' : 'left-0.5'
+                      filters[key as keyof any] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
                 </label>

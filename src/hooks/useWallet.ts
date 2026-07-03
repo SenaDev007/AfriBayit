@@ -41,7 +41,7 @@ export function useWallet(userId?: string, country?: string, page = 1, limit = 2
 
   return useQuery({
     queryKey: ['wallet', userId, country, page, limit],
-    queryFn: () => api<WalletData>(`/api/wallet?${params.toString()}`),
+    queryFn: () => api.get<WalletData>(`/api/wallet?${params.toString()}`),
     enabled: !!userId,
   });
 }

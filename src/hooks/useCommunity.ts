@@ -10,7 +10,7 @@ export function useCommunityPosts(category?: string, country?: string, page = 1,
 
   return useQuery({
     queryKey: ['community-posts', category, country, page, limit],
-    queryFn: () => api<{ posts: unknown[]; pagination: unknown }>(`/api/community/posts?${params.toString()}`),
+    queryFn: () => api.get<{ posts: unknown[]; pagination: unknown }>(`/api/community/posts?${params.toString()}`),
   });
 }
 
@@ -21,7 +21,7 @@ export function useCommunityGroups(type?: string, country?: string) {
 
   return useQuery({
     queryKey: ['community-groups', type, country],
-    queryFn: () => api<{ groups: unknown[] }>(`/api/community/groups?${params.toString()}`),
+    queryFn: () => api.get<{ groups: unknown[] }>(`/api/community/groups?${params.toString()}`),
   });
 }
 
@@ -32,7 +32,7 @@ export function useCommunityEvents(country?: string, city?: string) {
 
   return useQuery({
     queryKey: ['community-events', country, city],
-    queryFn: () => api<{ events: unknown[] }>(`/api/community/events?${params.toString()}`),
+    queryFn: () => api.get<{ events: unknown[] }>(`/api/community/events?${params.toString()}`),
   });
 }
 
@@ -63,7 +63,7 @@ export function useRegisterCommunityEvent() {
 export function useCommunityPost(id: string) {
   return useQuery({
     queryKey: ['community-post', id],
-    queryFn: () => api<{ data: unknown }>(`/api/community/posts/${id}`),
+    queryFn: () => api.get<{ data: unknown }>(`/api/community/posts/${id}`),
     enabled: !!id,
   });
 }
@@ -71,7 +71,7 @@ export function useCommunityPost(id: string) {
 export function useCommunityPostReplies(id: string) {
   return useQuery({
     queryKey: ['community-post-replies', id],
-    queryFn: () => api<{ data: unknown[]; pagination: unknown }>(`/api/community/posts/${id}/replies`),
+    queryFn: () => api.get<{ data: unknown[]; pagination: unknown }>(`/api/community/posts/${id}/replies`),
     enabled: !!id,
   });
 }
@@ -115,7 +115,7 @@ export function useReportContent() {
 export function useCommunityGroup(id: string) {
   return useQuery({
     queryKey: ['community-group', id],
-    queryFn: () => api<{ data: unknown }>(`/api/community/groups/${id}`),
+    queryFn: () => api.get<{ data: unknown }>(`/api/community/groups/${id}`),
     enabled: !!id,
   });
 }
@@ -123,7 +123,7 @@ export function useCommunityGroup(id: string) {
 export function useCommunityGroupMembers(id: string) {
   return useQuery({
     queryKey: ['community-group-members', id],
-    queryFn: () => api<{ data: unknown[]; pagination: unknown }>(`/api/community/groups/${id}/members`),
+    queryFn: () => api.get<{ data: unknown[]; pagination: unknown }>(`/api/community/groups/${id}/members`),
     enabled: !!id,
   });
 }
@@ -144,7 +144,7 @@ export function useJoinGroup(groupId: string) {
 export function useCommunityEvent(id: string) {
   return useQuery({
     queryKey: ['community-event', id],
-    queryFn: () => api<{ data: unknown }>(`/api/community/events/${id}`),
+    queryFn: () => api.get<{ data: unknown }>(`/api/community/events/${id}`),
     enabled: !!id,
   });
 }

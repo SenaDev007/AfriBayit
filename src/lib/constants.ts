@@ -202,3 +202,63 @@ export const FEATURE_MAP: Record<string, string> = {
   internet: 'Internet',
   parking: 'Parking',
 };
+
+// Extended SearchFilters (full version for AdvancedFilterSidebar)
+export interface ExtendedSearchFilters extends SearchFilters {
+  transaction?: string;
+  sortBy?: SortOption;
+  limit?: number;
+  page?: number;
+  query?: string;
+  quartier?: string;
+  priceMin?: number;
+  priceMax?: number;
+  filter?: string | string[];
+  features?: string[];
+  bedroomsMin?: number;
+  bedroomsMax?: number;
+  bathroomsMin?: number;
+  surfaceMax?: number;
+  bathrooms?: number;
+  surfaceMin?: number;
+}
+
+// Extended TaxCalculation with additional fields used by TaxCalculator component
+export interface ExtendedTaxCalculation extends TaxCalculation {
+  grandTotal?: number;
+  effectiveRate?: number;
+  totalTaxes?: number;
+  registrationFee?: number;
+  notaryFee?: number;
+  notaryFees?: number;
+  totalNotaryFees?: number;
+  transferTax?: number;
+  registrationDuty?: number;
+  agencyFee?: number;
+  stampDuty?: number;
+  vat?: number;
+  mortgageFees?: number;
+  breakdown?: any[];
+  countryName?: string;
+  landTax?: number;
+  municipalTax?: number;
+}
+
+// Extended QuizQuestion for QuizTaker (without correctAnswer on client side)
+export interface ClientQuizQuestion {
+  id: string;
+  question: string;
+  options: { id: string; text: string }[];
+  type?: string;
+}
+
+// Additional search filter fields for AdvancedFilterSidebar
+export interface FullSearchFilters extends ExtendedSearchFilters {
+  roomsMin?: number;
+  roomsMax?: number;
+  verified?: boolean;
+  geoTrust?: boolean;
+  premium?: boolean;
+  investmentScoreMin?: number;
+  roiMin?: number;
+}

@@ -11,7 +11,7 @@ export function useTransactions(userId?: string, country?: CountryCode, page = 1
 
   return useQuery({
     queryKey: ['transactions', userId, country, page, limit],
-    queryFn: () => api<{ transactions: unknown[]; pagination: unknown }>(`/api/transactions?${params.toString()}`),
+    queryFn: () => api.get<{ transactions: unknown[]; pagination: unknown }>(`/api/transactions?${params.toString()}`),
     enabled: !!userId,
   });
 }

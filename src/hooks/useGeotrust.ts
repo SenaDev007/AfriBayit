@@ -11,7 +11,7 @@ export function useGeometers(city?: string, country?: CountryCode, page = 1, lim
 
   return useQuery({
     queryKey: ['geotrust', city, country, page, limit],
-    queryFn: () => api<{ geometers: unknown[]; pagination: unknown }>(`/api/geotrust?${params.toString()}`),
+    queryFn: () => api.get<{ geometers: unknown[]; pagination: unknown }>(`/api/geotrust?${params.toString()}`),
   });
 }
 
@@ -21,14 +21,14 @@ export function useGeometerMissions(propertyId?: string) {
 
   return useQuery({
     queryKey: ['geotrust-missions', propertyId],
-    queryFn: () => api<{ missions: unknown[] }>(`/api/geotrust/missions?${params.toString()}`),
+    queryFn: () => api.get<{ missions: unknown[] }>(`/api/geotrust/missions?${params.toString()}`),
   });
 }
 
 export function useGeometerReports(geometerId: string) {
   return useQuery({
     queryKey: ['geotrust-reports', geometerId],
-    queryFn: () => api<{ reports: unknown[] }>(`/api/geotrust/${geometerId}/reports`),
+    queryFn: () => api.get<{ reports: unknown[] }>(`/api/geotrust/${geometerId}/reports`),
     enabled: !!geometerId,
   });
 }

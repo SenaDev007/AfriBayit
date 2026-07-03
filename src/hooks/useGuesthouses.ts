@@ -10,14 +10,14 @@ export function useGuesthouses(city?: string, country?: string, page = 1, limit 
 
   return useQuery({
     queryKey: ['guesthouses', city, country, page, limit],
-    queryFn: () => api<{ guesthouses: unknown[]; pagination: unknown }>(`/api/guesthouses?${params.toString()}`),
+    queryFn: () => api.get<{ guesthouses: unknown[]; pagination: unknown }>(`/api/guesthouses?${params.toString()}`),
   });
 }
 
 export function useGuesthouse(id: string) {
   return useQuery({
     queryKey: ['guesthouse', id],
-    queryFn: () => api<unknown>(`/api/guesthouses/${id}`),
+    queryFn: () => api.get<unknown>(`/api/guesthouses/${id}`),
     enabled: !!id,
   });
 }
@@ -25,7 +25,7 @@ export function useGuesthouse(id: string) {
 export function useGuesthouseRooms(guesthouseId: string) {
   return useQuery({
     queryKey: ['guesthouse-rooms', guesthouseId],
-    queryFn: () => api<{ rooms: unknown[] }>(`/api/guesthouses/${guesthouseId}/rooms`),
+    queryFn: () => api.get<{ rooms: unknown[] }>(`/api/guesthouses/${guesthouseId}/rooms`),
     enabled: !!guesthouseId,
   });
 }
@@ -35,7 +35,7 @@ export function useGuesthouseBookings(guesthouseId: string, status?: string) {
   if (status) params.set('status', status);
   return useQuery({
     queryKey: ['guesthouse-bookings', guesthouseId, status],
-    queryFn: () => api<{ bookings: unknown[]; pagination: unknown }>(`/api/guesthouses/${guesthouseId}/bookings?${params.toString()}`),
+    queryFn: () => api.get<{ bookings: unknown[]; pagination: unknown }>(`/api/guesthouses/${guesthouseId}/bookings?${params.toString()}`),
     enabled: !!guesthouseId,
   });
 }

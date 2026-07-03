@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import type { TaxCalculation, TaxLineItem } from '@/lib/constants';
+import type { ExtendedTaxCalculation, TaxLineItem } from '@/lib/constants';
 
 const COUNTRIES = [
   { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
@@ -50,17 +50,17 @@ function formatXOF(n: number) {
 
 // Simple pie chart using CSS conic-gradient
 function PieChart({ items }: { items: { name: string; amount: number; color: string }[] }) {
-  const total = items.reduce((sum, item) => sum + item.amount, 0);
+  const total = items.reduce((sum, item) => sum + item.amount || 0, 0);
   if (total === 0) return null;
 
   // Compute accumulated values without mutation
   const cumAmounts = items.reduce<number[]>((acc, item, i) => {
-    acc.push((acc[i - 1] ?? 0) + item.amount);
+    acc.push((acc[i - 1] ?? 0) + item.amount || 0);
     return acc;
   }, []);
 
   const gradientParts = items.map((item, i) => {
-    const startDeg = ((cumAmounts[i] - item.amount) / total) * 360;
+    const startDeg = ((cumAmounts[i] - item.amount || 0) / total) * 360;
     const endDeg = (cumAmounts[i] / total) * 360;
     return `${item.color} ${startDeg}deg ${endDeg}deg`;
   });
@@ -77,7 +77,7 @@ function PieChart({ items }: { items: { name: string; amount: number; color: str
             <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
             <span className="text-gray-600">{item.name}</span>
             <span className="font-medium text-gray-900 ml-auto">
-              {total > 0 ? ((item.amount / total) * 100).toFixed(1) : 0}%
+              {total > 0 ? ((item.amount || 0 / total) * 100).toFixed(1) : 0}%
             </span>
           </div>
         ))}
@@ -97,8 +97,8 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
   const [propertyValue, setPropertyValue] = useState('25000000');
   const [hasMortgage, setHasMortgage] = useState(false);
   const [isPrimaryResidence, setIsPrimaryResidence] = useState(true);
-  const [result, setResult] = useState<TaxCalculation | null>(null);
-  const [comparisons, setComparisons] = useState<TaxCalculation[]>([]);
+  const [result, setResult] = useState<ExtendedTaxCalculation | null>(null);
+  const [comparisons, setComparisons] = useState<ExtendedTaxCalculation[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
@@ -158,13 +158,13 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
   const selectedCountry = COUNTRIES.find(c => c.code === country);
 
   // Pie chart data
-  const pieData = result ? [
-    { name: "Droit d'enregistrement", amount: result.registrationDuty, color: '#003087' },
-    { name: 'Honoraires notariaux', amount: result.notaryFees, color: '#D4AF37' },
-    { name: 'Taxe de mutation', amount: result.transferTax, color: '#00A651' },
-    { name: 'Droit de timbre', amount: result.stampDuty, color: '#6B7280' },
-    { name: 'TVA', amount: result.vat, color: '#EF4444' },
-    { name: 'Frais hypothécaires', amount: result.mortgageFees, color: '#8B5CF6' },
+  const pieData: { name: string; amount: number; color: string }[] = result ? [
+    { name: "Droit d'enregistrement", amount: result.registrationDuty || 0, color: '#003366' },
+    { name: 'Honoraires notariaux', amount: result.notaryFees || 0, color: '#FFCC00' },
+    { name: 'Taxe de mutation', amount: result.transferTax || 0, color: '#3399FF' },
+    { name: 'Droit de timbre', amount: result.stampDuty || 0, color: '#6B7280' },
+    { name: 'TVA', amount: result.vat || 0, color: '#EF4444' },
+    { name: 'Frais hypothécaires', amount: result.mortgageFees || 0, color: '#8B5CF6' },
   ].filter(item => item.amount > 0) : [];
 
   return (
@@ -342,15 +342,15 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="bg-[#003087]/5 rounded-xl p-3 text-center">
                       <p className="text-[10px] text-gray-500 uppercase">Total taxes</p>
-                      <p className="text-base font-bold text-[#003087]">{formatXOF(result.totalTaxes)}</p>
+                      <p className="text-base font-bold text-[#003087]">{formatXOF(result.totalTaxes || 0)}</p>
                     </div>
                     <div className="bg-[#D4AF37]/5 rounded-xl p-3 text-center">
                       <p className="text-[10px] text-gray-500 uppercase">Hon. notariaux</p>
-                      <p className="text-base font-bold text-[#D4AF37]">{formatXOF(result.totalNotaryFees)}</p>
+                      <p className="text-base font-bold text-[#D4AF37]">{formatXOF(result.totalNotaryFees || 0)}</p>
                     </div>
                     <div className="bg-[#00A651]/5 rounded-xl p-3 text-center">
                       <p className="text-[10px] text-gray-500 uppercase">Coût total</p>
-                      <p className="text-base font-bold text-[#00A651]">{formatXOF(result.grandTotal)}</p>
+                      <p className="text-base font-bold text-[#00A651]">{formatXOF(result.grandTotal || 0)}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3 text-center">
                       <p className="text-[10px] text-gray-500 uppercase">Taux effectif</p>
@@ -375,7 +375,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {result.breakdown.map((item, i) => (
+                        {(result as any).breakdown || [].map((item: any, i) => (
                           <TableRow key={i}>
                             <TableCell className="text-sm font-medium">{item.name}</TableCell>
                             <TableCell className="text-xs text-gray-500 max-w-[200px] truncate">{item.description}</TableCell>
@@ -383,7 +383,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                               {item.isPercentage ? `${item.rate}%` : `${item.rate} XOF`}
                             </TableCell>
                             <TableCell className="text-sm text-right font-mono font-medium">
-                              {formatXOF(item.amount)}
+                              {formatXOF(item.amount || 0)}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -414,15 +414,15 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                     <BarChart3 className="w-4 h-4" /> Comparaison des frais par pays
                   </h4>
                   <div className="space-y-3">
-                    {comparisons.sort((a, b) => a.grandTotal - b.grandTotal).map(comp => {
-                      const maxTotal = Math.max(...comparisons.map(c => c.grandTotal));
-                      const widthPercent = maxTotal > 0 ? (comp.grandTotal / maxTotal) * 100 : 0;
-                      const countryInfo = COUNTRIES.find(c => c.code === comp.country);
+                    {comparisons.sort((a, b) => (a.grandTotal || 0) - (b.grandTotal || 0)).map(comp => {
+                      const maxTotal = Math.max(...comparisons.map(c => c.grandTotal || 0));
+                      const widthPercent = maxTotal > 0 ? ((comp.grandTotal || 0) / maxTotal) * 100 : 0;
+                      const countryInfo = COUNTRIES.find(c => c.code === comp.country || 0);
                       return (
                         <div key={comp.country} className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
                             <span className="font-medium">{countryInfo?.flag} {countryInfo?.name}</span>
-                            <span className="font-mono font-bold">{formatXOF(comp.grandTotal)}</span>
+                            <span className="font-mono font-bold">{formatXOF((comp.grandTotal || 0))}</span>
                           </div>
                           <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden">
                             <motion.div
@@ -440,8 +440,8 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                             </motion.div>
                           </div>
                           <div className="flex gap-3 text-[10px] text-gray-500">
-                            <span>Taxes: {formatXOF(comp.totalTaxes)}</span>
-                            <span>Notaire: {formatXOF(comp.totalNotaryFees)}</span>
+                            <span>Taxes: {formatXOF(comp.totalTaxes || 0)}</span>
+                            <span>Notaire: {formatXOF(comp.totalNotaryFees || 0)}</span>
                           </div>
                         </div>
                       );
@@ -457,7 +457,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                         <TableHead className="text-xs">Frais</TableHead>
                         {comparisons.map(comp => (
                           <TableHead key={comp.country} className="text-xs text-right">
-                            {COUNTRIES.find(c => c.code === comp.country)?.flag} {comp.countryName}
+                            {COUNTRIES.find(c => c.code === comp.country || 0)?.flag} {comp.countryName}
                           </TableHead>
                         ))}
                       </TableRow>
@@ -466,31 +466,31 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                       <TableRow className="font-medium">
                         <TableCell className="text-sm">Valeur du bien</TableCell>
                         {comparisons.map(comp => (
-                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.propertyValue)}</TableCell>
+                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.propertyValue || 0)}</TableCell>
                         ))}
                       </TableRow>
                       <TableRow>
                         <TableCell className="text-sm">Droit d&apos;enregistrement</TableCell>
                         {comparisons.map(comp => (
-                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.registrationDuty)}</TableCell>
+                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.registrationDuty || 0)}</TableCell>
                         ))}
                       </TableRow>
                       <TableRow>
                         <TableCell className="text-sm">Honoraires notariaux</TableCell>
                         {comparisons.map(comp => (
-                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.notaryFees)}</TableCell>
+                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.notaryFees || 0)}</TableCell>
                         ))}
                       </TableRow>
                       <TableRow>
                         <TableCell className="text-sm">Taxe de mutation</TableCell>
                         {comparisons.map(comp => (
-                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.transferTax)}</TableCell>
+                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.transferTax || 0)}</TableCell>
                         ))}
                       </TableRow>
                       <TableRow className="bg-[#003087]/5 font-bold">
                         <TableCell className="text-sm">Coût total</TableCell>
                         {comparisons.map(comp => (
-                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF(comp.grandTotal)}</TableCell>
+                          <TableCell key={comp.country} className="text-sm text-right font-mono">{formatXOF((comp.grandTotal || 0))}</TableCell>
                         ))}
                       </TableRow>
                       <TableRow className="bg-[#00A651]/5">

@@ -8,7 +8,7 @@ export function useNotifications(userId?: string, page = 1, limit = 20) {
 
   return useQuery({
     queryKey: ['notifications', userId, page, limit],
-    queryFn: () => api<{ notifications: unknown[]; unreadCount: number; pagination: unknown }>(`/api/notifications?${params.toString()}`),
+    queryFn: () => api.get<{ notifications: unknown[]; unreadCount: number; pagination: unknown }>(`/api/notifications?${params.toString()}`),
     enabled: !!userId,
     refetchInterval: 30000, // Poll every 30s for new notifications
   });
@@ -47,7 +47,7 @@ export function useMarkAllRead() {
 export function useNotificationPreferences() {
   return useQuery({
     queryKey: ['notification-preferences'],
-    queryFn: () => api<{ data: Record<string, unknown> }>('/api/notifications/preferences'),
+    queryFn: () => api.get<{ data: Record<string, unknown> }>('/api/notifications/preferences'),
   });
 }
 

@@ -4,7 +4,7 @@ import { api, apiPost } from '@/lib/api-client';
 export function useConversations(userId?: string) {
   return useQuery({
     queryKey: ['conversations', userId],
-    queryFn: () => api<{ conversations: unknown[] }>(`/api/messages?search=`),
+    queryFn: () => api.get<{ conversations: unknown[] }>(`/api/messages?search=`),
     enabled: !!userId,
     refetchInterval: 10000, // Poll every 10s for new conversations
   });
@@ -13,7 +13,7 @@ export function useConversations(userId?: string) {
 export function useChatMessages(conversationId: string, page = 1, limit = 50) {
   return useQuery({
     queryKey: ['chat-messages', conversationId, page, limit],
-    queryFn: () => api<{ messages: unknown[]; pagination: unknown }>(`/api/messages/${conversationId}?page=${page}&limit=${limit}`),
+    queryFn: () => api.get<{ messages: unknown[]; pagination: unknown }>(`/api/messages/${conversationId}?page=${page}&limit=${limit}`),
     enabled: !!conversationId,
     refetchInterval: 5000, // Poll every 5s for new messages
   });

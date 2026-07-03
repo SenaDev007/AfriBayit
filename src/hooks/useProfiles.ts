@@ -11,14 +11,14 @@ export function useProfiles(role?: string, country?: CountryCode, page = 1, limi
 
   return useQuery({
     queryKey: ['profiles', role, country, page, limit],
-    queryFn: () => api<{ profiles: unknown[]; pagination: unknown }>(`/api/profiles?${params.toString()}`),
+    queryFn: () => api.get<{ profiles: unknown[]; pagination: unknown }>(`/api/profiles?${params.toString()}`),
   });
 }
 
 export function useProfile(userId: string) {
   return useQuery({
     queryKey: ['profile', userId],
-    queryFn: () => api<unknown>(`/api/profiles?userId=${userId}`),
+    queryFn: () => api.get<unknown>(`/api/profiles?userId=${userId}`),
     enabled: !!userId,
   });
 }

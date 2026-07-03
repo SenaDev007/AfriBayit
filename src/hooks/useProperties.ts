@@ -34,14 +34,14 @@ export function useProperties(filters: PropertyFilters = {}) {
 
   return useQuery<PropertiesResponse>({
     queryKey: ['properties', filters],
-    queryFn: () => api<PropertiesResponse>(`/api/properties?${params.toString()}`),
+    queryFn: () => api.get<PropertiesResponse>(`/api/properties?${params.toString()}`),
   });
 }
 
 export function useProperty(id: string) {
   return useQuery<PropertyDetailResponse>({
     queryKey: ['property', id],
-    queryFn: () => api<PropertyDetailResponse>(`/api/properties/${id}`),
+    queryFn: () => api.get<PropertyDetailResponse>(`/api/properties/${id}`),
     enabled: !!id,
   });
 }
@@ -78,7 +78,7 @@ export function useMyProperties(userId?: string, page = 1, limit = 50) {
 
   return useQuery<PropertiesResponse>({
     queryKey: ['my-properties', userId, page, limit],
-    queryFn: () => api<PropertiesResponse>(`/api/properties?${params.toString()}`),
+    queryFn: () => api.get<PropertiesResponse>(`/api/properties?${params.toString()}`),
     enabled: !!userId,
   });
 }

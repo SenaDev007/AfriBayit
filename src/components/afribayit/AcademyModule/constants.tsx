@@ -110,14 +110,11 @@ export function LearningPaths() {
   );
 }
 
-// Mock reviews for CourseDetailDialog
-export const mockReviews = [
-  { id: 'r1', user: 'Aminata K.', rating: 5, comment: 'Excellente formation ! Très bien structurée et instructive.', date: 'Il y a 3j' },
-  { id: 'r2', user: 'Kofi M.', rating: 4, comment: 'Bon contenu, quelques vidéos pourraient être plus détaillées.', date: 'Il y a 1 semaine' },
-  { id: 'r3', user: 'Fatou D.', rating: 5, comment: 'Merci pour cette formation. J\'ai pu réaliser mon premier investissement grâce à ces conseils.', date: 'Il y a 2 semaines' },
-];
+// Reviews are now fetched from backend API (/academy/courses/:id/reviews)
+// Do not use mock data — all data must come from the database.
 
 // What you'll learn bullet points (used in CourseDetailDialog)
+// These are generic defaults — actual course content comes from the API
 export const whatYouWillLearn = [
   'Maîtriser les fondamentaux de l\'investissement',
   'Comprendre le cadre juridique foncier',
@@ -127,13 +124,5 @@ export const whatYouWillLearn = [
   'Gérer les risques liés à l\'investissement',
 ];
 
-// Default curriculum (when course has no modules)
-export const defaultCurriculum = [
-  { title: 'Introduction & Contexte', type: 'video', duration: '12 min' },
-  { title: 'Les fondamentaux', type: 'video', duration: '25 min' },
-  { title: 'Étude de cas pratique', type: 'text', duration: '15 min' },
-  { title: 'Aspects juridiques', type: 'video', duration: '30 min' },
-  { title: 'Quiz de validation', type: 'quiz', duration: '10 min' },
-  { title: 'Mise en pratique', type: 'video', duration: '20 min' },
-  { title: 'Quiz final & Certificat', type: 'quiz', duration: '15 min' },
-];
+// Default curriculum (used as placeholder while loading from API)
+export const defaultCurriculum: { title: string; type: string; duration: string }[] = [];

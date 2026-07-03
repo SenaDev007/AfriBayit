@@ -349,8 +349,8 @@ function rewritePath(path: string): string {
   return path;
 }
 
-export const apiPost = (path: string, body?: any) => api.post(rewritePath(path), body);
-export const apiPatch = (path: string, body?: any) => api.patch(rewritePath(path), body);
-export const apiDelete = (path: string) => api.delete(rewritePath(path));
-export const apiGet = (path: string) => api.get(rewritePath(path));
-export const apiPut = (path: string, body?: any) => api.put(rewritePath(path), body);
+export const apiPost = <T = any>(path: string, body?: any) => api.post<T>(rewritePath(path), body);
+export const apiPatch = <T = any>(path: string, body?: any) => api.patch<T>(rewritePath(path), body);
+export const apiDelete = <T = any>(path: string) => api.delete<T>(rewritePath(path));
+export const apiGet = <T = any>(path: string) => api.get<T>(rewritePath(path));
+export const apiPut = <T = any>(path: string, body?: any) => api.put<T>(rewritePath(path), body);

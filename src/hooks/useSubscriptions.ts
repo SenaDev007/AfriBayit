@@ -10,7 +10,7 @@ export function useSubscriptions(userId?: string, country?: string, page = 1, li
 
   return useQuery({
     queryKey: ['subscriptions', userId, country, page, limit],
-    queryFn: () => api<{ subscriptions: unknown[]; pagination: unknown }>(`/api/subscriptions?${params.toString()}`),
+    queryFn: () => api.get<{ subscriptions: unknown[]; pagination: unknown }>(`/api/subscriptions?${params.toString()}`),
     enabled: !!userId,
   });
 }

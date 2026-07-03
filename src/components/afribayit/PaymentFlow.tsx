@@ -13,22 +13,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import type { PaymentMethod, PaymentProvider } from '@/lib/constants';
 import { CreditCard, Lock, Smartphone, Waves } from 'lucide-react';
 
 // ============ Payment Method Config ============
 
-interface PaymentMethodOption {
-  key: PaymentMethod;
+interface anyOption {
+  key: any;
   name: string;
   icon: React.ReactNode;
-  provider: PaymentProvider;
+  provider: any;
   color: string;
   description: string;
   countries: string[];
 }
 
-const PAYMENT_METHODS: PaymentMethodOption[] = [
+const PAYMENT_METHODS: anyOption[] = [
   {
     key: 'mobile_money_mtn',
     name: 'MTN Mobile Money',
@@ -121,13 +120,13 @@ export default function PaymentFlow({
   onFailure,
 }: PaymentFlowProps) {
   const [step, setStep] = useState<PaymentStep>('method');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<any | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState<{
     paymentId: string;
     providerRef: string;
     redirectUrl?: string;
-    provider: PaymentProvider;
+    provider: any;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -141,7 +140,7 @@ export default function PaymentFlow({
 
   const selectedMethodConfig = PAYMENT_METHODS.find((m) => m.key === selectedMethod);
 
-  const handleSelectMethod = (method: PaymentMethod) => {
+  const handleSelectMethod = (method: any) => {
     setSelectedMethod(method);
     setStep('details');
   };
@@ -160,7 +159,7 @@ export default function PaymentFlow({
         providerRef: string;
         redirectUrl?: string;
         status: string;
-        provider: PaymentProvider;
+        provider: any;
       }>('/api/payments/initiate', {
         amount: totalAmount,
         currency,

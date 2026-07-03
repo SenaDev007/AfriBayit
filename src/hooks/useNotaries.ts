@@ -12,14 +12,14 @@ export function useNotaries(specialty?: string, zone?: string, country?: Country
 
   return useQuery({
     queryKey: ['notaries', specialty, zone, country, page, limit],
-    queryFn: () => api<{ notaries: unknown[]; pagination: unknown }>(`/api/notaries?${params.toString()}`),
+    queryFn: () => api.get<{ notaries: unknown[]; pagination: unknown }>(`/api/notaries?${params.toString()}`),
   });
 }
 
 export function useNotary(id: string) {
   return useQuery({
     queryKey: ['notary', id],
-    queryFn: () => api<unknown>(`/api/notaries/${id}`),
+    queryFn: () => api.get<unknown>(`/api/notaries/${id}`),
     enabled: !!id,
   });
 }

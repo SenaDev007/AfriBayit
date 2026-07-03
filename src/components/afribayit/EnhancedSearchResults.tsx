@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiPost, apiFetch } from '@/lib/api-client';
 import { formatPrice, getPropertyTypeLabel } from '@/lib/afribayit-utils';
-import type { SearchFilters, SortOption } from '@/lib/constants';
+import type { SortOption } from '@/lib/constants';
 import { SORT_OPTIONS, countActiveFilters, getFilterChipLabel } from '@/lib/constants';
 import PropertyCard from './PropertyCard';
 import PropertyMap from './PropertyMap';
@@ -84,8 +84,8 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
 
 export default function EnhancedSearchResults({ initialTab = 'achat', onSelectProperty }: EnhancedSearchResultsProps) {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<SearchFilters>({
-    transaction: [initialTab as SearchFilters['transaction'] extends (infer T)[] ? T : never],
+  const [filters, setFilters] = useState<any>({
+    transaction: [initialTab as any['transaction'] extends (infer T)[] ? T : never],
     sortBy: 'newest',
     page: 1,
     limit: 24,
@@ -98,7 +98,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
     setPrevTab(initialTab);
     setFilters(prev => ({
       ...prev,
-      transaction: [initialTab as SearchFilters['transaction'] extends (infer T)[] ? T : never],
+      transaction: [initialTab as any['transaction'] extends (infer T)[] ? T : never],
       page: 1,
     }));
   }

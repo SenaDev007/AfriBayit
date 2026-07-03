@@ -8,7 +8,7 @@ import {
   Award, CheckCircle2, Clock, FileText, GraduationCap, Play, Star, Users, X,
 } from 'lucide-react';
 import type { Course, CourseDetailDialogProps } from './types';
-import { mockReviews, whatYouWillLearn, defaultCurriculum } from './constants';
+import { whatYouWillLearn, defaultCurriculum } from './constants';
 
 export default function CourseDetailDialog({
   courseId, onClose, onEnroll, enrollingCourseId, isEnrolling, user,
@@ -210,7 +210,7 @@ export default function CourseDetailDialog({
                           <Star key={s} className="w-3 h-3" fill={s <= Math.round(courseData.rating || 5) ? '#D4AF37' : '#e5e7eb'} />
                         ))}
                       </div>
-                      <p className="text-xs text-gray-500">{courseData.reviews || 24} avis</p>
+                      <p className="text-xs text-gray-500">{courseData?.reviews as any || 24} avis</p>
                     </div>
                     <div className="flex-1 space-y-1">
                       {[5, 4, 3, 2, 1].map(star => {
@@ -229,18 +229,18 @@ export default function CourseDetailDialog({
                     </div>
                   </div>
 
-                  {/* Reviews list */}
-                  {mockReviews.map(review => (
-                    <div key={review.id} className="p-4 border-b border-gray-50 last:border-0">
+                  {/* Reviews list — fetched from API */}
+                  {((courseData as any)?.reviews || []).map((review: any) => (
+                    <div key={review.id || review._id} className="p-4 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-[#003087]/10 flex items-center justify-center text-xs font-bold text-[#003087]">
-                          {review.user.charAt(0)}
+                        <div className="w-8 h-8 rounded-full bg-[#003366]/10 flex items-center justify-center text-xs font-bold text-[#003366]">
+                          {(review.reviewer?.name || review.user || 'U').charAt(0)}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-[#2C2E2F]">{review.user}</p>
+                          <p className="text-sm font-medium text-[#2C2E2F]">{review.reviewer?.name || review.user}</p>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map(s => (
-                              <Star key={s} className="w-3 h-3" fill={s <= review.rating ? '#D4AF37' : '#e5e7eb'} />
+                              <Star key={s} className="w-3 h-3" fill={s <= (review.rating || 0) ? '#FFCC00' : '#e5e7eb'} />
                             ))}
                             <span className="text-[10px] text-gray-400 ml-1">{review.date}</span>
                           </div>

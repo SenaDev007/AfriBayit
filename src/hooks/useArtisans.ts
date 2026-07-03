@@ -12,14 +12,14 @@ export function useArtisans(trade?: string, city?: string, country?: CountryCode
 
   return useQuery({
     queryKey: ['artisans', trade, city, country, page, limit],
-    queryFn: () => api<{ artisans: unknown[]; pagination: unknown }>(`/api/artisans?${params.toString()}`),
+    queryFn: () => api.get<{ artisans: unknown[]; pagination: unknown }>(`/api/artisans?${params.toString()}`),
   });
 }
 
 export function useArtisanQuotes(artisanId: string) {
   return useQuery({
     queryKey: ['artisan-quotes', artisanId],
-    queryFn: () => api<{ quotes: unknown[] }>(`/api/artisans/${artisanId}/quotes`),
+    queryFn: () => api.get<{ quotes: unknown[] }>(`/api/artisans/${artisanId}/quotes`),
     enabled: !!artisanId,
   });
 }

@@ -9,14 +9,14 @@ export function useEscrowList(page = 1, limit = 20, country?: string) {
 
   return useQuery({
     queryKey: ['escrow', page, limit, country],
-    queryFn: () => api<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
+    queryFn: () => api.get<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
   });
 }
 
 export function useEscrowDetail(id: string) {
   return useQuery({
     queryKey: ['escrow-detail', id],
-    queryFn: () => api<{ transaction: unknown }>(`/api/escrow/${id}`),
+    queryFn: () => api.get<{ transaction: unknown }>(`/api/escrow/${id}`),
     enabled: !!id,
   });
 }
@@ -24,7 +24,7 @@ export function useEscrowDetail(id: string) {
 export function useEscrowLedger(escrowId: string) {
   return useQuery({
     queryKey: ['escrow-ledger', escrowId],
-    queryFn: () => api<{ ledger: unknown[] }>(`/api/escrow/${escrowId}/ledger`),
+    queryFn: () => api.get<{ ledger: unknown[] }>(`/api/escrow/${escrowId}/ledger`),
     enabled: !!escrowId,
   });
 }
