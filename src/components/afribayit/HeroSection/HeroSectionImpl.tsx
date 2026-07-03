@@ -217,12 +217,12 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
   });
 
   const statsItems = [
-    { value: stats?.properties ?? 250, suffix: '+', label: 'Biens listés' },
-    { value: stats?.transactions ?? 150, suffix: '+', label: 'Transactions' },
-    { value: (stats?.hotels ?? 0) + (stats?.guesthouses ?? 0) || 40, suffix: '+', label: 'Hôtels & Séjours' },
-    { value: stats?.countries ?? 4, suffix: '', label: 'Pays couverts' },
-    { value: stats?.bookings ?? 80, suffix: '+', label: 'Réservations' },
-    { value: stats?.satisfaction ?? 98, suffix: '%', label: 'Avis positifs' },
+    { value: stats?.properties ?? 0, suffix: '+', label: 'Biens listés' },
+    { value: stats?.transactions ?? 0, suffix: '+', label: 'Transactions' },
+    { value: (stats?.hotels ?? 0) + (stats?.guesthouses ?? 0), suffix: '+', label: 'Hôtels & Séjours' },
+    { value: stats?.countries ?? 0, suffix: '', label: 'Pays couverts' },
+    { value: stats?.bookings ?? 0, suffix: '+', label: 'Réservations' },
+    { value: stats?.satisfaction ?? 0, suffix: '%', label: 'Avis positifs' },
   ];
 
   // Distribute featured properties into the 3 spinning layers
@@ -282,7 +282,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
   }
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden" style={{ backgroundColor: '#001440' }}>
+    <section className="relative w-full min-h-screen overflow-hidden" style={{ backgroundColor: '#003366' }}>
       {/* ═══════════════════════════════════════════════════════════
           3D ANIMATED BACKGROUND — Spinning Layers with Icons & Property Cards
           Fully responsive: scales down on mobile/tablet
@@ -709,7 +709,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
-          background: `linear-gradient(to top, #001440 5%, rgba(0, 20, 64, 0.88) 25%, rgba(0, 31, 92, 0.65) 50%, rgba(0, 48, 135, 0.4) 75%, rgba(0, 48, 135, 0.25) 100%)`,
+          background: `linear-gradient(to top, #003366 5%, rgba(0, 51, 102, 0.88) 25%, rgba(0, 51, 102, 0.65) 50%, rgba(0, 51, 102, 0.4) 75%, rgba(0, 51, 102, 0.25) 100%)`,
         }}
       />
 
@@ -917,8 +917,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
         </div>
       </div>
 
-      {/* Bottom wave/gradient transition */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-white to-transparent z-10" />
+      {/* Bottom — solid color transition to next section (no gradient) */}
     </section>
   );
 }

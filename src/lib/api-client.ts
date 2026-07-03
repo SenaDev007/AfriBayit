@@ -72,7 +72,9 @@ export async function apiFetch<T = any>(
     fetchOptions.body = JSON.stringify(fetchOptions.body);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  // Rewrite /api/ prefix to / (backend doesn't use /api/ prefix)
+  const rewrittenPath = rewritePath(path);
+  const response = await fetch(`${API_URL}${rewrittenPath}`, {
     ...fetchOptions,
     headers,
   });
