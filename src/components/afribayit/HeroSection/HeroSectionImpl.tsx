@@ -736,7 +736,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
       </div>
 
       {/* ═══ Main Content ═══ */}
-      <div className="relative z-20 w-full h-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="relative z-20 w-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28">
         <div className="max-w-[1400px] w-full mx-auto flex flex-col items-center text-center">
 
           {/* Badge */}

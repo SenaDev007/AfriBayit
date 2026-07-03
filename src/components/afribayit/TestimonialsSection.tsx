@@ -118,17 +118,17 @@ export default function TestimonialsSection() {
           <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
             {t('testimonials.title', "Ce qu'ils")} {t('testimonials.titleAccent', 'disent')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-lg text-gray-500">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-gray-500">
             {t('testimonials.subtitle', "Des milliers d'utilisateurs font confiance à AfriBayit pour leurs projets immobiliers.")}
           </p>
         </motion.div>
 
         {/* Country filter badge */}
         <div className="mt-8 flex items-center justify-center gap-2">
-          <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">
+          <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">
             {t('testimonials.country', 'Pays')}:
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
@@ -152,19 +152,19 @@ export default function TestimonialsSection() {
               <StarRating rating={item.rating} />
 
               {/* Comment */}
-              <p className="relative mt-4 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-base leading-relaxed text-gray-700 line-clamp-4">
+              <p className="relative mt-4 font-[family-name:var(--font-inter),system-ui,sans-serif] text-base leading-relaxed text-gray-700 line-clamp-4">
                 &ldquo;{item.comment}&rdquo;
               </p>
 
               {/* Author */}
               <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#003366] font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#003366] font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-bold text-white">
                   {item.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <p className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-bold text-gray-900">{item.name}</p>
+                  <p className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-bold text-gray-900">{item.name}</p>
                   {item.reputation && (
-                    <p className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#8B6914]">
+                    <p className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#8B6914]">
                       {item.reputation}
                     </p>
                   )}
@@ -174,7 +174,7 @@ export default function TestimonialsSection() {
                   <svg className="h-3 w-3 text-[#3399FF]" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px] font-bold uppercase text-[#3399FF]">
+                  <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] font-bold uppercase text-[#3399FF]">
                     {t('testimonials.verified', 'Vérifié')}
                   </span>
                 </div>

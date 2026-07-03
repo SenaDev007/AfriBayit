@@ -48,7 +48,7 @@ export default function HowItWorks() {
           <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             Comment ça marche ?
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
             En 4 étapes simples, de la recherche à la signature. Transparent, sécurisé, sans stress.
           </p>
         </motion.div>
@@ -76,14 +76,14 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Step label */}
-                <span className="mt-6 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#3399FF]">
+                <span className="mt-6 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#3399FF]">
                   Étape {step.number}
                 </span>
 
                 <h3 className="mt-2 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-white">
                   {step.title}
                 </h3>
-                <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
+                <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
                   {step.description}
                 </p>
               </motion.div>

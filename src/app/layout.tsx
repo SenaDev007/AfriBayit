@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import { Cormorant_Garamond, Inter, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,17 +17,17 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -90,7 +90,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="AfriBayit" />
       </head>
       <body
-        className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable} font-body antialiased bg-background text-foreground`}
+        className={`${cormorant.variable} ${inter.variable} ${spaceGrotesk.variable} font-body antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

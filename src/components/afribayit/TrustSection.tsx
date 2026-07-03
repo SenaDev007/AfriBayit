@@ -79,7 +79,7 @@ export default function TrustSection() {
           <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             Pourquoi AfriBayit ?
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
             Quatre piliers fondamentaux pour garantir des transactions immobilières
             transparentes et sécurisées en Afrique de l&apos;Ouest.
           </p>
@@ -95,10 +95,10 @@ export default function TrustSection() {
         >
           {stats.map((stat) => (
             <div key={stat.label} className="bg-[#003366] px-6 py-8 text-center">
-              <div className="font-[family-name:var(--font-dm-mono),monospace] text-4xl font-bold text-[#FFCC00]">
+              <div className="font-[family-name:var(--font-space-grotesk),monospace] text-4xl font-bold text-[#FFCC00]">
                 {stat.value}
               </div>
-              <div className="mt-1 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-white/60">
+              <div className="mt-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-white/60">
                 {stat.label}
               </div>
             </div>
@@ -123,10 +123,10 @@ export default function TrustSection() {
 
               {/* Stat badge */}
               <div className="mt-5 flex items-baseline gap-2">
-                <span className="font-[family-name:var(--font-dm-mono),monospace] text-2xl font-bold text-white">
+                <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-white">
                   {pillar.stat}
                 </span>
-                <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-white/40">
+                <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-white/40">
                   {pillar.statLabel}
                 </span>
               </div>
@@ -134,7 +134,7 @@ export default function TrustSection() {
               <h3 className="mt-3 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-white">
                 {pillar.title}
               </h3>
-              <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
+              <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
                 {pillar.description}
               </p>
             </motion.div>

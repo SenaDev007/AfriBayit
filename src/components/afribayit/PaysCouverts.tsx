@@ -69,13 +69,13 @@ export default function PaysCouverts() {
           <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             Pays couverts
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
             Déjà opérationnel dans 5 pays d&apos;Afrique de l&apos;Ouest, avec des équipes locales et des partenaires certifiés.
           </p>
         </motion.div>
 
-        {/* Country Grid */}
-        <div className="mt-16 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-5">
+        {/* Country Grid — centered regardless of count */}
+        <div className="mt-16 flex flex-wrap justify-center gap-4 sm:gap-6">
           {COUNTRIES_CONFIG.map((country, i) => {
             const meta = countryMeta[country.code];
             const listingCount = propertiesData?.[country.code] ?? 0;
@@ -89,7 +89,7 @@ export default function PaysCouverts() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-                className="group flex flex-col items-center rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#FFCC00]/40 hover:bg-white/[0.05]"
+                className="group flex w-full max-w-[240px] flex-col items-center rounded-2xl border-2 border-white/20 bg-white p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#FFCC00] hover:shadow-xl"
               >
                 {/* Flag */}
                 <div className="text-5xl transition-transform duration-300 group-hover:scale-110 sm:text-6xl">
@@ -97,28 +97,28 @@ export default function PaysCouverts() {
                 </div>
 
                 {/* Name */}
-                <h3 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-white sm:text-xl">
+                <h3 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900 sm:text-xl">
                   {meta?.name || country.name}
                 </h3>
 
                 {/* Listing count */}
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="font-[family-name:var(--font-dm-mono),monospace] text-2xl font-bold text-[#FFCC00]">
+                  <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-[#003366]">
                     {listingCount}
                   </span>
-                  <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs uppercase tracking-wider text-white/50">
+                  <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs uppercase tracking-wider text-gray-400">
                     biens
                   </span>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-4 w-full space-y-1.5 border-t border-white/10 pt-4">
-                  <div className="flex items-center justify-between font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px]">
-                    <span className="uppercase tracking-wider text-white/40">Agents</span>
+                <div className="mt-4 w-full space-y-1.5 border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                    <span className="uppercase tracking-wider text-gray-400">Agents</span>
                     <span className="font-bold text-[#3399FF]">{cStats?.agents}</span>
                   </div>
-                  <div className="flex items-center justify-between font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px]">
-                    <span className="uppercase tracking-wider text-white/40">Partenaires</span>
+                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                    <span className="uppercase tracking-wider text-gray-400">Partenaires</span>
                     <span className="font-bold text-[#FFCC00]">{cStats?.partners}</span>
                   </div>
                 </div>
@@ -128,7 +128,7 @@ export default function PaysCouverts() {
                   {country.cities.slice(0, 3).map((city) => (
                     <span
                       key={city}
-                      className="rounded-full bg-white/5 px-2 py-0.5 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px] text-white/50"
+                      className="rounded-full bg-gray-100 px-2 py-0.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] text-gray-500"
                     >
                       {city}
                     </span>
@@ -147,9 +147,9 @@ export default function PaysCouverts() {
           transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
           className="mt-12 text-center"
         >
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 px-6 py-3">
+          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-6 py-3">
             <span className="h-2 w-2 rounded-full bg-[#3399FF]" />
-            <p className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-white/70">
+            <p className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-white/70">
               <span className="font-bold text-[#FFCC00]">Bientôt</span> dans 3 pays supplémentaires d&apos;Afrique de l&apos;Ouest
             </p>
           </div>

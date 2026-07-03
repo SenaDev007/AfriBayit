@@ -88,14 +88,14 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             <h2 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
               Biens en vedette
             </h2>
-            <p className="mt-3 max-w-lg font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-gray-500">
+            <p className="mt-3 max-w-lg font-[family-name:var(--font-inter),system-ui,sans-serif] text-gray-500">
               Une sélection rigoureuse de biens vérifiés et certifiés AfriBayit.
             </p>
           </div>
           <motion.button
             whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="group inline-flex items-center gap-2 rounded-full border border-[#003366] px-6 py-3 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+            className="group inline-flex items-center gap-2 rounded-full border border-[#003366] px-6 py-3 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
           >
             Voir tous les biens
             <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -107,8 +107,8 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Country filter + filter pills */}
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">Pays:</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
+            <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">Pays:</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
               {COUNTRY_NAMES[selectedCountry] || selectedCountry}
             </span>
@@ -125,7 +125,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               <button
                 key={tab.key}
                 onClick={() => setActiveFilter(tab.key)}
-                className={`rounded-full px-4 py-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold transition-colors ${
+                className={`rounded-full px-4 py-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold transition-colors ${
                   activeFilter === tab.key
                     ? 'bg-[#003366] text-white'
                     : 'border border-gray-200 bg-white text-gray-600 hover:border-[#003366]/40 hover:text-[#003366]'
@@ -155,7 +155,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               </svg>
             </div>
             <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Erreur de chargement</h3>
-            <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">Impossible de charger les biens. Veuillez réessayer.</p>
+            <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">Impossible de charger les biens. Veuillez réessayer.</p>
           </div>
         )}
 
@@ -170,12 +170,12 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             {activeFilter === 'sejour' ? (
               <>
                 <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900">Explorez nos hôtels et guesthouses</h3>
-                <p className="mx-auto mt-2 max-w-md font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">
+                <p className="mx-auto mt-2 max-w-md font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
                   Découvrez notre sélection d&apos;hébergements en Afrique de l&apos;Ouest.
                 </p>
                 <a
                   href="/booking"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFCC00] px-6 py-3 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#FFE680]"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFCC00] px-6 py-3 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#FFE680]"
                 >
                   Voir les séjours
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -186,7 +186,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             ) : (
               <>
                 <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
-                <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">
+                <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
                   {activeFilter !== 'all'
                     ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
                     : 'Les biens premium apparaîtront ici prochainement.'}

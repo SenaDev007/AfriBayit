@@ -94,7 +94,7 @@ export default function ModulesSection() {
           <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
             Nos modules
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-lg text-gray-500">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-gray-500">
             Une plateforme tout-en-un pour l&apos;immobilier en Afrique. Chaque module est conçu pour répondre à un besoin spécifique.
           </p>
         </motion.div>
@@ -112,7 +112,7 @@ export default function ModulesSection() {
               className="group relative block rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#003366]/30 hover:shadow-lg hover:shadow-gray-200/50"
             >
               {/* Badge */}
-              <span className="absolute right-6 top-6 rounded-full bg-[#FFCC00]/15 px-2.5 py-1 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-[10px] font-bold uppercase tracking-wider text-[#8B6914]">
+              <span className="absolute right-6 top-6 rounded-full bg-[#FFCC00]/15 px-2.5 py-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] font-bold uppercase tracking-wider text-[#8B6914]">
                 {mod.badge}
               </span>
 
@@ -124,12 +124,12 @@ export default function ModulesSection() {
               <h3 className="mt-5 font-[family-name:var(--font-cormorant),Georgia,serif] text-2xl font-bold text-gray-900 transition-colors group-hover:text-[#003366]">
                 {mod.name}
               </h3>
-              <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
+              <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
                 {mod.description}
               </p>
 
               {/* Arrow */}
-              <div className="mt-5 flex items-center gap-1 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold text-[#003366] opacity-0 transition-all duration-300 group-hover:opacity-100">
+              <div className="mt-5 flex items-center gap-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] opacity-0 transition-all duration-300 group-hover:opacity-100">
                 Explorer
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
