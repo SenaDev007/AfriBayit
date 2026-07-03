@@ -26,9 +26,9 @@ const filterTabs = [
 
 function PropertyCardSkeleton() {
   return (
-    <div className="rounded-3xl bg-white border border-gray-100 overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
-      <div className="p-5 space-y-3">
+      <div className="space-y-3 p-5">
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20 rounded-full" />
           <Skeleton className="h-4 w-8 rounded-full" />
@@ -40,7 +40,7 @@ function PropertyCardSkeleton() {
           <Skeleton className="h-3 w-12" />
           <Skeleton className="h-3 w-12" />
         </div>
-        <div className="pt-3 border-t border-gray-100">
+        <div className="border-t border-gray-100 pt-3">
           <Skeleton className="h-6 w-1/2" />
         </div>
       </div>
@@ -70,60 +70,46 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   }, [baseProperties, activeFilter]);
 
   return (
-    <section className="relative py-24 sm:py-32 bg-gradient-to-b from-white via-[#f8fafc] to-white overflow-hidden">
-      {/* Decorative top accent - bold gold line */}
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent" />
-
-      {/* Background pattern */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #003087 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
-
-      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Bold header with navy gradient strip */}
+    <section className="bg-white py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: easeOut }}
-          className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4"
+          className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
         >
           <div>
-            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#003087] to-[#001a4f] border border-[#D4AF37]/30 text-white text-sm font-bold mb-5 font-body uppercase tracking-wider shadow-lg shadow-[#003087]/20">
-              <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
+            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
+              <span className="h-px w-8 bg-[#003366]" />
               Sélection Premium
             </span>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#2C2E2F] leading-tight">
-              Biens <span className="bg-gradient-to-r from-[#003087] to-[#009CDE] bg-clip-text text-transparent">en vedette</span>
+            <h2 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+              Biens en vedette
             </h2>
-            <p className="mt-3 text-gray-500 max-w-lg font-body">
+            <p className="mt-3 max-w-lg font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-gray-500">
               Une sélection rigoureuse de biens vérifiés et certifiés AfriBayit.
             </p>
           </div>
           <motion.button
-            whileHover={{ x: 6 }}
+            whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#003087] hover:bg-[#001a4f] text-white text-sm font-bold shadow-lg shadow-[#003087]/25 transition-all font-body"
+            className="group inline-flex items-center gap-2 rounded-full border border-[#003366] px-6 py-3 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
           >
             Voir tous les biens
-            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
         </motion.div>
 
-        {/* Country Filter Badge + filter pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+        {/* Country filter + filter pills */}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Pays:</span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#003087]/10 to-[#009CDE]/10 border border-[#003087]/20 text-[#003087] text-xs font-bold">
-              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />
+            <span className="font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">Pays:</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
               {COUNTRY_NAMES[selectedCountry] || selectedCountry}
             </span>
           </div>
@@ -139,10 +125,10 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               <button
                 key={tab.key}
                 onClick={() => setActiveFilter(tab.key)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all font-body ${
+                className={`rounded-full px-4 py-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold transition-colors ${
                   activeFilter === tab.key
-                    ? 'bg-gradient-to-r from-[#003087] to-[#001a4f] text-white shadow-md shadow-[#003087]/25'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#D4AF37]/50 hover:text-[#003087] hover:shadow-sm'
+                    ? 'bg-[#003366] text-white'
+                    : 'border border-gray-200 bg-white text-gray-600 hover:border-[#003366]/40 hover:text-[#003366]'
                 }`}
               >
                 {tab.label}
@@ -151,56 +137,56 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           </motion.div>
         </div>
 
-        {/* Loading State */}
+        {/* Loading */}
         {isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <PropertyCardSkeleton key={i} />
             ))}
           </div>
         )}
 
-        {/* Error State */}
+        {/* Error */}
         {isError && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="py-16 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+              <svg className="h-7 w-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Erreur de chargement</h3>
-            <p className="text-sm text-gray-400 font-body">Impossible de charger les biens en vedette. Veuillez réessayer.</p>
+            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Erreur de chargement</h3>
+            <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">Impossible de charger les biens. Veuillez réessayer.</p>
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty */}
         {!isLoading && !isError && displayProperties.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="py-16 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
             {activeFilter === 'sejour' ? (
               <>
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Explorez nos hôtels et guesthouses</h3>
-                <p className="text-sm text-gray-400 font-body mb-4 max-w-md mx-auto">
-                  Découvrez notre sélection d&apos;hébergements en Afrique de l&apos;Ouest — hôtels, maisons d&apos;hôtes et séjours certifiés.
+                <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900">Explorez nos hôtels et guesthouses</h3>
+                <p className="mx-auto mt-2 max-w-md font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">
+                  Découvrez notre sélection d&apos;hébergements en Afrique de l&apos;Ouest.
                 </p>
                 <a
                   href="/booking"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8961f] text-white rounded-full text-sm font-bold transition-colors shadow-lg shadow-[#D4AF37]/25"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFCC00] px-6 py-3 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#FFE680]"
                 >
                   Voir les séjours
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </a>
               </>
             ) : (
               <>
-                <h3 className="font-display text-lg font-bold text-gray-400 mb-2">Aucun bien en vedette</h3>
-                <p className="text-sm text-gray-400 font-body">
+                <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
+                <p className="mt-2 font-[family-name:var(--font-dm-sans),system-ui,sans-serif] text-sm text-gray-400">
                   {activeFilter !== 'all'
                     ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
                     : 'Les biens premium apparaîtront ici prochainement.'}
@@ -210,9 +196,9 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           </div>
         )}
 
-        {/* Properties Grid */}
+        {/* Grid */}
         {!isLoading && !isError && displayProperties.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {displayProperties.map((property, i) => (
               <PropertyCard
                 key={property.id}
