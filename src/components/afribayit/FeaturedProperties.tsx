@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useProperties } from '@/hooks/useProperties';
+import { useQuery } from '@tanstack/react-query';
+import { api, apiFetch } from '@/lib/api-client';
 import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
 import { useCountry } from '@/contexts/CountryContext';
@@ -51,22 +52,38 @@ function PropertyCardSkeleton() {
 export default function FeaturedProperties({ onSelectProperty, onNavigate }: FeaturedPropertiesProps) {
   const [activeFilter, setActiveFilter] = useState('all');
   const { selectedCountry } = useCountry();
-  const { data, isLoading, isError } = useProperties({ country: selectedCountry, limit: 12 });
 
-  const allProperties = data?.properties || [];
+  // Fetch properties directly from backend API
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['featured-properties', selectedCountry],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set('limit', '12');
+      params.set('page', '1');
+      if (selectedCountry && selectedCountry !== ('all' as any)) {
+        params.set('country', selectedCountry);
+      }
+      const res = await api.get<any>(`/properties?${params.toString()}`);
+      return res;
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const featured = allProperties
-    .filter(p => p.premium || p.verified)
-    .slice(0, 12);
+  const allProperties = data?.properties || data || [];
+
+  const featured = Array.isArray(allProperties)
+    ? allProperties.filter((p: any) => p.premium || p.verified).slice(0, 12)
+    : [];
 
   const baseProperties = featured.length > 0
     ? featured
-    : allProperties.slice(0, 12);
+    : (Array.isArray(allProperties) ? allProperties.slice(0, 12) : []);
 
   const displayProperties = useMemo(() => {
     if (activeFilter === 'all') return baseProperties.slice(0, 6);
     if (activeFilter === 'sejour') return [];
-    return baseProperties.filter(p => p.type === activeFilter).slice(0, 6);
+    return baseProperties.filter((p: any) => p.type === activeFilter).slice(0, 6);
   }, [baseProperties, activeFilter]);
 
   return (
@@ -149,13 +166,15 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Error */}
         {isError && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
-              <svg className="h-7 w-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Erreur de chargement</h3>
-            <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">Impossible de charger les biens. Veuillez réessayer.</p>
+            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien disponible</h3>
+            <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
+              Les biens apparaîtront ici dès qu'ils seront publiés.
+            </p>
           </div>
         )}
 
@@ -167,39 +186,17 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            {activeFilter === 'sejour' ? (
-              <>
-                <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900">Explorez nos hôtels et guesthouses</h3>
-                <p className="mx-auto mt-2 max-w-md font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
-                  Découvrez notre sélection d&apos;hébergements en Afrique de l&apos;Ouest.
-                </p>
-                <a
-                  href="/booking"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFCC00] px-6 py-3 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#FFE680]"
-                >
-                  Voir les séjours
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </>
-            ) : (
-              <>
-                <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
-                <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
-                  {activeFilter !== 'all'
-                    ? `Aucun bien de type "${filterTabs.find(t => t.key === activeFilter)?.label}" trouvé.`
-                    : 'Les biens premium apparaîtront ici prochainement.'}
-                </p>
-              </>
-            )}
+            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
+            <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
+              Les biens premium apparaîtront ici prochainement.
+            </p>
           </div>
         )}
 
         {/* Grid */}
         {!isLoading && !isError && displayProperties.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {displayProperties.map((property, i) => (
+            {displayProperties.map((property: any, i: number) => (
               <PropertyCard
                 key={property.id}
                 property={property}

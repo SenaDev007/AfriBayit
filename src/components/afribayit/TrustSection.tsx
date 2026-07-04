@@ -1,9 +1,154 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
+
+// ─── Animated Counter (counts continuously, pauses on hover) ──────────────
+function AnimatedCounter({
+  value,
+  suffix = '',
+  duration = 2000,
+}: {
+  value: number;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const rafRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(0);
+  const currentValueRef = useRef(0);
+
+  useEffect(() => {
+    // If value is 0 or undefined, show 0
+    if (!value || value === 0) {
+      setDisplayValue(0);
+      return;
+    }
+
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = (elapsed % duration) / duration;
+
+      // Ease in-out cubic
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+      const current = Math.floor(eased * value);
+      currentValueRef.current = current;
+      setDisplayValue(current);
+
+      if (!isHovered) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (!isHovered) {
+      startTimeRef.current = 0;
+      rafRef.current = requestAnimationFrame(animate);
+    }
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [value, duration, isHovered]);
+
+  // Format number with thousands separator
+  const formatted = displayValue >= 1000
+    ? displayValue.toLocaleString('fr-FR')
+    : String(displayValue);
+
+  return (
+    <span
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="cursor-default tabular-nums"
+    >
+      {formatted}{suffix}
+    </span>
+  );
+}
+
+// ─── Pillar Card (animated) ───────────────────────────────────────────────
+function PillarCard({
+  icon,
+  title,
+  description,
+  stat,
+  statLabel,
+  delay,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  stat: string;
+  statLabel: string;
+  delay: number;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay, ease: easeOut }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="group relative overflow-hidden rounded-2xl border-2 border-[#003366]/20 bg-white p-6 transition-all duration-300 hover:border-[#003366] hover:shadow-xl"
+    >
+      {/* Animated top bar */}
+      <motion.div
+        className="absolute inset-x-0 top-0 h-1 bg-[#003366]"
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: delay + 0.2, ease: easeOut }}
+        style={{ originX: 0 }}
+      />
+
+      {/* Floating icon with continuous rotation animation */}
+      <motion.div
+        animate={isHovered ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#003366] text-white"
+      >
+        {icon}
+      </motion.div>
+
+      {/* Stat badge */}
+      <div className="mt-5 flex items-baseline gap-2">
+        <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-[#003366]">
+          {stat}
+        </span>
+        <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-gray-400">
+          {statLabel}
+        </span>
+      </div>
+
+      <h3 className="mt-3 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-gray-900">
+        {title}
+      </h3>
+      <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
+        {description}
+      </p>
+
+      {/* Bottom accent line — animates on hover */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-0.5 bg-[#FFCC00]"
+        initial={{ width: 0 }}
+        animate={isHovered ? { width: '100%' } : { width: 0 }}
+        transition={{ duration: 0.4, ease: easeOut }}
+      />
+    </motion.div>
+  );
+}
 
 const pillars = [
   {
@@ -52,16 +197,37 @@ const pillars = [
   },
 ];
 
-const stats = [
-  { value: '12K+', label: 'Biens vérifiés' },
-  { value: '5', label: 'Pays couverts' },
-  { value: '50K+', label: 'Utilisateurs' },
-  { value: '99.8%', label: 'Satisfaction' },
-];
-
 export default function TrustSection() {
+  // Fetch real stats from backend API
+  const { data: stats } = useQuery({
+    queryKey: ['platform-stats'],
+    queryFn: () => api.get<any>('/properties?limit=1'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Also fetch admin stats if available
+  const { data: adminStats } = useQuery({
+    queryKey: ['admin-stats-public'],
+    queryFn: () => api.get<any>('/admin/stats'),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+
+  // Derive real stats from API data
+  const totalProperties = adminStats?.properties ?? stats?.pagination?.total ?? 0;
+  const totalCountries = adminStats?.countries ?? 0;
+  const totalUsers = adminStats?.users ?? 0;
+  const satisfaction = adminStats?.satisfaction ?? 0;
+
+  const statsItems = [
+    { value: totalProperties, suffix: '+', label: 'Biens vérifiés' },
+    { value: totalCountries, suffix: '', label: 'Pays couverts' },
+    { value: totalUsers, suffix: '+', label: 'Utilisateurs' },
+    { value: satisfaction, suffix: '%', label: 'Satisfaction' },
+  ];
+
   return (
-    <section className="bg-[#003366] py-24 sm:py-32">
+    <section className="bg-[#FFCC00] py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -71,73 +237,52 @@ export default function TrustSection() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#FFCC00]">
-            <span className="h-px w-8 bg-[#FFCC00]" />
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
+            <span className="h-px w-8 bg-[#003366]" />
             Confiance & Sécurité
-            <span className="h-px w-8 bg-[#FFCC00]" />
+            <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-[#003366] sm:text-5xl lg:text-6xl">
             Pourquoi AfriBayit ?
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-[#003366]/70">
             Quatre piliers fondamentaux pour garantir des transactions immobilières
             transparentes et sécurisées en Afrique de l&apos;Ouest.
           </p>
         </motion.div>
 
-        {/* Stats banner */}
+        {/* Stats banner — animated counters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2, ease: easeOut }}
-          className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 md:grid-cols-4"
+          className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[#003366]/20 bg-[#003366]/10 md:grid-cols-4"
         >
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-[#003366] px-6 py-8 text-center">
-              <div className="font-[family-name:var(--font-space-grotesk),monospace] text-4xl font-bold text-[#FFCC00]">
-                {stat.value}
+          {statsItems.map((stat) => (
+            <div key={stat.label} className="bg-[#FFCC00] px-6 py-8 text-center">
+              <div className="font-[family-name:var(--font-space-grotesk),monospace] text-4xl font-bold text-[#003366]">
+                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
-              <div className="mt-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-white/60">
+              <div className="mt-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-[#003366]/60">
                 {stat.label}
               </div>
             </div>
           ))}
         </motion.div>
 
-        {/* Pillars grid */}
+        {/* Pillars grid — animated cards */}
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {pillars.map((pillar, i) => (
-            <motion.div
+            <PillarCard
               key={pillar.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-              className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-colors duration-300 hover:border-[#FFCC00]/40 hover:bg-white/[0.05]"
-            >
-              {/* Icon */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#3399FF]/15 text-[#3399FF] transition-colors duration-300 group-hover:bg-[#FFCC00]/15 group-hover:text-[#FFCC00]">
-                {pillar.icon}
-              </div>
-
-              {/* Stat badge */}
-              <div className="mt-5 flex items-baseline gap-2">
-                <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-white">
-                  {pillar.stat}
-                </span>
-                <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-white/40">
-                  {pillar.statLabel}
-                </span>
-              </div>
-
-              <h3 className="mt-3 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-white">
-                {pillar.title}
-              </h3>
-              <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
-                {pillar.description}
-              </p>
-            </motion.div>
+              icon={pillar.icon}
+              title={pillar.title}
+              description={pillar.description}
+              stat={pillar.stat}
+              statLabel={pillar.statLabel}
+              delay={i * 0.1}
+            />
           ))}
         </div>
       </div>
