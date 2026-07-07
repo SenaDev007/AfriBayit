@@ -4,7 +4,18 @@
 import { MetadataRoute } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://afribayit.com';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+// Normalize API URL — ensure protocol, no trailing slash
+function normalizeApiUrl(raw: string | undefined): string {
+  const fallback = 'http://localhost:3001';
+  let url = (raw || fallback).trim();
+  if (!url) return fallback;
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, '');
+}
+const API_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL);
 
 export const dynamic = 'force-dynamic';
 

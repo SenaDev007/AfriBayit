@@ -2,7 +2,22 @@
 // This module replaces the old apiFetch helper that called Next.js API routes.
 // All requests now go to the separate NestJS backend (afribayit-api on Fly.io).
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Normalize the API URL: ensure it has a protocol and no trailing slash.
+// Guards against misconfigured Vercel env vars like "afribayit-api-production.up.railway.app"
+// (missing "https://") which would otherwise be treated as a relative path.
+function normalizeApiUrl(raw: string | undefined): string {
+  const fallback = 'http://localhost:3001';
+  let url = (raw || fallback).trim();
+  if (!url) return fallback;
+  // If missing protocol, prepend https://
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  // Strip trailing slash
+  return url.replace(/\/+$/, '');
+}
+
+const API_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL);
 
 // ─── Token Management ────────────────────────────────────────────────────
 
