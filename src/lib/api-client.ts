@@ -94,13 +94,15 @@ export async function apiFetch<T = any>(
     headers,
   });
 
-  // Handle 401 — token expired, try refresh or redirect to login
+  // Handle 401 — token expired or missing.
+  // CRITICAL: On a public site, do NOT auto-redirect to /auth/login.
+  // The middleware already handles auth for protected routes.
+  // For public pages calling protected endpoints (e.g. /auth/me to check session),
+  // a 401 just means "not logged in" — the calling component should handle it
+  // gracefully (e.g. show "Connexion" button, hide authenticated UI).
   if (response.status === 401 && auth) {
     setAccessToken(null);
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
-    }
-    throw new Error('Session expirée. Veuillez vous reconnecter.');
+    throw new ApiError('Authentication required', 401);
   }
 
   // Parse response
