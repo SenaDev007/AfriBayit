@@ -14,7 +14,7 @@ const ArtisansMarketplace = dynamic(() => import('@/components/afribayit/Artisan
 });
 
 export default function ArtisansPage() {
-  const { onSelectProperty } = useAfriBayitNav();
+  const { onNavigate } = useAfriBayitNav();
 
   return (
     <TransactionPageShell
@@ -36,7 +36,7 @@ export default function ArtisansPage() {
     >
       <div id="artisans">
         <SafeModule>
-          <ArtisansMarketplace onSelectProperty={onSelectProperty} />
+          <ArtisansMarketplace onNavigate={onNavigate} />
         </SafeModule>
       </div>
     </TransactionPageShell>
