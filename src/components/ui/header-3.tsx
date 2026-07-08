@@ -117,7 +117,6 @@ const hospitalityLinks: LinkItem[] = [
     href: '/sejours',
     description: 'Réservez hôtels, guesthouses et séjours courts en Afrique de l\'Ouest',
     icon: Hotel,
-    gold: true,
   },
 ];
 
@@ -195,7 +194,6 @@ const companyLinks: LinkItem[] = [
     href: '/our-work',
     description: 'Projets immobiliers et hôteliers',
     icon: GlobeIcon,
-    gold: true,
   },
   {
     title: 'Témoignages',
@@ -718,10 +716,8 @@ function ListItem({
     <NavigationMenuLink
       className={cn(
         'w-full flex flex-row gap-x-2',
-        'data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground',
-        'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-        'rounded-sm p-2',
-        gold && 'text-[#D4AF37]',
+        'hover:bg-[#003087]/5 focus:bg-[#003087]/5',
+        'rounded-md p-2 transition-colors',
         className,
       )}
       {...props}
@@ -730,13 +726,13 @@ function ListItem({
       <a href={href}>
         <div className={cn(
           'flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm',
-          gold ? 'bg-[#D4AF37]/10 border-[#D4AF37]/20' : 'bg-background/40',
+          'bg-[#003087]/5 border-[#003087]/10',
         )}>
-          <Icon className={cn('size-5', gold ? 'text-[#D4AF37]' : 'text-[#003087]')} />
+          <Icon className="size-5 text-[#003087]" />
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className={cn('font-medium', gold && 'text-[#D4AF37]')}>{title}</span>
-          <span className="text-muted-foreground text-xs">{description}</span>
+          <span className="font-medium text-[#2C2E2F]">{title}</span>
+          <span className="text-gray-500 text-xs">{description}</span>
         </div>
       </a>
     </NavigationMenuLink>
