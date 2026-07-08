@@ -98,7 +98,6 @@ export default function Footer() {
       links: [
         { label: 'Communauté', href: '/community', icon: <HeartHandshake size={14} /> },
         { label: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: <Plane size={14} /> },
-        { label: 'Espace Hôtelier (PMS)', href: '/hotel-dashboard', icon: <Hotel size={14} /> },
         { label: 'Notaires', href: '/notary', icon: <Scale size={14} /> },
         { label: 'Publier une annonce', href: '/publish', icon: <PlusCircle size={14} /> },
       ],

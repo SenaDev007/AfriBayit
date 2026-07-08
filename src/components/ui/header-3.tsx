@@ -119,12 +119,6 @@ const hospitalityLinks: LinkItem[] = [
     icon: Hotel,
     gold: true,
   },
-  {
-    title: 'Espace Hôtelier (PMS)',
-    href: '/hotel-dashboard',
-    description: 'Gérez votre hôtel ou guesthouse : chambres, tarifs, réservations',
-    icon: BedDouble,
-  },
 ];
 
 const servicesLinks: LinkItem[] = [
@@ -303,6 +297,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   const onDarkHero = isHome && !scrolled;
   const textColor = onDarkHero ? 'text-white' : 'text-[#2C2E2F]';
   const mutedColor = onDarkHero ? 'text-white/70' : 'text-gray-500';
+  // Hover styles that work on both dark hero and white navbar
+  const triggerHoverClass = onDarkHero
+    ? 'hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white'
+    : 'hover:bg-[#003087]/10 hover:text-[#003087] data-[state=open]:bg-[#003087]/10 data-[state=open]:text-[#003087]';
 
   return (
     <header
@@ -332,7 +330,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             <NavigationMenuList>
               {/* Immobilier */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('bg-transparent', triggerHoverClass, textColor)}>
                   Immobilier
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5">
@@ -356,11 +354,11 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Hôtellerie */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('bg-transparent', triggerHoverClass, textColor)}>
                   Hôtellerie
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-background p-1 pr-1.5">
-                  <ul className="bg-popover space-y-2 rounded-md border p-2 shadow">
+                <NavigationMenuContent className="bg-background p-2">
+                  <ul className="bg-popover space-y-1 rounded-md border p-3 shadow-lg min-w-[320px]">
                     {hospitalityLinks.map((item, i) => (
                       <li key={i}>
                         <ListItem {...item} />
@@ -372,7 +370,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Services */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('bg-transparent', triggerHoverClass, textColor)}>
                   Services
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
@@ -403,7 +401,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
               {/* Entreprise */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn('bg-transparent', textColor)}>
+                <NavigationMenuTrigger className={cn('bg-transparent', triggerHoverClass, textColor)}>
                   Entreprise
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">

@@ -536,16 +536,16 @@ export default function BookingPage() {
                   >
                     <Link href={`/sejours/${listing.id}`}>
                       <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
-                        {/* Image area */}
+                        {/* Image area — absolute positioning so image fills full container */}
                         <div className="relative aspect-[4/3] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10 overflow-hidden">
                           {listing.image ? (
                             <img
                               src={listing.image}
                               alt={listing.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                               {listing.type === 'hotel' ? (
                                 <Hotel className="w-12 h-12 text-[#003087]/30" />
                               ) : (

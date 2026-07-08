@@ -43,7 +43,6 @@ const NAV_GROUPS = [
     icon: Hotel,
     items: [
       { key: 'sejours', label: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: Hotel, gold: true },
-      { key: 'hotel-dashboard', label: 'Espace Hôtelier (PMS)', href: '/hotel-dashboard', icon: BedDouble },
     ],
   },
   {
