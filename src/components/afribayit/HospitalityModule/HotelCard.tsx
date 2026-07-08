@@ -78,7 +78,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
                 className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/90 text-[8px] font-bold text-[#00A651]"
               >
                 <RefreshCw className="w-2.5 h-2.5" />
-                {ota.label === 'Booking.com' ? 'B.com' : 'Exp.'}
+                {ota.label === 'OTA Partner' ? 'B.com' : 'Exp.'}
               </span>
             ))}
           </div>

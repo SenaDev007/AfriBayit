@@ -14,7 +14,7 @@ export function formatDate(d: string): string {
 }
 
 export function channelLabel(ch: string): string {
-  const map: Record<string, string> = { direct: 'Direct', booking_com: 'Booking.com', expedia: 'Expedia', guesthouse: 'Guesthouse' };
+  const map: Record<string, string> = { direct: 'Direct', booking_com: 'OTA Partner', expedia: 'Expedia', guesthouse: 'Guesthouse' };
   return map[ch] || ch;
 }
 

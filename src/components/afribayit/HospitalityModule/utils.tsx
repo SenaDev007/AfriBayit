@@ -78,7 +78,7 @@ export function getOtaStatus(
   try {
     const refs = JSON.parse(otaRefs);
     const result: { ota: string; label: string; synced: boolean }[] = [];
-    if (refs.booking_com_id) result.push({ ota: 'booking_com', label: 'Booking.com', synced: true });
+    if (refs.booking_com_id) result.push({ ota: 'booking_com', label: 'OTA Partner', synced: true });
     if (refs.expedia_id) result.push({ ota: 'expedia', label: 'Expedia', synced: true });
     return result;
   } catch {

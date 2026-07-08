@@ -74,7 +74,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Fournisseurs d&apos;authentification :</strong> lorsque vous vous connectez via Google ou Facebook, nous recevons les informations de profil que vous avez autorisées (nom, e-mail, photo)</li>
               <li><strong>Partenaires de paiement :</strong> FedaPay et Stripe nous communiquent le statut de vos paiements et identifiants de transaction</li>
-              <li><strong>Partenaires OTA :</strong> Booking.com et Expedia nous transmettent les données de réservation nécessaires à la synchronisation</li>
+              <li><strong>Partenaires OTA :</strong> nos plateformes partenaires OTA nous transmettent les données de réservation nécessaires à la synchronisation</li>
             </ul>
           </section>
 
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
               <li><strong>Autres Utilisateurs :</strong> informations de profil et de contact dans le cadre de transactions (vendeur/acheteur, client/artisan)</li>
               <li><strong>Partenaires de paiement :</strong> FedaPay (BJ, CI, TG, BF) et Stripe (international) pour le traitement des paiements et virements</li>
               <li><strong>Notaires et professionnels :</strong> documents transactionnels nécessaires à la finalisation des actes</li>
-              <li><strong>Partenaires OTA :</strong> Booking.com et Expedia pour la synchronisation des réservations hôtelières</li>
+              <li><strong>Partenaires OTA :</strong> nos plateformes partenaires OTA pour la synchronisation des réservations hôtelières</li>
               <li><strong>Fournisseurs de services techniques :</strong> hébergement (Neon, Vercel), cache (Upstash Redis), temps réel (Pusher), cartes (Mapbox)</li>
               <li><strong>Autorités compétentes :</strong> sur réquisition légale, dans le cadre d&apos;enquêtes ou d&apos;obligations réglementaires</li>
             </ul>

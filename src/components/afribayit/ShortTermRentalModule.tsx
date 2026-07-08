@@ -44,7 +44,7 @@ const AMENITY_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CANCELLATION_LABELS: Record<string, string> = { flexible: 'Flexible', moderate: 'Moderee', strict: 'Stricte' };
-const OTA_LABELS: Record<string, string> = { airbnb: 'Airbnb', booking_com: 'Booking.com' };
+const OTA_LABELS: Record<string, string> = { airbnb: 'Airbnb', booking_com: 'OTA Partner' };
 
 const MOBILE_MONEY_PROVIDERS = [
   { key: 'mtn', name: 'MTN Mobile Money', color: '#FFC300' },

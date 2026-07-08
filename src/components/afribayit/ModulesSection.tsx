@@ -35,7 +35,7 @@ const modules = [
       </svg>
     ),
     name: 'Hôtellerie & Séjour',
-    description: 'Le Booking.com africain — Réservez hôtels, guesthouses et séjours en toute confiance.',
+    description: 'La plateforme hôtelière de référence en Afrique — Réservez hôtels, guesthouses et séjours en toute confiance.',
     href: '/hospitality',
     badge: 'Premium',
   },

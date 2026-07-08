@@ -31,7 +31,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 };
 
 const OTA_LABELS: Record<string, string> = {
-  booking_com: 'Booking.com',
+  booking_com: 'OTA Partner',
   expedia: 'Expedia',
   airbnb: 'Airbnb',
   hotelscom: 'Hotels.com',

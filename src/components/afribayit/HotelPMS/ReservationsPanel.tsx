@@ -24,7 +24,7 @@ export default function ReservationsPanel({ resFilter, setResFilter, reservation
         </select>
         <select value={resFilter.source} onChange={(e) => setResFilter((f) => ({ ...f, source: e.target.value }))} className="px-3 py-2 rounded-xl border text-sm bg-white">
           <option value="">Tous les canaux</option>
-          <option value="direct">Direct</option><option value="booking_com">Booking.com</option><option value="expedia">Expedia</option>
+          <option value="direct">Direct</option><option value="booking_com">OTA Partner</option><option value="expedia">Expedia</option>
         </select>
       </div>
       {reservations.length > 0 ? (

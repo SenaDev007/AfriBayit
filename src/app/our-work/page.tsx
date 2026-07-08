@@ -53,7 +53,7 @@ const PROJECTS = [
     location: 'Almadies, Dakar',
     type: 'Hôtellerie',
     description:
-      "Hôtel 4 étoiles de 120 chambres avec vue sur l'Atlantique, intégré au réseau AfriBayit Hospitality. Connexion OTA automatisée avec Booking.com et Expedia, gestion des réservations en temps réel et programme de fidélité AfriPoints.",
+      "Hôtel 4 étoiles de 120 chambres avec vue sur l'Atlantique, intégré au réseau AfriBayit Hospitality. Connexion OTA automatisée avec les plateformes de voyage, gestion des réservations en temps réel et programme de fidélité AfriPoints.",
     stats: { rooms: 120, occupancy: '87%', value: '5.1 Mds FCFA' },
     tags: ['OTA Connecté', 'AfriPoints', 'PMS Intégré'],
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop',

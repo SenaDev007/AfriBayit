@@ -24,7 +24,7 @@ export default function HospitalityPage() {
       hero={{
         badge: 'Hôtellerie',
         title: 'Réservez des hôtels vérifiés en Afrique de l\'Ouest',
-        subtitle: 'Hôtels connectés OTA (Booking.com, Expedia) et hôtels locaux hors-réseau digitalisés via notre PMS. Réservation instantanée, paiement Mobile Money.',
+        subtitle: 'Hôtels connectés aux plateformes de voyage internationales et hôtels locaux hors-réseau digitalisés via notre PMS. Réservation instantanée, paiement Mobile Money.',
         backgroundImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600&h=900&fit=crop',
         stats: [
           { value: 0, suffix: '+', label: 'Hôtels' },

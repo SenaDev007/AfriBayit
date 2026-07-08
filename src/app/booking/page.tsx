@@ -223,7 +223,7 @@ export default function BookingPage() {
               Réservation <span className="text-[#D4AF37]">en Afrique</span>
             </h1>
             <p className="text-white/70 mb-6 text-sm">
-              Le Booking.com africain — Hôtels, guesthouses et séjours dans 4 pays
+              La plateforme hôtelière de référence en Afrique de l'Ouest — Hôtels, guesthouses et séjours dans 4 pays
             </p>
 
             {/* Search bar */}
