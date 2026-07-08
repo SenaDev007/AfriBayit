@@ -434,8 +434,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
                     >
                       <div className="flex items-start gap-4 mb-4">
-                        <div className="relative">
-                          <ImageWithFallback src={notary.avatar} alt={notary.name} className="w-14 h-14 rounded-2xl" fallbackType="avatar" />
+                        <div className="relative shrink-0">
+                          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
+                            <ImageWithFallback src={notary.avatar} alt={notary.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
+                          </div>
                           <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
                         </div>
                         <div className="flex-1 min-w-0">

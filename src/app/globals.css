@@ -827,3 +827,13 @@
   0%, 100% { filter: blur(2px) brightness(0.6); }
   50% { filter: blur(3px) brightness(0.8); }
 }
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

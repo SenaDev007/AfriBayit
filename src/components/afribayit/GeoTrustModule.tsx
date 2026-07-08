@@ -174,23 +174,25 @@ export default function GeoTrustModule() {
           </span>
         </div>
 
-        {/* Service Catalog */}
+        {/* Service Catalog — horizontal scroll */}
         <div className="mb-10">
           <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
             {geometerServices.map((service, i) => (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
                 whileHover={{ y: -4 }}
                 onClick={() => setSelectedService(service.id)}
-                className={`bg-white rounded-3xl p-5 shadow-sm border-2 cursor-pointer transition-all ${
+                className={`shrink-0 w-64 snap-center bg-white rounded-3xl p-5 shadow-sm border-2 cursor-pointer transition-all ${
                   selectedService === service.id ? 'border-[#009CDE]' : 'border-transparent hover:border-gray-200'
                 }`}
               >
-                <span className="text-3xl block mb-3">{service.icon}</span>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: '#009CDE10' }}>
+                  <span className="text-[#009CDE]">{service.icon}</span>
+                </div>
                 <h3 className="font-semibold text-[#2C2E2F] mb-1">{service.name}</h3>
                 <p className="text-xs text-gray-500 mb-3">{service.description}</p>
                 <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.priceLabel}</p>
@@ -242,7 +244,9 @@ export default function GeoTrustModule() {
                   className="bg-white rounded-3xl p-6 shadow-sm border"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <ImageWithFallback src={geo.avatar} alt={geo.name} className="w-14 h-14 rounded-full border-2 border-[#009CDE]" fallbackType="avatar" />
+                    <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#009CDE] relative">
+                      <ImageWithFallback src={geo.avatar} alt={geo.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
+                    </div>
                     <div>
                       <h3 className="font-semibold text-[#2C2E2F]">{geo.name}</h3>
                       <p className="text-xs text-gray-500">{geo.city}, {geo.country}</p>
