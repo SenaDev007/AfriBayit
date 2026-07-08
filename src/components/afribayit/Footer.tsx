@@ -74,11 +74,11 @@ export default function Footer() {
       title: 'Acheter',
       icon: <Home size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'Villas', href: '/search?type=villa', icon: <LandPlot size={14} /> },
-        { label: 'Appartements', href: '/search?type=appartement', icon: <Building size={14} /> },
-        { label: 'Terrains', href: '/search?type=terrain', icon: <Warehouse size={14} /> },
-        { label: 'Bureaux', href: '/search?type=bureau', icon: <Briefcase size={14} /> },
-        { label: 'Commerces', href: '/search?type=commerce', icon: <ShoppingBag size={14} /> },
+        { label: 'Villas', href: '/acheter?type=villa', icon: <LandPlot size={14} /> },
+        { label: 'Appartements', href: '/acheter?type=appartement', icon: <Building size={14} /> },
+        { label: 'Terrains', href: '/acheter?type=terrain', icon: <Warehouse size={14} /> },
+        { label: 'Bureaux', href: '/acheter?type=bureau', icon: <Briefcase size={14} /> },
+        { label: 'Commerces', href: '/acheter?type=commerce', icon: <ShoppingBag size={14} /> },
       ],
     },
     {
@@ -231,37 +231,37 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#0a0a0c] relative h-fit overflow-hidden sm:m-4 lg:m-8 rounded-3xl">
-      <div className="max-w-7xl mx-auto p-8 sm:p-14 z-40 relative">
+    <footer className="bg-[#0a0a0c] relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10 z-40 relative">
         {/* Brand + Contact Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-8 lg:gap-12 pb-8">
           {/* Brand section */}
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-3">
             <div className="flex items-center space-x-3">
               <img
                 src="/logo.png"
                 alt="AfriBayit"
-                className="h-20 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain brightness-0 invert"
               />
-              <span className="text-white text-3xl font-bold tracking-tight">
+              <span className="text-white text-2xl font-bold tracking-tight">
                 AfriBayit
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-gray-200">
+            <p className="text-xs leading-relaxed text-gray-300">
               {t('footer.tagline', "Où l'Afrique trouve sa maison. Où les rêves deviennent adresses. Plateforme immobilière de référence en Afrique de l'Ouest, agréée par les autorités immobilières.")}
             </p>
 
             {/* Countries */}
-            <div className="mt-2">
-              <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-2">
+            <div className="mt-1">
+              <p className="text-[10px] font-semibold text-[#D4AF37] uppercase tracking-wider mb-1.5">
                 {t('footer.countries', 'Pays couverts')}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {countries.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => navigateTo(`/search?country=${c.code}`)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-xs text-white hover:text-[#D4AF37]"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-[10px] text-white hover:text-[#D4AF37]"
                   >
                     <span>{c.flag}</span>
                     <span>{c.name}</span>
@@ -272,24 +272,24 @@ export default function Footer() {
           </div>
 
           {/* Contact section */}
-          <div className="flex flex-col space-y-4">
-            <h4 className="text-white text-lg font-semibold flex items-center gap-2">
-              <Mail size={18} className="text-[#D4AF37]" />
+          <div className="flex flex-col space-y-3">
+            <h4 className="text-white text-sm font-semibold flex items-center gap-2">
+              <Mail size={16} className="text-[#D4AF37]" />
               {t('footer.contact', 'Contactez-nous')}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               {contactInfo.map((item, i) => (
-                <li key={i} className="flex items-center space-x-3">
+                <li key={i} className="flex items-center space-x-2">
                   {item.icon}
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-gray-100 hover:text-[#D4AF37] transition-colors text-sm"
+                      className="text-gray-100 hover:text-[#D4AF37] transition-colors text-xs"
                     >
                       {item.text}
                     </a>
                   ) : (
-                    <span className="text-gray-100 text-sm">
+                    <span className="text-gray-100 text-xs">
                       {item.text}
                     </span>
                   )}
@@ -297,8 +297,8 @@ export default function Footer() {
               ))}
             </ul>
 
-            {/* Social icons — official brand logos */}
-            <div className="flex space-x-3 pt-2">
+            {/* Social icons */}
+            <div className="flex space-x-2 pt-1">
               {socialLinks.map(({ icon, label, href, brandColor }) => (
                 <a
                   key={label}
@@ -306,13 +306,10 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110 hover:shadow-lg"
-                  style={{
-                    // On hover, use the brand color via inline style for the shadow
-                  }}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.color = brandColor;
-                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 12px ${brandColor}44`;
+                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 10px ${brandColor}44`;
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLElement).style.color = '';
@@ -325,19 +322,18 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Partners & Payments — official brand icons */}
-          <div className="flex flex-col space-y-4">
-            <h4 className="text-white text-lg font-semibold flex items-center gap-2">
-              <Shield size={18} className="text-[#D4AF37]" />
+          {/* Partners & Payments */}
+          <div className="flex flex-col space-y-3">
+            <h4 className="text-white text-sm font-semibold flex items-center gap-2">
+              <Shield size={16} className="text-[#D4AF37]" />
               {t('footer.partners', 'Paiement & Partenaires')}
             </h4>
 
-            {/* Official payment card icons */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               {paymentPartners.map((p) => (
                 <div
                   key={p.label}
-                  className="flex items-center justify-center bg-white rounded-md px-2 py-1.5 transition-transform hover:scale-110"
+                  className="flex items-center justify-center bg-white rounded-md px-1.5 py-1 transition-transform hover:scale-110"
                   title={p.label}
                 >
                   <span style={{ color: p.brandColor }}>
@@ -347,12 +343,11 @@ export default function Footer() {
               ))}
             </div>
 
-            {/* Mobile money badges */}
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="flex flex-wrap gap-1.5 mt-1">
               {mobileMoneyPartners.map((p) => (
                 <span
                   key={p.name}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.bg} ${p.text} transition-transform hover:scale-105`}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${p.bg} ${p.text} transition-transform hover:scale-105`}
                 >
                   {p.icon}
                   {p.name}
@@ -360,9 +355,9 @@ export default function Footer() {
               ))}
             </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30">
-              <p className="text-xs text-[#D4AF37] font-medium flex items-center gap-2">
-                <Shield size={14} />
+            <div className="mt-2 p-2 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30">
+              <p className="text-[10px] text-[#D4AF37] font-medium flex items-center gap-1.5">
+                <Shield size={12} />
                 {t('footer.secure', 'Transactions sécurisées par Escrow & GeoTrust')}
               </p>
             </div>
@@ -370,19 +365,19 @@ export default function Footer() {
         </div>
 
         {/* Main Footer Links */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 pb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pb-6">
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <h4 className="text-white text-sm font-semibold mb-4 flex items-center gap-2">
+              <h4 className="text-white text-xs font-semibold mb-2.5 flex items-center gap-1.5">
                 {section.icon}
                 {section.title}
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-1.5">
                 {section.links.map((link) => (
                   <li key={link.label} className="relative">
                     <button
                       onClick={() => navigateTo(link.href)}
-                      className="flex items-center gap-2 text-gray-100 hover:text-[#D4AF37] transition-colors text-sm group"
+                      className="flex items-center gap-1.5 text-gray-100 hover:text-[#D4AF37] transition-colors text-xs group"
                     >
                       <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-300">
                         {link.icon}
@@ -396,34 +391,29 @@ export default function Footer() {
           ))}
         </div>
 
-        <hr className="border-t border-white/10 my-6" />
+        <hr className="border-t border-white/10 my-4" />
 
         {/* Footer bottom */}
-        <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-4 md:space-y-0">
-          <p className="text-gray-300 text-xs text-center md:text-left">
+        <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-2 md:space-y-0">
+          <p className="text-gray-300 text-[10px] text-center md:text-left">
             &copy; {new Date().getFullYear()} AfriBayit. {t('footer.rights', 'Tous droits réservés. Plateforme agréée par les autorités immobilières.')}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigateTo('/auth/login')}
-              className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
+              className="text-[10px] text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
               {t('footer.proSpace', 'Espace Pro')}
             </button>
             <span className="text-gray-600">|</span>
             <button
               onClick={() => navigateTo('/admin')}
-              className="text-xs text-gray-300 hover:text-[#D4AF37] transition-colors"
+              className="text-[10px] text-gray-300 hover:text-[#D4AF37] transition-colors"
             >
               {t('footer.administration', 'Administration')}
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Text hover effect — AfriBayit branding (massive, animated, spans navy section edge-to-edge) */}
-      <div className="h-[28rem] sm:h-[34rem] lg:h-[40rem] -mt-40 sm:-mt-48 lg:-mt-56 -mb-16 sm:-mb-20 lg:-mb-24 relative">
-        <TextHoverEffect text="AfriBayit" className="z-50" />
       </div>
 
       <FooterBackgroundGradient />

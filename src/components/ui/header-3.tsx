@@ -87,19 +87,19 @@ function useScroll(threshold: number) {
 const immobilierLinks: LinkItem[] = [
   {
     title: 'Acheter',
-    href: '/search?tab=achat',
+    href: '/acheter',
     description: 'Villas, appartements, terrains à vendre',
     icon: Home,
   },
   {
     title: 'Louer',
-    href: '/search?tab=location',
+    href: '/louer',
     description: 'Location longue durée dans 5 pays',
     icon: Key,
   },
   {
     title: 'Investir',
-    href: '/search?tab=investissement',
+    href: '/investir',
     description: 'Opportunités de rendement immobilier',
     icon: TrendingUp,
   },
@@ -352,7 +352,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                   <div className="p-2">
                     <p className="text-muted-foreground text-sm">
                       Envie d&apos;investir ?{' '}
-                      <a href="/search?tab=investissement" className="text-[#D4AF37] font-medium hover:underline">
+                      <a href="/investir" className="text-[#D4AF37] font-medium hover:underline">
                         Voir les opportunités
                       </a>
                     </p>
