@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import PropertyGrid from '@/components/afribayit/PropertyGrid';
 import AdvancedFeaturesSection from '@/components/afribayit/AdvancedFeaturesSection';
+import ConversationalSearchBar from '@/components/afribayit/ConversationalSearchBar';
 import { ShieldCheck, FileText, Scale, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -118,6 +119,13 @@ export default function AcheterPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Conversational AI search — CDC §5.1.1 "Recherche IA conversationnelle" */}
+      <section className="py-12 bg-white border-b border-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ConversationalSearchBar transaction="achat" />
         </div>
       </section>
 

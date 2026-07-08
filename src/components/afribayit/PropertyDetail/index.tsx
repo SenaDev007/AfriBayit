@@ -23,6 +23,10 @@ import PropertyHeader from './PropertyHeader';
 import PropertyLocation from './PropertyLocation';
 import PropertyReviews from './PropertyReviews';
 import PropertySidebar from './PropertySidebar';
+import PricePredictionChart from '../PricePredictionChart';
+import VRTourPlayer from '../VRTourPlayer';
+import DroneViewPlayer from '../DroneViewPlayer';
+import NeighborhoodAnalysis from '../NeighborhoodAnalysis';
 
 // Dynamic import for VirtualTourViewer to avoid SSR issues with Three.js
 const VirtualTourViewer = dynamic(
@@ -365,6 +369,42 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           onClick={() => setShowShareMenu(false)}
         />
       )}
+
+      {/* ═══ Advanced Features (CDC §5.1.2 compliance) ═══ */}
+      <div className="mt-12 space-y-8">
+        {/* Price Prediction ML Chart — CDC §5.1.1 "Prédictions de prix par quartier (ML)" */}
+        {property.transaction !== 'location' && property.transaction !== 'location_courte_duree' && (
+          <PricePredictionChart
+            currentPrice={property.price}
+            city={property.city}
+            country={property.country}
+          />
+        )}
+
+        {/* VR Tour Player — CDC §5.1.2 "Visite virtuelle 360° réelle (Matterport) + WebXR" */}
+        <VRTourPlayer
+          propertyTitle={property.title}
+          images={images}
+          hasVR={hasVR}
+        />
+
+        {/* Drone View Player — CDC §5.1.2 "Drone view et time-lapse jour/nuit" */}
+        <DroneViewPlayer
+          propertyTitle={property.title}
+          hasDroneView={property.hasDroneView || false}
+        />
+
+        {/* Neighborhood Analysis — CDC §5.1.2 "Analyse de quartier IA" + "Données environnementales temps réel" */}
+        {property.lat && property.lng && (
+          <NeighborhoodAnalysis
+            lat={property.lat}
+            lng={property.lng}
+            city={property.city}
+            propertyId={propertyId}
+            agentId={agent?.id}
+          />
+        )}
+      </div>
     </section>
   );
 }

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import PropertyGrid from '@/components/afribayit/PropertyGrid';
 import AdvancedFeaturesSection from '@/components/afribayit/AdvancedFeaturesSection';
+import ConversationalSearchBar from '@/components/afribayit/ConversationalSearchBar';
 import { motion } from 'framer-motion';
 import { TrendingUp, BarChart3, MapPin, Calculator } from 'lucide-react';
 
@@ -174,6 +175,13 @@ export default function InvestirPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      {/* Conversational AI search */}
+      <section className="py-12 bg-white border-b border-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ConversationalSearchBar transaction="investissement" />
         </div>
       </section>
 
