@@ -56,6 +56,11 @@ const PUBLIC_ROUTES = [
   '/pro/',
   '/terms',
   '/privacy',
+  '/about',
+  '/help',
+  '/blog',
+  '/refund',
+  '/partnership',
   '/delete-data',
 ];
 
