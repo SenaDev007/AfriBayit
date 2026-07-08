@@ -21,15 +21,25 @@ interface HeroSectionProps {
 
 interface StatsData {
   properties: number;
+  verifiedProperties?: number;
+  premiumProperties?: number;
+  geoTrustProperties?: number;
   transactions: number;
   countries: number;
+  countriesList?: string[];
   agents: number;
+  artisans?: number;
+  notaries?: number;
+  users?: number;
   satisfaction: number;
-  artisans: number;
-  courses: number;
+  reviewsCount?: number;
+  courses?: number;
+  communityPosts?: number;
   hotels: number;
   guesthouses: number;
+  shortTermRentals?: number;
   bookings: number;
+  byCountry?: Record<string, { properties: number; hotels: number; guesthouses: number }>;
 }
 
 interface FeaturedProperty {
@@ -202,11 +212,12 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
     }
   }, []);
 
-  // Fetch stats from API
+  // Fetch real stats from backend /stats endpoint (aggregated live from DB)
   const { data: stats } = useQuery<StatsData>({
-    queryKey: ['stats'],
-    queryFn: () => apiFetch<StatsData>('/api/stats'),
-    staleTime: 5 * 60 * 1000,
+    queryKey: ['platform-stats'],
+    queryFn: () => apiFetch<StatsData>('/stats'),
+    staleTime: 5 * 60 * 1000, // 5 min — matches backend cache
+    retry: 2,
   });
 
   // Fetch featured properties from database

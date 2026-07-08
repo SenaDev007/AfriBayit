@@ -198,26 +198,19 @@ const pillars = [
 ];
 
 export default function TrustSection() {
-  // Fetch real stats from backend API
+  // Fetch real platform stats from the public /stats endpoint
   const { data: stats } = useQuery({
     queryKey: ['platform-stats'],
-    queryFn: () => api.get<any>('/properties?limit=1'),
+    queryFn: () => api.get<any>('/stats'),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
-  // Also fetch admin stats if available
-  const { data: adminStats } = useQuery({
-    queryKey: ['admin-stats-public'],
-    queryFn: () => api.get<any>('/admin/stats'),
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-  });
-
-  // Derive real stats from API data
-  const totalProperties = adminStats?.properties ?? stats?.pagination?.total ?? 0;
-  const totalCountries = adminStats?.countries ?? 0;
-  const totalUsers = adminStats?.users ?? 0;
-  const satisfaction = adminStats?.satisfaction ?? 0;
+  // Derive real stats from the single /stats response
+  const totalProperties = stats?.properties ?? 0;
+  const totalCountries = stats?.countries ?? 0;
+  const totalUsers = stats?.users ?? 0;
+  const satisfaction = stats?.satisfaction ?? 0;
 
   const statsItems = [
     { value: totalProperties, suffix: '+', label: 'Biens vérifiés' },

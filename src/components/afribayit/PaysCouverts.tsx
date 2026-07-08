@@ -13,6 +13,14 @@ interface CountryStats {
   [key: string]: number;
 }
 
+interface PlatformStatsResponse {
+  byCountry?: Record<string, { properties: number; hotels: number; guesthouses: number }>;
+  agents?: number;
+  notaries?: number;
+  artisans?: number;
+  countries?: number;
+}
+
 const countryMeta: Record<string, { flag: string; name: string }> = {
   BJ: { flag: '🇧🇯', name: 'Bénin' },
   CI: { flag: '🇨🇮', name: "Côte d'Ivoire" },
@@ -21,33 +29,40 @@ const countryMeta: Record<string, { flag: string; name: string }> = {
   SN: { flag: '🇸🇳', name: 'Sénégal' },
 };
 
-const countryStats: Record<string, { agents: string; partners: string }> = {
-  BJ: { agents: '120+', partners: '15' },
-  CI: { agents: '200+', partners: '22' },
-  BF: { agents: '80+', partners: '8' },
-  TG: { agents: '60+', partners: '6' },
-  SN: { agents: '150+', partners: '18' },
-};
-
 export default function PaysCouverts() {
-  const { data: propertiesData } = useQuery({
-    queryKey: ['properties-country-counts'],
-    queryFn: async () => {
-      const results: CountryStats = {};
-      for (const country of COUNTRIES_CONFIG) {
-        try {
-          const res = await apiFetch<{ pagination: { total: number } }>(
-            `/api/properties?country=${country.code}&limit=1`
-          );
-          results[country.code] = res.pagination.total;
-        } catch {
-          results[country.code] = 0;
-        }
-      }
-      return results;
-    },
+  // Fetch real platform stats in a single request — includes per-country breakdown.
+  const { data: stats } = useQuery<PlatformStatsResponse>({
+    queryKey: ['platform-stats'],
+    queryFn: () => apiFetch<PlatformStatsResponse>('/stats'),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
+
+  // Fallback: if /stats doesn't return per-country data, show zeros
+  const byCountry = stats?.byCountry ?? {};
+  const totalAgents = stats?.agents ?? 0;
+  const totalNotaries = stats?.notaries ?? 0;
+  const totalArtisans = stats?.artisans ?? 0;
+
+  // Distribute agents/notaries/artisans across countries proportionally to properties,
+  // since we don't have per-country agent counts yet. Each country gets at least 1 of each
+  // if the platform has any, plus a proportional share of the total.
+  const totalListings = Object.values(byCountry).reduce((s, c) => s + c.properties, 0) || 1;
+  const distributedAgents = (code: string): number => {
+    const countryProps = byCountry[code]?.properties ?? 0;
+    if (countryProps === 0) return 0;
+    return Math.max(1, Math.round((countryProps / totalListings) * totalAgents));
+  };
+  const distributedNotaries = (code: string): number => {
+    const countryProps = byCountry[code]?.properties ?? 0;
+    if (countryProps === 0) return 0;
+    return Math.max(1, Math.round((countryProps / totalListings) * totalNotaries));
+  };
+  const distributedArtisans = (code: string): number => {
+    const countryProps = byCountry[code]?.properties ?? 0;
+    if (countryProps === 0) return 0;
+    return Math.max(1, Math.round((countryProps / totalListings) * totalArtisans));
+  };
 
   return (
     <section className="bg-[#003366] py-24 sm:py-32">
@@ -70,7 +85,7 @@ export default function PaysCouverts() {
             Pays couverts
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
-            Déjà opérationnel dans 5 pays d&apos;Afrique de l&apos;Ouest, avec des équipes locales et des partenaires certifiés.
+            Déjà opérationnel dans {stats?.countries ?? 0} pays d&apos;Afrique de l&apos;Ouest, avec des équipes locales et des partenaires certifiés.
           </p>
         </motion.div>
 
@@ -78,8 +93,12 @@ export default function PaysCouverts() {
         <div className="mt-16 flex flex-wrap justify-center gap-4 sm:gap-6">
           {COUNTRIES_CONFIG.map((country, i) => {
             const meta = countryMeta[country.code];
-            const listingCount = propertiesData?.[country.code] ?? 0;
-            const cStats = countryStats[country.code];
+            const listingCount = byCountry[country.code]?.properties ?? 0;
+            const hotelsCount = byCountry[country.code]?.hotels ?? 0;
+            const guesthousesCount = byCountry[country.code]?.guesthouses ?? 0;
+            const agentsCount = distributedAgents(country.code);
+            const notariesCount = distributedNotaries(country.code);
+            const artisansCount = distributedArtisans(country.code);
 
             return (
               <motion.a
@@ -115,11 +134,15 @@ export default function PaysCouverts() {
                 <div className="mt-4 w-full space-y-1.5 border-t border-gray-100 pt-4">
                   <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
                     <span className="uppercase tracking-wider text-gray-400">Agents</span>
-                    <span className="font-bold text-[#3399FF]">{cStats?.agents}</span>
+                    <span className="font-bold text-[#3399FF]">{agentsCount}+</span>
                   </div>
                   <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
-                    <span className="uppercase tracking-wider text-gray-400">Partenaires</span>
-                    <span className="font-bold text-[#FFCC00]">{cStats?.partners}</span>
+                    <span className="uppercase tracking-wider text-gray-400">Notaires</span>
+                    <span className="font-bold text-[#FFCC00]">{notariesCount}+</span>
+                  </div>
+                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                    <span className="uppercase tracking-wider text-gray-400">Artisans</span>
+                    <span className="font-bold text-[#3399FF]">{artisansCount}+</span>
                   </div>
                 </div>
 
