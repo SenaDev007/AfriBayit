@@ -140,16 +140,20 @@ const servicesLinks: LinkItem[] = [
     icon: ShieldCheck,
   },
   {
-    title: 'Escrow Sécurisé',
-    href: '/escrow',
-    description: 'Transactions protégées par escrow',
-    icon: Shield,
-  },
-  {
     title: 'Académie',
     href: '/academy',
     description: 'Formations immobilières en ligne',
     icon: GraduationCap,
+  },
+];
+
+// Links visible only when logged in
+const authOnlyLinks: LinkItem[] = [
+  {
+    title: 'Escrow Sécurisé',
+    href: '/escrow',
+    description: 'Transactions protégées par escrow',
+    icon: Shield,
   },
   {
     title: 'Portefeuille',
@@ -170,6 +174,10 @@ const servicesLinks2: LinkItem[] = [
     href: '/community',
     icon: MessageCircle,
   },
+];
+
+// Auth-only links for second column
+const authOnlyLinks2: LinkItem[] = [
   {
     title: 'Profils Pro',
     href: '/profile',
@@ -379,10 +387,26 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                           <ListItem {...item} />
                         </li>
                       ))}
+                      {isLoggedIn && authOnlyLinks.map((item, i) => (
+                        <li key={`auth-${i}`}>
+                          <ListItem {...item} />
+                        </li>
+                      ))}
                     </ul>
                     <ul className="space-y-2 p-3">
                       {servicesLinks2.map((item, i) => (
                         <li key={i}>
+                          <NavigationMenuLink
+                            href={item.href}
+                            className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
+                          >
+                            <item.icon className="text-[#003087] size-4" />
+                            <span className="font-medium text-sm">{item.title}</span>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                      {isLoggedIn && authOnlyLinks2.map((item, i) => (
+                        <li key={`auth2-${i}`}>
                           <NavigationMenuLink
                             href={item.href}
                             className="flex p-2 hover:bg-accent flex-row rounded-md items-center gap-x-2"
@@ -588,6 +612,16 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             {servicesLinks2.map((link) => (
               <ListItem key={link.title} {...link} />
             ))}
+            {isLoggedIn && (
+              <>
+                {authOnlyLinks.map((link) => (
+                  <ListItem key={link.title} {...link} />
+                ))}
+                {authOnlyLinks2.map((link) => (
+                  <ListItem key={link.title} {...link} />
+                ))}
+              </>
+            )}
             <span className="text-sm font-semibold text-[#003087] mt-2">Entreprise</span>
             {companyLinks.map((link) => (
               <ListItem key={link.title} {...link} />

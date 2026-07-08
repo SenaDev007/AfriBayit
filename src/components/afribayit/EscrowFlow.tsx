@@ -239,7 +239,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: easeOut }}
-          className="bg-white rounded-3xl p-6 shadow-sm border mb-6"
+          className="bg-white rounded-3xl p-6 shadow-sm border mb-6 overflow-visible"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Cycle de vie Escrow</h3>
@@ -265,7 +265,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           ) : (
             <>
               {/* Normal flow timeline */}
-              <div className="flex items-start gap-1 overflow-x-auto pb-3">
+              <div className="flex items-start gap-2 sm:gap-3 overflow-x-auto pb-4 pt-2 px-1">
                 {escrowStatesConfig.map((state, i) => {
                   const status = getStateStatus(state.key);
                   return (
