@@ -660,8 +660,9 @@ export default function ShortTermRentalModule() {
                       <ImageWithFallback
                         src={image}
                         alt={rental.title}
-                        className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full group-hover:scale-105 transition-transform duration-500"
                         fallbackType="property"
+                        fill
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Home className="w-12 h-12 text-gray-300" /></div>
