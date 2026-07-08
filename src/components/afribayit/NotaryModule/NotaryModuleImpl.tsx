@@ -15,7 +15,7 @@ import {
   AlertTriangle, Award, BarChart3, Bot, Check, CheckCircle, Circle,
   ClipboardList, Coins, FileText, Home, Scale, User, PenTool,
   FileSignature, Archive, TrendingUp, Search, Filter, Zap,
-  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus
+  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus, ArrowLeft, Star, Briefcase, MapPin, X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -143,6 +143,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const [activeTab, setActiveTab] = useState<'notaries' | 'dashboard' | 'certification' | 'deeds' | 'esignature' | 'revenue'>('notaries');
   const [certStep, setCertStep] = useState(0);
   const [contactingNotaryId, setContactingNotaryId] = useState<string | null>(null);
+  const [detailNotary, setDetailNotary] = useState<Notary | null>(null);
   const [deedDraft, setDeedDraft] = useState('');
   const [deedGenerating, setDeedGenerating] = useState(false);
   const [signingDoc, setSigningDoc] = useState<string | null>(null);
@@ -310,6 +311,161 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     ];
   }, [escrowAccounts]);
 
+  // ─── DETAIL VIEW ──────────────────────────────────────────────────
+  if (detailNotary) {
+    return (
+      <section className="min-h-screen pb-24 bg-gray-50/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <button
+            onClick={() => setDetailNotary(null)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour à la liste
+          </button>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: easeOut }}
+          >
+            {/* Header card */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
+                  <ImageWithFallback
+                    src={detailNotary.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
+                    alt={detailNotary.name}
+                    className="absolute inset-0 w-full h-full"
+                    fallbackType="avatar"
+                    fill
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-[#2C2E2F]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                      {detailNotary.name}
+                    </h1>
+                    {detailNotary.certificationLevel && detailNotary.certificationLevel !== 'none' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getCertificationColor(detailNotary.certificationLevel) }}>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        {detailNotary.certificationLevel}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[#D4AF37] font-semibold mb-1">Notaire Certifié</p>
+                  <p className="text-xs text-gray-400 font-mono mb-2">Licence: {detailNotary.license}</p>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {detailNotary.zone}, {detailNotary.country}
+                    </span>
+                    {detailNotary.rating > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                        {detailNotary.rating}
+                      </span>
+                    )}
+                    {detailNotary.missions > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="w-4 h-4" />
+                        {detailNotary.missions} missions
+                      </span>
+                    )}
+                    <span className={`flex items-center gap-1 ${detailNotary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
+                      <Circle className={`w-3 h-3 ${detailNotary.available ? 'fill-[#00A651]' : 'fill-gray-300'}`} />
+                      {detailNotary.available ? 'Disponible' : 'Indisponible'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action button */}
+              <div className="mt-6">
+                <button
+                  onClick={() => handleContactNotary(detailNotary)}
+                  disabled={contactingNotaryId === detailNotary.id || createConversation.isPending}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {contactingNotaryId === detailNotary.id || createConversation.isPending ? 'Connexion...' : 'Contacter le notaire'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Specialities */}
+            {detailNotary.specialities.length > 0 && (
+              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+                <h3 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-[#003087]" />
+                  Spécialités
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {detailNotary.specialities.map((s) => (
+                    <span key={s} className="px-3 py-1.5 bg-[#003087]/5 text-[#003087] text-xs font-medium rounded-full">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Services offered */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+              <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Services proposés</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { name: 'Rédaction d\'actes', desc: 'Actes de vente, bail, donation, succession', icon: FileText },
+                  { name: 'Signature électronique', desc: 'Signature numérique certifiée avec horodatage', icon: FileSignature },
+                  { name: 'Consultation juridique', desc: 'Conseil en droit foncier et immobilier', icon: Scale },
+                  { name: 'Vérification de titres', desc: 'Authentification des titres fonciers et documents', icon: Shield },
+                ].map((service, i) => (
+                  <div key={i} className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#00308710' }}>
+                        <service.icon className="w-5 h-5 text-[#003087]" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-[#2C2E2F] text-sm mb-1">{service.name}</h4>
+                        <p className="text-xs text-gray-500">{service.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Info cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {detailNotary.rating > 0 && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Note</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{detailNotary.rating}/5</p>
+                </div>
+              )}
+              {detailNotary.missions > 0 && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Missions</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{detailNotary.missions}</p>
+                </div>
+              )}
+              {detailNotary.certifiedAt && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Certifié</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{timeAgo(detailNotary.certifiedAt)}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  // ─── LIST VIEW ────────────────────────────────────────────────────
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -432,6 +588,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                       whileHover={{ y: -4 }}
                       className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
+                      onClick={() => setDetailNotary(notary)}
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="relative shrink-0">
