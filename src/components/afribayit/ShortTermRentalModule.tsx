@@ -15,7 +15,7 @@ import {
   BadgeCheck, Heart, Share2, X, CreditCard, Wifi, Car, Waves,
   UtensilsCrossed, AirVent, Tv, Lock, RefreshCw, Home, Building2,
   Palmtree, DoorOpen, Globe, Smartphone, QrCode, CheckCircle,
-  ArrowRight, Shield, Calculator, Receipt,
+  ArrowRight, Shield, Calculator, Receipt, Eye,
 } from 'lucide-react';
 
 const NAVY = '#003087';
@@ -652,52 +652,131 @@ export default function ShortTermRentalModule() {
               const amenities = parseJsonArray(rental.amenities);
               const effectivePrice = getEffectivePrice(rental);
               return (
-                <motion.div key={rental.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
-                  whileHover={{ y: -4 }} className="bg-white rounded-3xl overflow-hidden shadow-sm border cursor-pointer group w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" onClick={() => setSelectedRentalId(rental.id)}>
-                  <div className="relative aspect-[16/10]">
-                    {image ? <ImageWithFallback src={image} alt={rental.title} className="w-full h-full" fallbackType="guesthouse" /> :
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Home className="w-12 h-12 text-gray-300" /></div>}
-                    <div className="absolute top-3 left-3 flex flex-col gap-1">
-                      {rental.instantBooking && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-lg"><Zap className="w-3 h-3" /> Réservation instantanée</span>}
-                      {!rental.instantBooking && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[#003087] text-[10px] font-bold shadow"><Clock className="w-3 h-3" /> Sur demande</span>}
+                <motion.div key={rental.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08, ease: easeOut }}
+                  whileHover={{ y: -4, transition: { duration: 0.25 } }} className="group cursor-pointer rounded-3xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" onClick={() => setSelectedRentalId(rental.id)}>
+                  {/* Image — same pattern as PropertyCard: aspect-[4/3], object-cover, group-hover:scale-105 */}
+                  <div className="relative overflow-hidden aspect-[4/3]">
+                    {image ? (
+                      <ImageWithFallback
+                        src={image}
+                        alt={rental.title}
+                        className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        fallbackType="property"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Home className="w-12 h-12 text-gray-300" /></div>
+                    )}
+                    {/* Left badges: booking type */}
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      {rental.instantBooking && (
+                        <span className="px-3 py-1 bg-[#D4AF37] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
+                          <Zap className="w-3 h-3" /> Réservation instantanée
+                        </span>
+                      )}
+                      {!rental.instantBooking && (
+                        <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[#003087] text-[11px] font-bold rounded-full shadow flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Sur demande
+                        </span>
+                      )}
                     </div>
-                    <div className="absolute top-3 right-3"><span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-[#2C2E2F] shadow">{getPropertyTypeIcon(rental.propertyType)} {rental.propertyType.charAt(0).toUpperCase() + rental.propertyType.slice(1)}</span></div>
+                    {/* Right badges: property type */}
+                    <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+                      <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[#2C2E2F] text-[11px] font-bold rounded-full shadow flex items-center gap-1">
+                        {getPropertyTypeIcon(rental.propertyType)} {rental.propertyType.charAt(0).toUpperCase() + rental.propertyType.slice(1)}
+                      </span>
+                      {rental.hostVerified && (
+                        <span className="px-2.5 py-1 bg-[#00A651] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
+                          <BadgeCheck className="w-3.5 h-3.5" /> Hôte vérifié
+                        </span>
+                      )}
+                    </div>
+                    {/* Bottom action row: Favorite button — right (same as PropertyCard) */}
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-end z-20 pointer-events-none">
+                      <button
+                        className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                        onClick={(e) => { e.stopPropagation(); toast.info('Ajouté aux favoris'); }}
+                        aria-label="Ajouter aux favoris"
+                      >
+                        <Heart className="w-4 h-4 text-gray-400 hover:text-[#D93025] transition-colors" />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Content — same padding and structure as PropertyCard */}
                   <div className="p-5">
-                    {/* Title — allow 2 lines to avoid truncation */}
-                    <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-1 leading-tight line-clamp-2 min-h-[2.5rem]">{rental.title}</h3>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mb-3"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{rental.city}, {rental.country}{rental.quartier && <span className="text-gray-400"> - {rental.quartier}</span>}</p>
+                    {/* Type + views row */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[11px] font-medium text-[#003087] bg-[#003087]/5 px-2 py-0.5 rounded-full">
+                        {rental.propertyType.charAt(0).toUpperCase() + rental.propertyType.slice(1)}
+                      </span>
+                      <span className="text-[11px] text-gray-400">•</span>
+                      <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        {rental.views || 0}
+                      </span>
+                      {rental.rating > 0 && (
+                        <>
+                          <span className="text-[11px] text-gray-400">•</span>
+                          <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                            <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
+                            {rental.rating.toFixed(1)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Title — same as PropertyCard: no line-clamp, natural display */}
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition">
+                      {rental.title}
+                    </h3>
+
+                    {/* Location */}
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
+                      <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                      {rental.city}, {rental.country}
+                      {rental.quartier && <span className="text-gray-400"> - {rental.quartier}</span>}
+                    </p>
+
+                    {/* Details row: guests, bedrooms, bathrooms */}
                     <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
                       <span className="inline-flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {rental.maxGuests}</span>
                       <span className="inline-flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" /> {rental.bedrooms}</span>
                       <span className="inline-flex items-center gap-1"><Bath className="w-3.5 h-3.5" /> {rental.bathrooms}</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {amenities.slice(0, 4).map((amenity) => <span key={amenity} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-full">{AMENITY_ICONS[amenity] || null}{amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span>)}
-                      {amenities.length > 4 && <span className="px-2 py-1 bg-gray-50 text-gray-400 text-[10px] rounded-full">+{amenities.length - 4}</span>}
-                    </div>
-                    <OtaSyncBadge syncStatus={rental.otaSyncStatus} />
-                    <div className="flex items-center justify-between pt-3 border-t mt-3">
-                      <div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-mono-data text-xl font-bold text-[#D4AF37]">{formatPrice(effectivePrice.price)}</span>
-                          {effectivePrice.isDiscounted && <span className="text-xs text-gray-400 line-through">{formatPrice(rental.pricePerNight)}</span>}
-                        </div>
-                        <span className="text-xs text-gray-400">FCFA/nuit</span>
-                        {effectivePrice.label && <span className="ml-1 text-[10px] text-[#D4AF37] font-medium">{effectivePrice.label}</span>}
-                      </div>
-                      <div className="flex items-center gap-1"><Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" /><span className="text-sm font-semibold">{rental.rating > 0 ? rental.rating.toFixed(1) : '-'}</span>{rental.reviewCount > 0 && <span className="text-xs text-gray-400">({rental.reviewCount})</span>}</div>
-                    </div>
-                    {(rental.hostVerified || rental.hostIdentityVerified) && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        {rental.hostVerified && <span className="inline-flex items-center gap-0.5 text-[10px] text-[#003087] font-medium"><BadgeCheck className="w-3 h-3" /> Hote verifie</span>}
-                        {rental.hostIdentityVerified && <span className="inline-flex items-center gap-0.5 text-[10px] text-[#00A651] font-medium"><ShieldCheck className="w-3 h-3" /> Identite verifiee</span>}
+
+                    {/* Amenities */}
+                    {amenities.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {amenities.slice(0, 4).map((amenity) => (
+                          <span key={amenity} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded-full">
+                            {AMENITY_ICONS[amenity] || null}
+                            {amenity.charAt(0).toUpperCase() + amenity.slice(1)}
+                          </span>
+                        ))}
+                        {amenities.length > 4 && <span className="px-2 py-1 bg-gray-50 text-gray-400 text-[10px] rounded-full">+{amenities.length - 4}</span>}
                       </div>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); handleOpenBooking(rental.id); }}
-                      className="w-full mt-3 py-2.5 bg-[#D4AF37] text-white rounded-2xl text-sm font-semibold hover:bg-[#c4a030] transition-colors flex items-center justify-center gap-2">
-                      <Calendar className="w-4 h-4" /> Réserver
-                    </button>
+
+                    {/* Price + Reserve button — same border-t pattern as PropertyCard */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-mono-data text-lg font-bold text-[#D4AF37]">
+                            {formatPrice(effectivePrice.price)}
+                          </span>
+                          {effectivePrice.isDiscounted && (
+                            <span className="text-xs text-gray-400 line-through">{formatPrice(rental.pricePerNight)}</span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-400">FCFA/nuit</span>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleOpenBooking(rental.id); }}
+                        className="px-4 py-2 bg-[#003087] hover:bg-[#0047b3] text-white rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
+                      >
+                        <Calendar className="w-3.5 h-3.5" /> Réserver
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               );
