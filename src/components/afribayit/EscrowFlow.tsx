@@ -21,7 +21,7 @@ const paymentProviders = [
   { key: 'carte', name: 'Carte bancaire', icon: <CreditCard className="w-5 h-5" />, color: '#003087' },
 ];
 
-// Full escrow state machine — CDC §5.0bis.4
+// Full escrow state machine
 type EscrowState = 'CREATED' | 'FUNDED' | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED' | 'NOTARY_ASSIGNED' | 'NOTARY_IN_PROGRESS' | 'DEED_SIGNED' | 'ANDF_REGISTERED' | 'RELEASED' | 'DISPUTED' | 'REFUNDED' | 'EXPIRED';
 
 interface EscrowStateConfig {
@@ -226,7 +226,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            <Lock className="w-4 h-4" /> Escrow Sécurisé — CDC §5.0bis.4
+            <Lock className="w-4 h-4" /> Escrow Sécurisé
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
             Transaction Escrow

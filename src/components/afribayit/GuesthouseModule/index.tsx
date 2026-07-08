@@ -233,7 +233,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            <Home className="w-4 h-4" /> PMS Hôtelier — CDC §5.3
+            <Home className="w-4 h-4" /> PMS Hôtelier
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Maisons <span className="text-[#00A651]">d&apos;Hôtes</span>

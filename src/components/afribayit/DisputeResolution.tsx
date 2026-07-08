@@ -351,7 +351,7 @@ export default function DisputeResolution({
       {/* 6-Step Visual Timeline */}
       <Card>
         <CardContent className="p-4">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">Protocole d&apos;arbitrage CDC 7B.3.3 — 6 étapes</h4>
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Protocole d&apos;arbitrage — 6 étapes</h4>
           <div className="space-y-2">
             {DISPUTE_STEPS.map((stepInfo) => {
               const StepIcon = stepInfo.icon;

@@ -47,7 +47,7 @@ const featuresList = [
   'Cuisine équipée', 'Terrasse', 'Balcon', 'Forage', 'Dépendance',
 ];
 
-// Publish steps — CDC §5.0.2: Saisie → Upload Documents → Vérification IA → Validation → Publication
+// Publish steps: Saisie → Upload Documents → Vérification IA → Validation → Publication
 const publishSteps = [
   { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: <ClipboardList className="w-4 h-4" /> },
   { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: <PenTool className="w-4 h-4" /> },
@@ -317,7 +317,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <PenTool className="w-4 h-4" /> Publier un bien — CDC §5.0.2
+            <PenTool className="w-4 h-4" /> Publier un bien
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
             Nouvelle <span className="text-[#003087]">Annonce</span>

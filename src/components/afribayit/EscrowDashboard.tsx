@@ -289,7 +289,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-          <Lock className="w-4 h-4" /> Escrow Sécurisé — CDC 7B.3–7B.5
+          <Lock className="w-4 h-4" /> Escrow Sécurisé–7B.5
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
           Tableau de Bord Escrow

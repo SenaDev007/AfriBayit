@@ -1,32 +1,41 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import SafeModule from '@/components/safe/SafeModule';
-
 
 const GeoTrustModule = dynamic(() => import('@/components/afribayit/GeoTrustModule'), {
   loading: () => (
-    <div className="pt-20 min-h-screen bg-gray-50/30">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 w-48 bg-gray-200 rounded mx-auto" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-32 bg-gray-100 rounded-2xl" />
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="py-24 flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
     </div>
   ),
 });
 
 export default function GeoTrustPage() {
   return (
-    <div className="pt-20 min-h-screen">
-      <SafeModule>
-        <GeoTrustModule />
-      </SafeModule>
-    </div>
+    <TransactionPageShell
+      activeTab="acheter"
+      hero={{
+        badge: 'GeoTrust',
+        title: 'Certification foncière et géomètres certifiés',
+        subtitle: 'Vérification et bornage de terrain par géomètres agréés. GeoTrust garantit la conformité foncière de chaque bien immobilier en Afrique de l\'Ouest.',
+        backgroundImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&h=900&fit=crop',
+        stats: [
+          { value: 0, suffix: '+', label: 'Inspections' },
+          { value: 0, suffix: '', label: 'Pays couverts' },
+          { value: 0, suffix: '+', label: 'Géomètres' },
+          { value: 0, suffix: '%', label: 'Fiabilité' },
+        ],
+        ctaLabel: 'Voir les inspections',
+        ctaHref: '#geotrust',
+      }}
+    >
+      <div id="geotrust">
+        <SafeModule>
+          <GeoTrustModule />
+        </SafeModule>
+      </div>
+    </TransactionPageShell>
   );
 }

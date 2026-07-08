@@ -2,34 +2,43 @@
 
 import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
+import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import SafeModule from '@/components/safe/SafeModule';
-
 
 const ArtisansMarketplace = dynamic(() => import('@/components/afribayit/ArtisansMarketplace'), {
   loading: () => (
-    <div className="pt-20 min-h-screen bg-gray-50/30">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 w-64 bg-gray-200 rounded mx-auto" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-64 bg-gray-100 rounded-3xl" />
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="py-24 flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
     </div>
   ),
 });
 
 export default function ArtisansPage() {
-  const { onNavigate } = useAfriBayitNav();
+  const { onSelectProperty } = useAfriBayitNav();
 
   return (
-    <div className="pt-20 min-h-screen">
-      <SafeModule>
-        <ArtisansMarketplace onNavigate={onNavigate} />
-      </SafeModule>
-    </div>
+    <TransactionPageShell
+      activeTab="acheter"
+      hero={{
+        badge: 'Artisans BTP',
+        title: 'Trouvez des artisans certifiés en Afrique de l\'Ouest',
+        subtitle: 'Maçons, électriciens, plombiers, peintres et plus. Marketplace d\'artisans BTP vérifiés avec mise en relation automatique et escrow sécurisé.',
+        backgroundImage: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&h=900&fit=crop',
+        stats: [
+          { value: 0, suffix: '+', label: 'Artisans' },
+          { value: 0, suffix: '', label: 'Pays couverts' },
+          { value: 0, suffix: '+', label: 'Missions' },
+          { value: 0, suffix: '%', label: 'Satisfaction' },
+        ],
+        ctaLabel: 'Voir les artisans',
+        ctaHref: '#artisans',
+      }}
+    >
+      <div id="artisans">
+        <SafeModule>
+          <ArtisansMarketplace onSelectProperty={onSelectProperty} />
+        </SafeModule>
+      </div>
+    </TransactionPageShell>
   );
 }

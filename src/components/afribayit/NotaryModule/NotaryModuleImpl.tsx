@@ -316,7 +316,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <Scale className="w-4 h-4" /> Notaire Certifié — CDC 5.0bis
+            <Scale className="w-4 h-4" /> Notaire Certifié
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
             Espace <span className="text-[#003087]">Notarial</span>
