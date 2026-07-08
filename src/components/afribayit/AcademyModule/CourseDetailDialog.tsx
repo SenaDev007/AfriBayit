@@ -74,13 +74,19 @@ export default function CourseDetailDialog({
           </div>
         ) : (
           <>
-            {/* Course image */}
-            <div className="relative aspect-[16/9]">
-              <ImageWithFallback src={courseData.image} alt={courseData.title} className="w-full h-full rounded-t-3xl" fallbackType="course" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-t-3xl" />
+            {/* Course image — same pattern as PropertyCard */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
+              <ImageWithFallback
+                src={courseData.image}
+                alt={courseData.title}
+                className="absolute inset-0 w-full h-full"
+                fallbackType="course"
+                fill
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors z-10"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -151,12 +157,15 @@ export default function CourseDetailDialog({
                   <div className="bg-gray-50 rounded-2xl p-4">
                     <h3 className="font-semibold text-sm text-[#2C2E2F] mb-3">Instructeur</h3>
                     <div className="flex items-center gap-3">
-                      <ImageWithFallback
-                        src={courseData.instructorAvatar || ''}
-                        alt={courseData.instructor}
-                        className="w-12 h-12 rounded-full"
-                        fallbackType="avatar"
-                      />
+                      <div className="w-12 h-12 rounded-full overflow-hidden relative shrink-0">
+                        <ImageWithFallback
+                          src={courseData.instructorAvatar || ''}
+                          alt={courseData.instructor}
+                          className="absolute inset-0 w-full h-full"
+                          fallbackType="avatar"
+                          fill
+                        />
+                      </div>
                       <div>
                         <p className="text-sm font-semibold text-[#003087] cursor-pointer hover:underline">
                           {courseData.instructor || 'Expert AfriBayit'}
