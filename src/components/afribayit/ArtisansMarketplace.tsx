@@ -227,12 +227,13 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
               <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
                 <div className="flex flex-col sm:flex-row gap-6">
                   {/* Avatar */}
-                  <div className="shrink-0">
+                  <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
                     <ImageWithFallback
                       src={detailArtisan.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
                       alt={detailArtisan.name}
-                      className="w-24 h-24 rounded-2xl object-cover border-2 border-[#D4AF37]"
+                      className="absolute inset-0 w-full h-full"
                       fallbackType="avatar"
+                      fill
                     />
                   </div>
 
@@ -345,12 +346,13 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Réalisations</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {portfolio.map((img, i) => (
-                      <div key={i} className="aspect-square rounded-2xl overflow-hidden">
+                      <div key={i} className="aspect-square rounded-2xl overflow-hidden relative">
                         <ImageWithFallback
                           src={img}
                           alt={`Réalisation ${i + 1}`}
-                          className="w-full h-full object-cover"
+                          className="absolute inset-0 w-full h-full"
                           fallbackType="property"
+                          fill
                         />
                       </div>
                     ))}
@@ -500,12 +502,15 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 className="bg-white rounded-3xl p-5 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
               >
                 <div className="flex items-start gap-3 mb-4">
-                  <ImageWithFallback
-                    src={artisan.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'}
-                    alt={artisan.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-[#D4AF37]"
-                    fallbackType="avatar"
-                  />
+                  <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37] relative">
+                    <ImageWithFallback
+                      src={artisan.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'}
+                      alt={artisan.name}
+                      className="absolute inset-0 w-full h-full"
+                      fallbackType="avatar"
+                      fill
+                    />
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-[#2C2E2F]">{artisan.name}</h3>
