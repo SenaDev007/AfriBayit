@@ -227,27 +227,12 @@ export default function PropertyGrid({
           <div className="flex flex-wrap justify-center gap-6">
             {filteredProperties.map((property: any, i: number) => (
               <div key={property.id} className="relative w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
-                {/* Compare toggle — placed at bottom-left to avoid overlapping top-right badges */}
-                {onToggleCompare && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleCompare(property.id);
-                    }}
-                    className={`absolute bottom-3 left-3 z-20 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      compareIds.includes(property.id)
-                        ? 'text-white shadow-lg'
-                        : 'bg-white/90 text-gray-600 hover:bg-white border border-gray-200'
-                    }`}
-                    style={compareIds.includes(property.id) ? { background: NAVY } : {}}
-                  >
-                    {compareIds.includes(property.id) ? '✓ Comparé' : '+ Comparer'}
-                  </button>
-                )}
                 <PropertyCard
                   property={property}
                   index={i}
                   onSelect={handleSelectProperty}
+                  compareIds={compareIds}
+                  onToggleCompare={onToggleCompare}
                 />
               </div>
             ))}

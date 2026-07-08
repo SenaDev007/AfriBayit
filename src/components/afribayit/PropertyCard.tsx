@@ -1,22 +1,65 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PropertyData, formatPrice, getPropertyTypeLabel, getTransactionLabel, timeAgo } from '@/lib/afribayit-utils';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { apiFetch } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/authStore';
 
 interface PropertyCardProps {
   property: PropertyData & { boostLevel?: number };
   index?: number;
   onSelect: (id: string) => void;
   compact?: boolean;
+  /** Compare mode props */
+  compareIds?: string[];
+  onToggleCompare?: (id: string) => void;
 }
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export default function PropertyCard({ property, index = 0, onSelect, compact = false }: PropertyCardProps) {
+export default function PropertyCard({ property, index = 0, onSelect, compact = false, compareIds = [], onToggleCompare }: PropertyCardProps) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuthStore();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  // Check if this property is favorited by the current user
+  const { data: favoritesData } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: () => apiFetch<{ favorites: { propertyId: string }[] }>('/api/favorites'),
+    enabled: isAuthenticated,
+    staleTime: 30 * 1000,
+  });
+
+  // Update local favorite state when favorites data loads
+  React.useEffect(() => {
+    if (favoritesData?.favorites) {
+      setIsFavorited(favoritesData.favorites.some((f) => f.propertyId === property.id));
+    }
+  }, [favoritesData, property.id]);
+
+  // Toggle favorite mutation
+  const toggleFavorite = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      if (isFavorited) {
+        await apiFetch(`/api/favorites?propertyId=${property.id}`, { method: 'DELETE' });
+      } else {
+        await apiFetch('/api/favorites', { method: 'POST', body: JSON.stringify({ propertyId: property.id }), headers: { 'Content-Type': 'application/json' } });
+      }
+      setIsFavorited(!isFavorited);
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    } catch (err) {
+      console.error('Favorite toggle error:', err);
+    }
+  }, [isAuthenticated, isFavorited, property.id, queryClient]);
+
+  const isCompared = compareIds.includes(property.id);
+
   // Compute price label from the data
   const priceLabel = formatPrice(property.price, property.transaction);
 
@@ -88,17 +131,47 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
             </span>
           )}
         </div>
-        {/* Heart */}
-        <button
-          className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-          onClick={(e) => { e.stopPropagation(); }}
-          aria-label={t('property.addToFavorites', 'Ajouter aux favoris')}
-          aria-pressed={false}
-        >
-          <svg className="w-4 h-4 text-gray-400 hover:text-[#D93025] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
+        {/* Bottom action row: Compare (left) + Favorite (right) — on the image */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-20 pointer-events-none">
+          {/* Compare button — left */}
+          {onToggleCompare && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCompare(property.id);
+              }}
+              className={`pointer-events-auto px-2.5 py-1 rounded-full text-[10px] font-bold transition-all backdrop-blur ${
+                isCompared
+                  ? 'text-white shadow-lg'
+                  : 'bg-white/90 text-gray-600 hover:bg-white border border-gray-200'
+              }`}
+              style={isCompared ? { background: '#003087' } : {}}
+            >
+              {isCompared ? '✓ Comparé' : '+ Comparer'}
+            </button>
+          )}
+
+          {/* Favorite button — right */}
+          <button
+            className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite();
+            }}
+            aria-label={t('property.addToFavorites', 'Ajouter aux favoris')}
+            aria-pressed={isFavorited}
+          >
+            <svg
+              className={`w-4 h-4 transition-colors ${isFavorited ? 'text-[#D93025]' : 'text-gray-400 hover:text-[#D93025]'}`}
+              fill={isFavorited ? 'currentColor' : 'none'}
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Content */}

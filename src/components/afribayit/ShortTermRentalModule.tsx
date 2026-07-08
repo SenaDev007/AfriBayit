@@ -644,31 +644,28 @@ export default function ShortTermRentalModule() {
         {isError && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4"><X className="w-8 h-8 text-red-400" /></div><h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Impossible de charger les annonces</h3><p className="text-sm text-gray-500">{(error as Error)?.message || 'Une erreur est survenue.'}</p></div>}
         {!isLoading && !isError && rentals.length === 0 && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4"><Home className="w-8 h-8 text-gray-300" /></div><h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Aucune location disponible</h3><p className="text-sm text-gray-500">Les locations courte duree seront bientot disponibles.</p></div>}
 
-        {/* Grid View */}
+        {/* Grid View — centered */}
         {!isLoading && !isError && rentals.length > 0 && viewMode === 'grid' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {rentals.map((rental, i) => {
               const image = getFirstImage(rental.images);
               const amenities = parseJsonArray(rental.amenities);
               const effectivePrice = getEffectivePrice(rental);
               return (
                 <motion.div key={rental.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
-                  whileHover={{ y: -4 }} className="bg-white rounded-3xl overflow-hidden shadow-sm border cursor-pointer group" onClick={() => setSelectedRentalId(rental.id)}>
+                  whileHover={{ y: -4 }} className="bg-white rounded-3xl overflow-hidden shadow-sm border cursor-pointer group w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" onClick={() => setSelectedRentalId(rental.id)}>
                   <div className="relative aspect-[16/10]">
                     {image ? <ImageWithFallback src={image} alt={rental.title} className="w-full h-full" fallbackType="guesthouse" /> :
                       <div className="w-full h-full bg-gray-100 flex items-center justify-center"><Home className="w-12 h-12 text-gray-300" /></div>}
                     <div className="absolute top-3 left-3 flex flex-col gap-1">
-                      {rental.instantBooking && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-lg"><Zap className="w-3 h-3" /> Reservation instantanee</span>}
+                      {rental.instantBooking && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-lg"><Zap className="w-3 h-3" /> Réservation instantanée</span>}
                       {!rental.instantBooking && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[#003087] text-[10px] font-bold shadow"><Clock className="w-3 h-3" /> Sur demande</span>}
                     </div>
                     <div className="absolute top-3 right-3"><span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-[#2C2E2F] shadow">{getPropertyTypeIcon(rental.propertyType)} {rental.propertyType.charAt(0).toUpperCase() + rental.propertyType.slice(1)}</span></div>
-                    <div className="absolute bottom-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); toast.info('Ajoute aux favoris'); }} className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow hover:scale-110 transition-transform"><Heart className="w-4 h-4 text-[#D93025]" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); toast.info('Lien copie'); }} className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow hover:scale-110 transition-transform"><Share2 className="w-4 h-4 text-gray-500" /></button>
-                    </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 line-clamp-1">{rental.title}</h3>
+                    {/* Title — allow 2 lines to avoid truncation */}
+                    <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-1 leading-tight line-clamp-2 min-h-[2.5rem]">{rental.title}</h3>
                     <p className="text-xs text-gray-500 flex items-center gap-1 mb-3"><MapPin className="w-3.5 h-3.5 flex-shrink-0" />{rental.city}, {rental.country}{rental.quartier && <span className="text-gray-400"> - {rental.quartier}</span>}</p>
                     <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
                       <span className="inline-flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {rental.maxGuests}</span>
