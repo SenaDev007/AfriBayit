@@ -75,7 +75,7 @@ export default function CourseDetailDialog({
         ) : (
           <>
             {/* Course image — same pattern as PropertyCard */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
+            <div className="relative aspect-[8/3] overflow-hidden rounded-t-3xl">
               <ImageWithFallback
                 src={courseData.image}
                 alt={courseData.title}
