@@ -1,23 +1,19 @@
 'use client';
 
+/**
+ * Page /guesthouse — Guesthouses AfriBayit
+ * Compact hero + GuesthouseModule
+ */
+
 import dynamic from 'next/dynamic';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
+import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import SafeModule from '@/components/safe/SafeModule';
-
 
 const GuesthouseModule = dynamic(() => import('@/components/afribayit/GuesthouseModule'), {
   loading: () => (
-    <div className="pt-20 min-h-screen bg-gray-50/30">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 w-64 bg-gray-200 rounded mx-auto" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-64 bg-gray-100 rounded-3xl" />
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="py-24 flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
     </div>
   ),
 });
@@ -26,10 +22,28 @@ export default function GuesthousePage() {
   const { onNavigate } = useAfriBayitNav();
 
   return (
-    <div className="pt-20 min-h-screen">
-      <SafeModule>
-        <GuesthouseModule onNavigate={onNavigate} />
-      </SafeModule>
-    </div>
+    <TransactionPageShell
+      activeTab="sejour"
+      hero={{
+        badge: 'Guesthouses',
+        title: 'Des guesthouses certifiées en Afrique de l\'Ouest',
+        subtitle: 'Mini-établissements gérés par des propriétaires particuliers. Réservation à la chambre, petit-déjeuner optionnel, certification AfriBayit.',
+        backgroundImage: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1600&h=900&fit=crop',
+        stats: [
+          { value: 0, suffix: '+', label: 'Guesthouses' },
+          { value: 0, suffix: '', label: 'Pays couverts' },
+          { value: 0, suffix: '+', label: 'Chambres' },
+          { value: 0, suffix: '+', label: 'Voyageurs' },
+        ],
+        ctaLabel: 'Voir les guesthouses',
+        ctaHref: '#properties',
+      }}
+    >
+      <div id="properties">
+        <SafeModule>
+          <GuesthouseModule onNavigate={onNavigate} />
+        </SafeModule>
+      </div>
+    </TransactionPageShell>
   );
 }

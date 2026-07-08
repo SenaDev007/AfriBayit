@@ -202,9 +202,18 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero search bar */}
-      <div className="bg-[#003087] pt-24 pb-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1400px] mx-auto">
+      {/* Hero search bar — with background image */}
+      <div className="relative pt-24 pb-10 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600&h=900&fit=crop"
+            alt="Hôtels en Afrique"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,48,135,0.92) 0%, rgba(0,48,135,0.78) 50%, rgba(0,156,222,0.65) 100%)' }} />
+        </div>
+        <div className="relative z-10 max-w-[1400px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -361,12 +370,12 @@ export default function BookingPage() {
                 {/* Stars */}
                 <div>
                   <h4 className="text-sm font-medium text-[#2C2E2F] mb-3">Étoiles</h4>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button
                         key={s}
                         onClick={() => setMinStars(minStars === s ? 0 : s)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                           minStars === s
                             ? 'bg-[#003087] text-white'
                             : minStars > 0 && s <= minStars
