@@ -504,7 +504,9 @@ export default function ShortTermRentalModule() {
     },
   });
 
-  const rentals: RentalApiItem[] = (rentalsData as { rentals: RentalApiItem[] } | undefined)?.rentals ?? [];
+  const rentals: RentalApiItem[] = Array.isArray(rentalsData)
+    ? rentalsData
+    : (rentalsData as { rentals?: RentalApiItem[] } | undefined)?.rentals ?? [];
   const availDays: AvailabilityDay[] = (availabilityData as { availability: AvailabilityDay[] } | undefined)?.availability ?? [];
   const bookingRental = rentals.find((r) => r.id === bookingRentalId) || null;
 

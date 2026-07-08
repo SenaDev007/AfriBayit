@@ -222,19 +222,19 @@ export default function PropertyGrid({
           </div>
         )}
 
-        {/* Property grid */}
+        {/* Property grid — centered */}
         {!isLoading && !isError && filteredProperties.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {filteredProperties.map((property: any, i: number) => (
-              <div key={property.id} className="relative">
-                {/* Compare toggle overlay */}
+              <div key={property.id} className="relative w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+                {/* Compare toggle — placed at bottom-left to avoid overlapping top-right badges */}
                 {onToggleCompare && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleCompare(property.id);
                     }}
-                    className={`absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    className={`absolute bottom-3 left-3 z-20 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                       compareIds.includes(property.id)
                         ? 'text-white shadow-lg'
                         : 'bg-white/90 text-gray-600 hover:bg-white border border-gray-200'

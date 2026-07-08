@@ -46,7 +46,6 @@ export default function robots(): MetadataRoute.Robots {
           '/ambassador',
           '/publish',
           '/booking/',
-          '/offline',
           '/delete-data',
           '/auth/login',
           '/auth/register',

@@ -55,7 +55,6 @@ const PUBLIC_ROUTES = [
   '/short-term',
   '/booking',
   '/pro/',
-  '/offline',
   '/terms',
   '/privacy',
   '/delete-data',
@@ -355,6 +354,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all routes except static assets
-    '/((?!_next/static|_next/image|favicon\\.ico|logo\\.png|robots\\.txt|manifest\\.json|sw\\.js).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|logo\\.png|robots\\.txt).*)',
   ],
 };

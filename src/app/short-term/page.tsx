@@ -2,18 +2,11 @@
 
 /**
  * Page /short-term — Location courte durée (modèle Airbnb adapté Afrique)
- *
- * Refonte premium avec hero, navbar glassmorphism et footer AfriBayit.
- * Conserve le ShortTermRentalModule existant (calendrier, booking, etc.).
- * Conforme au CDC §5.2 — palette #003087 / #D4AF37 / #009CDE.
+ * Compact hero + existing ShortTermRentalModule
  */
 
 import dynamic from 'next/dynamic';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
-import { motion } from 'framer-motion';
-import { Calendar, QrCode, Smartphone, ShieldCheck } from 'lucide-react';
-
-const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const ShortTermRentalModule = dynamic(() => import('@/components/afribayit/ShortTermRentalModule'), {
   loading: () => (
@@ -22,29 +15,6 @@ const ShortTermRentalModule = dynamic(() => import('@/components/afribayit/Short
     </div>
   ),
 });
-
-const STAY_FEATURES = [
-  {
-    icon: Calendar,
-    title: 'Réservation instantanée',
-    description: 'Réservez en temps réel avec calendrier de disponibilité et pricing dynamique selon la saison.',
-  },
-  {
-    icon: QrCode,
-    title: 'Check-in numérique',
-    description: 'Arrivée autonome via QR code ou serrure connectée. Pas besoin de rencontrer l\'hôte.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile Money intégré',
-    description: 'Paiement via MTN, Orange, Moov ou Airtel Money. Sécurisé et instantané.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Hôtes vérifiés',
-    description: 'Identité et propriété vérifiées par AfriBayit. Avis clients authentifiés.',
-  },
-];
 
 export default function ShortTermPage() {
   return (
@@ -65,50 +35,6 @@ export default function ShortTermPage() {
         ctaHref: '#properties',
       }}
     >
-      {/* Features */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: easeOut }}
-            className="text-center max-w-3xl mx-auto mb-12"
-          >
-            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003087]">
-              <span className="h-px w-8 bg-[#003087]" />
-              Expérience voyageur
-            </span>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-              Une expérience Airbnb adaptée à l'Afrique
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STAY_FEATURES.map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-                className="p-6 rounded-2xl bg-gray-50/50 border border-gray-100 hover:shadow-lg transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: '#009CDE15' }}>
-                  <feature.icon className="w-6 h-6" style={{ color: '#009CDE' }} />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Existing ShortTermRentalModule (calendar, booking, etc.) */}
       <div id="properties">
         <ShortTermRentalModule />

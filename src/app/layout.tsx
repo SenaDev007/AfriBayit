@@ -7,8 +7,6 @@ import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
 import { LocaleProvider } from "@/lib/i18n/context";
-import PWAInstallPrompt from "@/components/afribayit/PWAInstallPrompt";
-import PWARegistration from "@/components/afribayit/PWARegistration";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -58,12 +56,6 @@ export const metadata: Metadata = {
     "terrain",
   ],
   authors: [{ name: "AfriBayit" }],
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "AfriBayit",
-  },
   icons: {
     icon: "/logo.png",
     apple: "/icons/icon-192x192.svg",
@@ -83,12 +75,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="AfriBayit" />
-      </head>
+      <head />
       <body
         className={`${cormorant.variable} ${inter.variable} ${spaceGrotesk.variable} font-body antialiased bg-background text-foreground`}
       >
@@ -105,8 +92,6 @@ export default function RootLayout({
                   {children}
                 </AppShell>
                 <Toaster />
-                <PWAInstallPrompt />
-                <PWARegistration />
               </LocaleProvider>
             </ReactQueryProvider>
           </NextAuthProvider>
