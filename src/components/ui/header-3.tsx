@@ -193,7 +193,7 @@ const authOnlyLinks2: LinkItem[] = [
 const companyLinks: LinkItem[] = [
   {
     title: 'À propos',
-    href: '#',
+    href: '/about',
     description: 'Découvrez l\'équipe AfriBayit',
     icon: Users,
   },
@@ -205,13 +205,13 @@ const companyLinks: LinkItem[] = [
   },
   {
     title: 'Témoignages',
-    href: '#',
+    href: '/#testimonials',
     description: 'Ce que nos clients disent de nous',
     icon: Star,
   },
   {
     title: 'Partenariats',
-    href: '#',
+    href: '/partnership',
     icon: Handshake,
     description: 'Collaborez avec AfriBayit',
   },
@@ -230,17 +230,17 @@ const companyLinks2: LinkItem[] = [
   },
   {
     title: 'Remboursement',
-    href: '#',
+    href: '/refund',
     icon: RotateCcw,
   },
   {
     title: 'Blog',
-    href: '#',
+    href: '/blog',
     icon: Leaf,
   },
   {
     title: 'Aide',
-    href: '#',
+    href: '/help',
     icon: HelpCircle,
   },
 ];
