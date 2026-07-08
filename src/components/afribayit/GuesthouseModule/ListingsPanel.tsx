@@ -239,7 +239,7 @@ export default function ListingsPanel({
                       <CertificationBadge status={gh.certificationStatus} />
                     </div>
                     <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-mono flex items-center gap-1">
-                      <Bed className="w-3 h-3" /> {gh.rooms.length} chambre{gh.rooms.length > 1 ? 's' : ''}
+                      <Bed className="w-3 h-3" /> {(gh.rooms?.length || 0)} chambre{(gh.rooms?.length || 0) > 1 ? 's' : ''}
                     </div>
                   </div>
                   <div className="p-4">

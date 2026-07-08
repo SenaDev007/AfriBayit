@@ -99,7 +99,7 @@ export function getPricingPeriodColor(period: string): string {
 }
 
 export function getPriceRange(gh: GuesthouseListItem): { min: number; max: number } {
-  if (gh.rooms.length === 0) return { min: 0, max: 0 };
+  if (!gh.rooms?.length) return { min: 0, max: 0 };
   const prices = gh.rooms.map(r => r.basePrice);
   return { min: Math.min(...prices), max: Math.max(...prices) };
 }
