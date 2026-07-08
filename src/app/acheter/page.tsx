@@ -2,13 +2,14 @@
 
 /**
  * Page /acheter — Acheter un bien immobilier en Afrique de l'Ouest
- *
- * Hero premium + grid de propriétés (transaction=achat) + footer.
- * Conforme au CDC AfriBayit — palette #003087 / #D4AF37 / #009CDE.
+ * CDC §5.1 compliance: hero + trust features + property grid + advanced tools (map, comparator, financing)
  */
 
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import PropertyGrid from '@/components/afribayit/PropertyGrid';
+import AdvancedFeaturesSection from '@/components/afribayit/AdvancedFeaturesSection';
 import { ShieldCheck, FileText, Scale, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -38,6 +39,26 @@ const TRUST_FEATURES = [
 ];
 
 export default function AcheterPage() {
+  const router = useRouter();
+  const [properties, setProperties] = useState<any[]>([]);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  const handlePropertiesLoaded = useCallback((props: any[]) => {
+    setProperties(props);
+  }, []);
+
+  const handleToggleCompare = useCallback((id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 5) return prev;
+      return [...prev, id];
+    });
+  }, []);
+
+  const handleSelectProperty = useCallback((id: string) => {
+    router.push(`/property/${id}`);
+  }, [router]);
+
   return (
     <TransactionPageShell
       activeTab="acheter"
@@ -105,8 +126,19 @@ export default function AcheterPage() {
         <PropertyGrid
           transaction="achat"
           emptyMessage="Aucun bien à vendre pour le moment"
+          onPropertiesLoaded={handlePropertiesLoaded}
+          compareIds={compareIds}
+          onToggleCompare={handleToggleCompare}
         />
       </div>
+
+      {/* Advanced features: map, comparator, financing simulator */}
+      <AdvancedFeaturesSection
+        transaction="achat"
+        properties={properties}
+        onSelectProperty={handleSelectProperty}
+        showFinancing
+      />
     </TransactionPageShell>
   );
 }

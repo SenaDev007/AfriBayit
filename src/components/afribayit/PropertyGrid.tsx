@@ -43,9 +43,20 @@ const PRICE_RANGES = [
 interface PropertyGridProps {
   transaction: 'achat' | 'location' | 'investissement' | 'location_courte_duree';
   emptyMessage?: string;
+  /** Expose fetched properties to parent (for map, comparator, etc.) */
+  onPropertiesLoaded?: (properties: any[]) => void;
+  /** Compare mode */
+  compareIds?: string[];
+  onToggleCompare?: (id: string) => void;
 }
 
-export default function PropertyGrid({ transaction, emptyMessage }: PropertyGridProps) {
+export default function PropertyGrid({
+  transaction,
+  emptyMessage,
+  onPropertiesLoaded,
+  compareIds = [],
+  onToggleCompare,
+}: PropertyGridProps) {
   const router = useRouter();
   const { selectedCountry } = useCountry();
   const [activeType, setActiveType] = useState('all');
@@ -68,6 +79,13 @@ export default function PropertyGrid({ transaction, emptyMessage }: PropertyGrid
   });
 
   const allProperties = data?.properties || [];
+
+  // Notify parent when properties are loaded (for map/comparator)
+  React.useEffect(() => {
+    if (allProperties.length > 0 && onPropertiesLoaded) {
+      onPropertiesLoaded(allProperties);
+    }
+  }, [allProperties, onPropertiesLoaded]);
 
   // Client-side filter by type and price range (since backend doesn't support price range yet)
   const filteredProperties = useMemo(() => {
@@ -208,12 +226,30 @@ export default function PropertyGrid({ transaction, emptyMessage }: PropertyGrid
         {!isLoading && !isError && filteredProperties.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((property: any, i: number) => (
-              <PropertyCard
-                key={property.id}
-                property={property}
-                index={i}
-                onSelect={handleSelectProperty}
-              />
+              <div key={property.id} className="relative">
+                {/* Compare toggle overlay */}
+                {onToggleCompare && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleCompare(property.id);
+                    }}
+                    className={`absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                      compareIds.includes(property.id)
+                        ? 'text-white shadow-lg'
+                        : 'bg-white/90 text-gray-600 hover:bg-white border border-gray-200'
+                    }`}
+                    style={compareIds.includes(property.id) ? { background: NAVY } : {}}
+                  >
+                    {compareIds.includes(property.id) ? '✓ Comparé' : '+ Comparer'}
+                  </button>
+                )}
+                <PropertyCard
+                  property={property}
+                  index={i}
+                  onSelect={handleSelectProperty}
+                />
+              </div>
             ))}
           </div>
         )}

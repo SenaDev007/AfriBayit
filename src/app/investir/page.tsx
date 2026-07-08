@@ -2,13 +2,14 @@
 
 /**
  * Page /investir — Investir dans l'immobilier en Afrique de l'Ouest
- *
- * Affiche les propriétés à fort potentiel d'investissement (transaction=investissement)
- * avec score d'investissement, simulateur de ROI et stats marché.
+ * CDC §5.1 compliance: hero + investment tools + market stats + property grid + advanced tools (map, comparator, financing)
  */
 
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import PropertyGrid from '@/components/afribayit/PropertyGrid';
+import AdvancedFeaturesSection from '@/components/afribayit/AdvancedFeaturesSection';
 import { motion } from 'framer-motion';
 import { TrendingUp, BarChart3, MapPin, Calculator } from 'lucide-react';
 
@@ -45,6 +46,26 @@ const MARKET_STATS = [
 ];
 
 export default function InvestirPage() {
+  const router = useRouter();
+  const [properties, setProperties] = useState<any[]>([]);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  const handlePropertiesLoaded = useCallback((props: any[]) => {
+    setProperties(props);
+  }, []);
+
+  const handleToggleCompare = useCallback((id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 5) return prev;
+      return [...prev, id];
+    });
+  }, []);
+
+  const handleSelectProperty = useCallback((id: string) => {
+    router.push(`/property/${id}`);
+  }, [router]);
+
   return (
     <TransactionPageShell
       activeTab="investir"
@@ -161,8 +182,19 @@ export default function InvestirPage() {
         <PropertyGrid
           transaction="investissement"
           emptyMessage="Aucune opportunité d'investissement pour le moment"
+          onPropertiesLoaded={handlePropertiesLoaded}
+          compareIds={compareIds}
+          onToggleCompare={handleToggleCompare}
         />
       </div>
+
+      {/* Advanced features: map, comparator, financing simulator */}
+      <AdvancedFeaturesSection
+        transaction="investissement"
+        properties={properties}
+        onSelectProperty={handleSelectProperty}
+        showFinancing
+      />
     </TransactionPageShell>
   );
 }
