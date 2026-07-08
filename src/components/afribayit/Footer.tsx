@@ -97,8 +97,8 @@ export default function Footer() {
       icon: <Building2 size={16} className="text-[#D4AF37]" />,
       links: [
         { label: 'Communauté', href: '/community', icon: <HeartHandshake size={14} /> },
-        { label: 'Séjours', href: '/booking', icon: <Plane size={14} /> },
-        { label: 'Hôtellerie', href: '/hospitality', icon: <Hotel size={14} /> },
+        { label: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: <Plane size={14} /> },
+        { label: 'Espace Hôtelier (PMS)', href: '/hotel-dashboard', icon: <Hotel size={14} /> },
         { label: 'Notaires', href: '/notary', icon: <Scale size={14} /> },
         { label: 'Publier une annonce', href: '/publish', icon: <PlusCircle size={14} /> },
       ],

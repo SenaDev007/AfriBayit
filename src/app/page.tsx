@@ -25,7 +25,7 @@ export default function HomePage() {
         router.push('/publish');
         break;
       case 'booking':
-        router.push('/booking');
+        router.push('/sejours');
         break;
       case 'dashboard':
         router.push('/dashboard');

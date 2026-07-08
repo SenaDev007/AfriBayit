@@ -23,17 +23,17 @@ export function useAfriBayitNav() {
       'artisans': '/artisans',
       'geotrust': '/geotrust',
       'escrow': '/escrow',
-      'hospitality': '/hospitality',
+      'hospitality': '/sejours',
       'academy': '/academy',
       'community': '/community',
       'analytics': '/analytics',
       'notary': '/notary',
-      'guesthouse': '/guesthouse',
+      'guesthouse': '/sejours',
       'wallet': '/wallet',
       'profile': '/profile',
       'subscriptions': '/subscriptions',
       'publish': '/publish',
-      'booking': '/booking',
+      'booking': '/sejours',
     };
 
     const path = routeMap[section] || '/';
@@ -58,13 +58,13 @@ export function useAfriBayitNav() {
     if (pathname.startsWith('/artisans')) return 'artisans';
     if (pathname.startsWith('/geotrust')) return 'geotrust';
     if (pathname.startsWith('/escrow')) return 'escrow';
-    if (pathname.startsWith('/hospitality')) return 'hospitality';
+    if (pathname.startsWith('/hospitality') || pathname.startsWith('/sejours')) return 'sejours';
     if (pathname.startsWith('/academy')) return 'academy';
     if (pathname.startsWith('/community')) return 'community';
     if (pathname.startsWith('/analytics')) return 'analytics';
     if (pathname.startsWith('/notary')) return 'notary';
-    if (pathname.startsWith('/booking')) return 'booking';
-    if (pathname.startsWith('/guesthouse')) return 'guesthouse';
+    if (pathname.startsWith('/booking') || pathname.startsWith('/sejours')) return 'sejours';
+    if (pathname.startsWith('/guesthouse') || pathname.startsWith('/sejours')) return 'sejours';
     if (pathname.startsWith('/wallet')) return 'wallet';
     if (pathname.startsWith('/profile')) return 'profile';
     if (pathname.startsWith('/subscriptions')) return 'subscriptions';

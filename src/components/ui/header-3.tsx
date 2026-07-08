@@ -113,23 +113,17 @@ const immobilierLinks: LinkItem[] = [
 
 const hospitalityLinks: LinkItem[] = [
   {
-    title: 'Hôtels',
-    href: '/hospitality',
-    description: 'Réservez des hôtels vérifiés',
+    title: 'Séjours (Hôtels & Guesthouses)',
+    href: '/sejours',
+    description: 'Réservez hôtels, guesthouses et séjours courts en Afrique de l\'Ouest',
     icon: Hotel,
-  },
-  {
-    title: 'Guesthouses',
-    href: '/guesthouse',
-    description: 'Séjournez chez l\'habitant',
-    icon: BedDouble,
-  },
-  {
-    title: 'Réservation',
-    href: '/booking',
-    description: 'Réservez votre séjour en ligne',
-    icon: CalendarDays,
     gold: true,
+  },
+  {
+    title: 'Espace Hôtelier (PMS)',
+    href: '/hotel-dashboard',
+    description: 'Gérez votre hôtel ou guesthouse : chambres, tarifs, réservations',
+    icon: BedDouble,
   },
 ];
 

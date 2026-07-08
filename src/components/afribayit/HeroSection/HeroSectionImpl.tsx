@@ -860,7 +860,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                       achat: '/acheter',
                       location: '/louer',
                       investissement: '/investir',
-                      sejour: '/short-term',
+                      sejour: '/sejours',
                     };
                     window.location.href = routes[searchType] || '/search';
                   }}

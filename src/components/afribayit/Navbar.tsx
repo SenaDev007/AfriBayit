@@ -42,9 +42,8 @@ const NAV_GROUPS = [
     label: 'Hôtellerie',
     icon: Hotel,
     items: [
-      { key: 'hotels', label: 'Hôtels', href: '/hospitality', icon: Hotel },
-      { key: 'guesthouses', label: 'Guesthouses', href: '/guesthouse', icon: BedDouble },
-      { key: 'reservation', label: 'Réservation', href: '/booking', icon: CalendarDays, gold: true },
+      { key: 'sejours', label: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: Hotel, gold: true },
+      { key: 'hotel-dashboard', label: 'Espace Hôtelier (PMS)', href: '/hotel-dashboard', icon: BedDouble },
     ],
   },
   {
@@ -157,9 +156,10 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
       return 'acheter';
     }
     if (pathname.startsWith('/short-term')) return 'court_duree';
-    if (pathname.startsWith('/hospitality')) return 'hotels';
-    if (pathname.startsWith('/guesthouse')) return 'guesthouses';
-    if (pathname.startsWith('/booking')) return 'reservation';
+    if (pathname.startsWith('/hospitality') || pathname.startsWith('/sejours')) return 'sejours';
+    if (pathname.startsWith('/guesthouse') || pathname.startsWith('/sejours')) return 'sejours';
+    if (pathname.startsWith('/booking') || pathname.startsWith('/sejours')) return 'sejours';
+    if (pathname.startsWith('/hotel-dashboard')) return 'hotel-dashboard';
     if (pathname.startsWith('/artisans')) return 'artisans';
     if (pathname.startsWith('/notary') && !pathname.includes('notary-dashboard')) return 'notaire';
     if (pathname.startsWith('/geotrust')) return 'geotrust';
