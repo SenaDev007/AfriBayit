@@ -8,7 +8,7 @@ import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search, ArrowLeft, Star, Briefcase, Clock, Award, X } from 'lucide-react';
 import { geoServiceLabel } from '@/lib/constants';
 
 interface Geometer {
@@ -70,6 +70,7 @@ export default function GeoTrustModule() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showMissionDialog, setShowMissionDialog] = useState(false);
   const [selectedGeometer, setSelectedGeometer] = useState<Geometer | null>(null);
+  const [detailGeometer, setDetailGeometer] = useState<Geometer | null>(null);
   const [missionForm, setMissionForm] = useState({ serviceCode: '', propertyId: '', notes: '', price: 0 });
   const { selectedCountry } = useCountry();
 
@@ -107,6 +108,14 @@ export default function GeoTrustModule() {
     };
   });
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
+
+  const handleViewDetail = (geometer: Geometer) => {
+    setDetailGeometer(geometer);
+  };
+
+  const handleBackToList = () => {
+    setDetailGeometer(null);
+  };
 
   const handleOpenMissionDialog = (geometer: Geometer) => {
     setSelectedGeometer(geometer);
@@ -146,6 +155,153 @@ export default function GeoTrustModule() {
     );
   };
 
+  // ─── DETAIL VIEW ──────────────────────────────────────────────────
+  if (detailGeometer) {
+    return (
+      <section className="min-h-screen pb-24 bg-gray-50/30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <button
+            onClick={handleBackToList}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour à la liste
+          </button>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: easeOut }}
+          >
+            {/* Header card */}
+            <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#009CDE] relative">
+                  <ImageWithFallback
+                    src={detailGeometer.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
+                    alt={detailGeometer.name}
+                    className="absolute inset-0 w-full h-full"
+                    fallbackType="avatar"
+                    fill
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-[#2C2E2F]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                      {detailGeometer.name}
+                    </h1>
+                    {detailGeometer.certifiedAt && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00A651]/10 text-[#00A651]">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Certifié GeoTrust
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[#009CDE] font-semibold mb-2">Géomètre Expert</p>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {detailGeometer.city}, {detailGeometer.country}
+                    </span>
+                    {detailGeometer.rating > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                        {detailGeometer.rating} ({detailGeometer.reviews} avis)
+                      </span>
+                    )}
+                    {detailGeometer.missions > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="w-4 h-4" />
+                        {detailGeometer.missions} missions
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action button */}
+              <div className="mt-6">
+                <button
+                  onClick={() => handleOpenMissionDialog(detailGeometer)}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Demander un devis
+                </button>
+              </div>
+            </div>
+
+            {/* Certifications */}
+            {detailGeometer.certifications.length > 0 && (
+              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+                <h3 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-[#009CDE]" />
+                  Certifications & Spécialités
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {detailGeometer.certifications.map((cert) => (
+                    <span key={cert} className="px-3 py-1.5 bg-[#009CDE]/5 text-[#009CDE] text-xs font-medium rounded-full">
+                      {geoServiceLabel(cert)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Services offered — horizontal scroll */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+              <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Services proposés</h3>
+              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+                {geometerServices.map((service) => (
+                  <div
+                    key={service.id}
+                    className="shrink-0 w-64 snap-center p-4 rounded-2xl bg-gray-50/50 border border-gray-100"
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: '#009CDE10' }}>
+                      <span className="text-[#009CDE]">{service.icon}</span>
+                    </div>
+                    <h4 className="font-semibold text-[#2C2E2F] text-sm mb-1">{service.name}</h4>
+                    <p className="text-xs text-gray-500 mb-2">{service.description}</p>
+                    <p className="text-[#D4AF37] font-bold text-sm">{service.priceLabel}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Info cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {detailGeometer.rating > 0 && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Note</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{detailGeometer.rating}/5</p>
+                </div>
+              )}
+              {detailGeometer.missions > 0 && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Missions</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{detailGeometer.missions}</p>
+                </div>
+              )}
+              {detailGeometer.certifiedAt && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                  <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
+                  <p className="text-xs text-gray-400">Certifié</p>
+                  <p className="text-sm font-bold text-[#2C2E2F]">{timeAgo(detailGeometer.certifiedAt)}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Mission dialog — shared */}
+        {showMissionDialog && selectedGeometer && <MissionDialog />}
+      </section>
+    );
+  }
+
+  // ─── LIST VIEW ────────────────────────────────────────────────────
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -234,14 +390,16 @@ export default function GeoTrustModule() {
 
           {/* Geometer Cards */}
           {!geometersLoading && !geometersError && geometers.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {geometers.map((geo, i) => (
                 <motion.div
                   key={geo.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
-                  className="bg-white rounded-3xl p-6 shadow-sm border"
+                  whileHover={{ y: -4 }}
+                  onClick={() => handleViewDetail(geo)}
+                  className="bg-white rounded-3xl p-6 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#009CDE] relative">
@@ -274,7 +432,7 @@ export default function GeoTrustModule() {
                     ))}
                   </div>
                   <button
-                    onClick={() => handleOpenMissionDialog(geo)}
+                    onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
                     className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     Demander un devis
@@ -314,84 +472,97 @@ export default function GeoTrustModule() {
         </motion.div>
 
         {/* Mission Request Dialog */}
-        {showMissionDialog && selectedGeometer && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
-            onClick={() => setShowMissionDialog(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">Demander un devis</h3>
-              <p className="text-xs text-gray-500 mb-4">À {selectedGeometer.name} — {selectedGeometer.city}</p>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Service</label>
-                  <select
-                    value={missionForm.serviceCode}
-                    onChange={(e) => {
-                      const service = geometerServices.find(s => s.code === e.target.value);
-                      setMissionForm(prev => ({
-                        ...prev,
-                        serviceCode: e.target.value,
-                        price: service?.price || 0,
-                      }));
-                    }}
-                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
-                  >
-                    <option value="">Sélectionnez un service</option>
-                    {geometerServices.map((service) => (
-                      <option key={service.code} value={service.code}>
-                        {service.name} — {service.priceLabel}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">ID du bien (optionnel)</label>
-                  <input
-                    type="text"
-                    value={missionForm.propertyId}
-                    onChange={(e) => setMissionForm(prev => ({ ...prev, propertyId: e.target.value }))}
-                    placeholder="ex: prop-abc123"
-                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1.5 block">Notes</label>
-                  <textarea
-                    rows={3}
-                    value={missionForm.notes}
-                    onChange={(e) => setMissionForm(prev => ({ ...prev, notes: e.target.value }))}
-                    placeholder="Détails supplémentaires..."
-                    className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#009CDE] transition-colors"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowMissionDialog(false)}
-                    className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleSubmitMission}
-                    disabled={createMission.isPending || !missionForm.serviceCode}
-                    className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
-                  >
-                    {createMission.isPending ? 'Envoi...' : 'Envoyer'}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
+        {showMissionDialog && selectedGeometer && <MissionDialog />}
       </div>
     </section>
   );
+
+  // ─── MissionDialog (shared component function) ───────────────────
+  function MissionDialog() {
+    if (!selectedGeometer) return null;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+        onClick={() => setShowMissionDialog(false)}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-display text-xl font-bold text-[#2C2E2F]">Demander un devis</h3>
+              <p className="text-xs text-gray-500">À {selectedGeometer.name} — {selectedGeometer.city}</p>
+            </div>
+            <button onClick={() => setShowMissionDialog(false)} className="p-2 rounded-full hover:bg-gray-100">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Service</label>
+              <select
+                value={missionForm.serviceCode}
+                onChange={(e) => {
+                  const service = geometerServices.find(s => s.code === e.target.value);
+                  setMissionForm(prev => ({
+                    ...prev,
+                    serviceCode: e.target.value,
+                    price: service?.price || 0,
+                  }));
+                }}
+                className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
+              >
+                <option value="">Sélectionnez un service</option>
+                {geometerServices.map((service) => (
+                  <option key={service.code} value={service.code}>
+                    {service.name} — {service.priceLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">ID du bien (optionnel)</label>
+              <input
+                type="text"
+                value={missionForm.propertyId}
+                onChange={(e) => setMissionForm(prev => ({ ...prev, propertyId: e.target.value }))}
+                placeholder="ex: prop-abc123"
+                className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Notes</label>
+              <textarea
+                rows={3}
+                value={missionForm.notes}
+                onChange={(e) => setMissionForm(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Détails supplémentaires..."
+                className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#009CDE] transition-colors"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowMissionDialog(false)}
+                className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSubmitMission}
+                disabled={createMission.isPending || !missionForm.serviceCode}
+                className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+              >
+                {createMission.isPending ? 'Envoi...' : 'Envoyer'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 }
