@@ -85,7 +85,6 @@ export default function Footer() {
       title: 'Services',
       icon: <Shield size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'Escrow Sécurisé', href: '/escrow', icon: <Shield size={14} /> },
         { label: 'GeoTrust', href: '/geotrust', icon: <BadgeCheck size={14} /> },
         { label: 'ProMatch Artisans', href: '/artisans', icon: <Wrench size={14} /> },
         { label: 'Rebecca IA', href: '#', icon: <Bot size={14} /> },
