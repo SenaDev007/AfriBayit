@@ -54,6 +54,7 @@ const PUBLIC_ROUTES = [
   '/notary',
   '/short-term',
   '/booking',
+  '/hotel-dashboard',
   '/pro/',
   '/terms',
   '/privacy',

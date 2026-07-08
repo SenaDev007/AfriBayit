@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import PackagesSection from '@/components/afribayit/PackagesSection';
 import {
   Search,
   MapPin,
@@ -604,6 +605,9 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+
+      {/* Packages — CDC §7D.9 */}
+      <PackagesSection />
     </div>
   );
 }
