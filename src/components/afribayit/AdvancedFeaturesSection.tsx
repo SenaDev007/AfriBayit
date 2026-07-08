@@ -31,6 +31,9 @@ interface AdvancedFeaturesSectionProps {
   onSelectProperty: (id: string) => void;
   /** Show financing simulator (only for achat/investissement) */
   showFinancing?: boolean;
+  /** Compare IDs shared with PropertyGrid */
+  compareIds?: string[];
+  onToggleCompare?: (id: string) => void;
 }
 
 export default function AdvancedFeaturesSection({
@@ -38,10 +41,11 @@ export default function AdvancedFeaturesSection({
   properties,
   onSelectProperty,
   showFinancing = false,
+  compareIds = [],
+  onToggleCompare,
 }: AdvancedFeaturesSectionProps) {
   const { selectedCountry } = useCountry();
   const [activeTab, setActiveTab] = useState<'map' | 'compare' | 'financing'>('map');
-  const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showComparator, setShowComparator] = useState(false);
   const [showFinancingModal, setShowFinancingModal] = useState(false);
   const [financingPrice, setFinancingPrice] = useState(25000000);
@@ -95,17 +99,7 @@ export default function AdvancedFeaturesSection({
     };
   }, [compareProperties]);
 
-  const toggleCompare = useCallback((id: string) => {
-    setCompareIds((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((x) => x !== id);
-      }
-      if (prev.length >= 5) {
-        return prev; // Max 5 properties
-      }
-      return [...prev, id];
-    });
-  }, []);
+  const toggleCompare = onToggleCompare || (() => {});
 
   const openFinancing = useCallback((price?: number) => {
     if (price) setFinancingPrice(price);

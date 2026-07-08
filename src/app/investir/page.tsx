@@ -194,6 +194,8 @@ export default function InvestirPage() {
         properties={properties}
         onSelectProperty={handleSelectProperty}
         showFinancing
+        compareIds={compareIds}
+        onToggleCompare={handleToggleCompare}
       />
     </TransactionPageShell>
   );

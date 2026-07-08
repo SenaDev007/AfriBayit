@@ -138,6 +138,8 @@ export default function AcheterPage() {
         properties={properties}
         onSelectProperty={handleSelectProperty}
         showFinancing
+        compareIds={compareIds}
+        onToggleCompare={handleToggleCompare}
       />
     </TransactionPageShell>
   );

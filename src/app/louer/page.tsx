@@ -137,6 +137,8 @@ export default function LouerPage() {
         transaction="location"
         properties={properties}
         onSelectProperty={handleSelectProperty}
+        compareIds={compareIds}
+        onToggleCompare={handleToggleCompare}
       />
     </TransactionPageShell>
   );
