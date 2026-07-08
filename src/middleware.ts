@@ -40,6 +40,9 @@ const EXCLUDED_HOSTNAMES = ['localhost', '127.0.0.1', '0.0.0.0'];
 const PUBLIC_ROUTES = [
   '/',
   '/search',
+  '/acheter',
+  '/louer',
+  '/investir',
   '/auth/',
   '/property/',
   '/artisans',
