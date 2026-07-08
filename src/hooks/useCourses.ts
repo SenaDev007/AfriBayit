@@ -12,14 +12,14 @@ export function useCourses(category?: string, level?: string, country?: CountryC
 
   return useQuery({
     queryKey: ['courses', category, level, country, page, limit],
-    queryFn: () => api.get<{ courses: unknown[]; pagination: unknown }>(`/api/courses?${params.toString()}`),
+    queryFn: () => api.get<{ courses: unknown[]; pagination: unknown }>(`/api/academy/courses?${params.toString()}`),
   });
 }
 
 export function useCourseDetail(id: string) {
   return useQuery({
     queryKey: ['course-detail', id],
-    queryFn: () => api.get<{ course: unknown }>(`/api/courses/${id}`),
+    queryFn: () => api.get<{ course: unknown }>(`/api/academy/courses/${id}`),
     enabled: !!id,
   });
 }
@@ -28,7 +28,7 @@ export function useEnrollCourse() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { courseId: string; userId: string }) =>
-      apiPost('/api/courses/enrollments', data),
+      apiPost('/api/academy/courses/enrollments', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
@@ -39,7 +39,7 @@ export function useEnrollCourse() {
 export function useMyEnrollments(userId?: string) {
   return useQuery({
     queryKey: ['enrollments', userId],
-    queryFn: () => api.get<{ enrollments: unknown[] }>(`/api/courses/enrollments?userId=${userId}`),
+    queryFn: () => api.get<{ enrollments: unknown[] }>(`/api/academy/courses/enrollments?userId=${userId}`),
     enabled: !!userId,
   });
 }
