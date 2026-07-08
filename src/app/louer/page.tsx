@@ -1,67 +1,55 @@
 'use client';
 
 /**
- * Page /short-term — Location courte durée (modèle Airbnb adapté Afrique)
- *
- * Refonte premium avec hero, navbar glassmorphism et footer AfriBayit.
- * Conserve le ShortTermRentalModule existant (calendrier, booking, etc.).
- * Conforme au CDC §5.2 — palette #003087 / #D4AF37 / #009CDE.
+ * Page /louer — Louer un bien immobilier en Afrique de l'Ouest
  */
 
-import dynamic from 'next/dynamic';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
+import PropertyGrid from '@/components/afribayit/PropertyGrid';
+import { Calendar, KeyRound, ShieldCheck, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Calendar, QrCode, Smartphone, ShieldCheck } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const ShortTermRentalModule = dynamic(() => import('@/components/afribayit/ShortTermRentalModule'), {
-  loading: () => (
-    <div className="py-24 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
-    </div>
-  ),
-});
-
-const STAY_FEATURES = [
+const RENTAL_FEATURES = [
   {
     icon: Calendar,
-    title: 'Réservation instantanée',
-    description: 'Réservez en temps réel avec calendrier de disponibilité et pricing dynamique selon la saison.',
-  },
-  {
-    icon: QrCode,
-    title: 'Check-in numérique',
-    description: 'Arrivée autonome via QR code ou serrure connectée. Pas besoin de rencontrer l\'hôte.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile Money intégré',
-    description: 'Paiement via MTN, Orange, Moov ou Airtel Money. Sécurisé et instantané.',
+    title: 'Visites planifiées',
+    description: 'Réservez vos visites en ligne avec calendrier synchronisé. Disponibilités en temps réel.',
   },
   {
     icon: ShieldCheck,
-    title: 'Hôtes vérifiés',
-    description: 'Identité et propriété vérifiées par AfriBayit. Avis clients authentifiés.',
+    title: 'Bail numérique sécurisé',
+    description: 'Signature électronique du bail avec dépôt de garantie protégé sur compte Escrow.',
+  },
+  {
+    icon: KeyRound,
+    title: 'Remise des clés',
+    description: 'État des lieux digitalisé avec photos et vidéos. Check-in organisé par l\'agent.',
+  },
+  {
+    icon: Wallet,
+    title: 'Paiement Mobile Money',
+    description: 'Loyer payé via MTN, Orange, Moov ou Airtel Money. Reçus automatiques chaque mois.',
   },
 ];
 
-export default function ShortTermPage() {
+export default function LouerPage() {
   return (
     <TransactionPageShell
-      activeTab="sejour"
+      activeTab="louer"
       hero={{
-        badge: 'Location courte durée',
-        title: 'Des séjours premium en Afrique de l\'Ouest',
-        subtitle: 'Appartements, villas et guesthouses pour vos séjours courts. Réservation instantanée, check-in numérique QR code et paiement Mobile Money.',
-        backgroundImage: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1600&h=900&fit=crop',
+        badge: 'Location longue durée',
+        title: 'Louez votre prochain chez-vous en toute sérénité',
+        subtitle: 'Appartements, villas et bureaux à louer avec bail numérique sécurisé. Paiement Mobile Money intégré et dépôt de garantie protégé par Escrow.',
+        backgroundImage: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1600&h=900&fit=crop',
         stats: [
-          { value: 0, suffix: '+', label: 'Séjours disponibles' },
+          { value: 0, suffix: '+', label: 'Biens à louer' },
           { value: 0, suffix: '', label: 'Pays couverts' },
-          { value: 0, suffix: '+', label: 'Hôtes vérifiés' },
-          { value: 0, suffix: '+', label: 'Réservations' },
+          { value: 0, suffix: '+', label: 'Agents certifiés' },
+          { value: 0, suffix: '+', label: 'Bailleurs' },
         ],
-        ctaLabel: 'Voir les séjours',
+        ctaLabel: 'Voir les biens à louer',
         ctaHref: '#properties',
       }}
     >
@@ -77,15 +65,15 @@ export default function ShortTermPage() {
           >
             <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003087]">
               <span className="h-px w-8 bg-[#003087]" />
-              Expérience voyageur
+              Location simplifiée
             </span>
             <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-              Une expérience Airbnb adaptée à l'Afrique
+              Une expérience de location sans friction
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STAY_FEATURES.map((feature, i) => (
+            {RENTAL_FEATURES.map((feature, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -109,9 +97,12 @@ export default function ShortTermPage() {
         </div>
       </section>
 
-      {/* Existing ShortTermRentalModule (calendar, booking, etc.) */}
+      {/* Properties */}
       <div id="properties">
-        <ShortTermRentalModule />
+        <PropertyGrid
+          transaction="location"
+          emptyMessage="Aucun bien à louer pour le moment"
+        />
       </div>
     </TransactionPageShell>
   );

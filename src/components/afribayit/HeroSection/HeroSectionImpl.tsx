@@ -855,7 +855,15 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => searchType === 'sejour' ? window.location.href = '/booking' : onNavigate('search')}
+                  onClick={() => {
+                    const routes: Record<string, string> = {
+                      achat: '/acheter',
+                      location: '/louer',
+                      investissement: '/investir',
+                      sejour: '/short-term',
+                    };
+                    window.location.href = routes[searchType] || '/search';
+                  }}
                   className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#003087] hover:bg-[#0047b3] text-white rounded-[1.2rem] text-xs sm:text-sm font-semibold transition-colors font-body"
                 >
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
