@@ -89,9 +89,11 @@ export default function CataloguePanel({
 
       {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <CourseSkeleton key={i} />
+            <div key={i} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+              <CourseSkeleton />
+            </div>
           ))}
         </div>
       )}
@@ -114,19 +116,20 @@ export default function CataloguePanel({
         </div>
       )}
 
-      {/* Course Cards */}
+      {/* Course Cards — centered */}
       {!isLoading && !error && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           {filtered.map((course, i) => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              index={i}
-              enrollingCourseId={enrollingCourseId}
-              isEnrolling={isEnrolling}
-              onSelect={onSelect}
-              onEnroll={onEnroll}
-            />
+            <div key={course.id} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
+              <CourseCard
+                course={course}
+                index={i}
+                enrollingCourseId={enrollingCourseId}
+                isEnrolling={isEnrolling}
+                onSelect={onSelect}
+                onEnroll={onEnroll}
+              />
+            </div>
           ))}
         </div>
       )}
