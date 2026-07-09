@@ -272,7 +272,7 @@ export default function ROICalculator({
             </div>
             <div className="flex justify-between text-red-400">
               <span>− Taxe foncière</span>
-              <span className="font-mono">−{fmt(calc.propertyTax)}</span>
+              <span className="font-mono">−{fmt(propertyTax)}</span>
             </div>
             <div className="flex justify-between font-semibold text-[#2C2E2F] pt-1 border-t">
               <span className="flex items-center gap-1">Cashflow annuel <ArrowRight className="w-3 h-3" /></span>
