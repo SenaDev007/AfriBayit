@@ -55,7 +55,6 @@ import {
   ChevronDown,
   KeyRound,
   Building2,
-  TrendingUp,
 } from 'lucide-react';
 
 type LinkItem = {
