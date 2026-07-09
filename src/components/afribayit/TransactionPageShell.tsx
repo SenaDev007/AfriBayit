@@ -137,15 +137,31 @@ export default function TransactionPageShell({ activeTab, hero, children }: Tran
     retry: 2,
   });
 
-  // Override the hero stats with real data if available
+  // Override the hero stats with real data if available.
+  // The "bien" mapping is transaction-aware: for /louer we use propertiesForRent,
+  // for /acheter we use propertiesForSale, otherwise the total properties count.
+  const activeTabLower = activeTab?.toLowerCase() ?? '';
+  const isLouer = activeTabLower === 'louer';
+  const isAcheter = activeTabLower === 'acheter';
+
   const realStats = stats
     ? hero.stats.map((s) => {
-        if (s.label.toLowerCase().includes('bien')) return { ...s, value: stats.properties ?? s.value };
-        if (s.label.toLowerCase().includes('pay')) return { ...s, value: stats.countries ?? s.value };
-        if (s.label.toLowerCase().includes('agent')) return { ...s, value: stats.agents ?? s.value };
-        if (s.label.toLowerCase().includes('transaction')) return { ...s, value: stats.transactions ?? s.value };
-        if (s.label.toLowerCase().includes('utilisateur') || s.label.toLowerCase().includes('bailleur') || s.label.toLowerCase().includes('hôte')) return { ...s, value: stats.users ?? s.value };
-        if (s.label.toLowerCase().includes('réservation') || s.label.toLowerCase().includes('reservation')) return { ...s, value: stats.bookings ?? s.value };
+        const label = s.label.toLowerCase();
+        if (label.includes('bien')) {
+          // Transaction-aware: /louer wants rental count, /acheter wants sale count
+          const v = isLouer
+            ? stats.propertiesForRent ?? stats.properties ?? s.value
+            : isAcheter
+              ? stats.propertiesForSale ?? stats.properties ?? s.value
+              : stats.properties ?? s.value;
+          return { ...s, value: v };
+        }
+        if (label.includes('pay')) return { ...s, value: stats.countries ?? s.value };
+        if (label.includes('agent')) return { ...s, value: stats.agents ?? s.value };
+        if (label.includes('transaction')) return { ...s, value: stats.transactions ?? s.value };
+        if (label.includes('bailleur')) return { ...s, value: stats.landlords ?? s.value };
+        if (label.includes('utilisateur') || label.includes('hôte') || label.includes('hote')) return { ...s, value: stats.users ?? s.value };
+        if (label.includes('réservation') || label.includes('reservation')) return { ...s, value: stats.bookings ?? s.value };
         return s;
       })
     : hero.stats;
