@@ -54,6 +54,7 @@ import {
   Settings,
   ChevronDown,
   KeyRound,
+  Building2,
 } from 'lucide-react';
 
 type LinkItem = {
@@ -161,6 +162,12 @@ const authOnlyLinks: LinkItem[] = [
     href: '/leases',
     description: 'Contrats de location, signatures, états des lieux',
     icon: KeyRound,
+  },
+  {
+    title: 'Dashboard bailleur',
+    href: '/owner-dashboard',
+    description: 'Revenus locatifs, taux d\'occupation, vacancies',
+    icon: Building2,
   },
   {
     title: 'Portefeuille',

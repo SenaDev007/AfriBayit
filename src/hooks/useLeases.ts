@@ -150,3 +150,34 @@ export function usePayRent() {
     },
   });
 }
+
+/** Owner rental dashboard — KPIs, revenue series, upcoming rents, vacancies (CDC §5.1.3) */
+export function useOwnerDashboard() {
+  return useQuery({
+    queryKey: ['owner-dashboard'],
+    queryFn: () => api.get<{
+      kpis: {
+        totalProperties: number;
+        occupiedCount: number;
+        vacancyCount: number;
+        occupancyRate: number;
+        theoreticalMonthlyRent: number;
+        collectedThisMonth: number;
+        outstandingAmount: number;
+        overdueAmount: number;
+      };
+      revenueSeries: Array<{ month: string; label: string; amount: number }>;
+      upcomingPayments: Array<{
+        id: string;
+        dueDate: string;
+        amountDue: number;
+        currency: string;
+        status: string;
+        lease: any;
+      }>;
+      vacantProperties: Array<any>;
+      activeLeases: Array<any>;
+    }>(`/api/leases/owner/dashboard`),
+    staleTime: 60 * 1000, // refresh every minute
+  });
+}

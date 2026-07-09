@@ -73,6 +73,15 @@ interface FormData {
   features: string[];
   photos: string[];
   legalDocs: { type: string; file: string; status: string }[];
+  // P2.10 — Rental-specific fields (only used when transactionType='location')
+  leaseTermMonths: string;        // 6, 12, 24, 36
+  securityDepositMonths: string;  // 1, 2, 3
+  furnished: boolean;
+  chargesIncluded: boolean;
+  availableFrom: string;          // ISO date
+  petsAllowed: boolean;
+  smokingAllowed: boolean;
+  subletAllowed: boolean;
 }
 
 const initialFormData: FormData = {
@@ -90,6 +99,14 @@ const initialFormData: FormData = {
   features: [],
   photos: [],
   legalDocs: [],
+  leaseTermMonths: '12',
+  securityDepositMonths: '1',
+  furnished: false,
+  chargesIncluded: false,
+  availableFrom: '',
+  petsAllowed: false,
+  smokingAllowed: false,
+  subletAllowed: false,
 };
 
 export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
@@ -239,6 +256,15 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         features: formData.features,
         images: formData.photos,
         legalDocs: formData.legalDocs,
+        // P2.10 — Rental-specific fields (sent only when transactionType='location')
+        // These are stored directly on the Property model (new columns).
+        ...(formData.transactionType === 'location' ? {
+          leaseTermMonths: Number(formData.leaseTermMonths) || 12,
+          securityDepositMonths: Number(formData.securityDepositMonths) || 1,
+          furnished: formData.furnished,
+          chargesIncluded: formData.chargesIncluded,
+          availableFrom: formData.availableFrom || undefined,
+        } : {}),
       });
       setSubmitted(true);
     } catch (err) {
@@ -439,6 +465,113 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     <input type="number" value={formData.bathrooms} onChange={e => updateField('bathrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                 </div>
+
+                {/* P2.10 — Rental-specific fields (only shown when transactionType='location') */}
+                {formData.transactionType === 'location' && (
+                  <div className="p-4 bg-[#003087]/5 rounded-2xl space-y-3 border border-[#003087]/10">
+                    <p className="text-xs font-bold text-[#003087] flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5" />
+                      Conditions de location (OHADA)
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Durée du bail</label>
+                        <select
+                          value={formData.leaseTermMonths}
+                          onChange={e => updateField('leaseTermMonths', e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                        >
+                          <option value="6">6 mois (bail court)</option>
+                          <option value="12">12 mois (bail standard)</option>
+                          <option value="24">24 mois (2 ans)</option>
+                          <option value="36">36 mois (3 ans — max OHADA)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Dépôt de garantie</label>
+                        <select
+                          value={formData.securityDepositMonths}
+                          onChange={e => updateField('securityDepositMonths', e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                        >
+                          <option value="1">1 mois de loyer</option>
+                          <option value="2">2 mois de loyer</option>
+                          <option value="3">3 mois de loyer (max)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">État du bien</label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateField('furnished', 'true' as any)}
+                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                          >
+                            Meublé
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateField('furnished', 'false' as any)}
+                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                          >
+                            Vide
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Charges</label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateField('chargesIncluded', 'true' as any)}
+                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                          >
+                            CC
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateField('chargesIncluded', 'false' as any)}
+                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                          >
+                            HC
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Date d&apos;emménagement</label>
+                      <input
+                        type="date"
+                        value={formData.availableFrom}
+                        onChange={e => updateField('availableFrom', e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.petsAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                        <input type="checkbox" checked={formData.petsAllowed} onChange={e => updateField('petsAllowed', e.target.checked as any)} className="w-3 h-3" />
+                        Animaux
+                      </label>
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.smokingAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                        <input type="checkbox" checked={formData.smokingAllowed} onChange={e => updateField('smokingAllowed', e.target.checked as any)} className="w-3 h-3" />
+                        Fumeur
+                      </label>
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.subletAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                        <input type="checkbox" checked={formData.subletAllowed} onChange={e => updateField('subletAllowed', e.target.checked as any)} className="w-3 h-3" />
+                        Sous-location
+                      </label>
+                    </div>
+                    {/* Honoraires info (Décret 2024-1115) */}
+                    <div className="p-2 bg-[#D4AF37]/5 rounded-xl">
+                      <p className="text-[10px] text-gray-500">
+                        <span className="font-semibold text-[#D4AF37]">Honoraires d&apos;agence (Décret 2024-1115) :</span>{' '}
+                        répartis 50/50 entre bailleur et locataire (max 0,5 mois chacun), calculés automatiquement à la signature du bail.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* City & Quartier */}
                 <div className="grid grid-cols-2 gap-3">
