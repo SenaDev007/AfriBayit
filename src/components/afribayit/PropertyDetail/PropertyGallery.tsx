@@ -40,12 +40,13 @@ export default function PropertyGallery({
         transition={{ duration: 0.5, ease: easeOut }}
         className="mb-6"
       >
-        <div className="relative rounded-3xl overflow-hidden aspect-[16/10] bg-gray-100">
+        <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-gray-100">
           <ImageWithFallback
             src={images[activeImage]}
             alt={title}
-            className="w-full h-full"
+            className="absolute inset-0 w-full h-full"
             fallbackType="property"
+            fill
           />
           {/* Badges */}
           <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
@@ -129,11 +130,11 @@ export default function PropertyGallery({
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`w-20 h-14 rounded-xl overflow-hidden border-2 transition-colors ${
+                className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 transition-colors ${
                   i === activeImage ? 'border-[#003087]' : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
-                <ImageWithFallback src={img} alt="" className="w-full h-full" fallbackType="property" />
+                <ImageWithFallback src={img} alt="" className="absolute inset-0 w-full h-full" fallbackType="property" fill />
               </button>
             ))}
           </div>

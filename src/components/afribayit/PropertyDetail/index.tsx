@@ -393,8 +393,8 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
       )}
 
       {/* ═══ Advanced Features (CDC §5.1.2 compliance) ═══ */}
-      <div className="mt-12 space-y-8">
-        {/* Price Prediction ML Chart — CDC §5.1.1 "Prédictions de prix par quartier (ML)" */}
+      <div className="mt-12 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Price Prediction ML Chart */}
         {property.transaction !== 'location' && property.transaction !== 'location_courte_duree' && (
           <PricePredictionChart
             currentPrice={property.price}
@@ -403,20 +403,24 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           />
         )}
 
-        {/* VR Tour Player — CDC §5.1.2 "Visite virtuelle 360° réelle (Matterport) + WebXR" */}
-        <VRTourPlayer
-          propertyTitle={property.title}
-          images={images}
-          hasVR={hasVR}
-        />
+        {/* VR Tour Player — constrained width */}
+        <div className="max-w-2xl">
+          <VRTourPlayer
+            propertyTitle={property.title}
+            images={images}
+            hasVR={hasVR}
+          />
+        </div>
 
-        {/* Drone View Player — CDC §5.1.2 "Drone view et time-lapse jour/nuit" */}
-        <DroneViewPlayer
-          propertyTitle={property.title}
-          hasDroneView={property.hasDroneView || false}
-        />
+        {/* Drone View Player — constrained width */}
+        <div className="max-w-2xl">
+          <DroneViewPlayer
+            propertyTitle={property.title}
+            hasDroneView={property.hasDroneView || false}
+          />
+        </div>
 
-        {/* Neighborhood Analysis — CDC §5.1.2 "Analyse de quartier IA" + "Données environnementales temps réel" */}
+        {/* Neighborhood Analysis */}
         {property.lat && property.lng && (
           <NeighborhoodAnalysis
             lat={property.lat}

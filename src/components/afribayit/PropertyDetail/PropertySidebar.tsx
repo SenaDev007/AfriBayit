@@ -236,12 +236,15 @@ export default function PropertySidebar({
       {agent && (
         <div className="bg-white rounded-3xl p-5 shadow-sm border mb-4">
           <div className="flex items-center gap-3 mb-4">
-            <ImageWithFallback
-              src={agent.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
-              alt={agent.name}
-              className="w-12 h-12 rounded-full border-2 border-[#D4AF37]"
-              fallbackType="avatar"
-            />
+            <div className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] relative">
+              <ImageWithFallback
+                src={agent.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
+                alt={agent.name}
+                className="absolute inset-0 w-full h-full"
+                fallbackType="avatar"
+                fill
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-sm text-[#2C2E2F]">{agent.name}</h3>
