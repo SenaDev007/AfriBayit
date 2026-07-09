@@ -403,17 +403,13 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           />
         )}
 
-        {/* VR Tour Player — constrained width */}
-        <div className="max-w-2xl">
+        {/* VR Tour + Drone View — side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <VRTourPlayer
             propertyTitle={property.title}
             images={images}
             hasVR={hasVR}
           />
-        </div>
-
-        {/* Drone View Player — constrained width */}
-        <div className="max-w-2xl">
           <DroneViewPlayer
             propertyTitle={property.title}
             hasDroneView={property.hasDroneView || false}
