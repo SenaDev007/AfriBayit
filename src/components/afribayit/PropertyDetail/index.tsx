@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProperty } from '@/hooks/useProperties';
+import { useCreateTransaction } from '@/hooks/useTransactions';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, apiPost, apiDelete } from '@/lib/api-client';
 import { formatPrice } from '@/lib/afribayit-utils';
@@ -97,6 +98,24 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
       setFavoriteLoading(false);
     }
   }, [isAuthenticated, isFavorite, propertyId, queryClient]);
+
+  // Purchase transaction creation
+  const createTransaction = useCreateTransaction();
+
+  const handlePurchase = useCallback(async (propId: string) => {
+    if (!isAuthenticated) {
+      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+      return;
+    }
+    try {
+      const result = await createTransaction.mutateAsync({ propertyId: propId });
+      // Redirect to escrow page with the new transaction
+      window.location.href = result.paymentUrl || '/escrow';
+    } catch (err) {
+      console.error('Purchase initiation error:', err);
+      alert('Erreur lors de l\'initiation de la transaction. Veuillez réessayer.');
+    }
+  }, [isAuthenticated, createTransaction]);
 
   // Share functionality
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyId}` : '';
@@ -329,6 +348,9 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
               setShowPhone={setShowPhone}
               verified={property.verified}
               geoTrust={property.geoTrust}
+              onPurchase={handlePurchase}
+              onContactAgent={() => { window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`; }}
+              property={property}
             />
           </div>
         </div>
