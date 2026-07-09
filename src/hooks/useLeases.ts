@@ -108,3 +108,45 @@ export function useRecordDamages() {
     },
   });
 }
+
+/** List rent payments for a lease */
+export function useRentPayments(leaseId: string | null) {
+  return useQuery({
+    queryKey: ['rent-payments', leaseId],
+    queryFn: () => api.get<{ rentPayments: any[] }>(`/api/leases/${leaseId}/rent-payments`),
+    enabled: !!leaseId,
+  });
+}
+
+/**
+ * Initiate payment for a monthly rent.
+ * Returns the FedaPay/Stripe redirect URL — the tenant is redirected
+ * to the provider to confirm the payment. On success, the webhook
+ * releases the funds to the owner's wallet.
+ */
+export function usePayRent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      leaseId: string;
+      paymentId: string;
+      method: string;       // 'orange_money' | 'mtn_momo' | 'moov_money' | 'wave' | 'card'
+      provider?: string;    // 'fedapay' | 'stripe'
+    }) =>
+      apiPost<{
+        payment: any;
+        walletTransaction: any;
+        provider: string;
+        providerResponse: any;
+        message: string;
+      }>(`/api/leases/${data.leaseId}/rent-payments/${data.paymentId}/pay`, {
+        method: data.method,
+        provider: data.provider,
+      }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['rent-payments', variables.leaseId] });
+      queryClient.invalidateQueries({ queryKey: ['lease', variables.leaseId] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    },
+  });
+}

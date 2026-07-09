@@ -4,12 +4,13 @@ import { useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useLease, useGenerateContract, useSignLease, useCreateInventory, useSignInventory, useRecordDamages } from '@/hooks/useLeases';
+import { useLease, useGenerateContract, useSignLease, useCreateInventory, useSignInventory, useRecordDamages, useRentPayments, usePayRent } from '@/hooks/useLeases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
 import {
   ChevronRight, FileText, Home, KeyRound, Calendar, Coins, User, Phone, MapPin,
   Download, PenLine, CheckCircle2, Clock, AlertTriangle, ClipboardList, Plus, X,
+  CreditCard, Smartphone,
 } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
@@ -43,6 +44,8 @@ export default function LeaseDetailPage() {
   const createInventory = useCreateInventory();
   const signInventory = useSignInventory();
   const recordDamages = useRecordDamages();
+  const payRent = usePayRent();
+  const { data: rentPaymentsData } = useRentPayments(lease?.status === 'ACTIVE' || lease?.status === 'PENDING_CHECKOUT' ? leaseId : null);
 
   const [signaturePad, setSignaturePad] = useState<string | null>(null);
   const [signingTarget, setSigningTarget] = useState<{ type: 'contract' | 'inventory'; inventoryId?: string } | null>(null);
@@ -50,6 +53,8 @@ export default function LeaseDetailPage() {
   const [inventoryItems, setInventoryItems] = useState<Array<{ room: string; condition: string; observations?: string }>>([]);
   const [showDamagesForm, setShowDamagesForm] = useState<string | null>(null);
   const [damages, setDamages] = useState<Array<{ room: string; description: string; estimatedCost: number }>>([]);
+  const [payingRentId, setPayingRentId] = useState<string | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('orange_money');
 
   const lease = data;
 
@@ -133,6 +138,28 @@ export default function LeaseDetailPage() {
       alert('Erreur lors de l\'enregistrement des dégradations.');
     }
   }, [leaseId, recordDamages, damages]);
+
+  const handlePayRent = useCallback(async (paymentId: string) => {
+    if (!leaseId) return;
+    try {
+      const result = await payRent.mutateAsync({
+        leaseId,
+        paymentId,
+        method: selectedPaymentMethod,
+      });
+      // Redirect to the provider's payment page (FedaPay redirect URL or Stripe)
+      const redirectUrl = result?.providerResponse?.redirectUrl || result?.providerResponse?.url;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        alert('Paiement initié. Vous serez redirigé vers le provider.');
+      }
+      setPayingRentId(null);
+    } catch (err) {
+      console.error('Rent payment error:', err);
+      alert('Erreur lors de l\'initiation du paiement. Veuillez réessayer.');
+    }
+  }, [leaseId, payRent, selectedPaymentMethod]);
 
   if (isLoading) {
     return (
@@ -335,6 +362,32 @@ export default function LeaseDetailPage() {
                 onRecordDamages={isOwner ? (invId) => { setShowDamagesForm(invId); setDamages([{ room: '', description: '', estimatedCost: 0 }]); } : undefined}
               />
             </div>
+          </motion.div>
+        )}
+
+        {/* Rent payments section — monthly rent tracking + payment */}
+        {(lease.status === 'ACTIVE' || lease.status === 'PENDING_CHECKOUT') && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="bg-white rounded-3xl border p-6 mb-6"
+          >
+            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
+              <Coins className="w-5 h-5" />
+              Loyers mensuels
+            </h2>
+            <RentPaymentsList
+              payments={rentPaymentsData?.rentPayments || lease.rentPayments || []}
+              isTenant={isTenant}
+              payingRentId={payingRentId}
+              setPayingRentId={setPayingRentId}
+              selectedPaymentMethod={selectedPaymentMethod}
+              setSelectedPaymentMethod={setSelectedPaymentMethod}
+              onPay={handlePayRent}
+              isPaying={payRent.isPending}
+              currency={lease.currency}
+            />
           </motion.div>
         )}
 
@@ -698,6 +751,166 @@ function DamagesFormModal({ damages, setDamages, onSave, onClose, isPending }: {
             {isPending ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Rent Payments List (CDC §7B.5 — recurring monthly rent) ────────────
+const RENT_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'À payer', color: '#D4AF37' },
+  PAID: { label: 'Payé', color: '#009CDE' },
+  RELEASED: { label: 'Versé au bailleur', color: '#00A651' },
+  OVERDUE: { label: 'En retard', color: '#ef4444' },
+  FAILED: { label: 'Échec', color: '#ef4444' },
+  REFUNDED: { label: 'Remboursé', color: '#6b7280' },
+};
+
+const PAYMENT_METHODS = [
+  { id: 'orange_money', label: 'Orange Money', color: '#FF7900' },
+  { id: 'mtn_momo', label: 'MTN MoMo', color: '#FFCC00' },
+  { id: 'moov_money', label: 'Moov Money', color: '#0066B3' },
+  { id: 'wave', label: 'Wave', color: '#1DC9FF' },
+  { id: 'card', label: 'Carte bancaire', color: '#003087' },
+];
+
+function RentPaymentsList({
+  payments, isTenant, payingRentId, setPayingRentId,
+  selectedPaymentMethod, setSelectedPaymentMethod, onPay, isPaying, currency,
+}: {
+  payments: any[];
+  isTenant: boolean;
+  payingRentId: string | null;
+  setPayingRentId: (v: string | null) => void;
+  selectedPaymentMethod: string;
+  setSelectedPaymentMethod: (v: string) => void;
+  onPay: (paymentId: string) => void;
+  isPaying: boolean;
+  currency: string;
+}) {
+  if (payments.length === 0) {
+    return (
+      <div className="text-center py-6 text-sm text-gray-500">
+        Aucun loyer généré pour le moment. Les loyers mensuels apparaîtront ici automatiquement.
+      </div>
+    );
+  }
+
+  // Sort by due date descending (most recent first)
+  const sorted = [...payments].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+
+  // Stats summary
+  const totalPaid = sorted.filter(p => p.status === 'RELEASED' || p.status === 'PAID').reduce((s, p) => s + (p.amountPaid || 0), 0);
+  const pendingCount = sorted.filter(p => p.status === 'PENDING' || p.status === 'OVERDUE').length;
+  const overdueCount = sorted.filter(p => p.status === 'OVERDUE').length;
+
+  return (
+    <div>
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="p-3 bg-[#00A651]/5 rounded-2xl">
+          <p className="text-xs text-gray-400 mb-0.5">Total versé</p>
+          <p className="font-mono-data font-bold text-[#00A651] text-sm">{new Intl.NumberFormat('fr-FR').format(totalPaid)} {currency}</p>
+        </div>
+        <div className="p-3 bg-[#D4AF37]/5 rounded-2xl">
+          <p className="text-xs text-gray-400 mb-0.5">À payer</p>
+          <p className="font-mono-data font-bold text-[#D4AF37] text-sm">{pendingCount} mois</p>
+        </div>
+        <div className={`p-3 rounded-2xl ${overdueCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
+          <p className="text-xs text-gray-400 mb-0.5">En retard</p>
+          <p className={`font-mono-data font-bold text-sm ${overdueCount > 0 ? 'text-red-500' : 'text-gray-400'}`}>{overdueCount} mois</p>
+        </div>
+      </div>
+
+      {/* Payment list */}
+      <div className="space-y-2 max-h-96 overflow-y-auto">
+        {sorted.map((payment) => {
+          const status = RENT_STATUS_LABELS[payment.status] || RENT_STATUS_LABELS.PENDING;
+          const dueDate = new Date(payment.dueDate);
+          const isPayable = isTenant && (payment.status === 'PENDING' || payment.status === 'OVERDUE');
+          const isInitialBadge = payment.isInitial;
+          return (
+            <div key={payment.id} className={`p-3 rounded-2xl border ${payment.status === 'OVERDUE' ? 'border-red-200 bg-red-50/30' : 'border-gray-100'}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-semibold text-[#2C2E2F]">
+                      {dueDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    </p>
+                    {isInitialBadge && (
+                      <span className="px-1.5 py-0.5 bg-[#003087]/10 text-[#003087] text-[9px] font-bold rounded-full">1ER MOIS + DÉPÔT</span>
+                    )}
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
+                      style={{ backgroundColor: `${status.color}15`, color: status.color }}
+                    >
+                      {status.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    Échéance: {dueDate.toLocaleDateString('fr-FR')}
+                    {payment.paidAt && ` · Payé le ${new Date(payment.paidAt).toLocaleDateString('fr-FR')}`}
+                    {payment.releasedAt && ` · Versé le ${new Date(payment.releasedAt).toLocaleDateString('fr-FR')}`}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-mono-data font-bold text-sm text-[#2C2E2F]">
+                    {new Intl.NumberFormat('fr-FR').format(payment.amountDue)} {currency}
+                  </p>
+                  {isPayable && (
+                    <button
+                      onClick={() => setPayingRentId(payment.id)}
+                      className="mt-1 px-3 py-1 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1.5"
+                    >
+                      <CreditCard className="w-3 h-3" />
+                      Payer
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment method selector + confirm (inline) */}
+              {payingRentId === payment.id && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5" />
+                    Choisissez votre méthode de paiement:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {PAYMENT_METHODS.map((m) => (
+                      <button
+                        key={m.id}
+                        onClick={() => setSelectedPaymentMethod(m.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                          selectedPaymentMethod === m.id
+                            ? 'border-[#003087] bg-[#003087] text-white'
+                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPayingRentId(null)}
+                      className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={() => onPay(payment.id)}
+                      disabled={isPaying}
+                      className="flex-1 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      {isPaying ? 'Redirection...' : `Payer ${new Intl.NumberFormat('fr-FR').format(payment.amountDue)} ${currency}`}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
