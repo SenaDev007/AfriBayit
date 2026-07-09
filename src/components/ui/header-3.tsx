@@ -53,6 +53,7 @@ import {
   User,
   Settings,
   ChevronDown,
+  KeyRound,
 } from 'lucide-react';
 
 type LinkItem = {
@@ -154,6 +155,12 @@ const authOnlyLinks: LinkItem[] = [
     href: '/escrow',
     description: 'Transactions protégées par escrow',
     icon: Shield,
+  },
+  {
+    title: 'Mes baux',
+    href: '/leases',
+    description: 'Contrats de location, signatures, états des lieux',
+    icon: KeyRound,
   },
   {
     title: 'Portefeuille',
