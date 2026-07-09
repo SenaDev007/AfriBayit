@@ -55,6 +55,7 @@ import {
   ChevronDown,
   KeyRound,
   Building2,
+  TrendingUp,
 } from 'lucide-react';
 
 type LinkItem = {
@@ -168,6 +169,12 @@ const authOnlyLinks: LinkItem[] = [
     href: '/owner-dashboard',
     description: 'Revenus locatifs, taux d\'occupation, vacancies',
     icon: Building2,
+  },
+  {
+    title: 'Portfolio investisseur',
+    href: '/investor-dashboard',
+    description: 'Plus-value latente, ROI, revenus locatifs',
+    icon: TrendingUp,
   },
   {
     title: 'Portefeuille',

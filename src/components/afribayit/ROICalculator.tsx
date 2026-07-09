@@ -264,7 +264,7 @@ export default function ROICalculator({
             </div>
             <div className="flex justify-between text-red-400">
               <span>− Vacance ({vacancyPct}%)</span>
-              <span className="font-mono">−{fmt(calc.totalAnnualCosts - calc.annualCharges - calc.propertyTax)}</span>
+              <span className="font-mono">−{fmt(calc.annualRentGross - calc.annualRentNet)}</span>
             </div>
             <div className="flex justify-between text-red-400">
               <span>− Charges annuelles</span>

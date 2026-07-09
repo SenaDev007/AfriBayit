@@ -85,3 +85,62 @@ export function useInvestmentScore(propertyId: string | null) {
     enabled: !!propertyId,
   });
 }
+
+export interface PortfolioItem {
+  transactionId: string;
+  propertyId: string;
+  title: string;
+  type: string;
+  city: string;
+  country: string;
+  surface: number;
+  bedrooms: number;
+  images: string[];
+  purchasePrice: number;
+  purchaseDate: string;
+  currentValue: number;
+  plusValue: number;
+  plusValuePct: number;
+  yearsHeld: number;
+  investmentScore: number;
+  estimatedRoi: RoiEstimate;
+}
+
+export interface RentalIncomeItem {
+  leaseId: string;
+  leaseRef: string;
+  property: { id: string; title: string; city: string };
+  tenant: { id: string; name: string; avatar?: string };
+  monthlyRent: number;
+  currency: string;
+  collectedTotal: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface InvestorDashboard {
+  kpis: {
+    portfolioValue: number;
+    totalInvested: number;
+    totalPlusValue: number;
+    totalPlusValuePct: number;
+    totalRentalIncome: number;
+    monthlyRentalIncome: number;
+    avgRoi: number;
+    propertyCount: number;
+    activeLeaseCount: number;
+    favoritesCount: number;
+  };
+  portfolio: PortfolioItem[];
+  rentalIncome: RentalIncomeItem[];
+  incomeSeries: Array<{ month: string; label: string; amount: number }>;
+}
+
+/** Investor dashboard — portfolio, plus-value latente, rental income, ROI (CDC §5.9.2) */
+export function useInvestorDashboard() {
+  return useQuery({
+    queryKey: ['investor-dashboard'],
+    queryFn: () => api.get<InvestorDashboard>(`/api/investment/dashboard`),
+    staleTime: 60 * 1000,
+  });
+}
