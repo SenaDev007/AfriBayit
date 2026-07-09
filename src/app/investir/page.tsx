@@ -22,6 +22,8 @@ import ConversationalSearchBar from '@/components/afribayit/ConversationalSearch
 import InvestmentOpportunities from '@/components/afribayit/InvestmentOpportunities';
 import ROICalculator from '@/components/afribayit/ROICalculator';
 import TaxCalculator from '@/components/afribayit/TaxCalculator';
+import PriceAlertsManager from '@/components/afribayit/PriceAlertsManager';
+import InvestmentGuide from '@/components/afribayit/InvestmentGuide';
 import { useInvestmentStats } from '@/hooks/useInvestment';
 import { Brain, TrendingUp, Coins, Calculator, FileText, X, Sparkles } from 'lucide-react';
 
@@ -172,6 +174,31 @@ export default function InvestirPage() {
                 Ouvrir le calculateur fiscal
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Price alerts + Investment guide */}
+      <section className="py-12 bg-gray-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-8 text-center"
+          >
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#003087] mb-2">
+              Restez informé & investissez en toute connaissance de cause
+            </h2>
+            <p className="text-sm text-gray-500 max-w-2xl mx-auto">
+              Créez des alertes personnalisées pour ne manquer aucune opportunité,
+              et consultez le cadre légal d&apos;investissement dans chaque pays de la zone UEMOA.
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <PriceAlertsManager />
+            <InvestmentGuide />
           </div>
         </div>
       </section>
