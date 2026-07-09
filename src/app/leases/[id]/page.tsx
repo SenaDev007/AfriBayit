@@ -45,7 +45,10 @@ export default function LeaseDetailPage() {
   const signInventory = useSignInventory();
   const recordDamages = useRecordDamages();
   const payRent = usePayRent();
-  const { data: rentPaymentsData } = useRentPayments(lease?.status === 'ACTIVE' || lease?.status === 'PENDING_CHECKOUT' ? leaseId : null);
+  // Note: `lease` is derived from `data` below — we use `data?.status` here
+  // because the hook must be called unconditionally (React rules of hooks),
+  // and `lease` isn't defined yet at this point.
+  const { data: rentPaymentsData } = useRentPayments(data?.status === 'ACTIVE' || data?.status === 'PENDING_CHECKOUT' ? leaseId : null);
 
   const [signaturePad, setSignaturePad] = useState<string | null>(null);
   const [signingTarget, setSigningTarget] = useState<{ type: 'contract' | 'inventory'; inventoryId?: string } | null>(null);
