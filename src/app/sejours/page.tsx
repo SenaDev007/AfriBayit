@@ -165,6 +165,7 @@ export default function BookingPage() {
       country: g.country,
       stars: 0,
       rating: g.overallRating,
+      overallRating: g.overallRating,
       reviewCount: g.reviewCount || 0,
       price: g.rooms?.[0]?.basePrice || 0,
       minPrice: g.rooms?.[0]?.basePrice || 0,
@@ -172,7 +173,7 @@ export default function BookingPage() {
       currency: g.rooms?.[0]?.currency || 'XOF',
       amenities: g.amenities ? (typeof g.amenities === 'string' ? safeJsonParse<string[]>(g.amenities, []) : g.amenities) : [],
       hasBreakfast: g.amenities ? (typeof g.amenities === 'string' ? safeJsonParse<string[]>(g.amenities, []).includes('breakfast') : false) : false,
-      certified: false, // TODO: fetch from guesthouse model when certification field is available
+      certified: false,
       image: g.images ? (typeof g.images === 'string' ? (safeJsonParse<string[]>(g.images, []))[0] : null) : null,
       slug: g.slug,
     }));
