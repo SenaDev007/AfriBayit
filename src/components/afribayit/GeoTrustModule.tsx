@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGeometers, useGeometerMissions, useCreateGeotrustMission } from '@/hooks/useGeotrust';
+import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search, ArrowLeft, Star, Briefcase, Clock, Award, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search, ArrowLeft, Star, Briefcase, Clock, Award, X, ShieldCheck } from 'lucide-react';
 import { geoServiceLabel } from '@/lib/constants';
 
 interface Geometer {
@@ -73,6 +74,7 @@ export default function GeoTrustModule() {
   const [detailGeometer, setDetailGeometer] = useState<Geometer | null>(null);
   const [missionForm, setMissionForm] = useState({ serviceCode: '', propertyId: '', notes: '', price: 0 });
   const { selectedCountry } = useCountry();
+  const { isAuthenticated } = useAuthStore();
 
   const { data: geometersData, isLoading: geometersLoading, error: geometersError } = useGeometers(undefined, selectedCountry);
   const { data: missionsData, isLoading: missionsLoading } = useGeometerMissions();
@@ -110,6 +112,15 @@ export default function GeoTrustModule() {
   const missions: Mission[] = (missionsData?.missions as Mission[]) || [];
 
   const handleViewDetail = (geometer: Geometer) => {
+    // CDC §7C — Only registered users can view full geometer profiles
+    if (!isAuthenticated) {
+      toast({
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour voir le profil détaillé d\'un géomètre et demander une mission.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     setDetailGeometer(geometer);
   };
 
@@ -118,6 +129,15 @@ export default function GeoTrustModule() {
   };
 
   const handleOpenMissionDialog = (geometer: Geometer) => {
+    // CDC §7C — Only registered users can request missions
+    if (!isAuthenticated) {
+      toast({
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour demander une mission GeoTrust.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     setSelectedGeometer(geometer);
     const service = selectedService
       ? geometerServices.find(s => s.id === selectedService)
@@ -226,9 +246,17 @@ export default function GeoTrustModule() {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   <ClipboardList className="w-4 h-4" />
-                  Demander un devis
+                  Demander une mission
                 </button>
               </div>
+              <p className="text-[10px] text-gray-400 mt-3 max-w-md flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#00A651]" />
+                <span>
+                  Toute mission GeoTrust transite par AfriBayit. Le paiement est sécurisé via escrow
+                  (commission 8-12%). Le rapport du géomètre devient une condition de libération
+                  de l&apos;escrow : VALIDATED → progression, ALERT → litige, REJECTED → remboursement.
+                </span>
+              </p>
             </div>
 
             {/* Certifications */}
@@ -435,7 +463,7 @@ export default function GeoTrustModule() {
                     onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
                     className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
-                    Demander un devis
+                    Demander une mission
                   </button>
                 </motion.div>
               ))}
