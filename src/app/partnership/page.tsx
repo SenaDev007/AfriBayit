@@ -20,7 +20,7 @@ export default function PartnershipPage() {
       <section className="relative py-20 overflow-hidden" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Handshake className="w-12 h-12 mx-auto mb-4" style={{ color: GOLD }} />
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Devenir partenaire</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Devenir partenaire</h1>
           <p className="text-white/70 max-w-2xl mx-auto">Rejoignez l'écosystème AfriBayit et développez votre activité en Afrique de l'Ouest. Plus de 18 000 utilisateurs vous attendent.</p>
         </div>
       </section>
@@ -42,7 +42,7 @@ export default function PartnershipPage() {
                     <p.icon className="w-6 h-6" style={{ color: NAVY }} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>{p.title}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>{p.title}</h3>
                     <p className="text-sm text-gray-500">{p.desc}</p>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ export default function PartnershipPage() {
 
       <section className="py-16" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Une question sur le partenariat ?</h2>
+          <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Une question sur le partenariat ?</h2>
           <div className="flex flex-wrap justify-center gap-4 mt-6">
             <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-lg text-sm font-bold hover:scale-105 transition-transform">
               <Mail className="w-4 h-4" /> Email

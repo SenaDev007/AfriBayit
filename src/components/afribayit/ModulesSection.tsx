@@ -91,7 +91,7 @@ export default function ModulesSection() {
             Écosystème Complet
             <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
             Nos modules
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-gray-500">
@@ -121,7 +121,7 @@ export default function ModulesSection() {
                 {mod.icon}
               </div>
 
-              <h3 className="mt-5 font-[family-name:var(--font-cormorant),Georgia,serif] text-2xl font-bold text-gray-900 transition-colors group-hover:text-[#003366]">
+              <h3 className="mt-5 font-[family-name:var(--font-inter),Georgia,serif] text-2xl font-bold text-gray-900 transition-colors group-hover:text-[#003366]">
                 {mod.name}
               </h3>
               <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">

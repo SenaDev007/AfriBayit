@@ -160,7 +160,7 @@ export default function PricePredictionChart({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Brain className="w-5 h-5" style={{ color: GOLD }} />
-            <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
               Prédiction de prix IA
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}15`, color: GOLD }}>

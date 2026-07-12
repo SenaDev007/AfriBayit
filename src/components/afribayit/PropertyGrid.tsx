@@ -123,7 +123,7 @@ export default function PropertyGrid({
               <span className="h-px w-8" style={{ background: NAVY }} />
               {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''} disponible{filteredProperties.length > 1 ? 's' : ''}
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
               {selectedCountry && selectedCountry !== ('all' as any)
                 ? `Biens en ${COUNTRY_NAMES[selectedCountry] || selectedCountry}`
                 : 'Tous les biens'}

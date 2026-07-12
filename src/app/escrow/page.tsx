@@ -152,7 +152,7 @@ export default function EscrowPage() {
               <div className="w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-6" style={{ background: `${NAVY}10` }}>
                 <Shield className="w-10 h-10" style={{ color: NAVY }} />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
                 Aucune transaction en cours
               </h2>
               <p className="text-gray-500 mb-8 max-w-md mx-auto">

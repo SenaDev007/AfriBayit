@@ -26,7 +26,7 @@ export default function RefundPage() {
       <section className="relative py-20 overflow-hidden" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Shield className="w-12 h-12 mx-auto mb-4" style={{ color: GOLD }} />
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Politique de remboursement</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Politique de remboursement</h1>
           <p className="text-white/70 max-w-2xl mx-auto">Votre confiance est notre priorité. AfriBayit garantit des remboursements transparents et rapides pour toutes les transactions sécurisées par escrow.</p>
         </div>
       </section>
@@ -60,7 +60,7 @@ export default function RefundPage() {
 
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Comment se faire rembourser ?</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Comment se faire rembourser ?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {STEPS.map((s, i) => (
               <motion.div

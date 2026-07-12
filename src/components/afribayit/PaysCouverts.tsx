@@ -81,7 +81,7 @@ export default function PaysCouverts() {
             Présence Régionale
             <span className="h-px w-8 bg-[#FFCC00]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             Pays couverts
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
@@ -116,7 +116,7 @@ export default function PaysCouverts() {
                 </div>
 
                 {/* Name */}
-                <h3 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900 sm:text-xl">
+                <h3 className="mt-4 font-[family-name:var(--font-inter),Georgia,serif] text-lg font-bold text-gray-900 sm:text-xl">
                   {meta?.name || country.name}
                 </h3>
 

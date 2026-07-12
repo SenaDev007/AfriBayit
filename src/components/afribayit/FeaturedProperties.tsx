@@ -102,7 +102,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               <span className="h-px w-8 bg-[#003366]" />
               Sélection Premium
             </span>
-            <h2 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+            <h2 className="mt-4 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
               Biens en vedette
             </h2>
             <p className="mt-3 max-w-lg font-[family-name:var(--font-inter),system-ui,sans-serif] text-gray-500">
@@ -171,7 +171,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien disponible</h3>
+            <h3 className="font-[family-name:var(--font-inter),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien disponible</h3>
             <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
               Les biens apparaîtront ici dès qu'ils seront publiés.
             </p>
@@ -186,7 +186,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
+            <h3 className="font-[family-name:var(--font-inter),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
             <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-gray-400">
               Les biens premium apparaîtront ici prochainement.
             </p>

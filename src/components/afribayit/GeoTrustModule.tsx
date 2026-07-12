@@ -207,7 +207,7 @@ export default function GeoTrustModule() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
                       {detailGeometer.name}
                     </h1>
                     {detailGeometer.certifiedAt && (

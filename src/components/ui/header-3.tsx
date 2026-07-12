@@ -315,7 +315,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
   // When on home page and not scrolled, the navbar overlays the dark navy hero,
   // so we use white text. Otherwise we use dark text on the light background.
   const onDarkHero = isHome && !scrolled;
-  const textColor = onDarkHero ? 'text-white' : 'text-[#2C2E2F]';
+  const textColor = onDarkHero ? 'text-white' : 'text-[#0a2a5e]';
   const mutedColor = onDarkHero ? 'text-white/70' : 'text-gray-500';
   // Hover styles that work on both dark hero and white navbar
   const triggerHoverClass = onDarkHero
@@ -557,7 +557,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               {profileMenuOpen && (
                 <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e]">{session?.user?.name || 'Utilisateur'}</p>
                     <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                   </div>
                   <div className="py-1">
@@ -660,7 +660,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                   />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{session?.user?.name || 'Utilisateur'}</p>
                   <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                 </div>
               </div>
@@ -779,7 +779,7 @@ function ListItem({
           <Icon className="size-5 text-[#003087]" />
         </div>
         <div className="flex flex-col items-start justify-center">
-          <span className="font-medium text-[#2C2E2F]">{title}</span>
+          <span className="font-medium text-[#0a2a5e]">{title}</span>
           <span className="text-gray-500 text-xs">{description}</span>
         </div>
       </a>

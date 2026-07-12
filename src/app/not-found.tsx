@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="text-center max-w-xl">
         {/* Big 404 with gold accent */}
         <div className="mb-8">
-          <h1 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-8xl md:text-9xl font-bold text-white leading-none">
+          <h1 className="font-[family-name:var(--font-inter),Georgia,serif] text-8xl md:text-9xl font-bold text-white leading-none">
             4
             <span className="text-[#FFCC00]">0</span>
             4
@@ -19,7 +19,7 @@ export default function NotFound() {
           <div className="h-1 w-24 bg-[#FFCC00] mx-auto mt-4 rounded-lg" />
         </div>
 
-        <h2 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-3xl md:text-4xl text-white font-semibold mb-4">
+        <h2 className="font-[family-name:var(--font-inter),Georgia,serif] text-3xl md:text-4xl text-white font-semibold mb-4">
           Cette adresse n'existe pas
         </h2>
 
@@ -44,7 +44,7 @@ export default function NotFound() {
         </div>
 
         {/* Tagline */}
-        <p className="text-white/40 text-sm mt-16 italic font-[family-name:var(--font-cormorant),Georgia,serif]">
+        <p className="text-white/40 text-sm mt-16 italic font-[family-name:var(--font-inter),Georgia,serif]">
           « Où l'Afrique trouve sa maison. »
         </p>
       </div>

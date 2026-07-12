@@ -51,7 +51,7 @@ export default function AboutPage() {
               <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
               <span className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: GOLD }}>À propos d'AfriBayit</span>
             </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-white" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-white" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
               L'Afrique trouve sa maison
             </h1>
             <p className="mt-6 text-lg text-white/80 max-w-2xl">
@@ -77,7 +77,7 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${NAVY}10` }}>
                   <item.icon className="w-6 h-6" style={{ color: NAVY }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>{item.title}</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>{item.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{item.text}</p>
               </motion.div>
             ))}
@@ -119,7 +119,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Notre histoire</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Notre histoire</h2>
           </motion.div>
           <div className="space-y-6 text-gray-600 leading-relaxed">
             <p>

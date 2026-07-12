@@ -79,7 +79,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLa
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: easeOut }}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-white"
-            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
           >
             {title}
           </motion.h1>

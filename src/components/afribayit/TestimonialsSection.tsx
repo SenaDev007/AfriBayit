@@ -115,7 +115,7 @@ export default function TestimonialsSection() {
             {t('testimonials.badge', 'Témoignages')}
             <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
             {t('testimonials.title', "Ce qu'ils")} {t('testimonials.titleAccent', 'disent')}
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-gray-500">

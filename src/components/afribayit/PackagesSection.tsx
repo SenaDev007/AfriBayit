@@ -88,7 +88,7 @@ export default function PackagesSection() {
             <span className="h-px w-8" style={{ background: NAVY }} />
             Packages combinés
           </span>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+          <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
             Hôtellerie + Immobilier = l'avantage AfriBayit
           </h2>
           <p className="mt-4 text-gray-500">
@@ -113,7 +113,7 @@ export default function PackagesSection() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${pkg.color}15` }}>
                   <pkg.icon className="w-6 h-6" style={{ color: pkg.color }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                <h3 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
                   {pkg.title}
                 </h3>
                 <p className="text-sm font-semibold" style={{ color: pkg.color }}>

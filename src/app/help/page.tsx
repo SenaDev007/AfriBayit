@@ -37,7 +37,7 @@ export default function HelpPage() {
       {/* Hero */}
       <section className="relative py-20 overflow-hidden" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Centre d'aide</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Centre d'aide</h1>
           <p className="text-white/70 mb-8">Comment pouvons-nous vous aider ?</p>
           <div className="relative max-w-xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -65,7 +65,7 @@ export default function HelpPage() {
                 transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                 className="bg-white rounded-2xl p-6 shadow-sm border"
               >
-                <h3 className="font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>{cat.title}</h3>
+                <h3 className="font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>{cat.title}</h3>
                 <ul className="space-y-2">
                   {cat.items.map((item, j) => (
                     <li key={j} className="text-sm text-gray-500 hover:text-[#003087] cursor-pointer transition-colors">{item}</li>
@@ -80,7 +80,7 @@ export default function HelpPage() {
       {/* FAQ */}
       <section className="py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Questions fréquentes</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Questions fréquentes</h2>
           <div className="space-y-3">
             {filtered.map((faq, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -112,7 +112,7 @@ export default function HelpPage() {
       {/* Contact */}
       <section className="py-16" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Besoin d'aide supplémentaire ?</h2>
+          <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Besoin d'aide supplémentaire ?</h2>
           <p className="text-white/70 mb-8">Notre équipe support est disponible 7j/7</p>
           <div className="flex flex-wrap justify-center gap-4">
             <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-lg text-sm font-bold hover:scale-105 transition-transform">

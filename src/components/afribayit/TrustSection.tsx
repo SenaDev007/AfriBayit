@@ -132,7 +132,7 @@ function PillarCard({
         </span>
       </div>
 
-      <h3 className="mt-3 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-gray-900">
+      <h3 className="mt-3 font-[family-name:var(--font-inter),Georgia,serif] text-xl font-bold text-gray-900">
         {title}
       </h3>
       <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
@@ -235,7 +235,7 @@ export default function TrustSection() {
             Confiance & Sécurité
             <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-[#003366] sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-[#003366] sm:text-5xl lg:text-6xl">
             Pourquoi AfriBayit ?
           </h2>
           <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-[#003366]/70">

@@ -45,7 +45,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
-                className="mt-5 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl"
+                className="mt-5 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl"
               >
                 {t('cta.title', 'Prêt à trouver votre')}{' '}
                 <span className="text-[#FFCC00]">{t('cta.titleAccent', 'bien idéal')}</span>{' '}

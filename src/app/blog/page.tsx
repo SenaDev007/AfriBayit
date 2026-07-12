@@ -25,7 +25,7 @@ export default function BlogPage() {
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg mb-6" style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
             <span className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: GOLD }}>Blog AfriBayit</span>
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Actualités & Conseils immobiliers</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>Actualités & Conseils immobiliers</h1>
           <p className="text-white/70">Investissement, droit foncier, construction, hôtellerie — l'expertise AfriBayit</p>
         </div>
       </section>
@@ -55,7 +55,7 @@ export default function BlogPage() {
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {article.date}</span>
                     <span className="flex items-center gap-1"><User className="w-3 h-3" /> {article.author}</span>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2 leading-tight" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>{article.title}</h3>
+                  <h3 className="font-bold text-gray-900 mb-2 leading-tight" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>{article.title}</h3>
                   <p className="text-xs text-gray-500 mb-4 line-clamp-2">{article.excerpt}</p>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-[#003087]">
                     Lire l'article <ArrowRight className="w-3 h-3" />
