@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from '@/hooks/use-toast';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Award, ShieldCheck } from 'lucide-react';
 import type { Course, Enrollment, CertificateItem, AcademyTabKey } from './types';
 import { academyTabs } from './constants';
 import CataloguePanel from './CataloguePanel';
@@ -110,6 +110,21 @@ export default function AcademyModule() {
           <p className="text-gray-500 max-w-lg mx-auto">
             Montez en compétences avec nos formations certifiantes. Investissement, droit foncier, négociation, et plus encore.
           </p>
+          {/* CDC §5.6 — Model + Certificate info */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-gray-400">
+            <span className="flex items-center gap-1">
+              <Award className="w-3.5 h-3.5 text-[#D4AF37]" />
+              Certificats PDF avec QR code vérifiable
+            </span>
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#00A651]" />
+              Paiement sécurisé via escrow (70% expert / 30% AfriBayit)
+            </span>
+            <span className="flex items-center gap-1">
+              <GraduationCap className="w-3.5 h-3.5 text-[#003087]" />
+              5 parcours: Débutant, Investisseur, Pro, Légal, Artisan
+            </span>
+          </div>
         </motion.div>
 
         {/* Country Filter Badge */}

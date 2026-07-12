@@ -4,7 +4,16 @@ import {
 } from 'lucide-react';
 import type { AcademyTabKey } from './types';
 
-export const categories = ['Tous', 'Investissement', 'Certification', 'Juridique', 'Technique', 'Construction', 'Business'];
+// CDC §5.6.3 — Course categories aligned with the CDC
+export const categories = [
+  'Tous',
+  'Investissement immobilier',
+  'Droit foncier par pays',
+  'Gestion locative',
+  'Techniques de vente',
+  'Découverte AfriBayit',
+  'BTP & Rénovation',
+];
 
 export const academyTabs: { key: AcademyTabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'catalogue', label: 'Catalogue', icon: <BookOpen className="w-4 h-4" /> },
@@ -12,31 +21,47 @@ export const academyTabs: { key: AcademyTabKey; label: string; icon: React.React
   { key: 'certifications', label: 'Certifications', icon: <Award className="w-4 h-4" /> },
 ];
 
-// Learning paths suggestions
+// CDC §5.6 — 5 learning paths (Débutant, Investisseur, Professionnel, Légal, Artisan)
 export const LEARNING_PATHS = [
   {
-    id: 'lp1',
-    title: 'Investisseur Débutant',
-    description: 'De zéro à premier investissement',
-    courses: ['Investissement Immobilier 101', 'Analyse de Marché', 'Financement & Crédit'],
+    id: 'debutant',
+    title: 'Débutant',
+    description: 'Découverte de l\'immobilier africain',
+    courses: ['Découverte AfriBayit', 'Droit foncier Bénin 2023', 'Investissement Immobilier 101'],
     color: '#003087',
+    icon: <BookOpen className="w-5 h-5" />,
+  },
+  {
+    id: 'investisseur',
+    title: 'Investisseur',
+    description: 'Stratégies d\'investissement et ROI',
+    courses: ['Calcul de rentabilité', 'Défiscalisation en Afrique', 'Analyse de marché'],
+    color: '#D4AF37',
     icon: <Zap className="w-5 h-5" />,
   },
   {
-    id: 'lp2',
-    title: 'Agent Certifié',
-    description: 'Obtenez votre certification professionnelle',
-    courses: ['Droit Foncier', 'Négociation Avancée', 'Certification Agent'],
-    color: '#D4AF37',
+    id: 'professionnel',
+    title: 'Professionnel',
+    description: 'Agent certifié et gestion immobilière',
+    courses: ['Techniques de vente', 'Négociation immobilière', 'Certification Agent'],
+    color: '#00A651',
     icon: <BadgeCheck className="w-5 h-5" />,
   },
   {
-    id: 'lp3',
-    title: 'Promoteur Immobilier',
-    description: 'Maîtrisez la construction et la promotion',
-    courses: ['Gestion de Projet BTP', 'Réglementation Urbaine', 'Marketing Immobilier'],
-    color: '#00A651',
+    id: 'legal',
+    title: 'Légal',
+    description: 'Droit foncier OHADA et fiscalité',
+    courses: ['Code foncier OHADA', 'Réglementation CI', 'Fiscalité immobilière'],
+    color: '#009CDE',
     icon: <BarChart3 className="w-5 h-5" />,
+  },
+  {
+    id: 'artisan',
+    title: 'Artisan',
+    description: 'Normes BTP et certifications professionnelles',
+    courses: ['Normes BTP', 'Éco-construction', 'Lecture de plans'],
+    color: '#D93025',
+    icon: <GraduationCap className="w-5 h-5" />,
   },
 ];
 
