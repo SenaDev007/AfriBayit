@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import PackagesSection from '@/components/afribayit/PackagesSection';
+import HotelCard, { type HotelCardData } from '@/components/afribayit/sejours/HotelCard';
+import GuesthouseCard, { type GuesthouseCardData } from '@/components/afribayit/sejours/GuesthouseCard';
+import ShortTermRentalCard, { type ShortTermRentalCardData } from '@/components/afribayit/sejours/ShortTermRentalCard';
 import {
   Search,
   MapPin,
@@ -146,6 +149,7 @@ export default function BookingPage() {
       stars: h.stars,
       rating: h.rating,
       reviewCount: h._count?.reviews_hotel || 0,
+      pricePerNight: h.pricePerNight,
       price: h.pricePerNight,
       currency: h.currency || 'XOF',
       amenities: h.amenities ? (typeof h.amenities === 'string' ? safeJsonParse<string[]>(h.amenities, []) : h.amenities) : [],
@@ -163,8 +167,12 @@ export default function BookingPage() {
       rating: g.overallRating,
       reviewCount: g.reviewCount || 0,
       price: g.rooms?.[0]?.basePrice || 0,
+      minPrice: g.rooms?.[0]?.basePrice || 0,
+      roomCount: g.rooms?.length || 0,
       currency: g.rooms?.[0]?.currency || 'XOF',
       amenities: g.amenities ? (typeof g.amenities === 'string' ? safeJsonParse<string[]>(g.amenities, []) : g.amenities) : [],
+      hasBreakfast: g.amenities ? (typeof g.amenities === 'string' ? safeJsonParse<string[]>(g.amenities, []).includes('breakfast') : false) : false,
+      certified: false, // TODO: fetch from guesthouse model when certification field is available
       image: g.images ? (typeof g.images === 'string' ? (safeJsonParse<string[]>(g.images, []))[0] : null) : null,
       slug: g.slug,
     }));
@@ -174,12 +182,15 @@ export default function BookingPage() {
       id: r.id,
       type: 'short-term' as const,
       name: r.title,
+      title: r.title,
       city: r.city,
       country: r.country,
       stars: 0,
       rating: r.rating || 0,
       reviewCount: r.reviewCount || 0,
       price: r.pricePerNight,
+      pricePerNight: r.pricePerNight,
+      weeklyPrice: r.weeklyPrice,
       currency: r.currency || 'XOF',
       amenities: r.amenities ? (typeof r.amenities === 'string' ? safeJsonParse<string[]>(r.amenities, []) : r.amenities) : [],
       image: r.images ? (typeof r.images === 'string' ? (safeJsonParse<string[]>(r.images, []))[0] : null) : null,
@@ -589,89 +600,36 @@ export default function BookingPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {allListings.map((listing, i) => (
-                  <motion.div
-                    key={`${listing.type}-${listing.id}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.5), ease: easeOut }}
-                  >
-                    <Link href={listing.type === 'short-term' ? `/short-term` : `/sejours/${listing.id}`}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
-                        {/* Image area — absolute positioning so image fills full container */}
-                        <div className="relative aspect-[4/3] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10 overflow-hidden">
-                          {listing.image ? (
-                            <img
-                              src={listing.image}
-                              alt={listing.name}
-                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-                              {listing.type === 'hotel' ? (
-                                <Hotel className="w-12 h-12 text-[#003087]/30" />
-                              ) : listing.type === 'guesthouse' ? (
-                                <Home className="w-12 h-12 text-[#003087]/30" />
-                              ) : (
-                                <Key className="w-12 h-12 text-[#003087]/30" />
-                              )}
-                            </div>
-                          )}
-                          <div className="absolute top-3 left-3">
-                            <Badge className="bg-[#D4AF37] text-white text-xs border-0 px-2.5 py-1">
-                              {listing.type === 'hotel' ? 'Hôtel' : listing.type === 'guesthouse' ? 'Guesthouse' : 'Location'}
-                            </Badge>
-                          </div>
-                          {/* Instant booking badge for short-term rentals */}
-                          {listing.type === 'short-term' && (listing as any).instantBooking && (
-                            <div className="absolute bottom-3 left-3">
-                              <Badge className="bg-[#00A651] text-white text-[10px] border-0 px-2 py-0.5">
-                                ✓ Réservation instantanée
-                              </Badge>
-                            </div>
-                          )}
-                          {listing.stars > 0 && (
-                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-[#D4AF37] flex items-center gap-0.5">
-                              {Array.from({ length: listing.stars }).map((_, si) => (
-                                <Star key={si} className="w-3 h-3 fill-[#D4AF37] text-[#D4AF37]" />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors text-sm">
-                            {listing.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
-                            <MapPin className="w-3 h-3" />
-                            {listing.city}, {COUNTRY_FLAGS[listing.country] || ''} {listing.country}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <div className="bg-[#003087] text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                                {listing.rating.toFixed(1)}
-                              </div>
-                              {listing.reviewCount > 0 && (
-                                <span className="text-xs text-gray-400">
-                                  ({listing.reviewCount} avis)
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <span className="text-lg font-bold text-[#D4AF37]">
-                                {listing.price.toLocaleString('fr-FR')}
-                              </span>
-                              <span className="text-xs text-gray-500"> FCFA/nuit</span>
-                            </div>
-                          </div>
-                          <Button className="w-full mt-3 bg-[#D4AF37] hover:bg-[#b8961f] text-white text-sm font-semibold rounded-xl">
-                            Réserver
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                ))}
+                {allListings.map((listing, i) => {
+                  // Render a distinct card component per type — each has its own
+                  // design, info layout, and CTA matching the CDC workflow.
+                  if (listing.type === 'hotel') {
+                    return (
+                      <HotelCard
+                        key={`hotel-${listing.id}`}
+                        index={i}
+                        hotel={listing as HotelCardData}
+                      />
+                    );
+                  }
+                  if (listing.type === 'guesthouse') {
+                    return (
+                      <GuesthouseCard
+                        key={`gh-${listing.id}`}
+                        index={i}
+                        guesthouse={listing as GuesthouseCardData}
+                      />
+                    );
+                  }
+                  // short-term rental
+                  return (
+                    <ShortTermRentalCard
+                      key={`str-${listing.id}`}
+                      index={i}
+                      rental={listing as ShortTermRentalCardData}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
