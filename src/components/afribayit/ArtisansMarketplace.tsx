@@ -9,6 +9,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
+import { apiPost } from '@/lib/api-client';
 import { AlertTriangle, Search, Siren, Wrench, ArrowLeft, Phone, MapPin, Star, CheckCircle, Clock, DollarSign, Briefcase, X } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
@@ -17,6 +18,17 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const trades = ['Tous', 'Maçon', 'Électricien', 'Plombier', 'Peintre', 'Menuisier', 'Architecte d\'intérieur', 'Chauffagiste', 'Couvreur'];
+
+// CDC §5.5.1 — Service category labels (mapping DB IDs to readable French labels)
+const SERVICE_CATEGORY_LABELS: Record<string, string> = {
+  gros_oeuvre: 'Gros Œuvre',
+  second_oeuvre: 'Second Œuvre',
+  finition: 'Finition & Décoration',
+  genie_technique: 'Génie Technique',
+  exterieur: 'Extérieurs',
+  renovation: 'Rénovation & Maintenance',
+  numerique: 'Numérique & Innovation',
+};
 
 interface Artisan {
   id: string;
@@ -108,7 +120,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const [emergencyConfirm, setEmergencyConfirm] = useState<Artisan | null>(null);
   const [devisForm, setDevisForm] = useState({ title: '', description: '', estimatedBudget: '' });
 
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { selectedCountry } = useCountry();
 
   const { data, isLoading, error } = useArtisans(
@@ -129,6 +141,15 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const detailArtisan = detailData?.artisan ? mapArtisanFromApi(detailData.artisan as Record<string, unknown>) : null;
 
   const handleViewDetail = (artisan: Artisan) => {
+    // CDC §5.5 — Only registered users can view artisan details
+    if (!isAuthenticated) {
+      toast({
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour voir les détails d\'un artisan et demander un devis.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     setDetailArtisanId(artisan.id);
   };
 
@@ -169,25 +190,39 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
     setEmergencyConfirm(artisan);
   };
 
-  const confirmEmergencyCall = () => {
+  const confirmEmergencyCall = async () => {
     if (!emergencyConfirm) return;
-    createNotification.mutate(
-      {
-        type: 'alert',
-        message: `Demande d'artisan urgent : ${emergencyConfirm.name} (${emergencyConfirm.trade}) — Intervention d'urgence requise.`,
-        userId: user?.id,
-      },
-      {
-        onSuccess: () => {
-          toast({ title: 'Appel urgent envoyé', description: `${emergencyConfirm.name} a été notifié de votre urgence.` });
-          setEmergencyConfirm(null);
-        },
-        onError: (err) => {
-          toast({ title: 'Erreur', description: err.message || 'Impossible d\'envoyer l\'appel urgent.', variant: 'destructive' });
-          setEmergencyConfirm(null);
-        },
+    try {
+      // Log the emergency call via the API — CDC §5.5.2: everything transits
+      // through the platform and is logged. Returns the artisan's phone number.
+      const result = await apiPost<{ call: any; phone: string | null }>(
+        `/api/artisans/${emergencyConfirm.id}/emergency-call`,
+        { note: `Appel d'urgence — ${emergencyConfirm.trade}` },
+      );
+
+      toast({
+        title: 'Appel urgent lancé',
+        description: `${emergencyConfirm.name} a été notifié. L'appel est enregistré sur la plateforme.`,
+      });
+
+      // Trigger the actual phone call via tel: if we have the number
+      if (result.phone) {
+        window.location.href = `tel:${result.phone}`;
+      } else {
+        toast({
+          title: 'Numéro non disponible',
+          description: 'L\'artisan n\'a pas de numéro de téléphone renseigné. Il a été notifié via la plateforme.',
+        });
       }
-    );
+      setEmergencyConfirm(null);
+    } catch (err) {
+      toast({
+        title: 'Erreur',
+        description: err instanceof Error ? err.message : 'Impossible d\'initier l\'appel urgent.',
+        variant: 'destructive',
+      });
+      setEmergencyConfirm(null);
+    }
   };
 
   // ─── DETAIL VIEW ──────────────────────────────────────────────────
@@ -292,10 +327,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                       className="flex items-center gap-2 px-6 py-3 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors"
                     >
                       <Siren className="w-4 h-4" />
-                      Appel urgent
+                      Appel d'urgence 24h/7j
                     </button>
                   )}
                 </div>
+                <p className="text-[10px] text-gray-400 mt-3 max-w-md">
+                  Toute demande de devis et commande de service transite par AfriBayit.
+                  Le paiement est sécurisé via escrow (acompte 30%, solde après validation).
+                </p>
               </div>
 
               {/* Specialties */}
@@ -331,7 +370,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                         {service.description && <p className="text-xs text-gray-500">{service.description}</p>}
                         {service.category && (
                           <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#003087]/5 text-[#003087]">
-                            {service.category}
+                            {SERVICE_CATEGORY_LABELS[service.category] || service.category}
                           </span>
                         )}
                       </div>
@@ -571,6 +610,52 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
 
         {/* Devis modal */}
         {showDevis && selectedArtisan && <DevisModal />}
+
+        {/* Emergency call confirmation modal */}
+        {emergencyConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+            onClick={() => setEmergencyConfirm(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-3xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 rounded-full bg-[#D93025]/10 flex items-center justify-center">
+                  <Siren className="w-5 h-5 text-[#D93025]" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Appel d&apos;urgence</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">
+                Vous êtes sur le point d&apos;appeler <strong>{emergencyConfirm.name}</strong> ({emergencyConfirm.trade}) en urgence.
+              </p>
+              <p className="text-xs text-gray-400 mb-4">
+                L&apos;appel sera enregistré sur la plateforme AfriBayit pour suivi et sécurité.
+                L&apos;artisan sera notifié immédiatement. Le numéro de téléphone sera lancé via votre appareil.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEmergencyConfirm(null)}
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmEmergencyCall}
+                  className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors flex items-center justify-center gap-2"
+                >
+                  <Phone className="w-4 h-4" />
+                  Appeler maintenant
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
