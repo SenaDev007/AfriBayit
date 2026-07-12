@@ -6,9 +6,11 @@ import { useNotaries } from '@/hooks/useNotaries';
 import { useEscrowList } from '@/hooks/useEscrow';
 import { useCreateConversation } from '@/hooks/useChat';
 import { useCreateSubscription } from '@/hooks/useSubscriptions';
+import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
+import { apiPost } from '@/lib/api-client';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
@@ -153,6 +155,9 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     { id: '3', name: 'Promesse_Vente_Agossa.pdf', date: '2025-11-28', hash: 'sha256:c1d3e5f7a9...' },
   ]);
   const { selectedCountry } = useCountry();
+  const { isAuthenticated } = useAuthStore();
+  const [assigningNotaryId, setAssigningNotaryId] = useState<string | null>(null);
+  const [showAssignModal, setShowAssignModal] = useState<Notary | null>(null);
 
   const { data: notariesData, isLoading: notariesLoading, error: notariesError } = useNotaries(
     selectedSpeciality !== 'Toutes' ? selectedSpeciality : undefined,
@@ -221,6 +226,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
   const handleContactNotary = (notary: Notary) => {
+    // CDC §5.0bis — Only registered users can contact notaries
+    if (!isAuthenticated) {
+      toast.info('Connexion requise', {
+        description: 'Vous devez être connecté pour contacter un notaire.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
     setContactingNotaryId(notary.id);
     createConversation.mutate(
       {
@@ -240,6 +253,42 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         },
       }
     );
+  };
+
+  const handleOpenDetail = (notary: Notary) => {
+    // CDC §5.0bis — Only registered users can view full notary profiles
+    if (!isAuthenticated) {
+      toast.info('Connexion requise', {
+        description: 'Vous devez être connecté pour voir le profil détaillé d\'un notaire et utiliser ses services.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    setDetailNotary(notary);
+  };
+
+  const handleAssignNotary = async (notary: Notary, transactionId: string) => {
+    if (!isAuthenticated) {
+      toast.info('Connexion requise', {
+        description: 'Vous devez être connecté pour assigner un notaire à votre transaction.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    setAssigningNotaryId(notary.id);
+    try {
+      await apiPost(`/api/notaries/${notary.id}/assign`, { transactionId });
+      toast.success('Notaire assigné', {
+        description: `${notary.name} a été assigné à votre transaction. Le dossier a été transmis à son Espace Notaire.`,
+      });
+      setShowAssignModal(null);
+    } catch (err) {
+      toast.error('Erreur', {
+        description: err instanceof Error ? err.message : 'Impossible d\'assigner le notaire.',
+      });
+    } finally {
+      setAssigningNotaryId(null);
+    }
   };
 
   const handleChooseNotaryPlan = (tier: typeof subscriptionTiers[number]) => {
@@ -380,8 +429,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 </div>
               </div>
 
-              {/* Action button */}
-              <div className="mt-6">
+              {/* Action buttons */}
+              <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   onClick={() => handleContactNotary(detailNotary)}
                   disabled={contactingNotaryId === detailNotary.id || createConversation.isPending}
@@ -390,7 +439,19 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   {contactingNotaryId === detailNotary.id || createConversation.isPending ? 'Connexion...' : 'Contacter le notaire'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
+                <button
+                  onClick={() => setShowAssignModal(detailNotary)}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+                >
+                  <Scale className="w-4 h-4" />
+                  Assigner à ma transaction
+                </button>
               </div>
+              <p className="text-[10px] text-gray-400 mt-3 max-w-md">
+                Toute communication et transaction notariale transite par AfriBayit.
+                L&apos;acte authentique est signé électroniquement et déclenche automatiquement
+                la libération des fonds escrow (DEED_SIGNED → release).
+              </p>
             </div>
 
             {/* Specialities */}
@@ -588,7 +649,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                       whileHover={{ y: -4 }}
                       className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
-                      onClick={() => setDetailNotary(notary)}
+                      onClick={() => handleOpenDetail(notary)}
                     >
                       <div className="flex items-start gap-4 mb-4">
                         <div className="relative shrink-0">
@@ -1132,8 +1193,102 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Assign notary to transaction modal — CDC §5.0bis.4 */}
+        {showAssignModal && (
+          <AssignNotaryModal
+            notary={showAssignModal}
+            transactions={escrowAccounts}
+            onAssign={(transactionId) => handleAssignNotary(showAssignModal, transactionId)}
+            onClose={() => setShowAssignModal(null)}
+            isAssigning={assigningNotaryId === showAssignModal.id}
+          />
+        )}
       </div>
     </section>
+  );
+}
+
+// ─── Assign Notary Modal ──────────────────────────────────────────────
+function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssigning }: {
+  notary: Notary;
+  transactions: any[];
+  onAssign: (transactionId: string) => void;
+  onClose: () => void;
+  isAssigning: boolean;
+}) {
+  const [selectedTransaction, setSelectedTransaction] = useState<string>('');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-3xl p-6 max-w-md w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+            <Scale className="w-5 h-5 text-[#D4AF37]" />
+          </div>
+          <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Assigner un notaire</h3>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Assignez <strong>{notary.name}</strong> à l&apos;une de vos transactions en cours.
+          Le notaire recevra le dossier et commencera la rédaction de l&apos;acte authentique.
+        </p>
+
+        {transactions.length === 0 ? (
+          <div className="text-center py-6 bg-gray-50 rounded-2xl">
+            <p className="text-sm text-gray-400">Aucune transaction en cours.</p>
+            <p className="text-xs text-gray-400 mt-1">Vous devez avoir une transaction avec escrow financé pour assigner un notaire.</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
+              {transactions.map((tx: any) => (
+                <button
+                  key={tx.id}
+                  onClick={() => setSelectedTransaction(tx.id)}
+                  className={`w-full text-left p-3 rounded-2xl border transition-colors ${
+                    selectedTransaction === tx.id
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/5'
+                      : 'border-gray-100 hover:border-gray-200'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-[#2C2E2F] truncate">
+                    {tx.property?.title || 'Transaction'}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Intl.NumberFormat('fr-FR').format(tx.amount || 0)} FCFA · {tx.status}
+                  </p>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => selectedTransaction && onAssign(selectedTransaction)}
+                disabled={!selectedTransaction || isAssigning}
+                className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAssigning ? 'Assignation...' : 'Assigner le notaire'}
+              </button>
+            </div>
+          </>
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
