@@ -370,7 +370,7 @@ export default function AdminAuditLogsPage() {
           </div>
         ) : logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-lg font-medium text-gray-900">Aucun journal d&apos;audit trouvé</p>
@@ -597,7 +597,7 @@ function AuditLogRow({
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
               <span className="text-[10px] font-bold text-[#003087]">
                 {log.actorId ? log.actorId.slice(0, 2).toUpperCase() : 'SY'}
               </span>

@@ -225,10 +225,10 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
             <Lock className="w-4 h-4" /> Escrow Sécurisé
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
             Transaction Escrow
           </h1>
           <p className="text-gray-500 text-sm">Vos fonds sont protégés jusqu&apos;à la signature notariale</p>
@@ -239,10 +239,10 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: easeOut }}
-          className="bg-white rounded-3xl p-6 shadow-sm border mb-6 overflow-visible"
+          className="bg-white rounded-xl p-6 shadow-sm border mb-6 overflow-visible"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Cycle de vie Escrow</h3>
+            <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Cycle de vie Escrow</h3>
             <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-[#003087]/5 text-[#003087]">
               {escrowStatesConfig.find(s => s.key === currentEscrowState)?.label ||
                exceptionStatesConfig.find(s => s.key === currentEscrowState)?.label ||
@@ -255,7 +255,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
               {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="flex items-start shrink-0">
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse" />
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 animate-pulse" />
                     <div className="w-20 h-3 bg-gray-100 rounded mt-1 animate-pulse" />
                   </div>
                   {i < 8 && <div className="w-8 h-0.5 mt-5 bg-gray-200 shrink-0" />}
@@ -276,7 +276,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                           animate={{
                             scale: status === 'current' ? 1.15 : 1,
                           }}
-                          className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          className={`relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                             status === 'completed'
                               ? 'bg-[#00A651]/10 ring-2 ring-[#00A651]/30'
                               : status === 'current'
@@ -291,7 +291,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
                           )}
                           {status === 'current' && (
                             <motion.div
-                              className="absolute inset-0 rounded-full border-2 border-[#D4AF37]"
+                              className="absolute inset-0 rounded-lg border-2 border-[#D4AF37]"
                               animate={{ scale: [1, 1.3], opacity: [0.6, 0] }}
                               transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut' }}
                             />
@@ -383,9 +383,9 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12, ease: easeOut }}
-            className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
+            className="bg-white rounded-xl p-5 shadow-sm border mb-6"
           >
-            <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3">Actions disponibles</h4>
+            <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3">Actions disponibles</h4>
             <div className="flex flex-wrap gap-3">
               {availableActions.map((action) => (
                 <motion.button
@@ -424,15 +424,15 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
-          className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
+          className="bg-white rounded-xl p-5 shadow-sm border mb-6"
         >
-          <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3">Machine à états Escrow</h4>
+          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3">Machine à états Escrow</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {escrowStatesConfig.map((state) => {
               const status = getStateStatus(state.key);
               return (
                 <div key={state.key} className="flex items-start gap-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                     status === 'completed' ? 'bg-[#00A651]/10' :
                     status === 'current' ? 'bg-[#D4AF37]/10' :
                     'bg-gray-100'
@@ -497,22 +497,22 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-3xl p-8 text-center max-w-sm">
+            <div className="bg-white rounded-xl p-8 text-center max-w-sm">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-                className="w-20 h-20 rounded-full bg-[#00A651] flex items-center justify-center mx-auto mb-4"
+                className="w-20 h-20 rounded-lg bg-[#00A651] flex items-center justify-center mx-auto mb-4"
               >
                 <CheckCircle className="w-10 h-10 text-white" />
               </motion.div>
-              <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">Paiement Confirmé !</h3>
+              <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">Paiement Confirmé !</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Vos fonds sont maintenant en escrow sécurisé. Vous serez notifié à chaque étape du cycle de vie.
               </p>
               <button
                 onClick={() => { setShowSuccess(false); onNavigate('dashboard'); }}
-                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold"
+                className="px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold"
               >
                 Voir la transaction
               </button>
@@ -559,13 +559,13 @@ function PaymentSteps({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
-      className="bg-white rounded-3xl p-6 shadow-sm border"
+      className="bg-white rounded-xl p-6 shadow-sm border"
     >
       {/* Progress */}
       <div className="flex items-center gap-2 mb-6">
         {steps.map((s, i) => (
           <div key={i} className="flex items-center flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
               i <= step ? 'bg-[#003087] text-white' : 'bg-gray-100 text-gray-400'
             }`}>
               {i + 1}
@@ -577,7 +577,7 @@ function PaymentSteps({
         ))}
       </div>
 
-      <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">{steps[step].title}</h2>
+      <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">{steps[step].title}</h2>
       <p className="text-sm text-gray-500 mb-6">{steps[step].desc}</p>
 
       {/* Step 1: Payment Provider */}
@@ -596,7 +596,7 @@ function PaymentSteps({
               }`}
             >
               <span className="flex items-center justify-center mb-2">{provider.icon}</span>
-              <p className="text-sm font-semibold text-[#2C2E2F]">{provider.name}</p>
+              <p className="text-sm font-semibold text-[#0a2a5e]">{provider.name}</p>
             </motion.button>
           ))}
         </div>
@@ -607,7 +607,7 @@ function PaymentSteps({
         <div className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-2xl">
             <p className="text-xs text-gray-500 mb-1">Bien</p>
-            <p className="text-sm font-semibold text-[#2C2E2F]">{propertyName}</p>
+            <p className="text-sm font-semibold text-[#0a2a5e]">{propertyName}</p>
           </div>
           <div className="p-4 bg-gray-50 rounded-2xl">
             <p className="text-xs text-gray-500 mb-1">Montant</p>
@@ -615,7 +615,7 @@ function PaymentSteps({
           </div>
           <div className="p-4 bg-gray-50 rounded-2xl">
             <p className="text-xs text-gray-500 mb-1">Frais escrow (1.5%)</p>
-            <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
+            <p className="font-mono-data text-sm font-bold text-[#0a2a5e]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
           </div>
           <div className="p-4 bg-[#00A651]/5 rounded-2xl">
             <p className="text-xs text-[#00A651] mb-1">Total à payer</p>
@@ -627,10 +627,10 @@ function PaymentSteps({
       {/* Step 3: Confirmation */}
       {step === 2 && (
         <div className="text-center py-6">
-          <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-10 h-10 text-[#003087]" />
           </div>
-          <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Confirmer le paiement</h3>
+          <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">Confirmer le paiement</h3>
           <p className="text-sm text-gray-500 mb-6">
             En confirmant, vous acceptez de placer les fonds en escrow jusqu&apos;à la signature notariale.
           </p>
@@ -642,7 +642,7 @@ function PaymentSteps({
         {step > 0 && (
           <button
             onClick={() => setStep(step - 1)}
-            className="flex-1 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
           >
             Retour
           </button>
@@ -655,7 +655,7 @@ function PaymentSteps({
             else onConfirm();
           }}
           disabled={(step === 0 && !selectedProvider) || isPending}
-          className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 py-3 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending
             ? 'Traitement en cours...'

@@ -304,7 +304,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110"
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.color = brandColor;
                     (e.currentTarget as HTMLElement).style.boxShadow = `0 0 10px ${brandColor}44`;

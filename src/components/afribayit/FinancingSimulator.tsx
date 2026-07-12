@@ -133,7 +133,7 @@ export default function FinancingSimulator({
   const formatXOF = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
   return (
-    <div className="bg-white rounded-3xl border shadow-lg overflow-hidden">
+    <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-[#003087] to-[#0047b3]">
         <div>
@@ -145,7 +145,7 @@ export default function FinancingSimulator({
         {onClose && (
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
           >
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

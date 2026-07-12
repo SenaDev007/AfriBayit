@@ -63,7 +63,7 @@ export default function ShortTermRentalCard({ rental, index }: { rental: ShortTe
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.5) }}
     >
       <Link href={`/short-term/${rental.id}`}>
-        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
+        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-xl card-shadow border-0">
           {/* Image */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[#D4AF37]/10 to-[#003087]/10 overflow-hidden">
             {rental.image ? (
@@ -89,7 +89,7 @@ export default function ShortTermRentalCard({ rental, index }: { rental: ShortTe
               </div>
             )}
             {/* Capacité */}
-            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-semibold text-[#2C2E2F] flex items-center gap-2">
+            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-semibold text-[#0a2a5e] flex items-center gap-2">
               <span className="flex items-center gap-1">
                 <Users className="w-3 h-3" />
                 {rental.maxGuests}
@@ -102,7 +102,7 @@ export default function ShortTermRentalCard({ rental, index }: { rental: ShortTe
           </div>
 
           <CardContent className="p-4">
-            <h3 className="font-semibold text-[#2C2E2F] mb-1 group-hover:text-[#D4AF37] transition-colors text-sm truncate">
+            <h3 className="font-semibold text-[#0a2a5e] mb-1 group-hover:text-[#D4AF37] transition-colors text-sm truncate">
               {rental.title}
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">

@@ -21,9 +21,9 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
       {/* Main score card — LinkedIn-style gradient */}
-      <div className="relative bg-gradient-to-br from-[#003087] via-[#0047b3] to-[#00A651] rounded-3xl p-6 overflow-hidden text-white text-center">
+      <div className="relative bg-gradient-to-br from-[#003087] via-[#0047b3] to-[#00A651] rounded-xl p-6 overflow-hidden text-white text-center">
         {/* Decorative */}
-        <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#D4AF37]/10 blur-3xl" />
+        <div className="absolute top-0 right-0 w-48 h-48 rounded-lg bg-[#D4AF37]/10 blur-3xl" />
         <div className="relative z-10">
           <div className="flex items-center justify-center mb-3">
             <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
@@ -32,7 +32,7 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
           </div>
           <p className="font-mono-data text-4xl font-bold text-[#D4AF37] mb-1">{userAfriPoints}</p>
           <p className="text-sm text-white/70 mb-2">AfriPoints</p>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur">
+          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-white/15 backdrop-blur">
             Niveau {afriLevel.name}
           </span>
           {nextLevel && (
@@ -46,7 +46,7 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPct}%` }}
                   transition={{ duration: 0.8, ease: easeOut }}
-                  className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] rounded-full"
+                  className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FFD700] rounded-lg"
                 />
               </div>
               <p className="text-[10px] text-white/50 mt-1">
@@ -58,8 +58,8 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
       </div>
 
       {/* CDC §5.7.2 — How to earn */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
           <Coins className="w-5 h-5 text-[#D4AF37]" /> Gagner des AfriPoints
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -78,7 +78,7 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
                 {item.icon}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-[#2C2E2F]">{item.action}</p>
+                <p className="text-sm font-medium text-[#0a2a5e]">{item.action}</p>
                 <p className="text-xs font-semibold text-[#D4AF37]">+{item.points} pts</p>
               </div>
             </div>
@@ -87,8 +87,8 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
       </div>
 
       {/* CDC §5.7.2 — How to spend */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
           <ShoppingCart className="w-5 h-5 text-[#003087]" /> Dépenser des AfriPoints
         </h3>
         <div className="space-y-2">
@@ -104,9 +104,9 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${item.color}15`, color: item.color }}>
                   {item.icon}
                 </div>
-                <p className="text-sm font-medium text-[#2C2E2F]">{item.item}</p>
+                <p className="text-sm font-medium text-[#0a2a5e]">{item.item}</p>
               </div>
-              <span className="px-3 py-1 bg-[#003087]/10 text-[#003087] text-xs font-bold rounded-full">{item.cost} pts</span>
+              <span className="px-3 py-1 bg-[#003087]/10 text-[#003087] text-xs font-bold rounded-lg">{item.cost} pts</span>
             </div>
           ))}
         </div>
@@ -116,7 +116,7 @@ export default function AfriPointsPanel({ userAfriPoints }: AfriPointsPanelProps
       <div className="bg-gradient-to-r from-[#D4AF37]/5 to-[#00A651]/5 rounded-2xl p-4 border flex items-start gap-3">
         <TrendingUp className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500">
-          <strong className="text-[#2C2E2F]">1 XOF de transaction = 1 point</strong> — Bonus pour actions communautaires
+          <strong className="text-[#0a2a5e]">1 XOF de transaction = 1 point</strong> — Bonus pour actions communautaires
           et parrainage. Les AfriPoints sont utilisables en réductions sur commissions, abonnements, services GeoTrust
           et réservations hôtel.
         </p>

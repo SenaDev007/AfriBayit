@@ -102,21 +102,21 @@ export function getConnectionLevelLabel(level: number): { label: string; color: 
 // ── Skeleton loaders ──
 export function HotelCardSkeleton() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm border">
       <Skeleton className="aspect-[16/10] w-full rounded-none" />
       <div className="p-5 space-y-3">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
         <div className="flex gap-1.5">
-          <Skeleton className="h-5 w-14 rounded-full" />
-          <Skeleton className="h-5 w-14 rounded-full" />
-          <Skeleton className="h-5 w-14 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-lg" />
+          <Skeleton className="h-5 w-14 rounded-lg" />
+          <Skeleton className="h-5 w-14 rounded-lg" />
         </div>
         <div className="flex items-center justify-between pt-3 border-t">
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-4 w-12" />
         </div>
-        <Skeleton className="h-10 w-full rounded-full" />
+        <Skeleton className="h-10 w-full rounded-lg" />
       </div>
     </div>
   );
@@ -124,7 +124,7 @@ export function HotelCardSkeleton() {
 
 export function DetailSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border space-y-4">
+    <div className="bg-white rounded-xl p-6 shadow-sm border space-y-4">
       <Skeleton className="h-6 w-48" />
       <Skeleton className="h-40 w-full rounded-2xl" />
       <div className="grid grid-cols-2 gap-3">

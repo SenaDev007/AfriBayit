@@ -218,7 +218,7 @@ export default function PaymentFlow({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-3xl">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Paiement Escrow AfriBayit</DialogTitle>
         </DialogHeader>
@@ -226,10 +226,10 @@ export default function PaymentFlow({
         <div className="p-6">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#003087]/5 text-[#003087] text-xs font-semibold mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#003087]/5 text-[#003087] text-xs font-semibold mb-3">
               <Lock className="w-4 h-4" /> Paiement Sécurisé
             </div>
-            <h2 className="text-xl font-bold text-[#2C2E2F] mb-1">
+            <h2 className="text-xl font-bold text-[#0a2a5e] mb-1">
               {propertyTitle || 'Transaction Escrow'}
             </h2>
             <p className="text-sm text-gray-500">
@@ -257,7 +257,7 @@ export default function PaymentFlow({
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3, ease: easeOut }}
               >
-                <h3 className="text-sm font-bold text-[#2C2E2F] mb-3">
+                <h3 className="text-sm font-bold text-[#0a2a5e] mb-3">
                   Choisissez votre moyen de paiement
                 </h3>
                 <div className="space-y-2">
@@ -276,7 +276,7 @@ export default function PaymentFlow({
                         {method.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F]">{method.name}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e]">{method.name}</p>
                         <p className="text-[10px] text-gray-400">{method.description}</p>
                       </div>
                       <Badge variant="secondary" className="text-[9px] shrink-0">
@@ -312,7 +312,7 @@ export default function PaymentFlow({
                     {selectedMethodConfig.icon}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#2C2E2F]">{selectedMethodConfig.name}</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{selectedMethodConfig.name}</p>
                     <p className="text-xs text-gray-400">{selectedMethodConfig.description}</p>
                   </div>
                 </div>
@@ -320,11 +320,11 @@ export default function PaymentFlow({
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Montant</span>
-                    <span className="font-semibold text-[#2C2E2F]">{formatFCFA(amount)}</span>
+                    <span className="font-semibold text-[#0a2a5e]">{formatFCFA(amount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Frais escrow (1.5%)</span>
-                    <span className="font-semibold text-[#2C2E2F]">{formatFCFA(escrowFee)}</span>
+                    <span className="font-semibold text-[#0a2a5e]">{formatFCFA(escrowFee)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-sm">
@@ -360,7 +360,7 @@ export default function PaymentFlow({
                 className="text-center py-8"
               >
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-[#003087]/20 border-t-[#003087] animate-spin" />
-                <h3 className="text-lg font-bold text-[#2C2E2F] mb-2">Traitement en cours...</h3>
+                <h3 className="text-lg font-bold text-[#0a2a5e] mb-2">Traitement en cours...</h3>
                 <p className="text-sm text-gray-500">
                   Votre paiement est en cours de traitement. Ne fermez pas cette fenêtre.
                 </p>
@@ -380,7 +380,7 @@ export default function PaymentFlow({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-                  className="w-20 h-20 rounded-full bg-[#00A651] flex items-center justify-center mx-auto mb-4"
+                  className="w-20 h-20 rounded-lg bg-[#00A651] flex items-center justify-center mx-auto mb-4"
                 >
                   <svg
                     className="w-10 h-10 text-white"
@@ -392,7 +392,7 @@ export default function PaymentFlow({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
-                <h3 className="text-xl font-bold text-[#2C2E2F] mb-2">Paiement Initié !</h3>
+                <h3 className="text-xl font-bold text-[#0a2a5e] mb-2">Paiement Initié !</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {paymentResult.redirectUrl
                     ? 'Vous avez été redirigé vers la page de paiement. Suivez les instructions pour compléter le paiement.'
@@ -402,11 +402,11 @@ export default function PaymentFlow({
                 <div className="bg-gray-50 rounded-xl p-3 text-left text-xs space-y-1 mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Référence</span>
-                    <span className="font-mono text-[#2C2E2F]">{paymentResult.providerRef}</span>
+                    <span className="font-mono text-[#0a2a5e]">{paymentResult.providerRef}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Fournisseur</span>
-                    <span className="text-[#2C2E2F] font-semibold">
+                    <span className="text-[#0a2a5e] font-semibold">
                       {paymentResult.provider === 'fedapay' ? 'FedaPay' : 'Stripe'}
                     </span>
                   </div>
@@ -436,7 +436,7 @@ export default function PaymentFlow({
                 transition={{ type: 'spring', stiffness: 200 }}
                 className="text-center py-4"
               >
-                <div className="w-20 h-20 rounded-full bg-[#D93025]/10 flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 rounded-lg bg-[#D93025]/10 flex items-center justify-center mx-auto mb-4">
                   <svg
                     className="w-10 h-10 text-[#D93025]"
                     fill="none"
@@ -451,7 +451,7 @@ export default function PaymentFlow({
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-[#2C2E2F] mb-2">Paiement échoué</h3>
+                <h3 className="text-xl font-bold text-[#0a2a5e] mb-2">Paiement échoué</h3>
                 <p className="text-sm text-gray-500 mb-4">
                   {errorMessage || 'Une erreur est survenue lors du traitement du paiement.'}
                 </p>

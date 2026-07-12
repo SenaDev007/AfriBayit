@@ -27,7 +27,7 @@ export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, 
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-        className="w-28 h-28 rounded-full bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#D4AF37] flex items-center justify-center mx-auto mb-8 gold-glow"
+        className="w-28 h-28 rounded-lg bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#D4AF37] flex items-center justify-center mx-auto mb-8 gold-glow"
       >
         <span className="text-5xl"><Home className="w-4 h-4" /></span>
       </motion.div>
@@ -85,7 +85,7 @@ export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, 
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={onNext}
-          className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-full font-bold text-base hover:shadow-lg gold-glow transition-shadow"
+          className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-lg font-bold text-base hover:shadow-lg gold-glow transition-shadow"
         >
           Commencer la configuration 
         </motion.button>

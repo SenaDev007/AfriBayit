@@ -61,7 +61,7 @@ export default function ForumPanel({
               value={forumSearch}
               onChange={e => setForumSearch(e.target.value)}
               placeholder="Rechercher dans le forum..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-full border text-sm outline-none focus:border-[#003087] transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
             />
             {forumSearch && (
               <button onClick={() => setForumSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -74,7 +74,7 @@ export default function ForumPanel({
               <button
                 key={cat.key}
                 onClick={() => setForumCategory(cat.key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${forumCategory === cat.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-500 border hover:bg-gray-50'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${forumCategory === cat.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-500 border hover:bg-gray-50'}`}
               >
                 {cat.label}
               </button>
@@ -84,7 +84,7 @@ export default function ForumPanel({
 
         {/* Trending Topics */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <h4 className="text-xs font-semibold text-[#2C2E2F] mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Tendances</h4>
+          <h4 className="text-xs font-semibold text-[#0a2a5e] mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Tendances</h4>
           {trendingTopics.length > 0 ? (
             <div className="space-y-2">
               {trendingTopics.map(t => (
@@ -161,7 +161,7 @@ export default function ForumPanel({
                   <span className="text-[10px] text-gray-400">·</span>
                   <span className="text-[10px] text-gray-400">{post.createdAt ? timeAgo(post.createdAt) : post.lastActivity}</span>
                 </div>
-                <h3 className="font-semibold text-[#2C2E2F] mb-2 group-hover:text-[#003087] transition-colors text-sm leading-snug">{post.title}</h3>
+                <h3 className="font-semibold text-[#0a2a5e] mb-2 group-hover:text-[#003087] transition-colors text-sm leading-snug">{post.title}</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   {post.category && (
                     <span className="px-2 py-0.5 bg-[#003087]/5 text-[#003087] text-[10px] font-semibold rounded-full">{post.category}</span>

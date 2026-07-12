@@ -73,7 +73,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: easeOut }}
       whileHover={{ y: -4, transition: { duration: 0.25 } }}
-      className="group cursor-pointer rounded-3xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all"
+      className="group cursor-pointer rounded-xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all"
       onClick={() => onSelect(property.id)}
     >
       {/* Image */}
@@ -154,7 +154,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
 
           {/* Favorite button — right */}
           <button
-            className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            className="pointer-events-auto w-8 h-8 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               toggleFavorite();
@@ -197,7 +197,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
           )}
         </div>
 
-        <h3 className={`font-display font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors ${compact ? 'text-base' : 'text-lg'}`}>
+        <h3 className={`font-display font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors ${compact ? 'text-base' : 'text-lg'}`}>
           {property.title}
         </h3>
 

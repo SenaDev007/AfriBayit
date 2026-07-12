@@ -52,7 +52,7 @@ export default function LouerPage() {
       }}
     >
       {/* Conversational AI search */}
-      <section className="py-8 bg-white border-b border-gray-50">
+      <section className="py-12 bg-white border-b border-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ConversationalSearchBar transaction="location" />
         </div>

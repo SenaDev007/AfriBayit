@@ -58,24 +58,24 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.625rem;
   --background: #FFFFFF;
-  --foreground: #2C2E2F;
+  --foreground: #0a2a5e;
   --card: #FFFFFF;
-  --card-foreground: #2C2E2F;
+  --card-foreground: #0a2a5e;
   --popover: #FFFFFF;
-  --popover-foreground: #2C2E2F;
+  --popover-foreground: #0a2a5e;
   --primary: #003366;
   --primary-foreground: #FFFFFF;
-  --secondary: #f0f4f8;
-  --secondary-foreground: #2C2E2F;
+  --secondary: #f5f7fa;
+  --secondary-foreground: #0a2a5e;
   --muted: #f5f7fa;
   --muted-foreground: #6b7280;
   --accent: #3399FF;
   --accent-foreground: #FFFFFF;
   --destructive: #D93025;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
   --ring: #003366;
   --chart-1: #003366;
   --chart-2: #3399FF;
@@ -166,12 +166,12 @@
   --afri-color-neutral-900: #1a1d24;
   --afri-color-neutral-950: #0f1117;
 
-  /* Spacing: Radius — CDC §2.3 */
+  /* Spacing: Radius — Tesla-level design system (aligned with Academia Helm) */
   --afri-radius-radiusSm: 4px;
-  --afri-radius-radiusMd: 8px;
-  --afri-radius-radiusLg: 16px;
-  --afri-radius-radiusXl: 24px;
-  --afri-radius-radius2xl: 32px;
+  --afri-radius-radiusMd: 6px;
+  --afri-radius-radiusLg: 10px;
+  --afri-radius-radiusXl: 12px;
+  --afri-radius-radius2xl: 16px;
   --afri-radius-radiusFull: 9999px;
 
   /* Animation — CDC §2.4 */
@@ -228,17 +228,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
   }
-  /* CDC §2: All headings use Cormorant Garamond (font-display) by default */
+  /* Tesla-level design: All headings use Inter (unified typography) */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
 /* AfriBayit Custom Utilities */
 @layer utilities {
   .font-display {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   .font-body {
     font-family: var(--font-inter), system-ui, sans-serif;
@@ -277,10 +284,10 @@
     border-radius: 9999px;
   }
   .radius-card {
-    border-radius: 1.5rem;
+    border-radius: 0.625rem;
   }
   .radius-search {
-    border-radius: 1.5rem;
+    border-radius: 0.625rem;
   }
 
   /* P3.8 a11y — Gold lisible (contraste AAA sur blanc) pour le texte court.

@@ -344,7 +344,7 @@ export default function AdminAmbassadorsPage() {
           <div className="p-4 space-y-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-lg" />
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-20" />
@@ -355,7 +355,7 @@ export default function AdminAmbassadorsPage() {
         ) : activeTab === 'ambassadors' ? (
           ambassadors.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
                 <Megaphone className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-lg font-medium text-gray-900">Aucun ambassadeur trouvé</p>
@@ -381,7 +381,7 @@ export default function AdminAmbassadorsPage() {
                     <TableRow key={amb.id} className="hover:bg-gray-50/50">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
                             {amb.name?.charAt(0) || '?'}
                           </div>
                           <p className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{amb.name}</p>
@@ -447,7 +447,7 @@ export default function AdminAmbassadorsPage() {
           )
         ) : commissions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <DollarSign className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-lg font-medium text-gray-900">Aucune commission trouvée</p>

@@ -288,7 +288,7 @@ export default function AdminUserDetailPage() {
               </AvatarFallback>
             </Avatar>
             {user.isOnline && (
-              <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white" />
+              <span className="absolute bottom-1 right-1 w-4 h-4 rounded-lg bg-green-500 border-2 border-white" />
             )}
           </div>
           <div className="flex-1 space-y-3">
@@ -432,7 +432,7 @@ export default function AdminUserDetailPage() {
                     ...(kycDocs.length > 0 ? [{ icon: FileCheck, color: 'bg-amber-50 text-amber-500', text: `${kycDocs.length} document(s) KYC`, time: formatDate(kycDocs[0]?.createdAt as string || user.createdAt) }] : []),
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <div className={cn('w-7 h-7 rounded-full flex items-center justify-center shrink-0', item.color)}>
+                      <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center shrink-0', item.color)}>
                         <item.icon className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0 flex-1">

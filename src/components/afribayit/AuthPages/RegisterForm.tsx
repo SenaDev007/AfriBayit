@@ -52,7 +52,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         {registerSteps.map((step, i) => (
           <div key={step.key} className="flex items-center flex-1">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
                 i <= registerStep ? 'bg-[#003087] text-white' : 'bg-gray-100 text-gray-400'
               }`}
             >
@@ -69,7 +69,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         ))}
       </div>
 
-      <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">
+      <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">
         {registerSteps[registerStep].label}
       </h2>
       <p className="text-sm text-gray-500 mb-4">
@@ -226,7 +226,7 @@ export default function RegisterForm(props: RegisterFormProps) {
                 }`}
               >
                 <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                  className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
                     formData.role === r.value ? 'border-[#003087]' : 'border-gray-300'
                   }`}
                 >
@@ -252,7 +252,7 @@ export default function RegisterForm(props: RegisterFormProps) {
                 setRegisterError('');
                 setRegisterStep(registerStep - 1);
               }}
-              className="flex-1 py-3 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Retour
             </button>
@@ -263,7 +263,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             type="button"
             onClick={onRegisterNext}
             disabled={registerLoading}
-            className="flex-1 py-3 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {registerLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {registerLoading

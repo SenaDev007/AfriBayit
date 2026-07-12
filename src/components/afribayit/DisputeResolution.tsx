@@ -329,7 +329,7 @@ export default function DisputeResolution({
       {/* Parties */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-[#003087]/5 rounded-xl p-3 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#003087] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#003087] flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -338,7 +338,7 @@ export default function DisputeResolution({
           </div>
         </div>
         <div className="bg-[#D4AF37]/5 rounded-xl p-3 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#D4AF37] flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -792,7 +792,7 @@ export default function DisputeResolution({
               <CardContent className="p-4 space-y-4">
                 {/* Decision Header */}
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-2">
+                  <div className="w-12 h-12 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-2">
                     <Gavel className="w-6 h-6 text-[#D4AF37]" />
                   </div>
                   <h4 className="text-sm font-bold text-gray-900">Décision d&apos;arbitrage rendue</h4>

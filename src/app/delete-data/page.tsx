@@ -27,7 +27,7 @@ export default function DeleteDataPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-20">
         <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-8">
 
           {/* Intro banner */}
@@ -111,22 +111,22 @@ export default function DeleteDataPage() {
             </h2>
             <div className="grid gap-4 md:grid-cols-4">
               <div className="p-4 rounded-xl bg-[#003087]/5 text-center">
-                <div className="w-10 h-10 rounded-full bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">1</div>
+                <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">1</div>
                 <p className="text-sm font-semibold text-[#003087]">Réception</p>
                 <p className="text-xs text-gray-500 mt-1">Accusé de réception sous 24h</p>
               </div>
               <div className="p-4 rounded-xl bg-[#003087]/5 text-center">
-                <div className="w-10 h-10 rounded-full bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">2</div>
+                <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">2</div>
                 <p className="text-sm font-semibold text-[#003087]">Vérification</p>
                 <p className="text-xs text-gray-500 mt-1">Confirmation de votre identité</p>
               </div>
               <div className="p-4 rounded-xl bg-[#003087]/5 text-center">
-                <div className="w-10 h-10 rounded-full bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">3</div>
+                <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">3</div>
                 <p className="text-sm font-semibold text-[#003087]">Traitement</p>
                 <p className="text-xs text-gray-500 mt-1">Suppression sous 30 jours</p>
               </div>
               <div className="p-4 rounded-xl bg-[#003087]/5 text-center">
-                <div className="w-10 h-10 rounded-full bg-[#D4AF37] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">4</div>
+                <div className="w-10 h-10 rounded-lg bg-[#D4AF37] text-white flex items-center justify-center mx-auto mb-2 text-sm font-bold">4</div>
                 <p className="text-sm font-semibold text-[#003087]">Confirmation</p>
                 <p className="text-xs text-gray-500 mt-1">Notification de suppression</p>
               </div>

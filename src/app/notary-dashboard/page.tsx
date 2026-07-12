@@ -171,7 +171,7 @@ export default function NotaryDashboardPage() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">Espace Notaire</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">Espace Notaire</h1>
           <p className="text-sm text-gray-500 mt-1">Gérez vos actes, signatures et rendez-vous</p>
         </div>
 
@@ -206,20 +206,20 @@ export default function NotaryDashboardPage() {
                 ].map((kpi, i) => (
                   <motion.div key={kpi.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className="bg-white rounded-2xl p-4 shadow-sm border">
                     <div className="text-xl">{kpi.icon}</div>
-                    <p className="font-mono text-lg font-bold text-[#2C2E2F] mt-2">{kpi.value}</p>
+                    <p className="font-mono text-lg font-bold text-[#0a2a5e] mt-2">{kpi.value}</p>
                     <p className="text-xs text-gray-500">{kpi.label}</p>
                   </motion.div>
                 ))}
               </div>
 
               {/* Active Transactions */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions actives</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Transactions actives</h3>
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {DEMO_TRANSACTIONS.filter(t => ['NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'FUNDED'].includes(t.status)).map(txn => (
                     <div key={txn.id} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.propertyTitle}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e] truncate">{txn.propertyTitle}</p>
                         <p className="text-xs text-gray-500">{txn.buyer} → {txn.seller}</p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
@@ -234,16 +234,16 @@ export default function NotaryDashboardPage() {
               </div>
 
               {/* Pending Deed Reviews */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Actes en révision</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Actes en révision</h3>
                 <div className="space-y-3">
                   {DEMO_DEEDS.filter(d => d.status === 'review').map(deed => (
                     <div key={deed.id} className="flex items-center justify-between p-3 rounded-2xl bg-[#D4AF37]/5 border border-[#D4AF37]/10">
                       <div>
-                        <p className="text-sm font-semibold text-[#2C2E2F]">{deed.title}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e]">{deed.title}</p>
                         <p className="text-xs text-gray-500">{deed.country} · {deed.sections.length} sections</p>
                       </div>
-                      <button className="px-4 py-2 bg-[#D4AF37] text-white text-xs font-semibold rounded-full hover:bg-[#c9a030] transition-colors">
+                      <button className="px-4 py-2 bg-[#D4AF37] text-white text-xs font-semibold rounded-lg hover:bg-[#c9a030] transition-colors">
                         Réviser
                       </button>
                     </div>
@@ -257,8 +257,8 @@ export default function NotaryDashboardPage() {
           {activeTab === 'deeds' && (
             <motion.div key="deeds" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
               {/* Deed Generator */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Rédaction IA d&apos;actes</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Rédaction IA d&apos;actes</h3>
                 <p className="text-sm text-gray-500 mb-4">Sélectionnez une transaction et un modèle d&apos;acte pour générer un brouillon automatique.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -305,7 +305,7 @@ export default function NotaryDashboardPage() {
                 <button
                   onClick={handleGenerateDeed}
                   disabled={!selectedTransaction || !selectedTemplate || generating}
-                  className="px-6 py-3 bg-[#003087] text-white rounded-full font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-[#003087] text-white rounded-lg font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {generating ? (
                     <><span className="animate-spin">⏳</span> Génération en cours...</>
@@ -316,26 +316,26 @@ export default function NotaryDashboardPage() {
               </div>
 
               {/* Existing Deeds */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Actes récents</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Actes récents</h3>
                 <div className="space-y-3">
                   {DEMO_DEEDS.map(deed => (
                     <div key={deed.id} className="p-4 rounded-2xl border border-gray-100 hover:border-[#003087]/20 transition-colors">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-bold text-[#2C2E2F]">{deed.title}</h4>
+                        <h4 className="text-sm font-bold text-[#0a2a5e]">{deed.title}</h4>
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(deed.status)}`}>
                           {getStatusLabel(deed.status)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 mb-2">{deed.country} · {deed.sections.length} sections · Généré le {deed.generatedAt}</p>
                       <div className="flex gap-2">
-                        <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-full hover:bg-[#003087]/10 transition-colors">
+                        <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-lg hover:bg-[#003087]/10 transition-colors">
                           Voir
                         </button>
-                        <button className="px-3 py-1.5 text-xs font-semibold text-[#00A651] bg-[#00A651]/5 rounded-full hover:bg-[#00A651]/10 transition-colors">
+                        <button className="px-3 py-1.5 text-xs font-semibold text-[#00A651] bg-[#00A651]/5 rounded-lg hover:bg-[#00A651]/10 transition-colors">
                           Modifier
                         </button>
-                        <button className="px-3 py-1.5 text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/5 rounded-full hover:bg-[#D4AF37]/10 transition-colors">
+                        <button className="px-3 py-1.5 text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/5 rounded-lg hover:bg-[#D4AF37]/10 transition-colors">
                           Envoyer signature
                         </button>
                       </div>
@@ -354,9 +354,9 @@ export default function NotaryDashboardPage() {
                   const signed = sig.signers.filter(s => s.status === 'signed').length;
                   const total = sig.signers.length;
                   return (
-                    <div key={sig.id} className="bg-white rounded-3xl p-6 shadow-sm border">
+                    <div key={sig.id} className="bg-white rounded-xl p-6 shadow-sm border">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-bold text-[#2C2E2F]">{sig.documentTitle}</h4>
+                        <h4 className="text-sm font-bold text-[#0a2a5e]">{sig.documentTitle}</h4>
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(sig.status)}`}>
                           {getStatusLabel(sig.status)}
                         </span>
@@ -367,16 +367,16 @@ export default function NotaryDashboardPage() {
                           <span className="font-semibold text-[#003087]">{signed}/{total}</span>
                         </div>
                         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-full" style={{ width: `${(signed / total) * 100}%` }} />
+                          <div className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-lg" style={{ width: `${(signed / total) * 100}%` }} />
                         </div>
                       </div>
                       <div className="space-y-2">
                         {sig.signers.map((s, i) => (
                           <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-gray-50">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${s.status === 'signed' ? 'bg-[#00A651]' : 'bg-gray-300'}`}>
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs font-bold ${s.status === 'signed' ? 'bg-[#00A651]' : 'bg-gray-300'}`}>
                               {s.status === 'signed' ? <Check className="w-4 h-4" /> : (i + 1)}
                             </div>
-                            <span className="text-sm text-[#2C2E2F]">{s.name}</span>
+                            <span className="text-sm text-[#0a2a5e]">{s.name}</span>
                             <span className="text-xs text-gray-400 ml-auto">{s.role}</span>
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(s.status)}`}>
                               {getStatusLabel(s.status)}
@@ -398,9 +398,9 @@ export default function NotaryDashboardPage() {
                 {DEMO_CONVENTIONS.map(conv => {
                   const progress = conv.signers > 0 ? (conv.signedCount / conv.signers) * 100 : 0;
                   return (
-                    <div key={conv.id} className="bg-white rounded-3xl p-6 shadow-sm border">
+                    <div key={conv.id} className="bg-white rounded-xl p-6 shadow-sm border">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-bold text-[#2C2E2F]">{conv.type}</h4>
+                        <h4 className="text-sm font-bold text-[#0a2a5e]">{conv.type}</h4>
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${getStatusColor(conv.status)}`}>
                           {getStatusLabel(conv.status)}
                         </span>
@@ -408,7 +408,7 @@ export default function NotaryDashboardPage() {
                       <p className="text-xs text-gray-500 mb-3">Transaction: {conv.transactionId}</p>
                       <div className="flex items-center gap-3">
                         <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${progress === 100 ? 'bg-[#00A651]' : 'bg-[#003087]'}`} style={{ width: `${progress}%` }} />
+                          <div className={`h-full rounded-lg ${progress === 100 ? 'bg-[#00A651]' : 'bg-[#003087]'}`} style={{ width: `${progress}%` }} />
                         </div>
                         <span className="text-xs font-semibold text-[#003087]">{conv.signedCount}/{conv.signers}</span>
                       </div>
@@ -416,7 +416,7 @@ export default function NotaryDashboardPage() {
                   );
                 })}
 
-                <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-3xl text-sm font-semibold text-gray-400 hover:text-[#003087] hover:border-[#003087]/30 transition-colors">
+                <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-semibold text-gray-400 hover:text-[#003087] hover:border-[#003087]/30 transition-colors">
                   + Envoyer une nouvelle convention
                 </button>
               </div>
@@ -426,10 +426,10 @@ export default function NotaryDashboardPage() {
           {/*  CALENDAR TAB  */}
           {activeTab === 'calendar' && (
             <motion.div key="calendar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Rendez-vous à venir</h3>
-                  <button className="px-4 py-2 bg-[#003087] text-white text-xs font-semibold rounded-full hover:bg-[#0047b3] transition-colors">
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Rendez-vous à venir</h3>
+                  <button className="px-4 py-2 bg-[#003087] text-white text-xs font-semibold rounded-lg hover:bg-[#0047b3] transition-colors">
                     + Nouveau RDV
                   </button>
                 </div>
@@ -443,7 +443,7 @@ export default function NotaryDashboardPage() {
                           {typeIcons[apt.type]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#2C2E2F]">{apt.title}</p>
+                          <p className="text-sm font-semibold text-[#0a2a5e]">{apt.title}</p>
                           <p className="text-xs text-gray-500">{apt.client} · {typeLabels[apt.type]}</p>
                         </div>
                         <div className="text-right shrink-0">
@@ -461,9 +461,9 @@ export default function NotaryDashboardPage() {
           {/*  DOCUMENTS TAB  */}
           {activeTab === 'documents' && (
             <motion.div key="documents" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Archives documentaires</h3>
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Archives documentaires</h3>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -485,10 +485,10 @@ export default function NotaryDashboardPage() {
                         PDF
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#2C2E2F] truncate">{doc.name}</p>
+                        <p className="text-sm font-medium text-[#0a2a5e] truncate">{doc.name}</p>
                         <p className="text-xs text-gray-400">{doc.size} · {doc.date}</p>
                       </div>
-                      <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-full hover:bg-[#003087]/10 transition-colors">
+                      <button className="px-3 py-1.5 text-xs font-semibold text-[#003087] bg-[#003087]/5 rounded-lg hover:bg-[#003087]/10 transition-colors">
                         Télécharger
                       </button>
                     </div>

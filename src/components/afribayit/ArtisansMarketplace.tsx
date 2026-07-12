@@ -97,16 +97,16 @@ interface ArtisansMarketplaceProps {
 
 function ArtisanSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-sm border animate-pulse">
+    <div className="bg-white rounded-xl p-5 shadow-sm border animate-pulse">
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-14 h-14 rounded-full bg-gray-200" />
+        <div className="w-14 h-14 rounded-lg bg-gray-200" />
         <div className="flex-1">
           <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
           <div className="h-3 bg-gray-200 rounded w-16" />
           <div className="h-3 bg-gray-200 rounded w-20 mt-1" />
         </div>
       </div>
-      <div className="h-10 bg-gray-200 rounded-full" />
+      <div className="h-10 bg-gray-200 rounded-lg" />
     </div>
   );
 }
@@ -259,7 +259,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
               transition={{ duration: 0.5, ease: easeOut }}
             >
               {/* Header card */}
-              <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
+              <div className="bg-white rounded-xl p-8 shadow-sm border mb-6">
                 <div className="flex flex-col sm:flex-row gap-6">
                   {/* Avatar */}
                   <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
@@ -275,7 +275,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   {/* Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h1 className="text-2xl font-bold text-[#2C2E2F]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                      <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                         {detailArtisan.name}
                       </h1>
                       {detailArtisan.certified && (
@@ -316,7 +316,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 <div className="flex flex-wrap gap-3 mt-6">
                   <button
                     onClick={() => handleOpenDevis(detailArtisan)}
-                    className="flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                    className="flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     <Wrench className="w-4 h-4" />
                     Demander un devis
@@ -324,7 +324,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   {detailArtisan.emergency && (
                     <button
                       onClick={() => handleEmergencyCall(detailArtisan)}
-                      className="flex items-center gap-2 px-6 py-3 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors"
+                      className="flex items-center gap-2 px-6 py-3 bg-[#D93025] text-white rounded-lg text-sm font-semibold hover:bg-[#b5251f] transition-colors"
                     >
                       <Siren className="w-4 h-4" />
                       Appel d'urgence 24h/7j
@@ -339,8 +339,8 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
 
               {/* Specialties */}
               {detailArtisan.specialties.length > 0 && (
-                <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                  <h3 className="text-sm font-bold text-[#2C2E2F] mb-3">Spécialités</h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                  <h3 className="text-sm font-bold text-[#0a2a5e] mb-3">Spécialités</h3>
                   <div className="flex flex-wrap gap-2">
                     {detailArtisan.specialties.map((spec) => (
                       <span key={spec} className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-full">
@@ -353,13 +353,13 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
 
               {/* Services */}
               {detailArtisan.services && detailArtisan.services.length > 0 && (
-                <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                  <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Services proposés</h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                  <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {detailArtisan.services.map((service: any) => (
                       <div key={service.id} className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-semibold text-[#2C2E2F] text-sm">{service.serviceName}</h4>
+                          <h4 className="font-semibold text-[#0a2a5e] text-sm">{service.serviceName}</h4>
                           {service.basePrice && (
                             <span className="text-[#D4AF37] font-bold text-sm">
                               {new Intl.NumberFormat('fr-FR').format(service.basePrice)} FCFA
@@ -381,8 +381,8 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
 
               {/* Portfolio */}
               {portfolio.length > 0 && (
-                <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                  <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Réalisations</h3>
+                <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                  <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Réalisations</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {portfolio.map((img, i) => (
                       <div key={i} className="aspect-square rounded-2xl overflow-hidden relative">
@@ -405,28 +405,28 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                     <DollarSign className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
                     <p className="text-xs text-gray-400">Tarif jour</p>
-                    <p className="text-sm font-bold text-[#2C2E2F]">{new Intl.NumberFormat('fr-FR').format(detailArtisan.dailyRate)} FCFA</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{new Intl.NumberFormat('fr-FR').format(detailArtisan.dailyRate)} FCFA</p>
                   </div>
                 )}
                 {detailArtisan.priceRange && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                     <DollarSign className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
                     <p className="text-xs text-gray-400">Gamme prix</p>
-                    <p className="text-sm font-bold text-[#2C2E2F]">{detailArtisan.priceRange}</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{detailArtisan.priceRange}</p>
                   </div>
                 )}
                 {detailArtisan.responseTime && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                     <Clock className="w-5 h-5 text-[#009CDE] mx-auto mb-1" />
                     <p className="text-xs text-gray-400">Réponse</p>
-                    <p className="text-sm font-bold text-[#2C2E2F]">~{detailArtisan.responseTime} min</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">~{detailArtisan.responseTime} min</p>
                   </div>
                 )}
                 {detailArtisan.zone && (
                   <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                     <MapPin className="w-5 h-5 text-[#003087] mx-auto mb-1" />
                     <p className="text-xs text-gray-400">Zone</p>
-                    <p className="text-sm font-bold text-[#2C2E2F]">{detailArtisan.zone}</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{detailArtisan.zone}</p>
                   </div>
                 )}
               </div>
@@ -450,10 +450,10 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
             <Wrench className="w-4 h-4" /> ProMatch
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Artisans <span className="text-[#D4AF37]">Certifiés</span>
           </h1>
           <p className="text-gray-500 max-w-lg">
@@ -464,7 +464,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -495,7 +495,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
             <button
               key={trade}
               onClick={() => setSelectedTrade(trade)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                 selectedTrade === trade
                   ? 'bg-[#003087] text-white'
                   : 'bg-white text-gray-600 border hover:bg-gray-50'
@@ -538,7 +538,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                 whileHover={{ y: -4 }}
                 onClick={() => handleViewDetail(artisan)}
-                className="bg-white rounded-3xl p-5 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
+                className="bg-white rounded-xl p-5 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
               >
                 <div className="flex items-start gap-3 mb-4">
                   <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37] relative">
@@ -552,7 +552,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-[#2C2E2F]">{artisan.name}</h3>
+                      <h3 className="font-semibold text-[#0a2a5e]">{artisan.name}</h3>
                       {artisan.certified && (
                         <CheckCircle className="w-4 h-4 text-[#009CDE]" />
                       )}
@@ -580,7 +580,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-                    <span className="text-sm font-semibold text-[#2C2E2F]">{artisan.rating}</span>
+                    <span className="text-sm font-semibold text-[#0a2a5e]">{artisan.rating}</span>
                     <span className="text-xs text-gray-400">({artisan.reviews})</span>
                   </div>
                   <span className="text-xs text-gray-500">{artisan.priceRange}</span>
@@ -591,14 +591,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   {artisan.emergency && emergencyMode && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleEmergencyCall(artisan); }}
-                      className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors"
+                      className="flex-1 py-2.5 bg-[#D93025] text-white rounded-lg text-sm font-semibold hover:bg-[#b5251f] transition-colors"
                     >
                       <Siren className="w-4 h-4" /> Urgent
                     </button>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenDevis(artisan); }}
-                    className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                    className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     Demander devis
                   </button>
@@ -622,14 +622,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-3xl p-6 max-w-md w-full"
+              className="bg-white rounded-xl p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-full bg-[#D93025]/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-[#D93025]/10 flex items-center justify-center">
                   <Siren className="w-5 h-5 text-[#D93025]" />
                 </div>
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Appel d&apos;urgence</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Appel d&apos;urgence</h3>
               </div>
               <p className="text-sm text-gray-600 mb-2">
                 Vous êtes sur le point d&apos;appeler <strong>{emergencyConfirm.name}</strong> ({emergencyConfirm.trade}) en urgence.
@@ -641,13 +641,13 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
               <div className="flex gap-2">
                 <button
                   onClick={() => setEmergencyConfirm(null)}
-                  className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold"
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmEmergencyCall}
-                  className="flex-1 py-2.5 bg-[#D93025] text-white rounded-full text-sm font-semibold hover:bg-[#b5251f] transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-[#D93025] text-white rounded-lg text-sm font-semibold hover:bg-[#b5251f] transition-colors flex items-center justify-center gap-2"
                 >
                   <Phone className="w-4 h-4" />
                   Appeler maintenant
@@ -673,15 +673,15 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+          className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F]">Demander un devis</h3>
+              <h3 className="font-display text-xl font-bold text-[#0a2a5e]">Demander un devis</h3>
               <p className="text-xs text-gray-500">À {selectedArtisan.name} — {selectedArtisan.trade}</p>
             </div>
-            <button onClick={() => setShowDevis(false)} className="p-2 rounded-full hover:bg-gray-100">
+            <button onClick={() => setShowDevis(false)} className="p-2 rounded-lg hover:bg-gray-100">
               <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -719,14 +719,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDevis(false)}
-                className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSubmitDevis}
                 disabled={createQuote.isPending || !devisForm.title}
-                className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                className="flex-1 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
               >
                 {createQuote.isPending ? 'Envoi...' : 'Envoyer'}
               </button>

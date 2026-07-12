@@ -50,19 +50,19 @@ const geometerServices = [
 
 function GeometerSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border animate-pulse">
+    <div className="bg-white rounded-xl p-6 shadow-sm border animate-pulse">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-14 h-14 rounded-full bg-gray-200" />
+        <div className="w-14 h-14 rounded-lg bg-gray-200" />
         <div className="flex-1">
           <div className="h-4 bg-gray-200 rounded w-28 mb-2" />
           <div className="h-3 bg-gray-200 rounded w-20" />
         </div>
       </div>
       <div className="flex gap-2 mb-3">
-        <div className="h-4 w-20 bg-gray-100 rounded-full" />
-        <div className="h-4 w-16 bg-gray-100 rounded-full" />
+        <div className="h-4 w-20 bg-gray-100 rounded-lg" />
+        <div className="h-4 w-16 bg-gray-100 rounded-lg" />
       </div>
-      <div className="h-10 bg-gray-200 rounded-full" />
+      <div className="h-10 bg-gray-200 rounded-lg" />
     </div>
   );
 }
@@ -194,7 +194,7 @@ export default function GeoTrustModule() {
             transition={{ duration: 0.5, ease: easeOut }}
           >
             {/* Header card */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
+            <div className="bg-white rounded-xl p-8 shadow-sm border mb-6">
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#009CDE] relative">
                   <ImageWithFallback
@@ -207,7 +207,7 @@ export default function GeoTrustModule() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-[#2C2E2F]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                       {detailGeometer.name}
                     </h1>
                     {detailGeometer.certifiedAt && (
@@ -243,7 +243,7 @@ export default function GeoTrustModule() {
               <div className="mt-6">
                 <button
                   onClick={() => handleOpenMissionDialog(detailGeometer)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   <ClipboardList className="w-4 h-4" />
                   Demander une mission
@@ -261,14 +261,14 @@ export default function GeoTrustModule() {
 
             {/* Certifications */}
             {detailGeometer.certifications.length > 0 && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                <h3 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                <h3 className="text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2">
                   <Award className="w-4 h-4 text-[#009CDE]" />
                   Certifications & Spécialités
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {detailGeometer.certifications.map((cert) => (
-                    <span key={cert} className="px-3 py-1.5 bg-[#009CDE]/5 text-[#009CDE] text-xs font-medium rounded-full">
+                    <span key={cert} className="px-3 py-1.5 bg-[#009CDE]/5 text-[#009CDE] text-xs font-medium rounded-lg">
                       {geoServiceLabel(cert)}
                     </span>
                   ))}
@@ -277,8 +277,8 @@ export default function GeoTrustModule() {
             )}
 
             {/* Services offered — horizontal scroll */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-              <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Services proposés</h3>
+            <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
                 {geometerServices.map((service) => (
                   <div
@@ -288,7 +288,7 @@ export default function GeoTrustModule() {
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: '#009CDE10' }}>
                       <span className="text-[#009CDE]">{service.icon}</span>
                     </div>
-                    <h4 className="font-semibold text-[#2C2E2F] text-sm mb-1">{service.name}</h4>
+                    <h4 className="font-semibold text-[#0a2a5e] text-sm mb-1">{service.name}</h4>
                     <p className="text-xs text-gray-500 mb-2">{service.description}</p>
                     <p className="text-[#D4AF37] font-bold text-sm">{service.priceLabel}</p>
                   </div>
@@ -302,21 +302,21 @@ export default function GeoTrustModule() {
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Note</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{detailGeometer.rating}/5</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{detailGeometer.rating}/5</p>
                 </div>
               )}
               {detailGeometer.missions > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Missions</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{detailGeometer.missions}</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{detailGeometer.missions}</p>
                 </div>
               )}
               {detailGeometer.certifiedAt && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Certifié</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{timeAgo(detailGeometer.certifiedAt)}</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{timeAgo(detailGeometer.certifiedAt)}</p>
                 </div>
               )}
             </div>
@@ -339,10 +339,10 @@ export default function GeoTrustModule() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#009CDE]/10 text-[#009CDE] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#009CDE]/10 text-[#009CDE] text-sm font-semibold mb-4">
             <Map className="w-4 h-4" /> GeoTrust
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Géomètres <span className="text-[#009CDE]">Certifiés</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -353,14 +353,14 @@ export default function GeoTrustModule() {
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
 
         {/* Service Catalog — horizontal scroll */}
         <div className="mb-10">
-          <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Services</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Services</h2>
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
             {geometerServices.map((service, i) => (
               <motion.div
@@ -370,14 +370,14 @@ export default function GeoTrustModule() {
                 transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
                 whileHover={{ y: -4 }}
                 onClick={() => setSelectedService(service.id)}
-                className={`shrink-0 w-64 snap-center bg-white rounded-3xl p-5 shadow-sm border-2 cursor-pointer transition-all ${
+                className={`shrink-0 w-64 snap-center bg-white rounded-xl p-5 shadow-sm border-2 cursor-pointer transition-all ${
                   selectedService === service.id ? 'border-[#009CDE]' : 'border-transparent hover:border-gray-200'
                 }`}
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: '#009CDE10' }}>
                   <span className="text-[#009CDE]">{service.icon}</span>
                 </div>
-                <h3 className="font-semibold text-[#2C2E2F] mb-1">{service.name}</h3>
+                <h3 className="font-semibold text-[#0a2a5e] mb-1">{service.name}</h3>
                 <p className="text-xs text-gray-500 mb-3">{service.description}</p>
                 <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.priceLabel}</p>
               </motion.div>
@@ -387,7 +387,7 @@ export default function GeoTrustModule() {
 
         {/* Geometer Profiles */}
         <div>
-          <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Nos Géomètres</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Nos Géomètres</h2>
 
           {/* Loading State */}
           {geometersLoading && (
@@ -427,14 +427,14 @@ export default function GeoTrustModule() {
                   transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
                   whileHover={{ y: -4 }}
                   onClick={() => handleViewDetail(geo)}
-                  className="bg-white rounded-3xl p-6 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                  className="bg-white rounded-xl p-6 shadow-sm border cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#009CDE] relative">
                       <ImageWithFallback src={geo.avatar} alt={geo.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-[#2C2E2F]">{geo.name}</h3>
+                      <h3 className="font-semibold text-[#0a2a5e]">{geo.name}</h3>
                       <p className="text-xs text-gray-500">{geo.city}, {geo.country}</p>
                     </div>
                   </div>
@@ -461,7 +461,7 @@ export default function GeoTrustModule() {
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
-                    className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                    className="w-full py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     Demander une mission
                   </button>
@@ -476,9 +476,9 @@ export default function GeoTrustModule() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-10 bg-white rounded-3xl p-6 shadow-sm border"
+          className="mt-10 bg-white rounded-xl p-6 shadow-sm border"
         >
-          <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-4">Workflow de Mission</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Workflow de Mission</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             {[
               { step: '1', title: 'Demande', desc: 'Décrivez votre besoin', icon: <ClipboardList className="w-4 h-4" /> },
@@ -487,11 +487,11 @@ export default function GeoTrustModule() {
               { step: '4', title: 'Rapport', desc: 'Recevez le certificat GeoTrust', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 flex-1">
-                <div className="w-10 h-10 rounded-full bg-[#009CDE]/10 flex items-center justify-center text-lg shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-[#009CDE]/10 flex items-center justify-center text-lg shrink-0">
                   {item.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{item.title}</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{item.title}</p>
                   <p className="text-xs text-gray-500">{item.desc}</p>
                 </div>
               </div>
@@ -518,15 +518,15 @@ export default function GeoTrustModule() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+          className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-display text-xl font-bold text-[#2C2E2F]">Demander un devis</h3>
+              <h3 className="font-display text-xl font-bold text-[#0a2a5e]">Demander un devis</h3>
               <p className="text-xs text-gray-500">À {selectedGeometer.name} — {selectedGeometer.city}</p>
             </div>
-            <button onClick={() => setShowMissionDialog(false)} className="p-2 rounded-full hover:bg-gray-100">
+            <button onClick={() => setShowMissionDialog(false)} className="p-2 rounded-lg hover:bg-gray-100">
               <X className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -576,14 +576,14 @@ export default function GeoTrustModule() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowMissionDialog(false)}
-                className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600"
+                className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSubmitMission}
                 disabled={createMission.isPending || !missionForm.serviceCode}
-                className="flex-1 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
+                className="flex-1 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
               >
                 {createMission.isPending ? 'Envoi...' : 'Envoyer'}
               </button>

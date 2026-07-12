@@ -393,7 +393,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 30 }}
           transition={{ duration: 0.4, ease: easeOut }}
-          className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
+          className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
           {showForgotPassword ? (
@@ -430,7 +430,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <svg
                     className="w-5 h-5 text-gray-400"

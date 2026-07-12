@@ -39,7 +39,7 @@ export default function CataloguePanel({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Rechercher une formation..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-full border text-sm outline-none focus:border-[#003087] transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -50,19 +50,19 @@ export default function CataloguePanel({
         <div className="flex gap-2">
           <button
             onClick={() => setPriceFilter('all')}
-            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'all' ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'all' ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border'}`}
           >
             Toutes
           </button>
           <button
             onClick={() => setPriceFilter('free')}
-            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'free' ? 'bg-[#00A651] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'free' ? 'bg-[#00A651] text-white' : 'bg-white text-gray-600 border'}`}
           >
             Gratuites
           </button>
           <button
             onClick={() => setPriceFilter('paid')}
-            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'paid' ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'paid' ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border'}`}
           >
             Payantes
           </button>
@@ -75,7 +75,7 @@ export default function CataloguePanel({
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               selectedCategory === cat ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
             }`}
           >

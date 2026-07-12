@@ -93,7 +93,7 @@ export default function StaffPanel({
         <select
           value={effectiveGhId || ''}
           onChange={e => setSelectedGhId(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-200 text-sm bg-white"
+          className="px-4 py-2 rounded-lg border border-gray-200 text-sm bg-white"
         >
           {guesthousesList.map(gh => <option key={gh.id} value={gh.id}>{gh.name}</option>)}
         </select>
@@ -101,7 +101,7 @@ export default function StaffPanel({
 
       {/* Add Staff Form */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border mb-4">
-        <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3">Ajouter un membre du personnel</h4>
+        <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3">Ajouter un membre du personnel</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
             <label className="text-[10px] text-gray-500 block mb-1">Nom complet *</label>
@@ -180,17 +180,17 @@ export default function StaffPanel({
                 className="bg-white rounded-2xl p-4 shadow-sm border flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087]">
+                  <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087]">
                     {icon}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#2C2E2F]">{s.name}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e]">{s.name}</p>
                     <p className="text-xs text-gray-500">{getRoleLabel(s.role)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {schedule && (
-                    <span className="px-3 py-1 bg-gray-50 rounded-full text-xs font-medium text-gray-600">{schedule}</span>
+                    <span className="px-3 py-1 bg-gray-50 rounded-lg text-xs font-medium text-gray-600">{schedule}</span>
                   )}
                   <button
                     onClick={() => handleRemoveStaff(s.id, s.name)}

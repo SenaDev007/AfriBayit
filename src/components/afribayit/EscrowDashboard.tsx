@@ -288,10 +288,10 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
           <Lock className="w-4 h-4" /> Escrow Sécurisé–7B.5
         </span>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
           Tableau de Bord Escrow
         </h1>
         <p className="text-gray-500 text-sm">
@@ -322,7 +322,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* 12-State Machine Timeline */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[#2C2E2F]">Machine à états — 12 états</h3>
+          <h3 className="text-lg font-bold text-[#0a2a5e]">Machine à états — 12 états</h3>
           <Badge variant="secondary" className="text-[10px]">
             {NORMAL_FLOW_ORDER.indexOf(currentState) + 1}/{NORMAL_FLOW_ORDER.length} étapes
           </Badge>
@@ -332,7 +332,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           <div className="flex gap-2 overflow-x-auto pb-2">
             {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="flex items-start shrink-0">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-lg" />
                 {i < 8 && <Skeleton className="w-4 h-0.5 mt-5" />}
               </div>
             ))}
@@ -350,7 +350,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       <motion.div
                         initial={false}
                         animate={{ scale: status === 'current' ? 1.15 : 1 }}
-                        className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        className={`relative w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
                           status === 'completed'
                             ? 'bg-[#00A651]/10 ring-2 ring-[#00A651]/30'
                             : status === 'current'
@@ -365,7 +365,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         )}
                         {status === 'current' && (
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-[#D4AF37]"
+                            className="absolute inset-0 rounded-lg border-2 border-[#D4AF37]"
                             animate={{ scale: [1, 1.3], opacity: [0.6, 0] }}
                             transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut' }}
                           />
@@ -447,7 +447,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         {/* Release Conditions Checklist (7 conditions) */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-[#2C2E2F]">Conditions de libération</h3>
+            <h3 className="text-base font-bold text-[#0a2a5e]">Conditions de libération</h3>
             <span className="text-xs font-mono text-gray-500">
               {completedConditions}/{totalConditions}
             </span>
@@ -459,7 +459,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
               initial={{ width: 0 }}
               animate={{ width: `${(completedConditions / totalConditions) * 100}%` }}
               transition={{ duration: 0.5, ease: easeOut }}
-              className="h-full bg-[#00A651] rounded-full"
+              className="h-full bg-[#00A651] rounded-lg"
             />
           </div>
 
@@ -473,7 +473,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     : 'bg-gray-50'
                 }`}
               >
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
                   releaseConditions[condition.key as keyof typeof releaseConditions]
                     ? 'bg-[#00A651] text-white'
                     : 'bg-gray-200 text-gray-400'
@@ -501,7 +501,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
         {/* Balance Breakdown */}
         <Card className="p-6">
-          <h3 className="text-base font-bold text-[#2C2E2F] mb-4">Répartition des fonds</h3>
+          <h3 className="text-base font-bold text-[#0a2a5e] mb-4">Répartition des fonds</h3>
 
           <div className="space-y-4">
             {/* Buyer deposit */}
@@ -546,7 +546,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Action Buttons */}
       {!isLoading && (availableActions.length > 0 || canDispute) && (
         <Card className="p-6">
-          <h4 className="text-sm font-bold text-[#2C2E2F] mb-3">Actions disponibles</h4>
+          <h4 className="text-sm font-bold text-[#0a2a5e] mb-3">Actions disponibles</h4>
           <div className="flex flex-wrap gap-3">
             {availableActions
               .filter((action) => {
@@ -633,14 +633,14 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-white rounded-3xl p-6 shadow-xl"
+              className="w-full max-w-md bg-white rounded-xl p-6 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center mb-6">
-                <div className="w-14 h-14 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-3">
                   <Fingerprint className="w-7 h-7 text-[#003087]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#2C2E2F]">Confirmation 2FA requise</h3>
+                <h3 className="text-lg font-bold text-[#0a2a5e]">Confirmation 2FA requise</h3>
                 <p className="text-xs text-gray-500 mt-1">
                   Vérification requise pour libérer les fonds de {formatFCFA(amount)}
                 </p>
@@ -704,7 +704,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Ledger Entries with SHA-256 Checksums */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[#2C2E2F]">Grand Livre Escrow</h3>
+          <h3 className="text-base font-bold text-[#0a2a5e]">Grand Livre Escrow</h3>
           <Badge variant="secondary" className="text-[10px]">
             <Link className="w-3 h-3 mr-1" /> SHA-256 chaîné
           </Badge>
@@ -768,7 +768,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-[#2C2E2F]">
+                        <span className="text-xs font-semibold text-[#0a2a5e]">
                           {typeLabels[entryType] || entryType}
                         </span>
                         <span className="font-mono text-xs font-bold" style={{ color }}>
@@ -808,7 +808,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
       {/* State Transition History Timeline */}
       <Card className="p-6">
-        <h3 className="text-base font-bold text-[#2C2E2F] mb-4">Historique des transitions</h3>
+        <h3 className="text-base font-bold text-[#0a2a5e] mb-4">Historique des transitions</h3>
 
         {isLoading ? (
           <div className="space-y-3">
@@ -831,7 +831,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     <div className="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-[#003087] border-2 border-white z-10" />
                     <div className="flex-1 p-2.5 bg-gray-50 rounded-xl text-xs">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-semibold text-[#2C2E2F]">
+                        <span className="font-semibold text-[#0a2a5e]">
                           {event.fromStatus as string} <ArrowRight className="w-3 h-3 inline" /> {event.toStatus as string}
                         </span>
                       </div>

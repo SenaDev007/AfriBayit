@@ -207,18 +207,18 @@ export default function PropertyComparator({
       exit={{ opacity: 0, y: 20 }}
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 pt-8"
     >
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[1200px] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-[1200px] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="font-display text-xl font-bold text-[#2C2E2F]">
+            <h2 className="font-display text-xl font-bold text-[#0a2a5e]">
               Comparaison de biens
             </h2>
             <p className="text-sm text-gray-500">{properties.length} propriétés sélectionnées</p>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
           >
             <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -238,7 +238,7 @@ export default function PropertyComparator({
                   <th key={p.id} className="p-4 text-center min-w-[200px]">
                     <button
                       onClick={() => onRemoveProperty?.(p.id)}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors text-xs"
+                      className="absolute top-2 right-2 w-6 h-6 rounded-lg bg-gray-100 hover:bg-red-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors text-xs"
                     >
                       <X className="w-4 h-4" />
                     </button>

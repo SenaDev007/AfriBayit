@@ -15,7 +15,7 @@ const PropertyPublishModule = dynamic(() => import('@/components/afribayit/Prope
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-6">
           <div className="h-10 w-48 bg-gray-200 rounded" />
-          <div className="h-96 bg-gray-100 rounded-3xl" />
+          <div className="h-96 bg-gray-100 rounded-xl" />
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@ export default function PublishPage() {
               <span className="text-2xl shrink-0">{noticeMessage.variant === 'error' ? <Ban className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}</span>
               <div className="flex-1">
                 <h3 className={`font-display text-base font-bold mb-1 ${
-                  noticeMessage.variant === 'error' ? 'text-red-700' : 'text-[#2C2E2F]'
+                  noticeMessage.variant === 'error' ? 'text-red-700' : 'text-[#0a2a5e]'
                 }`}>
                   {noticeMessage.title}
                 </h3>

@@ -150,7 +150,7 @@ function FAQItem({ item, isOpen, onToggle }: { item: typeof faqItems[0]; isOpen:
         onClick={onToggle}
         className="w-full flex items-center justify-between p-5 sm:p-6 text-left bg-white hover:bg-gray-50/50 transition-colors"
       >
-        <span className="font-display text-base sm:text-lg font-semibold text-[#2C2E2F] pr-4">
+        <span className="font-display text-base sm:text-lg font-semibold text-[#0a2a5e] pr-4">
           {item.question}
         </span>
         <motion.div
@@ -221,8 +221,8 @@ export default function AmbassadorPage() {
       <section className="relative overflow-hidden bg-navy-gradient noise-overlay">
         {/* Decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#009CDE]/15 via-transparent to-[#D4AF37]/10 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#009CDE]/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#009CDE]/5 rounded-lg blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#D4AF37]/5 rounded-lg blur-[100px] pointer-events-none" />
 
         {/* Gold particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -241,7 +241,7 @@ export default function AmbassadorPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: easeOut }}
             >
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-6">
                 <Award className="w-4 h-4" />
                 Programme Ambassadeurs
               </span>
@@ -279,7 +279,7 @@ export default function AmbassadorPage() {
                 href="/auth/register"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
               >
                 Devenir ambassadeur
                 <ArrowRight className="w-4 h-4" />
@@ -288,7 +288,7 @@ export default function AmbassadorPage() {
                 href="#how-it-works"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-semibold text-sm border border-white/20 transition-colors font-body"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-sm border border-white/20 transition-colors font-body"
               >
                 En savoir plus
               </motion.a>
@@ -334,7 +334,7 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12 md:mb-16"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
               <TrendingUp className="w-3.5 h-3.5" />
               Comment ça marche
             </span>
@@ -379,7 +379,7 @@ export default function AmbassadorPage() {
                     <Icon className="w-7 h-7" />
                   </div>
 
-                  <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">
+                  <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">
                     {step.title}
                   </h3>
                   <p className="text-sm text-gray-500 leading-relaxed font-body">
@@ -413,7 +413,7 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12 md:mb-16"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#D4AF37]/5 border border-[#D4AF37]/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#D4AF37]/5 border border-[#D4AF37]/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-4">
               <Star className="w-3.5 h-3.5" />
               Paliers
             </span>
@@ -486,7 +486,7 @@ export default function AmbassadorPage() {
 
                     {/* Commission */}
                     <div className="mb-5">
-                      <span className="font-display text-4xl font-bold text-[#2C2E2F]">
+                      <span className="font-display text-4xl font-bold text-[#0a2a5e]">
                         {tier.commission}
                       </span>
                       <span className="text-gray-500 text-sm font-body ml-1">commission</span>
@@ -494,7 +494,7 @@ export default function AmbassadorPage() {
 
                     {/* Requirements badge */}
                     <div
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mb-5 w-fit font-body"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold mb-5 w-fit font-body"
                       style={{ backgroundColor: tier.colorLight, color: tier.color }}
                     >
                       <Check className="w-3.5 h-3.5" />
@@ -522,7 +522,7 @@ export default function AmbassadorPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={cn(
-                        'w-full flex items-center justify-center gap-2 py-3.5 rounded-full font-semibold text-sm transition-colors font-body',
+                        'w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold text-sm transition-colors font-body',
                         tier.highlighted
                           ? 'text-white shadow-lg'
                           : 'text-white'
@@ -559,8 +559,8 @@ export default function AmbassadorPage() {
           >
             {/* Decorative overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/10 via-transparent to-[#D4AF37]/10 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#009CDE]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#009CDE]/5 rounded-lg blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#D4AF37]/5 rounded-lg blur-3xl pointer-events-none" />
 
             <div className="relative z-10 p-8 sm:p-12 lg:p-16">
               {/* Section heading */}
@@ -626,7 +626,7 @@ export default function AmbassadorPage() {
                 {['Bénin', 'Côte d\'Ivoire', 'Burkina Faso', 'Togo'].map((country) => (
                   <span
                     key={country}
-                    className="px-4 py-2 rounded-full bg-white/10 border border-white/10 text-white/80 text-sm font-body"
+                    className="px-4 py-2 rounded-lg bg-white/10 border border-white/10 text-white/80 text-sm font-body"
                   >
                     {country}
                   </span>
@@ -650,7 +650,7 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
               FAQ
             </span>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -690,8 +690,8 @@ export default function AmbassadorPage() {
             <div className="bg-navy-gradient noise-overlay relative p-8 sm:p-12 lg:p-16">
               {/* Decorative overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/20 via-transparent to-[#D4AF37]/10 pointer-events-none" />
-              <div className="absolute top-0 right-0 w-96 h-96 bg-[#009CDE]/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-96 h-96 bg-[#009CDE]/5 rounded-lg blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#D4AF37]/5 rounded-lg blur-3xl pointer-events-none" />
 
               {/* Gold particles */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -737,7 +737,7 @@ export default function AmbassadorPage() {
                     href="/auth/register"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
                   >
                     Devenir ambassadeur
                     <ArrowRight className="w-4 h-4" />
@@ -746,7 +746,7 @@ export default function AmbassadorPage() {
                     href="#how-it-works"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-semibold text-sm border border-white/20 transition-colors font-body"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-sm border border-white/20 transition-colors font-body"
                   >
                     En savoir plus
                   </motion.a>

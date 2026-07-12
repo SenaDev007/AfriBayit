@@ -69,7 +69,7 @@ export default function HowItWorks() {
                 className="flex flex-col items-center text-center lg:items-start lg:text-left"
               >
                 {/* Number badge */}
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#FFCC00] bg-[#003366]">
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-lg border-2 border-[#FFCC00] bg-[#003366]">
                   <span className="font-[family-name:var(--font-cormorant),Georgia,serif] text-3xl font-bold text-[#FFCC00]">
                     {step.number}
                   </span>

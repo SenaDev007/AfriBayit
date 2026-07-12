@@ -9,7 +9,7 @@ const AuthPages = dynamic(() => import('@/components/afribayit/AuthPages'), {
   loading: () => (
     <div className="min-h-screen bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] flex items-center justify-center">
       <div className="animate-pulse">
-        <div className="w-80 h-96 bg-white/10 rounded-3xl" />
+        <div className="w-80 h-96 bg-white/10 rounded-xl" />
       </div>
     </div>
   ),

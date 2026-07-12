@@ -35,7 +35,7 @@ export default function PartnershipPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl p-8 shadow-sm border"
+                className="bg-white rounded-xl p-8 shadow-sm border"
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${NAVY}10` }}>
@@ -56,7 +56,7 @@ export default function PartnershipPage() {
                     </li>
                   ))}
                 </ul>
-                <a href="mailto:contact@afribayit.com?subject=Partenariat" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:scale-105" style={{ background: NAVY }}>
+                <a href="mailto:contact@afribayit.com?subject=Partenariat" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:scale-105" style={{ background: NAVY }}>
                   Nous contacter <ArrowRight className="w-4 h-4" />
                 </a>
               </motion.div>
@@ -69,10 +69,10 @@ export default function PartnershipPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Une question sur le partenariat ?</h2>
           <div className="flex flex-wrap justify-center gap-4 mt-6">
-            <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-full text-sm font-bold hover:scale-105 transition-transform">
+            <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-lg text-sm font-bold hover:scale-105 transition-transform">
               <Mail className="w-4 h-4" /> Email
             </a>
-            <a href="tel:+22997000000" className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-bold hover:scale-105 transition-transform">
+            <a href="tel:+22997000000" className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-bold hover:scale-105 transition-transform">
               <Phone className="w-4 h-4" /> Appeler
             </a>
           </div>

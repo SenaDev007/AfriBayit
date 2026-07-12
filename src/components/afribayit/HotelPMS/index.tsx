@@ -206,7 +206,7 @@ export default function HotelPMS() {
       {['booking_com', 'expedia'].map((ota) => {
         const info = otaSyncStatus[ota];
         return (
-          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
+          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
             info?.status === 'synced' ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
           }`}>
             <RefreshCw className={`w-3 h-3 ${info?.status === 'synced' ? '' : 'animate-spin'}`} />
@@ -223,10 +223,10 @@ export default function HotelPMS() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
             <Hotel className="w-4 h-4" /> PMS Hotelier — AfriBayit
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Gestion <span className="text-[#003087]">Hoteliere</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -251,7 +251,7 @@ export default function HotelPMS() {
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {TABS.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
               activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
             }`}>
               {tab.icon} {tab.label}

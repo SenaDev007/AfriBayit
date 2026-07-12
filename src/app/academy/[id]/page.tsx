@@ -297,7 +297,7 @@ export default function CourseDetailPage() {
           </p>
           <button
             onClick={() => router.push('/academy')}
-            className="px-6 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+            className="px-6 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
           >
             Retour à l&apos;académie
           </button>
@@ -421,7 +421,7 @@ export default function CourseDetailPage() {
                 >
                   {/* Course info */}
                   <div className="bg-white rounded-2xl border shadow-sm p-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
                       {course.title}
                     </h1>
                     <p className="text-gray-500 mb-4">
@@ -466,7 +466,7 @@ export default function CourseDetailPage() {
                         onClick={() => setExpandedModules(!expandedModules)}
                         className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                       >
-                        <h3 className="font-semibold text-[#2C2E2F] flex items-center gap-2">
+                        <h3 className="font-semibold text-[#0a2a5e] flex items-center gap-2">
                           <BookOpen className="w-5 h-5 text-[#003087]" />
                           Programme ({totalModules} modules)
                         </h3>
@@ -493,7 +493,7 @@ export default function CourseDetailPage() {
                                   key={mod.id || idx}
                                   className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50/50"
                                 >
-                                  <div className="w-8 h-8 rounded-full bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-lg bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
                                     {modType === 'video' ? (
                                       <Play className="w-3.5 h-3.5 text-[#003087]" />
                                     ) : modType === 'text' ? (
@@ -503,7 +503,7 @@ export default function CourseDetailPage() {
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-[#2C2E2F] truncate">
+                                    <p className="text-sm font-medium text-[#0a2a5e] truncate">
                                       {idx + 1}. {mod.title}
                                     </p>
                                   </div>
@@ -528,7 +528,7 @@ export default function CourseDetailPage() {
                         <FileText className="w-5 h-5 text-[#003087]" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#2C2E2F] text-sm">
+                        <h4 className="font-semibold text-[#0a2a5e] text-sm">
                           Quiz de validation
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -547,7 +547,7 @@ export default function CourseDetailPage() {
                         <Award className="w-5 h-5 text-[#D4AF37]" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#2C2E2F] text-sm">
+                        <h4 className="font-semibold text-[#0a2a5e] text-sm">
                           Certificat de réussite
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -607,7 +607,7 @@ export default function CourseDetailPage() {
                       <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
                         <FileText className="w-6 h-6 text-gray-400" />
                       </div>
-                      <h3 className="font-semibold text-[#2C2E2F] mb-1">
+                      <h3 className="font-semibold text-[#0a2a5e] mb-1">
                         Quiz de validation
                       </h3>
                       <p className="text-sm text-gray-500 mb-4">
@@ -616,7 +616,7 @@ export default function CourseDetailPage() {
                       <button
                         onClick={handleLoadQuiz}
                         disabled={isLoadingQuiz}
-                        className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+                        className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
                       >
                         {isLoadingQuiz
                           ? 'Chargement...'
@@ -767,7 +767,7 @@ export default function CourseDetailPage() {
                       <Icon className="w-4 h-4" />
                       {label}
                     </span>
-                    <span className="font-medium text-[#2C2E2F]">{value}</span>
+                    <span className="font-medium text-[#0a2a5e]">{value}</span>
                   </div>
                 ))}
               </div>
@@ -783,7 +783,7 @@ export default function CourseDetailPage() {
                   </div>
                   <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-full"
+                      className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-lg"
                       initial={{ width: 0 }}
                       animate={{
                         width: `${Math.round(enrollment.progress)}%`,
@@ -803,15 +803,15 @@ export default function CourseDetailPage() {
 
             {/* Instructor card */}
             <div className="bg-white rounded-2xl border shadow-sm p-5">
-              <h4 className="text-sm font-semibold text-[#2C2E2F] mb-3">
+              <h4 className="text-sm font-semibold text-[#0a2a5e] mb-3">
                 Instructeur
               </h4>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
+                <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
                   {course.instructor.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#2C2E2F] text-sm">
+                  <p className="font-semibold text-[#0a2a5e] text-sm">
                     {course.instructor}
                   </p>
                   <p className="text-xs text-gray-500">

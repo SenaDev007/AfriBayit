@@ -40,7 +40,7 @@ export default function TourStep({ direction, slideVariants, easeOut, setIsAnima
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: i * 0.12, duration: 0.4, ease: easeOut }}
             whileHover={{ scale: 1.03, y: -2 }}
-            className="p-5 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all cursor-default"
+            className="p-5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all cursor-default"
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"

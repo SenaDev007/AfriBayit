@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
                         <span className="text-gray-500">{p.count} ({pct}%)</span>
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#003087] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                        <div className="h-full bg-[#003087] rounded-lg transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
                         <span className="text-gray-500">{t.count} ({pct}%)</span>
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#D4AF37] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                        <div className="h-full bg-[#D4AF37] rounded-lg transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );

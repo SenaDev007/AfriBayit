@@ -214,22 +214,22 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F]">Analytique</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">Analytique</h1>
             <p className="text-sm text-gray-500 mt-1">Vue d&apos;ensemble de vos performances</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Pays:</span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
                 {COUNTRY_NAMES[selectedCountry] || selectedCountry}
               </span>
             </div>
-            <div className="flex gap-1 bg-gray-100 rounded-full p-0.5">
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
               {PERIOD_OPTIONS.map((p) => (
                 <button
                   key={p.key}
                   onClick={() => setPeriod(p.key)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     period === p.key ? 'bg-white shadow-sm text-[#003087]' : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -239,7 +239,7 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
             </div>
             <button
               onClick={() => handleExport('csv')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#003087] text-white text-xs font-medium hover:bg-[#003087]/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#003087] text-white text-xs font-medium hover:bg-[#003087]/90 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               Exporter
@@ -270,7 +270,7 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >

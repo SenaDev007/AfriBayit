@@ -28,10 +28,10 @@ export default function ReportDialog({ open, onClose, reason, setReason, onSubmi
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+        className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2"><Flag className="w-5 h-5 text-[#D93025]" /> Signaler ce contenu</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Flag className="w-5 h-5 text-[#D93025]" /> Signaler ce contenu</h3>
         <p className="text-xs text-gray-500 mb-4">Notre équipe de modération examinera votre signalement sous 24h.</p>
         <div className="space-y-4">
           <div>
@@ -52,11 +52,11 @@ export default function ReportDialog({ open, onClose, reason, setReason, onSubmi
             </select>
           </div>
           <div className="flex gap-3">
-            <button onClick={handleClose} className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600">Annuler</button>
+            <button onClick={handleClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">Annuler</button>
             <button
               onClick={onSubmit}
               disabled={isSubmitting || !reason}
-              className="flex-1 py-3 bg-[#D93025] text-white rounded-full text-sm font-semibold disabled:opacity-50"
+              className="flex-1 py-3 bg-[#D93025] text-white rounded-lg text-sm font-semibold disabled:opacity-50"
             >
               {isSubmitting ? 'Envoi...' : 'Signaler'}
             </button>

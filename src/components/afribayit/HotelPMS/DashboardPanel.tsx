@@ -62,7 +62,7 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
 
         {/* Occupancy Bar Chart */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+          <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
             <Percent className="w-5 h-5" /> Taux d&apos;occupation — 7 jours
           </h3>
           <div className="flex items-end gap-2 h-32">
@@ -106,7 +106,7 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
         {/* Revenue & Channels */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border">
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Coins className="w-5 h-5" /> Revenus</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Coins className="w-5 h-5" /> Revenus</h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Aujourd&apos;hui</span>
@@ -123,7 +123,7 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
             </div>
           </div>
           <div className="bg-white rounded-2xl p-5 shadow-sm border">
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Radio className="w-5 h-5" /> Canaux</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Radio className="w-5 h-5" /> Canaux</h3>
             <div className="space-y-3">
               {Object.entries(data.channels).map(([channel, stats]) => (
                 <div key={channel} className="flex justify-between items-center">
@@ -139,12 +139,12 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
         {/* Today Arrivals & Departures */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border">
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneLanding className="w-5 h-5" /> Arrivees aujourd&apos;hui</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><PlaneLanding className="w-5 h-5" /> Arrivees aujourd&apos;hui</h3>
             {data.today.arrivals.length > 0 ? (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {data.today.arrivals.map((a) => (
                   <div key={a.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-xl">
-                    <div><p className="text-sm font-medium text-[#2C2E2F]">{a.guestName}</p><p className="text-[10px] text-gray-500">{channelLabel(a.sourceChannel)} · {formatDate(a.checkOut)}</p></div>
+                    <div><p className="text-sm font-medium text-[#0a2a5e]">{a.guestName}</p><p className="text-[10px] text-gray-500">{channelLabel(a.sourceChannel)} · {formatDate(a.checkOut)}</p></div>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_COLORS[a.status] || 'bg-gray-100 text-gray-600'}`}>{STATUS_LABELS[a.status] || a.status}</span>
                   </div>
                 ))}
@@ -152,12 +152,12 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
             ) : <p className="text-sm text-gray-400">Aucune arrivee prevue</p>}
           </div>
           <div className="bg-white rounded-2xl p-5 shadow-sm border">
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneTakeoff className="w-5 h-5" /> Departs aujourd&apos;hui</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><PlaneTakeoff className="w-5 h-5" /> Departs aujourd&apos;hui</h3>
             {data.today.departures.length > 0 ? (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {data.today.departures.map((d) => (
                   <div key={d.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-xl">
-                    <div><p className="text-sm font-medium text-[#2C2E2F]">{d.guestName}</p><p className="text-[10px] text-gray-500">{channelLabel(d.sourceChannel)}</p></div>
+                    <div><p className="text-sm font-medium text-[#0a2a5e]">{d.guestName}</p><p className="text-[10px] text-gray-500">{channelLabel(d.sourceChannel)}</p></div>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>{STATUS_LABELS[d.status] || d.status}</span>
                   </div>
                 ))}

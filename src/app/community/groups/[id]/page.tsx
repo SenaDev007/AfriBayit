@@ -65,7 +65,7 @@ export default function GroupDetailPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
             <div className="h-6 w-32 bg-gray-200 rounded" />
-            <div className="bg-white rounded-3xl p-6 shadow-sm border space-y-4">
+            <div className="bg-white rounded-xl p-6 shadow-sm border space-y-4">
               <div className="h-6 w-48 bg-gray-200 rounded" />
               <div className="h-4 w-full bg-gray-100 rounded" />
               <div className="h-4 w-3/4 bg-gray-100 rounded" />
@@ -83,7 +83,7 @@ export default function GroupDetailPage() {
           <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-600 mb-2">Groupe introuvable</h2>
           <p className="text-sm text-gray-400 mb-6">{groupError?.message || 'Ce groupe n\'existe pas ou a été supprimé.'}</p>
-          <button onClick={() => router.push('/community')} className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">Retour à la communauté</button>
+          <button onClick={() => router.push('/community')} className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors">Retour à la communauté</button>
         </div>
       </div>
     );
@@ -102,14 +102,14 @@ export default function GroupDetailPage() {
         </motion.div>
 
         {/* Group Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-[#003087]/10 flex items-center justify-center shrink-0">
                 <Landmark className="w-7 h-7 text-[#003087]" />
               </div>
               <div>
-                <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F]">{String(group.name || '')}</h1>
+                <h1 className="font-display text-xl sm:text-2xl font-bold text-[#0a2a5e]">{String(group.name || '')}</h1>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isPrivate ? 'bg-[#003087]/10 text-[#003087]' : 'bg-[#00A651]/10 text-[#00A651]'}`}>
                     {isPrivate ? (
@@ -144,7 +144,7 @@ export default function GroupDetailPage() {
           <button
             onClick={handleJoin}
             disabled={joining || joinGroup.isPending}
-            className="w-full py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {joining || joinGroup.isPending ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Inscription...</>
@@ -155,8 +155,8 @@ export default function GroupDetailPage() {
         </motion.div>
 
         {/* Members List */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-semibold text-sm text-[#2C2E2F] mb-4 flex items-center gap-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-semibold text-sm text-[#0a2a5e] mb-4 flex items-center gap-2">
             <Users className="w-4 h-4 text-[#003087]" /> Membres ({members.length})
           </h3>
 
@@ -164,7 +164,7 @@ export default function GroupDetailPage() {
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-9 h-9 rounded-full bg-gray-200" />
+                  <div className="w-9 h-9 rounded-lg bg-gray-200" />
                   <div className="flex-1"><div className="h-3 bg-gray-200 rounded w-24" /></div>
                 </div>
               ))}
@@ -194,11 +194,11 @@ export default function GroupDetailPage() {
                     <ImageWithFallback
                       src={String(memberUser?.avatar || '')}
                       alt={String(memberUser?.name || 'Membre')}
-                      className="w-9 h-9 rounded-full shrink-0"
+                      className="w-9 h-9 rounded-lg shrink-0"
                       fallbackType="avatar"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#2C2E2F] truncate">{String(memberUser?.name || 'Membre')}</p>
+                      <p className="text-sm font-medium text-[#0a2a5e] truncate">{String(memberUser?.name || 'Membre')}</p>
                       <p className="text-xs text-gray-400">
                         {role === 'admin' ? (
                           <span className="flex items-center gap-1 text-[#D4AF37]"><Crown className="w-3 h-3" /> Admin</span>

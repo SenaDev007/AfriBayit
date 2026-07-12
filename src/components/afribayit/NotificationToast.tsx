@@ -136,7 +136,7 @@ function ToastItem({
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">
+            <h4 className="text-sm font-semibold text-[#0a2a5e] truncate">
               {notification.title}
             </h4>
             <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
@@ -164,7 +164,7 @@ function ToastItem({
           {/* Dismiss button */}
           <button
             onClick={() => onDismiss(notification.id)}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+            className="p-1 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
@@ -175,7 +175,7 @@ function ToastItem({
           initial={{ width: '100%' }}
           animate={{ width: '0%' }}
           transition={{ duration: 5, ease: 'linear' }}
-          className="h-0.5 mt-3 rounded-full"
+          className="h-0.5 mt-3 rounded-lg"
           style={{ backgroundColor: `${color}30` }}
         />
       </div>

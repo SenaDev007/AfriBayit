@@ -13,7 +13,7 @@ const SubscriptionsModule = dynamic(() => import('@/components/afribayit/Subscri
           <div className="h-10 w-48 bg-gray-200 rounded mx-auto" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-80 bg-gray-100 rounded-3xl" />
+              <div key={i} className="h-80 bg-gray-100 rounded-xl" />
             ))}
           </div>
         </div>

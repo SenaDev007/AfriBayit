@@ -35,8 +35,8 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
 
   if (opportunities.length === 0) {
     return (
-      <div className="bg-white rounded-3xl p-12 border text-center">
-        <div className="w-16 h-16 rounded-full bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-white rounded-xl p-12 border text-center">
+        <div className="w-16 h-16 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
           <TrendingUp className="w-8 h-8 text-[#003087]" />
         </div>
         <h3 className="font-display text-xl font-bold text-gray-700 mb-2">
@@ -78,7 +78,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
     >
       <Link
         href={`/property/${opportunity.id}`}
-        className="block bg-white rounded-3xl border overflow-hidden hover:shadow-lg hover:border-[#003087]/20 transition-all group"
+        className="block bg-white rounded-xl border overflow-hidden hover:shadow-lg hover:border-[#003087]/20 transition-all group"
       >
         {/* Image with score badge */}
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
@@ -89,7 +89,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Score badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full backdrop-blur-md bg-white/90 shadow-sm">
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-md bg-white/90 shadow-sm">
             <Brain className="w-3.5 h-3.5" style={{ color: scoreColor }} />
             <span className="font-mono-data font-bold text-sm" style={{ color: scoreColor }}>{score}</span>
             <span className="text-[9px] font-semibold text-gray-500">/100</span>
@@ -118,7 +118,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="font-display font-bold text-sm text-[#2C2E2F] truncate mb-1">
+          <h3 className="font-display font-bold text-sm text-[#0a2a5e] truncate mb-1">
             {opportunity.title}
           </h3>
           <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-3">
@@ -139,7 +139,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
             <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-gray-50">
               <div>
                 <p className="text-[9px] text-gray-400 mb-0.5">Loyer est.</p>
-                <p className="font-mono-data font-bold text-xs text-[#2C2E2F]">{fmt(roi.estimatedMonthlyRent)}</p>
+                <p className="font-mono-data font-bold text-xs text-[#0a2a5e]">{fmt(roi.estimatedMonthlyRent)}</p>
               </div>
               <div>
                 <p className="text-[9px] text-gray-400 mb-0.5">Rendement</p>

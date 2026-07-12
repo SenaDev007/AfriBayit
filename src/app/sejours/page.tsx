@@ -394,11 +394,11 @@ export default function BookingPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 shrink-0`}
           >
-            <Card className="rounded-3xl card-shadow sticky top-20">
+            <Card className="rounded-xl card-shadow sticky top-20">
               <CardContent className="p-6 space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-[#2C2E2F] flex items-center gap-2">
+                  <h3 className="font-semibold text-[#0a2a5e] flex items-center gap-2">
                     <SlidersHorizontal className="w-4 h-4" />
                     Filtres
                   </h3>
@@ -414,7 +414,7 @@ export default function BookingPage() {
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#2C2E2F] mb-3">Prix par nuit (FCFA)</h4>
+                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Prix par nuit (FCFA)</h4>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -436,7 +436,7 @@ export default function BookingPage() {
 
                 {/* Stars */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#2C2E2F] mb-3">Étoiles</h4>
+                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Étoiles</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button
@@ -458,7 +458,7 @@ export default function BookingPage() {
 
                 {/* Minimum Rating */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#2C2E2F] mb-3">Note minimum</h4>
+                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Note minimum</h4>
                   <div className="flex gap-2 flex-wrap">
                     {[0, 3, 3.5, 4, 4.5].map((r) => (
                       <button
@@ -478,7 +478,7 @@ export default function BookingPage() {
 
                 {/* Amenities */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#2C2E2F] mb-3">Équipements</h4>
+                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Équipements</h4>
                   <div className="space-y-2.5">
                     {COMMON_AMENITIES.map((amenity) => (
                       <label
@@ -490,7 +490,7 @@ export default function BookingPage() {
                           onCheckedChange={() => toggleAmenity(amenity.key)}
                           className="data-[state=checked]:bg-[#003087] data-[state=checked]:border-[#003087]"
                         />
-                        <span className="text-sm text-gray-600 group-hover:text-[#2C2E2F] transition-colors">
+                        <span className="text-sm text-gray-600 group-hover:text-[#0a2a5e] transition-colors">
                           {amenity.label}
                         </span>
                       </label>
@@ -576,7 +576,7 @@ export default function BookingPage() {
             {(hotelsLoading || ghLoading || stLoading) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse rounded-3xl">
+                  <Card key={i} className="animate-pulse rounded-xl">
                     <div className="aspect-[4/3] bg-gray-200 rounded-t-3xl" />
                     <CardContent className="p-4 space-y-2">
                       <div className="h-5 bg-gray-200 rounded w-3/4" />
@@ -587,7 +587,7 @@ export default function BookingPage() {
                 ))}
               </div>
             ) : allListings.length === 0 ? (
-              <Card className="p-8 text-center text-gray-400 rounded-3xl">
+              <Card className="p-8 text-center text-gray-400 rounded-xl">
                 <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                 <p className="font-medium text-lg mb-1">Aucun établissement trouvé</p>
                 <p className="text-sm mb-4">Essayez de modifier vos critères de recherche</p>

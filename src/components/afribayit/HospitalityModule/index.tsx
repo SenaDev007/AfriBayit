@@ -166,10 +166,10 @@ export default function HospitalityModule() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
             <Hotel className="w-4 h-4" /> AfriBayit Hospitality
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Hôtels & <span className="text-[#D4AF37]">Séjours</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">

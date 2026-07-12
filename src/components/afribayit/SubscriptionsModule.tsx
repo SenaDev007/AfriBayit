@@ -277,13 +277,13 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4"><RefreshCw className="w-4 h-4" /> Abonnements Premium</span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">Plans <span className="text-[#003087]">Premium</span></h1>
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4"><RefreshCw className="w-4 h-4" /> Abonnements Premium</span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">Plans <span className="text-[#003087]">Premium</span></h1>
           <p className="text-gray-500 max-w-lg mx-auto">Choisissez le plan adapté à votre activité et débloquez tout le potentiel d&apos;AfriBayit</p>
         </motion.div>
 
         {/* Current Subscription Banner */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-gradient-to-r from-[#003087] to-[#001a4d] rounded-3xl p-5 mb-8 text-white">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-gradient-to-r from-[#003087] to-[#001a4d] rounded-xl p-5 mb-8 text-white">
           {subsLoading ? (
             <div className="animate-pulse"><div className="h-3 bg-white/20 rounded w-24 mb-2" /><div className="h-6 bg-white/20 rounded w-32 mb-2" /><div className="h-3 bg-white/20 rounded w-48" /></div>
           ) : currentSubscription ? (
@@ -302,7 +302,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                   <p className="text-xs text-white/60">/mois</p>
                 </div>
                 {currentSubscription.status === 'active' && (
-                  <button onClick={() => handleCancelSubscription(currentSubscription.id)} disabled={cancelSubscription.isPending} className="px-4 py-2 border border-white/30 rounded-full text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50">{cancelSubscription.isPending ? '...' : 'Annuler'}</button>
+                  <button onClick={() => handleCancelSubscription(currentSubscription.id)} disabled={cancelSubscription.isPending} className="px-4 py-2 border border-white/30 rounded-lg text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50">{cancelSubscription.isPending ? '...' : 'Annuler'}</button>
                 )}
               </div>
             </div>
@@ -316,14 +316,14 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
         {/* Category Tabs */}
         <div className="flex gap-2 mb-6">
           {categories.map(cat => (
-            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${activeCategory === cat.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}>{cat.icon} {cat.label}</button>
+            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${activeCategory === cat.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}>{cat.icon} {cat.label}</button>
           ))}
         </div>
 
         {/* Boost Algorithm Visualization (Agent only) */}
         {activeCategory === 'agent' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-6 shadow-sm border mb-8">
-            <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> Algorithme de Boost</h3>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl p-6 shadow-sm border mb-8">
+            <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> Algorithme de Boost</h3>
             <p className="text-sm text-gray-500 mb-4">Plus votre plan est élevé, plus vos annonces sont mises en avant dans les résultats de recherche.</p>
             <div className="flex items-end gap-3">
               {agentTiers.map((tier, i) => (
@@ -358,10 +358,10 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                 const isAgent = activeCategory === 'agent';
                 const agentTier = isAgent ? agentTiers.find(t => t.id === tier.id) : null;
                 return (
-                  <motion.div key={tier.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className={`bg-white rounded-3xl p-5 shadow-sm border relative flex flex-col ${'popular' in tier && tier.popular ? 'ring-2 ring-[#D4AF37]' : ''}`}>
+                  <motion.div key={tier.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className={`bg-white rounded-xl p-5 shadow-sm border relative flex flex-col ${'popular' in tier && tier.popular ? 'ring-2 ring-[#D4AF37]' : ''}`}>
                     {Boolean('popular' in tier && tier.popular) && (<span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>)}
                     <div className="text-center mb-3">
-                      <h3 className="font-display text-base font-bold text-[#2C2E2F]">{tier.name}</h3>
+                      <h3 className="font-display text-base font-bold text-[#0a2a5e]">{tier.name}</h3>
                       <p className="text-xs text-gray-500 mb-1">{tier.desc}</p>
                       <p className="font-mono text-xl font-bold" style={{ color: tier.color }}>{tier.priceLabel}</p>
                       {agentTier && (<p className="text-xs font-semibold mt-1" style={{ color: tier.color }}>Boost {agentTier.boost}</p>)}
@@ -377,13 +377,13 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                         {agentTier.limits.annonces > 0 && (
                           <div>
                             <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">Annonces</span><span className="font-mono font-bold">{currentUsage.annonces}/{agentTier.limits.annonces === -1 ? '∞' : agentTier.limits.annonces}</span></div>
-                            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-full bg-[#003087]" style={{ width: `${Math.min((currentUsage.annonces / (agentTier.limits.annonces || 1)) * 100, 100)}%` }} /></div>
+                            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-lg bg-[#003087]" style={{ width: `${Math.min((currentUsage.annonces / (agentTier.limits.annonces || 1)) * 100, 100)}%` }} /></div>
                           </div>
                         )}
                         {agentTier.limits.inmail > 0 && (
                           <div>
                             <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">InMail</span><span className="font-mono font-bold">{currentUsage.inmail}/{agentTier.limits.inmail === -1 ? '∞' : agentTier.limits.inmail}</span></div>
-                            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-full bg-[#009CDE]" style={{ width: `${Math.min((currentUsage.inmail / (agentTier.limits.inmail || 1)) * 100, 100)}%` }} /></div>
+                            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-lg bg-[#009CDE]" style={{ width: `${Math.min((currentUsage.inmail / (agentTier.limits.inmail || 1)) * 100, 100)}%` }} /></div>
                           </div>
                         )}
                         {agentTier.limits.annonces === -1 && agentTier.limits.inmail === -1 && (
@@ -392,7 +392,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                       </div>
                     )}
 
-                    <button onClick={() => handleChoosePlan(tier.planType, tier.price)} disabled={currentSubscription?.plan === tier.name} className={`w-full py-2.5 rounded-full text-xs font-semibold transition-colors ${currentSubscription?.plan === tier.name ? 'bg-gray-100 text-gray-500 cursor-default' : tier.color === '#D4AF37' ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]' : 'bg-[#003087] text-white hover:bg-[#0047b3]'}`}>
+                    <button onClick={() => handleChoosePlan(tier.planType, tier.price)} disabled={currentSubscription?.plan === tier.name} className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-colors ${currentSubscription?.plan === tier.name ? 'bg-gray-100 text-gray-500 cursor-default' : tier.color === '#D4AF37' ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]' : 'bg-[#003087] text-white hover:bg-[#0047b3]'}`}>
                       {currentSubscription?.plan === tier.name ? 'Plan actuel' : tier.price === 0 && tier.id === 'starter' ? 'Commencer gratuitement' : 'Choisir'}
                     </button>
                   </motion.div>
@@ -402,8 +402,8 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
 
             {/* Premium Benefits Detail (Agent only) */}
             {activeCategory === 'agent' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8 bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-[#D4AF37]" /> Avantages Premium détaillés</h3>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8 bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-[#D4AF37]" /> Avantages Premium détaillés</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -448,11 +448,11 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
             {/* Feature Comparison */}
             {activeCategory === 'agent' && (
               <div className="mt-6">
-                <button onClick={() => setShowComparison(!showComparison)} className="px-4 py-2 rounded-full text-sm font-medium bg-white border text-gray-600 hover:bg-gray-50 transition-all">{showComparison ? 'Masquer' : 'Afficher'} la comparaison détaillée</button>
+                <button onClick={() => setShowComparison(!showComparison)} className="px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-600 hover:bg-gray-50 transition-all">{showComparison ? 'Masquer' : 'Afficher'} la comparaison détaillée</button>
                 <AnimatePresence>
                   {showComparison && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 overflow-hidden">
-                      <div className="bg-white rounded-3xl p-5 shadow-sm border overflow-x-auto">
+                      <div className="bg-white rounded-xl p-5 shadow-sm border overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b">
@@ -491,11 +491,11 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
                   <Ruler className="w-5 h-5 text-[#009CDE]" />
-                  <div><p className="text-sm font-semibold text-[#2C2E2F]">Géomètre</p><p className="text-xs text-gray-500">Plans sur mesure — Contactez-nous</p></div>
+                  <div><p className="text-sm font-semibold text-[#0a2a5e]">Géomètre</p><p className="text-xs text-gray-500">Plans sur mesure — Contactez-nous</p></div>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
                   <Scale className="w-5 h-5 text-[#D4AF37]" />
-                  <div><p className="text-sm font-semibold text-[#2C2E2F]">Notaire</p><p className="text-xs text-gray-500">Plans Standard / Premium / Elite</p></div>
+                  <div><p className="text-sm font-semibold text-[#0a2a5e]">Notaire</p><p className="text-xs text-gray-500">Plans Standard / Premium / Elite</p></div>
                 </div>
               </motion.div>
             )}
@@ -505,17 +505,17 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
         {/* Upgrade/Downgrade Modal */}
         {showUpgrade && selectedPlan && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-6 max-w-sm w-full">
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Confirmer le changement</h3>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 max-w-sm w-full">
+              <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Confirmer le changement</h3>
               <p className="text-sm text-gray-500 mb-4">Vous allez changer votre abonnement. Le prorata sera calculé automatiquement.</p>
               <div className="p-3 bg-gray-50 rounded-2xl mb-4">
                 <p className="text-xs text-gray-500">Nouveau plan</p>
-                <p className="text-sm font-bold text-[#2C2E2F]">{selectedPlan.replace(/_/g, ' ').toUpperCase()}</p>
+                <p className="text-sm font-bold text-[#0a2a5e]">{selectedPlan.replace(/_/g, ' ').toUpperCase()}</p>
                 {selectedPlanPrice > 0 && (<p className="font-mono text-lg font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(selectedPlanPrice)} FCFA/mois</p>)}
               </div>
               <div className="flex gap-3">
-                <button onClick={() => setShowUpgrade(false)} className="flex-1 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50">Annuler</button>
-                <button onClick={handleConfirmUpgrade} disabled={createSubscription.isPending} className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50">{createSubscription.isPending ? 'Traitement...' : 'Confirmer'}</button>
+                <button onClick={() => setShowUpgrade(false)} className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">Annuler</button>
+                <button onClick={handleConfirmUpgrade} disabled={createSubscription.isPending} className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50">{createSubscription.isPending ? 'Traitement...' : 'Confirmer'}</button>
               </div>
             </motion.div>
           </motion.div>

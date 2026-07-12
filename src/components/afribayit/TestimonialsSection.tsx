@@ -128,8 +128,8 @@ export default function TestimonialsSection() {
           <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">
             {t('testimonials.country', 'Pays')}:
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
+            <span className="h-1.5 w-1.5 rounded-lg bg-[#FFCC00]" />
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -158,7 +158,7 @@ export default function TestimonialsSection() {
 
               {/* Author */}
               <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#003366] font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-bold text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#003366] font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-bold text-white">
                   {item.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
@@ -170,7 +170,7 @@ export default function TestimonialsSection() {
                   )}
                 </div>
                 {/* Verified */}
-                <div className="flex items-center gap-1 rounded-full bg-[#3399FF]/10 px-2 py-1">
+                <div className="flex items-center gap-1 rounded-lg bg-[#3399FF]/10 px-2 py-1">
                   <svg className="h-3 w-3 text-[#3399FF]" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>

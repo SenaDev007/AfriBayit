@@ -170,8 +170,8 @@ export default function PaysCouverts() {
           transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
           className="mt-12 text-center"
         >
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-6 py-3">
-            <span className="h-2 w-2 rounded-full bg-[#3399FF]" />
+          <div className="inline-flex items-center gap-3 rounded-lg border border-white/15 bg-white/5 px-6 py-3">
+            <span className="h-2 w-2 rounded-lg bg-[#3399FF]" />
             <p className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-white/70">
               <span className="font-bold text-[#FFCC00]">Bientôt</span> dans 3 pays supplémentaires d&apos;Afrique de l&apos;Ouest
             </p>

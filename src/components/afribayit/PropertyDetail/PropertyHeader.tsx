@@ -58,7 +58,7 @@ export default function PropertyHeader({
             </span>
           )}
         </div>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-2">
+        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-2">
           {title}
         </h1>
         <p className="text-gray-500 flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function PropertyHeader({
               </svg>
             </div>
             <div>
-              <span className="text-lg font-bold text-[#2C2E2F]">{bedrooms}</span>
+              <span className="text-lg font-bold text-[#0a2a5e]">{bedrooms}</span>
               <span className="text-xs text-gray-500 ml-1">{t('property.bedrooms', 'Chambres')}</span>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function PropertyHeader({
               </svg>
             </div>
             <div>
-              <span className="text-lg font-bold text-[#2C2E2F]">{bathrooms}</span>
+              <span className="text-lg font-bold text-[#0a2a5e]">{bathrooms}</span>
               <span className="text-xs text-gray-500 ml-1">{t('property.bathroomsShort', 'SdB')}</span>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function PropertyHeader({
             </svg>
           </div>
           <div>
-            <span className="text-lg font-bold text-[#2C2E2F]">{surface}</span>
+            <span className="text-lg font-bold text-[#0a2a5e]">{surface}</span>
             <span className="text-xs text-gray-500 ml-1">{t('property.surfaceUnit', 'm²')}</span>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function PropertyHeader({
             <Eye className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <span className="text-lg font-bold text-[#2C2E2F]">{views}</span>
+            <span className="text-lg font-bold text-[#0a2a5e]">{views}</span>
             <span className="text-xs text-gray-500 ml-1">Vues</span>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function PropertyHeader({
               <Heart className="w-5 h-5 text-red-400" />
             </div>
             <div>
-              <span className="text-lg font-bold text-[#2C2E2F]">{favorites}</span>
+              <span className="text-lg font-bold text-[#0a2a5e]">{favorites}</span>
               <span className="text-xs text-gray-500 ml-1">Favoris</span>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function PropertyHeader({
         transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
         className="mb-6"
       >
-        <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">{t('property.descriptionTitle', 'Description')}</h2>
+        <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-3">{t('property.descriptionTitle', 'Description')}</h2>
         <p className="text-gray-600 leading-relaxed">{description}</p>
       </motion.div>
 
@@ -152,7 +152,7 @@ export default function PropertyHeader({
           transition={{ duration: 0.5, delay: 0.25, ease: easeOut }}
           className="mb-6"
         >
-          <h2 className="font-display text-xl font-bold text-[#2C2E2F] mb-3">{t('property.featuresTitle', 'Équipements')}</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-3">{t('property.featuresTitle', 'Équipements')}</h2>
           <div className="flex flex-wrap gap-2">
             {features.map((feature) => (
               <span key={feature} className="px-4 py-2 bg-gray-50 rounded-xl text-sm text-gray-600 font-medium">

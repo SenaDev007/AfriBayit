@@ -193,7 +193,7 @@ export default function KycLevelCard({
               initial={{ width: 0 }}
               animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.8, delay: index * 0.12 + 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={`h-full rounded-full ${
+              className={`h-full rounded-lg ${
                 progressPct === 100
                   ? 'bg-emerald-500'
                   : progressPct > 0

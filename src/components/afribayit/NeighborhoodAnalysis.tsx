@@ -76,7 +76,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-48" />
           <div className="grid grid-cols-2 gap-4">
@@ -92,8 +92,8 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
   return (
     <div className="space-y-4">
       {/* Walk Score Gauge */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Score de marche</h3>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Score de marche</h3>
         <div className="flex items-center gap-6">
           <div className="relative w-28 h-28 shrink-0">
             <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
@@ -102,7 +102,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <span className="font-mono text-2xl font-bold text-[#2C2E2F]">{data.walkScore.score}</span>
+                <span className="font-mono text-2xl font-bold text-[#0a2a5e]">{data.walkScore.score}</span>
                 <span className="block text-[10px] text-gray-400">/100</span>
               </div>
             </div>
@@ -119,9 +119,9 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
       </motion.div>
 
       {/* Amenities */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Commodités à proximité</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Commodités à proximité</h3>
           <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#00A651]/10 text-[#00A651]">
             {data.amenities.amenityCount} trouvées
           </span>
@@ -131,11 +131,11 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
             <div key={cat.category} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
               <span className="text-lg">{cat.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#2C2E2F]">{cat.categoryFr}</p>
+                <p className="text-sm font-medium text-[#0a2a5e]">{cat.categoryFr}</p>
                 <p className="text-xs text-gray-400">{cat.count} · {cat.nearestDistance}m le plus proche</p>
               </div>
               <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden shrink-0">
-                <div className="h-full bg-[#00A651] rounded-full" style={{ width: `${cat.score}%` }} />
+                <div className="h-full bg-[#00A651] rounded-lg" style={{ width: `${cat.score}%` }} />
               </div>
             </div>
           ))}
@@ -143,8 +143,8 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
       </motion.div>
 
       {/* Transport */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Accessibilité transport</h3>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Accessibilité transport</h3>
         <div className="space-y-3">
           {data.transport.options.map(opt => {
             const distKm = opt.distance >= 1000 ? `${(opt.distance / 1000).toFixed(1)} km` : `${opt.distance} m`;
@@ -154,7 +154,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
                   {opt.type === 'road' ? <Route className="w-4 h-4" /> : opt.type === 'transit' ? <Bus className="w-4 h-4" /> : opt.type === 'taxi' ? <Car className="w-4 h-4" /> : <Plane className="w-4 h-4" />}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-[#2C2E2F]">{opt.name}</p>
+                  <p className="text-sm text-[#0a2a5e]">{opt.name}</p>
                   <p className="text-xs text-gray-400">{distKm}</p>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${opt.accessible ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'}`}>
@@ -168,8 +168,8 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
 
       {/* Environmental Data */}
       {data.environmental && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Données environnementales</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Données environnementales</h3>
           <div className="grid grid-cols-2 gap-3">
             {[
               { label: 'Température moy.', value: `${data.environmental.avgTemp}°C`, icon: <Thermometer className="w-4 h-4" /> },
@@ -181,7 +181,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
             ].map(item => (
               <div key={item.label} className="p-3 rounded-xl bg-gray-50">
                 <span className="text-sm">{item.icon}</span>
-                <p className="text-xs font-semibold text-[#2C2E2F] mt-1">{item.value}</p>
+                <p className="text-xs font-semibold text-[#0a2a5e] mt-1">{item.value}</p>
                 <p className="text-[10px] text-gray-400">{item.label}</p>
               </div>
             ))}
@@ -209,8 +209,8 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
             <Home className="w-4 h-4" /> Planifier une visite
           </button>
         ) : (
-          <div className="bg-white rounded-3xl p-6 shadow-sm border">
-            <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Planifier une visite</h4>
+          <div className="bg-white rounded-xl p-6 shadow-sm border">
+            <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-4">Planifier une visite</h4>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1 block">Date</label>

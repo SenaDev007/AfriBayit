@@ -101,7 +101,7 @@ export default function ShortTermRentalDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 px-4">
         <div className="max-w-5xl mx-auto animate-pulse space-y-6">
-          <div className="h-64 bg-gray-200 rounded-3xl" />
+          <div className="h-64 bg-gray-200 rounded-xl" />
           <div className="h-8 bg-gray-200 rounded w-1/2" />
           <div className="h-4 bg-gray-200 rounded w-1/3" />
           <div className="grid grid-cols-3 gap-4">
@@ -117,7 +117,7 @@ export default function ShortTermRentalDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 px-4">
         <div className="max-w-5xl mx-auto text-center py-20">
-          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <Key className="w-8 h-8 text-gray-300" />
           </div>
           <h2 className="text-2xl font-bold text-gray-400 mb-2">Location non trouvée</h2>
@@ -156,7 +156,7 @@ export default function ShortTermRentalDetailPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative rounded-3xl overflow-hidden mb-6 card-shadow"
+          className="relative rounded-xl overflow-hidden mb-6 card-shadow"
         >
           <div className="aspect-[16/9] bg-gradient-to-br from-[#D4AF37]/10 to-[#003087]/10">
             {images.length > 0 ? (
@@ -175,13 +175,13 @@ export default function ShortTermRentalDetailPage() {
             <>
               <button
                 onClick={() => setCurrentImage((prev) => (prev - 1 + images.length) % images.length)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-lg hover:bg-white transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setCurrentImage((prev) => (prev + 1) % images.length)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-lg hover:bg-white transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -200,7 +200,7 @@ export default function ShortTermRentalDetailPage() {
           <Badge className="absolute top-4 left-4 bg-[#D4AF37] text-white border-0 px-3 py-1">{propertyLabel}</Badge>
           {/* Badge instant booking */}
           {rental.instantBooking && (
-            <div className="absolute top-4 right-4 bg-[#00A651] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+            <div className="absolute top-4 right-4 bg-[#00A651] text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
               <Zap className="w-3 h-3" />
               Réservation instantanée
             </div>
@@ -217,7 +217,7 @@ export default function ShortTermRentalDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2E2F]">{rental.title}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#0a2a5e]">{rental.title}</h1>
               <p className="text-gray-500 flex items-center gap-2 mt-1 text-sm">
                 <MapPin className="w-4 h-4" />
                 {rental.quartier ? `${rental.quartier}, ` : ''}{rental.city}, {COUNTRY_FLAGS[rental.country] || ''} {rental.country}
@@ -261,7 +261,7 @@ export default function ShortTermRentalDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Description</CardTitle>
                   </CardHeader>
@@ -279,7 +279,7 @@ export default function ShortTermRentalDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.25 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Équipements</CardTitle>
                   </CardHeader>
@@ -309,7 +309,7 @@ export default function ShortTermRentalDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.3 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Règles de la maison</CardTitle>
                   </CardHeader>
@@ -346,17 +346,17 @@ export default function ShortTermRentalDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.35 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Votre hôte</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
+                      <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
                         {rental.host.name?.[0]?.toUpperCase() || 'H'}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-[#2C2E2F]">{rental.host.name}</p>
+                        <p className="font-semibold text-sm text-[#0a2a5e]">{rental.host.name}</p>
                         {rental.host.verified && (
                           <p className="text-xs text-[#00A651] flex items-center gap-1">
                             <ShieldCheck className="w-3 h-3" /> Hôte vérifié
@@ -375,7 +375,7 @@ export default function ShortTermRentalDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <Card className="rounded-3xl card-shadow border-0">
+              <Card className="rounded-xl card-shadow border-0">
                 <CardHeader>
                   <CardTitle className="text-base">Politique d&apos;annulation</CardTitle>
                 </CardHeader>
@@ -395,13 +395,13 @@ export default function ShortTermRentalDetailPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Card className="sticky top-24 rounded-3xl card-shadow border-0">
+              <Card className="sticky top-24 rounded-xl card-shadow border-0">
                 {bookingSuccess ? (
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 rounded-full bg-[#00A651]/10 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 rounded-lg bg-[#00A651]/10 flex items-center justify-center mx-auto mb-4">
                       <Check className="w-8 h-8 text-[#00A651]" />
                     </div>
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Demande envoyée !</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Demande envoyée !</h3>
                     <p className="text-sm text-gray-500 mb-4">
                       {rental.instantBooking
                         ? 'Votre réservation est confirmée. Vous allez recevoir un email avec le QR code de check-in.'

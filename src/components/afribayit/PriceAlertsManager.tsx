@@ -59,7 +59,7 @@ export default function PriceAlertsManager() {
   const totalUnread = notifications.length;
 
   return (
-    <div className="bg-white rounded-3xl border overflow-hidden">
+    <div className="bg-white rounded-xl border overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-[#003087] to-[#0047b3]">
         <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function PriceAlertsManager() {
           </div>
         ) : alerts.length === 0 ? (
           <div className="text-center py-8">
-            <div className="w-12 h-12 rounded-full bg-[#003087]/5 flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-3">
               <Bell className="w-6 h-6 text-[#003087]" />
             </div>
             <p className="text-sm font-semibold text-gray-600 mb-1">Aucune alerte configurée</p>
@@ -115,7 +115,7 @@ export default function PriceAlertsManager() {
             </p>
             <button
               onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               Créer ma première alerte
@@ -176,14 +176,14 @@ function AlertRow({ alert, onToggle, onDelete }: {
     <div className={`flex items-center gap-3 p-3 rounded-2xl border ${isActive ? 'bg-white border-gray-100' : 'bg-gray-50/50 border-gray-50 opacity-60'}`}>
       <button
         onClick={() => onToggle(!isActive)}
-        className={`shrink-0 w-9 h-5 rounded-full transition-colors relative ${isActive ? 'bg-[#00A651]' : 'bg-gray-300'}`}
+        className={`shrink-0 w-9 h-5 rounded-lg transition-colors relative ${isActive ? 'bg-[#00A651]' : 'bg-gray-300'}`}
       >
-        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${isActive ? 'left-4' : 'left-0.5'}`} />
+        <span className={`absolute top-0.5 w-4 h-4 rounded-lg bg-white transition-all ${isActive ? 'left-4' : 'left-0.5'}`} />
       </button>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-[#2C2E2F] truncate">{alert.name}</p>
+          <p className="text-sm font-semibold text-[#0a2a5e] truncate">{alert.name}</p>
           {alert.unreadCount && alert.unreadCount > 0 ? (
             <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold rounded-full">
               {alert.unreadCount} nouveau{alert.unreadCount > 1 ? 'x' : ''}
@@ -252,12 +252,12 @@ function CreateAlertModal({ onClose, onCreate, isPending }: {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg font-bold text-[#003087]">Créer une alerte</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="space-y-3">
@@ -350,13 +350,13 @@ function CreateAlertModal({ onClose, onCreate, isPending }: {
         </div>
 
         <div className="flex gap-2 mt-5">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">
             Annuler
           </button>
           <button
             onClick={handleSubmit}
             disabled={isPending}
-            className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
           >
             {isPending ? 'Création...' : 'Créer l\'alerte'}
           </button>
@@ -386,7 +386,7 @@ function NotificationsModal({ notifications, onClose, onRead, onReadAll }: {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
+        className="bg-white rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -404,7 +404,7 @@ function NotificationsModal({ notifications, onClose, onRead, onReadAll }: {
                 Tout lire
               </button>
             )}
-            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full"><X className="w-4 h-4" /></button>
+            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
           </div>
         </div>
 
@@ -424,7 +424,7 @@ function NotificationsModal({ notifications, onClose, onRead, onReadAll }: {
               >
                 <div className="flex items-start gap-2 mb-1">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C2E2F] truncate">{n.propertyTitle}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e] truncate">{n.propertyTitle}</p>
                     <p className="text-[10px] text-gray-400">{n.propertyCity}, {n.propertyCountry}</p>
                   </div>
                   <p className="font-mono-data font-bold text-xs text-[#D4AF37] shrink-0">{fmt(n.propertyPrice)}</p>

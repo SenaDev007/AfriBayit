@@ -55,7 +55,7 @@ export default function OverviewPanel({
             <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
               <div className="flex items-center justify-between mb-2">
                 <Skeleton className="w-6 h-6 rounded" />
-                <Skeleton className="h-4 w-10 rounded-full" />
+                <Skeleton className="h-4 w-10 rounded-lg" />
               </div>
               <Skeleton className="h-6 w-24 mb-1" />
               <Skeleton className="h-3 w-28" />
@@ -72,7 +72,7 @@ export default function OverviewPanel({
                 <span style={{ color: kpi.color }}>{kpi.icon}</span>
                 <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">{kpi.change}</span>
               </div>
-              <p className="font-mono text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+              <p className="font-mono text-lg sm:text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
               <p className="text-xs text-gray-500">{kpi.label}</p>
             </motion.div>
           ))
@@ -80,8 +80,8 @@ export default function OverviewPanel({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Revenus mensuels</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Revenus mensuels</h3>
           {!hasChartData ? (
             <div className="h-64 flex items-center justify-center"><p className="text-sm text-gray-500">Aucune donnée de revenu disponible</p></div>
           ) : (
@@ -100,8 +100,8 @@ export default function OverviewPanel({
           )}
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Par ville</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Par ville</h3>
           {barData.length === 0 ? (
             <div className="flex items-center justify-center h-32"><p className="text-sm text-gray-500">Aucune donnée par ville</p></div>
           ) : (
@@ -115,7 +115,7 @@ export default function OverviewPanel({
                       <span className="font-mono text-sm font-bold" style={{ color: item.color }}>{item.value}%</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / maxVal) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-full" style={{ backgroundColor: item.color }} />
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / maxVal) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-lg" style={{ backgroundColor: item.color }} />
                     </div>
                   </div>
                 );
@@ -127,8 +127,8 @@ export default function OverviewPanel({
 
       {/* Connections & Followers Growth + Content Engagement */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.42, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#003087]" /> Connexions & Abonnés</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.42, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#003087]" /> Connexions & Abonnés</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-[#003087]/5 rounded-2xl">
               <div className="flex items-center justify-between mb-2">
@@ -149,8 +149,8 @@ export default function OverviewPanel({
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.44, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-[#D93025]" /> Engagement contenu</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.44, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-[#D93025]" /> Engagement contenu</h3>
           <div className="grid grid-cols-4 gap-2">
             {[
               { label: 'J\'aime', value: engagementData.likes, icon: <Heart className="w-4 h-4" />, color: '#D93025' },
@@ -160,7 +160,7 @@ export default function OverviewPanel({
             ].map(item => (
               <div key={item.label} className="text-center p-3 bg-gray-50 rounded-xl">
                 <span className="inline-flex items-center justify-center mb-1" style={{ color: item.color }}>{item.icon}</span>
-                <p className="font-mono text-lg font-bold text-[#2C2E2F]">{item.value}</p>
+                <p className="font-mono text-lg font-bold text-[#0a2a5e]">{item.value}</p>
                 <p className="text-[10px] text-gray-500">{item.label}</p>
               </div>
             ))}
@@ -170,8 +170,8 @@ export default function OverviewPanel({
 
       {/* Profile Completeness & Market Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Complétude du profil</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Complétude du profil</h3>
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 shrink-0">
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
@@ -179,11 +179,11 @@ export default function OverviewPanel({
                 <circle cx="50" cy="50" r="42" fill="none" stroke={DEMO_COMPLETENESS.percentage >= 80 ? '#00A651' : DEMO_COMPLETENESS.percentage >= 50 ? '#D4AF37' : '#D93025'} strokeWidth="8" strokeDasharray={`${(DEMO_COMPLETENESS.percentage / 100) * 264} 264`} strokeLinecap="round" />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-mono text-xl font-bold text-[#2C2E2F]">{DEMO_COMPLETENESS.percentage}%</span>
+                <span className="font-mono text-xl font-bold text-[#0a2a5e]">{DEMO_COMPLETENESS.percentage}%</span>
               </div>
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#2C2E2F] mb-2">Éléments manquants :</p>
+              <p className="text-sm font-semibold text-[#0a2a5e] mb-2">Éléments manquants :</p>
               <div className="space-y-1.5">
                 {DEMO_COMPLETENESS.missing.map(m => (
                   <div key={m.field} className="flex items-center gap-2 text-xs">
@@ -197,8 +197,8 @@ export default function OverviewPanel({
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Comparaison marché</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Comparaison marché</h3>
           <div className="space-y-3">
             {DEMO_COMPARISON.metrics.map(metric => {
               return (
@@ -208,7 +208,7 @@ export default function OverviewPanel({
                     <span className="text-xs font-semibold text-[#003087] w-12 text-right">{metric.user}{metric.unit}</span>
                     <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden relative">
                       <div className="absolute inset-0 flex">
-                        <div className={`h-full rounded-full ${metric.status === 'above' ? 'bg-[#00A651]' : metric.status === 'below' ? 'bg-[#D93025]' : 'bg-[#D4AF37]'}`} style={{ width: `${Math.min(100, (metric.user / metric.market) * 60)}%` }} />
+                        <div className={`h-full rounded-lg ${metric.status === 'above' ? 'bg-[#00A651]' : metric.status === 'below' ? 'bg-[#D93025]' : 'bg-[#D4AF37]'}`} style={{ width: `${Math.min(100, (metric.user / metric.market) * 60)}%` }} />
                       </div>
                       <div className="absolute top-0 h-full w-0.5 bg-gray-400" style={{ left: '60%' }} />
                     </div>
@@ -220,7 +220,7 @@ export default function OverviewPanel({
             })}
           </div>
           <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl border border-[#00A651]/10">
-            <p className="text-xs text-[#2C2E2F]">
+            <p className="text-xs text-[#0a2a5e]">
               <span className="font-semibold text-[#00A651]">Votre taux de conversion est 18% supérieur</span> à la moyenne des agents de {AGENT_ANALYTICS.localRanking.city}.
             </p>
           </div>
@@ -228,11 +228,11 @@ export default function OverviewPanel({
       </div>
 
       {/* Rebecca Mini Insights */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="mt-6 bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="mt-6 bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center"><Lightbulb className="w-5 h-5 text-white" /></div>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center"><Lightbulb className="w-5 h-5 text-white" /></div>
             <div>
               <h3 className="text-white font-semibold text-sm">Rebecca Insights</h3>
               <p className="text-white/50 text-xs">Analyse IA de vos données</p>

@@ -11,7 +11,7 @@ const WalletModule = dynamic(() => import('@/components/afribayit/WalletModule')
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-6">
           <div className="h-10 w-64 bg-gray-200 rounded mx-auto" />
-          <div className="h-48 bg-gray-100 rounded-3xl" />
+          <div className="h-48 bg-gray-100 rounded-xl" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-24 bg-gray-100 rounded-2xl" />

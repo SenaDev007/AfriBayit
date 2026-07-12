@@ -31,8 +31,8 @@ function PropertyCardSkeleton() {
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="space-y-3 p-5">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-20 rounded-full" />
-          <Skeleton className="h-4 w-8 rounded-full" />
+          <Skeleton className="h-4 w-20 rounded-lg" />
+          <Skeleton className="h-4 w-8 rounded-lg" />
         </div>
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
@@ -112,7 +112,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           <motion.button
             whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="group inline-flex items-center gap-2 rounded-full border border-[#003366] px-6 py-3 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+            className="group inline-flex items-center gap-2 rounded-lg border border-[#003366] px-6 py-3 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
           >
             Voir tous les biens
             <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -125,8 +125,8 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">Pays:</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#FFCC00]" />
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
+              <span className="h-1.5 w-1.5 rounded-lg bg-[#FFCC00]" />
               {COUNTRY_NAMES[selectedCountry] || selectedCountry}
             </span>
           </div>
@@ -142,7 +142,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               <button
                 key={tab.key}
                 onClick={() => setActiveFilter(tab.key)}
-                className={`rounded-full px-4 py-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold transition-colors ${
+                className={`rounded-lg px-4 py-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm font-semibold transition-colors ${
                   activeFilter === tab.key
                     ? 'bg-[#003366] text-white'
                     : 'border border-gray-200 bg-white text-gray-600 hover:border-[#003366]/40 hover:text-[#003366]'
@@ -166,7 +166,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Error */}
         {isError && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
@@ -181,7 +181,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Empty */}
         {!isLoading && !isError && displayProperties.length === 0 && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>

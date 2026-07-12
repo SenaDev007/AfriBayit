@@ -113,7 +113,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
             <div className="h-40 sm:h-52 bg-gray-200 rounded-b-3xl" />
             <div className="relative -mt-16 mb-6 px-4">
               <div className="flex items-end gap-4">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gray-200 border-4 border-white" />
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl bg-gray-200 border-4 border-white" />
                 <div className="flex-1 pb-2">
                   <div className="h-6 bg-gray-200 rounded w-40 mb-2" />
                   <div className="h-4 bg-gray-100 rounded w-64 mb-1" />
@@ -122,8 +122,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
               </div>
             </div>
             <div className="space-y-4 px-4">
-              <div className="h-32 bg-gray-100 rounded-3xl" />
-              <div className="h-48 bg-gray-100 rounded-3xl" />
+              <div className="h-32 bg-gray-100 rounded-xl" />
+              <div className="h-48 bg-gray-100 rounded-xl" />
             </div>
           </div>
         </div>
@@ -170,16 +170,16 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
               <ImageWithFallback
                 src={user.avatar || ''}
                 alt={user.name}
-                className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl border-4 border-white shadow-lg"
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl border-4 border-white shadow-lg"
                 fallbackType="avatar"
               />
-              <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-white ${
+              <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-lg border-2 border-white ${
                 profile.availability === 'available' ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
               }`} />
             </div>
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F]">{user.name}</h1>
+                <h1 className="font-display text-xl sm:text-2xl font-bold text-[#0a2a5e]">{user.name}</h1>
                 {user.verified && (
                   <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full"><Award className="w-4 h-4" /> Vérifié</span>
                 )}
@@ -193,13 +193,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
             <div className="flex gap-2">
               <button
                 onClick={handleContact}
-                className="px-5 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                className="px-5 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
               >
                 Contacter
               </button>
               <button
                 onClick={handleShare}
-                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
               >
                 ↗ Partager
               </button>
@@ -217,7 +217,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                 initial={{ width: 0 }}
                 animate={{ width: `${profile.credibilityScore}%` }}
                 transition={{ duration: 1, ease: easeOut }}
-                className="h-full rounded-full bg-gradient-to-r from-[#003087] to-[#00A651]"
+                className="h-full rounded-lg bg-gradient-to-r from-[#003087] to-[#00A651]"
               />
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
               {profile.certifications.map(cert => (
                 <span
                   key={cert.id}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0"
                   style={{ backgroundColor: `${cert.color}10`, color: cert.color }}
                 >
                   {cert.icon} {cert.name}
@@ -244,7 +244,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -256,14 +256,14 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
         {/* About Tab */}
         {activeTab === 'about' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-            <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-3">À propos</h3>
+            <div className="bg-white rounded-xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3">À propos</h3>
               <p className="text-sm text-gray-600 leading-relaxed">{profile.bio || user.bio || 'Aucune description pour le moment.'}</p>
             </div>
 
             {/* Skills with endorsements */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-3">Compétences & Spécialités</h3>
+            <div className="bg-white rounded-xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3">Compétences & Spécialités</h3>
               <div className="space-y-3">
                 {Object.entries(profile.skillEndorsements).length > 0 ? (
                   Object.entries(profile.skillEndorsements).map(([skill, count]) => (
@@ -275,7 +275,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                             initial={{ width: 0 }}
                             animate={{ width: `${Math.min((count / 50) * 100, 100)}%` }}
                             transition={{ duration: 0.8, ease: easeOut }}
-                            className="h-full bg-[#D4AF37] rounded-full"
+                            className="h-full bg-[#D4AF37] rounded-lg"
                           />
                         </div>
                         <span className="font-mono text-xs text-gray-400 w-8 text-right">{count}</span>
@@ -284,7 +284,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                   ))
                 ) : (
                   profile.specialities.map((skill) => (
-                    <span key={skill} className="inline-block px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-full mr-2 mb-2">
+                    <span key={skill} className="inline-block px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-lg mr-2 mb-2">
                       {geoServiceLabel(skill)}
                     </span>
                   ))
@@ -294,16 +294,16 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
 
             {/* Education */}
             {profile.education.length > 0 && (
-              <div className="bg-white rounded-3xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-3">Formation</h3>
+              <div className="bg-white rounded-xl p-5 shadow-sm border">
+                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3">Formation</h3>
                 <div className="space-y-3">
                   {profile.education.map(edu => (
                     <div key={edu.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl">
-                      <div className="w-10 h-10 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
                         <span className="text-lg"><GraduationCap className="w-4 h-4" /></span>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#2C2E2F]">{edu.degree}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e]">{edu.degree}</p>
                         <p className="text-xs text-gray-500">{edu.school} · {edu.year}</p>
                       </div>
                     </div>
@@ -317,8 +317,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
         {/* Experience Tab */}
         {activeTab === 'experience' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Expérience professionnelle</h3>
+            <div className="bg-white rounded-xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4">Expérience professionnelle</h3>
               {profile.experience.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-sm text-gray-400">Aucune expérience renseignée</p>
@@ -333,9 +333,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                       transition={{ delay: i * 0.15, ease: easeOut }}
                       className="relative"
                     >
-                      <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-[#003087] border-2 border-white" />
+                      <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-lg bg-[#003087] border-2 border-white" />
                       <div className="p-4 bg-gray-50 rounded-2xl">
-                        <h4 className="text-sm font-bold text-[#2C2E2F]">{exp.title}</h4>
+                        <h4 className="text-sm font-bold text-[#0a2a5e]">{exp.title}</h4>
                         <p className="text-xs text-[#003087] font-semibold">{exp.company}</p>
                         <p className="text-xs text-gray-400 mb-2">{exp.period}</p>
                         <p className="text-xs text-gray-600">{exp.desc}</p>
@@ -365,13 +365,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1, ease: easeOut }}
                     whileHover={{ y: -4 }}
-                    className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer"
+                    className="bg-white rounded-xl overflow-hidden shadow-sm border group cursor-pointer"
                   >
                     <div className="aspect-[4/3] overflow-hidden">
                       <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full group-hover:scale-105 transition-transform duration-500" fallbackType="property" />
                     </div>
                     <div className="p-3">
-                      <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">{item.title}</h4>
+                      <h4 className="text-sm font-semibold text-[#0a2a5e] truncate">{item.title}</h4>
                       <span className="text-[10px] font-medium text-[#009CDE]">{item.type}</span>
                     </div>
                   </motion.div>
@@ -396,12 +396,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.15, ease: easeOut }}
-                  className="bg-white rounded-3xl p-5 shadow-sm border"
+                  className="bg-white rounded-xl p-5 shadow-sm border"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <ImageWithFallback src={review.reviewer.avatar || ''} alt={review.reviewer.name} className="w-10 h-10 rounded-full" fallbackType="avatar" />
+                    <ImageWithFallback src={review.reviewer.avatar || ''} alt={review.reviewer.name} className="w-10 h-10 rounded-lg" fallbackType="avatar" />
                     <div>
-                      <p className="text-sm font-semibold text-[#2C2E2F]">{review.reviewer.name}</p>
+                      <p className="text-sm font-semibold text-[#0a2a5e]">{review.reviewer.name}</p>
                       <div className="flex gap-0.5">
                         {[1,2,3,4,5].map(s => (
                           <svg key={s} className={`w-3 h-3 ${s <= review.rating ? 'text-[#D4AF37]' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
@@ -447,8 +447,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
             </div>
 
             {/* Credibility breakdown */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border">
-              <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4">Détail du score de crédibilité</h3>
+            <div className="bg-white rounded-xl p-5 shadow-sm border">
+              <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4">Détail du score de crédibilité</h3>
               <div className="space-y-3">
                 {[
                   { label: 'Complétude du profil', value: Math.round(profile.completenessPct * 0.2 / 0.2), color: '#00A651' },
@@ -466,7 +466,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
                         initial={{ width: 0 }}
                         animate={{ width: `${item.value}%` }}
                         transition={{ duration: 0.8, ease: easeOut }}
-                        className="h-full rounded-full"
+                        className="h-full rounded-lg"
                         style={{ backgroundColor: item.color }}
                       />
                     </div>

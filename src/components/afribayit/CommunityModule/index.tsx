@@ -200,11 +200,11 @@ export default function CommunityModule() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="relative bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] rounded-3xl p-8 overflow-hidden">
+          <div className="relative bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] rounded-xl p-8 overflow-hidden">
             {/* Decorative pattern */}
             <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white blur-3xl" />
-              <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-full bg-white blur-3xl" />
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-lg bg-white blur-3xl" />
+              <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-lg bg-white blur-3xl" />
             </div>
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
               <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0">
@@ -259,7 +259,7 @@ export default function CommunityModule() {
                 <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
               </div>
               <div>
-                <p className="font-bold text-sm text-[#2C2E2F]">{stat.value}</p>
+                <p className="font-bold text-sm text-[#0a2a5e]">{stat.value}</p>
                 <p className="text-[10px] text-gray-400">{stat.label}</p>
               </div>
             </motion.div>

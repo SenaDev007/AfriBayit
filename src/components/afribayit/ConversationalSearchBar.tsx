@@ -183,7 +183,7 @@ export default function ConversationalSearchBar({
         {/* AI badge */}
         {!compact && (
           <div className="flex items-center justify-center gap-1.5 mt-3">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: `${GOLD}15`, color: GOLD }}>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: `${GOLD}15`, color: GOLD }}>
               <Sparkles className="w-3 h-3" />
               Propulsé par Rebecca IA
             </span>

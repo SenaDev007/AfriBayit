@@ -249,7 +249,7 @@ export default function AdminKycPage() {
         </div>
       ) : documents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-xl border border-gray-200">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
             <FileCheck className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-lg font-medium text-gray-900">Aucun document trouvé</p>
@@ -393,7 +393,7 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
                 <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className={cn(
-                      'h-full rounded-full',
+                      'h-full rounded-lg',
                       (doc.aiScore ?? 0) >= 80 ? 'bg-green-500' : (doc.aiScore ?? 0) >= 50 ? 'bg-amber-500' : 'bg-red-500'
                     )}
                     style={{ width: `${Math.min(doc.aiScore ?? 0, 100)}%` }}
@@ -533,7 +533,7 @@ function KycListRow({ doc }: { doc: AdminKycDocument }) {
             <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className={cn(
-                  'h-full rounded-full',
+                  'h-full rounded-lg',
                   (doc.aiScore ?? 0) >= 80 ? 'bg-green-500' : (doc.aiScore ?? 0) >= 50 ? 'bg-amber-500' : 'bg-red-500'
                 )}
                 style={{ width: `${Math.min(doc.aiScore ?? 0, 100)}%` }}

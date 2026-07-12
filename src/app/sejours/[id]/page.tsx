@@ -212,7 +212,7 @@ export default function BookingDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 px-4">
         <div className="max-w-5xl mx-auto animate-pulse space-y-6">
-          <div className="h-64 bg-gray-200 rounded-3xl" />
+          <div className="h-64 bg-gray-200 rounded-xl" />
           <div className="h-8 bg-gray-200 rounded w-1/2" />
           <div className="h-4 bg-gray-200 rounded w-1/3" />
           <div className="grid grid-cols-3 gap-4">
@@ -228,7 +228,7 @@ export default function BookingDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 px-4">
         <div className="max-w-5xl mx-auto text-center py-20">
-          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <MapPin className="w-8 h-8 text-gray-300" />
           </div>
           <h2 className="text-2xl font-bold text-gray-400 mb-2">Établissement non trouvé</h2>
@@ -264,7 +264,7 @@ export default function BookingDetailPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative rounded-3xl overflow-hidden mb-6 card-shadow"
+          className="relative rounded-xl overflow-hidden mb-6 card-shadow"
         >
           <div className="aspect-[16/9] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10">
             {images.length > 0 ? (
@@ -291,13 +291,13 @@ export default function BookingDetailPage() {
             <>
               <button
                 onClick={() => setCurrentImage((prev) => (prev - 1 + images.length) % images.length)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-lg hover:bg-white transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setCurrentImage((prev) => (prev + 1) % images.length)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-lg hover:bg-white transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -316,7 +316,7 @@ export default function BookingDetailPage() {
             {isHotel ? 'Hôtel' : 'Guesthouse'}
           </Badge>
           {stars > 0 && (
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-[#D4AF37] flex items-center gap-1">
+            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm font-bold text-[#D4AF37] flex items-center gap-1">
               {Array.from({ length: stars }).map((_, i) => (
                 <Star key={i} className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
               ))}
@@ -334,7 +334,7 @@ export default function BookingDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2E2F]">{name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#0a2a5e]">{name}</h1>
               <p className="text-gray-500 flex items-center gap-2 mt-1 text-sm">
                 <MapPin className="w-4 h-4" />
                 {address}, {COUNTRY_FLAGS[country] || ''} {country}
@@ -369,7 +369,7 @@ export default function BookingDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <Card className="rounded-3xl card-shadow border-0">
+              <Card className="rounded-xl card-shadow border-0">
                 <CardHeader>
                   <CardTitle className="text-base">Description</CardTitle>
                 </CardHeader>
@@ -386,7 +386,7 @@ export default function BookingDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.25 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Équipements</CardTitle>
                   </CardHeader>
@@ -416,7 +416,7 @@ export default function BookingDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.3 }}
               >
-                <Card className="rounded-3xl card-shadow border-0">
+                <Card className="rounded-xl card-shadow border-0">
                   <CardHeader>
                     <CardTitle className="text-base">Types de chambres</CardTitle>
                   </CardHeader>
@@ -436,7 +436,7 @@ export default function BookingDetailPage() {
                           className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
                         >
                           <div>
-                            <p className="font-medium text-sm text-[#2C2E2F] capitalize">{roomName}</p>
+                            <p className="font-medium text-sm text-[#0a2a5e] capitalize">{roomName}</p>
                             <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                               <Users className="w-3 h-3" /> {roomCapacity} personne{roomCapacity > 1 ? 's' : ''}
                             </p>
@@ -466,7 +466,7 @@ export default function BookingDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.35 }}
             >
-              <Card className="rounded-3xl card-shadow border-0">
+              <Card className="rounded-xl card-shadow border-0">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-[#003087]" />
@@ -525,7 +525,7 @@ export default function BookingDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <Card className="rounded-3xl card-shadow border-0">
+              <Card className="rounded-xl card-shadow border-0">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-[#003087]" />
@@ -572,10 +572,10 @@ export default function BookingDetailPage() {
                         </div>
                       </div>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
+                        <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center mb-2 mx-auto">
                           <MapPin className="w-6 h-6 text-[#003087]" />
                         </div>
-                        <p className="text-sm font-semibold text-[#2C2E2F] mt-2">Carte interactive</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e] mt-2">Carte interactive</p>
                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           {address}, {city}
@@ -595,7 +595,7 @@ export default function BookingDetailPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Card className="sticky top-24 rounded-3xl card-shadow border-0">
+              <Card className="sticky top-24 rounded-xl card-shadow border-0">
                 <CardContent className="p-6 space-y-4">
                   {/* Price */}
                   <div className="text-center mb-2">

@@ -64,7 +64,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLa
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: easeOut }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mb-4"
             style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}
           >
             <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />

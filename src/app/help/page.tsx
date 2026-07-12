@@ -46,7 +46,7 @@ export default function HelpPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Recherchez une question..."
-              className="w-full pl-12 pr-4 py-4 rounded-full text-sm bg-white text-gray-900 outline-none shadow-lg"
+              className="w-full pl-12 pr-4 py-4 rounded-lg text-sm bg-white text-gray-900 outline-none shadow-lg"
             />
           </div>
         </div>
@@ -115,13 +115,13 @@ export default function HelpPage() {
           <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Besoin d'aide supplémentaire ?</h2>
           <p className="text-white/70 mb-8">Notre équipe support est disponible 7j/7</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-full text-sm font-bold hover:scale-105 transition-transform">
+            <a href="mailto:contact@afribayit.com" className="flex items-center gap-2 px-6 py-3 bg-white text-[#003087] rounded-lg text-sm font-bold hover:scale-105 transition-transform">
               <Mail className="w-4 h-4" /> Email
             </a>
-            <a href="tel:+22997000000" className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-bold hover:scale-105 transition-transform">
+            <a href="tel:+22997000000" className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-bold hover:scale-105 transition-transform">
               <Phone className="w-4 h-4" /> Téléphone
             </a>
-            <a href="#" className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white rounded-full text-sm font-bold hover:bg-white/10 transition-colors">
+            <a href="#" className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white rounded-lg text-sm font-bold hover:bg-white/10 transition-colors">
               <MessageCircle className="w-4 h-4" /> Chat Rebecca IA
             </a>
           </div>

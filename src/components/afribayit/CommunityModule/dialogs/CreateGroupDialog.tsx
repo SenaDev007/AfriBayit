@@ -32,10 +32,10 @@ export default function CreateGroupDialog({ open, onClose, form, setForm }: Crea
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+        className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Users className="w-5 h-5 text-[#00A651]" /> Créer un groupe</h3>
+        <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Users className="w-5 h-5 text-[#00A651]" /> Créer un groupe</h3>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1.5 block">Nom du groupe</label>
@@ -80,10 +80,10 @@ export default function CreateGroupDialog({ open, onClose, form, setForm }: Crea
             />
           </div>
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600">Annuler</button>
+            <button onClick={onClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">Annuler</button>
             <button
               onClick={handleSubmit}
-              className="flex-1 py-3 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors"
+              className="flex-1 py-3 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors"
             >
               Créer le groupe
             </button>

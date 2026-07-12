@@ -21,7 +21,7 @@ const UserDashboard = dynamic(() => import('@/components/afribayit/UserDashboard
               <div key={i} className="h-32 bg-gray-100 rounded-2xl" />
             ))}
           </div>
-          <div className="h-64 bg-gray-100 rounded-3xl" />
+          <div className="h-64 bg-gray-100 rounded-xl" />
         </div>
       </div>
     </div>

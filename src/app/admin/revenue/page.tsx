@@ -156,7 +156,7 @@ function SourceCardSkeleton() {
         <div className="flex-1 space-y-2">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-5 w-28" />
-          <Skeleton className="h-1.5 w-full rounded-full" />
+          <Skeleton className="h-1.5 w-full rounded-lg" />
         </div>
         <Skeleton className="h-4 w-12" />
       </CardContent>
@@ -475,8 +475,8 @@ export default function AdminRevenuePage() {
                       <div className="flex-1">
                         <p className="text-sm text-gray-500">{label}</p>
                         <p className="text-xl font-bold text-gray-900">{formatXOF(source.revenue)}</p>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full mt-2">
-                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                        <div className="w-full h-1.5 bg-gray-100 rounded-lg mt-2">
+                          <div className="h-full rounded-lg" style={{ width: `${pct}%`, backgroundColor: color }} />
                         </div>
                       </div>
                       <span className="text-sm font-mono font-bold" style={{ color }}>
@@ -523,7 +523,7 @@ export default function AdminRevenuePage() {
                         <TableRow key={agent.agentId}>
                           <TableCell className="text-sm font-medium">
                             <span className="inline-flex items-center gap-2">
-                              <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white', i === 0 ? 'bg-[#D4AF37]' : i === 1 ? 'bg-gray-400' : i === 2 ? 'bg-amber-700' : 'bg-gray-300')}>
+                              <span className={cn('w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-white', i === 0 ? 'bg-[#D4AF37]' : i === 1 ? 'bg-gray-400' : i === 2 ? 'bg-amber-700' : 'bg-gray-300')}>
                                 {i + 1}
                               </span>
                               {agent.agentName}
@@ -556,7 +556,7 @@ export default function AdminRevenuePage() {
                     <Skeleton className="w-24 h-4" />
                     <div className="flex-1 space-y-1">
                       <Skeleton className="h-3 w-full" />
-                      <Skeleton className="h-3 w-3/4 rounded-full" />
+                      <Skeleton className="h-3 w-3/4 rounded-lg" />
                     </div>
                     <Skeleton className="w-32 h-4" />
                   </div>
@@ -593,7 +593,7 @@ export default function AdminRevenuePage() {
                             <span className="font-mono">{pct.toFixed(1)}%</span>
                           </div>
                           <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} className="h-full rounded-full" style={{ backgroundColor: color }} />
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} className="h-full rounded-lg" style={{ backgroundColor: color }} />
                           </div>
                         </div>
                         <div className="w-32 text-right text-sm font-mono font-medium">{tier.revenue > 0 ? formatXOF(tier.revenue) : '—'}</div>

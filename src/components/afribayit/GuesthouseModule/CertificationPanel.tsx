@@ -20,13 +20,13 @@ export default function CertificationPanel({ activeDetail }: CertificationPanelP
       transition={{ duration: 0.4, ease: easeOut }}
       className="max-w-2xl mx-auto"
     >
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-6">Certification Guesthouse</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">Certification Guesthouse</h3>
         <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2">
           {certificationProcessSteps.map((s, i) => (
             <div key={s.step} className="flex items-start shrink-0">
               <div className="flex flex-col items-center">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                   i < 2 ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-gray-100 text-gray-400'
                 }`}>
                   {s.icon}
@@ -55,7 +55,7 @@ export default function CertificationPanel({ activeDetail }: CertificationPanelP
               ) : (
                 <XCircle className="w-4 h-4 text-gray-500" />
               )}
-              <p className="text-sm text-[#2C2E2F] font-semibold">
+              <p className="text-sm text-[#0a2a5e] font-semibold">
                 {activeDetail.certificationStatus === 'certified'
                   ? 'Guesthouse certifiée'
                   : activeDetail.certificationStatus === 'pending'
@@ -75,7 +75,7 @@ export default function CertificationPanel({ activeDetail }: CertificationPanelP
 
         {!activeDetail && (
           <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
-            <p className="text-sm text-[#2C2E2F] font-semibold mb-1">En cours de certification</p>
+            <p className="text-sm text-[#0a2a5e] font-semibold mb-1">En cours de certification</p>
             <p className="text-xs text-gray-500">Votre demande est en cours de traitement. L&apos;inspection sera planifiée sous 5 jours ouvrés.</p>
           </div>
         )}

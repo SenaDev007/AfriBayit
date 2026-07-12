@@ -8,8 +8,8 @@ import { formatPrice } from './utils';
 export default function HeatmapPanel() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> Performance par zone</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> Performance par zone</h3>
         <p className="text-sm text-gray-500 mb-6">Carte de chaleur des performances immobilières par quartier et ville.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {ZONE_PERFORMANCE.map(zone => {

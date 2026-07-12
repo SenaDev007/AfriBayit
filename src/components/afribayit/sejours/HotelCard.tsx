@@ -56,7 +56,7 @@ export default function HotelCard({ hotel, index }: { hotel: HotelCardData; inde
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.5) }}
     >
       <Link href={`/sejours/${hotel.id}`}>
-        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
+        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-xl card-shadow border-0">
           {/* Image */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10 overflow-hidden">
             {hotel.image ? (
@@ -76,7 +76,7 @@ export default function HotelCard({ hotel, index }: { hotel: HotelCardData; inde
             </div>
             {/* Étoiles */}
             {hotel.stars > 0 && (
-              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-[#D4AF37] flex items-center gap-0.5">
+              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-[#D4AF37] flex items-center gap-0.5">
                 {Array.from({ length: hotel.stars }).map((_, si) => (
                   <Star key={si} className="w-3 h-3 fill-[#D4AF37] text-[#D4AF37]" />
                 ))}
@@ -85,7 +85,7 @@ export default function HotelCard({ hotel, index }: { hotel: HotelCardData; inde
           </div>
 
           <CardContent className="p-4">
-            <h3 className="font-semibold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors text-sm truncate">
+            <h3 className="font-semibold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors text-sm truncate">
               {hotel.name}
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">

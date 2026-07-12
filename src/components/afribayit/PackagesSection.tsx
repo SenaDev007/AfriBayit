@@ -106,7 +106,7 @@ export default function PackagesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-3xl bg-white border border-gray-100 overflow-hidden hover:shadow-xl transition-all"
+              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-xl bg-white border border-gray-100 overflow-hidden hover:shadow-xl transition-all"
             >
               {/* Header */}
               <div className="p-6" style={{ background: pkg.bgColor }}>
@@ -144,7 +144,7 @@ export default function PackagesSection() {
                   <p className="text-sm font-bold text-gray-900 mb-3">{pkg.price}</p>
                   <Link
                     href={pkg.href}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:scale-105"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:scale-105"
                     style={{ background: pkg.color }}
                   >
                     Découvrir

@@ -47,7 +47,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => toggleArrayItem('countries', c.code)}
-              className={`p-5 rounded-3xl border-2 text-center transition-all ${
+              className={`p-5 rounded-xl border-2 text-center transition-all ${
                 data.countries.includes(c.code)
                   ? 'bg-white/10 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/20'
                   : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
@@ -59,7 +59,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="w-5 h-5 rounded-full bg-[#D4AF37] flex items-center justify-center mx-auto mt-2"
+                  className="w-5 h-5 rounded-lg bg-[#D4AF37] flex items-center justify-center mx-auto mt-2"
                 >
                   <svg className="w-3 h-3 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -90,7 +90,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => toggleArrayItem('cities', city.value)}
-                  className={`px-4 py-2.5 rounded-full text-xs font-medium transition-all ${
+                  className={`px-4 py-2.5 rounded-lg text-xs font-medium transition-all ${
                     data.cities.includes(city.value)
                       ? 'bg-[#D4AF37] text-[#003087]'
                       : 'bg-white/10 text-white/70 hover:bg-white/15'

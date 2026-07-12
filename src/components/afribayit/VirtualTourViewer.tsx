@@ -553,11 +553,11 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10 backdrop-blur-sm"
           >
-            <div className="w-20 h-20 rounded-full border-4 border-[#D4AF37]/30 flex items-center justify-center mb-4">
+            <div className="w-20 h-20 rounded-lg border-4 border-[#D4AF37]/30 flex items-center justify-center mb-4">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-12 h-12 rounded-full border-4 border-transparent border-t-[#D4AF37] border-r-[#D4AF37]"
+                className="w-12 h-12 rounded-lg border-4 border-transparent border-t-[#D4AF37] border-r-[#D4AF37]"
               />
             </div>
             <p className="text-white/80 text-sm font-medium mb-2">Chargement de la visite...</p>
@@ -566,7 +566,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${loadingProgress}%` }}
-                  className="h-full bg-[#D4AF37] rounded-full"
+                  className="h-full bg-[#D4AF37] rounded-lg"
                   transition={{ duration: 0.3 }}
                 />
               </div>
@@ -584,7 +584,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10"
           >
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-red-500/10 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
@@ -592,7 +592,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
             <p className="text-white/80 text-sm text-center max-w-xs">{error}</p>
             <button
               onClick={() => { setError(null); window.location.reload(); }}
-              className="mt-4 px-4 py-2 bg-[#D4AF37] text-white text-sm font-medium rounded-full hover:bg-[#b8961f] transition-colors"
+              className="mt-4 px-4 py-2 bg-[#D4AF37] text-white text-sm font-medium rounded-lg hover:bg-[#b8961f] transition-colors"
             >
               Réessayer
             </button>
@@ -603,7 +603,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
       {/* ─── Top Controls ───────────────────────────────────────────── */}
       <div className="absolute top-0 left-0 right-0 p-3 flex items-center justify-between z-20 pointer-events-none">
         <div className="pointer-events-auto">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-full">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md rounded-lg">
             <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
             <span className="text-white text-xs font-medium">{currentScene?.label || 'Chargement'}</span>
             <span className="text-white/50 text-[10px]">360°</span>
@@ -612,21 +612,21 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
 
         <div className="flex items-center gap-2 pointer-events-auto">
           {/* Scene List */}
-          <button onClick={() => setShowSceneList(!showSceneList)} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label="Liste des pièces">
+          <button onClick={() => setShowSceneList(!showSceneList)} className="w-9 h-9 rounded-lg bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label="Liste des pièces">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
           </button>
           {/* Minimap */}
-          <button onClick={() => setShowMinimap(!showMinimap)} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label="Plan">
+          <button onClick={() => setShowMinimap(!showMinimap)} className="w-9 h-9 rounded-lg bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label="Plan">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" /></svg>
           </button>
           {/* VR */}
           {vrSupported && (
-            <button onClick={toggleVR} className="w-9 h-9 rounded-full bg-[#003087]/70 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#003087] transition-colors" aria-label="Mode VR">
+            <button onClick={toggleVR} className="w-9 h-9 rounded-lg bg-[#003087]/70 backdrop-blur-md flex items-center justify-center text-white hover:bg-[#003087] transition-colors" aria-label="Mode VR">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
           )}
           {/* Fullscreen */}
-          <button onClick={toggleFullscreen} className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label={isFullscreen ? 'Quitter plein écran' : 'Plein écran'}>
+          <button onClick={toggleFullscreen} className="w-9 h-9 rounded-lg bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-colors" aria-label={isFullscreen ? 'Quitter plein écran' : 'Plein écran'}>
             {isFullscreen ? (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" /></svg>
             ) : (
@@ -635,7 +635,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
           </button>
           {/* Close */}
           {onClose && (
-            <button onClick={onClose} className="w-9 h-9 rounded-full bg-red-500/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-red-500/70 transition-colors" aria-label="Fermer">
+            <button onClick={onClose} className="w-9 h-9 rounded-lg bg-red-500/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-red-500/70 transition-colors" aria-label="Fermer">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
@@ -737,7 +737,7 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
 
       {/* ─── VR Badge ───────────────────────────────────────────────── */}
       <div className="absolute top-14 left-3 z-20">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#003087]/70 backdrop-blur-md rounded-full">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#003087]/70 backdrop-blur-md rounded-lg">
           <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           <span className="text-[10px] text-white font-semibold">Visite VR disponible</span>
         </div>

@@ -733,7 +733,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             scale: [1, 1.1, 0.95, 1],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-          className={`absolute top-20 right-0 ${isMobile ? 'w-48 h-48' : 'w-96 h-96'} bg-[#009CDE]/10 rounded-full blur-3xl`}
+          className={`absolute top-20 right-0 ${isMobile ? 'w-48 h-48' : 'w-96 h-96'} bg-[#009CDE]/10 rounded-lg blur-3xl`}
         />
         <motion.div
           animate={{
@@ -742,7 +742,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             scale: [1, 0.9, 1.1, 1],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
-          className={`absolute bottom-0 left-0 ${isMobile ? 'w-40 h-40' : 'w-80 h-80'} bg-[#D4AF37]/10 rounded-full blur-3xl`}
+          className={`absolute bottom-0 left-0 ${isMobile ? 'w-40 h-40' : 'w-80 h-80'} bg-[#D4AF37]/10 rounded-lg blur-3xl`}
         />
       </div>
 
@@ -755,7 +755,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
             initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.6, delay: 0.1, ease: easeOut }}
-            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full glass border border-white/20 mb-4 sm:mb-6"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg glass border border-white/20 mb-4 sm:mb-6"
           >
             <span className="w-2 h-2 bg-[#D4AF37] rounded-full animate-pulse" />
             <span className="text-white/90 text-xs sm:text-sm font-medium font-body">{t('hero.badge', "Plateforme N°1 en Afrique de l'Ouest")}</span>
@@ -805,7 +805,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                     onChange={(e) => setSearchQuery(e.target.value)}
                     aria-label={t('hero.cta', 'Rechercher')}
                     placeholder={t('hero.searchPlaceholder', 'Ville, quartier, type de bien...')}
-                    className="flex-1 text-xs sm:text-sm text-[#2C2E2F] placeholder-gray-400 outline-none bg-transparent font-body"
+                    className="flex-1 text-xs sm:text-sm text-[#0a2a5e] placeholder-gray-400 outline-none bg-transparent font-body"
                   />
                   {/* Voice Search Button */}
                   <VoiceSearchButton
@@ -822,7 +822,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                   <select
                     value={searchType}
                     onChange={(e) => setSearchType(e.target.value)}
-                    className="text-xs sm:text-sm text-[#2C2E2F] bg-transparent outline-none font-body cursor-pointer"
+                    className="text-xs sm:text-sm text-[#0a2a5e] bg-transparent outline-none font-body cursor-pointer"
                   >
                     <option value="achat">Acheter</option>
                     <option value="location">Louer</option>
@@ -842,7 +842,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                   <select
                     value={searchCountry}
                     onChange={(e) => setSearchCountry(e.target.value)}
-                    className="text-xs sm:text-sm text-[#2C2E2F] bg-transparent outline-none font-body cursor-pointer"
+                    className="text-xs sm:text-sm text-[#0a2a5e] bg-transparent outline-none font-body cursor-pointer"
                   >
                     <option value="all">Tous les pays</option>
                     {COUNTRIES_CONFIG.map((c) => (
@@ -901,7 +901,7 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.6 + i * 0.06, ease: easeOut }}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm"
               >
                 <item.Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: item.color }} />
                 <span className="text-white/60 text-[10px] sm:text-xs font-body font-medium">{item.label}</span>

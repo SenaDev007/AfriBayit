@@ -15,13 +15,13 @@ export default function MarketplacePanel({ contactingService, onContactService }
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
             <Store className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <h3 className="font-display text-base font-bold text-[#2C2E2F]">Marketplace de services</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e]">Marketplace de services</h3>
             <p className="text-xs text-gray-500">Annuaire peer-to-peer des professionnels de l&apos;écosystème — notation par la communauté</p>
           </div>
         </div>
@@ -54,14 +54,14 @@ export default function MarketplacePanel({ contactingService, onContactService }
                 </span>
               </div>
               {/* Title */}
-              <h4 className="font-semibold text-sm text-[#2C2E2F] mb-2 group-hover:text-[#003087] transition-colors">{svc.title}</h4>
+              <h4 className="font-semibold text-sm text-[#0a2a5e] mb-2 group-hover:text-[#003087] transition-colors">{svc.title}</h4>
               {/* Provider */}
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087] text-xs font-bold shrink-0">
                   {svc.provider[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-[#2C2E2F]">{svc.provider}</p>
+                  <p className="text-xs font-medium text-[#0a2a5e]">{svc.provider}</p>
                   <p className="text-[10px] text-gray-400 flex items-center gap-0.5">
                     <MapPin className="w-2.5 h-2.5" />
                     {svc.city}
@@ -77,13 +77,13 @@ export default function MarketplacePanel({ contactingService, onContactService }
                   <button
                     onClick={() => onContactService(svc.id, svc.provider)}
                     disabled={contactingService === svc.id}
-                    className="px-3 py-1.5 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
+                    className="px-3 py-1.5 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
                   >
                     {contactingService === svc.id ? 'Envoi...' : 'Contacter'}
                   </button>
                   <button
                     onClick={() => toast({ title: 'Réservation', description: 'Fonctionnalité de réservation bientôt disponible.' })}
-                    className="px-3 py-1.5 border border-[#D4AF37] text-[#D4AF37] rounded-full text-xs font-semibold hover:bg-[#D4AF37]/5 transition-colors"
+                    className="px-3 py-1.5 border border-[#D4AF37] text-[#D4AF37] rounded-lg text-xs font-semibold hover:bg-[#D4AF37]/5 transition-colors"
                   >
                     Réserver
                   </button>

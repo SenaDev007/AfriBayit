@@ -100,7 +100,7 @@ const specialityOptions = ['Vente immobilière', 'Succession', 'Bail commercial'
 
 function NotarySkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-sm border animate-pulse">
+    <div className="bg-white rounded-xl p-5 shadow-sm border animate-pulse">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-14 h-14 rounded-2xl bg-gray-200" />
         <div className="flex-1">
@@ -110,10 +110,10 @@ function NotarySkeleton() {
         </div>
       </div>
       <div className="flex gap-2 mb-3">
-        <div className="h-4 w-12 bg-gray-100 rounded-full" />
-        <div className="h-4 w-16 bg-gray-100 rounded-full" />
+        <div className="h-4 w-12 bg-gray-100 rounded-lg" />
+        <div className="h-4 w-16 bg-gray-100 rounded-lg" />
       </div>
-      <div className="h-9 bg-gray-200 rounded-full mt-3" />
+      <div className="h-9 bg-gray-200 rounded-lg mt-3" />
     </div>
   );
 }
@@ -379,7 +379,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             transition={{ duration: 0.5, ease: easeOut }}
           >
             {/* Header card */}
-            <div className="bg-white rounded-3xl p-8 shadow-sm border mb-6">
+            <div className="bg-white rounded-xl p-8 shadow-sm border mb-6">
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
                   <ImageWithFallback
@@ -392,7 +392,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-[#2C2E2F]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                       {detailNotary.name}
                     </h1>
                     {detailNotary.certificationLevel && detailNotary.certificationLevel !== 'none' && (
@@ -434,14 +434,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 <button
                   onClick={() => handleContactNotary(detailNotary)}
                   disabled={contactingNotaryId === detailNotary.id || createConversation.isPending}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {contactingNotaryId === detailNotary.id || createConversation.isPending ? 'Connexion...' : 'Contacter le notaire'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShowAssignModal(detailNotary)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                 >
                   <Scale className="w-4 h-4" />
                   Assigner à ma transaction
@@ -456,14 +456,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
             {/* Specialities */}
             {detailNotary.specialities.length > 0 && (
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                <h3 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2">
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                <h3 className="text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2">
                   <Scale className="w-4 h-4 text-[#003087]" />
                   Spécialités
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {detailNotary.specialities.map((s) => (
-                    <span key={s} className="px-3 py-1.5 bg-[#003087]/5 text-[#003087] text-xs font-medium rounded-full">
+                    <span key={s} className="px-3 py-1.5 bg-[#003087]/5 text-[#003087] text-xs font-medium rounded-lg">
                       {s}
                     </span>
                   ))}
@@ -472,8 +472,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             )}
 
             {/* Services offered */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-              <h3 className="text-sm font-bold text-[#2C2E2F] mb-4">Services proposés</h3>
+            <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { name: 'Rédaction d\'actes', desc: 'Actes de vente, bail, donation, succession', icon: FileText },
@@ -487,7 +487,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                         <service.icon className="w-5 h-5 text-[#003087]" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#2C2E2F] text-sm mb-1">{service.name}</h4>
+                        <h4 className="font-semibold text-[#0a2a5e] text-sm mb-1">{service.name}</h4>
                         <p className="text-xs text-gray-500">{service.desc}</p>
                       </div>
                     </div>
@@ -502,21 +502,21 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Note</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{detailNotary.rating}/5</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{detailNotary.rating}/5</p>
                 </div>
               )}
               {detailNotary.missions > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Missions</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{detailNotary.missions}</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{detailNotary.missions}</p>
                 </div>
               )}
               {detailNotary.certifiedAt && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
                   <p className="text-xs text-gray-400">Certifié</p>
-                  <p className="text-sm font-bold text-[#2C2E2F]">{timeAgo(detailNotary.certifiedAt)}</p>
+                  <p className="text-sm font-bold text-[#0a2a5e]">{timeAgo(detailNotary.certifiedAt)}</p>
                 </div>
               )}
             </div>
@@ -532,10 +532,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
             <Scale className="w-4 h-4" /> Notaire Certifié
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Espace <span className="text-[#003087]">Notarial</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -546,7 +546,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         {/* Country Filter */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -564,7 +564,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -586,27 +586,27 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     placeholder="Rechercher un notaire..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20 bg-white"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20 bg-white"
                   />
                 </div>
                 <select
                   value={selectedZone}
                   onChange={e => setSelectedZone(e.target.value)}
-                  className="px-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
+                  className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
                   {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? 'Toutes les zones' : z}</option>)}
                 </select>
                 <select
                   value={selectedLevel}
                   onChange={e => setSelectedLevel(e.target.value)}
-                  className="px-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
+                  className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
                   {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? 'Tous niveaux' : l}</option>)}
                 </select>
                 <select
                   value={selectedSpeciality}
                   onChange={e => setSelectedSpeciality(e.target.value)}
-                  className="px-4 py-2.5 rounded-full border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
+                  className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
                   <option value="Toutes">Toutes spécialités</option>
                   {specialityOptions.map(s => <option key={s} value={s}>{s}</option>)}
@@ -648,7 +648,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                       whileHover={{ y: -4 }}
-                      className="bg-white rounded-3xl p-5 shadow-sm border group cursor-pointer"
+                      className="bg-white rounded-xl p-5 shadow-sm border group cursor-pointer"
                       onClick={() => handleOpenDetail(notary)}
                     >
                       <div className="flex items-start gap-4 mb-4">
@@ -656,10 +656,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                           <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#D4AF37] relative">
                             <ImageWithFallback src={notary.avatar} alt={notary.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
                           </div>
-                          <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
+                          <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-lg border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-display text-base font-bold text-[#2C2E2F] truncate group-hover:text-[#003087] transition-colors">
+                          <h3 className="font-display text-base font-bold text-[#0a2a5e] truncate group-hover:text-[#003087] transition-colors">
                             {notary.name}
                           </h3>
                           <p className="text-xs text-gray-400 font-mono">{notary.license}</p>
@@ -698,7 +698,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleContactNotary(notary); }}
                           disabled={contactingNotaryId === notary.id || createConversation.isPending}
-                          className="px-4 py-1.5 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-1.5 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {contactingNotaryId === notary.id ? '...' : 'Contacter'}
                         </button>
@@ -732,13 +732,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* Escrow State Machine */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Cycle notarial Escrow</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Cycle notarial Escrow</h3>
                 <div className="flex items-start gap-2 overflow-x-auto pb-2">
                   {escrowNotaryStates.map((state, i) => (
                     <div key={state.key} className="flex items-start shrink-0">
                       <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${state.color}15` }}>
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${state.color}15` }}>
                           {i === 0 && <Scale className="w-5 h-5" style={{ color: state.color }} />}
                           {i === 1 && <FileText className="w-5 h-5" style={{ color: state.color }} />}
                           {i === 2 && <FileCheck className="w-5 h-5" style={{ color: state.color }} />}
@@ -769,8 +769,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* Assigned Transactions */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Transactions assignées</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Transactions assignées</h3>
                 {escrowLoading ? (
                   <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}</div>
                 ) : escrowAccounts.length === 0 ? (
@@ -780,7 +780,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     {escrowAccounts.map((txn) => (
                       <div key={txn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#2C2E2F] truncate">{txn.property}</p>
+                          <p className="text-sm font-semibold text-[#0a2a5e] truncate">{txn.property}</p>
                           <p className="text-xs text-gray-500">{txn.buyer}</p>
                         </div>
                         <div className="text-right ml-4 shrink-0">
@@ -796,9 +796,9 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* Secure Document Archive */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] flex items-center gap-2">
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e] flex items-center gap-2">
                     <Archive className="w-5 h-5 text-[#003087]" /> Archivage sécurisé
                   </h3>
                   <Badge variant="secondary" className="text-[10px]">
@@ -811,7 +811,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <div className="flex items-center gap-3">
                         <FileCheck className="w-4 h-4 text-[#003087]" />
                         <div>
-                          <p className="text-sm font-medium text-[#2C2E2F]">{doc.name}</p>
+                          <p className="text-sm font-medium text-[#0a2a5e]">{doc.name}</p>
                           <p className="text-[10px] text-gray-400 font-mono">{doc.hash}</p>
                         </div>
                       </div>
@@ -827,12 +827,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* ANDF Registration Status */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Statut ANDF</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Statut ANDF</h3>
                 <div className="space-y-3">
                   {andfStatusItems.map(item => (
                     <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                      <span className="text-sm text-[#2C2E2F]">{item.label}</span>
+                      <span className="text-sm text-[#0a2a5e]">{item.label}</span>
                       <span className={`text-xs font-semibold flex items-center gap-1 ${item.done ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
                         {item.done ? <CheckCircle className="w-3.5 h-3.5" /> : <Timer className="w-3.5 h-3.5" />} {item.status}
                       </span>
@@ -846,8 +846,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
           {/* ===== CERTIFICATION PROCESS (6 steps) ===== */}
           {activeTab === 'certification' && (
             <motion.div key="certification" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-6">Processus de certification notaire — 6 étapes</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">Processus de certification notaire — 6 étapes</h3>
 
                 {/* Progress Stepper */}
                 <div className="flex items-center gap-1 mb-8">
@@ -856,7 +856,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     return (
                       <div key={s.step} className="flex items-center flex-1">
                         <button onClick={() => setCertStep(i)} className="flex flex-col items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                             i <= certStep ? 'bg-[#003087] text-white shadow-lg' : 'bg-gray-100 text-gray-400'
                           }`}>
                             {i < certStep ? <Check className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
@@ -889,7 +889,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <div className="flex items-center gap-3 mb-3">
                       {React.createElement(certificationSteps[certStep].icon, { className: 'w-6 h-6 text-[#003087]' })}
                       <div>
-                        <h4 className="font-display text-base font-bold text-[#2C2E2F]">
+                        <h4 className="font-display text-base font-bold text-[#0a2a5e]">
                           Étape {certificationSteps[certStep].step} : {certificationSteps[certStep].title}
                         </h4>
                         <p className="text-sm text-gray-500">{certificationSteps[certStep].desc}</p>
@@ -909,7 +909,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <div className="mt-4 p-3 bg-white rounded-xl">
                         <p className="text-xs text-gray-600 mb-2">Analyse IA en cours...</p>
                         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <motion.div className="h-full bg-[#009CDE] rounded-full" initial={{ width: '0%' }} animate={{ width: '75%' }} transition={{ duration: 1.5 }} />
+                          <motion.div className="h-full bg-[#009CDE] rounded-lg" initial={{ width: '0%' }} animate={{ width: '75%' }} transition={{ duration: 1.5 }} />
                         </div>
                         <p className="text-[10px] text-gray-400 mt-1">3/4 documents vérifiés</p>
                       </div>
@@ -930,13 +930,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   <button
                     onClick={() => setCertStep(Math.max(0, certStep - 1))}
                     disabled={certStep === 0}
-                    className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
+                    className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
                   >
                     Précédent
                   </button>
                   <button
                     onClick={() => setCertStep(Math.min(certificationSteps.length - 1, certStep + 1))}
-                    className="flex-1 px-5 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                    className="flex-1 px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
                     {certStep === certificationSteps.length - 1 ? 'Terminer' : 'Étape suivante'}
                   </button>
@@ -948,13 +948,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
           {/* ===== AI-ASSISTED DEED DRAFTING ===== */}
           {activeTab === 'deeds' && (
             <motion.div key="deeds" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-3xl mx-auto">
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
                     <Bot className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Rédaction d&apos;actes assistée par IA</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Rédaction d&apos;actes assistée par IA</h3>
                     <p className="text-xs text-gray-500">Générez un projet d&apos;acte en quelques clics</p>
                   </div>
                 </div>
@@ -1034,13 +1034,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
           {/* ===== ELECTRONIC SIGNATURE ===== */}
           {activeTab === 'esignature' && (
             <motion.div key="esignature" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-3xl mx-auto space-y-6">
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-xl bg-[#00A651]/10 flex items-center justify-center">
                     <FileSignature className="w-5 h-5 text-[#00A651]" />
                   </div>
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Signature électronique</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Signature électronique</h3>
                     <p className="text-xs text-gray-500">Signez les actes en toute sécurité avec vérification OTP</p>
                   </div>
                 </div>
@@ -1056,7 +1056,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <div className="flex items-center gap-3">
                         <FileSignature className={`w-5 h-5 ${doc.status === 'Signé' ? 'text-[#00A651]' : doc.status.includes('Partiel') ? 'text-[#D4AF37]' : 'text-[#003087]'}`} />
                         <div>
-                          <p className="text-sm font-semibold text-[#2C2E2F]">{doc.name}</p>
+                          <p className="text-sm font-semibold text-[#0a2a5e]">{doc.name}</p>
                           <p className="text-xs text-gray-500">{doc.amount}</p>
                         </div>
                       </div>
@@ -1090,12 +1090,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* Escrow Release Trigger */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
                   <Zap className="w-5 h-5 text-[#00A651]" /> Déclencheur de libération Escrow
                 </h3>
                 <div className="p-4 bg-[#00A651]/5 border border-[#00A651]/10 rounded-2xl">
-                  <p className="text-sm font-semibold text-[#2C2E2F] mb-2">DEED_SIGNED → Libération automatique</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e] mb-2">DEED_SIGNED → Libération automatique</p>
                   <p className="text-xs text-gray-500">
                     Lorsqu&apos;un acte est signé électroniquement (DEED_SIGNED), le système vérifie automatiquement les conditions de libération et déclenche la libération des fonds escrow.
                   </p>
@@ -1144,14 +1144,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1, ease: easeOut }}
-                    className={`bg-white rounded-3xl p-6 shadow-sm border relative ${tier.name === 'Premium' ? 'ring-2 ring-[#D4AF37]' : ''}`}
+                    className={`bg-white rounded-xl p-6 shadow-sm border relative ${tier.name === 'Premium' ? 'ring-2 ring-[#D4AF37]' : ''}`}
                   >
                     {tier.name === 'Premium' && (
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>
                     )}
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">{tier.name}</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{tier.name}</h3>
                     <p className="font-mono text-2xl font-bold text-[#D4AF37] mb-1">{tier.priceLabel}</p>
-                    <p className="text-xs text-gray-500 mb-4">Commission : <span className="font-bold text-[#2C2E2F]">{tier.commission}</span></p>
+                    <p className="text-xs text-gray-500 mb-4">Commission : <span className="font-bold text-[#0a2a5e]">{tier.commission}</span></p>
                     <div className="space-y-2">
                       {tier.features.map(f => (
                         <div key={f} className="flex items-center gap-2 text-sm text-gray-600">
@@ -1162,7 +1162,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <button
                       onClick={() => handleChooseNotaryPlan(tier)}
                       disabled={tier.name === 'Standard' || createSubscription.isPending}
-                      className={`w-full mt-5 py-2.5 rounded-full text-sm font-semibold transition-colors disabled:opacity-50 ${
+                      className={`w-full mt-5 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
                         tier.name === 'Standard' ? 'bg-gray-100 text-gray-500 cursor-default' :
                         tier.name === 'Premium' ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]' :
                         'bg-[#003087] text-white hover:bg-[#0047b3]'
@@ -1175,17 +1175,17 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               </div>
 
               {/* Revenue breakdown */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Détail du modèle de revenus</h3>
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Détail du modèle de revenus</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 bg-[#00A651]/5 rounded-2xl">
                     <p className="text-xs text-[#00A651] font-semibold mb-1">Commission par transaction</p>
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">10 – 15%</p>
+                    <p className="font-mono text-xl font-bold text-[#0a2a5e]">10 – 15%</p>
                     <p className="text-xs text-gray-500 mt-1">Selon le niveau d&apos;abonnement du notaire</p>
                   </div>
                   <div className="p-4 bg-[#003087]/5 rounded-2xl">
                     <p className="text-xs text-[#003087] font-semibold mb-1">Abonnement mensuel</p>
-                    <p className="font-mono text-xl font-bold text-[#2C2E2F]">0 – 50 000 FCFA</p>
+                    <p className="font-mono text-xl font-bold text-[#0a2a5e]">0 – 50 000 FCFA</p>
                     <p className="text-xs text-gray-500 mt-1">3 niveaux : Standard, Premium, Elite</p>
                   </div>
                 </div>
@@ -1229,14 +1229,14 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 max-w-md w-full"
+        className="bg-white rounded-xl p-6 max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
             <Scale className="w-5 h-5 text-[#D4AF37]" />
           </div>
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Assigner un notaire</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Assigner un notaire</h3>
         </div>
         <p className="text-sm text-gray-600 mb-4">
           Assignez <strong>{notary.name}</strong> à l&apos;une de vos transactions en cours.
@@ -1261,7 +1261,7 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
                       : 'border-gray-100 hover:border-gray-200'
                   }`}
                 >
-                  <p className="text-sm font-semibold text-[#2C2E2F] truncate">
+                  <p className="text-sm font-semibold text-[#0a2a5e] truncate">
                     {tx.property?.title || 'Transaction'}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -1273,14 +1273,14 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
             <div className="flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold"
+                className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold"
               >
                 Annuler
               </button>
               <button
                 onClick={() => selectedTransaction && onAssign(selectedTransaction)}
                 disabled={!selectedTransaction || isAssigning}
-                className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isAssigning ? 'Assignation...' : 'Assigner le notaire'}
               </button>

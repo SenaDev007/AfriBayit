@@ -180,7 +180,7 @@ export default function QuizTaker({
               <CheckCircle2 className="w-6 h-6 text-[#003087]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#2C2E2F]">
+              <h2 className="text-xl font-bold text-[#0a2a5e]">
                 {quiz.title}
               </h2>
               <p className="text-sm text-gray-500">{quiz.description}</p>
@@ -359,7 +359,7 @@ export default function QuizTaker({
                         <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#2C2E2F] mb-1">
+                        <p className="text-sm font-medium text-[#0a2a5e] mb-1">
                           {idx + 1}. {fb.question}
                         </p>
                         <p className="text-xs text-gray-500">
@@ -416,7 +416,7 @@ export default function QuizTaker({
       {/* Header bar */}
       <div className="p-4 border-b bg-gradient-to-r from-[#003087]/5 to-transparent flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-[#2C2E2F] text-sm">
+          <h3 className="font-semibold text-[#0a2a5e] text-sm">
             {quiz.title}
           </h3>
           <p className="text-xs text-gray-500">
@@ -426,7 +426,7 @@ export default function QuizTaker({
 
         {/* Timer */}
         <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-mono font-bold ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-mono font-bold ${
             isLowTime
               ? 'bg-red-50 text-red-600 animate-pulse'
               : 'bg-gray-100 text-gray-700'
@@ -466,7 +466,7 @@ export default function QuizTaker({
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25 }}
           >
-            <h3 className="text-base sm:text-lg font-semibold text-[#2C2E2F] mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-[#0a2a5e] mb-4">
               {question.question}
             </h3>
 
@@ -488,7 +488,7 @@ export default function QuizTaker({
                       }`}
                     >
                       <span
-                        className={`w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 ${
+                        className={`w-8 h-8 rounded-lg text-sm font-bold flex items-center justify-center flex-shrink-0 ${
                           isSelected
                             ? 'bg-[#003087] text-white'
                             : 'bg-gray-100 text-gray-500'
@@ -557,7 +557,7 @@ export default function QuizTaker({
             setCurrentQuestion(Math.max(0, currentQuestion - 1))
           }
           disabled={currentQuestion === 0}
-          className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-gray-600 border hover:bg-gray-100 transition-colors disabled:opacity-40"
+          className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border hover:bg-gray-100 transition-colors disabled:opacity-40"
         >
           <ChevronLeft className="w-4 h-4" />
           Précédent
@@ -574,7 +574,7 @@ export default function QuizTaker({
                 Math.min(totalQuestions - 1, currentQuestion + 1)
               )
             }
-            className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-white bg-[#003087] hover:bg-[#0047b3] transition-colors"
+            className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#003087] hover:bg-[#0047b3] transition-colors"
           >
             Suivant
             <ChevronRight className="w-4 h-4" />
@@ -583,7 +583,7 @@ export default function QuizTaker({
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || !allAnswered}
-            className="flex items-center gap-1 px-5 py-2 rounded-full text-sm font-semibold text-white bg-[#D4AF37] hover:bg-[#c9a22e] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-[#D4AF37] hover:bg-[#c9a22e] transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

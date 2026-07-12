@@ -22,7 +22,7 @@ export default function BlogPage() {
       {/* Hero */}
       <section className="relative py-20 overflow-hidden" style={{ background: NAVY }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg mb-6" style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
             <span className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: GOLD }}>Blog AfriBayit</span>
           </span>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>Actualités & Conseils immobiliers</h1>
@@ -42,7 +42,7 @@ export default function BlogPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
                 whileHover={{ y: -4 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-sm border cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                className="bg-white rounded-xl overflow-hidden shadow-sm border cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img src={article.image} alt={article.title} className="absolute inset-0 w-full h-full object-cover" />

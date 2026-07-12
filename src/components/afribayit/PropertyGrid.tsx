@@ -132,7 +132,7 @@ export default function PropertyGrid({
 
           {/* Country indicator */}
           {selectedCountry && selectedCountry !== ('all' as any) && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ background: `${NAVY}10`, border: `1px solid ${NAVY}30` }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: `${NAVY}10`, border: `1px solid ${NAVY}30` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
               <span className="text-sm font-semibold" style={{ color: NAVY }}>
                 {COUNTRY_NAMES[selectedCountry] || selectedCountry}
@@ -149,7 +149,7 @@ export default function PropertyGrid({
               <button
                 key={type.value}
                 onClick={() => setActiveType(type.value)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   activeType === type.value
                     ? 'text-white'
                     : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
@@ -165,7 +165,7 @@ export default function PropertyGrid({
           <select
             value={activePrice}
             onChange={(e) => setActivePrice(e.target.value)}
-            className="px-4 py-2 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-600 cursor-pointer hover:border-gray-300 transition-all"
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-gray-200 text-gray-600 cursor-pointer hover:border-gray-300 transition-all"
           >
             {PRICE_RANGES.map((range) => (
               <option key={range.value} value={range.value}>
@@ -179,10 +179,10 @@ export default function PropertyGrid({
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="overflow-hidden rounded-3xl border border-gray-100 bg-white">
+              <div key={i} className="overflow-hidden rounded-xl border border-gray-100 bg-white">
                 <Skeleton className="aspect-[4/3] w-full rounded-none" />
                 <div className="space-y-3 p-5">
-                  <Skeleton className="h-4 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-20 rounded-lg" />
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
                   <Skeleton className="h-6 w-1/2" />
@@ -195,7 +195,7 @@ export default function PropertyGrid({
         {/* Error state */}
         {isError && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
@@ -208,7 +208,7 @@ export default function PropertyGrid({
         {/* Empty state */}
         {!isLoading && !isError && filteredProperties.length === 0 && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>

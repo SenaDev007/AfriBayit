@@ -45,13 +45,13 @@ export default function NewsPanel() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-9 h-9 rounded-xl bg-[#003087]/10 flex items-center justify-center">
             <Newspaper className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <h3 className="font-display text-base font-bold text-[#2C2E2F]">Actualités immobilières</h3>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e]">Actualités immobilières</h3>
             <p className="text-xs text-gray-500">Réglementation, tendances de marché et annonces premium — curaté par IA + éditeur humain</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function NewsPanel() {
                 {new Date(news.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             </div>
-            <h4 className="font-semibold text-sm text-[#2C2E2F] mb-1.5 group-hover:text-[#003087] transition-colors">
+            <h4 className="font-semibold text-sm text-[#0a2a5e] mb-1.5 group-hover:text-[#003087] transition-colors">
               {news.title}
             </h4>
             <p className="text-xs text-gray-500 mb-3 leading-relaxed">{news.excerpt}</p>
@@ -102,7 +102,7 @@ export default function NewsPanel() {
       <div className="bg-gradient-to-r from-[#003087]/5 to-[#009CDE]/5 rounded-2xl p-4 border flex items-start gap-3">
         <TrendingUp className="w-5 h-5 text-[#009CDE] shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500">
-          <strong className="text-[#2C2E2F]">Fil actualités AfriBayit</strong> — Agrégation automatique des nouvelles
+          <strong className="text-[#0a2a5e]">Fil actualités AfriBayit</strong> — Agrégation automatique des nouvelles
           réglementaires (Section 10B), tendances de marché (données AVM), et annonces premium de la plateforme.
         </p>
       </div>

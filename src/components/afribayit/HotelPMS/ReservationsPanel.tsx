@@ -37,7 +37,7 @@ export default function ReservationsPanel({ resFilter, setResFilter, reservation
                     <span className="font-mono text-xs text-gray-400">{res.bookingRef || res.id.slice(0, 8)}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STATUS_COLORS[res.status] || 'bg-gray-100 text-gray-600'}`}>{STATUS_LABELS[res.status] || res.status}</span>
                   </div>
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{formatDate(res.checkIn)} &rarr; {formatDate(res.checkOut)} · {res.guests} pers.</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{formatDate(res.checkIn)} &rarr; {formatDate(res.checkOut)} · {res.guests} pers.</p>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-xs text-gray-500">{channelLabel(res.sourceChannel)}</span>
                     {res.specialRequests && <span className="text-xs text-[#D4AF37] flex items-center gap-1"><FileText className="w-3 h-3" /> Demande speciale</span>}

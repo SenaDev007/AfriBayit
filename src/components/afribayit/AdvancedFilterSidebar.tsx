@@ -209,12 +209,12 @@ export default function AdvancedFilterSidebar({
           isOpen ? 'fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto' : 'hidden'
         } lg:block w-full lg:w-80 shrink-0 overflow-y-auto`}
       >
-        <div className="bg-white rounded-3xl p-5 shadow-sm border min-h-[calc(100vh-8rem)] lg:min-h-0 lg:sticky lg:top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="bg-white rounded-xl p-5 shadow-sm border min-h-[calc(100vh-8rem)] lg:min-h-0 lg:sticky lg:top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-[#003087]" />
-              <h3 className="font-semibold text-sm text-[#2C2E2F]">Filtres avancés</h3>
+              <h3 className="font-semibold text-sm text-[#0a2a5e]">Filtres avancés</h3>
               {activeCount > 0 && (
                 <span className="px-2 py-0.5 bg-[#003087] text-white text-[10px] font-bold rounded-full">
                   {activeCount}
@@ -229,7 +229,7 @@ export default function AdvancedFilterSidebar({
               )}
               <button
                 onClick={onToggle}
-                className="lg:hidden w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
+                className="lg:hidden w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -241,7 +241,7 @@ export default function AdvancedFilterSidebar({
             <VoiceSearchButton onTranscript={handleVoiceTranscript} currentQuery={filters.query} />
             <button
               onClick={() => setShowAiSearch(!showAiSearch)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-medium hover:bg-[#D4AF37]/20 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-medium hover:bg-[#D4AF37]/20 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" /> IA
             </button>
@@ -530,11 +530,11 @@ export default function AdvancedFilterSidebar({
                   </span>
                   <button
                     onClick={() => toggleAmenity(key)}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${
+                    className={`w-9 h-5 rounded-lg transition-colors relative ${
                       filters[key as keyof any] ? 'bg-[#00A651]' : 'bg-gray-200'
                     }`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-lg shadow-sm transition-transform ${
                       filters[key as keyof any] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
@@ -604,11 +604,11 @@ export default function AdvancedFilterSidebar({
                   <span className="text-xs text-gray-600">{label}</span>
                   <button
                     onClick={() => updateFilter(key, !filters[key])}
-                    className={`w-9 h-5 rounded-full transition-colors relative ${
+                    className={`w-9 h-5 rounded-lg transition-colors relative ${
                       filters[key] ? 'bg-[#00A651]' : 'bg-gray-200'
                     }`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-lg shadow-sm transition-transform ${
                       filters[key] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
@@ -763,7 +763,7 @@ function FilterSection({
         onClick={onToggle}
         className="flex items-center justify-between w-full text-left"
       >
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#2C2E2F]">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#0a2a5e]">
           {icon} {title}
         </span>
         <svg

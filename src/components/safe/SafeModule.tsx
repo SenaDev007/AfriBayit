@@ -45,7 +45,7 @@ export default class SafeModule extends Component<SafeModuleProps, SafeModuleSta
       return (
         <div className="min-h-[400px] flex items-center justify-center p-8">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-lg bg-amber-50 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-amber-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -61,7 +61,7 @@ export default class SafeModule extends Component<SafeModuleProps, SafeModuleSta
             )}
             <button
               onClick={this.handleRetry}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Reessayer

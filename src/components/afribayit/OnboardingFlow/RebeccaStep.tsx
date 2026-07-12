@@ -24,7 +24,7 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         initial={{ scale: 0, rotate: -90 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 150, delay: 0.1 }}
-        className="w-28 h-28 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#009CDE]/30"
+        className="w-28 h-28 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center mx-auto mb-8 shadow-lg shadow-[#009CDE]/30"
       >
         <span className="text-5xl font-bold text-white font-display">R</span>
       </motion.div>
@@ -74,7 +74,7 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="p-5 rounded-3xl bg-white/5 border border-white/10 max-w-sm mx-auto mb-8"
+        className="p-5 rounded-xl bg-white/5 border border-white/10 max-w-sm mx-auto mb-8"
       >
         <div className="flex items-center justify-between">
           <div className="text-left">
@@ -83,13 +83,13 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
           </div>
           <button
             onClick={() => updateData({ rebeccaEnabled: !data.rebeccaEnabled })}
-            className={`relative w-14 h-7 rounded-full transition-colors ${
+            className={`relative w-14 h-7 rounded-lg transition-colors ${
               data.rebeccaEnabled ? 'bg-[#00A651]' : 'bg-white/20'
             }`}
           >
             <motion.div
               layout
-              className="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-lg"
+              className="absolute top-0.5 w-6 h-6 bg-white rounded-lg shadow-lg"
               style={{ left: data.rebeccaEnabled ? '1.75rem' : '0.125rem' }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
@@ -102,7 +102,7 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
-        className="p-5 rounded-3xl bg-white/5 border border-white/10 max-w-sm mx-auto text-left"
+        className="p-5 rounded-xl bg-white/5 border border-white/10 max-w-sm mx-auto text-left"
       >
         <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-4">Récapitulatif de votre configuration</p>
         <div className="space-y-3 text-xs">

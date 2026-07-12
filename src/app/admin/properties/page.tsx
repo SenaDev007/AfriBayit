@@ -298,7 +298,7 @@ export default function AdminPropertiesPage() {
           </div>
         ) : properties.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Building2 className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-lg font-medium text-gray-900">Aucune propriété trouvée</p>

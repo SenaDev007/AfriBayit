@@ -26,7 +26,7 @@ export default function RoomsPanel({
   return (
     <motion.div key="rooms" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F]">Gestion des chambres</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e]">Gestion des chambres</h3>
         <button onClick={onOpenAdd} className="px-4 py-2 bg-[#00A651] text-white rounded-xl text-sm font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-2">
           <Plus className="w-4 h-4" /> Ajouter
         </button>
@@ -37,7 +37,7 @@ export default function RoomsPanel({
             <div key={room.id} className="bg-white rounded-2xl p-5 shadow-sm border">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h4 className="font-display text-base font-bold text-[#2C2E2F]">{room.name || room.type}</h4>
+                  <h4 className="font-display text-base font-bold text-[#0a2a5e]">{room.name || room.type}</h4>
                   <p className="text-xs text-gray-500">{room.type} · {room.totalRooms} chambre(s)</p>
                 </div>
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${ROOM_STATUS_COLORS[room.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -51,7 +51,7 @@ export default function RoomsPanel({
                 </div>
                 <div className="p-2 bg-gray-50 rounded-xl">
                   <p className="text-[10px] text-gray-500">Capacite</p>
-                  <p className="font-mono text-sm font-bold text-[#2C2E2F]">{room.capacity || 2} pers.</p>
+                  <p className="font-mono text-sm font-bold text-[#0a2a5e]">{room.capacity || 2} pers.</p>
                 </div>
               </div>
               {room.channels.length > 0 && (

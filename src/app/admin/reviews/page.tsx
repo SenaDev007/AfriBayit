@@ -241,7 +241,7 @@ export default function AdminReviewsPage() {
           <div className="p-4 space-y-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-lg" />
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-20" />
@@ -251,7 +251,7 @@ export default function AdminReviewsPage() {
           </div>
         ) : reviews.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <MessageSquare className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-lg font-medium text-gray-900">Aucun avis trouvé</p>

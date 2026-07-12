@@ -40,8 +40,8 @@ export default function ProfileViewsPanel({ profileViews }: ProfileViewsPanelPro
           <p className="text-xs text-gray-500">Évolution</p>
         </div>
       </div>
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Origine des vues</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Origine des vues</h3>
         <div className="space-y-4">
           {[
             { label: 'Recherche', value: profileViews.search, total: profileViews.total, color: '#009CDE' },
@@ -54,7 +54,7 @@ export default function ProfileViewsPanel({ profileViews }: ProfileViewsPanelPro
                 <span className="font-mono text-sm font-bold" style={{ color: item.color }}>{item.value} ({Math.round((item.value / item.total) * 100)}%)</span>
               </div>
               <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / item.total) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-full" style={{ backgroundColor: item.color }} />
+                <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / item.total) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-lg" style={{ backgroundColor: item.color }} />
               </div>
             </div>
           ))}

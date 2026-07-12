@@ -61,10 +61,10 @@ export default function LoginForm(props: LoginFormProps) {
   if (twoFA.show2FA) {
     return (
       <>
-        <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
           <ShieldCheck className="w-8 h-8 text-[#003087]" />
         </div>
-        <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1 text-center">
+        <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-1 text-center">
           Vérification 2FA
         </h2>
         <p className="text-sm text-gray-500 mb-6 text-center">
@@ -106,7 +106,7 @@ export default function LoginForm(props: LoginFormProps) {
             whileTap={{ scale: twoFA.twoFALoading ? 1 : 0.99 }}
             type="submit"
             disabled={twoFA.twoFALoading}
-            className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {twoFA.twoFALoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {twoFA.twoFALoading ? 'Vérification...' : 'Vérifier'}
@@ -126,7 +126,7 @@ export default function LoginForm(props: LoginFormProps) {
 
   return (
     <>
-      <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-1">
+      <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-1">
         {t('auth.loginForm.title', 'Bon retour !')}
       </h2>
       <p className="text-sm text-gray-500 mb-6">
@@ -192,7 +192,7 @@ export default function LoginForm(props: LoginFormProps) {
           whileTap={{ scale: loginLoading ? 1 : 0.99 }}
           type="submit"
           disabled={loginLoading}
-          className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loginLoading

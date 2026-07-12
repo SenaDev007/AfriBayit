@@ -163,14 +163,14 @@ export default function VRTourPlayer({
 
         {/* VR badge overlay */}
         {hasVR && (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white" style={{ background: 'rgba(0, 48, 135, 0.8)' }}>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: 'rgba(0, 48, 135, 0.8)' }}>
             <Box className="w-3.5 h-3.5" />
             Visite VR disponible
           </div>
         )}
 
         {/* Rotation indicator */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-white" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
           <RotateCw className={`w-3.5 h-3.5 ${isDragging ? 'animate-spin' : ''}`} />
           Glissez pour pivoter · 360°
         </div>
@@ -184,7 +184,7 @@ export default function VRTourPlayer({
                 setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                 setRotation(0);
               }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
             >
               ‹
             </button>
@@ -194,7 +194,7 @@ export default function VRTourPlayer({
                 setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                 setRotation(0);
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
             >
               ›
             </button>
@@ -220,7 +220,7 @@ export default function VRTourPlayer({
 
         {/* Info overlay */}
         <div className="absolute top-3 right-3 group">
-          <div className="p-2 rounded-full bg-black/50 text-white cursor-help">
+          <div className="p-2 rounded-lg bg-black/50 text-white cursor-help">
             <Info className="w-4 h-4" />
           </div>
           <div className="absolute top-full right-0 mt-2 p-3 rounded-xl bg-black/80 text-white text-xs w-64 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">

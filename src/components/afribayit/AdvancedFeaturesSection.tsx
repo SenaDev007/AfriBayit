@@ -150,7 +150,7 @@ export default function AdvancedFeaturesSection({
                   setShowFinancingModal(true);
                 }
               }}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === tab.key
                   ? 'text-white'
                   : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
@@ -184,7 +184,7 @@ export default function AdvancedFeaturesSection({
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: easeOut }}
             >
-              <div className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg">
+              <div className="rounded-xl overflow-hidden border border-gray-200 shadow-lg">
                 <PropertyMap
                   properties={mappableProperties}
                   onPropertyClick={onSelectProperty}
@@ -206,11 +206,11 @@ export default function AdvancedFeaturesSection({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: easeOut }}
-              className="rounded-3xl border border-gray-200 bg-gray-50/50 p-8"
+              className="rounded-xl border border-gray-200 bg-gray-50/50 p-8"
             >
               {compareIds.length < 2 ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `${NAVY}10` }}>
+                  <div className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ background: `${NAVY}10` }}>
                     <GitCompare className="w-8 h-8" style={{ color: NAVY }} />
                   </div>
                   <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
@@ -251,7 +251,7 @@ export default function AdvancedFeaturesSection({
                       />
                       <button
                         onClick={() => toggleCompare(p.id)}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
+                        className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/50 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -273,10 +273,10 @@ export default function AdvancedFeaturesSection({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: easeOut }}
-              className="rounded-3xl border border-gray-200 bg-gray-50/50 p-8"
+              className="rounded-xl border border-gray-200 bg-gray-50/50 p-8"
             >
               <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `${GOLD}15` }}>
+                <div className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ background: `${GOLD}15` }}>
                   <Calculator className="w-8 h-8" style={{ color: GOLD }} />
                 </div>
                 <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
@@ -323,7 +323,7 @@ export default function AdvancedFeaturesSection({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 40 }}
               transition={{ duration: 0.3, ease: easeOut }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden"
+              className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b">
@@ -332,7 +332,7 @@ export default function AdvancedFeaturesSection({
                 </h2>
                 <button
                   onClick={() => setShowFinancingModal(false)}
-                  className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
                 >
                   <X className="w-5 h-5 text-gray-500" />
                 </button>

@@ -77,7 +77,7 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head />
       <body
-        className={`${cormorant.variable} ${inter.variable} ${spaceGrotesk.variable} font-body antialiased bg-background text-foreground`}
+        className={`${inter.variable} ${cormorant.variable} ${spaceGrotesk.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

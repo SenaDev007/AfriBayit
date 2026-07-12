@@ -63,7 +63,7 @@ export default function CourseDetailDialog({
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl my-8 mx-4"
+        className="bg-white rounded-xl w-full max-w-3xl shadow-2xl my-8 mx-4"
         onClick={e => e.stopPropagation()}
       >
         {isLoading ? (
@@ -86,7 +86,7 @@ export default function CourseDetailDialog({
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors z-10"
+                className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors z-10"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -147,7 +147,7 @@ export default function CourseDetailDialog({
                 <div className="space-y-5">
                   {/* Description */}
                   <div>
-                    <h3 className="font-semibold text-sm text-[#2C2E2F] mb-2">Description</h3>
+                    <h3 className="font-semibold text-sm text-[#0a2a5e] mb-2">Description</h3>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {courseData.description || 'Découvrez cette formation complète conçue pour les professionnels de l\'immobilier en Afrique de l\'Ouest. Apprenez les fondamentaux, maîtrisez les aspects juridiques et développez vos compétences pratiques.'}
                     </p>
@@ -155,7 +155,7 @@ export default function CourseDetailDialog({
 
                   {/* Instructor */}
                   <div className="bg-gray-50 rounded-2xl p-4">
-                    <h3 className="font-semibold text-sm text-[#2C2E2F] mb-3">Instructeur</h3>
+                    <h3 className="font-semibold text-sm text-[#0a2a5e] mb-3">Instructeur</h3>
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full overflow-hidden relative shrink-0">
                         <ImageWithFallback
@@ -179,7 +179,7 @@ export default function CourseDetailDialog({
 
                   {/* What you'll learn */}
                   <div>
-                    <h3 className="font-semibold text-sm text-[#2C2E2F] mb-3">Ce que vous allez apprendre</h3>
+                    <h3 className="font-semibold text-sm text-[#0a2a5e] mb-3">Ce que vous allez apprendre</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {whatYouWillLearn.map((item, i) => (
                         <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
@@ -229,7 +229,7 @@ export default function CourseDetailDialog({
                             <span className="w-3 text-gray-500">{star}</span>
                             <Star className="w-3 h-3 text-[#D4AF37]" fill="#D4AF37" />
                             <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#D4AF37] rounded-full" style={{ width: `${pct}%` }} />
+                              <div className="h-full bg-[#D4AF37] rounded-lg" style={{ width: `${pct}%` }} />
                             </div>
                             <span className="w-8 text-gray-400">{pct}%</span>
                           </div>
@@ -242,11 +242,11 @@ export default function CourseDetailDialog({
                   {((courseData as any)?.reviews || []).map((review: any) => (
                     <div key={review.id || review._id} className="p-4 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-[#003366]/10 flex items-center justify-center text-xs font-bold text-[#003366]">
+                        <div className="w-8 h-8 rounded-lg bg-[#003366]/10 flex items-center justify-center text-xs font-bold text-[#003366]">
                           {(review.reviewer?.name || review.user || 'U').charAt(0)}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-[#2C2E2F]">{review.reviewer?.name || review.user}</p>
+                          <p className="text-sm font-medium text-[#0a2a5e]">{review.reviewer?.name || review.user}</p>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map(s => (
                               <Star key={s} className="w-3 h-3" fill={s <= (review.rating || 0) ? '#FFCC00' : '#e5e7eb'} />
@@ -277,7 +277,7 @@ export default function CourseDetailDialog({
               <button
                 onClick={() => onEnroll(courseId)}
                 disabled={enrollingCourseId === courseId && isEnrolling}
-                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center gap-2"
+                className="px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center gap-2"
               >
                 {enrollingCourseId === courseId && isEnrolling ? (
                   <>
@@ -305,7 +305,7 @@ function CurriculumRow({ index, title, type, duration }: { index: number; title:
         <span className="text-xs font-bold text-[#003087]">{index + 1}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#2C2E2F]">{title}</p>
+        <p className="text-sm font-medium text-[#0a2a5e]">{title}</p>
         <div className="flex items-center gap-2 text-[10px] text-gray-400">
           {type === 'video' && <Play className="w-3 h-3" />}
           {type === 'text' && <FileText className="w-3 h-3" />}

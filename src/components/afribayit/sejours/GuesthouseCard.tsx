@@ -50,7 +50,7 @@ export default function GuesthouseCard({ guesthouse, index }: { guesthouse: Gues
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.5) }}
     >
       <Link href={`/sejours/${guesthouse.id}`}>
-        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
+        <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-xl card-shadow border-0">
           {/* Image */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[#00A651]/10 to-[#009CDE]/10 overflow-hidden">
             {guesthouse.image ? (
@@ -76,14 +76,14 @@ export default function GuesthouseCard({ guesthouse, index }: { guesthouse: Gues
               </div>
             )}
             {/* Nombre de chambres */}
-            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-semibold text-[#2C2E2F] flex items-center gap-1">
+            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-[10px] font-semibold text-[#0a2a5e] flex items-center gap-1">
               <BedDouble className="w-3 h-3" />
               {guesthouse.roomCount} chambre{guesthouse.roomCount > 1 ? 's' : ''}
             </div>
           </div>
 
           <CardContent className="p-4">
-            <h3 className="font-semibold text-[#2C2E2F] mb-1 group-hover:text-[#00A651] transition-colors text-sm truncate">
+            <h3 className="font-semibold text-[#0a2a5e] mb-1 group-hover:text-[#00A651] transition-colors text-sm truncate">
               {guesthouse.name}
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">

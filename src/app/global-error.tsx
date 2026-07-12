@@ -21,7 +21,7 @@ export default function GlobalError({
       <body>
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-10 h-10 text-red-400" />
             </div>
 
@@ -35,7 +35,7 @@ export default function GlobalError({
 
             <button
               onClick={() => reset()}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Rafra&icirc;chir

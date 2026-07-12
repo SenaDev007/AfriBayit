@@ -25,7 +25,7 @@ export default function PreferencesPanel(props: PreferencesPanelProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: easeOut }}
       >
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-1">Canaux de notification</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-1">Canaux de notification</h3>
         <p className="text-xs text-gray-500 mb-5">
           Choisissez comment vous souhaitez recevoir les alertes pour chaque categorie.
         </p>
@@ -55,7 +55,7 @@ export default function PreferencesPanel(props: PreferencesPanelProps) {
                 <div className="flex items-center gap-2">
                   <cat.icon className="w-4 h-4 text-[#003087]" />
                   <div>
-                    <p className="text-xs font-semibold text-[#2C2E2F]">{cat.label}</p>
+                    <p className="text-xs font-semibold text-[#0a2a5e]">{cat.label}</p>
                     <p className="text-[9px] text-gray-400 hidden sm:block">{cat.desc}</p>
                   </div>
                 </div>

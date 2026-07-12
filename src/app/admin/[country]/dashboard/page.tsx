@@ -120,7 +120,7 @@ function StatCard({
       </div>
       <div className="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
         <div
-          className={cn('h-full rounded-full bg-gradient-to-r', colorMap[color])}
+          className={cn('h-full rounded-lg bg-gradient-to-r', colorMap[color])}
           style={{ width: '65%' }}
         />
       </div>
@@ -170,7 +170,7 @@ function ActivityItem({
 }) {
   return (
     <div className="flex items-start gap-3 py-3">
-      <div className={cn('w-8 h-8 rounded-full flex items-center justify-center shrink-0', iconColor)}>
+      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', iconColor)}>
         <Icon className="w-4 h-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -202,7 +202,7 @@ export default function CountryDashboard() {
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-24 mb-3" />
               <div className="h-8 bg-gray-200 rounded w-20 mb-2" />
-              <div className="h-2 bg-gray-100 rounded-full" />
+              <div className="h-2 bg-gray-100 rounded-lg" />
             </div>
           ))}
         </div>
@@ -237,7 +237,7 @@ export default function CountryDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             En ligne
           </span>
@@ -450,7 +450,7 @@ export default function CountryDashboard() {
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#003087] rounded-full transition-all duration-500"
+                      className="h-full bg-[#003087] rounded-lg transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -494,7 +494,7 @@ export default function CountryDashboard() {
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className={cn('h-full rounded-full transition-all duration-500', statusColors[status] || 'bg-gray-400')}
+                      className={cn('h-full rounded-lg transition-all duration-500', statusColors[status] || 'bg-gray-400')}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

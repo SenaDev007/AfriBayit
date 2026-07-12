@@ -236,13 +236,13 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
             aria-modal="true"
             aria-labelledby="rebecca-chat-title"
             aria-label="Chat Rebecca IA"
-            className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-[420px] h-[560px] sm:h-[640px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200"
+            className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-[420px] h-[560px] sm:h-[640px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col border border-gray-200"
             style={{ maxHeight: 'calc(100vh - 120px)' }}
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-[#003087] to-[#002266] p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg">
                   <span className="text-white text-sm font-bold">R</span>
                 </div>
                 <div>
@@ -262,7 +262,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowQuickActions(!showQuickActions)}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   aria-label="Actions rapides"
                   title="Actions rapides"
                 >
@@ -270,7 +270,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </button>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors" aria-label="Fermer le chat">
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer le chat">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -315,7 +315,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                     {/* Bot avatar for left-aligned messages */}
                     {msg.sender === 'bot' && (
                       <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
                           <span className="text-white text-[8px] font-bold">R</span>
                         </div>
                         <span className="text-[10px] text-gray-400">Rebecca · {formatTime(msg.timestamp)}</span>
@@ -393,7 +393,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
                         <span className="text-white text-[8px] font-bold">R</span>
                       </div>
                       <span className="text-[10px] text-gray-400">Rebecca analyse...</span>
@@ -428,7 +428,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
             <div className="p-3 border-t shrink-0 bg-white">
               <div className="flex items-center gap-2">
                 <button
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                   aria-label="Joindre un document"
                   title="Analyser un document"
                 >
@@ -448,7 +448,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   className="flex-1 text-sm outline-none bg-transparent disabled:opacity-50 placeholder:text-gray-400"
                 />
                 <button
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
                   aria-label="Commande vocale"
                   title="Recherche vocale"
                   onClick={() => {
@@ -482,7 +482,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   whileTap={{ scale: 0.9 }}
                   onClick={() => { if (input.trim() && !isSending) sendMessage(input.trim()); }}
                   disabled={isSending || !input.trim()}
-                  className="w-10 h-10 bg-[#003087] rounded-full flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-10 h-10 bg-[#003087] rounded-lg flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Envoyer le message"
                 >
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

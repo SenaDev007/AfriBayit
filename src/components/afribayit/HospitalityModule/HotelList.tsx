@@ -199,11 +199,11 @@ export default function HotelList(props: HotelListProps) {
 
       {/* Active Filter Badges & Country */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
           <Globe className="w-3 h-3" /> {COUNTRY_NAMES[selectedCountry] || selectedCountry}
         </span>
         {searchCity && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#009CDE]/10 text-[#009CDE] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#009CDE]/10 text-[#009CDE] text-xs font-semibold">
             <MapPin className="w-3 h-3" /> {searchCity}
             <button
               onClick={() => {
@@ -217,28 +217,28 @@ export default function HotelList(props: HotelListProps) {
           </span>
         )}
         {filterStars > 0 && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-xs font-semibold">
             <Star className="w-3 h-3 fill-[#D4AF37]" /> {filterStars} étoile{filterStars > 1 ? 's' : ''}
             <button
               onClick={() => {
                 setFilterStars(0);
                 setPage(1);
               }}
-              className="ml-0.5 hover:text-[#2C2E2F]"
+              className="ml-0.5 hover:text-[#0a2a5e]"
             >
               <X className="w-3 h-3" />
             </button>
           </span>
         )}
         {filterAvailable && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#00A651]/10 text-[#00A651] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#00A651]/10 text-[#00A651] text-xs font-semibold">
             <CheckCircle className="w-3 h-3" /> Disponible
             <button
               onClick={() => {
                 setFilterAvailable(false);
                 setPage(1);
               }}
-              className="ml-0.5 hover:text-[#2C2E2F]"
+              className="ml-0.5 hover:text-[#0a2a5e]"
             >
               <X className="w-3 h-3" />
             </button>
@@ -263,16 +263,16 @@ export default function HotelList(props: HotelListProps) {
       {/* Error State */}
       {isError && (
         <div className="text-center py-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-red-50 mb-4">
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Impossible de charger les hôtels</h3>
+          <h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">Impossible de charger les hôtels</h3>
           <p className="text-sm text-gray-500">
             {errorMessage || 'Une erreur est survenue. Veuillez réessayer.'}
           </p>
           <button
             onClick={onResetFilters}
-            className="mt-4 px-5 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+            className="mt-4 px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
           >
             Réessayer
           </button>
@@ -282,10 +282,10 @@ export default function HotelList(props: HotelListProps) {
       {/* Empty State */}
       {!isLoading && !isError && hotels.length === 0 && (
         <div className="text-center py-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#D4AF37]/10 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-[#D4AF37]/10 mb-4">
             <Building2 className="w-8 h-8 text-[#D4AF37]" />
           </div>
-          <h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">
+          <h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">
             {hasActiveFilters ? 'Aucun hôtel ne correspond à vos critères' : 'Aucun hôtel disponible dans ce pays'}
           </h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
@@ -296,7 +296,7 @@ export default function HotelList(props: HotelListProps) {
           {hasActiveFilters && (
             <button
               onClick={onResetFilters}
-              className="px-5 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+              className="px-5 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
             >
               Réinitialiser les filtres
             </button>

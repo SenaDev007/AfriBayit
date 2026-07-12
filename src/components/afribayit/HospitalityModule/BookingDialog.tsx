@@ -60,12 +60,12 @@ export default function BookingDialog(props: BookingDialogProps) {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-xl font-bold text-[#2C2E2F]">Réserver</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
+          <h3 className="font-display text-xl font-bold text-[#0a2a5e]">Réserver</h3>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
@@ -73,7 +73,7 @@ export default function BookingDialog(props: BookingDialogProps) {
         {/* Hotel Name */}
         {detail && (
           <div className="mb-4 p-3 bg-gray-50 rounded-xl">
-            <p className="text-sm font-semibold text-[#2C2E2F]">{detail.name}</p>
+            <p className="text-sm font-semibold text-[#0a2a5e]">{detail.name}</p>
             <p className="text-xs text-gray-500">
               {detail.city}, {detail.country}
             </p>
@@ -170,14 +170,14 @@ export default function BookingDialog(props: BookingDialogProps) {
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Annuler
             </button>
             <button
               onClick={onSubmit}
               disabled={isPending || !bookingForm.checkIn || !bookingForm.checkOut}
-              className="flex-1 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold disabled:opacity-50 disabled:cursor-wait hover:bg-[#b8961f] transition-colors"
+              className="flex-1 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-wait hover:bg-[#b8961f] transition-colors"
             >
               {isPending ? 'Réservation...' : 'Confirmer'}
             </button>

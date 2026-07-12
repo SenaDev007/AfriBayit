@@ -27,7 +27,7 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
       {/* Country + City Filter */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className="text-xs text-gray-500 font-medium">Pays:</span>
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
           {COUNTRY_NAMES[selectedCountry] || selectedCountry}
         </span>
         <span className="text-xs text-gray-400 mx-1">|</span>
@@ -35,7 +35,7 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
         <select
           value={forumCity}
           onChange={e => setForumCity(e.target.value)}
-          className="text-xs border rounded-full px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#003087]"
+          className="text-xs border rounded-lg px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#003087]"
         >
           <option value="">Toutes les villes</option>
           <option value="Cotonou">Cotonou</option>
@@ -50,7 +50,7 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-3xl p-5 shadow-sm border mb-6"
+        className="bg-white rounded-xl p-5 shadow-sm border mb-6"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -58,14 +58,14 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
               <div className="flex items-center gap-2">
                 <span className="text-lg">{userRepLevel.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{userRepLevel.name}</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{userRepLevel.name}</p>
                   <p className="text-xs text-gray-500">Score AfriBayit : {currentUserScore}/1000</p>
                 </div>
               </div>
-              <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>{userRepLevel.name}</span>
+              <span className="text-xs font-medium px-2.5 py-1 rounded-lg" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>{userRepLevel.name}</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min((currentUserScore / 1000) * 100, 100)}%`, backgroundColor: userRepLevel.color }} />
+              <div className="h-full rounded-lg transition-all" style={{ width: `${Math.min((currentUserScore / 1000) * 100, 100)}%`, backgroundColor: userRepLevel.color }} />
             </div>
             <div className="flex justify-between mt-1 text-[9px] text-gray-400">
               {reputationLevels.map(level => <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>)}
@@ -75,22 +75,22 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">{afriLevel.icon}</span>
-                <div><p className="text-sm font-semibold text-[#2C2E2F]">AfriPoints</p><p className="text-xs text-gray-500">{userAfriPoints} points</p></div>
+                <div><p className="text-sm font-semibold text-[#0a2a5e]">AfriPoints</p><p className="text-xs text-gray-500">{userAfriPoints} points</p></div>
               </div>
-              <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>{afriLevel.name}</span>
+              <span className="text-xs font-medium px-2.5 py-1 rounded-lg" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>{afriLevel.name}</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-full transition-all bg-gradient-to-r from-[#D4AF37] to-[#003087]" style={{ width: nextLevel ? `${Math.min((userAfriPoints / nextLevel.min) * 100, 100)}%` : '100%' }} />
+              <div className="h-full rounded-lg transition-all bg-gradient-to-r from-[#D4AF37] to-[#003087]" style={{ width: nextLevel ? `${Math.min((userAfriPoints / nextLevel.min) * 100, 100)}%` : '100%' }} />
             </div>
             <div className="flex justify-between mt-1 text-[9px] text-gray-400">{afriPointLevels.slice(0, 4).map(level => <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>)}</div>
           </div>
         </div>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {badges.filter(b => b.earned).map(badge => (
-            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]" title={badge.description}>{badge.icon} {badge.name}</span>
+            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]" title={badge.description}>{badge.icon} {badge.name}</span>
           ))}
           {badges.filter(b => !b.earned).map(badge => (
-            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300" title={badge.description}><Lock className="w-3 h-3" /> {badge.name}</span>
+            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300" title={badge.description}><Lock className="w-3 h-3" /> {badge.name}</span>
           ))}
         </div>
         {/* NLP moderation + Signalement + Rebecca AI */}

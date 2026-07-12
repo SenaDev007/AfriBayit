@@ -67,7 +67,7 @@ export const LEARNING_PATHS = [
 
 export function CourseSkeleton() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-sm border animate-pulse">
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm border animate-pulse">
       <div className="aspect-[16/9] bg-gray-200" />
       <div className="p-5">
         <div className="h-3 bg-gray-100 rounded w-16 mb-2" />
@@ -79,7 +79,7 @@ export function CourseSkeleton() {
         </div>
         <div className="flex justify-between items-center pt-3 border-t">
           <div className="h-5 bg-gray-200 rounded w-20" />
-          <div className="h-8 w-20 bg-gray-200 rounded-full" />
+          <div className="h-8 w-20 bg-gray-200 rounded-lg" />
         </div>
       </div>
     </div>
@@ -93,7 +93,7 @@ export function LearningPaths() {
       animate={{ opacity: 1, y: 0 }}
       className="mb-10"
     >
-      <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+      <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
         <Zap className="w-5 h-5 text-[#D4AF37]" /> Parcours recommandés
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -103,7 +103,7 @@ export function LearningPaths() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-white rounded-3xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer group"
+            className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
@@ -111,14 +111,14 @@ export function LearningPaths() {
             >
               {path.icon}
             </div>
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors">
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors">
               {path.title}
             </h3>
             <p className="text-xs text-gray-500 mb-3">{path.description}</p>
             <div className="space-y-1.5">
               {path.courses.map((course, ci) => (
                 <div key={ci} className="flex items-center gap-2 text-xs text-gray-600">
-                  <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0" style={{ borderColor: path.color }}>
+                  <div className="w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0" style={{ borderColor: path.color }}>
                     <span className="text-[9px] font-bold" style={{ color: path.color }}>{ci + 1}</span>
                   </div>
                   {course}

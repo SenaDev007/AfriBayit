@@ -126,8 +126,8 @@ export default function OurWorkPage() {
       {/* Hero Section */}
       <section className="pt-28 pb-20 bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37] rounded-lg blur-3xl" />
+          <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-lg blur-3xl" />
         </div>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
@@ -136,7 +136,7 @@ export default function OurWorkPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center max-w-3xl mx-auto"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full text-sm text-white/80 mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-lg text-sm text-white/80 mb-6">
               <MapPin className="w-4 h-4" />
               5 pays en Afrique de l&apos;Ouest
             </span>
@@ -181,7 +181,7 @@ export default function OurWorkPage() {
             transition={{ duration: 0.5, ease: easeOut }}
             className="text-center mb-12"
           >
-            <h2 className="font-display text-3xl font-bold text-[#2C2E2F] mb-4">
+            <h2 className="font-display text-3xl font-bold text-[#0a2a5e] mb-4">
               Projets Phares
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
@@ -198,7 +198,7 @@ export default function OurWorkPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl shadow-sm border overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border overflow-hidden"
               >
                 <div className="flex flex-col lg:flex-row">
                   {/* Image */}
@@ -209,7 +209,7 @@ export default function OurWorkPage() {
                       className="w-full h-64 lg:h-full object-cover"
                     />
                     <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-sm font-semibold text-[#003087]">
+                      <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg text-sm font-semibold text-[#003087]">
                         {project.flag} {project.country}
                       </span>
                     </div>
@@ -222,7 +222,7 @@ export default function OurWorkPage() {
                         <span className="text-xs font-medium text-[#D4AF37] uppercase tracking-wider">
                           {project.type}
                         </span>
-                        <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mt-1">
+                        <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mt-1">
                           {project.title}
                         </h3>
                         <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
@@ -269,7 +269,7 @@ export default function OurWorkPage() {
                       {project.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-[#00A651]/5 text-[#00A651] text-xs font-medium rounded-full"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-[#00A651]/5 text-[#00A651] text-xs font-medium rounded-lg"
                         >
                           <CheckCircle className="w-3 h-3" />
                           {tag}
@@ -294,7 +294,7 @@ export default function OurWorkPage() {
             transition={{ duration: 0.5, ease: easeOut }}
             className="text-center mb-12"
           >
-            <h2 className="font-display text-3xl font-bold text-[#2C2E2F] mb-4">
+            <h2 className="font-display text-3xl font-bold text-[#0a2a5e] mb-4">
               Notre Approche
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
@@ -312,12 +312,12 @@ export default function OurWorkPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl p-6 shadow-sm border hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow"
               >
                 <div className="w-12 h-12 rounded-2xl bg-[#003087]/10 flex items-center justify-center mb-4">
                   <service.icon className="w-6 h-6 text-[#003087]" />
                 </div>
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">
                   {service.title}
                 </h3>
                 <p className="text-sm text-gray-500 leading-relaxed">
@@ -332,7 +332,7 @@ export default function OurWorkPage() {
       {/* CTA Section */}
       <section className="py-16 sm:py-24 bg-gradient-to-r from-[#003087] to-[#001f5c] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4AF37] rounded-lg blur-3xl" />
         </div>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
@@ -353,13 +353,13 @@ export default function OurWorkPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 onClick={() => router.push('/search')}
-                className="px-8 py-3.5 bg-white text-[#003087] rounded-full font-semibold text-sm hover:bg-white/90 transition-colors flex items-center gap-2"
+                className="px-8 py-3.5 bg-white text-[#003087] rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors flex items-center gap-2"
               >
                 Explorer les biens <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => router.push('/publish')}
-                className="px-8 py-3.5 bg-[#D4AF37] text-white rounded-full font-semibold text-sm hover:bg-[#b8961f] transition-colors flex items-center gap-2"
+                className="px-8 py-3.5 bg-[#D4AF37] text-white rounded-lg font-semibold text-sm hover:bg-[#b8961f] transition-colors flex items-center gap-2"
               >
                 Publier une annonce <ArrowRight className="w-4 h-4" />
               </button>

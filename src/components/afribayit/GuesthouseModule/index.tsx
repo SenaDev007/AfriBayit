@@ -232,10 +232,10 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
             <Home className="w-4 h-4" /> PMS Hôtelier
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Maisons <span className="text-[#00A651]">d&apos;Hôtes</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -246,7 +246,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -261,7 +261,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           <div className="flex items-center gap-3">
             <Coins className="w-5 h-5 text-[#D4AF37]" />
             <div>
-              <p className="text-sm font-semibold text-[#2C2E2F]">Modèle de revenus</p>
+              <p className="text-sm font-semibold text-[#0a2a5e]">Modèle de revenus</p>
               <p className="text-xs text-gray-500">Commission voyageur : 10-13% · Commission propriétaire : 3%</p>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >

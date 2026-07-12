@@ -245,7 +245,7 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-display text-lg font-bold text-[#2C2E2F]">Notifications</h2>
+                    <h2 className="font-display text-lg font-bold text-[#0a2a5e]">Notifications</h2>
                     {process.env.NEXT_PUBLIC_PUSHER_KEY && (
                       <span
                         className="flex items-center gap-1"
@@ -280,7 +280,7 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
                   )}
                   <button
                     onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <X className="w-5 h-5 text-gray-400" />
                   </button>

@@ -113,12 +113,12 @@ function AppShellInner({ children }: { children: ReactNode }) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsRebeccaOpen(true)}
-            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-40 w-14 h-14 bg-[#003087] rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-shadow"
+            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-40 w-14 h-14 bg-[#003087] rounded-lg flex items-center justify-center shadow-xl hover:shadow-2xl transition-shadow"
           >
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] rounded-lg flex items-center justify-center">
               <span className="text-[8px] text-white font-bold">IA</span>
             </span>
           </motion.button>

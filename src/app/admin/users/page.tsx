@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
           <div className="p-4 space-y-3">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-10 h-10 rounded-lg" />
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-20" />
@@ -229,7 +229,7 @@ export default function AdminUsersPage() {
           </div>
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-lg font-medium text-gray-900">Aucun utilisateur trouvé</p>
@@ -448,7 +448,7 @@ function UserRow({ user }: { user: AdminUser }) {
           <div className="flex items-center gap-1.5">
             <div className="w-8 h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#003087] rounded-full"
+                className="h-full bg-[#003087] rounded-lg"
                 style={{ width: `${Math.min((user.score / 1000) * 100, 100)}%` }}
               />
             </div>

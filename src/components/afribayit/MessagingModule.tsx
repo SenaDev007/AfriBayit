@@ -197,7 +197,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
       case 'system':
         return (
           <div className="text-center">
-            <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+            <span className="text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-lg">
               {msg.content}
             </span>
           </div>
@@ -230,8 +230,8 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
             {/* Header */}
             <div className="p-4 border-b bg-white">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-bold text-[#2C2E2F] font-display">Messages</h2>
-                <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full">
+                <h2 className="font-bold text-[#0a2a5e] font-display">Messages</h2>
+                <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
                   <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -266,14 +266,14 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                     >
                       <div className="relative">
                         {conv.type === 'rebecca' ? (
-                          <div className="w-10 h-10 rounded-full bg-[#9333ea]/10 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-lg bg-[#9333ea]/10 flex items-center justify-center">
                             <span className="text-lg"><Bot className="w-4 h-4" /></span>
                           </div>
                         ) : (
                           <ImageWithFallback
                             src={other?.avatar || ''}
                             alt={other?.name || 'Avatar'}
-                            className="w-10 h-10 rounded-full object-cover"
+                            className="w-10 h-10 rounded-lg object-cover"
                             fallbackType="avatar"
                           />
                         )}
@@ -283,7 +283,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-semibold text-[#2C2E2F] truncate">
+                          <p className="text-sm font-semibold text-[#0a2a5e] truncate">
                             {getRecipientName(conv)}
                           </p>
                           <span className="text-[10px] text-gray-400 shrink-0 ml-1">
@@ -317,19 +317,19 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                     return (
                       <>
                         {selectedConversation.type === 'rebecca' ? (
-                          <div className="w-8 h-8 rounded-full bg-[#9333ea]/10 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-[#9333ea]/10 flex items-center justify-center">
                             <span className="text-sm"><Bot className="w-4 h-4" /></span>
                           </div>
                         ) : (
                           <ImageWithFallback
                             src={other?.avatar || ''}
                             alt={other?.name || 'Avatar'}
-                            className="w-8 h-8 rounded-full object-cover"
+                            className="w-8 h-8 rounded-lg object-cover"
                             fallbackType="avatar"
                           />
                         )}
                         <div>
-                          <p className="text-sm font-semibold text-[#2C2E2F]">
+                          <p className="text-sm font-semibold text-[#0a2a5e]">
                             {getRecipientName(selectedConversation)}
                           </p>
                           <p className="text-[10px] text-gray-400">
@@ -358,7 +358,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                               className={`max-w-[70%] ${
                                 isOwn
                                   ? 'bg-[#003087] text-white rounded-2xl rounded-br-sm'
-                                  : 'bg-gray-100 text-[#2C2E2F] rounded-2xl rounded-bl-sm'
+                                  : 'bg-gray-100 text-[#0a2a5e] rounded-2xl rounded-bl-sm'
                               } px-4 py-2.5`}
                             >
                               {renderMessageContent(msg)}
@@ -407,7 +407,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <span className="text-5xl block mb-4"><MessageCircle className="w-4 h-4" /></span>
-                  <h3 className="text-lg font-semibold text-[#2C2E2F]">Vos messages</h3>
+                  <h3 className="text-lg font-semibold text-[#0a2a5e]">Vos messages</h3>
                   <p className="text-sm text-gray-500 mt-1 max-w-xs">
                     Sélectionnez une conversation ou contactez un agent immobilier pour commencer.
                   </p>

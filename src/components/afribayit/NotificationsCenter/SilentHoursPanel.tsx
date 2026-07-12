@@ -42,7 +42,7 @@ export default function SilentHoursPanel(props: SilentHoursPanelProps) {
       >
         <div className="flex items-center gap-2 mb-1">
           <Moon className="w-5 h-5 text-[#003087]" />
-          <h3 className="font-display text-base font-bold text-[#2C2E2F]">Heures silencieuses</h3>
+          <h3 className="font-display text-base font-bold text-[#0a2a5e]">Heures silencieuses</h3>
         </div>
         <p className="text-xs text-gray-500 mb-5">
           Configurez une plage horaire pendant laquelle vous ne recevez pas de notifications.
@@ -52,7 +52,7 @@ export default function SilentHoursPanel(props: SilentHoursPanelProps) {
         <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 mb-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-[#2C2E2F]">Ne pas deranger</p>
+              <p className="text-sm font-semibold text-[#0a2a5e]">Ne pas deranger</p>
               <p className="text-[10px] text-gray-500">
                 Desactive les notifications pendant vos heures de repos
               </p>
@@ -83,7 +83,7 @@ export default function SilentHoursPanel(props: SilentHoursPanelProps) {
             {/* Start hour slider */}
             <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-[#2C2E2F]">Debut</p>
+                <p className="text-sm font-medium text-[#0a2a5e]">Debut</p>
                 <p className="text-sm font-bold text-[#003087]">{String(start).padStart(2, '0')}h</p>
               </div>
               <Slider
@@ -103,7 +103,7 @@ export default function SilentHoursPanel(props: SilentHoursPanelProps) {
             {/* End hour slider */}
             <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-[#2C2E2F]">Fin</p>
+                <p className="text-sm font-medium text-[#0a2a5e]">Fin</p>
                 <p className="text-sm font-bold text-[#003087]">{String(end).padStart(2, '0')}h</p>
               </div>
               <Slider
@@ -122,7 +122,7 @@ export default function SilentHoursPanel(props: SilentHoursPanelProps) {
 
             {/* Quick presets */}
             <div>
-              <p className="text-xs font-medium text-[#2C2E2F] mb-2">Presets rapides</p>
+              <p className="text-xs font-medium text-[#0a2a5e] mb-2">Presets rapides</p>
               <div className="grid grid-cols-2 gap-2">
                 {PRESETS.map((preset) => (
                   <motion.button

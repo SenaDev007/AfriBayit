@@ -47,7 +47,7 @@ export default function AboutPage() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg mb-6" style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.4)' }}>
               <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
               <span className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: GOLD }}>À propos d'AfriBayit</span>
             </span>
@@ -72,7 +72,7 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-                className="p-8 rounded-3xl bg-gray-50/50 border border-gray-100"
+                className="p-8 rounded-xl bg-gray-50/50 border border-gray-100"
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${NAVY}10` }}>
                   <item.icon className="w-6 h-6" style={{ color: NAVY }} />

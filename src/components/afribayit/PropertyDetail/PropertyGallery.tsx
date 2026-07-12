@@ -40,7 +40,7 @@ export default function PropertyGallery({
         transition={{ duration: 0.5, ease: easeOut }}
         className="mb-6"
       >
-        <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-gray-100">
+        <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-gray-100">
           <ImageWithFallback
             src={images[activeImage]}
             alt={title}
@@ -51,13 +51,13 @@ export default function PropertyGallery({
           {/* Badges */}
           <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
             {verified && (
-              <span className="px-3 py-1.5 bg-[#00A651] text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+              <span className="px-3 py-1.5 bg-[#00A651] text-white text-xs font-bold rounded-lg flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5" />
                 Documents vérifiés
               </span>
             )}
             {geoTrust && (
-              <span className="px-3 py-1.5 bg-[#009CDE] text-white text-xs font-bold rounded-full flex items-center gap-1.5">
+              <span className="px-3 py-1.5 bg-[#009CDE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5">
                 <Map className="w-3.5 h-3.5" />
                 GeoTrust
               </span>
@@ -68,14 +68,14 @@ export default function PropertyGallery({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onOpenVRTour}
-                className="px-3 py-1.5 bg-[#003087] text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg hover:bg-[#0047b3] transition-colors cursor-pointer"
+                className="px-3 py-1.5 bg-[#003087] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-lg hover:bg-[#0047b3] transition-colors cursor-pointer"
                 aria-label="Ouvrir la visite virtuelle 360°"
               >
                 <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
                 Visite VR disponible
               </motion.button>
             ) : (
-              <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-gray-700 flex items-center gap-1.5">
+              <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-lg text-gray-700 flex items-center gap-1.5">
                 <Eye className="w-4 h-4" /> VR 360°
               </span>
             )}
@@ -86,7 +86,7 @@ export default function PropertyGallery({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={isAuthenticated ? onToggleFavorite : undefined}
-            className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+            className={`absolute top-4 right-4 w-10 h-10 rounded-lg flex items-center justify-center shadow-lg transition-colors ${
               isFavorite
                 ? 'bg-red-500 text-white'
                 : 'bg-white/90 backdrop-blur text-gray-400 hover:text-red-400'
@@ -102,7 +102,7 @@ export default function PropertyGallery({
             <>
               <button
                 onClick={() => setActiveImage((activeImage - 1 + images.length) % images.length)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg hover:bg-white"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center shadow-lg hover:bg-white"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -110,7 +110,7 @@ export default function PropertyGallery({
               </button>
               <button
                 onClick={() => setActiveImage((activeImage + 1) % images.length)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-lg hover:bg-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center shadow-lg hover:bg-white"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -119,7 +119,7 @@ export default function PropertyGallery({
             </>
           )}
           {/* Image counter */}
-          <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/60 text-white text-xs font-medium rounded-full backdrop-blur">
+          <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/60 text-white text-xs font-medium rounded-lg backdrop-blur">
             {activeImage + 1} / {images.length}
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function PropertyGallery({
               </div>
               <p className="text-white/70 text-xs sm:text-sm">Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce</p>
             </div>
-            <div className="shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            <div className="shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
               </svg>

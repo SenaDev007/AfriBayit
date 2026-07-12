@@ -119,13 +119,13 @@ function getPropertyTypeIcon(type: string) {
 
 function RentalCardSkeleton() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm border">
       <Skeleton className="aspect-[16/10] w-full rounded-none" />
       <div className="p-5 space-y-3">
         <Skeleton className="h-5 w-3/4" /><Skeleton className="h-3 w-1/2" />
-        <div className="flex gap-2"><Skeleton className="h-5 w-12 rounded-full" /><Skeleton className="h-5 w-12 rounded-full" /><Skeleton className="h-5 w-12 rounded-full" /></div>
+        <div className="flex gap-2"><Skeleton className="h-5 w-12 rounded-lg" /><Skeleton className="h-5 w-12 rounded-lg" /><Skeleton className="h-5 w-12 rounded-lg" /></div>
         <div className="flex items-center justify-between pt-3 border-t"><Skeleton className="h-6 w-28" /><Skeleton className="h-4 w-12" /></div>
-        <Skeleton className="h-10 w-full rounded-full" />
+        <Skeleton className="h-10 w-full rounded-lg" />
       </div>
     </div>
   );
@@ -188,9 +188,9 @@ function AvailabilityCalendar({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onPrevMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors"><ChevronLeft className="w-5 h-5 text-gray-500" /></button>
-        <h4 className="text-sm font-semibold text-[#2C2E2F]">{firstDay.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h4>
-        <button onClick={onNextMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors"><ChevronRight className="w-5 h-5 text-gray-500" /></button>
+        <button onClick={onPrevMonth} className="p-2 rounded-lg hover:bg-gray-100 transition-colors"><ChevronLeft className="w-5 h-5 text-gray-500" /></button>
+        <h4 className="text-sm font-semibold text-[#0a2a5e]">{firstDay.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h4>
+        <button onClick={onNextMonth} className="p-2 rounded-lg hover:bg-gray-100 transition-colors"><ChevronRight className="w-5 h-5 text-gray-500" /></button>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">{dayLabels.map((d) => <div key={d} className="text-center text-[10px] font-medium text-gray-400 py-1">{d}</div>)}</div>
       <div className="grid grid-cols-7 gap-1">
@@ -264,12 +264,12 @@ function BookingFlowModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Réserver : {rental.title}</h3>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100"><X className="w-5 h-5 text-gray-500" /></button>
+            <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Réserver : {rental.title}</h3>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-gray-500" /></button>
           </div>
 
           {/* Step Indicator */}
@@ -281,7 +281,7 @@ function BookingFlowModal({
               { key: 'confirmation', label: 'Confirmation', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((s, i) => (
               <div key={s.key} className="flex items-center gap-1.5 flex-1">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                   step === s.key ? 'bg-[#003087] text-white' : ['dates', 'details', 'payment', 'confirmation'].indexOf(step) > i ? 'bg-[#00A651] text-white' : 'bg-gray-100 text-gray-400'
                 }`}>{s.icon}</div>
                 <span className="text-[10px] font-medium text-gray-500 hidden sm:block">{s.label}</span>
@@ -299,11 +299,11 @@ function BookingFlowModal({
               <div className="mt-4 p-3 bg-gray-50 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Arrivée</span>
-                  <span className="text-sm font-semibold text-[#2C2E2F]">{bookingForm.checkIn || '—'}</span>
+                  <span className="text-sm font-semibold text-[#0a2a5e]">{bookingForm.checkIn || '—'}</span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm text-gray-500">Départ</span>
-                  <span className="text-sm font-semibold text-[#2C2E2F]">{bookingForm.checkOut || '—'}</span>
+                  <span className="text-sm font-semibold text-[#0a2a5e]">{bookingForm.checkOut || '—'}</span>
                 </div>
                 {nights > 0 && <p className="text-xs text-[#003087] font-semibold mt-2">{nights} nuit{nights > 1 ? 's' : ''}</p>}
               </div>
@@ -321,9 +321,9 @@ function BookingFlowModal({
               <div className="mb-4">
                 <label className="text-xs text-gray-500 mb-1.5 block">Nombre de voyageurs</label>
                 <div className="flex items-center gap-4 px-4 py-3 rounded-2xl border">
-                  <button onClick={() => setBookingForm((f) => ({ ...f, guests: Math.max(1, f.guests - 1) }))} className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-50">-</button>
-                  <span className="font-mono text-lg font-bold text-[#2C2E2F]">{bookingForm.guests}</span>
-                  <button onClick={() => setBookingForm((f) => ({ ...f, guests: Math.min(rental.maxGuests, f.guests + 1) }))} className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-50">+</button>
+                  <button onClick={() => setBookingForm((f) => ({ ...f, guests: Math.max(1, f.guests - 1) }))} className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-50">-</button>
+                  <span className="font-mono text-lg font-bold text-[#0a2a5e]">{bookingForm.guests}</span>
+                  <button onClick={() => setBookingForm((f) => ({ ...f, guests: Math.min(rental.maxGuests, f.guests + 1) }))} className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-50">+</button>
                   <span className="text-xs text-gray-400 ml-2">Max {rental.maxGuests}</span>
                 </div>
               </div>
@@ -335,12 +335,12 @@ function BookingFlowModal({
 
               {/* Pricing Summary */}
               <div className="p-4 bg-gray-50 rounded-2xl mb-4">
-                <h4 className="text-sm font-bold text-[#2C2E2F] mb-3 flex items-center gap-2"><Calculator className="w-4 h-4" /> Récapitulatif</h4>
+                <h4 className="text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Calculator className="w-4 h-4" /> Récapitulatif</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-gray-500">{formatPrice(rental.pricePerNight)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span className="font-mono font-semibold">{formatPrice(subtotal)} FCFA</span></div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de ménage</span><span className="font-mono font-semibold">{formatPrice(cleaningFee)} FCFA</span></div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de service (12%)</span><span className="font-mono font-semibold">{formatPrice(serviceFee)} FCFA</span></div>
-                  <div className="border-t pt-2 flex justify-between"><span className="text-sm font-bold text-[#2C2E2F]">Total</span><span className="font-mono text-lg font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
+                  <div className="border-t pt-2 flex justify-between"><span className="text-sm font-bold text-[#0a2a5e]">Total</span><span className="font-mono text-lg font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
                 </div>
               </div>
 
@@ -357,7 +357,7 @@ function BookingFlowModal({
           {step === 'payment' && (
             <div>
               <div className="p-4 bg-[#003087]/5 rounded-2xl mb-4">
-                <div className="flex items-center justify-between"><span className="text-sm font-bold text-[#2C2E2F]">Total a payer</span><span className="font-mono text-xl font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
+                <div className="flex items-center justify-between"><span className="text-sm font-bold text-[#0a2a5e]">Total a payer</span><span className="font-mono text-xl font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
               </div>
 
               <label className="text-xs text-gray-500 mb-2 block">Mobile Money</label>
@@ -366,7 +366,7 @@ function BookingFlowModal({
                   <button key={p.key} onClick={() => setPaymentMethod(p.key)}
                     className={`p-3 rounded-2xl border-2 text-center transition-all ${paymentMethod === p.key ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'}`}>
                     <Smartphone className="w-5 h-5 mx-auto mb-1" style={{ color: p.color }} />
-                    <p className="text-[10px] font-semibold text-[#2C2E2F]">{p.name}</p>
+                    <p className="text-[10px] font-semibold text-[#0a2a5e]">{p.name}</p>
                   </button>
                 ))}
               </div>
@@ -395,10 +395,10 @@ function BookingFlowModal({
           {/* Step: Confirmation + Digital Check-in */}
           {step === 'confirmation' && (
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#00A651]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#00A651]/10 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-[#00A651]" />
               </div>
-              <h4 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Réservation confirmée !</h4>
+              <h4 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Réservation confirmée !</h4>
               <p className="text-sm text-gray-500 mb-4">Votre réservation a été enregistrée. Un QR code sera généré pour votre check-in digital.</p>
 
               {/* Digital Check-in Card */}
@@ -420,7 +420,7 @@ function BookingFlowModal({
 
               {/* Checkout flow info */}
               <div className="p-4 bg-[#D4AF37]/5 rounded-2xl text-left mb-4">
-                <h5 className="text-sm font-bold text-[#2C2E2F] mb-2 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#D4AF37]" /> Processus de check-out</h5>
+                <h5 className="text-sm font-bold text-[#0a2a5e] mb-2 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#D4AF37]" /> Processus de check-out</h5>
                 <ol className="text-xs text-gray-600 space-y-1.5">
                   <li className="flex items-center gap-2"><span className="w-5 h-5 bg-[#003087] text-white rounded-full flex items-center justify-center text-[10px] font-bold">1</span> Scannez le QR code a l&apos;arrivee</li>
                   <li className="flex items-center gap-2"><span className="w-5 h-5 bg-[#003087] text-white rounded-full flex items-center justify-center text-[10px] font-bold">2</span> Verifiez la chambre ensemble</li>
@@ -564,10 +564,10 @@ export default function ShortTermRentalModule() {
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
             <Home className="w-4 h-4" /> Location Courte Durée
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Locations <span className="text-[#D4AF37]">Vacances</span> & Séjours
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -576,7 +576,7 @@ export default function ShortTermRentalModule() {
         </motion.div>
 
         {/* Search & Filters */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/80 backdrop-blur-xl rounded-3xl p-4 shadow-sm border mb-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/80 backdrop-blur-xl rounded-xl p-4 shadow-sm border mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -613,9 +613,9 @@ export default function ShortTermRentalModule() {
                     </div></div>
                   <div><label className="text-xs font-medium text-gray-500 mb-1.5 block">Voyageurs</label>
                     <div className="flex items-center gap-3 px-3 py-2 rounded-xl border">
-                      <button onClick={() => setFilterGuests((g) => Math.max(1, g - 1))} className="w-7 h-7 rounded-full border flex items-center justify-center hover:bg-gray-50">-</button>
+                      <button onClick={() => setFilterGuests((g) => Math.max(1, g - 1))} className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-gray-50">-</button>
                       <span className="text-sm font-medium">{filterGuests}</span>
-                      <button onClick={() => setFilterGuests((g) => Math.min(16, g + 1))} className="w-7 h-7 rounded-full border flex items-center justify-center hover:bg-gray-50">+</button>
+                      <button onClick={() => setFilterGuests((g) => Math.min(16, g + 1))} className="w-7 h-7 rounded-lg border flex items-center justify-center hover:bg-gray-50">+</button>
                     </div></div>
                   <div><label className="text-xs font-medium text-gray-500 mb-1.5 block">Equipements</label>
                     <div className="flex flex-wrap gap-1.5">
@@ -636,13 +636,13 @@ export default function ShortTermRentalModule() {
         {/* Country Badge */}
         <div className="flex items-center gap-2 mb-4">
           <Globe className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">{COUNTRY_NAMES[selectedCountry] || selectedCountry}</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">{COUNTRY_NAMES[selectedCountry] || selectedCountry}</span>
           {rentals.length > 0 && <span className="text-xs text-gray-400 ml-2">{rentals.length} annonce{rentals.length !== 1 ? 's' : ''}</span>}
         </div>
 
         {isLoading && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{Array.from({ length: 6 }).map((_, i) => <RentalCardSkeleton key={i} />)}</div>}
-        {isError && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4"><X className="w-8 h-8 text-red-400" /></div><h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Impossible de charger les annonces</h3><p className="text-sm text-gray-500">{(error as Error)?.message || 'Une erreur est survenue.'}</p></div>}
-        {!isLoading && !isError && rentals.length === 0 && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 mb-4"><Home className="w-8 h-8 text-gray-300" /></div><h3 className="text-lg font-semibold text-[#2C2E2F] mb-2">Aucune location disponible</h3><p className="text-sm text-gray-500">Les locations courte duree seront bientot disponibles.</p></div>}
+        {isError && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-red-50 mb-4"><X className="w-8 h-8 text-red-400" /></div><h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">Impossible de charger les annonces</h3><p className="text-sm text-gray-500">{(error as Error)?.message || 'Une erreur est survenue.'}</p></div>}
+        {!isLoading && !isError && rentals.length === 0 && <div className="text-center py-16"><div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-gray-50 mb-4"><Home className="w-8 h-8 text-gray-300" /></div><h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">Aucune location disponible</h3><p className="text-sm text-gray-500">Les locations courte duree seront bientot disponibles.</p></div>}
 
         {/* Grid View — centered */}
         {!isLoading && !isError && rentals.length > 0 && viewMode === 'grid' && (
@@ -653,7 +653,7 @@ export default function ShortTermRentalModule() {
               const effectivePrice = getEffectivePrice(rental);
               return (
                 <motion.div key={rental.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08, ease: easeOut }}
-                  whileHover={{ y: -4, transition: { duration: 0.25 } }} className="group cursor-pointer rounded-3xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" onClick={() => setSelectedRentalId(rental.id)}>
+                  whileHover={{ y: -4, transition: { duration: 0.25 } }} className="group cursor-pointer rounded-xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]" onClick={() => setSelectedRentalId(rental.id)}>
                   {/* Image — same pattern as PropertyCard: aspect-[4/3], object-cover, group-hover:scale-105 */}
                   <div className="relative overflow-hidden aspect-[4/3]">
                     {image ? (
@@ -682,7 +682,7 @@ export default function ShortTermRentalModule() {
                     </div>
                     {/* Right badges: property type */}
                     <div className="absolute top-3 right-3 flex flex-col gap-1.5">
-                      <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[#2C2E2F] text-[11px] font-bold rounded-full shadow flex items-center gap-1">
+                      <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[#0a2a5e] text-[11px] font-bold rounded-full shadow flex items-center gap-1">
                         {getPropertyTypeIcon(rental.propertyType)} {rental.propertyType.charAt(0).toUpperCase() + rental.propertyType.slice(1)}
                       </span>
                       {rental.hostVerified && (
@@ -694,7 +694,7 @@ export default function ShortTermRentalModule() {
                     {/* Bottom action row: Favorite button — right (same as PropertyCard) */}
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-end z-20 pointer-events-none">
                       <button
-                        className="pointer-events-auto w-8 h-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+                        className="pointer-events-auto w-8 h-8 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
                         onClick={(e) => { e.stopPropagation(); toast.info('Ajouté aux favoris'); }}
                         aria-label="Ajouter aux favoris"
                       >
@@ -727,7 +727,7 @@ export default function ShortTermRentalModule() {
                     </div>
 
                     {/* Title — same as PropertyCard: no line-clamp, natural display */}
-                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition">
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition">
                       {rental.title}
                     </h3>
 
@@ -773,7 +773,7 @@ export default function ShortTermRentalModule() {
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleOpenBooking(rental.id); }}
-                        className="px-4 py-2 bg-[#003087] hover:bg-[#0047b3] text-white rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
+                        className="px-4 py-2 bg-[#003087] hover:bg-[#0047b3] text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
                       >
                         <Calendar className="w-3.5 h-3.5" /> Réserver
                       </button>
@@ -789,10 +789,10 @@ export default function ShortTermRentalModule() {
         <AnimatePresence>
           {selectedRentalId && rentalDetail && (
             <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mt-6">
-              <div className="bg-white rounded-3xl p-6 shadow-sm border">
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-xl font-bold text-[#2C2E2F]">{(rentalDetail as RentalApiItem).title}</h2>
-                  <button onClick={() => setSelectedRentalId(null)} className="p-2 rounded-full hover:bg-gray-100"><X className="w-5 h-5 text-gray-500" /></button>
+                  <h2 className="font-display text-xl font-bold text-[#0a2a5e]">{(rentalDetail as RentalApiItem).title}</h2>
+                  <button onClick={() => setSelectedRentalId(null)} className="p-2 rounded-lg hover:bg-gray-100"><X className="w-5 h-5 text-gray-500" /></button>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">{(rentalDetail as RentalApiItem).description}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">

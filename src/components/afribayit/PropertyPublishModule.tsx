@@ -279,19 +279,19 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl p-8 shadow-sm border text-center mt-12"
+            className="bg-white rounded-xl p-8 shadow-sm border text-center mt-12"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-              className="w-20 h-20 rounded-full bg-[#00A651] flex items-center justify-center mx-auto mb-4"
+              className="w-20 h-20 rounded-lg bg-[#00A651] flex items-center justify-center mx-auto mb-4"
             >
               <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </motion.div>
-            <h3 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">Annonce soumise !</h3>
+            <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">Annonce soumise !</h3>
             <p className="text-sm text-gray-500 mb-6">
               Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.
             </p>
@@ -305,7 +305,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 { step: 'Publication', status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
               ].map((vs, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${
                     vs.status === 'completed' ? 'bg-[#00A651] text-white' :
                     vs.status === 'in_progress' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' :
                     'bg-gray-100 text-gray-400'
@@ -313,7 +313,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     {vs.status === 'completed' ? <Check className="w-3 h-3" /> : vs.status === 'in_progress' ? <Hourglass className="w-3 h-3" /> : (i + 1)}
                   </div>
                   <div>
-                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#2C2E2F]'}`}>
+                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#0a2a5e]'}`}>
                       {vs.icon} {vs.step}
                     </p>
                   </div>
@@ -323,7 +323,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
             <button
               onClick={() => { setSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}
-              className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
               Publier un autre bien
             </button>
@@ -342,10 +342,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
             <PenTool className="w-4 h-4" /> Publier un bien
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
             Nouvelle <span className="text-[#003087]">Annonce</span>
           </h1>
         </motion.div>
@@ -378,13 +378,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         </div>
 
         {/* Form Content */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border">
+        <div className="bg-white rounded-xl p-6 shadow-sm border">
           <AnimatePresence mode="wait">
             {/* Step 1: Property Info */}
             {currentStep === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Informations du bien</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Informations du bien</h2>
                   <p className="text-xs text-gray-500">Type de bien, transaction, prix et localisation</p>
                 </div>
 
@@ -606,7 +606,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Description & Caractéristiques</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Description & Caractéristiques</h2>
                   <p className="text-xs text-gray-500">Décrivez votre bien et sélectionnez ses atouts</p>
                 </div>
 
@@ -639,7 +639,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                       <button
                         key={feature}
                         onClick={() => toggleFeature(feature)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                           formData.features.includes(feature)
                             ? 'bg-[#003087] text-white'
                             : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
@@ -657,7 +657,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Photos du bien</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Photos du bien</h2>
                   <p className="text-xs text-gray-500">Ajoutez jusqu&apos;à 20 photos. La première sera la photo principale.</p>
                 </div>
 
@@ -683,7 +683,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">Principale</span>}
                         <button
                           onClick={() => setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, idx) => idx !== i) }))}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 w-5 h-5 rounded-lg bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           ×
                         </button>
@@ -698,7 +698,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Documents légaux requis</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Documents légaux requis</h2>
                   <p className="text-xs text-gray-500">
                     {selectedCountryCode && formData.propertyType
                       ? `Documents requis pour ${COUNTRY_NAMES[selectedCountryCode] || selectedCountryName} — ${propertyTypes.find(p => p.value === formData.propertyType)?.label}`
@@ -725,7 +725,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                             }`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
                                 isUploaded ? 'bg-[#00A651]/10' : 'bg-gray-100'
                               }`}>
                                 {isUploaded ? (
@@ -740,7 +740,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-sm font-semibold text-[#2C2E2F]">{docLabel}</p>
+                                  <p className="text-sm font-semibold text-[#0a2a5e]">{docLabel}</p>
                                   <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">REQUIS</span>
                                 </div>
                                 {docDesc && <p className="text-[10px] text-gray-400 mt-0.5">{docDesc}</p>}
@@ -784,9 +784,9 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents requis sont téléchargés</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> Documents en attente de vérification</span>}
                         </p>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-lg h-2">
                         <div
-                          className={`h-2 rounded-full transition-all ${
+                          className={`h-2 rounded-lg transition-all ${
                             allRequiredDocsUploaded ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
                           }`}
                           style={{ width: `${(formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length / Math.max(requiredDocs.length, 1)) * 100}%` }}
@@ -814,7 +814,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     <p className="text-sm text-gray-400">Veuillez d&apos;abord sélectionner une ville et un type de bien aux étapes précédentes</p>
                     <button
                       onClick={() => setCurrentStep(1)}
-                      className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold"
+                      className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold"
                     >
                       Retour à l&apos;étape 1
                     </button>
@@ -827,7 +827,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 5 && (
               <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Vérification IA des documents</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Vérification IA des documents</h2>
                   <p className="text-xs text-gray-500">Nos algorithmes analysent vos documents en temps réel</p>
                 </div>
 
@@ -841,7 +841,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     return (
                       <div key={docType} className="p-4 bg-gray-50 rounded-2xl">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-semibold text-[#2C2E2F]">{getDocLabel(docType)}</p>
+                          <p className="text-sm font-semibold text-[#0a2a5e]">{getDocLabel(docType)}</p>
                           {doc ? (
                             <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
                               {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> Vérifié</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> En attente</span>}
@@ -852,9 +852,9 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         </div>
                         {doc && (
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                            <div className="flex-1 bg-gray-200 rounded-lg h-1.5">
                               <div
-                                className="h-1.5 rounded-full bg-[#009CDE] transition-all"
+                                className="h-1.5 rounded-lg bg-[#009CDE] transition-all"
                                 style={{ width: `${simulatedScore}%` }}
                               />
                             </div>
@@ -877,7 +877,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 6 && (
               <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#2C2E2F] mb-1">Révision & Validation</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Révision & Validation</h2>
                   <p className="text-xs text-gray-500">Vérifiez les informations avant de publier</p>
                 </div>
 
@@ -893,7 +893,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 <div className="space-y-3">
                   <div className="p-4 bg-gray-50 rounded-2xl">
                     <p className="text-[10px] text-gray-400 mb-1">Bien</p>
-                    <p className="text-sm font-bold text-[#2C2E2F]">{formData.title || 'Sans titre'}</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{formData.title || 'Sans titre'}</p>
                     <p className="text-xs text-gray-500">
                       {propertyTypes.find(p => p.value === formData.propertyType)?.label} ·
                       {' '}{transactionTypes.find(t => t.value === formData.transactionType)?.label}
@@ -906,11 +906,11 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     </div>
                     <div className="p-3 bg-gray-50 rounded-xl text-center">
                       <p className="text-[10px] text-gray-400">Surface</p>
-                      <p className="font-mono text-sm font-bold text-[#2C2E2F]">{formData.surface || '—'} m²</p>
+                      <p className="font-mono text-sm font-bold text-[#0a2a5e]">{formData.surface || '—'} m²</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-xl text-center">
                       <p className="text-[10px] text-gray-400">Localisation</p>
-                      <p className="text-sm font-bold text-[#2C2E2F]">{selectedCity?.label || '—'}</p>
+                      <p className="text-sm font-bold text-[#0a2a5e]">{selectedCity?.label || '—'}</p>
                     </div>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-xl">
@@ -925,7 +925,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-gray-50 rounded-xl">
                       <p className="text-[10px] text-gray-400">Photos</p>
-                      <p className="text-sm font-bold text-[#2C2E2F]">{formData.photos.length}/20</p>
+                      <p className="text-sm font-bold text-[#0a2a5e]">{formData.photos.length}/20</p>
                     </div>
                     <div className={`p-3 rounded-xl ${allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'}`}>
                       <p className="text-[10px] text-gray-400">Documents légaux</p>
@@ -946,7 +946,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                               <span className={isUploaded ? 'text-[#00A651]' : 'text-[#D93025]'}>
                                 {isUploaded ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                               </span>
-                              <span className={isUploaded ? 'text-[#2C2E2F]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
+                              <span className={isUploaded ? 'text-[#0a2a5e]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
                             </div>
                           );
                         })}
@@ -982,13 +982,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-                  className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4"
+                  className="w-20 h-20 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4"
                 >
                   <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
                   </svg>
                 </motion.div>
-                <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Prêt à publier ?</h3>
+                <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">Prêt à publier ?</h3>
                 <p className="text-sm text-gray-500 mb-6">
                   Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.
                 </p>
@@ -1011,7 +1011,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep > 1 && (
               <button
                 onClick={() => setCurrentStep(currentStep - 1)}
-                className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 Retour
               </button>
@@ -1024,7 +1024,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 else handleSubmit();
               }}
               disabled={!canProceed() || createPropertyMutation.isPending}
-              className="flex-1 py-2.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createPropertyMutation.isPending
                 ? 'Soumission en cours...'

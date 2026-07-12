@@ -49,12 +49,12 @@ export default function LeasesPage() {
         </div>
 
         {/* Role filter */}
-        <div className="flex items-center gap-2 mb-6 p-1 bg-white rounded-full border w-fit">
+        <div className="flex items-center gap-2 mb-6 p-1 bg-white rounded-lg border w-fit">
           {(['all', 'tenant', 'owner'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setRole(r)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
                 role === r ? 'bg-[#003087] text-white' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -71,8 +71,8 @@ export default function LeasesPage() {
             ))}
           </div>
         ) : leases.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 border text-center">
-            <div className="w-16 h-16 rounded-full bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-xl p-12 border text-center">
+            <div className="w-16 h-16 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
               <KeyRound className="w-8 h-8 text-[#003087]" />
             </div>
             <h3 className="font-display text-xl font-bold text-gray-700 mb-2">Aucun bail pour le moment</h3>
@@ -82,7 +82,7 @@ export default function LeasesPage() {
             </p>
             <Link
               href="/louer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
               <Home className="w-4 h-4" />
               Voir les biens à louer
@@ -135,7 +135,7 @@ function LeaseCard({ lease, onSelect, index }: { lease: any; onSelect: (id: stri
       {/* Lease info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-display font-bold text-[#2C2E2F] truncate">
+          <h3 className="font-display font-bold text-[#0a2a5e] truncate">
             {property?.title || 'Bien immobilier'}
           </h3>
           <span

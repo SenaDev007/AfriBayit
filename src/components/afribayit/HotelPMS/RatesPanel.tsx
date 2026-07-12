@@ -22,13 +22,13 @@ export default function RatesPanel({ rates }: RatesPanelProps) {
     <motion.div key="rates" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       {/* Seasonal Pricing Section */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border mb-6">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Calculator className="w-5 h-5" /> Tarifs saisonniers</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Calculator className="w-5 h-5" /> Tarifs saisonniers</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {SEASONAL_PRICING.map((season) => (
             <div key={season.name} className="p-4 rounded-2xl border-2" style={{ borderColor: `${season.color}30` }}>
               <div className="flex items-center gap-2 mb-2">
                 <span style={{ color: season.color }}><SeasonalIcon name={season.icon} /></span>
-                <h4 className="text-sm font-bold text-[#2C2E2F]">{season.name}</h4>
+                <h4 className="text-sm font-bold text-[#0a2a5e]">{season.name}</h4>
               </div>
               <p className="text-xs text-gray-500 mb-2">{season.period}</p>
               <div className="flex items-baseline gap-1">
@@ -45,7 +45,7 @@ export default function RatesPanel({ rates }: RatesPanelProps) {
           {rates.map((rate) => (
             <div key={rate.roomId} className="bg-white rounded-2xl p-5 shadow-sm border">
               <div className="flex items-center justify-between mb-3">
-                <div><h4 className="font-display text-base font-bold text-[#2C2E2F]">{rate.name || rate.roomType}</h4><p className="text-xs text-gray-500">Type: {rate.roomType}</p></div>
+                <div><h4 className="font-display text-base font-bold text-[#0a2a5e]">{rate.name || rate.roomType}</h4><p className="text-xs text-gray-500">Type: {rate.roomType}</p></div>
                 <div className="text-right"><p className="text-[10px] text-gray-500">Prix de base</p><p className="font-mono text-lg font-bold text-[#D4AF37]">{fmt(rate.basePrice)} FCFA</p></div>
               </div>
               {rate.channelRates.length > 0 && (

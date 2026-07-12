@@ -55,12 +55,12 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-display text-xl font-bold text-[#2C2E2F]">
+        <h2 className="font-display text-xl font-bold text-[#0a2a5e]">
           Mot de passe oublié
         </h2>
         <button
           onClick={close}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <svg
             className="w-5 h-5 text-gray-400"
@@ -79,7 +79,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
           {!state.forgotSuccess ? (
             <>
               {/* Step 1: Enter email and send OTP */}
-              <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
                 <Key className="w-8 h-8 text-[#003087]" />
               </div>
               <p className="text-sm text-gray-600 text-center mb-4">
@@ -117,7 +117,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
                 whileTap={{ scale: state.forgotLoading ? 1 : 0.99 }}
                 onClick={onSubmitEmail}
                 disabled={state.forgotLoading}
-                className="w-full mt-4 py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full mt-4 py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {state.forgotLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {state.forgotLoading ? 'Envoi en cours...' : 'Envoyer le code'}
@@ -126,7 +126,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
           ) : (
             <>
               {/* Step 2: Enter OTP code and new password */}
-              <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-lg bg-green-50 flex items-center justify-center mx-auto mb-4">
                 <Mail className="w-8 h-8 text-green-600" />
               </div>
               <motion.div
@@ -191,7 +191,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
                   whileTap={{ scale: state.resetLoading ? 1 : 0.99 }}
                   onClick={onSubmitReset}
                   disabled={state.resetLoading}
-                  className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {state.resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {state.resetLoading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
@@ -203,7 +203,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
       ) : (
         <>
           {/* Step 3: Password reset success */}
-          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-lg bg-green-50 flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-600" />
           </div>
           <motion.div
@@ -215,7 +215,7 @@ export default function ForgotPasswordForm(props: ForgotPasswordFormProps) {
           </motion.div>
           <button
             onClick={close}
-            className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors"
+            className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors"
           >
             Se connecter
           </button>

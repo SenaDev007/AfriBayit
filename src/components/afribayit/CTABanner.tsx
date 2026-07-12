@@ -75,7 +75,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigate('search')}
-                className="rounded-full bg-[#FFCC00] px-8 py-4 font-[family-name:var(--font-inter),system-ui,sans-serif] text-base font-bold text-[#003366] transition-colors hover:bg-[#FFE680]"
+                className="rounded-lg bg-[#FFCC00] px-8 py-4 font-[family-name:var(--font-inter),system-ui,sans-serif] text-base font-bold text-[#003366] transition-colors hover:bg-[#FFE680]"
               >
                 {t('cta.explore', 'Explorer les biens')}
               </motion.button>
@@ -83,7 +83,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigate('publish')}
-                className="rounded-full border-2 border-white/30 px-8 py-4 font-[family-name:var(--font-inter),system-ui,sans-serif] text-base font-bold text-white transition-colors hover:border-white hover:bg-white/10"
+                className="rounded-lg border-2 border-white/30 px-8 py-4 font-[family-name:var(--font-inter),system-ui,sans-serif] text-base font-bold text-white transition-colors hover:border-white hover:bg-white/10"
               >
                 {t('cta.publish', 'Publier une annonce')}
               </motion.button>

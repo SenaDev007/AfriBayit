@@ -43,7 +43,7 @@ export default function NotificationItem({ notif, onAction, actionLoading }: Not
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-[#2C2E2F] truncate">
+            <h4 className="text-sm font-semibold text-[#0a2a5e] truncate">
               {String(notif.title ?? '')}
             </h4>
             {!notifRead && <span className="w-2 h-2 bg-[#003087] rounded-full shrink-0" />}

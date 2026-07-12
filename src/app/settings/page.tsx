@@ -793,7 +793,7 @@ export default function SettingsPage() {
                             {[0, 1, 2, 3].map((level) => (
                               <div
                                 key={level}
-                                className={`h-2 w-12 rounded-full ${
+                                className={`h-2 w-12 rounded-lg ${
                                   (profile?.kycLevel || 0) >= level ? 'bg-[#00A651]' : 'bg-gray-200'
                                 }`}
                               />

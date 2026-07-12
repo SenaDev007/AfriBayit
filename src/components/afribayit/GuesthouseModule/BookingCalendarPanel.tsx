@@ -19,9 +19,9 @@ export default function BookingCalendarPanel({ calendarDays }: BookingCalendarPa
       transition={{ duration: 0.4, ease: easeOut }}
       className="max-w-2xl mx-auto"
     >
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Calendrier — {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Calendrier — {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h3>
           <div className="flex gap-2">
             <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#00A651]/20" /> Disponible</span>
             <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#D93025]/20" /> Réservé</span>
@@ -40,7 +40,7 @@ export default function BookingCalendarPanel({ calendarDays }: BookingCalendarPa
                 cd.day === null ? '' :
                 cd.booked
                   ? 'bg-[#D93025]/10 text-[#D93025] cursor-pointer'
-                  : 'bg-[#00A651]/5 text-[#2C2E2F] hover:bg-[#00A651]/20 cursor-pointer'
+                  : 'bg-[#00A651]/5 text-[#0a2a5e] hover:bg-[#00A651]/20 cursor-pointer'
               }`}
             >
               {cd.day}

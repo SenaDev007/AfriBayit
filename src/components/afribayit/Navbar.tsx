@@ -202,7 +202,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
   };
 
   /* ── Color helpers ── */
-  const textColor = scrolled ? 'text-[#2C2E2F]' : 'text-white';
+  const textColor = scrolled ? 'text-[#0a2a5e]' : 'text-white';
   const mutedColor = scrolled ? 'text-gray-500' : 'text-white/70';
 
   return (
@@ -253,13 +253,13 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     <motion.button
                       whileHover={{ y: -1 }}
                       whileTap={{ scale: 0.97 }}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                         isGroupActive
                           ? scrolled
                             ? 'bg-[#003087] text-white'
                             : 'bg-white/20 text-white'
                           : scrolled
-                            ? 'text-[#2C2E2F] hover:bg-gray-100'
+                            ? 'text-[#0a2a5e] hover:bg-gray-100'
                             : 'text-white/90 hover:bg-white/10'
                       }`}
                     >
@@ -321,8 +321,8 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}
-                  className={`appearance-none text-xs font-medium pl-3 pr-7 py-1.5 rounded-full border cursor-pointer ${
-                    scrolled ? 'bg-white border-gray-200 text-[#2C2E2F]' : 'bg-white/10 border-white/20 text-white'
+                  className={`appearance-none text-xs font-medium pl-3 pr-7 py-1.5 rounded-lg border cursor-pointer ${
+                    scrolled ? 'bg-white border-gray-200 text-[#0a2a5e]' : 'bg-white/10 border-white/20 text-white'
                   }`}
                 >
                   {COUNTRIES_CONFIG.map((c) => (
@@ -334,8 +334,8 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
               {/* Language Switcher */}
               <button
                 onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-                className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  scrolled ? 'bg-white border-gray-200 text-[#2C2E2F] hover:bg-gray-50' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  scrolled ? 'bg-white border-gray-200 text-[#0a2a5e] hover:bg-gray-50' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                 }`}
                 title={locale === 'fr' ? 'Switch to English' : 'Passer en Français'}
               >
@@ -349,7 +349,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onOpenNotifications}
-                  className={`relative p-2 rounded-full transition-all ${scrolled ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}
+                  className={`relative p-2 rounded-lg transition-all ${scrolled ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}
                 >
                   <Bell className={`w-5 h-5 ${textColor}`} />
                   {notificationCount > 0 && (
@@ -365,7 +365,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(isLoggedIn && isAdmin ? '/admin' : '/auth/login')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
                   isLoggedIn && isAdmin
                     ? 'bg-[#003087] text-white border border-[#003087]/30 hover:bg-[#002060] shadow-md'
                     : scrolled
@@ -382,7 +382,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate('/dashboard')}
-                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     scrolled
                       ? 'text-[#003087] hover:bg-blue-50'
                       : 'text-white hover:bg-white/10'
@@ -399,7 +399,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate('/auth/login')}
-                  className={`hidden sm:flex px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     scrolled ? 'text-[#003087] hover:bg-blue-50' : 'text-white hover:bg-white/10'
                   }`}
                 >
@@ -438,7 +438,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                       >
                         {/* User info */}
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                          <p className="text-sm font-semibold text-[#0a2a5e]">{session?.user?.name || 'Utilisateur'}</p>
                           <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                         </div>
 
@@ -512,7 +512,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className={`hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    className={`hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       scrolled ? 'text-[#D93025] hover:bg-red-50' : 'text-white/80 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -526,7 +526,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full text-sm font-semibold shadow-lg transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg text-sm font-semibold shadow-lg transition-colors"
                 onClick={() => navigate(isLoggedIn ? '/publish' : '/auth/register')}
               >
                 <Plus className="w-4 h-4" />
@@ -540,7 +540,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 aria-expanded={mobileMenuOpen}
                 aria-haspopup="true"
                 aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-                className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-[#2C2E2F]' : 'text-white'}`}
+                className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-[#0a2a5e]' : 'text-white'}`}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </motion.button>
@@ -585,7 +585,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     <div key={group.key}>
                       <button
                         onClick={() => setOpenGroup(isGroupOpen ? null : group.key)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-[#2C2E2F] hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-[#0a2a5e] hover:bg-gray-50 transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
                           <GroupIcon className="w-4 h-4 text-[#003087]" />
@@ -650,7 +650,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#2C2E2F]">{session?.user?.name || 'Utilisateur'}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e]">{session?.user?.name || 'Utilisateur'}</p>
                         <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                       </div>
                     </div>
@@ -720,7 +720,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
                       <button
                         onClick={() => navigate('/publish')}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         {t('dashboard.publishAd', 'Publier une annonce')}
@@ -738,20 +738,20 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   <div className="space-y-2">
                     <button
                       onClick={() => navigate('/auth/login')}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002060] transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002060] transition-colors"
                     >
                       {t('nav.login', 'Connexion')}
                     </button>
                     <button
                       onClick={() => navigate('/admin')}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087]/10 text-[#003087] rounded-full text-sm font-semibold hover:bg-[#003087]/20 transition-colors border border-[#003087]/20"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087]/10 text-[#003087] rounded-lg text-sm font-semibold hover:bg-[#003087]/20 transition-colors border border-[#003087]/20"
                     >
                       <LayoutDashboard className="w-4 h-4" />
                       Accès Backoffice
                     </button>
                     <button
                       onClick={() => navigate('/auth/register')}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                     >
                       {t('nav.register', 'Créer un compte')}
                     </button>
@@ -764,7 +764,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 <select
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value as CountryCode)}
-                  className="w-full appearance-none text-sm font-medium px-4 py-2.5 rounded-full border border-gray-200 bg-white text-[#2C2E2F]"
+                  className="w-full appearance-none text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-[#0a2a5e]"
                 >
                   {COUNTRIES_CONFIG.map((c) => (
                     <option key={c.code} value={c.code}>{c.name}</option>
@@ -772,7 +772,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </select>
                 <button
                   onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-medium text-[#2C2E2F] hover:bg-gray-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-[#0a2a5e] hover:bg-gray-50"
                 >
                   <Languages className="w-4 h-4" />
                   {locale === 'fr' ? 'Français' : 'English'}

@@ -32,8 +32,8 @@ export default function InvestorDashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
           </div>
-          <Skeleton className="h-64 rounded-3xl mb-6" />
-          <Skeleton className="h-80 rounded-3xl" />
+          <Skeleton className="h-64 rounded-xl mb-6" />
+          <Skeleton className="h-80 rounded-xl" />
         </div>
       </section>
     );
@@ -49,8 +49,8 @@ export default function InvestorDashboardPage() {
     return (
       <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl p-12 border text-center">
-            <div className="w-16 h-16 rounded-full bg-[#D4AF37]/5 flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-xl p-12 border text-center">
+            <div className="w-16 h-16 rounded-lg bg-[#D4AF37]/5 flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="w-8 h-8 text-[#D4AF37]" />
             </div>
             <h2 className="font-display text-2xl font-bold text-gray-700 mb-2">
@@ -63,7 +63,7 @@ export default function InvestorDashboardPage() {
             </p>
             <Link
               href="/investir"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
               <TrendingUp className="w-4 h-4" />
               Voir les opportunités
@@ -134,7 +134,7 @@ export default function InvestorDashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-white rounded-3xl p-6 border"
+            className="lg:col-span-2 bg-white rounded-xl p-6 border"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <Coins className="w-5 h-5" />
@@ -185,7 +185,7 @@ export default function InvestorDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-3xl p-6 border flex flex-col"
+            className="bg-white rounded-xl p-6 border flex flex-col"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <Wallet className="w-5 h-5" />
@@ -201,7 +201,7 @@ export default function InvestorDashboardPage() {
             </div>
             <Link
               href="/investir"
-              className="mt-4 w-full py-2.5 bg-[#003087]/5 text-[#003087] rounded-full text-xs font-semibold hover:bg-[#003087]/10 transition-colors text-center flex items-center justify-center gap-1.5"
+              className="mt-4 w-full py-2.5 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors text-center flex items-center justify-center gap-1.5"
             >
               <TrendingUp className="w-3.5 h-3.5" />
               Voir les opportunités
@@ -214,7 +214,7 @@ export default function InvestorDashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white rounded-3xl p-6 border mb-6"
+          className="bg-white rounded-xl p-6 border mb-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
@@ -246,7 +246,7 @@ export default function InvestorDashboardPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-display font-bold text-sm text-[#2C2E2F] truncate">{item.title}</h3>
+                      <h3 className="font-display font-bold text-sm text-[#0a2a5e] truncate">{item.title}</h3>
                       <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold rounded-full shrink-0">
                         Score {item.investmentScore}/100
                       </span>
@@ -281,7 +281,7 @@ export default function InvestorDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl p-6 border"
+            className="bg-white rounded-xl p-6 border"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
@@ -309,7 +309,7 @@ export default function InvestorDashboardPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C2E2F] truncate">{lease.property?.title}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e] truncate">{lease.property?.title}</p>
                     <p className="text-xs text-gray-400">
                       {lease.tenant?.name} · depuis {new Date(lease.startDate).toLocaleDateString('fr-FR')}
                     </p>
@@ -358,7 +358,7 @@ function KpiCard({
         )}
       </div>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="font-mono-data font-bold text-lg text-[#2C2E2F]">{value}</p>
+      <p className="font-mono-data font-bold text-lg text-[#0a2a5e]">{value}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
     </motion.div>
   );

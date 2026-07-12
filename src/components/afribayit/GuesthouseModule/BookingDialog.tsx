@@ -50,13 +50,13 @@ export default function BookingDialog({
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 max-w-md w-full"
+        className="bg-white rounded-xl p-6 max-w-md w-full"
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#2C2E2F]">Réserver {bookingRoom.name}</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Réserver {bookingRoom.name}</h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -137,14 +137,14 @@ export default function BookingDialog({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50"
+            className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50"
           >
             Annuler
           </button>
           <button
             onClick={onConfirm}
             disabled={!bookingCheckIn || !bookingCheckOut || isPending}
-            className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50"
           >
             {isPending ? 'Réservation...' : 'Confirmer'}
           </button>

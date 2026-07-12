@@ -90,7 +90,7 @@ export default function CountriesPage() {
       </div>
 
       {/* Global overview banner */}
-      <div className="bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-3xl p-6 text-white">
+      <div className="bg-gradient-to-r from-[#003087] to-[#0047b3] rounded-xl p-6 text-white">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
             <Globe className="w-5 h-5" />
@@ -136,7 +136,7 @@ export default function CountriesPage() {
           return (
             <Card
               key={country.code}
-              className="rounded-3xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+              className="rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group"
             >
               {/* Card top gradient bar */}
               <div className="h-2 bg-gradient-to-r from-[#003087] to-[#D4AF37]" />
@@ -158,7 +158,7 @@ export default function CountriesPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-[#D4AF37]/10 px-3 py-1.5 rounded-full">
+                  <div className="flex items-center gap-1.5 bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
                     <span className="text-xs font-semibold text-[#D4AF37]">{accCount} admins</span>
                   </div>

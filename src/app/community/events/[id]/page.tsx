@@ -58,7 +58,7 @@ export default function EventDetailPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
             <div className="h-6 w-32 bg-gray-200 rounded" />
-            <div className="bg-white rounded-3xl p-6 shadow-sm border space-y-4">
+            <div className="bg-white rounded-xl p-6 shadow-sm border space-y-4">
               <div className="h-6 w-48 bg-gray-200 rounded" />
               <div className="h-4 w-full bg-gray-100 rounded" />
               <div className="h-4 w-3/4 bg-gray-100 rounded" />
@@ -76,7 +76,7 @@ export default function EventDetailPage() {
           <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-600 mb-2">Événement introuvable</h2>
           <p className="text-sm text-gray-400 mb-6">{eventError?.message || 'Cet événement n\'existe pas ou a été supprimé.'}</p>
-          <button onClick={() => router.push('/community')} className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">Retour à la communauté</button>
+          <button onClick={() => router.push('/community')} className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors">Retour à la communauté</button>
         </div>
       </div>
     );
@@ -101,24 +101,24 @@ export default function EventDetailPage() {
         </motion.div>
 
         {/* Event Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-3xl p-6 shadow-sm border mb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border mb-6">
           {/* Event type badge */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: `${typeInfo.color}15`, color: typeInfo.color }}>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold" style={{ backgroundColor: `${typeInfo.color}15`, color: typeInfo.color }}>
               {typeInfo.icon} {typeInfo.label}
             </span>
             {isVirtual && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#00A651]/10 text-[#00A651]">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-[#00A651]/10 text-[#00A651]">
                 <Globe className="w-3.5 h-3.5" /> Virtuel
               </span>
             )}
             {isFull && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-[#D93025]/10 text-[#D93025]">Complet</span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-[#D93025]/10 text-[#D93025]">Complet</span>
             )}
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-xl sm:text-2xl font-bold text-[#2C2E2F] mb-4">{String(event.title || '')}</h1>
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-[#0a2a5e] mb-4">{String(event.title || '')}</h1>
 
           <p className="text-sm text-gray-600 leading-relaxed mb-5">{String(event.description || '')}</p>
 
@@ -132,7 +132,7 @@ export default function EventDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Date</p>
-                <p className="text-sm font-medium text-[#2C2E2F]">
+                <p className="text-sm font-medium text-[#0a2a5e]">
                   {eventDate ? formatDate(eventDate) : 'Non définie'}
                 </p>
               </div>
@@ -146,7 +146,7 @@ export default function EventDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Heure</p>
-                  <p className="text-sm font-medium text-[#2C2E2F]">
+                  <p className="text-sm font-medium text-[#0a2a5e]">
                     {eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                     {endDate && ` — ${endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
                   </p>
@@ -161,7 +161,7 @@ export default function EventDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Lieu</p>
-                <p className="text-sm font-medium text-[#2C2E2F]">
+                <p className="text-sm font-medium text-[#0a2a5e]">
                   {isVirtual ? 'En ligne' : String(event.venue || event.city || 'Non défini')}
                 </p>
               </div>
@@ -174,7 +174,7 @@ export default function EventDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Participants</p>
-                <p className="text-sm font-medium text-[#2C2E2F]">
+                <p className="text-sm font-medium text-[#0a2a5e]">
                   {Number(event.attendees || 0)}{event.maxAttendees ? ` / ${Number(event.maxAttendees)}` : ''}
                 </p>
               </div>
@@ -193,7 +193,7 @@ export default function EventDetailPage() {
           <button
             onClick={handleRegister}
             disabled={registering || registerEvent.isPending || isFull}
-            className="w-full py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {registering || registerEvent.isPending ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Inscription...</>

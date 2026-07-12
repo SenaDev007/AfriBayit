@@ -112,10 +112,10 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
       <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-20">
-            <div className="w-20 h-20 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-6">
               <Home className="w-10 h-10 text-[#003087]" />
             </div>
-            <h2 className="font-display text-2xl font-bold text-[#2C2E2F] mb-3">
+            <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-3">
               {t('dashboard.welcomeGuest', 'Bienvenue sur AfriBayit')}
             </h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto font-body">
@@ -124,13 +124,13 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
             <div className="flex items-center justify-center gap-3">
               <a
                 href="/auth/login"
-                className="px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
+                className="px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors"
               >
                 {t('dashboard.login', 'Se connecter')}
               </a>
               <a
                 href="/auth/register"
-                className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-full text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
+                className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-lg text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
               >
                 {t('dashboard.register', 'Créer un compte')}
               </a>
@@ -147,21 +147,21 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
           <aside className="lg:w-60 shrink-0">
-            <div className="bg-white rounded-3xl p-4 shadow-sm border sticky top-24">
+            <div className="bg-white rounded-xl p-4 shadow-sm border sticky top-24">
               <div className="flex items-center gap-3 mb-4 pb-4 border-b">
                 {userAvatar ? (
                   <img
                     src={userAvatar}
                     alt={userName}
-                    className="w-11 h-11 rounded-full object-cover border-2 border-[#D4AF37]"
+                    className="w-11 h-11 rounded-lg object-cover border-2 border-[#D4AF37]"
                   />
                 ) : (
-                  <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center border-2 border-[#D4AF37]">
+                  <div className="w-11 h-11 rounded-lg bg-gray-200 flex items-center justify-center border-2 border-[#D4AF37]">
                     <span className="text-gray-500 text-sm font-bold">{userName.charAt(0)}</span>
                   </div>
                 )}
                 <div>
-                  <h3 className="text-sm font-semibold text-[#2C2E2F]">{userName}</h3>
+                  <h3 className="text-sm font-semibold text-[#0a2a5e]">{userName}</h3>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
                     <userKyc.Icon className="w-3 h-3 inline" /> {userKyc.name}
                   </span>
@@ -208,19 +208,19 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
                 <div className="relative z-10">
                   <h3 className="font-display text-xl font-bold mb-2">{t('dashboard.welcomeBack', 'Bienvenue sur AfriBayit !')} 🏠</h3>
                   <p className="text-white/70 text-sm mb-4">
                     {t('dashboard.onboardTitle', 'Commencez par compléter votre profil et vérifier votre identité pour accéder à toutes les fonctionnalités.')}
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <a href="/kyc" className="px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors">
+                    <a href="/kyc" className="px-4 py-2 bg-white text-[#003087] rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors">
                       {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
                     </a>
-                    <a href="/publish" className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors">
+                    <a href="/publish" className="px-4 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors">
                       {t('dashboard.publishAd', 'Publier une annonce')}
                     </a>
                   </div>
@@ -259,7 +259,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       <span className="text-2xl">{kpi.icon}</span>
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
                     </div>
-                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
                   </motion.div>
                 ))
@@ -281,7 +281,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       <span className="text-2xl">{kpi.icon}</span>
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
                     </div>
-                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#2C2E2F]">{kpi.value}</p>
+                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
                   </motion.div>
                 ))
@@ -290,7 +290,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
 
             {/* Wallet Card */}
             {walletLoading ? (
-              <div className="bg-navy-gradient rounded-3xl p-6 sm:p-8 mb-6">
+              <div className="bg-navy-gradient rounded-xl p-6 sm:p-8 mb-6">
                 <Skeleton className="h-4 w-32 mb-2 bg-white/20" />
                 <Skeleton className="h-10 w-48 mb-6 bg-white/20" />
                 <div className="grid grid-cols-3 gap-4">
@@ -304,9 +304,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
@@ -322,7 +322,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   </p>
                   <a
                     href="/kyc"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#003087] rounded-full text-sm font-semibold hover:bg-white/90 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#003087] rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
@@ -334,9 +334,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="bg-navy-gradient rounded-3xl p-6 sm:p-8 mb-6 relative overflow-hidden"
+                className="bg-navy-gradient rounded-xl p-6 sm:p-8 mb-6 relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -372,9 +372,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4, ease: easeOut }}
-              className="bg-white rounded-3xl p-6 shadow-sm border"
+              className="bg-white rounded-xl p-6 shadow-sm border"
             >
-              <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">{t('dashboard.recentTransactions', 'Transactions récentes')}</h3>
+              <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('dashboard.recentTransactions', 'Transactions récentes')}</h3>
               {txnLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -415,11 +415,11 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#2C2E2F] truncate">{propertyTitle}</p>
+                          <p className="text-sm font-medium text-[#0a2a5e] truncate">{propertyTitle}</p>
                           <p className="text-xs text-gray-400">{displayDate}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="font-mono-data text-sm font-bold text-[#2C2E2F]">{new Intl.NumberFormat('fr-FR').format(amount)}</p>
+                          <p className="font-mono-data text-sm font-bold text-[#0a2a5e]">{new Intl.NumberFormat('fr-FR').format(amount)}</p>
                           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10`, color: statusColors[status] || '#6b7280' }}>
                             {statusLabels[status] || status}
                           </span>
@@ -436,10 +436,10 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
-              className="bg-white rounded-3xl p-6 shadow-sm border mt-6"
+              className="bg-white rounded-xl p-6 shadow-sm border mt-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg font-bold text-[#2C2E2F]">{t('dashboard.kycLevel', 'Niveau KYC')}</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('dashboard.kycLevel', 'Niveau KYC')}</h3>
                 <a href="/kyc" className="text-xs font-semibold text-[#003087] hover:underline">{t('dashboard.verifyIdentity', 'Vérifier mon identité')} →</a>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

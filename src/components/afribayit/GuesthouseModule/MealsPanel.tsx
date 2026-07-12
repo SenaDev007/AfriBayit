@@ -36,7 +36,7 @@ export default function MealsPanel({
         <select
           value={effectiveGhId || ''}
           onChange={e => setSelectedGhId(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-200 text-sm bg-white"
+          className="px-4 py-2 rounded-lg border border-gray-200 text-sm bg-white"
         >
           {guesthousesList.map(gh => <option key={gh.id} value={gh.id}>{gh.name}</option>)}
         </select>
@@ -57,12 +57,12 @@ export default function MealsPanel({
                 key={mtc.key}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-6 shadow-sm border text-center"
+                className="bg-white rounded-xl p-6 shadow-sm border text-center"
               >
-                <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${mtc.color}10`, color: mtc.color }}>
+                <div className="w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${mtc.color}10`, color: mtc.color }}>
                   {mtc.icon}
                 </div>
-                <h4 className="font-display text-base font-bold text-[#2C2E2F] mb-1">{mtc.label}</h4>
+                <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{mtc.label}</h4>
                 {meal ? (
                   <>
                     <p className="font-mono text-2xl font-bold" style={{ color: mtc.color }}>

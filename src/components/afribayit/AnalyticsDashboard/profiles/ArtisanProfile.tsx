@@ -17,7 +17,7 @@ export default function ArtisanProfile() {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Wrench className="w-5 h-5 text-[#D4AF37] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.missionsCompleted}</p>
+          <p className="font-mono text-xl font-bold text-[#0a2a5e]">{ARTISAN_ANALYTICS.missionsCompleted}</p>
           <p className="text-xs text-gray-500">Missions terminées</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
@@ -27,7 +27,7 @@ export default function ArtisanProfile() {
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Clock className="w-5 h-5 text-[#009CDE] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.responseTime} min</p>
+          <p className="font-mono text-xl font-bold text-[#0a2a5e]">{ARTISAN_ANALYTICS.responseTime} min</p>
           <p className="text-xs text-gray-500">Temps de réponse</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
@@ -37,14 +37,14 @@ export default function ArtisanProfile() {
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Star className="w-5 h-5 text-[#D4AF37] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#2C2E2F]">{ARTISAN_ANALYTICS.avgRating}</p>
+          <p className="font-mono text-xl font-bold text-[#0a2a5e]">{ARTISAN_ANALYTICS.avgRating}</p>
           <p className="text-xs text-gray-500">Note moyenne</p>
         </div>
       </div>
 
       {/* Demandes devis breakdown */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-[#003087]" /> Demandes devis</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-[#003087]" /> Demandes devis</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Reçues', value: ARTISAN_ANALYTICS.demandesDevis.recues, color: '#003087' },
@@ -60,8 +60,8 @@ export default function ArtisanProfile() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Entonnoir de conversion artisan</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Entonnoir de conversion artisan</h3>
         <div className="space-y-3">
           {ARTISAN_ANALYTICS.conversionFunnel.map((stage, i) => (
             <div key={stage.stage} className="flex items-center gap-4">
@@ -77,12 +77,12 @@ export default function ArtisanProfile() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4">Spécialités</h3>
+      <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Spécialités</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {ARTISAN_ANALYTICS.specialties.map(spec => (
             <div key={spec.name} className="p-4 bg-gray-50 rounded-xl">
-              <p className="font-semibold text-sm text-[#2C2E2F]">{spec.name}</p>
+              <p className="font-semibold text-sm text-[#0a2a5e]">{spec.name}</p>
               <p className="text-xs text-gray-500 mt-1">{spec.missions} missions · <span className="text-[#D4AF37]">{spec.rating}/5</span></p>
             </div>
           ))}

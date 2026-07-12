@@ -67,7 +67,7 @@ export default function HotelDetail(props: HotelDetailProps) {
         ) : detail ? (
           <div className="space-y-6">
             {/* Hotel Header */}
-            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border">
+            <div className="bg-white rounded-xl overflow-hidden shadow-sm border">
               <div className="relative aspect-[21/9]">
                 {getFirstImage(detail.images) ? (
                   <ImageWithFallback
@@ -96,14 +96,14 @@ export default function HotelDetail(props: HotelDetailProps) {
                 </div>
                 <div className="absolute top-4 right-4 flex gap-2">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    className={`px-3 py-1 rounded-lg text-xs font-bold ${
                       detail.available ? 'bg-[#00A651] text-white' : 'bg-gray-500 text-white'
                     }`}
                   >
                     {detail.available ? 'Disponible' : 'Complet'}
                   </span>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${getConnectionLevelLabel(detail.connectionLevel).color}`}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold ${getConnectionLevelLabel(detail.connectionLevel).color}`}
                   >
                     {getConnectionLevelLabel(detail.connectionLevel).label}
                   </span>
@@ -114,17 +114,17 @@ export default function HotelDetail(props: HotelDetailProps) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-50 rounded-2xl p-4 text-center">
                     <Star className="w-5 h-5 text-[#D4AF37] fill-[#D4AF37] mx-auto mb-1" />
-                    <p className="font-mono text-lg font-bold text-[#2C2E2F]">{detail.rating}</p>
+                    <p className="font-mono text-lg font-bold text-[#0a2a5e]">{detail.rating}</p>
                     <p className="text-[10px] text-gray-500">{detail._count?.reviews_hotel || 0} avis</p>
                   </div>
                   <div className="bg-gray-50 rounded-2xl p-4 text-center">
                     <BedDouble className="w-5 h-5 text-[#003087] mx-auto mb-1" />
-                    <p className="font-mono text-lg font-bold text-[#2C2E2F]">{detail._count?.rooms || 0}</p>
+                    <p className="font-mono text-lg font-bold text-[#0a2a5e]">{detail._count?.rooms || 0}</p>
                     <p className="text-[10px] text-gray-500">Chambres</p>
                   </div>
                   <div className="bg-gray-50 rounded-2xl p-4 text-center">
                     <CalendarDays className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
-                    <p className="font-mono text-lg font-bold text-[#2C2E2F]">{detail._count?.bookings || 0}</p>
+                    <p className="font-mono text-lg font-bold text-[#0a2a5e]">{detail._count?.bookings || 0}</p>
                     <p className="text-[10px] text-gray-500">Réservations</p>
                   </div>
                   <div className="bg-gray-50 rounded-2xl p-4 text-center">
@@ -145,7 +145,7 @@ export default function HotelDetail(props: HotelDetailProps) {
                       {getOtaStatus(detail.otaRefs).map((ota) => (
                         <span
                           key={ota.ota}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full text-xs font-medium text-[#00A651]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg text-xs font-medium text-[#00A651]"
                         >
                           <CheckCircle className="w-3 h-3" />
                           {ota.label} — Synchronisé
@@ -158,12 +158,12 @@ export default function HotelDetail(props: HotelDetailProps) {
                 {/* Amenities */}
                 {parseJsonArray(detail.amenities).length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-[#2C2E2F] mb-3">Équipements</h4>
+                    <h4 className="text-sm font-semibold text-[#0a2a5e] mb-3">Équipements</h4>
                     <div className="flex flex-wrap gap-2">
                       {parseJsonArray(detail.amenities).map((amenity) => (
                         <span
                           key={amenity}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-full"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-lg"
                         >
                           {AMENITY_ICONS[amenity.toLowerCase()] || <CheckCircle className="w-3 h-3 text-[#00A651]" />}
                           {amenity}
@@ -177,7 +177,7 @@ export default function HotelDetail(props: HotelDetailProps) {
                 {detail.available && (
                   <button
                     onClick={() => onOpenBooking(detail.id)}
-                    className="w-full py-3 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors flex items-center justify-center gap-2"
                   >
                     Réserver maintenant <ArrowRight className="w-4 h-4" />
                   </button>
@@ -229,8 +229,8 @@ function RoomsSection({
   onOpenBooking: (hotelId: string, roomId?: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border">
-      <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+    <div className="bg-white rounded-xl p-6 shadow-sm border">
+      <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
         <BedDouble className="w-5 h-5 text-[#003087]" /> Types de chambres
       </h3>
       {roomsLoading ? (
@@ -264,7 +264,7 @@ function RoomsSection({
 
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h4 className="font-display text-base font-bold text-[#2C2E2F]">
+                    <h4 className="font-display text-base font-bold text-[#0a2a5e]">
                       {room.name || ROOM_TYPE_LABELS[room.type] || room.type}
                     </h4>
                     <p className="text-xs text-gray-500 flex items-center gap-2">
@@ -329,7 +329,7 @@ function RoomsSection({
                   {room.available && hotelAvailable && (
                     <button
                       onClick={() => onOpenBooking(hotelId, room.id)}
-                      className="px-4 py-2 bg-[#D4AF37] text-white rounded-full text-xs font-semibold hover:bg-[#b8961f] transition-colors"
+                      className="px-4 py-2 bg-[#D4AF37] text-white rounded-lg text-xs font-semibold hover:bg-[#b8961f] transition-colors"
                     >
                       Réserver
                     </button>
@@ -352,8 +352,8 @@ function RoomsSection({
 // ── Reviews Section ──
 function ReviewsSection({ reviews }: { reviews: ReviewApiItem[] }) {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border">
-      <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+    <div className="bg-white rounded-xl p-6 shadow-sm border">
+      <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
         <Star className="w-5 h-5 text-[#D4AF37] fill-[#D4AF37]" /> Avis clients
       </h3>
       <div className="space-y-4 max-h-96 overflow-y-auto">

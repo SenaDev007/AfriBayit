@@ -18,7 +18,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-6">
           <AlertTriangle className="w-10 h-10 text-red-400" />
         </div>
 
@@ -39,7 +39,7 @@ export default function Error({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={() => reset()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#002266] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             R&eacute;essayer
@@ -47,7 +47,7 @@ export default function Error({
 
           <a
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-full text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-lg text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
           >
             <Home className="w-4 h-4" />
             Retour &agrave; l&apos;accueil

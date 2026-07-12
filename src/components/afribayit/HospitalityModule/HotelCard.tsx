@@ -40,7 +40,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.06, ease: easeOut }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-sm border cursor-pointer group"
+      className="bg-white rounded-xl overflow-hidden shadow-sm border cursor-pointer group"
       onClick={() => onSelect(hotel.id)}
     >
       <div className="relative aspect-[16/10]">
@@ -52,7 +52,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
           </div>
         )}
         {/* Star Rating Overlay */}
-        <div className="absolute top-3 left-3 flex gap-0.5 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full">
+        <div className="absolute top-3 left-3 flex gap-0.5 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
           {Array.from({ length: hotel.stars }).map((_, j) => (
             <Star key={j} className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
           ))}
@@ -86,7 +86,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
       </div>
 
       <div className="p-5">
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors">
           {hotel.name}
         </h3>
         <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
@@ -136,7 +136,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
               e.stopPropagation();
               onBook(hotel.id);
             }}
-            className="w-full mt-4 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+            className="w-full mt-4 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
           >
             Réserver
           </button>
@@ -146,7 +146,7 @@ export default function HotelCard({ hotel, index, onSelect, onBook }: HotelCardP
               e.stopPropagation();
               onSelect(hotel.id);
             }}
-            className="w-full mt-4 py-2.5 bg-gray-100 text-gray-500 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors"
+            className="w-full mt-4 py-2.5 bg-gray-100 text-gray-500 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
           >
             Voir les détails
           </button>

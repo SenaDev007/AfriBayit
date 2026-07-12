@@ -103,7 +103,7 @@ export default function PricingPanel({
         <select
           value={effectiveGhId || ''}
           onChange={e => setSelectedGhId(e.target.value)}
-          className="px-4 py-2 rounded-full border border-gray-200 text-sm bg-white"
+          className="px-4 py-2 rounded-lg border border-gray-200 text-sm bg-white"
         >
           {guesthousesList.map(gh => <option key={gh.id} value={gh.id}>{gh.name}</option>)}
         </select>
@@ -111,7 +111,7 @@ export default function PricingPanel({
 
       {/* Add Pricing Rule Form */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border mb-4">
-        <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-3">Ajouter une règle de tarification saisonnière</h4>
+        <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3">Ajouter une règle de tarification saisonnière</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <div>
             <label className="text-[10px] text-gray-500 block mb-1">Nom de la règle *</label>
@@ -207,17 +207,17 @@ export default function PricingPanel({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1, ease: easeOut }}
-                className="bg-white rounded-3xl p-5 shadow-sm border text-center relative group/pricing"
+                className="bg-white rounded-xl p-5 shadow-sm border text-center relative group/pricing"
               >
                 <button
                   onClick={() => handleDeleteRule(pr.id, pr.name)}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-100 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover/pricing:opacity-100 transition-all"
+                  className="absolute top-2 right-2 w-6 h-6 rounded-lg bg-gray-100 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 opacity-0 group-hover/pricing:opacity-100 transition-all"
                   title="Supprimer cette règle"
                 >
                   <X className="w-4 h-4" />
                 </button>
                 <div className="mb-2 mx-auto w-fit" style={{ color }}>{getPricingPeriodIcon(pr.period)}</div>
-                <h4 className="font-display text-sm font-bold text-[#2C2E2F] mb-0.5">{pr.name}</h4>
+                <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-0.5">{pr.name}</h4>
                 <p className="text-[10px] text-gray-400 mb-1">{periodLabel(pr.period)}</p>
                 <p className="font-mono text-2xl font-bold mb-1" style={{ color }}>{formatModifier(pr.multiplier)}</p>
                 <p className="text-xs text-gray-500">{formatPeriodDates(pr.startDate, pr.endDate, pr.event_name)}</p>

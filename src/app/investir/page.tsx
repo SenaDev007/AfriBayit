@@ -71,14 +71,14 @@ export default function InvestirPage() {
       }}
     >
       {/* Conversational AI search */}
-      <section className="py-8 bg-white border-b border-gray-50">
+      <section className="py-12 bg-white border-b border-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ConversationalSearchBar transaction="investissement" />
         </div>
       </section>
 
       {/* Top opportunities — sorted by investment score */}
-      <section id="opportunities" className="py-12 bg-gray-50/30">
+      <section id="opportunities" className="py-20 bg-gray-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -86,7 +86,7 @@ export default function InvestirPage() {
             viewport={{ once: true }}
             className="mb-8 text-center"
           >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37] mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#D4AF37]/10 rounded-lg text-xs font-semibold text-[#D4AF37] mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               Sélection IA
             </div>
@@ -105,7 +105,7 @@ export default function InvestirPage() {
       </section>
 
       {/* Investor tools — ROI + Tax calculators */}
-      <section className="py-12 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -124,7 +124,7 @@ export default function InvestirPage() {
 
           <div className="grid lg:grid-cols-2 gap-6">
             {/* ROI Calculator trigger */}
-            <div className="bg-gradient-to-br from-[#003087] to-[#0047b3] rounded-3xl p-8 text-white">
+            <div className="bg-gradient-to-br from-[#003087] to-[#0047b3] rounded-xl p-8 text-white">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
@@ -143,14 +143,14 @@ export default function InvestirPage() {
               </ul>
               <button
                 onClick={() => setShowRoiCalc(true)}
-                className="w-full py-3 bg-[#D4AF37] text-[#003087] rounded-full text-sm font-bold hover:bg-[#b8961f] transition-colors"
+                className="w-full py-3 bg-[#D4AF37] text-[#003087] rounded-lg text-sm font-bold hover:bg-[#b8961f] transition-colors"
               >
                 Ouvrir le calculateur ROI
               </button>
             </div>
 
             {/* Tax Calculator trigger */}
-            <div className="bg-gradient-to-br from-[#2C2E2F] to-[#1a1c1d] rounded-3xl p-8 text-white">
+            <div className="bg-gradient-to-br from-[#2C2E2F] to-[#1a1c1d] rounded-xl p-8 text-white">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-[#D4AF37]" />
@@ -169,7 +169,7 @@ export default function InvestirPage() {
               </ul>
               <button
                 onClick={() => setShowTaxCalc(true)}
-                className="w-full py-3 bg-white text-[#2C2E2F] rounded-full text-sm font-bold hover:bg-gray-100 transition-colors"
+                className="w-full py-3 bg-white text-[#0a2a5e] rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
               >
                 Ouvrir le calculateur fiscal
               </button>
@@ -179,7 +179,7 @@ export default function InvestirPage() {
       </section>
 
       {/* Price alerts + Investment guide */}
-      <section className="py-12 bg-gray-50/30">
+      <section className="py-20 bg-gray-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -204,7 +204,7 @@ export default function InvestirPage() {
       </section>
 
       {/* Properties grid */}
-      <section id="properties" className="py-12 bg-gray-50/30">
+      <section id="properties" className="py-20 bg-gray-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -246,7 +246,7 @@ export default function InvestirPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowRoiCalc(false)}>
           <div className="max-w-2xl w-full my-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-end mb-2">
-              <button onClick={() => setShowRoiCalc(false)} className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white">
+              <button onClick={() => setShowRoiCalc(false)} className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center hover:bg-white">
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
@@ -260,7 +260,7 @@ export default function InvestirPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowTaxCalc(false)}>
           <div className="max-w-4xl w-full my-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-end mb-2">
-              <button onClick={() => setShowTaxCalc(false)} className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white">
+              <button onClick={() => setShowTaxCalc(false)} className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center hover:bg-white">
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>

@@ -118,7 +118,7 @@ export default function DroneViewPlayer({
 
         {/* Drone badge */}
         {hasDroneView && (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white" style={{ background: 'rgba(0, 48, 135, 0.8)' }}>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: 'rgba(0, 48, 135, 0.8)' }}>
             <Plane className="w-3.5 h-3.5" />
             Drone View
           </div>
@@ -132,7 +132,7 @@ export default function DroneViewPlayer({
           <motion.div
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl"
+            className="w-16 h-16 rounded-lg flex items-center justify-center shadow-2xl"
             style={{ background: 'rgba(0, 48, 135, 0.8)' }}
           >
             {isPlaying || showTimeLapse ? (
@@ -145,7 +145,7 @@ export default function DroneViewPlayer({
 
         {/* Time-lapse indicator */}
         {showTimeLapse && (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-white" style={{ background: 'rgba(0, 0, 0, 0.6)' }}>
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white" style={{ background: 'rgba(0, 0, 0, 0.6)' }}>
             <Clock className="w-3.5 h-3.5 animate-spin" />
             Time-lapse jour → nuit...
           </div>
@@ -155,10 +155,10 @@ export default function DroneViewPlayer({
       {/* Controls bar */}
       <div className="flex items-center justify-between p-3 bg-gray-50/50">
         {/* Day/Night toggle */}
-        <div className="flex items-center gap-1 p-1 rounded-full bg-white border border-gray-200">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-gray-200">
           <button
             onClick={() => setMode('day')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               mode === 'day' ? 'text-white' : 'text-gray-500'
             }`}
             style={mode === 'day' ? { background: NAVY } : {}}
@@ -168,7 +168,7 @@ export default function DroneViewPlayer({
           </button>
           <button
             onClick={() => setMode('night')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               mode === 'night' ? 'text-white' : 'text-gray-500'
             }`}
             style={mode === 'night' ? { background: NAVY } : {}}
@@ -187,7 +187,7 @@ export default function DroneViewPlayer({
               setShowTimeLapse(false);
             }, 2000);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-600 hover:bg-white transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-white transition-colors"
         >
           <Clock className="w-3.5 h-3.5" />
           Time-lapse

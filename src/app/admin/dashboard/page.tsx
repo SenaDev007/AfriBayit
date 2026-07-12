@@ -126,7 +126,7 @@ export default function GlobalAdminDashboard() {
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-24 mb-3" />
               <div className="h-8 bg-gray-200 rounded w-20 mb-2" />
-              <div className="h-2 bg-gray-100 rounded-full" />
+              <div className="h-2 bg-gray-100 rounded-lg" />
             </div>
           ))}
         </div>
@@ -168,7 +168,7 @@ export default function GlobalAdminDashboard() {
             <ShieldCheck className="w-3 h-3 mr-1" />
             SUPER_ADMIN
           </Badge>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             En ligne
           </span>
@@ -233,7 +233,7 @@ export default function GlobalAdminDashboard() {
                     <span className="text-gray-500">{formatXOF(c.commission)}</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#003087] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-[#003087] rounded-lg transition-all duration-500" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );

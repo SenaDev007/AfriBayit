@@ -36,9 +36,9 @@ function renderRecIcon(icon: RebeccaRecommendation['icon']) {
 export default function RebeccaPanel() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D4AF37]/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+      <div className="bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D4AF37]/10 rounded-lg translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg"><Lightbulb className="w-7 h-7 text-white" /></div>
           <div>
@@ -68,7 +68,7 @@ export default function RebeccaPanel() {
                       {renderRecIcon(rec.icon)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm text-[#2C2E2F]">{rec.title}</h4>
+                      <h4 className="font-semibold text-sm text-[#0a2a5e]">{rec.title}</h4>
                       <p className="text-xs text-gray-600 mt-1 leading-relaxed">{rec.description}</p>
                     </div>
                     <button

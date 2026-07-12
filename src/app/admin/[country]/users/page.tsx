@@ -101,7 +101,7 @@ export default function CountryUsersPage() {
                     <tr key={user.id} className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
                             <Users className="w-4 h-4 text-[#003087]" />
                           </div>
                           <span className="font-medium text-gray-900 truncate">{user.name}</span>

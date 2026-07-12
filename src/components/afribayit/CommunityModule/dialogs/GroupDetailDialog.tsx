@@ -40,7 +40,7 @@ export default function GroupDetailDialog({ groupId, onClose, user }: GroupDetai
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="bg-white rounded-3xl w-full max-w-lg shadow-2xl my-8 mx-4"
+        className="bg-white rounded-xl w-full max-w-lg shadow-2xl my-8 mx-4"
         onClick={e => e.stopPropagation()}
       >
         {isLoading ? (
@@ -55,7 +55,7 @@ export default function GroupDetailDialog({ groupId, onClose, user }: GroupDetai
             <div className="p-5 border-b">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h2 className="font-display text-xl font-bold text-[#2C2E2F]">
+                  <h2 className="font-display text-xl font-bold text-[#0a2a5e]">
                     {groupData?.name ? String(groupData.name) : 'Groupe'}
                   </h2>
                   <div className="flex items-center gap-2 mt-1">
@@ -81,14 +81,14 @@ export default function GroupDetailDialog({ groupId, onClose, user }: GroupDetai
 
             {/* Members list */}
             <div className="p-5 max-h-[40vh] overflow-y-auto">
-              <h4 className="text-sm font-semibold text-[#2C2E2F] mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-[#0a2a5e] mb-3 flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#003087]" /> Membres
               </h4>
               {membersLoading && (
                 <div className="space-y-2">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="animate-pulse flex items-center gap-2 p-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-200" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-200" />
                       <div className="flex-1"><div className="h-3 bg-gray-200 rounded w-24" /></div>
                     </div>
                   ))}
@@ -106,11 +106,11 @@ export default function GroupDetailDialog({ groupId, onClose, user }: GroupDetai
                         <ImageWithFallback
                           src={memberUser?.avatar ? String(memberUser.avatar) : ''}
                           alt=""
-                          className="w-8 h-8 rounded-full"
+                          className="w-8 h-8 rounded-lg"
                           fallbackType="avatar"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#2C2E2F] truncate">
+                          <p className="text-sm font-medium text-[#0a2a5e] truncate">
                             {memberUser?.name ? String(memberUser.name) : 'Membre'}
                           </p>
                           <p className="text-[10px] text-gray-400">{String(member.role ?? 'Membre')}</p>
@@ -130,14 +130,14 @@ export default function GroupDetailDialog({ groupId, onClose, user }: GroupDetai
               <div className="flex gap-3">
                 <button
                   onClick={() => toast({ title: 'Messagerie', description: 'Ouvrez la messagerie pour contacter ce groupe.' })}
-                  className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="w-4 h-4" /> Message
                 </button>
                 <button
                   onClick={handleJoin}
                   disabled={!user || joinGroup.isPending}
-                  className="flex-1 py-3 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {joinGroup.isPending ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

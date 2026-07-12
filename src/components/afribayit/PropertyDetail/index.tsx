@@ -218,15 +218,15 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           <Skeleton className="h-4 w-40 mb-6" />
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1 lg:max-w-[65%]">
-              <Skeleton className="aspect-[16/10] rounded-3xl mb-6" />
+              <Skeleton className="aspect-[16/10] rounded-xl mb-6" />
               <Skeleton className="h-8 w-3/4 mb-3" />
               <Skeleton className="h-5 w-1/2 mb-6" />
               <Skeleton className="h-24 rounded-2xl mb-6" />
               <Skeleton className="h-40 rounded-2xl mb-6" />
             </div>
             <div className="lg:w-[35%]">
-              <Skeleton className="h-72 rounded-3xl mb-4" />
-              <Skeleton className="h-48 rounded-3xl" />
+              <Skeleton className="h-72 rounded-xl mb-4" />
+              <Skeleton className="h-48 rounded-xl" />
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
@@ -257,7 +257,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <MapPin className="w-8 h-8 text-gray-300" />
           </div>
           <h2 className="font-display text-2xl font-bold text-gray-400">Bien non trouvé</h2>

@@ -305,7 +305,7 @@ export default function CountryAccreditationsPage() {
                       <tr key={acc.id} className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors">
                         <td className="p-4 font-medium">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-[#003087]/10 flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
                               <UserCircle className="w-4 h-4 text-[#003087]" />
                             </div>
                             <span className="truncate">{acc.user?.name || 'Utilisateur'}</span>

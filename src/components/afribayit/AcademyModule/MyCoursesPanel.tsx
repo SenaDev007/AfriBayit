@@ -24,9 +24,9 @@ export default function MyCoursesPanel({
     return (
       <div className="text-center py-16">
         <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Connectez-vous</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Connectez-vous</h3>
         <p className="text-sm text-gray-500 mb-4">Veuillez vous connecter pour voir vos formations</p>
-        <button onClick={onLogin} className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
+        <button onClick={onLogin} className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors">
           Se connecter
         </button>
       </div>
@@ -37,11 +37,11 @@ export default function MyCoursesPanel({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-3xl p-5 shadow-sm border animate-pulse">
+          <div key={i} className="bg-white rounded-xl p-5 shadow-sm border animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
             <div className="h-3 bg-gray-100 rounded w-1/2 mb-4" />
-            <div className="h-2 bg-gray-100 rounded-full mb-2" />
-            <div className="h-8 bg-gray-200 rounded-full w-32" />
+            <div className="h-2 bg-gray-100 rounded-lg mb-2" />
+            <div className="h-8 bg-gray-200 rounded-lg w-32" />
           </div>
         ))}
       </div>
@@ -52,9 +52,9 @@ export default function MyCoursesPanel({
     return (
       <div className="text-center py-16">
         <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Aucune formation suivie</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Aucune formation suivie</h3>
         <p className="text-sm text-gray-500 mb-4">Explorez notre catalogue et inscrivez-vous à une formation</p>
-        <button onClick={onGoToCatalogue} className="px-6 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors">
+        <button onClick={onGoToCatalogue} className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors">
           Explorer le catalogue
         </button>
       </div>
@@ -91,7 +91,7 @@ export default function MyCoursesPanel({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08, ease: easeOut }}
-            className="bg-white rounded-3xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => course ? onSelect(course.id) : undefined}
           >
             <div className="flex items-start gap-4">
@@ -102,7 +102,7 @@ export default function MyCoursesPanel({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-semibold text-sm text-[#2C2E2F] hover:text-[#003087] transition-colors truncate">
+                  <h3 className="font-semibold text-sm text-[#0a2a5e] hover:text-[#003087] transition-colors truncate">
                     {course?.title || `Formation #${enrollment.courseId}`}
                   </h3>
                   {enrollment.completed ? (
@@ -121,7 +121,7 @@ export default function MyCoursesPanel({
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full rounded-full"
+                      className="h-full rounded-lg"
                       initial={{ width: 0 }}
                       animate={{ width: `${enrollment.progress}%` }}
                       transition={{ duration: 0.6, ease: 'easeOut' }}

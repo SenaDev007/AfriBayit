@@ -101,10 +101,10 @@ export default function AcademyModule() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
             <GraduationCap className="w-4 h-4" /> AfriBayit Academy
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
             Formations <span className="text-[#003087]">Immobilières</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
@@ -130,7 +130,7 @@ export default function AcademyModule() {
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -141,7 +141,7 @@ export default function AcademyModule() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >

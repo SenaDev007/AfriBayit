@@ -25,10 +25,10 @@ export default function InvestorGroupsPanel({
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       {/* Header card */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-1 flex items-center gap-2">
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-1 flex items-center gap-2">
               <Landmark className="w-5 h-5 text-[#00A651]" /> Groupes d&apos;investisseurs
             </h3>
             <p className="text-xs text-gray-500">
@@ -38,7 +38,7 @@ export default function InvestorGroupsPanel({
           </div>
           <button
             onClick={() => { if (!isAuth) { toast({ title: 'Connexion requise' }); return; } onCreateGroup(); }}
-            className="px-4 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1 shrink-0"
+            className="px-4 py-2 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" /> Créer
           </button>
@@ -92,7 +92,7 @@ export default function InvestorGroupsPanel({
                     ) : (
                       <Globe className="w-4 h-4 text-[#009CDE]" />
                     )}
-                    <h4 className="font-semibold text-sm text-[#2C2E2F] group-hover:text-[#003087] transition-colors">{group.name}</h4>
+                    <h4 className="font-semibold text-sm text-[#0a2a5e] group-hover:text-[#003087] transition-colors">{group.name}</h4>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${group.role === 'Premium' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-[#009CDE]/10 text-[#009CDE]'}`}>
                     {group.role || 'Privé'}
@@ -118,7 +118,7 @@ export default function InvestorGroupsPanel({
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onSelectGroup(group.id); }}
-                  className="w-full py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+                  className="w-full py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   Voir le groupe
                 </button>
@@ -132,7 +132,7 @@ export default function InvestorGroupsPanel({
       <div className="bg-gradient-to-r from-[#003087]/5 to-[#00A651]/5 rounded-2xl p-4 border flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-[#00A651] shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500">
-          <strong className="text-[#2C2E2F]">Accès conditionné</strong> — L&apos;accès aux groupes premium est conditionné
+          <strong className="text-[#0a2a5e]">Accès conditionné</strong> — L&apos;accès aux groupes premium est conditionné
           au niveau KYC et au montant de portefeuille déclaré. Les groupes sont modérés par des Community Managers par pays
           avec modération IA temps réel (détection spam, hate speech, annonces déguisées).
         </p>

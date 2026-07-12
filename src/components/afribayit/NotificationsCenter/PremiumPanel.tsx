@@ -24,7 +24,7 @@ export default function PremiumPanel(props: PremiumPanelProps) {
       >
         <div className="flex items-center gap-2 mb-1">
           <Crown className="w-5 h-5 text-[#D4AF37]" />
-          <h3 className="font-display text-base font-bold text-[#2C2E2F]">Notifications Premium</h3>
+          <h3 className="font-display text-base font-bold text-[#0a2a5e]">Notifications Premium</h3>
         </div>
         <p className="text-xs text-gray-500 mb-5">
           Notifications exclusives pour les membres Premium et Pro.
@@ -45,7 +45,7 @@ export default function PremiumPanel(props: PremiumPanelProps) {
                     <type.icon className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#2C2E2F]">{type.label}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e]">{type.label}</p>
                     <p className="text-[10px] text-gray-500">{type.desc}</p>
                   </div>
                 </div>

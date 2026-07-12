@@ -30,7 +30,7 @@ export default function CourseCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08, ease: easeOut }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-sm border group cursor-pointer w-full"
+      className="bg-white rounded-xl overflow-hidden shadow-sm border group cursor-pointer w-full"
       onClick={() => onSelect(course.id)}
     >
       {/* Image — same pattern as PropertyCard: aspect-[4/3], fill, absolute */}
@@ -75,7 +75,7 @@ export default function CourseCard({
         </div>
 
         {/* Title */}
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-1 group-hover:text-[#003087] transition-colors">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors">
           {course.title}
         </h3>
         <p className="text-xs text-gray-500 mb-3">Par {course.instructor}</p>
@@ -107,7 +107,7 @@ export default function CourseCard({
           <button
             onClick={(e) => { e.stopPropagation(); onEnroll(course.id); }}
             disabled={enrollingCourseId === course.id && isEnrolling}
-            className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
+            className="px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
           >
             {enrollingCourseId === course.id && isEnrolling ? 'Inscription...' : "S'inscrire"}
           </button>

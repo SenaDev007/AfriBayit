@@ -16,7 +16,7 @@ export default function NotFound() {
             <span className="text-[#FFCC00]">0</span>
             4
           </h1>
-          <div className="h-1 w-24 bg-[#FFCC00] mx-auto mt-4 rounded-full" />
+          <div className="h-1 w-24 bg-[#FFCC00] mx-auto mt-4 rounded-lg" />
         </div>
 
         <h2 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-3xl md:text-4xl text-white font-semibold mb-4">

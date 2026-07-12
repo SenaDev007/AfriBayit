@@ -137,14 +137,14 @@ export default function CompleteProfilePage() {
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: easeOut }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
       >
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
             <MapPin className="w-8 h-8 text-[#003087]" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-[#2C2E2F] mb-2">
+          <h1 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">
             Bienvenue sur AfriBayit !
           </h1>
           <p className="text-sm text-gray-500">
@@ -282,7 +282,7 @@ export default function CompleteProfilePage() {
             whileTap={{ scale: loading ? 1 : 0.99 }}
             type="submit"
             disabled={loading || !selectedCountry || !selectedCity || (needsEmail && !email.trim())}
-            className="w-full py-3.5 bg-[#003087] text-white rounded-full font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? 'Enregistrement...' : 'Commencer'}

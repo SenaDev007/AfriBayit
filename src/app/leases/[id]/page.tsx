@@ -170,8 +170,8 @@ export default function LeaseDetailPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Skeleton className="h-4 w-40 mb-6" />
           <Skeleton className="h-8 w-3/4 mb-6" />
-          <Skeleton className="h-64 rounded-3xl mb-6" />
-          <Skeleton className="h-48 rounded-3xl" />
+          <Skeleton className="h-64 rounded-xl mb-6" />
+          <Skeleton className="h-48 rounded-xl" />
         </div>
       </section>
     );
@@ -219,7 +219,7 @@ export default function LeaseDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl border overflow-hidden mb-6"
+          className="bg-white rounded-xl border overflow-hidden mb-6"
         >
           <div className="grid md:grid-cols-3 gap-0">
             {/* Property image */}
@@ -235,11 +235,11 @@ export default function LeaseDetailPage() {
             <div className="md:col-span-2 p-5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
-                  <h1 className="font-display text-xl font-bold text-[#2C2E2F] mb-1">{property?.title}</h1>
+                  <h1 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">{property?.title}</h1>
                   <p className="text-xs text-gray-400 mb-1">Réf. {lease.leaseRef}</p>
                 </div>
                 <span
-                  className="px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap"
                   style={{ backgroundColor: `${status.color}15`, color: status.color }}
                 >
                   {status.label}
@@ -260,7 +260,7 @@ export default function LeaseDetailPage() {
                 </div>
                 <div>
                   <p className="text-gray-400 mb-0.5">Durée</p>
-                  <p className="font-bold text-[#2C2E2F]">{lease.leaseTermMonths} mois</p>
+                  <p className="font-bold text-[#0a2a5e]">{lease.leaseTermMonths} mois</p>
                 </div>
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function LeaseDetailPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-3xl border p-6 mb-6"
+          className="bg-white rounded-xl border p-6 mb-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
@@ -288,7 +288,7 @@ export default function LeaseDetailPage() {
             {contractDoc && (
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-3 py-2 bg-[#003087]/5 text-[#003087] rounded-full text-xs font-semibold hover:bg-[#003087]/10 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 Télécharger PDF
@@ -304,7 +304,7 @@ export default function LeaseDetailPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generateContract.isPending}
-                className="px-5 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
               >
                 {generateContract.isPending ? 'Génération...' : 'Générer le contrat'}
               </button>
@@ -319,7 +319,7 @@ export default function LeaseDetailPage() {
                 <button
                   onClick={() => handleSignClick({ type: 'contract' })}
                   disabled={signLease.isPending}
-                  className="w-full py-3 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <PenLine className="w-4 h-4" />
                   {signLease.isPending ? 'Signature...' : 'Signer le bail électroniquement'}
@@ -341,7 +341,7 @@ export default function LeaseDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl border p-6 mb-6"
+            className="bg-white rounded-xl border p-6 mb-6"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <ClipboardList className="w-5 h-5" />
@@ -374,7 +374,7 @@ export default function LeaseDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="bg-white rounded-3xl border p-6 mb-6"
+            className="bg-white rounded-xl border p-6 mb-6"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <Coins className="w-5 h-5" />
@@ -399,7 +399,7 @@ export default function LeaseDetailPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-3xl border p-6"
+          className="bg-white rounded-xl border p-6"
         >
           <h2 className="font-display text-lg font-bold text-[#003087] mb-4">Conditions du bail</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -466,7 +466,7 @@ function PartyCard({ label, name, email, phone, avatar, isMe }: { label: string;
           />
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm text-[#2C2E2F] truncate">{name || 'N/A'}</p>
+          <p className="font-semibold text-sm text-[#0a2a5e] truncate">{name || 'N/A'}</p>
           {email && <p className="text-xs text-gray-400 truncate">{email}</p>}
           {phone && <p className="text-xs text-gray-400 flex items-center gap-1"><Phone className="w-3 h-3" />{phone}</p>}
         </div>
@@ -513,7 +513,7 @@ function InventoryRow({
           <p className="text-xs text-gray-400">Non créé</p>
         </div>
         {canCreate && (
-          <button onClick={onCreate} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#003087]/5 text-[#003087] rounded-full text-xs font-semibold hover:bg-[#003087]/10 transition-colors">
+          <button onClick={onCreate} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors">
             <Plus className="w-3.5 h-3.5" />
             Créer
           </button>
@@ -542,7 +542,7 @@ function InventoryRow({
         {!bothSigned && (
           <button
             onClick={() => onSign(inventory.id)}
-            className="flex-1 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center justify-center gap-1.5"
           >
             <PenLine className="w-3.5 h-3.5" />
             Signer
@@ -551,7 +551,7 @@ function InventoryRow({
         {onRecordDamages && !bothSigned && (
           <button
             onClick={() => onRecordDamages(inventory.id)}
-            className="flex-1 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-semibold hover:bg-[#D4AF37]/20 transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-semibold hover:bg-[#D4AF37]/20 transition-colors flex items-center justify-center gap-1.5"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             Dégradations
@@ -566,7 +566,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="font-semibold text-[#2C2E2F]">{value}</p>
+      <p className="font-semibold text-[#0a2a5e]">{value}</p>
     </div>
   );
 }
@@ -581,10 +581,10 @@ function SignatureModal({ title, signaturePad, setSignaturePad, onConfirm, onClo
 }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg font-bold text-[#003087]">{title}</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
         </div>
         <p className="text-xs text-gray-500 mb-4">
           Saisissez votre nom complet comme signature électronique. Cette signature a valeur légale
@@ -599,13 +599,13 @@ function SignatureModal({ title, signaturePad, setSignaturePad, onConfirm, onClo
           autoFocus
         />
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">
             Annuler
           </button>
           <button
             onClick={onConfirm}
             disabled={!signaturePad || isPending}
-            className="flex-1 py-2.5 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50"
           >
             {isPending ? 'Signature...' : 'Confirmer'}
           </button>
@@ -633,12 +633,12 @@ function InventoryFormModal({ type, items, setItems, onCreate, onClose, isPendin
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg font-bold text-[#003087]">
             État des lieux d{type === 'in' ? '\'entrée' : 'e sortie'}
           </h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
         </div>
         <p className="text-xs text-gray-500 mb-4">
           Renseignez l&apos;état de chaque pièce du logement. Les deux parties devront signer cet état des lieux.
@@ -678,18 +678,18 @@ function InventoryFormModal({ type, items, setItems, onCreate, onClose, isPendin
             </div>
           ))}
         </div>
-        <button onClick={addRoom} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-full mb-4">
+        <button onClick={addRoom} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-lg mb-4">
           <Plus className="w-3.5 h-3.5" />
           Ajouter une pièce
         </button>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">
             Annuler
           </button>
           <button
             onClick={onCreate}
             disabled={isPending || items.length === 0}
-            className="flex-1 py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
           >
             {isPending ? 'Création...' : 'Créer l\'état des lieux'}
           </button>
@@ -718,10 +718,10 @@ function DamagesFormModal({ damages, setDamages, onSave, onClose, isPending }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg font-bold text-[#003087]">Dégradations constatées</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
         </div>
         <p className="text-xs text-gray-500 mb-4">
           Enregistrez les dégradations constatées lors de l&apos;état des lieux de sortie. Le coût total sera déduit du dépôt de garantie restitué au locataire.
@@ -736,7 +736,7 @@ function DamagesFormModal({ damages, setDamages, onSave, onClose, isPending }: {
             </div>
           ))}
         </div>
-        <button onClick={addDamage} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-full mb-4">
+        <button onClick={addDamage} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-lg mb-4">
           <Plus className="w-3.5 h-3.5" />
           Ajouter une dégradation
         </button>
@@ -745,11 +745,11 @@ function DamagesFormModal({ damages, setDamages, onSave, onClose, isPending }: {
           <span className="font-mono-data font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(total)} FCFA</span>
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-full text-sm font-semibold">Annuler</button>
+          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">Annuler</button>
           <button
             onClick={onSave}
             disabled={isPending || damages.length === 0}
-            className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-full text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50"
           >
             {isPending ? 'Enregistrement...' : 'Enregistrer'}
           </button>
@@ -837,7 +837,7 @@ function RentPaymentsList({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-[#2C2E2F]">
+                    <p className="text-sm font-semibold text-[#0a2a5e]">
                       {dueDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                     </p>
                     {isInitialBadge && (
@@ -857,13 +857,13 @@ function RentPaymentsList({
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-mono-data font-bold text-sm text-[#2C2E2F]">
+                  <p className="font-mono-data font-bold text-sm text-[#0a2a5e]">
                     {new Intl.NumberFormat('fr-FR').format(payment.amountDue)} {currency}
                   </p>
                   {isPayable && (
                     <button
                       onClick={() => setPayingRentId(payment.id)}
-                      className="mt-1 px-3 py-1 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1.5"
+                      className="mt-1 px-3 py-1 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1.5"
                     >
                       <CreditCard className="w-3 h-3" />
                       Payer
@@ -884,7 +884,7 @@ function RentPaymentsList({
                       <button
                         key={m.id}
                         onClick={() => setSelectedPaymentMethod(m.id)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                           selectedPaymentMethod === m.id
                             ? 'border-[#003087] bg-[#003087] text-white'
                             : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -897,14 +897,14 @@ function RentPaymentsList({
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPayingRentId(null)}
-                      className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold"
+                      className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold"
                     >
                       Annuler
                     </button>
                     <button
                       onClick={() => onPay(payment.id)}
                       disabled={isPaying}
-                      className="flex-1 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       {isPaying ? 'Redirection...' : `Payer ${new Intl.NumberFormat('fr-FR').format(payment.amountDue)} ${currency}`}
                     </button>

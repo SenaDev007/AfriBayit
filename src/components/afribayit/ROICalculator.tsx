@@ -103,7 +103,7 @@ export default function ROICalculator({
   const yieldColor = (y: number) => y >= 8 ? '#00A651' : y >= 5 ? '#D4AF37' : '#ef4444';
 
   return (
-    <div className={`bg-white rounded-3xl border overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
+    <div className={`bg-white rounded-xl border overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
       {/* Header */}
       <div className="flex items-center gap-2 p-4 border-b bg-gradient-to-r from-[#003087] to-[#0047b3]">
         <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
@@ -218,7 +218,7 @@ export default function ROICalculator({
               <Calendar className="w-3.5 h-3.5 text-gray-500" />
               <p className="text-[10px] text-gray-500">Rentabilité (années)</p>
             </div>
-            <p className="font-mono-data font-bold text-lg text-[#2C2E2F]">
+            <p className="font-mono-data font-bold text-lg text-[#0a2a5e]">
               {calc.paybackYears ? `${Math.round(calc.paybackYears)} ans` : '—'}
             </p>
           </div>
@@ -274,7 +274,7 @@ export default function ROICalculator({
               <span>− Taxe foncière</span>
               <span className="font-mono">−{fmt(propertyTax)}</span>
             </div>
-            <div className="flex justify-between font-semibold text-[#2C2E2F] pt-1 border-t">
+            <div className="flex justify-between font-semibold text-[#0a2a5e] pt-1 border-t">
               <span className="flex items-center gap-1">Cashflow annuel <ArrowRight className="w-3 h-3" /></span>
               <span className={`font-mono ${calc.annualCashflow >= 0 ? 'text-[#00A651]' : 'text-red-500'}`}>
                 {calc.annualCashflow >= 0 ? '+' : ''}{fmt(calc.annualCashflow)}

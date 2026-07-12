@@ -70,9 +70,9 @@ export function RoomFormModal({ open, onClose, onSubmit, initial, loading }: Roo
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4"
+        className="bg-white rounded-xl p-6 shadow-2xl max-w-md w-full mx-4"
       >
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-4 flex items-center gap-2">
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
           {initial ? <Pencil className="w-5 h-5 text-[#003087]" /> : <Plus className="w-5 h-5 text-[#00A651]" />}
           {initial ? 'Modifier la chambre' : 'Ajouter une chambre'}
         </h3>

@@ -68,7 +68,7 @@ function PieChart({ items }: { items: { name: string; amount: number; color: str
   return (
     <div className="flex items-center gap-6">
       <div
-        className="w-40 h-40 rounded-full shrink-0"
+        className="w-40 h-40 rounded-lg shrink-0"
         style={{ background: `conic-gradient(${gradientParts.join(', ')})` }}
       />
       <div className="space-y-2">
@@ -430,7 +430,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                               animate={{ width: `${widthPercent}%` }}
                               transition={{ duration: 0.8, ease: 'easeOut' }}
                               className={cn(
-                                'h-full rounded-full flex items-center justify-end pr-2',
+                                'h-full rounded-lg flex items-center justify-end pr-2',
                                 comp.country === 'BJ' ? 'bg-[#003087]' :
                                 comp.country === 'CI' ? 'bg-[#D4AF37]' :
                                 comp.country === 'BF' ? 'bg-[#00A651]' : 'bg-[#8B5CF6]'

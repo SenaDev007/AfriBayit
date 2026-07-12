@@ -183,7 +183,7 @@ export default function CourseLessonViewer({
                     ) : isActive ? (
                       <Play className="w-5 h-5 text-[#003087]" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                      <div className="w-5 h-5 rounded-lg border-2 border-gray-300" />
                     )}
                   </div>
 
@@ -232,7 +232,7 @@ export default function CourseLessonViewer({
             </div>
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-full"
+                className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-lg"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -260,7 +260,7 @@ export default function CourseLessonViewer({
                 <span>•</span>
                 <span>{totalModules - completedCount} restants</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#2C2E2F]">
+              <h2 className="text-lg sm:text-xl font-bold text-[#0a2a5e]">
                 {activeModule?.title || 'Chargement...'}
               </h2>
             </div>
@@ -281,7 +281,7 @@ export default function CourseLessonViewer({
             ) : (
               <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 rounded-lg bg-white/10 flex items-center justify-center mx-auto mb-3">
                     {activeModule?.type === 'text' ? (
                       <FileText className="w-8 h-8 text-white/60" />
                     ) : (
@@ -311,7 +311,7 @@ export default function CourseLessonViewer({
                 <button
                   onClick={goPrev}
                   disabled={activeModuleIndex === 0}
-                  className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-gray-600 border hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Précédent
@@ -319,7 +319,7 @@ export default function CourseLessonViewer({
                 <button
                   onClick={goNext}
                   disabled={activeModuleIndex === totalModules - 1}
-                  className="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium text-white bg-[#003087] hover:bg-[#0047b3] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#003087] hover:bg-[#0047b3] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Suivant
                   <ArrowRight className="w-4 h-4" />
@@ -332,7 +332,7 @@ export default function CourseLessonViewer({
                 disabled={
                   completedMods.includes(activeModuleId) || isSaving
                 }
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   completedMods.includes(activeModuleId)
                     ? 'bg-[#00A651]/10 text-[#00A651] cursor-default'
                     : 'bg-[#D4AF37] text-white hover:bg-[#c9a22e]'

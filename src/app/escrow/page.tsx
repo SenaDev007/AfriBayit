@@ -149,7 +149,7 @@ export default function EscrowPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: easeOut }}
             >
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: `${NAVY}10` }}>
+              <div className="w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-6" style={{ background: `${NAVY}10` }}>
                 <Shield className="w-10 h-10" style={{ color: NAVY }} />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
@@ -160,7 +160,7 @@ export default function EscrowPage() {
               </p>
               <a
                 href="/acheter"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-lg text-base font-bold text-white transition-all hover:scale-105"
                 style={{ background: NAVY }}
               >
                 Parcourir les biens

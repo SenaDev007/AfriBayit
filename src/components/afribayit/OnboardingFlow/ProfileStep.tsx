@@ -42,7 +42,7 @@ export default function ProfileStep({ data, updateData, direction, slideVariants
             whileHover={{ scale: 1.01, x: 4 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => updateData({ profileType: pt.value })}
-            className={`w-full p-5 rounded-3xl border-2 text-left transition-all flex items-center gap-4 ${
+            className={`w-full p-5 rounded-xl border-2 text-left transition-all flex items-center gap-4 ${
               data.profileType === pt.value
                 ? 'bg-white/10 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/20'
                 : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
@@ -63,7 +63,7 @@ export default function ProfileStep({ data, updateData, direction, slideVariants
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                className="w-7 h-7 rounded-full bg-[#D4AF37] flex items-center justify-center shrink-0"
+                className="w-7 h-7 rounded-lg bg-[#D4AF37] flex items-center justify-center shrink-0"
               >
                 <svg className="w-4 h-4 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

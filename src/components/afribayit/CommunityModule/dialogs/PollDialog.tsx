@@ -25,10 +25,10 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl"
+        className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Créer un sondage</h3>
+        <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Créer un sondage</h3>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1.5 block">Question</label>
@@ -42,7 +42,7 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
           </div>
           {form.options.map((opt, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full bg-[#003087]/10 flex items-center justify-center text-xs font-bold text-[#003087] shrink-0">{String.fromCharCode(65 + i)}</span>
+              <span className="w-7 h-7 rounded-lg bg-[#003087]/10 flex items-center justify-center text-xs font-bold text-[#003087] shrink-0">{String.fromCharCode(65 + i)}</span>
               <input
                 type="text"
                 value={opt}
@@ -73,11 +73,11 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
             </button>
           )}
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 py-3 border rounded-full text-sm font-semibold text-gray-600">Annuler</button>
+            <button onClick={onClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">Annuler</button>
             <button
               onClick={onSubmit}
               disabled={isPending}
-              className="flex-1 py-3 bg-[#D4AF37] text-[#003087] rounded-full text-sm font-bold disabled:opacity-50"
+              className="flex-1 py-3 bg-[#D4AF37] text-[#003087] rounded-lg text-sm font-bold disabled:opacity-50"
             >
               {isPending ? 'Publication...' : 'Publier le sondage'}
             </button>

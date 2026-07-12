@@ -46,7 +46,7 @@ export default function EventsPanel({
       <div className="bg-gradient-to-r from-[#009CDE]/5 to-[#003087]/5 rounded-2xl p-4 border flex items-start gap-3">
         <Video className="w-5 h-5 text-[#009CDE] shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500">
-          <strong className="text-[#2C2E2F]">Événements AfriBayit</strong> — Summit mensuel par pays (webinaire live,
+          <strong className="text-[#0a2a5e]">Événements AfriBayit</strong> — Summit mensuel par pays (webinaire live,
           replay 30 jours), Networking trimestriel (physique, 50-200 participants), Portes ouvertes virtuelles
           (visites VR simultanées), Formation communautaire hebdomadaire (gratuite).
         </p>
@@ -85,7 +85,7 @@ export default function EventsPanel({
             </div>
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-[#2C2E2F] group-hover:text-[#003087] transition-colors mb-1">{event.title}</h3>
+              <h3 className="font-semibold text-sm text-[#0a2a5e] group-hover:text-[#003087] transition-colors mb-1">{event.title}</h3>
               <div className="flex items-center gap-2 flex-wrap text-xs">
                 <span className="flex items-center gap-1 px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full font-medium">
                   {eventTypeIcon(event.type)} {event.type}
@@ -104,7 +104,7 @@ export default function EventsPanel({
             <button
               onClick={(e) => { e.stopPropagation(); onRegisterEvent(event.id); }}
               disabled={registeringEventId === event.id && isRegisterPending}
-              className="px-4 py-2 bg-[#003087] text-white rounded-full text-xs font-semibold shrink-0 disabled:opacity-60 hover:bg-[#0047b3] transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold shrink-0 disabled:opacity-60 hover:bg-[#0047b3] transition-colors flex items-center gap-1.5"
             >
               {registeringEventId === event.id && isRegisterPending ? (
                 <>Inscription...</>

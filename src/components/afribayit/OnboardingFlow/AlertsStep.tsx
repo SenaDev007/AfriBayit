@@ -47,7 +47,7 @@ export default function AlertsStep({ data, updateData, direction, slideVariants,
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => updateData({ alertFrequency: freq.value })}
-              className={`w-full p-5 rounded-3xl border-2 text-left transition-all flex items-center justify-between ${
+              className={`w-full p-5 rounded-xl border-2 text-left transition-all flex items-center justify-between ${
                 data.alertFrequency === freq.value
                   ? 'bg-white/10 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/20'
                   : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
@@ -61,7 +61,7 @@ export default function AlertsStep({ data, updateData, direction, slideVariants,
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="w-6 h-6 rounded-full bg-[#D4AF37] flex items-center justify-center shrink-0"
+                  className="w-6 h-6 rounded-lg bg-[#D4AF37] flex items-center justify-center shrink-0"
                 >
                   <svg className="w-3.5 h-3.5 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />

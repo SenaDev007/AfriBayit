@@ -22,19 +22,19 @@ interface ExportPanelProps {
 export default function ExportPanel({ onExport }: ExportPanelProps) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="bg-white rounded-3xl p-6 shadow-sm border max-w-2xl mx-auto text-center">
+      <div className="bg-white rounded-xl p-6 shadow-sm border max-w-2xl mx-auto text-center">
         <Download className="w-10 h-10 mx-auto mb-3 text-[#003087]" />
-        <h3 className="font-display text-xl font-bold text-[#2C2E2F] mb-2">Exporter vos données</h3>
+        <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">Exporter vos données</h3>
         <p className="text-sm text-gray-500 mb-6">Téléchargez vos statistiques et données analytiques au format de votre choix.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button onClick={() => onExport('csv')} className="p-4 border-2 border-[#00A651]/20 rounded-2xl hover:border-[#00A651] hover:bg-[#00A651]/5 transition-all">
             <FileText className="w-6 h-6 mx-auto mb-2 text-[#00A651]" />
-            <h4 className="font-display text-base font-bold text-[#2C2E2F]">CSV</h4>
+            <h4 className="font-display text-base font-bold text-[#0a2a5e]">CSV</h4>
             <p className="text-xs text-gray-500 mt-1">Compatible Excel, Google Sheets</p>
           </button>
           <button onClick={() => onExport('pdf')} className="p-4 border-2 border-[#003087]/20 rounded-2xl hover:border-[#003087] hover:bg-[#003087]/5 transition-all">
             <FileText className="w-6 h-6 mx-auto mb-2 text-[#003087]" />
-            <h4 className="font-display text-base font-bold text-[#2C2E2F]">PDF</h4>
+            <h4 className="font-display text-base font-bold text-[#0a2a5e]">PDF</h4>
             <p className="text-xs text-gray-500 mt-1">Rapport formaté prêt à imprimer</p>
           </button>
         </div>

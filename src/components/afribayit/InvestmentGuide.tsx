@@ -165,7 +165,7 @@ export default function InvestmentGuide() {
   const guide = GUIDES.find(g => g.code === selectedCountry) || GUIDES[0];
 
   return (
-    <div className="bg-white rounded-3xl border overflow-hidden">
+    <div className="bg-white rounded-xl border overflow-hidden">
       {/* Header */}
       <div className="p-5 border-b bg-gradient-to-r from-[#2C2E2F] to-[#1a1c1d]">
         <div className="flex items-center gap-2 mb-1">
@@ -233,7 +233,7 @@ export default function InvestmentGuide() {
                       style={{ backgroundColor: cfg.color }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#2C2E2F] truncate">{doc.doc}</p>
+                      <p className="text-xs font-semibold text-[#0a2a5e] truncate">{doc.doc}</p>
                       <p className="text-[10px] text-gray-400">{doc.type}</p>
                     </div>
                     <span
@@ -302,7 +302,7 @@ function TaxRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-[#D4AF37]/5">
       <span className="text-[10px] text-gray-500 shrink-0 pt-0.5">{label}</span>
-      <span className="text-xs font-semibold text-[#2C2E2F] text-right">{value}</span>
+      <span className="text-xs font-semibold text-[#0a2a5e] text-right">{value}</span>
     </div>
   );
 }

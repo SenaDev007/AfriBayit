@@ -11,8 +11,8 @@ const ProfessionalProfileModule = dynamic(() => import('@/components/afribayit/P
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
         <div className="animate-pulse">
           <div className="h-48 bg-gray-200 rounded-b-3xl" />
-          <div className="h-32 bg-gray-100 rounded-3xl mt-4" />
-          <div className="h-64 bg-gray-100 rounded-3xl mt-4" />
+          <div className="h-32 bg-gray-100 rounded-xl mt-4" />
+          <div className="h-64 bg-gray-100 rounded-xl mt-4" />
         </div>
       </div>
     </div>

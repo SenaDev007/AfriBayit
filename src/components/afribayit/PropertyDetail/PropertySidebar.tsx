@@ -87,7 +87,7 @@ export default function PropertySidebar({
       className="lg:sticky lg:top-24"
     >
       {/* Price Box */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm border mb-4">
+      <div className="bg-white rounded-xl p-6 shadow-sm border mb-4">
         <div className="mb-4">
           <p className="font-mono-data text-3xl sm:text-4xl font-bold text-[#D4AF37] mb-1">
             {priceLabel}
@@ -99,7 +99,7 @@ export default function PropertySidebar({
 
         {/* Escrow Badge */}
         <div className="flex items-center gap-2 p-3 bg-[#00A651]/5 rounded-2xl mb-5">
-          <div className="w-8 h-8 rounded-full bg-[#00A651]/10 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#00A651]/10 flex items-center justify-center">
             <svg className="w-4 h-4 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
@@ -118,7 +118,7 @@ export default function PropertySidebar({
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={onOpenVRTour}
-              className="w-full py-3.5 bg-[#003087] hover:bg-[#0047b3] text-white rounded-full font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#003087] hover:bg-[#0047b3] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
             >
               <Eye className="w-4 h-4 text-[#D4AF37]" />
               Visite virtuelle 360°
@@ -131,7 +131,7 @@ export default function PropertySidebar({
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => onPurchase?.(property?.id || '')}
-              className="w-full py-3.5 bg-[#00A651] hover:bg-[#008f47] text-white rounded-full font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#00A651] hover:bg-[#008f47] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -146,7 +146,7 @@ export default function PropertySidebar({
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => onRent?.(property?.id || '')}
-              className="w-full py-3.5 bg-[#00A651] hover:bg-[#008f47] text-white rounded-full font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#00A651] hover:bg-[#008f47] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -159,7 +159,7 @@ export default function PropertySidebar({
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => onContactAgent?.()}
-            className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-full font-semibold text-sm shadow-lg transition-colors"
+            className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors"
           >
             Demander une visite
           </motion.button>
@@ -167,7 +167,7 @@ export default function PropertySidebar({
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => onContactAgent?.()}
-            className="w-full py-3.5 bg-transparent border-2 border-[#003087] text-[#003087] rounded-full font-semibold text-sm hover:bg-[#003087] hover:text-white transition-colors"
+            className="w-full py-3.5 bg-transparent border-2 border-[#003087] text-[#003087] rounded-lg font-semibold text-sm hover:bg-[#003087] hover:text-white transition-colors"
           >
             Contacter l&apos;agent
           </motion.button>
@@ -178,7 +178,7 @@ export default function PropertySidebar({
           {/* Favorite Button */}
           <button
             onClick={isAuthenticated ? onToggleFavorite : undefined}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               isFavorite
                 ? 'bg-red-50 text-red-500 hover:bg-red-100'
                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
@@ -193,7 +193,7 @@ export default function PropertySidebar({
           <div className="relative flex-1">
             <button
               onClick={() => setShowShareMenu(!showShareMenu)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-50 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-50 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
             >
               <Share2 className="w-4 h-4" />
               Partager
@@ -251,7 +251,7 @@ export default function PropertySidebar({
 
       {/* Agent Card */}
       {agent && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm border mb-4">
+        <div className="bg-white rounded-xl p-5 shadow-sm border mb-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] relative">
               <ImageWithFallback
@@ -264,7 +264,7 @@ export default function PropertySidebar({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-sm text-[#2C2E2F]">{agent.name}</h3>
+                <h3 className="font-semibold text-sm text-[#0a2a5e]">{agent.name}</h3>
                 {agent.certified && (
                   <span className="px-1.5 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[9px] font-bold rounded-full">Certifié</span>
                 )}
@@ -284,7 +284,7 @@ export default function PropertySidebar({
           {agent.phone && (
             <button
               onClick={() => setShowPhone(!showPhone)}
-              className="w-full py-2.5 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="w-full py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
               {showPhone ? agent.phone : 'Voir le numéro'}
             </button>
@@ -293,8 +293,8 @@ export default function PropertySidebar({
       )}
 
       {/* Trust Badges */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm border">
-        <h3 className="text-sm font-semibold text-[#2C2E2F] mb-3">Garanties AfriBayit</h3>
+      <div className="bg-white rounded-xl p-5 shadow-sm border">
+        <h3 className="text-sm font-semibold text-[#0a2a5e] mb-3">Garanties AfriBayit</h3>
         <div className="space-y-2.5">
           {trustBadges.map((badge) => (
             <div key={badge.text} className="flex items-center gap-2">

@@ -39,7 +39,7 @@ export default function PropertyReviews({
       className="mb-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-xl font-bold text-[#2C2E2F] flex items-center gap-2">
+        <h2 className="font-display text-xl font-bold text-[#0a2a5e] flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-[#003087]" />
           Avis ({reviews.length})
         </h2>
@@ -117,7 +117,7 @@ export default function PropertyReviews({
                 <button
                   onClick={onSubmitReview}
                   disabled={reviewSubmitting || !reviewComment.trim()}
-                  className="px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-full hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-lg hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {reviewSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -138,13 +138,13 @@ export default function PropertyReviews({
           {reviews.map((review) => (
             <div key={review.id} className="p-4 bg-white rounded-2xl border">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-full bg-[#003087]/10 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-[#003087]/10 flex items-center justify-center">
                   <span className="text-sm font-bold text-[#003087]">
                     {review.reviewer.name?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#2C2E2F]">{review.reviewer.name}</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{review.reviewer.name}</p>
                   <div className="flex items-center gap-2">
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((star) => (

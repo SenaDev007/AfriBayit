@@ -23,10 +23,10 @@ export default function OwnerDashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
           </div>
-          <Skeleton className="h-64 rounded-3xl mb-6" />
+          <Skeleton className="h-64 rounded-xl mb-6" />
           <div className="grid lg:grid-cols-2 gap-4">
-            <Skeleton className="h-80 rounded-3xl" />
-            <Skeleton className="h-80 rounded-3xl" />
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
           </div>
         </div>
       </section>
@@ -44,8 +44,8 @@ export default function OwnerDashboardPage() {
     return (
       <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl p-12 border text-center">
-            <div className="w-16 h-16 rounded-full bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-xl p-12 border text-center">
+            <div className="w-16 h-16 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
               <Building2 className="w-8 h-8 text-[#003087]" />
             </div>
             <h2 className="font-display text-2xl font-bold text-gray-700 mb-2">
@@ -57,7 +57,7 @@ export default function OwnerDashboardPage() {
             </p>
             <Link
               href="/publish"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Publier un bien à louer
@@ -133,7 +133,7 @@ export default function OwnerDashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-white rounded-3xl p-6 border"
+            className="lg:col-span-2 bg-white rounded-xl p-6 border"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function OwnerDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-3xl p-6 border flex flex-col items-center justify-center"
+            className="bg-white rounded-xl p-6 border flex flex-col items-center justify-center"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] mb-4 text-center">Occupation</h2>
             <div className="relative w-32 h-32">
@@ -214,7 +214,7 @@ export default function OwnerDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white rounded-3xl p-6 border"
+            className="bg-white rounded-xl p-6 border"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <Calendar className="w-5 h-5" />
@@ -241,7 +241,7 @@ export default function OwnerDashboardPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">
+                        <p className="text-sm font-semibold text-[#0a2a5e] truncate">
                           {p.lease?.property?.title || 'Bien'}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -249,7 +249,7 @@ export default function OwnerDashboardPage() {
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-mono-data font-bold text-sm text-[#2C2E2F]">{fmt(p.amountDue)}</p>
+                        <p className="font-mono-data font-bold text-sm text-[#0a2a5e]">{fmt(p.amountDue)}</p>
                         <p className={`text-[10px] ${daysUntil <= 3 ? 'text-[#D4AF37]' : 'text-gray-400'}`}>
                           {daysUntil === 0 ? "Aujourd'hui" : daysUntil > 0 ? `Dans ${daysUntil}j` : `Il y a ${Math.abs(daysUntil)}j`}
                         </p>
@@ -266,7 +266,7 @@ export default function OwnerDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl p-6 border"
+            className="bg-white rounded-xl p-6 border"
           >
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
               <Home className="w-5 h-5" />
@@ -274,7 +274,7 @@ export default function OwnerDashboardPage() {
             </h2>
             {vacantProperties.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-12 h-12 rounded-full bg-[#00A651]/5 flex items-center justify-center mx-auto mb-2">
+                <div className="w-12 h-12 rounded-lg bg-[#00A651]/5 flex items-center justify-center mx-auto mb-2">
                   <Building2 className="w-6 h-6 text-[#00A651]" />
                 </div>
                 <p className="text-sm text-gray-500">Tous vos biens sont loués ! 🎉</p>
@@ -303,7 +303,7 @@ export default function OwnerDashboardPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#2C2E2F] truncate">{p.title}</p>
+                        <p className="text-sm font-semibold text-[#0a2a5e] truncate">{p.title}</p>
                         <p className="text-xs text-gray-400">{p.city} · {fmt(p.price)} FCFA/mois</p>
                       </div>
                       <div className="text-right shrink-0">
@@ -324,7 +324,7 @@ export default function OwnerDashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="bg-white rounded-3xl p-6 border"
+          className="bg-white rounded-xl p-6 border"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
@@ -357,7 +357,7 @@ export default function OwnerDashboardPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2C2E2F] truncate">
+                    <p className="text-sm font-semibold text-[#0a2a5e] truncate">
                       {lease.property?.title || 'Bien'}
                     </p>
                     <p className="text-xs text-gray-400">
@@ -414,7 +414,7 @@ function KpiCard({
         )}
       </div>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="font-mono-data font-bold text-lg text-[#2C2E2F]">{value}</p>
+      <p className="font-mono-data font-bold text-lg text-[#0a2a5e]">{value}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
     </motion.div>
   );

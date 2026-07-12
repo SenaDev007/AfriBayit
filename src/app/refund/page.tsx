@@ -71,7 +71,7 @@ export default function RefundPage() {
                 transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
                 className="text-center"
               >
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `${NAVY}10` }}>
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ background: `${NAVY}10` }}>
                   <span className="text-xl font-bold" style={{ color: NAVY }}>{s.step}</span>
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">{s.title}</h3>

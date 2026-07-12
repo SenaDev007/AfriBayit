@@ -20,13 +20,13 @@ export function CheckinPanel({ reservations, onCheckIn, onCheckOut }: CheckinPan
     <motion.div key="checkin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneLanding className="w-5 h-5" /> Enregistrements</h3>
+          <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><PlaneLanding className="w-5 h-5" /> Enregistrements</h3>
           {reservations.filter(r => r.status === 'confirmed').length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {reservations.filter(r => r.status === 'confirmed').map((res) => (
                 <div key={res.id} className="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#2C2E2F]">Res. {res.bookingRef || res.id.slice(0, 8)}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e]">Res. {res.bookingRef || res.id.slice(0, 8)}</p>
                     <p className="text-xs text-gray-500">{formatDate(res.checkIn)} &rarr; {formatDate(res.checkOut)}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -41,13 +41,13 @@ export function CheckinPanel({ reservations, onCheckIn, onCheckOut }: CheckinPan
           ) : <p className="text-sm text-gray-400">Aucun enregistrement prevu</p>}
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><PlaneTakeoff className="w-5 h-5" /> Departs</h3>
+          <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><PlaneTakeoff className="w-5 h-5" /> Departs</h3>
           {reservations.filter(r => r.status === 'checked_in').length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {reservations.filter(r => r.status === 'checked_in').map((res) => (
                 <div key={res.id} className="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#2C2E2F]">Res. {res.bookingRef || res.id.slice(0, 8)}</p>
+                    <p className="text-sm font-semibold text-[#0a2a5e]">Res. {res.bookingRef || res.id.slice(0, 8)}</p>
                     <p className="text-xs text-gray-500">Depart : {formatDate(res.checkOut)}</p>
                     <p className="font-mono text-sm font-bold text-[#D4AF37]">{fmt(res.totalPrice)} FCFA</p>
                   </div>
@@ -71,7 +71,7 @@ export function InvoicingPanel({ dashboardData, reservations }: InvoicingPanelPr
   return (
     <motion.div key="invoicing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="bg-white rounded-2xl p-6 shadow-sm border">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><DollarSign className="w-5 h-5" /> Facturation</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><DollarSign className="w-5 h-5" /> Facturation</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="p-4 bg-[#00A651]/5 rounded-2xl text-center">
             <DollarSign className="w-6 h-6 text-[#00A651] mx-auto mb-1" />
@@ -93,7 +93,7 @@ export function InvoicingPanel({ dashboardData, reservations }: InvoicingPanelPr
           {reservations.filter(r => ['checked_out', 'completed'].includes(r.status)).length > 0 ? (
             reservations.filter(r => ['checked_out', 'completed'].includes(r.status)).map((res) => (
               <div key={res.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                <div><p className="text-sm font-semibold text-[#2C2E2F]">Facture {res.bookingRef || res.id.slice(0, 8)}</p><p className="text-xs text-gray-500">{formatDate(res.checkIn)} - {formatDate(res.checkOut)}</p></div>
+                <div><p className="text-sm font-semibold text-[#0a2a5e]">Facture {res.bookingRef || res.id.slice(0, 8)}</p><p className="text-xs text-gray-500">{formatDate(res.checkIn)} - {formatDate(res.checkOut)}</p></div>
                 <div className="flex items-center gap-3">
                   <p className="font-mono text-sm font-bold text-[#D4AF37]">{fmt(res.totalPrice)} FCFA</p>
                   <button className="p-2 rounded-xl border hover:bg-gray-100"><Download className="w-4 h-4 text-[#003087]" /></button>
@@ -111,12 +111,12 @@ export function CancellationPanel({ reservations }: { reservations: ReservationI
   return (
     <motion.div key="cancellation" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="bg-white rounded-2xl p-6 shadow-sm border">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Ban className="w-5 h-5" /> Annulations</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Ban className="w-5 h-5" /> Annulations</h3>
         {reservations.filter(r => r.status === 'cancelled').length > 0 ? (
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {reservations.filter(r => r.status === 'cancelled').map((res) => (
               <div key={res.id} className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl">
-                <div><p className="text-sm font-semibold text-[#2C2E2F]">{res.bookingRef || res.id.slice(0, 8)}</p><p className="text-xs text-gray-500">{formatDate(res.checkIn)} &rarr; {formatDate(res.checkOut)}</p></div>
+                <div><p className="text-sm font-semibold text-[#0a2a5e]">{res.bookingRef || res.id.slice(0, 8)}</p><p className="text-xs text-gray-500">{formatDate(res.checkIn)} &rarr; {formatDate(res.checkOut)}</p></div>
                 <div className="text-right"><p className="font-mono text-sm font-bold text-[#D93025]">-{fmt(res.totalPrice)} FCFA</p><span className="text-[10px] text-gray-400">{channelLabel(res.sourceChannel)}</span></div>
               </div>
             ))}
@@ -131,7 +131,7 @@ export function LastMinutePanel({ rooms }: { rooms: RoomItem[] }) {
   return (
     <motion.div key="lastminute" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="bg-gradient-to-br from-[#D4AF37]/10 to-[#003087]/10 rounded-2xl p-6 shadow-sm border">
-        <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-2 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> Offres Last-Minute</h3>
+        <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-2 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> Offres Last-Minute</h3>
         <p className="text-sm text-gray-500 mb-4">Chambres disponibles aujourd&apos;hui avec reduction automatique</p>
         {rooms.filter(r => r.status === 'available' || r.status === 'AVAILABLE').length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -140,7 +140,7 @@ export function LastMinutePanel({ rooms }: { rooms: RoomItem[] }) {
               return (
                 <div key={room.id} className="bg-white rounded-2xl p-4 border">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-bold text-[#2C2E2F]">{room.name || room.type}</h4>
+                    <h4 className="text-sm font-bold text-[#0a2a5e]">{room.name || room.type}</h4>
                     <span className="px-2 py-0.5 bg-[#D93025] text-white text-[10px] font-bold rounded-full">-30%</span>
                   </div>
                   <div className="flex items-baseline gap-2">
@@ -163,7 +163,7 @@ export function GuestsPanel() {
     <motion.div key="guests" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="bg-white rounded-2xl p-6 shadow-sm border max-w-2xl mx-auto text-center">
         <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Annuaire Clients</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Annuaire Clients</h3>
         <p className="text-sm text-gray-500 mb-4">Historique des communications, preferences et sejours passes de vos clients.</p>
         <div className="p-4 bg-gray-50 rounded-2xl text-left">
           <p className="text-xs text-gray-400 mb-2">Fonctionnalites :</p>
@@ -203,13 +203,13 @@ export function ReportsPanel({ dashboardData, reservations }: ReportsPanelProps)
           ))}
         </div>
         <div className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h3 className="font-display text-base font-bold text-[#2C2E2F] mb-4 flex items-center gap-2"><Eye className="w-5 h-5" /> Performance par canal</h3>
+          <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Eye className="w-5 h-5" /> Performance par canal</h3>
           <div className="space-y-3">
             {Object.entries(dashboardData?.channels || {}).map(([channel, chStats]) => (
               <div key={channel}>
                 <div className="flex items-center justify-between mb-1"><span className="text-sm text-gray-600">{channelLabel(channel)}</span><span className="font-mono text-xs font-bold">{chStats.bookings} res. · {fmt(chStats.revenue)} FCFA</span></div>
                 <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((chStats.revenue / (dashboardData?.revenue.thisMonth || 1)) * 100, 100)}%` }} transition={{ duration: 0.8, ease: easeOut }} className="h-full bg-[#003087] rounded-full" />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((chStats.revenue / (dashboardData?.revenue.thisMonth || 1)) * 100, 100)}%` }} transition={{ duration: 0.8, ease: easeOut }} className="h-full bg-[#003087] rounded-lg" />
                 </div>
               </div>
             ))}

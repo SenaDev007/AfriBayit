@@ -296,7 +296,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
         disabled={isProcessing}
         className={`
           relative flex items-center justify-center
-          w-10 h-10 rounded-full
+          w-10 h-10 rounded-lg
           transition-colors duration-200
           focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009CDE] focus-visible:ring-offset-2
           ${isListening
@@ -320,7 +320,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
                 animate={{ scale: 1.8, opacity: 0 }}
                 exit={{ scale: 1.8, opacity: 0 }}
                 transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
-                className="absolute inset-0 rounded-full bg-red-500 pointer-events-none"
+                className="absolute inset-0 rounded-lg bg-red-500 pointer-events-none"
               />
               <motion.span
                 key="pulse-ring-2"
@@ -328,7 +328,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
                 animate={{ scale: 2.2, opacity: 0 }}
                 exit={{ scale: 2.2, opacity: 0 }}
                 transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut', delay: 0.3 }}
-                className="absolute inset-0 rounded-full bg-red-400 pointer-events-none"
+                className="absolute inset-0 rounded-lg bg-red-400 pointer-events-none"
               />
             </>
           )}
@@ -424,8 +424,8 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
             className="text-xs text-red-500 font-body font-medium whitespace-nowrap flex items-center gap-1"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-lg bg-red-400 opacity-75" />
+              <span className="relative inline-flex rounded-lg h-2 w-2 bg-red-500" />
             </span>
             Écoute en cours...
           </motion.span>
