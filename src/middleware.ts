@@ -78,6 +78,16 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/publish',
   '/kyc',
   '/settings',
+  '/owner-dashboard',
+  '/investor-dashboard',
+  '/hotel-dashboard',
+  '/notary-dashboard',
+  '/leases',
+  '/profile',
+  '/subscriptions',
+  '/ambassador',
+  '/escrow',
+  '/wallet',
 ];
 
 // Admin route prefixes that require admin role
