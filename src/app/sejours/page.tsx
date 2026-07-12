@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { useHotels } from '@/hooks/useHotels';
 import { useGuesthouses as useGh } from '@/hooks/useGuesthouses';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +24,7 @@ import {
   List,
   Filter,
   X,
+  Key,
 } from 'lucide-react';
 import Link from 'next/link';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
@@ -57,6 +60,25 @@ interface GuesthouseData {
   _count?: { bookings?: number };
 }
 
+interface ShortTermRentalData {
+  id: string;
+  title: string;
+  city: string;
+  country: string;
+  propertyType: string;
+  pricePerNight: number;
+  weeklyPrice?: number | null;
+  currency: string;
+  rating: number;
+  reviewCount: number;
+  images: string | null;
+  amenities: string | null;
+  instantBooking: boolean;
+  hostVerified: boolean;
+  maxGuests: number;
+  bedrooms: number;
+}
+
 function safeJsonParse<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw || typeof raw !== 'string') return fallback;
   try { const parsed = JSON.parse(raw); return (Array.isArray(parsed) ? parsed : fallback) as T; } catch { return fallback; }
@@ -86,7 +108,7 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 export default function BookingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('all');
-  const [propertyType, setPropertyType] = useState<'all' | 'hotel' | 'guesthouse'>('all');
+  const [propertyType, setPropertyType] = useState<'all' | 'hotel' | 'guesthouse' | 'short-term'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [priceMin, setPriceMin] = useState(0);
   const [priceMax, setPriceMax] = useState(500000);
@@ -102,8 +124,17 @@ export default function BookingPage() {
   const { data: hotelsData, isLoading: hotelsLoading } = useHotels(undefined, effectiveCountry);
   const { data: guesthousesData, isLoading: ghLoading } = useGh(undefined, effectiveCountry);
 
+  // Fetch short-term rentals (CDC §5.2 — location courte durée, modèle Airbnb)
+  const { data: shortTermData, isLoading: stLoading } = useQuery({
+    queryKey: ['short-term-rentals', effectiveCountry],
+    queryFn: () => apiFetch<{ rentals: ShortTermRentalData[]; pagination: any }>(
+      `/api/short-term?${effectiveCountry ? `country=${effectiveCountry}` : ''}&limit=50`,
+    ),
+  });
+
   const hotels = (hotelsData?.hotels || []) as HotelData[];
   const guesthouses = (guesthousesData?.guesthouses || []) as GuesthouseData[];
+  const shortTermRentals = (shortTermData?.rentals || []) as ShortTermRentalData[];
 
   const allListings = useMemo(() => {
     const hotelListings = hotels.map((h) => ({
@@ -138,7 +169,29 @@ export default function BookingPage() {
       slug: g.slug,
     }));
 
-    let combined = [...hotelListings, ...ghListings];
+    // Short-term rentals (location courte durée — CDC §5.2)
+    const stListings = shortTermRentals.map((r) => ({
+      id: r.id,
+      type: 'short-term' as const,
+      name: r.title,
+      city: r.city,
+      country: r.country,
+      stars: 0,
+      rating: r.rating || 0,
+      reviewCount: r.reviewCount || 0,
+      price: r.pricePerNight,
+      currency: r.currency || 'XOF',
+      amenities: r.amenities ? (typeof r.amenities === 'string' ? safeJsonParse<string[]>(r.amenities, []) : r.amenities) : [],
+      image: r.images ? (typeof r.images === 'string' ? (safeJsonParse<string[]>(r.images, []))[0] : null) : null,
+      slug: null,
+      instantBooking: r.instantBooking,
+      hostVerified: r.hostVerified,
+      propertyType: r.propertyType,
+      maxGuests: r.maxGuests,
+      bedrooms: r.bedrooms,
+    }));
+
+    let combined = [...hotelListings, ...ghListings, ...stListings];
 
     // Filter by type
     if (propertyType !== 'all') {
@@ -175,7 +228,7 @@ export default function BookingPage() {
     }
 
     return combined;
-  }, [hotels, guesthouses, propertyType, searchQuery, minStars, minRating, priceMin, priceMax, selectedAmenities]);
+  }, [hotels, guesthouses, shortTermRentals, propertyType, searchQuery, minStars, minRating, priceMin, priceMax, selectedAmenities]);
 
   const toggleAmenity = (key: string) => {
     setSelectedAmenities((prev) =>
@@ -221,10 +274,10 @@ export default function BookingPage() {
             transition={{ duration: 0.6, ease: easeOut }}
           >
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Séjours <span className="text-[#D4AF37]">Hôtels & Guesthouses</span>
+              Séjours <span className="text-[#D4AF37]">Hôtels, Guesthouses & Locations</span>
             </h1>
             <p className="text-white/70 mb-6 text-sm">
-              La plateforme hôtelière de référence en Afrique de l'Ouest — Réservez hôtels, guesthouses et séjours courts dans 4 pays
+              La plateforme hôtelière de référence en Afrique de l'Ouest — Hôtels structurés, guesthouses cosy et locations courte durée (modèle Airbnb) avec paiement Mobile Money.
             </p>
 
             {/* Search bar */}
@@ -298,12 +351,13 @@ export default function BookingPage() {
                 <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
                   <select
                     value={propertyType}
-                    onChange={(e) => setPropertyType(e.target.value as 'all' | 'hotel' | 'guesthouse')}
+                    onChange={(e) => setPropertyType(e.target.value as 'all' | 'hotel' | 'guesthouse' | 'short-term')}
                     className="text-sm text-gray-600 bg-transparent outline-none"
                   >
                     <option value="all">Tous types</option>
                     <option value="hotel">Hôtels</option>
                     <option value="guesthouse">Guesthouses</option>
+                    <option value="short-term">Locations courte durée</option>
                   </select>
                 </div>
 
@@ -470,7 +524,7 @@ export default function BookingPage() {
               </div>
 
               {/* Type tabs */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <Button
                   variant={propertyType === 'all' ? 'default' : 'outline'}
                   size="sm"
@@ -495,11 +549,19 @@ export default function BookingPage() {
                 >
                   <Home className="w-4 h-4 mr-1" /> Guesthouses
                 </Button>
+                <Button
+                  variant={propertyType === 'short-term' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPropertyType('short-term')}
+                  className={propertyType === 'short-term' ? 'bg-[#003087]' : ''}
+                >
+                  <Key className="w-4 h-4 mr-1" /> Locations
+                </Button>
               </div>
             </div>
 
             {/* Loading State */}
-            {(hotelsLoading || ghLoading) ? (
+            {(hotelsLoading || ghLoading || stLoading) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="animate-pulse rounded-3xl">
@@ -534,7 +596,7 @@ export default function BookingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.5), ease: easeOut }}
                   >
-                    <Link href={`/sejours/${listing.id}`}>
+                    <Link href={listing.type === 'short-term' ? `/short-term` : `/sejours/${listing.id}`}>
                       <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
                         {/* Image area — absolute positioning so image fills full container */}
                         <div className="relative aspect-[4/3] bg-gradient-to-br from-[#003087]/10 to-[#009CDE]/10 overflow-hidden">
@@ -548,16 +610,26 @@ export default function BookingPage() {
                             <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                               {listing.type === 'hotel' ? (
                                 <Hotel className="w-12 h-12 text-[#003087]/30" />
-                              ) : (
+                              ) : listing.type === 'guesthouse' ? (
                                 <Home className="w-12 h-12 text-[#003087]/30" />
+                              ) : (
+                                <Key className="w-12 h-12 text-[#003087]/30" />
                               )}
                             </div>
                           )}
                           <div className="absolute top-3 left-3">
                             <Badge className="bg-[#D4AF37] text-white text-xs border-0 px-2.5 py-1">
-                              {listing.type === 'hotel' ? 'Hôtel' : 'Guesthouse'}
+                              {listing.type === 'hotel' ? 'Hôtel' : listing.type === 'guesthouse' ? 'Guesthouse' : 'Location'}
                             </Badge>
                           </div>
+                          {/* Instant booking badge for short-term rentals */}
+                          {listing.type === 'short-term' && (listing as any).instantBooking && (
+                            <div className="absolute bottom-3 left-3">
+                              <Badge className="bg-[#00A651] text-white text-[10px] border-0 px-2 py-0.5">
+                                ✓ Réservation instantanée
+                              </Badge>
+                            </div>
+                          )}
                           {listing.stars > 0 && (
                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-[#D4AF37] flex items-center gap-0.5">
                               {Array.from({ length: listing.stars }).map((_, si) => (

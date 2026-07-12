@@ -1,44 +1,26 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 /**
- * Page /short-term — Location courte durée (modèle Airbnb adapté Afrique)
- * Compact hero + existing ShortTermRentalModule
+ * /short-term — Redirige vers /sejours (page unifiée des séjours)
+ *
+ * La page /short-term a été fusionnée avec /sejours qui contient maintenant
+ * 3 types de séjours : Hôtels, Guesthouses et Locations courte durée.
+ * Cette page redirige automatiquement vers /sejours.
  */
-
-import dynamic from 'next/dynamic';
-import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
-
-const ShortTermRentalModule = dynamic(() => import('@/components/afribayit/ShortTermRentalModule'), {
-  loading: () => (
-    <div className="py-24 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
-    </div>
-  ),
-});
-
-export default function ShortTermPage() {
+export default function ShortTermRedirectPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/sejours');
+  }, [router]);
   return (
-    <TransactionPageShell
-      activeTab="sejour"
-      hero={{
-        badge: 'Location courte durée',
-        title: 'Des séjours premium en Afrique de l\'Ouest',
-        subtitle: 'Appartements, villas et guesthouses pour vos séjours courts. Réservation instantanée, check-in numérique QR code et paiement Mobile Money.',
-        backgroundImage: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1600&h=900&fit=crop',
-        stats: [
-          { value: 0, suffix: '+', label: 'Séjours disponibles' },
-          { value: 0, suffix: '', label: 'Pays couverts' },
-          { value: 0, suffix: '+', label: 'Hôtes vérifiés' },
-          { value: 0, suffix: '+', label: 'Réservations' },
-        ],
-        ctaLabel: 'Voir les séjours',
-        ctaHref: '#properties',
-      }}
-    >
-      {/* Existing ShortTermRentalModule (calendar, booking, etc.) */}
-      <div id="properties">
-        <ShortTermRentalModule />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-sm text-gray-500">Redirection vers la page Séjours...</p>
       </div>
-    </TransactionPageShell>
+    </div>
   );
 }

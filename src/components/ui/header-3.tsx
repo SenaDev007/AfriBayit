@@ -105,19 +105,13 @@ const immobilierLinks: LinkItem[] = [
     description: 'Opportunités de rendement immobilier',
     icon: TrendingUp,
   },
-  {
-    title: 'Location courte durée',
-    href: '/short-term',
-    description: 'Séjours et locations temporaires',
-    icon: CalendarDays,
-  },
 ];
 
 const hospitalityLinks: LinkItem[] = [
   {
-    title: 'Séjours (Hôtels & Guesthouses)',
+    title: 'Séjours (Hôtels, Guesthouses & Locations)',
     href: '/sejours',
-    description: 'Réservez hôtels, guesthouses et séjours courts en Afrique de l\'Ouest',
+    description: 'Hôtels, guesthouses et locations courte durée en Afrique de l\'Ouest',
     icon: Hotel,
   },
 ];
