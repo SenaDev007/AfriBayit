@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityPosts, useCommunityGroups, useCommunityEvents, useCreateCommunityPost, useRegisterCommunityEvent, useReportContent } from '@/hooks/useCommunity';
 import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
-import { Handshake } from 'lucide-react';
+import { Handshake, MessageCircle, Users, Newspaper, Store, Calendar, Coins, Crown, TrendingUp, Sparkles, ShieldCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 import { tabs } from './constants';
@@ -192,27 +192,110 @@ export default function CommunityModule() {
   const eventsErrObj = eventsError as { message?: string } | null;
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gradient-to-b from-[#00A651]/5 via-white to-white">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4"><Handshake className="w-4 h-4" /> AfriBayit Connect</span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2C2E2F] mb-3">Communauté <span className="text-[#00A651]">Africaine</span></h1>
-          <p className="text-gray-500 max-w-lg mx-auto">Connectez-vous avec des professionnels de l&apos;immobilier, partagez vos expériences, et développez votre réseau.</p>
+        {/* LinkedIn-style header banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="relative bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] rounded-3xl p-8 overflow-hidden">
+            {/* Decorative pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white blur-3xl" />
+              <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-full bg-white blur-3xl" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0">
+                <Handshake className="w-10 h-10 text-white" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
+                  AfriBayit <span className="text-[#D4AF37]">Connect</span>
+                </h1>
+                <p className="text-white/80 text-sm max-w-2xl">
+                  Le réseau social de l&apos;immobilier ouest-africain. Forums par pays, groupes d&apos;investisseurs,
+                  événements de networking, marketplace de services et programme ambassadeurs.
+                </p>
+                <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-white/70">
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    4x plus de transactions pour les membres actifs
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Modération IA temps réel + Community Managers par pays
+                  </span>
+                </div>
+              </div>
+              {user && (
+                <div className="shrink-0 px-4 py-2 bg-white/15 backdrop-blur rounded-2xl text-center">
+                  <p className="text-[10px] text-white/60 uppercase tracking-wide">Votre score</p>
+                  <p className="font-mono-data text-2xl font-bold text-white">{user.score || 0}</p>
+                  <p className="text-[10px] text-white/70">{user.reputation || 'Découvreur'}</p>
+                </div>
+              )}
+            </div>
+          </div>
         </motion.div>
+
+        {/* Community stats row */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {[
+            { label: 'Membres', value: '—', icon: Users, color: '#003087' },
+            { label: 'Discussions', value: `${filteredPosts.length}`, icon: MessageCircle, color: '#00A651' },
+            { label: 'Groupes', value: `${groups.length}`, icon: Users, color: '#D4AF37' },
+            { label: 'Événements', value: `${events.length}`, icon: Calendar, color: '#009CDE' },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-white rounded-2xl p-3 border flex items-center gap-2"
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${stat.color}15` }}>
+                <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-[#2C2E2F]">{stat.value}</p>
+                <p className="text-[10px] text-gray-400">{stat.label}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
         <ReputationBar user={user} forumCity={forumCity} setForumCity={setForumCity} />
 
-        {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Tabs — LinkedIn style with icons */}
+        <div className="flex gap-1 overflow-x-auto pb-3 mb-6 bg-white rounded-2xl p-1.5 border">
+          {tabs.map(tab => {
+            const tabIcons: Record<string, any> = {
+              forum: MessageCircle,
+              investor_groups: Users,
+              news: Newspaper,
+              marketplace: Store,
+              events: Calendar,
+              points: Coins,
+              ambassador: Crown,
+            };
+            const TabIcon = tabIcons[tab.key] || Sparkles;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTab === tab.key
+                    ? 'bg-[#003087] text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <TabIcon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {activeTab === 'forum' && (

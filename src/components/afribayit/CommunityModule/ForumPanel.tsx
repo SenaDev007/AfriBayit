@@ -136,30 +136,66 @@ export default function ForumPanel({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.08, ease: easeOut }}
-          className="bg-white rounded-2xl p-5 shadow-sm border hover:shadow-md transition-shadow"
+          className="bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:border-[#003087]/20 transition-all overflow-hidden group"
         >
-          <div className="flex items-start gap-3">
-            <ImageWithFallback
-              src={post.avatar}
-              alt=""
-              className="w-10 h-10 rounded-full shrink-0 cursor-pointer"
-              fallbackType="avatar"
-              onClick={() => onSelectPost(post.id)}
-            />
-            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelectPost(post.id)}>
-              <h3 className="font-semibold text-sm text-[#2C2E2F] mb-1 hover:text-[#003087] transition-colors">{post.title}</h3>
-              <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                <span className="font-medium text-[#003087]">{typeof post.author === 'object' && post.author !== null ? String((post.author as PostAuthor)?.name ?? '') : String(post.author ?? '')}</span>
-                <span className="px-2 py-0.5 bg-gray-100 rounded-full">{post.category}</span>
-                {post.city && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{post.city}</span>}
-                <span>{post.replies} réponses</span>
-                <span>{post.views} vues</span>
-                <span className="text-gray-400">{post.createdAt ? timeAgo(post.createdAt) : post.lastActivity}</span>
+          {/* LinkedIn-style colored top border */}
+          <div className="h-1 bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="p-5">
+            <div className="flex items-start gap-3">
+              {/* Avatar */}
+              <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden border-2 border-[#003087]/10 relative bg-gray-100 cursor-pointer" onClick={() => onSelectPost(post.id)}>
+                <ImageWithFallback
+                  src={post.avatar}
+                  alt=""
+                  className="absolute inset-0 w-full h-full"
+                  fallbackType="avatar"
+                  fill
+                />
               </div>
+              {/* Content */}
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelectPost(post.id)}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-sm text-[#003087]">
+                    {typeof post.author === 'object' && post.author !== null ? String((post.author as PostAuthor)?.name ?? '') : String(post.author ?? '')}
+                  </span>
+                  <span className="text-[10px] text-gray-400">·</span>
+                  <span className="text-[10px] text-gray-400">{post.createdAt ? timeAgo(post.createdAt) : post.lastActivity}</span>
+                </div>
+                <h3 className="font-semibold text-[#2C2E2F] mb-2 group-hover:text-[#003087] transition-colors text-sm leading-snug">{post.title}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {post.category && (
+                    <span className="px-2 py-0.5 bg-[#003087]/5 text-[#003087] text-[10px] font-semibold rounded-full">{post.category}</span>
+                  )}
+                  {post.city && (
+                    <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+                      <MapPin className="w-2.5 h-2.5" />
+                      {post.city}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Report button */}
+              <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Signaler ce contenu">
+                <Flag className="w-3.5 h-3.5 text-gray-300 hover:text-[#D93025]" />
+              </button>
             </div>
-            <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Signaler ce contenu">
-              <Flag className="w-4 h-4 text-gray-300 hover:text-[#D93025]" />
-            </button>
+            {/* LinkedIn-style engagement bar */}
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+              <div className="flex items-center gap-4 text-xs text-gray-400">
+                <span className="flex items-center gap-1">
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  {post.replies} réponses
+                </span>
+                <span className="flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {post.views} vues
+                </span>
+              </div>
+              <span className="text-[10px] text-gray-300">Cliquez pour ouvrir →</span>
+            </div>
           </div>
         </motion.div>
       ))}
