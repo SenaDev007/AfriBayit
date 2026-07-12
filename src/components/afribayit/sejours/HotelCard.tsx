@@ -15,16 +15,19 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Hotel } from 'lucide-react';
+import {
+  Star, MapPin, Hotel, Wifi, Car, Utensils, Waves, Dumbbell,
+  Coffee, Snowflake, Tv, ShieldCheck,
+} from 'lucide-react';
 import Link from 'next/link';
 
 const COUNTRY_FLAGS: Record<string, string> = {
   BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬',
 };
 
-const AMENITY_ICONS: Record<string, string> = {
-  wifi: '📶', parking: '🅿️', restaurant: '🍽️', pool: '🏊', gym: '💪',
-  breakfast: '☕', ac: '❄️', tv: '📺', security: '🔒',
+const AMENITY_ICONS: Record<string, any> = {
+  wifi: Wifi, parking: Car, restaurant: Utensils, pool: Waves, gym: Dumbbell,
+  breakfast: Coffee, ac: Snowflake, tv: Tv, security: ShieldCheck,
 };
 
 export interface HotelCardData {
@@ -93,11 +96,15 @@ export default function HotelCard({ hotel, index }: { hotel: HotelCardData; inde
             {/* Amenities */}
             {topAmenities.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
-                {topAmenities.map((a) => (
-                  <span key={a} className="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                    {AMENITY_ICONS[a] || '•'} {a}
-                  </span>
-                ))}
+                {topAmenities.map((a) => {
+                  const Icon = AMENITY_ICONS[a];
+                  return (
+                    <span key={a} className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                      {Icon && <Icon className="w-3 h-3" />}
+                      {a}
+                    </span>
+                  );
+                })}
               </div>
             )}
 
