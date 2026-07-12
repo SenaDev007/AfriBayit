@@ -230,10 +230,10 @@ export default function CommunityModule() {
                 </div>
               </div>
               {user && (
-                <div className="shrink-0 px-4 py-2 bg-white/15 backdrop-blur rounded-2xl text-center">
+                <div className="shrink-0 px-4 py-2 bg-white/15 backdrop-blur rounded-xl text-center">
                   <p className="text-[10px] text-white/60 uppercase tracking-wide">Votre score</p>
-                  <p className="font-mono-data text-2xl font-bold text-white">{user.score || 0}</p>
-                  <p className="text-[10px] text-white/70">{user.reputation || 'Découvreur'}</p>
+                  <p className="font-mono-data text-2xl font-bold text-white">{(user as any).score || 0}</p>
+                  <p className="text-[10px] text-white/70">{(user as any).reputation || 'Découvreur'}</p>
                 </div>
               )}
             </div>
