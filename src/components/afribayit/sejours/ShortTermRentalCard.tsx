@@ -62,7 +62,7 @@ export default function ShortTermRentalCard({ rental, index }: { rental: ShortTe
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.5) }}
     >
-      <Link href="/short-term">
+      <Link href={`/short-term/${rental.id}`}>
         <Card className="overflow-hidden hover:shadow-xl transition-all cursor-pointer group rounded-3xl card-shadow border-0">
           {/* Image */}
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[#D4AF37]/10 to-[#003087]/10 overflow-hidden">
