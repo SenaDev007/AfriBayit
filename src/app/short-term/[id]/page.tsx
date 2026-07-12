@@ -3,37 +3,29 @@
 /**
  * /short-term/[id] — Page de détail d'une location courte durée (CDC §5.2)
  *
- * Affiche :
- *   - Galerie photos
- *   - Titre, type, localisation
- *   - Capacité (voyageurs, chambres, lits, SDB)
- *   - Description
- *   - Équipements
- *   - Règles de la maison
- *   - Hôte (nom, avatar, vérifié)
- *   - Prix par nuit + prix hebdo/mensuel
- *   - Frais de ménage + dépôt de garantie
- *   - Politique d'annulation
- *   - Formulaire de réservation (dates, voyageurs, demande instantanée ou approbation)
- *   - Paiement Mobile Money intégré
+ * Design aligné avec /sejours/[id] — même structure, mêmes composants UI,
+ * mais adapté au workflow location (CTA "Louer", prix/nuit + hebdo,
+ * hôte vérifié, réservation instantanée ou approbation).
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiFetch, apiPost } from '@/lib/api-client';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import {
-  Star, MapPin, Users, BedDouble, Bath, Maximize, Key, Zap, ShieldCheck,
-  Calendar, ArrowLeft, CreditCard, Check, X, Home, ChefHat, Wifi, Car,
-  Wind, Tv, Waves, Dumbbell, Coffee, Snowflake,
+  Star, MapPin, Calendar, Users, BedDouble, Bath, Key, Zap, ShieldCheck,
+  ChevronLeft, ChevronRight, CreditCard, Smartphone, MessageSquare,
+  Check, Clock, Wifi, Car, Utensils, Waves, Dumbbell, Coffee,
+  Snowflake, Tv, Home, ChefHat, X,
 } from 'lucide-react';
+import Link from 'next/link';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -49,31 +41,21 @@ const CANCELLATION_LABELS: Record<string, string> = {
   strict: 'Stricte — 50% remboursable',
 };
 
-const AMENITY_ICONS: Record<string, any> = {
-  wifi: Wifi, parking: Car, ac: Snowflake, tv: Tv, pool: Waves,
-  gym: Dumbbell, breakfast: Coffee, kitchen: ChefHat, security: ShieldCheck,
+const AMENITY_ICONS: Record<string, React.ElementType> = {
+  wifi: Wifi, parking: Car, restaurant: Utensils, pool: Waves, gym: Dumbbell,
+  breakfast: Coffee, ac: Snowflake, tv: Tv, security: ShieldCheck, kitchen: ChefHat,
 };
 
-function parseJsonArray(raw: string | null | undefined): string[] {
-  if (!raw) return [];
-  try { const parsed = JSON.parse(raw); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
-}
-
-function parseJsonObj(raw: string | null | undefined): Record<string, any> {
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { return {}; }
-}
-
-function getFirstImage(images: string | null | undefined): string {
-  const arr = parseJsonArray(images);
-  return arr[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop';
+function safeJsonParse<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw || typeof raw !== 'string') return fallback;
+  try { const parsed = JSON.parse(raw); return (Array.isArray(parsed) ? parsed : fallback) as T; } catch { return fallback; }
 }
 
 export default function ShortTermRentalDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams();
   const router = useRouter();
-  const rentalId = params.id;
-
+  const id = params.id as string;
+  const [currentImage, setCurrentImage] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
@@ -81,28 +63,50 @@ export default function ShortTermRentalDetailPage() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
   const { data: rental, isLoading } = useQuery({
-    queryKey: ['short-term-rental-detail', rentalId],
-    queryFn: () => apiFetch<any>(`/api/short-term/${rentalId}`),
-    enabled: !!rentalId,
+    queryKey: ['short-term-rental-detail', id],
+    queryFn: () => apiFetch<any>(`/api/short-term/${id}`),
+    enabled: !!id,
+    retry: false,
   });
 
   const bookingMutation = useMutation({
     mutationFn: (data: { rentalId: string; checkIn: string; checkOut: string; guests: number; specialRequests?: string }) =>
       apiPost(`/api/short-term/${data.rentalId}/bookings`, data),
-    onSuccess: () => {
-      setBookingSuccess(true);
-    },
+    onSuccess: () => setBookingSuccess(true),
   });
+
+  // Extract data
+  const images: string[] = rental?.images ? safeJsonParse<string[]>(rental.images, []) : [];
+  const amenities: string[] = rental?.amenities ? safeJsonParse<string[]>(rental.amenities, []) : [];
+  const houseRules: Record<string, any> = rental?.houseRules ? safeJsonParse<Record<string, any>>(rental.houseRules, {}) : {};
+  const propertyLabel = PROPERTY_TYPE_LABELS[rental?.propertyType] || rental?.propertyType || 'Location';
+
+  const pricePerNight = rental?.pricePerNight || 0;
+  const cleaningFee = rental?.cleaningFee || 0;
+  const securityDeposit = rental?.securityDeposit || 0;
+  const weeklyPrice = rental?.weeklyPrice || null;
+  const rating = rental?.rating || 0;
+  const reviewCount = rental?.reviewCount || 0;
+
+  // Compute nights and total
+  const checkInDate = checkIn ? new Date(checkIn) : null;
+  const checkOutDate = checkOut ? new Date(checkOut) : null;
+  const nights = checkInDate && checkOutDate && checkOutDate > checkInDate
+    ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const subtotal = nights * pricePerNight;
+  const totalPrice = subtotal + cleaningFee;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-20 pb-16 bg-gray-50/30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-8 w-32 mb-6" />
-          <Skeleton className="aspect-[16/10] rounded-3xl mb-6" />
-          <div className="grid lg:grid-cols-3 gap-6">
-            <Skeleton className="lg:col-span-2 h-96 rounded-3xl" />
-            <Skeleton className="h-96 rounded-3xl" />
+      <div className="min-h-screen bg-gray-50 pt-20 px-4">
+        <div className="max-w-5xl mx-auto animate-pulse space-y-6">
+          <div className="h-64 bg-gray-200 rounded-3xl" />
+          <div className="h-8 bg-gray-200 rounded w-1/2" />
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="grid grid-cols-3 gap-4">
+            <div className="h-32 bg-gray-200 rounded-xl col-span-2" />
+            <div className="h-32 bg-gray-200 rounded-xl" />
           </div>
         </div>
       </div>
@@ -111,372 +115,441 @@ export default function ShortTermRentalDetailPage() {
 
   if (!rental) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
-        <div className="text-center">
-          <Key className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h2 className="font-display text-xl font-bold text-gray-400">Location non trouvée</h2>
-          <button onClick={() => router.push('/sejours')} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">
-            ← Retour aux séjours
-          </button>
+      <div className="min-h-screen bg-gray-50 pt-20 px-4">
+        <div className="max-w-5xl mx-auto text-center py-20">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <Key className="w-8 h-8 text-gray-300" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-400 mb-2">Location non trouvée</h2>
+          <p className="text-gray-400 mb-6">Cette location n&apos;existe pas ou a été retirée.</p>
+          <Link href="/sejours">
+            <Button className="bg-[#003087] text-white rounded-xl px-6">Retour aux résultats</Button>
+          </Link>
         </div>
       </div>
     );
   }
 
-  const images = parseJsonArray(rental.images);
-  const amenities = parseJsonArray(rental.amenities);
-  const houseRules = parseJsonObj(rental.houseRules);
-  const propertyLabel = PROPERTY_TYPE_LABELS[rental.propertyType] || rental.propertyType;
-  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(Math.round(n));
-
-  // Calculate nights and total
-  const nights = checkIn && checkOut
-    ? Math.max(0, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000))
-    : 0;
-  const subtotal = nights * rental.pricePerNight;
-  const cleaningFee = rental.cleaningFee || 0;
-  const total = subtotal + cleaningFee;
-
   const handleBook = () => {
     if (!checkIn || !checkOut) return;
-    bookingMutation.mutate({
-      rentalId,
-      checkIn,
-      checkOut,
-      guests,
-      specialRequests: specialRequests || undefined,
-    });
+    bookingMutation.mutate({ rentalId: id, checkIn, checkOut, guests, specialRequests: specialRequests || undefined });
   };
 
   return (
-    <section className="min-h-screen pt-20 pb-16 bg-gray-50/30">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back button */}
-        <motion.button
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={() => router.push('/sejours')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
+    <div className="min-h-screen bg-gray-50 pt-20 pb-10">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-4"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Retour aux séjours
-        </motion.button>
+          <Link href="/sejours" className="text-sm text-[#003087] hover:underline flex items-center gap-1">
+            <ChevronLeft className="w-4 h-4" />
+            Retour aux résultats
+          </Link>
+        </motion.div>
 
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge className="bg-[#D4AF37] text-white text-xs border-0 px-2.5 py-1">{propertyLabel}</Badge>
-            {rental.instantBooking && (
-              <Badge className="bg-[#00A651] text-white text-xs border-0 px-2.5 py-1 flex items-center gap-1">
-                <Zap className="w-3 h-3" />
-                Réservation instantanée
-              </Badge>
-            )}
-            {rental.hostVerified && (
-              <Badge className="bg-[#003087] text-white text-xs border-0 px-2.5 py-1 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3" />
-                Hôte vérifié
-              </Badge>
-            )}
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#2C2E2F] mb-2">{rental.title}</h1>
-          <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
-            <span className="flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              {rental.city}, {COUNTRY_FLAGS[rental.country] || ''} {rental.country}
-              {rental.quartier ? ` · ${rental.quartier}` : ''}
-            </span>
-            {rental.rating > 0 && (
-              <span className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-[#D4AF37] fill-current" />
-                {rental.rating.toFixed(1)} ({rental.reviewCount} avis)
-              </span>
+        {/* Image Gallery — carrousel identique à /sejours/[id] */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative rounded-3xl overflow-hidden mb-6 card-shadow"
+        >
+          <div className="aspect-[16/9] bg-gradient-to-br from-[#D4AF37]/10 to-[#003087]/10">
+            {images.length > 0 ? (
+              <img
+                src={images[currentImage] || images[0]}
+                alt={rental.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[#003087]/20">
+                <Key className="w-24 h-24" />
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Gallery */}
-        <div className="grid grid-cols-4 gap-2 mb-6 rounded-3xl overflow-hidden">
-          <div className="col-span-4 sm:col-span-2 row-span-2 aspect-square sm:aspect-auto">
-            <img
-              src={images[0] || getFirstImage(rental.images)}
-              alt={rental.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {images.slice(1, 5).map((img, i) => (
-            <div key={i} className="aspect-square hidden sm:block">
-              <img src={img} alt={`${rental.title} ${i + 2}`} className="w-full h-full object-cover" />
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentImage((prev) => (prev - 1 + images.length) % images.length)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setCurrentImage((prev) => (prev + 1) % images.length)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={`w-2 h-2 rounded-full transition-colors ${i === currentImage ? 'bg-white' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Badge type */}
+          <Badge className="absolute top-4 left-4 bg-[#D4AF37] text-white border-0 px-3 py-1">{propertyLabel}</Badge>
+          {/* Badge instant booking */}
+          {rental.instantBooking && (
+            <div className="absolute top-4 right-4 bg-[#00A651] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              Réservation instantanée
             </div>
-          ))}
-        </div>
+          )}
+        </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left — details */}
+        {/* Main content — grid 2 colonnes */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left - Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Capacity */}
-            <Card className="rounded-3xl border-0 shadow-sm">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-4 gap-4 text-center">
-                  <div>
-                    <Users className="w-5 h-5 mx-auto mb-1 text-[#003087]" />
-                    <p className="text-xs text-gray-400">Voyageurs</p>
-                    <p className="font-bold text-[#2C2E2F]">{rental.maxGuests}</p>
+            {/* Header Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <h1 className="text-2xl md:text-3xl font-bold text-[#2C2E2F]">{rental.title}</h1>
+              <p className="text-gray-500 flex items-center gap-2 mt-1 text-sm">
+                <MapPin className="w-4 h-4" />
+                {rental.quartier ? `${rental.quartier}, ` : ''}{rental.city}, {COUNTRY_FLAGS[rental.country] || ''} {rental.country}
+              </p>
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                {/* Capacity badges */}
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" /> {rental.maxGuests} voyageur{rental.maxGuests > 1 ? 's' : ''}
+                </span>
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <BedDouble className="w-3.5 h-3.5" /> {rental.bedrooms} ch.
+                </span>
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Bath className="w-3.5 h-3.5" /> {rental.bathrooms} sdb
+                </span>
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Key className="w-3.5 h-3.5" /> {rental.beds} lit{rental.beds > 1 ? 's' : ''}
+                </span>
+                {/* Rating */}
+                {rating > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="bg-[#D4AF37] text-white text-xs font-bold px-2 py-0.5 rounded">
+                      {rating.toFixed(1)}
+                    </div>
+                    <span className="text-xs text-gray-500">{reviewCount} avis</span>
                   </div>
-                  <div>
-                    <BedDouble className="w-5 h-5 mx-auto mb-1 text-[#003087]" />
-                    <p className="text-xs text-gray-400">Chambres</p>
-                    <p className="font-bold text-[#2C2E2F]">{rental.bedrooms}</p>
-                  </div>
-                  <div>
-                    <Bath className="w-5 h-5 mx-auto mb-1 text-[#003087]" />
-                    <p className="text-xs text-gray-400">Salles de bain</p>
-                    <p className="font-bold text-[#2C2E2F]">{rental.bathrooms}</p>
-                  </div>
-                  <div>
-                    <Key className="w-5 h-5 mx-auto mb-1 text-[#003087]" />
-                    <p className="text-xs text-gray-400">Lits</p>
-                    <p className="font-bold text-[#2C2E2F]">{rental.beds}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+                {/* Host verified */}
+                {rental.hostVerified && (
+                  <Badge variant="outline" className="text-xs border-[#003087] text-[#003087]">
+                    <ShieldCheck className="w-3 h-3 mr-1" /> Hôte vérifié
+                  </Badge>
+                )}
+              </div>
+            </motion.div>
 
             {/* Description */}
             {rental.description && (
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="font-display text-lg font-bold text-[#003087] mb-3">Description</h2>
-                  <p className="text-sm text-gray-600 whitespace-pre-line">{rental.description}</p>
-                </CardContent>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+              >
+                <Card className="rounded-3xl card-shadow border-0">
+                  <CardHeader>
+                    <CardTitle className="text-base">Description</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{rental.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
 
-            {/* Amenities */}
+            {/* Amenities — même design que /sejours/[id] */}
             {amenities.length > 0 && (
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="font-display text-lg font-bold text-[#003087] mb-3">Équipements</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {amenities.map((a) => {
-                      const Icon = AMENITY_ICONS[a] || Check;
-                      return (
-                        <div key={a} className="flex items-center gap-2 text-sm text-gray-600">
-                          <Icon className="w-4 h-4 text-[#003087]" />
-                          <span className="capitalize">{a}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.25 }}
+              >
+                <Card className="rounded-3xl card-shadow border-0">
+                  <CardHeader>
+                    <CardTitle className="text-base">Équipements</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {amenities.map((amenity) => {
+                        const Icon = AMENITY_ICONS[String(amenity).toLowerCase()] || Check;
+                        return (
+                          <div key={String(amenity)} className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center shrink-0">
+                              <Icon className="w-4 h-4 text-[#D4AF37]" />
+                            </div>
+                            <span className="capitalize">{String(amenity)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
 
             {/* House rules */}
             {Object.keys(houseRules).length > 0 && (
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="font-display text-lg font-bold text-[#003087] mb-3">Règles de la maison</h2>
-                  <div className="space-y-2">
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+              >
+                <Card className="rounded-3xl card-shadow border-0">
+                  <CardHeader>
+                    <CardTitle className="text-base">Règles de la maison</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
                     {houseRules.checkInTime && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        Arrivée : {houseRules.checkInTime}
+                        <Calendar className="w-4 h-4 text-gray-400" /> Arrivée : {houseRules.checkInTime}
                       </div>
                     )}
                     {houseRules.checkOutTime && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        Départ : {houseRules.checkOutTime}
+                        <Calendar className="w-4 h-4 text-gray-400" /> Départ : {houseRules.checkOutTime}
                       </div>
                     )}
                     {houseRules.noSmoking && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <X className="w-4 h-4 text-red-400" />
-                        Non fumeur
+                        <X className="w-4 h-4 text-red-400" /> Non fumeur
                       </div>
                     )}
                     {houseRules.noPets && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <X className="w-4 h-4 text-red-400" />
-                        Animaux non admis
+                        <X className="w-4 h-4 text-red-400" /> Animaux non admis
                       </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
 
             {/* Host */}
             {rental.host && (
-              <Card className="rounded-3xl border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="font-display text-lg font-bold text-[#003087] mb-3">Votre hôte</h2>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
-                      {rental.host.name?.[0]?.toUpperCase() || 'H'}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.35 }}
+              >
+                <Card className="rounded-3xl card-shadow border-0">
+                  <CardHeader>
+                    <CardTitle className="text-base">Votre hôte</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
+                        {rental.host.name?.[0]?.toUpperCase() || 'H'}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-[#2C2E2F]">{rental.host.name}</p>
+                        {rental.host.verified && (
+                          <p className="text-xs text-[#00A651] flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" /> Hôte vérifié
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm text-[#2C2E2F]">{rental.host.name}</p>
-                      {rental.host.verified && (
-                        <p className="text-xs text-[#00A651] flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" />
-                          Hôte vérifié
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
 
             {/* Cancellation policy */}
-            <Card className="rounded-3xl border-0 shadow-sm">
-              <CardContent className="p-6">
-                <h2 className="font-display text-lg font-bold text-[#003087] mb-3">Politique d&apos;annulation</h2>
-                <p className="text-sm text-gray-600">
-                  {CANCELLATION_LABELS[rental.cancellationPolicy] || rental.cancellationPolicy}
-                </p>
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <Card className="rounded-3xl card-shadow border-0">
+                <CardHeader>
+                  <CardTitle className="text-base">Politique d&apos;annulation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600">
+                    {CANCELLATION_LABELS[rental.cancellationPolicy] || rental.cancellationPolicy}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          {/* Right — booking sidebar */}
-          <div className="lg:sticky lg:top-24 h-fit">
-            <Card className="rounded-3xl border-0 shadow-lg overflow-hidden">
-              {bookingSuccess ? (
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[#00A651]/10 flex items-center justify-center mx-auto mb-4">
-                    <Check className="w-8 h-8 text-[#00A651]" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Demande envoyée !</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {rental.instantBooking
-                      ? 'Votre réservation est confirmée. Vous allez recevoir un email de confirmation avec le QR code de check-in.'
-                      : 'Votre demande a été envoyée à l\'hôte. Vous recevrez une réponse sous 24h.'}
-                  </p>
-                  <Button
-                    onClick={() => router.push('/sejours')}
-                    className="w-full bg-[#003087] hover:bg-[#0047b3] text-white rounded-full"
-                  >
-                    Retour aux séjours
-                  </Button>
-                </CardContent>
-              ) : (
-                <CardContent className="p-6">
-                  {/* Price */}
-                  <div className="flex items-baseline justify-between mb-4">
-                    <div>
-                      <span className="font-mono-data text-2xl font-bold text-[#D4AF37]">{fmt(rental.pricePerNight)}</span>
-                      <span className="text-sm text-gray-500"> FCFA/nuit</span>
+          {/* Right - Booking form — sticky, même design que /sejours/[id] */}
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="sticky top-24 rounded-3xl card-shadow border-0">
+                {bookingSuccess ? (
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-[#00A651]/10 flex items-center justify-center mx-auto mb-4">
+                      <Check className="w-8 h-8 text-[#00A651]" />
                     </div>
-                    {rental.rating > 0 && (
-                      <span className="flex items-center gap-1 text-sm">
-                        <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
-                        {rental.rating.toFixed(1)}
+                    <h3 className="font-display text-lg font-bold text-[#2C2E2F] mb-2">Demande envoyée !</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      {rental.instantBooking
+                        ? 'Votre réservation est confirmée. Vous allez recevoir un email avec le QR code de check-in.'
+                        : 'Votre demande a été envoyée à l\'hôte. Vous recevrez une réponse sous 24h.'}
+                    </p>
+                    <Button
+                      onClick={() => router.push('/sejours')}
+                      className="w-full bg-[#003087] hover:bg-[#0047b3] text-white rounded-xl"
+                    >
+                      Retour aux séjours
+                    </Button>
+                  </CardContent>
+                ) : (
+                  <CardContent className="p-6 space-y-4">
+                    {/* Price */}
+                    <div className="text-center mb-2">
+                      <span className="text-3xl font-bold text-[#D4AF37]">
+                        {pricePerNight.toLocaleString('fr-FR')}
                       </span>
-                    )}
-                  </div>
-
-                  {/* Booking form */}
-                  <div className="space-y-3 mb-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-[10px] text-gray-400 mb-1 block">Arrivée</label>
-                        <Input
-                          type="date"
-                          value={checkIn}
-                          onChange={(e) => setCheckIn(e.target.value)}
-                          className="text-sm rounded-xl"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-gray-400 mb-1 block">Départ</label>
-                        <Input
-                          type="date"
-                          value={checkOut}
-                          onChange={(e) => setCheckOut(e.target.value)}
-                          className="text-sm rounded-xl"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-gray-400 mb-1 block">Voyageurs</label>
-                      <select
-                        value={guests}
-                        onChange={(e) => setGuests(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"
-                      >
-                        {Array.from({ length: rental.maxGuests }).map((_, i) => (
-                          <option key={i + 1} value={i + 1}>{i + 1} voyageur{i + 1 > 1 ? 's' : ''}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-gray-400 mb-1 block">Demandes spéciales (optionnel)</label>
-                      <Textarea
-                        value={specialRequests}
-                        onChange={(e) => setSpecialRequests(e.target.value)}
-                        placeholder="Heure d'arrivée, questions..."
-                        className="text-sm rounded-xl min-h-[60px]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Price breakdown */}
-                  {nights > 0 && (
-                    <div className="space-y-2 py-3 border-t border-b border-gray-100 mb-4 text-sm">
-                      <div className="flex justify-between text-gray-500">
-                        <span>{fmt(rental.pricePerNight)} FCFA × {nights} nuit{nights > 1 ? 's' : ''}</span>
-                        <span className="font-mono">{fmt(subtotal)} FCFA</span>
-                      </div>
-                      {cleaningFee > 0 && (
-                        <div className="flex justify-between text-gray-500">
-                          <span>Frais de ménage</span>
-                          <span className="font-mono">{fmt(cleaningFee)} FCFA</span>
-                        </div>
+                      <span className="text-gray-500 text-sm"> FCFA/nuit</span>
+                      {weeklyPrice && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          {weeklyPrice.toLocaleString('fr-FR')} FCFA/semaine
+                        </p>
                       )}
-                      <div className="flex justify-between font-bold text-[#2C2E2F] pt-1">
-                        <span>Total</span>
-                        <span className="font-mono">{fmt(total)} FCFA</span>
+                    </div>
+
+                    <Separator />
+
+                    {/* Date inputs — même design que /sejours/[id] */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Date d&apos;arrivée</label>
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            type="date"
+                            value={checkIn}
+                            onChange={(e) => setCheckIn(e.target.value)}
+                            className="pl-9 rounded-xl"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Date de départ</label>
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            type="date"
+                            value={checkOut}
+                            onChange={(e) => setCheckOut(e.target.value)}
+                            className="pl-9 rounded-xl"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Voyageurs</label>
+                        <div className="relative">
+                          <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <select
+                            value={guests}
+                            onChange={(e) => setGuests(Number(e.target.value))}
+                            className="w-full h-10 pl-9 pr-3 border border-gray-200 rounded-xl text-sm bg-white"
+                          >
+                            {Array.from({ length: rental.maxGuests }).map((_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1} voyageur{i + 1 > 1 ? 's' : ''}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Demandes spéciales</label>
+                        <Textarea
+                          value={specialRequests}
+                          onChange={(e) => setSpecialRequests(e.target.value)}
+                          placeholder="Arrivée tardive, questions..."
+                          rows={3}
+                          className="rounded-xl resize-none"
+                        />
                       </div>
                     </div>
-                  )}
 
-                  {/* CTA — Louer (workflow location) */}
-                  <Button
-                    onClick={handleBook}
-                    disabled={!checkIn || !checkOut || bookingMutation.isPending}
-                    className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white font-semibold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {bookingMutation.isPending ? (
-                      'Traitement...'
-                    ) : (
-                      <>
-                        <CreditCard className="w-4 h-4" />
-                        {rental.instantBooking ? 'Louer maintenant' : 'Demander à louer'}
-                      </>
+                    {/* Price summary */}
+                    {nights > 0 && (
+                      <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">
+                            {pricePerNight.toLocaleString('fr-FR')} FCFA × {nights} nuit{nights > 1 ? 's' : ''}
+                          </span>
+                          <span className="font-medium">{subtotal.toLocaleString('fr-FR')} FCFA</span>
+                        </div>
+                        {cleaningFee > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Frais de ménage</span>
+                            <span className="font-medium">{cleaningFee.toLocaleString('fr-FR')} FCFA</span>
+                          </div>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between text-sm font-bold">
+                          <span>Total</span>
+                          <span className="text-[#D4AF37]">{totalPrice.toLocaleString('fr-FR')} FCFA</span>
+                        </div>
+                      </div>
                     )}
-                  </Button>
 
-                  <p className="text-[10px] text-gray-400 text-center mt-3">
-                    {rental.instantBooking
-                      ? 'Paiement Mobile Money sécurisé · Confirmation immédiate'
-                      : 'L\'hôte doit approuver votre demande sous 24h'}
-                  </p>
+                    {/* CTA — Louer (workflow location) */}
+                    <Button
+                      onClick={handleBook}
+                      disabled={!checkIn || !checkOut || bookingMutation.isPending}
+                      className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white text-base font-bold py-6 rounded-xl disabled:opacity-50"
+                    >
+                      {bookingMutation.isPending
+                        ? 'Traitement...'
+                        : rental.instantBooking
+                          ? 'Louer maintenant'
+                          : 'Demander à louer'}
+                    </Button>
 
-                  {/* Security deposit notice */}
-                  {rental.securityDeposit > 0 && (
-                    <div className="mt-3 p-2 bg-[#003087]/5 rounded-xl text-[10px] text-gray-500 text-center">
-                      Dépôt de garantie : {fmt(rental.securityDeposit)} FCFA (sécurisé via Escrow)
+                    <Button
+                      variant="outline"
+                      className="w-full border-[#00A651] text-[#00A651] hover:bg-[#00A651]/10 rounded-xl py-5"
+                    >
+                      <Smartphone className="w-5 h-5 mr-2" />
+                      Paiement Mobile Money
+                    </Button>
+
+                    {/* Security deposit */}
+                    {securityDeposit > 0 && (
+                      <div className="text-center text-xs text-gray-500">
+                        Dépôt de garantie : {securityDeposit.toLocaleString('fr-FR')} FCFA (sécurisé Escrow)
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" /> Paiement sécurisé
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Annulation 24h
+                      </span>
                     </div>
-                  )}
-                </CardContent>
-              )}
-            </Card>
+                  </CardContent>
+                )}
+              </Card>
+            </motion.div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
