@@ -12,6 +12,9 @@ declare module 'next-auth' {
       country: string | null;
       kycLevel: number;
     };
+    // Surfaced from the backend so the AppShell can sync it to localStorage
+    // via `setAccessToken()` for the api-client Authorization header.
+    accessToken?: string;
   }
 
   interface User {
@@ -21,6 +24,7 @@ declare module 'next-auth' {
     role: string;
     country: string | null;
     kycLevel: number;
+    accessToken?: string;
   }
 }
 
@@ -30,5 +34,6 @@ declare module 'next-auth/jwt' {
     role: string;
     country: string | null;
     kycLevel: number;
+    accessToken?: string;
   }
 }

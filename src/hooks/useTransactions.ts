@@ -4,20 +4,21 @@ import { api, apiPost } from '@/lib/api-client';
 /** List user's transactions (as buyer/tenant or seller/owner — CDC §5.1.3) */
 export function useTransactions(userId?: string, country?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
-  if (userId) params.set('userId', userId);
   if (country) params.set('country', country);
   params.set('page', String(page));
   params.set('limit', String(limit));
 
-  // Use the new user-scoped endpoint /properties/me/transactions when no userId
-  // filter is provided (the common case — the JWT identifies the user).
-  const endpoint = userId
-    ? `/api/transactions?${params.toString()}`
-    : `/api/properties/me/transactions?${params.toString()}`;
-
+  // P0-3 fix: always use the user-scoped endpoint `/properties/me/transactions`.
+  // The backend resolves the user from the JWT (no IDOR risk), so `userId`
+  // is only kept in the query key + `enabled` gate — it is NOT passed as a
+  // query param.
   return useQuery({
     queryKey: ['transactions', userId, country, page, limit],
-    queryFn: () => api.get<{ transactions: any[]; pagination: any }>(endpoint),
+    queryFn: () =>
+      api.get<{ transactions: any[]; pagination: any }>(
+        `/api/properties/me/transactions?${params.toString()}`,
+      ),
+    enabled: !!userId,
   });
 }
 

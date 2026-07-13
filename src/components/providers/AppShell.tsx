@@ -11,6 +11,7 @@ import RebeccaChat from '@/components/afribayit/RebeccaChat';
 import { motion } from 'framer-motion';
 import { CountryProvider } from '@/contexts/CountryContext';
 import { useAuthStore } from '@/stores/authStore';
+import { setAccessToken } from '@/lib/api-client';
 
 function AppShellInner({ children }: { children: ReactNode }) {
   // useSession is called unconditionally per React's rules of hooks.
@@ -49,6 +50,22 @@ function AppShellInner({ children }: { children: ReactNode }) {
       setUser(null);
     }
   }, [session, sessionStatus, storeUser, setUser]);
+
+  // Sync the backend JWT (carried inside the NextAuth session) → localStorage.
+  // The api-client reads `getAccessToken()` on every request to set the
+  // `Authorization: Bearer <token>` header, so we MUST keep localStorage in
+  // sync with the session. We also re-hydrate from localStorage on mount so
+  // a hard refresh doesn't lose the token between the first paint and the
+  // session resolving.
+  useEffect(() => {
+    const sessionToken = (session as any)?.accessToken as string | undefined;
+    if (sessionToken) {
+      setAccessToken(sessionToken);
+    } else if (sessionStatus === 'unauthenticated') {
+      // Session explicitly gone → drop any stale localStorage token.
+      setAccessToken(null);
+    }
+  }, [session, sessionStatus]);
 
   const isHomePage = pathname === '/';
   const isAuthPage = pathname.startsWith('/auth/');

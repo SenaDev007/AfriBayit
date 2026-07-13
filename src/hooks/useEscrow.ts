@@ -7,9 +7,25 @@ export function useEscrowList(page = 1, limit = 20, country?: string) {
   params.set('limit', String(limit));
   if (country) params.set('country', country);
 
+  // P0-5 fix: the backend `/escrow` endpoint returns `{ transactions, pagination }`
+  // (it lists the user's transactions that have an escrow account). The
+  // previous shape (`{ escrowAccounts }`) never existed — the hook was
+  // always reading `undefined`. We now read `transactions` and alias it
+  // as `escrowAccounts` for backward compatibility with any consumer that
+  // still reads that field.
   return useQuery({
     queryKey: ['escrow', page, limit, country],
-    queryFn: () => api.get<{ escrowAccounts: unknown[]; pagination: unknown }>(`/api/escrow?${params.toString()}`),
+    queryFn: async () => {
+      const res = await api.get<{
+        transactions?: unknown[];
+        escrowAccounts?: unknown[];
+        pagination: unknown;
+      }>(`/api/escrow?${params.toString()}`);
+      // Normalize: always expose `transactions` (the real backend shape)
+      // and an `escrowAccounts` alias so legacy consumers keep working.
+      const transactions = res.transactions ?? res.escrowAccounts ?? [];
+      return { ...res, transactions, escrowAccounts: transactions };
+    },
   });
 }
 

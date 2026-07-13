@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, apiPost, apiDelete } from '@/lib/api-client';
+import { api, apiPost } from '@/lib/api-client';
 
 export function useCommunityPosts(category?: string, country?: string, page = 1, limit = 12) {
   const params = new URLSearchParams();
@@ -59,11 +59,21 @@ export function useRegisterCommunityEvent() {
 }
 
 // ============ Detail Page Hooks ============
+//
+// P0-7 fix: the backend returns the post/group/event object directly (not
+// wrapped in `{ data: ... }`). We defensively unwrap with
+// `response.data ?? response` so the hooks keep working regardless of
+// whether a future backend version starts wrapping responses.
 
 export function useCommunityPost(id: string) {
   return useQuery({
     queryKey: ['community-post', id],
-    queryFn: () => api.get<{ data: unknown }>(`/api/community/posts/${id}`),
+    queryFn: async () => {
+      const res: any = await api.get(`/api/community/posts/${id}`);
+      // Backend returns the post directly; some legacy routes wrap in `{ data }`.
+      const post = res?.data ?? res;
+      return { post, data: post };
+    },
     enabled: !!id,
   });
 }
@@ -71,7 +81,14 @@ export function useCommunityPost(id: string) {
 export function useCommunityPostReplies(id: string) {
   return useQuery({
     queryKey: ['community-post-replies', id],
-    queryFn: () => api.get<{ data: unknown[]; pagination: unknown }>(`/api/community/posts/${id}/replies`),
+    queryFn: async () => {
+      const res: any = await api.get(`/api/community/posts/${id}/replies`);
+      // Backend wraps replies in `{ replies: [...] }`; some legacy routes
+      // wrap in `{ data: [...] }`. Unwrap defensively.
+      const replies = res?.data ?? res?.replies ?? [];
+      const pagination = res?.pagination ?? null;
+      return { replies, data: replies, pagination };
+    },
     enabled: !!id,
   });
 }
@@ -89,15 +106,15 @@ export function useCreateReply(postId: string) {
   });
 }
 
+// P0-7 fix: the backend `POST /community/posts/:id/like` is a TOGGLE —
+// it flips the like state and returns the new state. The old hook tried
+// to `DELETE` to unlike, which the backend doesn't support. We just POST
+// every time and let the backend toggle.
 export function useLikePost(postId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (liked: boolean) => {
-      if (liked) {
-        return apiDelete(`/api/community/posts/${postId}/like`);
-      }
-      return apiPost(`/api/community/posts/${postId}/like`, {});
-    },
+    mutationFn: (_liked: boolean) =>
+      apiPost(`/api/community/posts/${postId}/like`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-post', postId] });
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
@@ -105,17 +122,23 @@ export function useLikePost(postId: string) {
   });
 }
 
+// P0-7 fix: the moderation endpoint is `POST /community/reports`
+// (was `POST /community/moderate`).
 export function useReportContent() {
   return useMutation({
     mutationFn: (data: { content: string; contentId?: string; type?: string; reason?: string }) =>
-      apiPost('/api/community/moderate', data),
+      apiPost('/api/community/reports', data),
   });
 }
 
 export function useCommunityGroup(id: string) {
   return useQuery({
     queryKey: ['community-group', id],
-    queryFn: () => api.get<{ data: unknown }>(`/api/community/groups/${id}`),
+    queryFn: async () => {
+      const res: any = await api.get(`/api/community/groups/${id}`);
+      const group = res?.data ?? res;
+      return { group, data: group };
+    },
     enabled: !!id,
   });
 }
@@ -123,16 +146,23 @@ export function useCommunityGroup(id: string) {
 export function useCommunityGroupMembers(id: string) {
   return useQuery({
     queryKey: ['community-group-members', id],
-    queryFn: () => api.get<{ data: unknown[]; pagination: unknown }>(`/api/community/groups/${id}/members`),
+    queryFn: async () => {
+      const res: any = await api.get(`/api/community/groups/${id}/members`);
+      const members = res?.data ?? res?.members ?? [];
+      const pagination = res?.pagination ?? null;
+      return { members, data: members, pagination };
+    },
     enabled: !!id,
   });
 }
 
+// P0-7 fix: the join-group endpoint is `POST /community/groups/:id/join`
+// (was `POST /community/groups/:id/members`).
 export function useJoinGroup(groupId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      apiPost(`/api/community/groups/${groupId}/members`, {}),
+      apiPost(`/api/community/groups/${groupId}/join`, {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-group', groupId] });
       queryClient.invalidateQueries({ queryKey: ['community-group-members', groupId] });
@@ -144,7 +174,11 @@ export function useJoinGroup(groupId: string) {
 export function useCommunityEvent(id: string) {
   return useQuery({
     queryKey: ['community-event', id],
-    queryFn: () => api.get<{ data: unknown }>(`/api/community/events/${id}`),
+    queryFn: async () => {
+      const res: any = await api.get(`/api/community/events/${id}`);
+      const event = res?.data ?? res;
+      return { event, data: event };
+    },
     enabled: !!id,
   });
 }

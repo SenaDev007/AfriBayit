@@ -32,16 +32,20 @@ export interface WalletData {
   pagination: { page: number; limit: number; total: number; pages: number };
 }
 
+// P0-2 fix: the wallet endpoint is user-scoped (`/users/me/wallet`).
+// The backend resolves the user from the JWT, so we no longer pass
+// `userId` as a query param (that would be an IDOR risk). We keep
+// `userId` in the query key as a cache-busting handle and for the
+// `enabled` gate so callers can opt out of fetching until ready.
 export function useWallet(userId?: string, country?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
-  if (userId) params.set('userId', userId);
   params.set('page', String(page));
   params.set('limit', String(limit));
   if (country) params.set('country', country);
 
   return useQuery({
     queryKey: ['wallet', userId, country, page, limit],
-    queryFn: () => api.get<WalletData>(`/api/wallet?${params.toString()}`),
+    queryFn: () => api.get<WalletData>(`/api/users/me/wallet?${params.toString()}`),
     enabled: !!userId,
   });
 }
