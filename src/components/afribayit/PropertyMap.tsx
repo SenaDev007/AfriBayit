@@ -3,8 +3,68 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import Map, { Marker, Popup, NavigationControl, FullscreenControl, Layer, Source } from 'react-map-gl/mapbox';
 import type { MapRef } from 'react-map-gl/mapbox';
+import type { ErrorEvent } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { formatPrice, getTransactionLabel } from '@/lib/afribayit-utils';
+
+/**
+ * Detect Mapbox access tokens that are obviously invalid.
+ * Catches placeholder values committed by mistake, tokens that are clearly
+ * fake, and tokens missing the standard `pk.` prefix.
+ */
+function isTokenInvalid(token: string | undefined): boolean {
+  if (!token) return true;
+  if (token === 'pk.placeholder_mapbox_token') return true;
+  // Real Mapbox public tokens start with "pk." and are at least 60 chars long
+  if (!token.startsWith('pk.')) return true;
+  if (token.length < 60) return true;
+  // Common placeholder patterns
+  if (/^(pk\.(test|invalid|placeholder|your|demo|example|xxxx))/i.test(token)) return true;
+  return false;
+}
+
+/**
+ * Compute a small OpenStreetMap embed URL for a list of properties.
+ * Free, no token required. Used as a graceful fallback when Mapbox fails.
+ */
+function buildOsmEmbedUrl(properties: PropertyMapItem[], selectedPropertyId?: string): string {
+  const withCoords = properties.filter(p => p.lat != null && p.lng != null);
+  if (withCoords.length === 0) {
+    // Default to a West Africa overview
+    return 'https://www.openstreetmap.org/export/embed.html?bbox=-8%2C3%2C4%2C12&layer=mapnik';
+  }
+
+  let centerLat: number;
+  let centerLng: number;
+  let zoom = 13;
+
+  const selected = selectedPropertyId
+    ? withCoords.find(p => p.id === selectedPropertyId)
+    : null;
+
+  if (selected) {
+    centerLat = selected.lat!;
+    centerLng = selected.lng!;
+    zoom = 15;
+  } else if (withCoords.length === 1) {
+    centerLat = withCoords[0].lat!;
+    centerLng = withCoords[0].lng!;
+    zoom = 14;
+  } else {
+    const lats = withCoords.map(p => p.lat!);
+    const lngs = withCoords.map(p => p.lng!);
+    centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+    centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+    const latSpan = Math.max(...lats) - Math.min(...lats);
+    const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+    zoom = latSpan > 1 || lngSpan > 1 ? 8 : latSpan > 0.2 || lngSpan > 0.2 ? 11 : 13;
+  }
+
+  const delta = zoom >= 15 ? 0.005 : zoom >= 12 ? 0.02 : zoom >= 9 ? 0.2 : 1.5;
+  const bbox = `${centerLng - delta}%2C${centerLat - delta}%2C${centerLng + delta}%2C${centerLat + delta}`;
+  const marker = `marker=${centerLat}%2C${centerLng}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&${marker}&layer=mapnik`;
+}
 
 interface PropertyMapItem {
   id: string;
@@ -77,6 +137,9 @@ export default function PropertyMap({
   const [popupInfo, setPopupInfo] = useState<PropertyMapItem | null>(null);
   const mapRef = React.useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  // Set to true when Mapbox emits an error event (invalid token, network failure,
+  // style load failure, etc.). When true, we fall back to OpenStreetMap embed.
+  const [mapError, setMapError] = useState(false);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -85,6 +148,20 @@ export default function PropertyMap({
     () => properties.filter(p => p.lat !== null && p.lng !== null),
     [properties]
   );
+
+  // Handle errors emitted by Mapbox GL JS (invalid token, tile load failures,
+  // style load failures, etc.). We capture the FIRST error and switch to the
+  // OSM fallback so users never see a blank white map.
+  const handleMapError = useCallback((e: ErrorEvent) => {
+    const msg = e?.error?.message || e?.type || '';
+    // eslint-disable-next-line no-console
+    console.warn('[PropertyMap] Mapbox error, falling back to OpenStreetMap:', msg);
+    setMapError(true);
+  }, []);
+
+  // Effective token validity: empty / placeholder / obviously fake → treat as
+  // missing. Real Mapbox tokens start with "pk." and are long.
+  const tokenIsValid = !isTokenInvalid(mapboxToken);
 
   // Compute initial view state: zoom to properties if available, otherwise country default
   const initialViewState = useMemo(() => {
@@ -227,38 +304,98 @@ export default function PropertyMap({
     return { type: 'FeatureCollection' as const, features };
   }, [mapProperties, showGeoTrustOverlay]);
 
-  // If no Mapbox token, show fallback
-  if (!mapboxToken || mapboxToken === 'pk.placeholder_mapbox_token') {
+  // ─── Fallback UI ─────────────────────────────────────────────────────────
+  // Used when:
+  //   1. No valid Mapbox token (empty / placeholder / obviously fake)
+  //   2. Mapbox emitted an error at runtime (token rejected, tiles failed to
+  //      load, style failed to load, etc.)
+  // In both cases, we render an OpenStreetMap embed (free, no token required)
+  // alongside a property list so users still get a useful map experience.
+  const showFallback = !tokenIsValid || mapError;
+
+  if (showFallback) {
+    const osmEmbedUrl = buildOsmEmbedUrl(mapProperties, selectedPropertyId);
     return (
-      <div className={`flex items-center justify-center bg-gray-100 rounded-2xl ${className}`} style={{ minHeight: 400 }}>
-        <div className="text-center p-8">
-          <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-            </svg>
+      <div className={`relative rounded-2xl overflow-hidden bg-gray-100 ${className}`} style={{ minHeight: 400 }}>
+        {/* OpenStreetMap embed — free, no token required */}
+        {mapProperties.length > 0 ? (
+          <iframe
+            title="Carte OpenStreetMap"
+            src={osmEmbedUrl}
+            className="absolute inset-0 w-full h-full"
+            style={{ border: 0, minHeight: 400 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center p-8">
+              <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+                </svg>
+              </div>
+              <h3 className="font-display text-lg font-bold text-gray-700 mb-2">Carte Interactive</h3>
+              <p className="text-sm text-gray-500 mb-1">Aucun bien avec localisation</p>
+            </div>
           </div>
-          <h3 className="font-display text-lg font-bold text-gray-700 mb-2">Carte Interactive</h3>
-          <p className="text-sm text-gray-500 mb-1">
-            {mapProperties.length} bien{mapProperties.length !== 1 ? 's' : ''} avec localisation
-          </p>
-          <p className="text-xs text-gray-400">
-            Configurez NEXT_PUBLIC_MAPBOX_TOKEN pour activer la carte
-          </p>
-          <div className="mt-4 space-y-1">
-            {mapProperties.slice(0, 5).map(p => (
-              <button
-                key={p.id}
-                onClick={() => onPropertyClick?.(p.id)}
-                className="w-full text-left px-3 py-2 bg-white rounded-lg border hover:border-[#003087] transition-colors text-xs"
-              >
-                <span className="font-semibold text-[#D4AF37]">{formatPrice(p.price, p.transaction)}</span>
-                <span className="text-gray-400"> · </span>
-                <span className="text-gray-600">{p.quartier}, {p.city}</span>
-              </button>
+        )}
+
+        {/* Property chips overlay (top-left) */}
+        {mapProperties.length > 0 && (
+          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur rounded-xl p-2 shadow-lg max-w-[280px] z-10">
+            <div className="text-[10px] font-semibold text-gray-600 mb-1.5 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0115 0z" />
+              </svg>
+              {mapProperties.length} bien{mapProperties.length !== 1 ? 's' : ''} · OpenStreetMap
+            </div>
+            <div className="space-y-1 max-h-[180px] overflow-y-auto">
+              {mapProperties.slice(0, 6).map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => onPropertyClick?.(p.id)}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg border transition-colors text-xs ${
+                    p.id === selectedPropertyId
+                      ? 'border-[#003087] bg-[#003087]/5'
+                      : 'border-gray-200 hover:border-[#003087]'
+                  }`}
+                >
+                  <span className="font-semibold text-[#D4AF37]">{formatPrice(p.price, p.transaction)}</span>
+                  <span className="text-gray-400"> · </span>
+                  <span className="text-gray-600">{p.quartier}, {p.city}</span>
+                </button>
+              ))}
+              {mapProperties.length > 6 && (
+                <p className="text-[10px] text-gray-400 pt-0.5">...et {mapProperties.length - 6} autres</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* "Open larger map" link (bottom-right) */}
+        {mapProperties.length > 0 && (
+          <a
+            href={osmEmbedUrl.replace('/export/embed.html', '/?mlat=' + (mapProperties.find(p => p.id === selectedPropertyId)?.lat ?? mapProperties[0].lat) + '&mlon=' + (mapProperties.find(p => p.id === selectedPropertyId)?.lng ?? mapProperties[0].lng) + '#map=15/' + (mapProperties.find(p => p.id === selectedPropertyId)?.lat ?? mapProperties[0].lat) + '/' + (mapProperties.find(p => p.id === selectedPropertyId)?.lng ?? mapProperties[0].lng))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-3 right-3 bg-white/95 backdrop-blur text-[#003087] text-xs font-medium px-2.5 py-1.5 rounded-lg shadow hover:bg-white transition-colors z-10"
+          >
+            Ouvrir la carte ↗
+          </a>
+        )}
+
+        {/* Map Legend (bottom-left) — same as Mapbox version */}
+        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur rounded-xl p-3 shadow-lg">
+          <div className="text-[10px] font-semibold text-gray-600 mb-1.5">Type de transaction</div>
+          <div className="flex gap-3 flex-wrap">
+            {Object.entries(TRANSACTION_COLORS).map(([key, color]) => (
+              <div key={key} className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-[10px] text-gray-600">{getTransactionLabel(key)}</span>
+              </div>
             ))}
-            {mapProperties.length > 5 && (
-              <p className="text-xs text-gray-400 pt-1">...et {mapProperties.length - 5} autres</p>
-            )}
           </div>
         </div>
       </div>
@@ -275,9 +412,10 @@ export default function PropertyMap({
           setMapLoaded(true);
           handleBoundsChange();
         }}
+        onError={handleMapError}
         mapStyle="mapbox://styles/mapbox/streets-v12"
         mapboxAccessToken={mapboxToken}
-        style={{ width: '100%', height: '100%', minHeight: 400 }}
+        style={{ width: '100%', height: '100%', minHeight: 400, backgroundColor: '#e5e7eb' }}
       >
         <NavigationControl position="top-right" />
         <FullscreenControl position="top-right" />
