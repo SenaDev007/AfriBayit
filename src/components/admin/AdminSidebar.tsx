@@ -36,10 +36,13 @@ import {
   GraduationCap,
   Bot,
   TrendingUp,
+<<<<<<< HEAD
   FileSignature,
   Layers,
   MessageCircle,
   Sparkles,
+=======
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -121,7 +124,11 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
   {
     label: 'COMMUNAUTÉ (§5.7)',
     items: [
+<<<<<<< HEAD
       { label: 'Communauté', href: '/admin/community', icon: MessageCircle },
+=======
+      { label: 'Communauté', href: '/admin/community', icon: Users },
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
       { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: Award },
       { label: 'Avis', href: '/admin/reviews', icon: Star },
       { label: 'Litiges', href: '/admin/disputes', icon: AlertTriangle },

@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< HEAD
 /**
  * useRoleAccess — multi-role access control hook (CDC V4 §3.1.1)
  *
@@ -20,6 +21,11 @@ import { ROLE_CATALOG, getRoleDefinition } from '@/lib/role-catalog';
 
 // Mirror of ROLE_GATED_ROUTES from middleware.ts (kept in sync manually)
 // If you change one, change the other.
+=======
+import { useSession } from 'next-auth/react';
+import { ROLE_CATALOG, getRoleDefinition } from '@/lib/role-catalog';
+
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
 export const DASHBOARD_ACCESS: { path: string; roles: string[] }[] = [
   { path: '/agent-dashboard', roles: ['agent', 'certified_agent', 'premium_agent'] },
   { path: '/investor-dashboard', roles: ['investor'] },
@@ -28,7 +34,11 @@ export const DASHBOARD_ACCESS: { path: string; roles: string[] }[] = [
   { path: '/notary-dashboard', roles: ['notary'] },
   { path: '/geotrust', roles: ['geometer'] },
   { path: '/admin', roles: ['admin'] },
+<<<<<<< HEAD
   { path: '/dashboard', roles: [] }, // accessible to everyone authenticated
+=======
+  { path: '/dashboard', roles: [] },
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
 ];
 
 export interface DashboardInfo {
@@ -53,7 +63,11 @@ export function useRoleAccess() {
   const isAdmin = roles.includes('admin');
 
   const hasRole = (role: string): boolean => {
+<<<<<<< HEAD
     if (isAdmin) return true; // admin bypasses everything
+=======
+    if (isAdmin) return true;
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
     return roles.includes(role);
   };
 
@@ -62,6 +76,7 @@ export function useRoleAccess() {
     return roleList.some((r) => roles.includes(r));
   };
 
+<<<<<<< HEAD
   const hasAllRoles = (roleList: string[]): boolean => {
     if (isAdmin) return true;
     return roleList.every((r) => roles.includes(r));
@@ -118,4 +133,33 @@ export function useRoleAccess() {
     canAccess,
     availableDashboards,
   };
+=======
+  const canAccess = (path: string): boolean => {
+    if (isAdmin) return true;
+    const match = DASHBOARD_ACCESS.find((d) => path.startsWith(d.path));
+    if (!match) return true;
+    if (match.roles.length === 0) return true;
+    return match.roles.some((r) => roles.includes(r));
+  };
+
+  const availableDashboards: DashboardInfo[] = [];
+  availableDashboards.push({
+    path: '/dashboard', roleKey: primaryRole, label: 'Tableau de bord',
+    description: 'Vue d\'ensemble de votre activité', isPrimary: true,
+  });
+
+  for (const entry of DASHBOARD_ACCESS) {
+    if (entry.path === '/dashboard') continue;
+    if (entry.roles.length === 0) continue;
+    if (!hasAnyRole(entry.roles)) continue;
+    const userMatchingRole = entry.roles.find((r) => roles.includes(r)) || entry.roles[0];
+    const roleDef = getRoleDefinition(userMatchingRole);
+    availableDashboards.push({
+      path: entry.path, roleKey: userMatchingRole, label: roleDef.label,
+      description: roleDef.description, isPrimary: userMatchingRole === primaryRole,
+    });
+  }
+
+  return { roles, primaryRole, isAdmin, hasRole, hasAnyRole, canAccess, availableDashboards };
+>>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
 }
