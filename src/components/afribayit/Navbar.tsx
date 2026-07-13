@@ -522,16 +522,18 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </div>
               )}
 
-              {/* CTA - Publier */}
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg text-sm font-semibold shadow-lg transition-colors"
-                onClick={() => navigate(isLoggedIn ? '/publish' : '/auth/register')}
-              >
-                <Plus className="w-4 h-4" />
-                {t('nav.publish', 'Publier')}
-              </motion.button>
+              {/* CTA - Publier (visible uniquement si connecté) */}
+              {isLoggedIn && (
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-[#003087] hover:bg-[#001f5c] text-white rounded-lg text-sm font-semibold shadow-lg transition-colors"
+                  onClick={() => navigate('/publish')}
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('nav.publish', 'Publier')}
+                </motion.button>
+              )}
 
               {/* Mobile Menu Toggle */}
               <motion.button
@@ -720,7 +722,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
                       <button
                         onClick={() => navigate('/publish')}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#001f5c] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         {t('dashboard.publishAd', 'Publier une annonce')}
