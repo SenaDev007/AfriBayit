@@ -4,28 +4,27 @@
  * /admin/settings — Paramètres plateforme (CDC §3.2 + §10 + §11)
  *
  * Global platform configuration:
- *   - Commissions escrow par type de transaction (§6.2)
+ *   - Commissions escrow par type de transaction (§6.2) — LIVE from backend
  *   - Taux de change XOF/EUR/USD/NGN/GHS/KES
  *   - Limites KYC par niveau (§4.3)
  *   - Pays actifs et sous-domaines (§3.2)
  *   - Providers de paiement actifs (§7.1)
  *   - Seuils anti-fraude (§10.2)
  *   - Tiers Premium et tarifs (§5.5b.1, §11.2)
- *
- * TODO: connect to backend /admin/settings endpoints when available
  */
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings, Percent, Globe, CreditCard, ShieldCheck, Crown,
-  Save, RefreshCw, AlertTriangle,
+  Save, RefreshCw, AlertTriangle, Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { useAdminCommissions } from '@/hooks/useAdminApi';
 
 const TABS = [
   { id: 'commissions', label: 'Commissions', icon: Percent },
@@ -102,88 +101,139 @@ export default function AdminSettingsPage() {
 }
 
 function CommissionsTab() {
-  const [commissions, setCommissions] = useState([
-    { type: 'Vente immobilière', rate: 3.5, min: 50000, max: 5000000, enabled: true },
-    { type: 'Location longue durée', rate: 8.33, min: 25000, max: 500000, enabled: true },
-    { type: 'Investissement', rate: 2.0, min: 100000, max: 10000000, enabled: true },
-    { type: 'Location courte durée', rate: 10.0, min: 5000, max: 100000, enabled: true },
-    { type: 'Hôtellerie', rate: 12.0, min: 2000, max: 50000, enabled: true },
-    { type: 'Artisan BTP', rate: 5.0, min: 10000, max: 500000, enabled: true },
-  ]);
+  const { data, isLoading } = useAdminCommissions();
+  const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(Math.round(n));
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="py-12 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#003087]" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const commissions = data?.commissions || [];
+  const totals = data?.totals;
+  const byCountry = data?.byCountry || [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base font-semibold text-[#0a2a5e]">
-          Commissions escrow par type de transaction (CDC §6.2)
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-semibold text-gray-700">Type</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-700">Taux (%)</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-700">Min (FCFA)</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-700">Max (FCFA)</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-700">Statut</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {commissions.map((c, idx) => (
-                <tr key={c.type}>
-                  <td className="px-4 py-3 font-medium text-[#0a2a5e]">{c.type}</td>
-                  <td className="px-4 py-3">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={c.rate}
-                      onChange={(e) => {
-                        const next = [...commissions];
-                        next[idx] = { ...c, rate: parseFloat(e.target.value) || 0 };
-                        setCommissions(next);
-                      }}
-                      className="h-8 w-20 text-right ml-auto"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Input
-                      type="number"
-                      value={c.min}
-                      onChange={(e) => {
-                        const next = [...commissions];
-                        next[idx] = { ...c, min: parseInt(e.target.value) || 0 };
-                        setCommissions(next);
-                      }}
-                      className="h-8 w-28 text-right ml-auto"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Input
-                      type="number"
-                      value={c.max}
-                      onChange={(e) => {
-                        const next = [...commissions];
-                        next[idx] = { ...c, max: parseInt(e.target.value) || 0 };
-                        setCommissions(next);
-                      }}
-                      className="h-8 w-32 text-right ml-auto"
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Badge variant={c.enabled ? 'default' : 'secondary'}
-                           className={c.enabled ? 'bg-green-100 text-green-700 hover:bg-green-100' : ''}>
-                      {c.enabled ? 'Actif' : 'Inactif'}
-                    </Badge>
-                  </td>
+    <div className="space-y-4">
+      {/* Live KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-gray-500 uppercase">Commission totale</p>
+            <p className="text-2xl font-bold text-[#D4AF37]">{fmt(totals?.totalCommission || 0)} FCFA</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-gray-500 uppercase">Volume total</p>
+            <p className="text-2xl font-bold text-[#003087]">{fmt(totals?.totalVolume || 0)} FCFA</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-gray-500 uppercase">Taux moyen effectif</p>
+            <p className="text-2xl font-bold text-green-600">{totals?.avgRate || 0}%</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-gray-500 uppercase">Transactions libérées</p>
+            <p className="text-2xl font-bold text-[#0a2a5e]">{totals?.transactionCount || 0}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold text-[#0a2a5e]">
+            Commissions escrow par type de transaction (CDC §6.2)
+          </CardTitle>
+          <p className="text-xs text-gray-500 mt-1">
+            Taux calculés en temps réel depuis les transactions libérées. Si aucune transaction
+            n'existe pour un type, le taux par défaut du CDC est affiché.
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">Type</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Taux effectif</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Min (FCFA)</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Max (FCFA)</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-700">Transactions</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Volume</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Commission perçue</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-700">Source</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {commissions.map((c) => (
+                  <tr key={c.type} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-[#0a2a5e]">{c.type}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={`font-mono font-bold ${c.isLive ? 'text-green-600' : 'text-gray-500'}`}>
+                        {c.rate}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono text-gray-600">{fmt(c.min)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-gray-600">{fmt(c.max)}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">{c.transactionCount}</td>
+                    <td className="px-4 py-3 text-right font-mono text-gray-700">{fmt(c.totalVolume)}</td>
+                    <td className="px-4 py-3 text-right font-mono font-semibold text-[#D4AF37]">{fmt(c.totalCommission)}</td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge variant={c.isLive ? 'default' : 'secondary'}
+                             className={c.isLive ? 'bg-green-100 text-green-700 hover:bg-green-100' : ''}>
+                        {c.isLive ? 'Temps réel' : 'CDC défaut'}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* By country */}
+      {byCountry.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-[#0a2a5e]">
+              Commissions par pays
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">Pays</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-700">Transactions</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Volume</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-700">Commission</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {byCountry.map((c) => (
+                  <tr key={c.country} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-semibold text-[#0a2a5e]">{c.country}</td>
+                    <td className="px-4 py-3 text-center text-gray-600">{c.count}</td>
+                    <td className="px-4 py-3 text-right font-mono text-gray-700">{fmt(c.volume)}</td>
+                    <td className="px-4 py-3 text-right font-mono font-semibold text-[#D4AF37]">{fmt(c.commission)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 

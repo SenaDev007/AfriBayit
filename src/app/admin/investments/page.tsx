@@ -3,44 +3,42 @@
 /**
  * /admin/investments — Investissements (CDC §5.1 + §8.3.1)
  *
- * Admin view for monitoring the investment module:
- *   - Active investor portfolios
- *   - Score IA d'investissement (0-100) stats
- *   - Alertes prix déclenchées
- *   - ROI calculator usage analytics
- *   - Top performing properties (investor perspective)
- *
- * TODO: connect to backend /investment/* endpoints when available
+ * Wired to backend:
+ *   - GET /admin/investments/stats — KPIs, top properties, recent alerts
  */
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
   TrendingUp, Coins, Target, BarChart3, AlertTriangle,
-  ArrowUpRight, ArrowDownRight, Sparkles,
+  ArrowUpRight, Sparkles, Loader2, Users,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAdminInvestmentsStats } from '@/hooks/useAdminApi';
+
+const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(Math.round(n));
 
 export default function AdminInvestmentsPage() {
-  const kpis = [
-    { label: 'Investisseurs actifs', value: 47, icon: TrendingUp, color: 'text-[#003087]', bg: 'bg-[#003087]/10' },
-    { label: 'Capital total investi', value: '2.4 Mrd FCFA', icon: Coins, color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10' },
-    { label: 'ROI moyen', value: '+18.3%', icon: Target, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Alertes prix actives', value: 12, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
-  ];
+  const { data, isLoading } = useAdminInvestmentsStats();
 
-  const topProperties = [
-    { title: 'Villa Cadjèhoun, Cotonou', score: 92, investorCount: 8, totalInvested: 85000000, roi: '+24%' },
-    { title: 'Immeuble Cocody, Abidjan', score: 88, investorCount: 12, totalInvested: 145000000, roi: '+21%' },
-    { title: 'Terrain Lomé-Ganvié', score: 85, investorCount: 5, totalInvested: 32000000, roi: '+31%' },
-    { title: 'Appartement Ouaga', score: 81, investorCount: 6, totalInvested: 28000000, roi: '+15%' },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-8 h-8 animate-spin text-[#003087]" />
+      </div>
+    );
+  }
 
-  const recentAlerts = [
-    { property: 'Villa Cotonou', type: 'Baisse de prix -8%', date: 'Il y a 2h', severity: 'info' },
-    { property: 'Terrain Abidjan', type: 'Hausse +15% en 30j', date: 'Il y a 5h', severity: 'success' },
-    { property: 'Appartement Lomé', type: 'Score IA réévalué +5pts', date: 'Hier', severity: 'info' },
+  const kpis = data?.kpis;
+  const topProperties = data?.topProperties || [];
+  const recentAlerts = data?.recentAlerts || [];
+
+  const kpiCards = [
+    { label: 'Investisseurs actifs', value: kpis?.investors ?? 0, icon: Users, color: 'text-[#003087]', bg: 'bg-[#003087]/10' },
+    { label: 'Capital total investi', value: kpis ? fmt(kpis.totalCapital) + ' FCFA' : '0 FCFA', icon: Coins, color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10' },
+    { label: 'Score IA moyen', value: kpis?.avgScore ?? 0, icon: Target, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Alertes prix déclenchées', value: kpis?.activePriceAlerts ?? 0, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];
 
   return (
@@ -57,7 +55,7 @@ export default function AdminInvestmentsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, idx) => {
+        {kpiCards.map((kpi, idx) => {
           const Icon = kpi.icon;
           return (
             <motion.div
@@ -102,31 +100,36 @@ export default function AdminInvestmentsPage() {
                     <th className="text-center px-4 py-2 font-semibold text-gray-700">Score IA</th>
                     <th className="text-center px-4 py-2 font-semibold text-gray-700">Investisseurs</th>
                     <th className="text-right px-4 py-2 font-semibold text-gray-700">Capital</th>
-                    <th className="text-center px-4 py-2 font-semibold text-gray-700">ROI</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {topProperties.map((p) => (
-                    <tr key={p.title} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-800">{p.title}</td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="inline-flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-                          <span className="font-bold text-[#D4AF37]">{p.score}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-600">{p.investorCount}</td>
-                      <td className="px-4 py-3 text-right font-mono text-gray-700">
-                        {new Intl.NumberFormat('fr-FR').format(p.totalInvested)} FCFA
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
-                          <ArrowUpRight className="w-3 h-3 mr-1" />
-                          {p.roi}
-                        </Badge>
+                  {topProperties.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-8 text-gray-400">
+                        <Sparkles className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Aucun bien avec score IA d'investissement pour l'instant</p>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    topProperties.map((p) => (
+                      <tr key={p.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800">
+                          {p.title}
+                          <span className="block text-xs text-gray-400">{p.city}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="inline-flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                            <span className="font-bold text-[#D4AF37]">{p.score}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600">{p.investorCount}</td>
+                        <td className="px-4 py-3 text-right font-mono text-gray-700">
+                          {fmt(p.totalInvested)} FCFA
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -141,17 +144,33 @@ export default function AdminInvestmentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {recentAlerts.map((alert, idx) => (
-              <div key={idx} className="p-3 rounded-lg border bg-gray-50/50">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-[#0a2a5e]">{alert.property}</p>
-                    <p className="text-xs text-gray-600">{alert.type}</p>
-                  </div>
-                  <span className="text-[10px] text-gray-400 whitespace-nowrap">{alert.date}</span>
-                </div>
+            {recentAlerts.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <AlertTriangle className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">Aucune alerte déclenchée</p>
               </div>
-            ))}
+            ) : (
+              recentAlerts.map((alert, idx) => (
+                <div key={alert.id || idx} className="p-3 rounded-lg border bg-gray-50/50">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[#0a2a5e]">{alert.propertyTitle}</p>
+                      <p className="text-xs text-gray-600">
+                        {alert.threshold ? `Seuil: ${fmt(alert.threshold)} FCFA` : 'Alerte prix'}
+                      </p>
+                      {alert.userName && (
+                        <p className="text-[10px] text-gray-400 mt-0.5">par {alert.userName}</p>
+                      )}
+                    </div>
+                    {alert.triggeredAt && (
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                        {new Date(alert.triggeredAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
@@ -168,7 +187,8 @@ export default function AdminInvestmentsPage() {
                 Le moteur IA analyse 23 critères (prix/m², infrastructures, dynamique démographique,
                 titres fonciers, etc.) pour calculer un score d'investissement 0-100 sur chaque bien.
                 Les alertes prix notifient automatiquement les investisseurs quand une opportunité
-                correspond à leurs critères.
+                correspond à leurs critères. Les données affichées ci-dessus sont calculées en temps réel
+                depuis la base de données.
               </p>
             </div>
           </div>

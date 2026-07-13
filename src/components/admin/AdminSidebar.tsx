@@ -143,6 +143,7 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
       { label: 'Rebecca IA', href: '/admin/rebecca', icon: Bot },
       { label: 'KYC & Vérification', href: '/admin/kyc', icon: ShieldCheck },
       { label: 'Utilisateurs & Rôles', href: '/admin/users', icon: Users },
+      { label: 'Multi-rôles (gestion)', href: '/admin/multi-roles', icon: Users },
       { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
