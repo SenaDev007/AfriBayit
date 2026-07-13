@@ -48,9 +48,10 @@ export function getAccessToken(): string | null {
 
 // ─── API Client ──────────────────────────────────────────────────────────
 
-export interface ApiOptions extends RequestInit {
+export interface ApiOptions extends Omit<RequestInit, 'body'> {
   auth?: boolean; // Include Authorization header (default: true)
   formData?: boolean; // Don't set Content-Type JSON (for file uploads)
+  body?: BodyInit | Record<string, unknown> | null;
 }
 
 export async function apiFetch<T = any>(
@@ -82,15 +83,26 @@ export async function apiFetch<T = any>(
     headers['Content-Type'] = 'application/json';
   }
 
-  // Ensure body is stringified if object
-  if (fetchOptions.body && typeof fetchOptions.body === 'object' && !formData) {
-    fetchOptions.body = JSON.stringify(fetchOptions.body);
+  // Ensure body is stringified if it's a plain object (NOT Blob/FormData/URLSearchParams/ArrayBuffer)
+  let body: BodyInit | null | undefined = fetchOptions.body as BodyInit | null | undefined;
+  if (
+    fetchOptions.body &&
+    typeof fetchOptions.body === 'object' &&
+    !formData &&
+    !(fetchOptions.body instanceof FormData) &&
+    !(fetchOptions.body instanceof Blob) &&
+    !(fetchOptions.body instanceof URLSearchParams) &&
+    !(fetchOptions.body instanceof ArrayBuffer) &&
+    !(ArrayBuffer.isView(fetchOptions.body))
+  ) {
+    body = JSON.stringify(fetchOptions.body);
   }
 
   // Rewrite /api/ prefix to / (backend doesn't use /api/ prefix)
   const rewrittenPath = rewritePath(path);
   const response = await fetch(`${API_URL}${rewrittenPath}`, {
     ...fetchOptions,
+    body,
     headers,
   });
 
