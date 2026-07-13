@@ -16,6 +16,7 @@
 import dynamic from 'next/dynamic';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
 import SafeModule from '@/components/safe/SafeModule';
+import RoleContextBanner from '@/components/afribayit/RoleContextBanner';
 
 const HotelPMS = dynamic(() => import('@/components/afribayit/HotelPMS'), {
   loading: () => (
@@ -44,6 +45,9 @@ export default function HotelDashboardPage() {
         ctaHref: '#pms',
       }}
     >
+      <div className="pt-4 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <RoleContextBanner />
+      </div>
       <div id="pms">
         <SafeModule>
           <HotelPMS />

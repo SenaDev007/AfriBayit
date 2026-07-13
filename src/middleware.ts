@@ -90,6 +90,19 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/wallet',
 ];
 
+// Role-gated dashboard routes (CDC V4 §3.1.1 — multi-role aware)
+// Each entry maps a route prefix to the set of roles allowed to access it.
+// A user with ANY of the listed roles (in their `roles` array, or the legacy
+// single `role` field) can access the route. Admin can access everything.
+const ROLE_GATED_ROUTES: { prefix: string; roles: string[] }[] = [
+  { prefix: '/agent-dashboard', roles: ['agent', 'certified_agent', 'premium_agent'] },
+  { prefix: '/investor-dashboard', roles: ['investor'] },
+  { prefix: '/owner-dashboard', roles: ['seller', 'agent', 'certified_agent', 'premium_agent'] },
+  { prefix: '/hotel-dashboard', roles: ['hotelier'] },
+  { prefix: '/notary-dashboard', roles: ['notary'] },
+  { prefix: '/geotrust', roles: ['geometer'] },
+];
+
 // Admin route prefixes that require admin role
 const ADMIN_ROUTE_PREFIXES = [
   '/admin',
@@ -277,12 +290,33 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
 
         // Admin routes require admin role or accreditation
         if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
-          if (token?.role === 'admin') return true;
+          // Multi-role: check both the legacy `role` and the new `roles[]`
+          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
+            ? (token as any).roles
+            : token?.role
+              ? [token.role]
+              : [];
+          if (tokenRoles.includes('admin')) return true;
           const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string;
           if (accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN') {
             return true;
           }
           return false; // Deny — not admin
+        }
+
+        // Role-gated dashboard routes (CDC V4 §3.1.1)
+        // User must have at least one of the allowed roles in their roles[] array.
+        // Admin bypasses all role gates.
+        const roleGate = ROLE_GATED_ROUTES.find((g) => path.startsWith(g.prefix));
+        if (roleGate) {
+          if (!token) return false;
+          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
+            ? (token as any).roles
+            : token?.role
+              ? [token.role]
+              : [];
+          if (tokenRoles.includes('admin')) return true;
+          return tokenRoles.some((r) => roleGate.roles.includes(r));
         }
 
         // Protected routes require authentication

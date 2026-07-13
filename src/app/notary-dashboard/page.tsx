@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Bot, Calendar, Check, ClipboardList, Coins, FileText, Folder, Home, PenTool, ScrollText } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import RoleContextBanner from '@/components/afribayit/RoleContextBanner';
 
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -168,6 +169,7 @@ export default function NotaryDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <RoleContextBanner />
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">Espace Notaire</h1>

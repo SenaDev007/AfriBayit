@@ -18,6 +18,7 @@ import {
   LayoutDashboard, Briefcase, ShieldCheck, Star, Landmark,
   MessageCircle, Eye, Settings, ChevronRight, Menu, X
 } from 'lucide-react';
+import DashboardSwitcher from '@/components/afribayit/DashboardSwitcher';
 
 interface NavbarProps {
   onOpenNotifications: () => void;
@@ -554,6 +555,9 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   </motion.button>
                 </div>
               )}
+
+              {/* Dashboard Switcher — only shown for multi-role users */}
+              {isLoggedIn && <DashboardSwitcher />}
 
               {/* CTA - Publier (visible uniquement si connecté) */}
               {isLoggedIn && (

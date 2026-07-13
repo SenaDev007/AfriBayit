@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { signOut } from 'next-auth/react';
 import SafeModule from '@/components/safe/SafeModule';
+import RoleContextBanner from '@/components/afribayit/RoleContextBanner';
 
 
 const AgentDashboard = dynamic(() => import('@/components/afribayit/AgentDashboard'), {
@@ -29,6 +30,9 @@ export default function AgentDashboardPage() {
 
   return (
     <div className="min-h-screen">
+      <div className="pt-20 pb-4 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <RoleContextBanner />
+      </div>
       <SafeModule>
         <AgentDashboard onLogout={handleLogout} />
       </SafeModule>

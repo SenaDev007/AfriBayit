@@ -20,6 +20,7 @@ import {
   MapPin, Calendar, Percent, Home, KeyRound,
 } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import RoleContextBanner from '@/components/afribayit/RoleContextBanner';
 
 export default function InvestorDashboardPage() {
   const { data, isLoading } = useInvestorDashboard();
@@ -80,6 +81,7 @@ export default function InvestorDashboardPage() {
   return (
     <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <RoleContextBanner />
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
