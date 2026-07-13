@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Briefcase,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,6 +82,7 @@ interface UserProfile {
 // Tab config
 const TABS = [
   { id: 'profile', label: 'Profil', icon: User },
+  { id: 'roles', label: 'Rôles', icon: Briefcase, href: '/settings/roles' },
   { id: 'security', label: 'Sécurité', icon: Shield },
   { id: 'verification', label: 'Vérification', icon: BadgeCheck },
   { id: 'connected', label: 'Comptes connectés', icon: Link2 },
@@ -396,10 +398,17 @@ export default function SettingsPage() {
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
+                const handleTabClick = () => {
+                  if ('href' in tab && tab.href) {
+                    router.push(tab.href);
+                  } else {
+                    setActiveTab(tab.id);
+                  }
+                };
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={handleTabClick}
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
                       ${isActive
@@ -424,10 +433,17 @@ export default function SettingsPage() {
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
+                const handleTabClick = () => {
+                  if ('href' in tab && tab.href) {
+                    router.push(tab.href);
+                  } else {
+                    setActiveTab(tab.id);
+                  }
+                };
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={handleTabClick}
                     className={`
                       flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap
                       ${isActive

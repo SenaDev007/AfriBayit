@@ -8,7 +8,8 @@ declare module 'next-auth' {
       email: string;
       name: string;
       image?: string | null;
-      role: string;
+      role: string;          // primary role (legacy, backward compat)
+      roles?: string[];      // multi-role array (CDC V4 §3.1.1)
       country: string | null;
       kycLevel: number;
     };
@@ -22,6 +23,7 @@ declare module 'next-auth' {
     email: string;
     name: string;
     role: string;
+    roles?: string[];
     country: string | null;
     kycLevel: number;
     accessToken?: string;
@@ -32,6 +34,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     role: string;
+    roles?: string[];
     country: string | null;
     kycLevel: number;
     accessToken?: string;
