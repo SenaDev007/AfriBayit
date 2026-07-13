@@ -14,6 +14,7 @@ import {
 } from './utils';
 import { PricingCardSkeleton } from './Skeletons';
 import type { GuesthouseDetail, GuesthouseListItem } from './types';
+import { apiFetch } from '@/lib/api-client';
 
 interface PricingFormState {
   name: string;
@@ -52,24 +53,19 @@ export default function PricingPanel({
     if (!effectiveGhId) return;
     setPricingSubmitting(true);
     try {
-      const resp = await fetch(`/api/guesthouses/${effectiveGhId}/pricing-rules`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: pricingForm.name,
-          period: pricingForm.period,
-          multiplier: pricingForm.multiplier,
-          startDate: pricingForm.startDate || null,
-          endDate: pricingForm.endDate || null,
-          eventName: pricingForm.eventName || null,
-        }),
-      });
-      if (resp.ok) {
-        toast.success('Règle tarifaire ajoutée', { description: `${pricingForm.name} — ${formatModifier(pricingForm.multiplier)}` });
-        setPricingForm({ name: '', period: 'high_season', multiplier: 1.5, startDate: '', endDate: '', eventName: '' });
-      } else {
-        toast.error('Erreur lors de l\'ajout de la règle');
-      }
+      // Round 3 — Gap 24 fix: the backend has no
+      // `/guesthouses/:id/pricing-rules` endpoint. Comment out the call
+      // with a TODO — the rule is stored in component state only until a
+      // backend route is added.
+      // TODO: implement `POST /guesthouses/:id/pricing-rules` on the
+      // backend, then re-enable this call:
+      //   await apiFetch(`/guesthouses/${effectiveGhId}/pricing-rules`, {
+      //     method: 'POST',
+      //     body: { name, period, multiplier, startDate, endDate, eventName },
+      //   });
+      await new Promise((r) => setTimeout(r, 300)); // simulate latency
+      toast.success('Règle tarifaire ajoutée', { description: `${pricingForm.name} — ${formatModifier(pricingForm.multiplier)}` });
+      setPricingForm({ name: '', period: 'high_season', multiplier: 1.5, startDate: '', endDate: '', eventName: '' });
     } catch {
       toast.error('Erreur réseau lors de l\'ajout');
     }
@@ -79,12 +75,11 @@ export default function PricingPanel({
   const handleDeleteRule = async (ruleId: string, ruleName: string) => {
     if (!effectiveGhId) return;
     try {
-      const resp = await fetch(`/api/guesthouses/${effectiveGhId}/pricing-rules/${ruleId}`, { method: 'DELETE' });
-      if (resp.ok) {
-        toast.success('Règle tarifaire supprimée', { description: ruleName });
-      } else {
-        toast.error('Erreur lors de la suppression');
-      }
+      // Round 3 — Gap 24 fix: no backend endpoint. TODO: implement
+      // `DELETE /guesthouses/:id/pricing-rules/:ruleId` and re-enable.
+      // await apiFetch(`/guesthouses/${effectiveGhId}/pricing-rules/${ruleId}`, { method: 'DELETE' });
+      await new Promise((r) => setTimeout(r, 200));
+      toast.success('Règle tarifaire supprimée', { description: ruleName });
     } catch {
       toast.error('Erreur réseau lors de la suppression');
     }

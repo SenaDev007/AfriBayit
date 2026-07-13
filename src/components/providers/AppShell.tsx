@@ -11,7 +11,7 @@ import RebeccaChat from '@/components/afribayit/RebeccaChat';
 import { motion } from 'framer-motion';
 import { CountryProvider } from '@/contexts/CountryContext';
 import { useAuthStore } from '@/stores/authStore';
-import { setAccessToken } from '@/lib/api-client';
+import { setAccessToken, apiFetch } from '@/lib/api-client';
 
 function AppShellInner({ children }: { children: ReactNode }) {
   // useSession is called unconditionally per React's rules of hooks.
@@ -72,6 +72,10 @@ function AppShellInner({ children }: { children: ReactNode }) {
   const isAdminPage = pathname.startsWith('/admin');
 
   // Fetch notification count for logged-in users
+  // Round 3 — Gap 16 fix: use `apiFetch` (which carries the JWT
+  // Authorization header and the X-Country-Code header) instead of raw
+  // `fetch('/api/notifications?...')` which used to 401 for users logged
+  // in via the backend JWT.
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -79,11 +83,12 @@ function AppShellInner({ children }: { children: ReactNode }) {
 
     const fetchCount = async () => {
       try {
-        const res = await fetch('/api/notifications?unreadOnly=true&limit=1');
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await apiFetch<{
+          unreadCount?: number;
+          pagination?: { total?: number };
+        }>('/notifications?unreadOnly=true&limit=1');
         if (!cancelled) {
-          setNotificationCount(data.pagination?.total || data.unreadCount || 0);
+          setNotificationCount(data?.unreadCount ?? data?.pagination?.total ?? 0);
         }
       } catch {
         // silently fail — notification count is non-critical

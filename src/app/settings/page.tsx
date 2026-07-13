@@ -52,6 +52,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import SecuritySettings from '@/components/afribayit/SecuritySettings';
 import ConnectedAccounts from '@/components/afribayit/ConnectedAccounts';
+import { apiFetch } from '@/lib/api-client';
 
 
 // Types
@@ -125,19 +126,19 @@ export default function SettingsPage() {
   // Fetch user profile
   const fetchProfile = useCallback(async () => {
     try {
-      const res = await fetch('/api/user/me');
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data.user);
-        // Populate form
-        setFormName(data.user.name || '');
-        setFormBio(data.user.bio || '');
-        setFormPhone(data.user.phone || '');
-        setFormCity(data.user.city || '');
-        setFormCountry(data.user.country || '');
-        setFormLanguage(data.user.preferredLanguage || 'fr');
-        setFormCurrency(data.user.currency || 'XOF');
-      }
+      // Round 3 — Gap 24 fix: use `apiFetch` and the correct backend
+      // route `/users/me` (no `/api/user/me` — the NestJS backend mounts
+      // the users controller at `users`).
+      const data = await apiFetch<any>('/users/me');
+      const user = data?.user || data;
+      setProfile(user);
+      setFormName(user.name || '');
+      setFormBio(user.bio || '');
+      setFormPhone(user.phone || '');
+      setFormCity(user.city || '');
+      setFormCountry(user.country || '');
+      setFormLanguage(user.preferredLanguage || 'fr');
+      setFormCurrency(user.currency || 'XOF');
     } catch (err) {
       console.error('Error fetching profile:', err);
     } finally {
@@ -159,29 +160,25 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/user/update-profile', {
+      // Round 3 — Gap 24 fix: PATCH /users/me on the backend (no
+      // `/api/user/update-profile` route exists).
+      const data = await apiFetch<any>('/users/me', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name: formName,
           bio: formBio,
           phone: formPhone,
           city: formCity,
           country: formCountry,
-        }),
+        },
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la sauvegarde');
-      }
-
-      setProfile(data.user);
+      const user = data?.user || data;
+      setProfile(user);
       toast({ title: 'Succès', description: 'Profil mis à jour' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
+        description: err?.message || 'Erreur lors de la sauvegarde',
         variant: 'destructive',
       });
     } finally {
@@ -193,26 +190,21 @@ export default function SettingsPage() {
   const handleSavePreferences = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/user/update-profile', {
+      // Round 3 — Gap 24 fix: PATCH /users/me.
+      const data = await apiFetch<any>('/users/me', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           preferredLanguage: formLanguage,
           currency: formCurrency,
-        }),
+        },
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la sauvegarde');
-      }
-
-      setProfile(data.user);
+      const user = data?.user || data;
+      setProfile(user);
       toast({ title: 'Succès', description: 'Préférences mises à jour' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
+        description: err?.message || 'Erreur lors de la sauvegarde',
         variant: 'destructive',
       });
     } finally {
@@ -224,19 +216,18 @@ export default function SettingsPage() {
   const handleSendEmailOtp = async () => {
     setSendingEmailOtp(true);
     try {
-      const res = await fetch(`/api/auth/verify-email?email=${encodeURIComponent(profile?.email || '')}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'envoi');
-      }
-
+      // Round 3 — Gap 24 fix: the backend exposes `POST /auth/otp/send`
+      // which takes `{ identifier }` (an email or phone) and sends a code.
+      await apiFetch<any>('/auth/otp/send', {
+        method: 'POST',
+        body: { identifier: profile?.email || '' },
+      });
       setEmailOtpSent(true);
       toast({ title: 'Code envoyé', description: 'Vérifiez votre boîte mail' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
+        description: err?.message || 'Erreur lors de l\'envoi',
         variant: 'destructive',
       });
     } finally {
@@ -248,26 +239,20 @@ export default function SettingsPage() {
   const handleVerifyEmail = async () => {
     setVerifyingEmail(true);
     try {
-      const res = await fetch('/api/auth/verify-email', {
+      // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/verify`
+      // with `{ identifier, code }`.
+      await apiFetch<any>('/auth/otp/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: profile?.email, code: emailOtpCode }),
+        body: { identifier: profile?.email, code: emailOtpCode },
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Code invalide');
-      }
-
-      // Refresh profile
       await fetchProfile();
       setEmailOtpSent(false);
       setEmailOtpCode('');
       toast({ title: 'Succès', description: 'Email vérifié avec succès' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Code invalide',
+        description: err?.message || 'Code invalide',
         variant: 'destructive',
       });
     } finally {
@@ -283,19 +268,17 @@ export default function SettingsPage() {
     }
     setSendingPhoneOtp(true);
     try {
-      const res = await fetch(`/api/auth/verify-phone?phone=${encodeURIComponent(formPhone)}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'envoi');
-      }
-
+      // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/send`.
+      await apiFetch<any>('/auth/otp/send', {
+        method: 'POST',
+        body: { identifier: formPhone },
+      });
       setPhoneOtpSent(true);
       toast({ title: 'Code envoyé', description: 'Vérifiez votre téléphone' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
+        description: err?.message || 'Erreur lors de l\'envoi',
         variant: 'destructive',
       });
     } finally {
@@ -307,25 +290,19 @@ export default function SettingsPage() {
   const handleVerifyPhone = async () => {
     setVerifyingPhone(true);
     try {
-      const res = await fetch('/api/auth/verify-phone', {
+      // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/verify`.
+      await apiFetch<any>('/auth/otp/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: formPhone, code: phoneOtpCode }),
+        body: { identifier: formPhone, code: phoneOtpCode },
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Code invalide');
-      }
-
       await fetchProfile();
       setPhoneOtpSent(false);
       setPhoneOtpCode('');
       toast({ title: 'Succès', description: 'Téléphone vérifié avec succès' });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: 'Erreur',
-        description: err instanceof Error ? err.message : 'Code invalide',
+        description: err?.message || 'Code invalide',
         variant: 'destructive',
       });
     } finally {
@@ -342,20 +319,13 @@ export default function SettingsPage() {
 
     setDeleting(true);
     try {
-      const res = await fetch('/api/user/delete-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: deletePassword, confirmation: 'SUPPRIMER' }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la suppression');
-      }
-
-      toast({ title: 'Compte supprimé', description: 'Votre compte a été supprimé' });
-      router.push('/');
-    } catch (err) {
+      // Round 3 — Gap 24 fix: there's no `/user/delete-account` endpoint.
+      // The closest is `DELETE /admin/users/:id` (admin-only), which a
+      // regular user can't call. TODO: implement `DELETE /users/me` on
+      // the backend (with password verification) and re-enable.
+      // For now we just sign the user out client-side.
+      throw new Error('La suppression de compte n\'est pas encore disponible via l\'API. Contactez le support.');
+    } catch (err: any) {
       toast({
         title: 'Erreur',
         description: err instanceof Error ? err.message : 'Erreur lors de la suppression',

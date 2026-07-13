@@ -278,7 +278,9 @@ export const communityApi = {
   groups: (params?: any) => api.get(`/community/groups?${new URLSearchParams(params).toString()}`),
   createGroup: (data: any) => api.post('/community/groups', data),
   getGroup: (id: string) => api.get(`/community/groups/${id}`),
-  joinGroup: (id: string) => api.post(`/community/groups/${id}/members`),
+  // Round 3 — Gap 23 fix: the backend's join route is `/groups/:id/join`,
+  // not `/groups/:id/members`.
+  joinGroup: (id: string) => api.post(`/community/groups/${id}/join`),
 
   events: (params?: any) => api.get(`/community/events?${new URLSearchParams(params).toString()}`),
   registerEvent: (id: string) => api.post(`/community/events/${id}/register`),
@@ -291,11 +293,17 @@ export const academyApi = {
   createCourse: (data: any) => api.post('/academy/courses', data),
   getCourse: (id: string) => api.get(`/academy/courses/${id}`),
   enroll: (id: string) => api.post(`/academy/courses/${id}/enroll`),
-  getQuiz: (id: string) => api.get(`/academy/courses/${id}/quiz`),
-  submitQuiz: (data: any) => api.post('/academy/quiz/attempt', data),
-  generateCertificate: (data: any) => api.post('/academy/certificates/generate', data),
+  // Round 3 — Gap 23 fix:
+  //  - `getQuiz` removed — quiz comes from the course detail response.
+  //  - `submitQuiz` → `/academy/courses/:id/quiz/attempt` (was
+  //     `/academy/quiz/attempt`).
+  //  - `generateCertificate` → `/academy/courses/:id/certificate` (was
+  //     `/academy/certificates/generate`).
+  //  - `enrollments` → `/academy/me/enrollments` (was `/academy/enrollments`).
+  submitQuiz: (courseId: string, data: any) => api.post(`/academy/courses/${courseId}/quiz/attempt`, data),
+  generateCertificate: (courseId: string) => api.post(`/academy/courses/${courseId}/certificate`),
   verifyCertificate: (certificateId: string) => api.get(`/academy/certificates/verify/${certificateId}`),
-  enrollments: () => api.get('/academy/enrollments'),
+  enrollments: () => api.get('/academy/me/enrollments'),
 };
 
 // ─── Hospitality Helpers ──────────────────────────────────────────────────

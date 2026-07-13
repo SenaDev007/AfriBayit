@@ -8,6 +8,7 @@ import { useProperties } from '@/hooks/useProperties';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { Calendar, Coins, BarChart3, Download, Eye, Users } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 import { ANALYTICS_TABS, PERIOD_OPTIONS } from './tabs';
 import {
@@ -174,16 +175,13 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
     }
 
     try {
-      const res = await fetch(`/api/analytics/export?format=${format}&userId=${userId || 'demo'}&type=listings`);
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `afribayit-analytics.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
+      // Round 3 — Gap 24 fix: there's no `/analytics/export` endpoint on
+      // the backend. The CSV is generated client-side from the same
+      // in-memory analytics data the dashboard already shows. TODO:
+      // implement `GET /analytics/export` on the backend and re-enable the
+      // network call:
+      //   const blob = await apiFetch<Blob>(`/analytics/export?format=${format}&type=listings`);
+      throw new Error('client-side fallback');
     } catch {
       const csvRows = [
         'Métrique,Valeur',

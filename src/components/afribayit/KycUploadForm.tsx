@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -171,24 +172,29 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
     setSuccess(false);
 
     try {
-      const formData = new FormData();
-      formData.append('document', file);
-      formData.append('type', selectedDocType);
-
-      const headers: Record<string, string> = {};
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
-      const res = await fetch('/api/kyc/ocr', {
-        method: 'POST',
-        body: formData,
-        headers,
+      // Round 3 — Gap 24 fix: the backend has no `/kyc/ocr` endpoint.
+      // The closest equivalent is `POST /kyc/submit` which expects
+      // `{ documentType, docUrl, country? }` (a URL, not a file upload).
+      // We convert the File to a base64 data URL client-side and post
+      // that as `docUrl` so the backend can persist the document.
+      // TODO: once a proper `/storage/signed-url` endpoint exists, upload
+      // the file there first and pass the resulting URL here instead.
+      const docUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('File read failed'));
+        reader.readAsDataURL(file);
       });
 
-      const data = await res.json();
+      const data = await apiFetch<any>('/kyc/submit', {
+        method: 'POST',
+        body: {
+          documentType: selectedDocType,
+          docUrl,
+        },
+      });
 
-      if (!res.ok) {
+      if (data?.error) {
         setError(data.error || 'Erreur lors du téléversement du document.');
         return;
       }
@@ -197,8 +203,9 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
       clearFile();
       setSelectedDocType('');
       onSubmitted?.();
-    } catch (err) {
-      setError('Erreur réseau. Veuillez vérifier votre connexion et réessayer.');
+    } catch (err: any) {
+      // apiFetch throws an ApiError with a `message` field on non-2xx.
+      setError(err?.message || 'Erreur réseau. Veuillez vérifier votre connexion et réessayer.');
       console.error('[KycUploadForm] Upload error:', err);
     } finally {
       setIsUploading(false);

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Loader2, MapPin, Mail } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 const COUNTRIES = [
   { value: 'BJ', label: 'Bénin', flag: '🇧🇯' },
@@ -91,32 +92,26 @@ export default function CompleteProfilePage() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/complete-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // Round 3 — Gap 24 fix: there's no `/auth/complete-profile` endpoint
+      // on the backend. The closest equivalent is `PATCH /users/me` which
+      // accepts `country`, `city`, `phone`, `email` as profile fields.
+      await apiFetch<any>('/users/me', {
+        method: 'PATCH',
+        body: {
           country: selectedCountry,
           city: selectedCity,
           phone: phone.trim() || undefined,
-          email: needsEmail ? email.trim() : undefined,
-        }),
+          ...(needsEmail ? { email: email.trim() } : {}),
+        },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Erreur lors de la mise à jour');
-        setLoading(false);
-        return;
-      }
 
       // Update the NextAuth session to reflect the new country and email
       await update();
 
       // Redirect to dashboard
       router.push('/dashboard');
-    } catch {
-      setError('Erreur de connexion au serveur');
+    } catch (err: any) {
+      setError(err?.message || 'Erreur de connexion au serveur');
     } finally {
       setLoading(false);
     }

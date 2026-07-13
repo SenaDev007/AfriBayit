@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Bot, Calendar, Check, ClipboardList, Coins, FileText, Folder, Home, PenTool, ScrollText } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -147,19 +148,17 @@ export default function NotaryDashboardPage() {
     if (!selectedTransaction || !selectedTemplate) return;
     setGenerating(true);
     try {
-      const res = await fetch('/api/notary/deeds/generate', {
+      // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT) and the correct
+      // backend route (`/notaries/deeds/generate`, plural — the controller
+      // is mounted at `notaries`, not `notary`).
+      const result = await apiFetch<any>('/notaries/deeds/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           transactionId: selectedTransaction,
-          templateId: selectedTemplate,
-          data: { country: 'BJ' },
-        }),
+          notaryId: 'me',
+        },
       });
-      if (res.ok) {
-        const result = await res.json();
-        alert(`Acte généré: ${result.deed.title} (${result.deed.id})`);
-      }
+      alert(`Acte généré: ${result?.deed?.title || result?.title || 'demo'} (${result?.deed?.id || result?.id || ''})`);
     } catch {
       alert('Acte généré (demo)');
     }

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiPost } from '@/lib/api-client';
+import { apiPost, apiFetch } from '@/lib/api-client';
 import { BarChart3, Bot, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, MessageCircle, HandHeart, Scale, Search, Zap } from 'lucide-react';
 
 interface RebeccaChatProps {
@@ -117,21 +117,21 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
         }));
 
       // Call the dedicated Rebecca chat endpoint
-      const response = await fetch('/api/rebecca/chat', {
+      // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT + country header)
+      // and the correct backend route (`/rebecca/chat`, no `/api/` prefix).
+      // The backend accepts `{ message, sessionId? }` (single message, not
+      // an array), so we send the last user message.
+      const lastUserMessage = chatMessages.length > 0
+        ? chatMessages[chatMessages.length - 1]
+        : { role: 'user', content: '' };
+
+      const data = await apiFetch<any>('/rebecca/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: chatMessages,
+        body: {
+          message: lastUserMessage.content,
           sessionId: convId,
-          userId,
-        }),
+        },
       });
-
-      if (!response.ok) {
-        throw new Error('Rebecca API error');
-      }
-
-      const data = await response.json();
 
       setIsTyping(false);
 
@@ -139,7 +139,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'bot',
-        text: data.message || 'Je suis désolée, je n\'ai pas pu traiter votre demande.',
+        text: data.message || data.response || data.text || 'Je suis désolée, je n\'ai pas pu traiter votre demande.',
         timestamp: new Date(),
         sources: data.sources || [],
         functionsCalled: data.functionsCalled || [],

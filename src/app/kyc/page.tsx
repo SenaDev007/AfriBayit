@@ -26,6 +26,7 @@ import KycLevelCard, {
 import KycUploadForm, {
   type DocTypeOption,
 } from '@/components/afribayit/KycUploadForm';
+import { apiFetch } from '@/lib/api-client';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -262,26 +263,16 @@ export default function KycPage() {
     setFetchError(null);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
-      const res = await fetch('/api/kyc', { headers });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Erreur lors du chargement des documents');
-      }
-      const data = await res.json();
-      setDocuments(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setFetchError(err instanceof Error ? err.message : 'Erreur inconnue');
+      // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT automatically)
+      // and the correct backend route (`/kyc`, no `/api/` prefix).
+      const data = await apiFetch<any>('/kyc');
+      setDocuments(Array.isArray(data) ? data : (data?.documents || []));
+    } catch (err: any) {
+      setFetchError(err?.message || 'Erreur lors du chargement des documents');
     } finally {
       setIsLoadingDocs(false);
     }
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     if (sessionStatus === 'authenticated') {

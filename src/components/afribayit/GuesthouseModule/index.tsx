@@ -6,6 +6,7 @@ import { useGuesthouses, useGuesthouse, useGuesthouseBookings, useCreateBooking 
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from 'sonner';
+import { apiFetch } from '@/lib/api-client';
 import {
   Award,
   Bed,
@@ -165,20 +166,25 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
     if (!bookingRoom || !bookingCheckIn || !bookingCheckOut) return;
     (async () => {
       try {
-        const resp = await fetch('/api/hotels/pricing/calculate', {
+        // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT + country
+        // header) and the correct backend route
+        // (`/hotels/pricing/calculate`, no `/api/` prefix).
+        const data = await apiFetch<any>('/hotels/pricing/calculate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: {
+            // Backend expects `hotelId` + `roomId`; we don't have a
+            // hotelId here so we pass the guesthouse id and the room id.
+            hotelId: activeDetail?.id,
+            roomId: bookingRoom.id,
             basePrice: bookingRoom.basePrice,
             checkIn: bookingCheckIn,
             checkOut: bookingCheckOut,
             country: activeDetail?.country || 'BJ',
             includeBreakdown: false,
-          }),
+          },
         });
-        if (resp.ok && !cancelled) {
-          const data = await resp.json();
-          setDynamicPrice(data.dynamicPrice);
+        if (!cancelled) {
+          setDynamicPrice(data.dynamicPrice ?? data.total ?? data.pricePerNight);
           if (data.season === 'haute') setCancellationPolicy('Modérée — Annulation gratuite 5 jours avant');
           else if (data.season === 'basse') setCancellationPolicy('Flexible — Annulation gratuite 24h avant');
           else setCancellationPolicy('Flexible — Annulation gratuite 24h avant');

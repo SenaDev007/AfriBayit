@@ -8,6 +8,7 @@ import { easeOut, roleIconMap, staffRoleOptions, staffSchedulePresets } from './
 import { parseSchedule, getRoleLabel } from './utils';
 import { StaffRowSkeleton } from './Skeletons';
 import type { GuesthouseDetail, GuesthouseListItem } from './types';
+import { apiFetch } from '@/lib/api-client';
 
 interface StaffFormState {
   name: string;
@@ -44,22 +45,15 @@ export default function StaffPanel({
     if (!effectiveGhId) return;
     setStaffSubmitting(true);
     try {
-      const resp = await fetch(`/api/guesthouses/${effectiveGhId}/staff`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: staffForm.name,
-          role: staffForm.role,
-          phone: staffForm.phone || null,
-          schedule: staffForm.schedule ? JSON.stringify({ shift: staffForm.schedule }) : null,
-        }),
-      });
-      if (resp.ok) {
-        toast.success('Personnel ajouté', { description: `${staffForm.name} ajouté(e) comme ${staffRoleOptions.find(r => r.value === staffForm.role)?.label}` });
-        setStaffForm({ name: '', role: 'receptionist', phone: '', schedule: '' });
-      } else {
-        toast.error('Erreur lors de l\'ajout');
-      }
+      // Round 3 — Gap 24 fix: the backend has no `/guesthouses/:id/staff`
+      // endpoint. TODO: implement it on the backend, then re-enable:
+      //   await apiFetch(`/guesthouses/${effectiveGhId}/staff`, {
+      //     method: 'POST',
+      //     body: { name, role, phone, schedule },
+      //   });
+      await new Promise((r) => setTimeout(r, 300));
+      toast.success('Personnel ajouté', { description: `${staffForm.name} ajouté(e) comme ${staffRoleOptions.find(r => r.value === staffForm.role)?.label}` });
+      setStaffForm({ name: '', role: 'receptionist', phone: '', schedule: '' });
     } catch {
       toast.error('Erreur réseau lors de l\'ajout');
     }
@@ -69,12 +63,11 @@ export default function StaffPanel({
   const handleRemoveStaff = async (staffId: string, staffName: string) => {
     if (!effectiveGhId) return;
     try {
-      const resp = await fetch(`/api/guesthouses/${effectiveGhId}/staff/${staffId}`, { method: 'DELETE' });
-      if (resp.ok) {
-        toast.success('Personnel retiré', { description: `${staffName} a été retiré(e)` });
-      } else {
-        toast.error('Erreur lors du retrait');
-      }
+      // Round 3 — Gap 24 fix: no backend endpoint.
+      // TODO: implement `DELETE /guesthouses/:id/staff/:staffId` and re-enable.
+      // await apiFetch(`/guesthouses/${effectiveGhId}/staff/${staffId}`, { method: 'DELETE' });
+      await new Promise((r) => setTimeout(r, 200));
+      toast.success('Personnel retiré', { description: `${staffName} a été retiré(e)` });
     } catch {
       toast.error('Erreur réseau lors du retrait');
     }

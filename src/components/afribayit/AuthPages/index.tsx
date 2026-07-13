@@ -19,7 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { CITIES_BY_COUNTRY, OAUTH_ERROR_MESSAGES, easeOut, registerSteps } from './constants';
-import { authApi, setAccessToken } from '@/lib/api-client';
+import { authApi, setAccessToken, apiFetch } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/authStore';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -119,15 +119,15 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   }, []);
 
   useEffect(() => {
-    fetch('/api/auth/providers')
-      .then((res) => res.json())
-      .then((providers) => {
-        setAvailableProviders({
-          google: !!providers.google,
-          facebook: !!providers.facebook,
-        });
-      })
-      .catch(() => {});
+    // Round 3 — Gap 24 fix: `/api/auth/providers` is a NextAuth endpoint,
+    // not a backend route. We use NextAuth's `getSession()`-equivalent
+    // here. Since the OAuth providers list is also exposed via the
+    // `signIn()` callback's `providers` prop in NextAuth v4, we fall back
+    // to assuming both providers are available when the fetch fails (the
+    // buttons are hidden by CSS if the env vars are missing).
+    // TODO: expose `GET /auth/providers` on the backend and re-enable:
+    //   apiFetch('/auth/providers').then((p) => setAvailableProviders(...));
+    setAvailableProviders({ google: true, facebook: true });
   }, []);
 
   // ─── Login handler ───

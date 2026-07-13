@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Bus, Car, CloudRain, Droplets, Globe, Home, Plane, Route, Store, Sun, Thermometer, Wind } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 

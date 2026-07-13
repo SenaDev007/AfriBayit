@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
-import { apiPost } from '@/lib/api-client';
+import { apiPost, apiFetch } from '@/lib/api-client';
 import { toast } from 'sonner';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
@@ -305,26 +305,18 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const handleGenerateDeed = async () => {
     setDeedGenerating(true);
     try {
-      const res = await fetch('/api/notary/deeds/generate', {
+      // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT) and the correct
+      // backend route `/notaries/deeds/generate` (plural — the controller
+      // is mounted at `notaries`, not `notary`).
+      const data = await apiFetch<any>('/notaries/deeds/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'acte_vente',
-          propertyId: 'demo_property',
-          buyerName: 'Amadou Diallo',
-          sellerName: 'Marie Koffi',
-          amount: 15000000,
-          description: deedDraft || 'Villa 3 chambres, Cotonou Ganhi',
-        }),
+        body: {
+          transactionId: 'demo_property',
+          notaryId: 'me',
+        },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setDeedDraft(data.deedText || 'ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés...\n\n[Projet généré par IA — À réviser par le notaire]');
-        toast.success('Projet d\'acte généré par IA');
-      } else {
-        setDeedDraft('ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés :\n- Le vendeur : M./Mme [NOM]\n- L\'acheteur : M./Mme [NOM]\n\nObjet : Villa 3 chambres, Cotonou\nMontant : 15 000 000 FCFA\n\n[Projet généré par IA — À réviser par le notaire]');
-        toast.success('Projet d\'acte généré (demo)');
-      }
+      setDeedDraft(data?.deedText || data?.deed?.content || 'ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés...\n\n[Projet généré par IA — À réviser par le notaire]');
+      toast.success('Projet d\'acte généré par IA');
     } catch {
       setDeedDraft('ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés :\n- Le vendeur : M./Mme [NOM]\n- L\'acheteur : M./Mme [NOM]\n\nObjet : Villa 3 chambres, Cotonou\nMontant : 15 000 000 FCFA\n\n[Projet généré par IA — À réviser par le notaire]');
       toast.success('Projet d\'acte généré (demo)');
@@ -337,10 +329,15 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const handleESign = async (docId: string) => {
     setSigningDoc(docId);
     try {
-      await fetch('/api/notary/signatures/confirm', {
+      // Round 3 — Gap 24 fix: use `apiFetch` and the correct backend route
+      // `/notaries/signatures/confirm`. The backend expects
+      // `{ signatureId, signatureData }` (no `code` field).
+      await apiFetch<any>('/notaries/signatures/confirm', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatureId: docId, code: '123456' }),
+        body: {
+          signatureId: docId,
+          signatureData: 'esign-confirmed',
+        },
       });
       toast.success('Signature électronique appliquée');
     } catch {
