@@ -19,6 +19,8 @@ import {
   MessageCircle, Eye, Settings, ChevronRight, Menu, X
 } from 'lucide-react';
 import DashboardSwitcher from '@/components/afribayit/DashboardSwitcher';
+import MobileDashboardList from '@/components/afribayit/MobileDashboardList';
+import DesktopDashboardLinks from '@/components/afribayit/DesktopDashboardLinks';
 
 interface NavbarProps {
   onOpenNotifications: () => void;
@@ -476,6 +478,16 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                           )}
                         </div>
 
+                        {/* Mes dashboards — multi-role quick switcher (desktop dropdown) */}
+                        {isMultiRole && (
+                          <div className="border-b border-gray-100 py-1">
+                            <div className="px-4 py-1.5">
+                              <span className="text-[10px] uppercase tracking-wider font-bold text-[#003087]">Mes dashboards</span>
+                            </div>
+                            <DesktopDashboardLinks onNavigate={(href) => navigate(href)} />
+                          </div>
+                        )}
+
                         {/* Menu items */}
                         <div className="py-1 max-h-[340px] overflow-y-auto">
                           {PROFILE_MENU_ITEMS.filter(item => {
@@ -718,6 +730,11 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                         )}
                       </div>
                     </div>
+
+                    {/* Mes dashboards — multi-role quick switcher (mobile) */}
+                    {isLoggedIn && (
+                      <MobileDashboardList onNavigate={(href) => navigate(href)} />
+                    )}
 
                     {/* Quick links */}
                     <div className="space-y-0.5">

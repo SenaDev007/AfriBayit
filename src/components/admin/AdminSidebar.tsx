@@ -34,6 +34,12 @@ import {
   Bell,
   CreditCard,
   GraduationCap,
+  Bot,
+  TrendingUp,
+  FileSignature,
+  Layers,
+  MessageCircle,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -56,30 +62,46 @@ interface NavItem {
   icon: React.ElementType;
 }
 
+/**
+ * Admin sidebar navigation — aligned with CDC V4 modules
+ *
+ * The sidebar is organized in 7 top-level groups that mirror the CDC's
+ * module structure (§5 — Modules métier, §6 — Escrow, §7 — Payments,
+ * §8 — IA Rebecca, §10 — Sécurité, §11 — Revenus):
+ *
+ *   1. Vue d'ensemble        — global KPIs, analytics, revenue
+ *   2. Immobilier             — properties, transactions, leases, escrow
+ *   3. Hôtellerie             — hotels, guesthouses, short-term, bookings
+ *   4. Services Pro           — artisans, notaries, geotrust, courses
+ *   5. Communauté             — community, ambassadors, reviews, disputes
+ *   6. Finances               — payouts, wallets, subscriptions, revenue
+ *   7. Intelligence & Système — Rebecca IA, KYC, multi-roles, settings,
+ *                              notifications, audit-logs, OTA, content
+ *
+ * Each country also has its own sub-backoffice accessible via the
+ * 'BACKOFFICES PAR PAYS' section at the bottom.
+ */
 const GLOBAL_NAV_GROUPS: NavGroup[] = [
   {
-    label: 'GLOBAL',
+    label: 'VUE D\'ENSEMBLE',
     items: [
       { label: 'Tableau de bord', href: '/admin/dashboard', icon: LayoutDashboard },
       { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { label: 'Revenus', href: '/admin/revenue', icon: DollarSign },
-      { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: Award },
-      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
     ],
   },
   {
-    label: 'MODÉRATION',
+    label: 'IMMOBILIER (§5.1)',
     items: [
-      { label: 'Artisans', href: '/admin/artisans', icon: Hammer },
-      { label: 'Notaires', href: '/admin/notaries', icon: Scale },
-      { label: 'GeoTrust', href: '/admin/geotrust', icon: ShieldCheck },
-      { label: 'Avis', href: '/admin/reviews', icon: Star },
-      { label: 'Litiges', href: '/admin/disputes', icon: AlertTriangle },
-      { label: 'Contenu', href: '/admin/content', icon: FileText },
+      { label: 'Propriétés', href: '/admin/properties', icon: Building2 },
+      { label: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
+      { label: 'Baux & Loyers', href: '/admin/leases', icon: KeyRound },
+      { label: 'Escrow', href: '/admin/escrow', icon: Lock },
+      { label: 'Investissements', href: '/admin/investments', icon: TrendingUp },
     ],
   },
   {
-    label: 'HÔTELLERIE',
+    label: 'HÔTELLERIE (§5.2-5.4)',
     items: [
       { label: 'Hôtels', href: '/admin/hotels', icon: Hotel },
       { label: 'Guesthouses', href: '/admin/guesthouses', icon: Home },
@@ -88,25 +110,45 @@ const GLOBAL_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'FINANCES',
+    label: 'SERVICES PRO (§5.5-5.6)',
+    items: [
+      { label: 'Artisans BTP', href: '/admin/artisans', icon: Hammer },
+      { label: 'Notaires', href: '/admin/notaries', icon: Scale },
+      { label: 'GeoTrust', href: '/admin/geotrust', icon: ShieldCheck },
+      { label: 'Académie', href: '/admin/courses', icon: GraduationCap },
+    ],
+  },
+  {
+    label: 'COMMUNAUTÉ (§5.7)',
+    items: [
+      { label: 'Communauté', href: '/admin/community', icon: MessageCircle },
+      { label: 'Ambassadeurs', href: '/admin/ambassadors', icon: Award },
+      { label: 'Avis', href: '/admin/reviews', icon: Star },
+      { label: 'Litiges', href: '/admin/disputes', icon: AlertTriangle },
+      { label: 'Contenu', href: '/admin/content', icon: FileText },
+    ],
+  },
+  {
+    label: 'FINANCES (§6-7-11)',
     items: [
       { label: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
       { label: 'Portefeuilles', href: '/admin/wallets', icon: Wallet },
       { label: 'Paiements', href: '/admin/payouts', icon: Banknote },
-      { label: 'Escrow', href: '/admin/escrow', icon: Lock },
+      { label: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
     ],
   },
   {
-    label: 'SYSTÈME',
+    label: 'INTELLIGENCE & SYSTÈME (§8-10)',
     items: [
+      { label: 'Rebecca IA', href: '/admin/rebecca', icon: Bot },
+      { label: 'KYC & Vérification', href: '/admin/kyc', icon: ShieldCheck },
+      { label: 'Utilisateurs & Rôles', href: '/admin/users', icon: Users },
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Pays & Backoffices', href: '/admin/countries', icon: Globe },
       { label: 'Accréditations', href: '/admin/accreditations', icon: KeyRound },
       { label: 'OTA Config', href: '/admin/ota', icon: Cable },
+      { label: 'Paramètres plateforme', href: '/admin/settings', icon: Settings },
       { label: "Journaux d'audit", href: '/admin/audit-logs', icon: ScrollText },
-      { label: 'KYC', href: '/admin/kyc', icon: ShieldCheck },
-      { label: 'Communauté', href: '/admin/community', icon: Users },
-      { label: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
-      { label: 'Académie', href: '/admin/courses', icon: GraduationCap },
     ],
   },
 ];
@@ -115,13 +157,13 @@ function getCountryNavGroups(country: string): NavGroup[] {
   const base = `/admin/${country}`;
   return [
     {
-      label: `${country} — TABLEAU DE BORD`,
+      label: `${country} — VUE D'ENSEMBLE`,
       items: [
         { label: "Vue d'ensemble", href: `${base}/dashboard`, icon: LayoutDashboard },
       ],
     },
     {
-      label: `${country} — GESTION`,
+      label: `${country} — IMMOBILIER`,
       items: [
         { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
         { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
@@ -132,12 +174,26 @@ function getCountryNavGroups(country: string): NavGroup[] {
       label: `${country} — HÔTELLERIE`,
       items: [
         { label: 'Hôtels & Guesthouses', href: `${base}/hospitality`, icon: Hotel },
+        { label: 'Réservations', href: `${base}/bookings`, icon: CalendarDays },
+        { label: 'Avis', href: `${base}/reviews`, icon: Star },
+      ],
+    },
+    {
+      label: `${country} — SERVICES PRO`,
+      items: [
+        { label: 'Artisans', href: `${base}/artisans`, icon: Hammer },
+        { label: 'Notaires', href: `${base}/notaries`, icon: Scale },
+        { label: 'GeoTrust', href: `${base}/geotrust`, icon: ShieldCheck },
+        { label: 'Ambassadeurs', href: `${base}/ambassadors`, icon: Award },
       ],
     },
     {
       label: `${country} — ADMINISTRATION`,
       items: [
         { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
+        { label: 'Notifications', href: `${base}/notifications`, icon: Bell },
+        { label: 'Contenu', href: `${base}/content`, icon: FileText },
+        { label: 'Locations courte durée', href: `${base}/short-term-rentals`, icon: KeyRound },
       ],
     },
   ];
