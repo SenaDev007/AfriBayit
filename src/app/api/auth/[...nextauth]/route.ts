@@ -1,25 +1,22 @@
-// NextAuth route handler (P0-1 fix).
+// NextAuth route handler.
 //
-// Wires NextAuth's CredentialsProvider up to the NestJS backend
-// `/auth/login` and `/auth/login/2fa` endpoints. The backend returns a
-// JWT (`accessToken`) plus the user object; we surface the JWT through
-// the NextAuth session so the AppShell can sync it to localStorage via
-// `setAccessToken()` — which is what the api-client reads to send the
-// `Authorization: Bearer <token>` header on every API request.
+// Wires up:
+//   - CredentialsProvider (email + password → backend /auth/login)
+//   - GoogleProvider (OAuth → backend /auth/oauth)
+//   - FacebookProvider (OAuth → backend /auth/oauth)
 //
-// 2FA flow:
-//   1. User submits email + password → backend returns `{ requires2FA: true, user }`
-//      We translate that to a `2FA_REQUIRED:<userId>` error so the frontend
-//      can route the user to the 2FA form.
-//   2. User submits the 6-digit TOTP code → frontend calls `signIn` again,
-//      this time with `userId` + `totpCode`, and we hit `/auth/login/2fa`.
+// For OAuth providers, the signIn callback calls the backend /auth/oauth
+// endpoint to either log in an existing user (linked via OAuthAccount) or
+// create a new user. The backend returns a JWT that we store in the
+// NextAuth session for the api-client to use.
 
 import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import FacebookProvider from 'next-auth/providers/facebook';
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').trim();
 
-// Re-normalize (handles missing protocol like the api-client does)
 function normalizeApiUrl(raw: string): string {
   let url = raw.trim();
   if (!url) return 'http://localhost:3001';
@@ -36,6 +33,7 @@ interface BackendAuthResponse {
     email: string;
     name: string;
     role: string;
+    roles?: string[];
     country: string | null;
     kycLevel: number;
   };
@@ -54,19 +52,92 @@ async function callBackend(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-
-  // The backend always responds with JSON for these endpoints, but guard
-  // against a non-JSON reply (e.g. 502 from the gateway) so we don't crash.
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     const text = await res.text().catch(() => '');
-    return {
-      success: false,
-      error: text || `Backend returned ${res.status} ${res.statusText}`,
-    };
+    return { success: false, error: text || `Backend returned ${res.status} ${res.statusText}` };
   }
-
   return (await res.json()) as BackendAuthResponse;
+}
+
+// Build the providers array — OAuth providers are only added if their
+// env vars are configured, so the app doesn't crash if they're missing.
+const providers: NextAuthOptions['providers'] = [
+  CredentialsProvider({
+    id: 'credentials',
+    name: 'Credentials',
+    credentials: {
+      email: { label: 'Email', type: 'email' },
+      password: { label: 'Password', type: 'password' },
+      userId: { label: 'UserId', type: 'text' },
+      totpCode: { label: 'TOTP', type: 'text' },
+    },
+    async authorize(credentials) {
+      if (!credentials) return null;
+      const email = credentials.email?.trim();
+      const password = credentials.password;
+      if (!email || !password) return null;
+
+      // 2FA second leg
+      if (credentials.totpCode && credentials.userId) {
+        const data = await callBackend('/auth/login/2fa', {
+          userId: credentials.userId,
+          otpCode: credentials.totpCode,
+        });
+        if (!data.success || !data.accessToken || !data.user) {
+          throw new Error('2FA_INVALID');
+        }
+        return {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          role: data.user.role,
+          roles: data.user.roles || [data.user.role],
+          country: data.user.country,
+          kycLevel: data.user.kycLevel,
+          accessToken: data.accessToken,
+        } as any;
+      }
+
+      // Regular login
+      const data = await callBackend('/auth/login', { email, password });
+      if (!data.success) {
+        if (data.requires2FA && data.user) {
+          throw new Error(`2FA_REQUIRED:${data.user.id}`);
+        }
+        return null;
+      }
+      if (!data.accessToken || !data.user) return null;
+      return {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: data.user.role,
+        roles: data.user.roles || [data.user.role],
+        country: data.user.country,
+        kycLevel: data.user.kycLevel,
+        accessToken: data.accessToken,
+      } as any;
+    },
+  }),
+];
+
+// Add Google provider if configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(GoogleProvider({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
+  }));
+}
+
+// Add Facebook provider if configured
+if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
+  providers.push(FacebookProvider({
+    clientId: process.env.FACEBOOK_CLIENT_ID,
+    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
+  }));
 }
 
 export const authOptions: NextAuthOptions = {
@@ -74,87 +145,55 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/login',
   },
-  providers: [
-    CredentialsProvider({
-      id: 'credentials',
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-        // Used for the second leg of the 2FA login flow
-        userId: { label: 'UserId', type: 'text' },
-        totpCode: { label: 'TOTP', type: 'text' },
-      },
-      async authorize(credentials) {
-        if (!credentials) return null;
+  providers,
+  callbacks: {
+    async signIn({ user, account }) {
+      // For credentials provider, the authorize() function already
+      // validated against the backend. Just allow.
+      if (!account || account.provider === 'credentials') return true;
 
-        const email = credentials.email?.trim();
-        const password = credentials.password;
-
-        if (!email || !password) return null;
-
-        // ─── 2FA second leg ────────────────────────────────────────────
-        // If the frontend passes a userId + totpCode, we verify the 2FA
-        // code against the backend instead of doing a fresh login.
-        if (credentials.totpCode && credentials.userId) {
-          const data = await callBackend('/auth/login/2fa', {
-            userId: credentials.userId,
-            otpCode: credentials.totpCode,
+      // For OAuth providers (google, facebook), call the backend
+      // /auth/oauth endpoint to create/link the user and get a JWT.
+      if (account.provider === 'google' || account.provider === 'facebook') {
+        try {
+          const data = await callBackend('/auth/oauth', {
+            email: user.email!,
+            name: user.name || user.email!.split('@')[0],
+            provider: account.provider,
+            providerId: account.providerAccountId,
+            avatar: user.image || undefined,
           });
 
           if (!data.success || !data.accessToken || !data.user) {
-            throw new Error('2FA_INVALID');
+            console.error('[NextAuth] OAuth backend call failed:', data.error);
+            return false;
           }
 
-          return {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            role: data.user.role,
-            country: data.user.country,
-            kycLevel: data.user.kycLevel,
-            accessToken: data.accessToken,
-          } as any;
+          // Attach the backend JWT + user info to the user object so
+          // the jwt() callback can pick it up.
+          (user as any).id = data.user.id;
+          (user as any).role = data.user.role;
+          (user as any).roles = data.user.roles || [data.user.role];
+          (user as any).country = data.user.country;
+          (user as any).kycLevel = data.user.kycLevel;
+          (user as any).accessToken = data.accessToken;
+
+          return true;
+        } catch (err) {
+          console.error('[NextAuth] OAuth error:', err);
+          return false;
         }
+      }
 
-        // ─── Regular login ─────────────────────────────────────────────
-        const data = await callBackend('/auth/login', { email, password });
-
-        if (!data.success) {
-          // Translate backend error into a NextAuth error.
-          // The backend returns `requires2FA: true` with the user object
-          // when 2FA is enabled — we encode the userId into the error
-          // string so the frontend can route the user to the 2FA form.
-          if (data.requires2FA && data.user) {
-            throw new Error(`2FA_REQUIRED:${data.user.id}`);
-          }
-          return null;
-        }
-
-        if (!data.accessToken || !data.user) {
-          return null;
-        }
-
-        return {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          role: data.user.role,
-          country: data.user.country,
-          kycLevel: data.user.kycLevel,
-          accessToken: data.accessToken,
-        } as any;
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      // `user` is only present on the first sign-in call; persist its
-      // fields onto the JWT so they survive across requests.
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      // `user` is present on first sign-in (credentials or OAuth).
       if (user) {
         const u = user as any;
         token.id = u.id;
         token.role = u.role;
+        token.roles = u.roles || [u.role];
         token.country = u.country;
         token.kycLevel = u.kycLevel;
         if (u.accessToken) token.accessToken = u.accessToken;
@@ -165,19 +204,14 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = (token.id as string) || session.user.id;
         session.user.role = (token.role as string) || session.user.role;
-        session.user.country =
-          (token.country as string | null) ?? session.user.country ?? null;
-        session.user.kycLevel =
-          (token.kycLevel as number) ?? session.user.kycLevel ?? 0;
+        session.user.roles = (token.roles as string[]) || [session.user.role];
+        session.user.country = (token.country as string | null) ?? session.user.country ?? null;
+        session.user.kycLevel = (token.kycLevel as number) ?? session.user.kycLevel ?? 0;
       }
-      // Expose the backend JWT so the AppShell can sync it to localStorage
-      // for the api-client to send as the `Authorization: Bearer` header.
       (session as any).accessToken = token.accessToken;
       return session;
     },
   },
-  // Fall back to a dev secret so the route handler always initializes.
-  // In production, NEXTAUTH_SECRET must be set.
   secret: process.env.NEXTAUTH_SECRET || 'afribayit-dev-only-secret-change-me',
   debug: false,
 };
