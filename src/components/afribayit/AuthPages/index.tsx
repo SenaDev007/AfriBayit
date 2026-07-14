@@ -439,7 +439,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <Image
-                    src="/logo.svg"
+                    src="/logo.png"
                     alt="AfriBayit"
                     width={160}
                     height={36}
