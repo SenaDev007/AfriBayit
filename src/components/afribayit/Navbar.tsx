@@ -117,12 +117,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
   const { data: session } = useSession();
 
   const isLoggedIn = !!session?.user;
-<<<<<<< HEAD
-  // Multi-role support (CDC V4 §3.1.1): prefer the new `roles` array if present,
-  // fall back to the legacy single `role` field for backward compat.
-=======
   // Multi-role support (CDC V4 §3.1.1)
->>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
   const userRoles: string[] = (session?.user?.roles && session.user.roles.length > 0)
     ? session.user.roles
     : session?.user?.role
@@ -459,34 +454,14 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                           {userRoles.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {userRoles.map((r) => (
-<<<<<<< HEAD
-                                <span
-                                  key={r}
-                                  className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                    r === userRole
-                                      ? 'bg-[#003087] text-white'
-                                      : 'bg-[#003087]/10 text-[#003087]'
-                                  }`}
-                                >
-=======
                                 <span key={r} className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${r === userRole ? 'bg-[#003087] text-white' : 'bg-[#003087]/10 text-[#003087]'}`}>
->>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
                                   {r.replace(/_/g, ' ')}
                                 </span>
                               ))}
                             </div>
                           )}
                           {isMultiRole && (
-<<<<<<< HEAD
-                            <button
-                              onClick={() => navigate('/settings/roles')}
-                              className="mt-2 text-[10px] text-[#D4AF37] hover:underline font-medium"
-                            >
-                              ⚙ Gérer mes rôles
-                            </button>
-=======
                             <button onClick={() => navigate('/settings/roles')} className="mt-2 text-[10px] text-[#D4AF37] hover:underline font-medium">⚙ Gérer mes rôles</button>
->>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
                           )}
                         </div>
 
@@ -580,12 +555,6 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </div>
               )}
 
-<<<<<<< HEAD
-              {/* Dashboard Switcher — only shown for multi-role users */}
-              {isLoggedIn && <DashboardSwitcher />}
-
-=======
->>>>>>> e0c4da1 (feat(admin): lease detail + PDF download + investments polling + Rebecca 30d chart + settings tabs wired + multi-role infra)
               {/* CTA - Publier (visible uniquement si connecté) */}
               {isLoggedIn && (
                 <motion.button
