@@ -46,5 +46,8 @@ declare module 'next-auth/jwt' {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresAt?: number;
+    /** Optional RBAC accreditation (CDC V4 §3.2 — country-scoped admin). */
+    accreditationRole?: string;
+    accreditationCountry?: string;
   }
 }

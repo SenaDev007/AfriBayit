@@ -20,6 +20,7 @@ import PropertyComparator from './PropertyComparator';
 import FinancingSimulator from './FinancingSimulator';
 import { Map as MapIcon, GitCompare, Calculator, X, Layers } from 'lucide-react';
 import { useCountry } from '@/contexts/CountryContext';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const NAVY = '#003087';
@@ -45,6 +46,7 @@ export default function AdvancedFeaturesSection({
   onToggleCompare,
 }: AdvancedFeaturesSectionProps) {
   const { selectedCountry } = useCountry();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'map' | 'compare' | 'financing'>('map');
   const [showComparator, setShowComparator] = useState(false);
   const [showFinancingModal, setShowFinancingModal] = useState(false);
@@ -107,10 +109,12 @@ export default function AdvancedFeaturesSection({
   }, []);
 
   const tabs = [
-    { key: 'map' as const, label: 'Carte interactive', icon: MapIcon, count: mappableProperties.length },
-    { key: 'compare' as const, label: 'Comparateur', icon: GitCompare, count: compareIds.length },
-    ...(showFinancing ? [{ key: 'financing' as const, label: 'Simulateur', icon: Calculator, count: 0 }] : []),
+    { key: 'map' as const, label: t('advancedFeatures.tabMap', 'Carte interactive'), icon: MapIcon, count: mappableProperties.length },
+    { key: 'compare' as const, label: t('advancedFeatures.tabCompare', 'Comparateur'), icon: GitCompare, count: compareIds.length },
+    ...(showFinancing ? [{ key: 'financing' as const, label: t('advancedFeatures.tabFinancing', 'Simulateur'), icon: Calculator, count: 0 }] : []),
   ];
+
+  const mapCountText = `${mappableProperties.length} ${t('advancedFeatures.propertiesGeolocated', 'bien(s) géolocalisé(s) sur la carte')}`;
 
   return (
     <section className="py-20 bg-white">
@@ -126,13 +130,16 @@ export default function AdvancedFeaturesSection({
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
             <span className="h-px w-8" style={{ background: NAVY }} />
             <Layers className="w-3.5 h-3.5" />
-            Outils avancés
+            {t('advancedFeatures.eyebrow', 'Outils avancés')}
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
-            Décidez avec les meilleurs outils
+            {t('advancedFeatures.title', 'Décidez avec les meilleurs outils')}
           </h2>
           <p className="mt-3 text-gray-500">
-            Carte interactive, comparateur de biens et simulateur de financement — tout ce qu'il faut pour choisir intelligemment.
+            {t(
+              'advancedFeatures.subtitle',
+              'Carte interactive, comparateur de biens et simulateur de financement — tout ce qu\'il faut pour choisir intelligemment.'
+            )}
           </p>
         </motion.div>
 
@@ -194,7 +201,7 @@ export default function AdvancedFeaturesSection({
                 />
               </div>
               <p className="mt-3 text-center text-xs text-gray-400">
-                {mappableProperties.length} bien{mappableProperties.length !== 1 ? 's' : ''} géolocalisé{mappableProperties.length !== 1 ? 's' : ''} sur la carte
+                {mapCountText}
               </p>
             </motion.div>
           )}
@@ -214,15 +221,17 @@ export default function AdvancedFeaturesSection({
                     <GitCompare className="w-8 h-8" style={{ color: NAVY }} />
                   </div>
                   <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
-                    Comparez jusqu'à 5 biens
+                    {t('advancedFeatures.compareUpTo5', 'Comparez jusqu\'à 5 biens')}
                   </h3>
                   <p className="text-sm text-gray-500 max-w-md mx-auto">
-                    Cliquez sur le bouton « Comparer » sous chaque bien pour l'ajouter au comparateur.
-                    Vous pourrez voir les caractéristiques côte à côte avec scoring automatique.
+                    {t(
+                      'advancedFeatures.compareHint',
+                      'Cliquez sur le bouton « Comparer » sous chaque bien pour l\'ajouter au comparateur. Vous pourrez voir les caractéristiques côte à côte avec scoring automatique.'
+                    )}
                   </p>
                   {compareIds.length === 1 && (
                     <p className="mt-4 text-sm font-semibold" style={{ color: GOLD }}>
-                      1 bien sélectionné — ajoutez au moins 1 autre pour comparer
+                      {t('advancedFeatures.addOneMoreToCompare', '1 bien sélectionné — ajoutez au moins 1 autre pour comparer')}
                     </p>
                   )}
                 </div>
@@ -234,7 +243,7 @@ export default function AdvancedFeaturesSection({
                     style={{ background: NAVY }}
                   >
                     <GitCompare className="w-5 h-5" />
-                    Voir la comparaison ({compareIds.length} biens)
+                    {t('advancedFeatures.viewComparison', 'Voir la comparaison')} ({compareIds.length} {t('advancedFeatures.properties', 'biens')})
                   </button>
                 </div>
               )}
@@ -280,10 +289,13 @@ export default function AdvancedFeaturesSection({
                   <Calculator className="w-8 h-8" style={{ color: GOLD }} />
                 </div>
                 <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
-                  Simulateur de financement immobilier
+                  {t('advancedFeatures.financingSimulatorTitle', 'Simulateur de financement immobilier')}
                 </h3>
                 <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-                  Calculez vos mensualités de crédit, comparez les taux par pays et visualisez le tableau d'amortissement complet.
+                  {t(
+                    'advancedFeatures.financingSimulatorDesc',
+                    'Calculez vos mensualités de crédit, comparez les taux par pays et visualisez le tableau d\'amortissement complet.'
+                  )}
                 </p>
                 <button
                   onClick={() => setShowFinancingModal(true)}
@@ -291,7 +303,7 @@ export default function AdvancedFeaturesSection({
                   style={{ background: GOLD, color: NAVY }}
                 >
                   <Calculator className="w-5 h-5" />
-                  Ouvrir le simulateur
+                  {t('advancedFeatures.openSimulator', 'Ouvrir le simulateur')}
                 </button>
               </div>
             </motion.div>
@@ -328,7 +340,7 @@ export default function AdvancedFeaturesSection({
             >
               <div className="flex items-center justify-between p-6 border-b">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
-                  Simulateur de financement
+                  {t('advancedFeatures.financingModalTitle', 'Simulateur de financement')}
                 </h2>
                 <button
                   onClick={() => setShowFinancingModal(false)}

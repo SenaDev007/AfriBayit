@@ -310,13 +310,13 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
         // Admin routes require admin role or accreditation
         if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
           // Multi-role: check both the legacy `role` and the new `roles[]`
-          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
-            ? (token as any).roles
+          const tokenRoles: string[] = token?.roles && token.roles.length > 0
+            ? token.roles
             : token?.role
               ? [token.role]
               : [];
           if (tokenRoles.includes('admin')) return true;
-          const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string;
+          const accreditationRole = token?.accreditationRole;
           if (accreditationRole === 'SUPER_ADMIN') {
             return true; // SUPER_ADMIN bypasses all country checks
           }
@@ -327,7 +327,7 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
               || path.match(/^\/admin\/([a-zA-Z]{2})(?:\/|$)/);
             if (match) {
               const urlCountry = match[1].toUpperCase();
-              const tokenCountry = (token as Record<string, unknown>)?.accreditationCountry as string | undefined;
+              const tokenCountry = token?.accreditationCountry;
               if (tokenCountry && tokenCountry.toUpperCase() === urlCountry) {
                 return true;
               }
@@ -346,9 +346,9 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
         const roleGate = ROLE_GATED_ROUTES.find((g) => path.startsWith(g.prefix));
         if (roleGate) {
           if (!token) return false;
-          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
-            ? (token as any).roles
-            : token?.role
+          const tokenRoles: string[] = token.roles && token.roles.length > 0
+            ? token.roles
+            : token.role
               ? [token.role]
               : [];
           if (tokenRoles.includes('admin')) return true;

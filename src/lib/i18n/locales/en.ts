@@ -146,6 +146,40 @@ export const en = {
       terms: 'Terms',
       privacy: 'Privacy',
     },
+    section: {
+      acheter: 'Buy',
+      services: 'Services',
+      entreprise: 'Company',
+      legal: 'Legal',
+    },
+    link: {
+      villas: 'Villas',
+      appartements: 'Apartments',
+      terrains: 'Land',
+      bureaux: 'Offices',
+      commerces: 'Commercial',
+      geotrust: 'GeoTrust',
+      proMatchArtisans: 'ProMatch Artisans',
+      rebeccaIA: 'Rebecca AI',
+      academy: 'Academy',
+      community: 'Community',
+      sejours: 'Stays (Hotels & Guesthouses)',
+      notaries: 'Notaries',
+      publishAd: 'Publish a listing',
+      cgu: 'Terms of Use',
+      privacy: 'Privacy',
+      cookies: 'Cookies',
+      legalMentions: 'Legal notices',
+      deleteData: 'Delete data',
+      report: 'Report',
+    },
+    country: {
+      benin: 'Benin',
+      civ: "Côte d'Ivoire",
+      senegal: 'Senegal',
+      togo: 'Togo',
+      burkina: 'Burkina Faso',
+    },
   },
   property: {
     title: 'Title',
@@ -779,6 +813,135 @@ export const en = {
     responseTime: 'Response time',
     completedMissions: 'Completed missions',
     proMatch: 'ProMatch',
+  },
+  howItWorks: {
+    eyebrow: 'Simplified Process',
+    title: 'How it works',
+    subtitle:
+      'In 4 simple steps, from search to signature. Transparent, secure, stress-free.',
+    stepLabel: 'Step',
+    step1Title: 'Find your property',
+    step1Desc:
+      'Search through hundreds of properties with advanced filters and Rebecca AI assistance.',
+    step2Title: 'Verify documents',
+    step2Desc:
+      'GeoTrust verifies land titles and legal documents. Nothing escapes you.',
+    step3Title: 'Secure with Escrow',
+    step3Desc:
+      'Your funds are protected via an escrow account until the final notarial signature.',
+    step4Title: 'Become a homeowner',
+    step4Desc:
+      'Notary signs the deed, ANDF registers — you are officially a homeowner.',
+  },
+  modules: {
+    eyebrow: 'Complete Ecosystem',
+    title: 'Our modules',
+    subtitle:
+      'An all-in-one platform for real estate in Africa. Each module is designed to meet a specific need.',
+    explore: 'Explore',
+    immobilier: {
+      name: 'Real Estate',
+      description:
+        'Buy, rent and invest in real estate with verified documents and secure escrow.',
+    },
+    guesthouses: {
+      name: 'Guesthouses',
+      description:
+        'Short-term rental with certified guesthouses and instant booking.',
+    },
+    hospitality: {
+      name: 'Hospitality & Stays',
+      description:
+        'The leading hospitality platform in Africa — Book hotels, guesthouses and stays with confidence.',
+    },
+    artisans: {
+      name: 'Construction Trades',
+      description:
+        'Marketplace of certified tradespeople: masons, electricians, plumbers. Quotes and tracking online.',
+    },
+    academy: {
+      name: 'Academy',
+      description:
+        'Real estate training: land law, investment, agent certification. Learn from experts.',
+    },
+    community: {
+      name: 'Community',
+      description:
+        'Connect with investors, agents and owners. Events, groups and mentoring.',
+    },
+    badges: {
+      popular: 'Popular',
+      new: 'New',
+      premium: 'Premium',
+      proMatch: 'ProMatch',
+      certifying: 'Certifying',
+      social: 'Social',
+    },
+  },
+  advancedFeatures: {
+    eyebrow: 'Advanced tools',
+    title: 'Decide with the best tools',
+    subtitle:
+      'Interactive map, property comparator and financing simulator — everything you need to choose smartly.',
+    tabMap: 'Interactive map',
+    tabCompare: 'Comparator',
+    tabFinancing: 'Simulator',
+    propertiesGeolocated: 'property(ies) geolocated on the map',
+    properties: 'properties',
+    compareUpTo5: 'Compare up to 5 properties',
+    compareHint:
+      'Click the "Compare" button under each property to add it to the comparator. You will see the features side by side with automatic scoring.',
+    addOneMoreToCompare:
+      '1 property selected — add at least 1 more to compare',
+    viewComparison: 'View comparison',
+    financingSimulatorTitle: 'Mortgage financing simulator',
+    financingSimulatorDesc:
+      'Calculate your loan monthly payments, compare rates by country and visualize the full amortization schedule.',
+    openSimulator: 'Open the simulator',
+    financingModalTitle: 'Financing simulator',
+  },
+  packages: {
+    eyebrow: 'Combined packages',
+    title: 'Hospitality + Real Estate = the AfriBayit advantage',
+    subtitle:
+      'The only platform that combines hotel booking and real estate in West Africa. Unique packages impossible to find elsewhere.',
+    discover: 'Discover',
+    investor: {
+      title: 'Investor Package',
+      subtitle: 'Stay + Field visit',
+      description:
+        'Hotel booking in Cotonou or Abidjan from the diaspora + automatic scheduling of real estate property visits in the city. Integrated calendar with certified AfriBayit real estate agent.',
+      feature1: 'Hotel booking 3-7 nights',
+      feature2: '3 scheduled real estate visits',
+      feature3: 'Dedicated certified real estate agent',
+      feature4: 'On-site transportation included',
+      feature5: 'Detailed visit report',
+      price: 'From 500,000 FCFA',
+    },
+    relocation: {
+      title: 'Relocation Package',
+      subtitle: 'Transition hotel + Housing search',
+      description:
+        'Professional relocated to West Africa: short-term hotel booking (1-4 weeks) + priority access to local real estate listings + AfriBayit agent matching.',
+      feature1: 'Hotel 1-4 weeks',
+      feature2: 'Priority access to listings',
+      feature3: 'Matching with AfriBayit agent',
+      feature4: '360° virtual tour of properties',
+      feature5: '10% cross-discount on real estate',
+      price: 'Custom',
+    },
+    artisan: {
+      title: 'Tradesperson Package',
+      subtitle: 'Accommodation + Construction mission',
+      description:
+        'Tradesperson on the move for a mission: room booking at the partner hotel closest to the construction site + mission management via tradesperson marketplace. Unified AfriBayit invoicing.',
+      feature1: 'Hotel room near the construction site',
+      feature2: 'Integrated construction mission management',
+      feature3: 'Unified AfriBayit invoicing',
+      feature4: 'Secure escrow for the mission',
+      feature5: '7-day/7 support',
+      price: 'From 25,000 FCFA/night',
+    },
   },
 } as const;
 

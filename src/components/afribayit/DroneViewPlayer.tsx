@@ -9,7 +9,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, Sun, Moon, Clock, Maximize2, Plane } from 'lucide-react';
+import { X, Play, Pause, Sun, Moon, Clock, Plane, Box } from 'lucide-react';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const NAVY = '#003087';
@@ -40,10 +40,10 @@ export default function DroneViewPlayer({
   const [showTimeLapse, setShowTimeLapse] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const aerialImage =
-    mode === 'day'
-      ? dayImage || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=600&fit=crop'
-      : nightImage || 'https://images.unsplash.com/photo-1535313142515-9b6de1d1c83d?w=1200&h=600&fit=crop';
+  // Honest empty-state: do NOT fall back to fake Unsplash photos. The
+  // caller is expected to pass real `dayImage` / `nightImage` (or none).
+  const aerialImage = mode === 'day' ? dayImage : nightImage;
+  const hasAnyContent = !!(videoUrl || aerialImage);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -90,7 +90,14 @@ export default function DroneViewPlayer({
 
       {/* Video/Image viewer */}
       <div className="relative aspect-video bg-gray-900 overflow-hidden">
-        {videoUrl ? (
+        {!hasAnyContent ? (
+          <div className="flex items-center justify-center h-full bg-gray-100">
+            <div className="text-center p-8">
+              <Box className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-500">Aucune vue drone disponible pour ce bien</p>
+            </div>
+          </div>
+        ) : videoUrl ? (
           <video
             ref={videoRef}
             src={videoUrl}
@@ -117,7 +124,7 @@ export default function DroneViewPlayer({
         )}
 
         {/* Drone badge */}
-        {hasDroneView && (
+        {hasDroneView && hasAnyContent && (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: 'rgba(0, 48, 135, 0.8)' }}>
             <Plane className="w-3.5 h-3.5" />
             Drone View
@@ -125,26 +132,28 @@ export default function DroneViewPlayer({
         )}
 
         {/* Play/Pause button overlay */}
-        <button
-          onClick={togglePlay}
-          className="absolute inset-0 flex items-center justify-center group"
-        >
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-16 h-16 rounded-lg flex items-center justify-center shadow-2xl"
-            style={{ background: 'rgba(0, 48, 135, 0.8)' }}
+        {hasAnyContent && (
+          <button
+            onClick={togglePlay}
+            className="absolute inset-0 flex items-center justify-center group"
           >
-            {isPlaying || showTimeLapse ? (
-              <Pause className="w-7 h-7 text-white" />
-            ) : (
-              <Play className="w-7 h-7 text-white ml-1" />
-            )}
-          </motion.div>
-        </button>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-16 h-16 rounded-lg flex items-center justify-center shadow-2xl"
+              style={{ background: 'rgba(0, 48, 135, 0.8)' }}
+            >
+              {isPlaying || showTimeLapse ? (
+                <Pause className="w-7 h-7 text-white" />
+              ) : (
+                <Play className="w-7 h-7 text-white ml-1" />
+              )}
+            </motion.div>
+          </button>
+        )}
 
         {/* Time-lapse indicator */}
-        {showTimeLapse && (
+        {showTimeLapse && hasAnyContent && (
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white" style={{ background: 'rgba(0, 0, 0, 0.6)' }}>
             <Clock className="w-3.5 h-3.5 animate-spin" />
             Time-lapse jour → nuit...
@@ -153,46 +162,48 @@ export default function DroneViewPlayer({
       </div>
 
       {/* Controls bar */}
-      <div className="flex items-center justify-between p-3 bg-gray-50/50">
-        {/* Day/Night toggle */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-gray-200">
+      {hasAnyContent && (
+        <div className="flex items-center justify-between p-3 bg-gray-50/50">
+          {/* Day/Night toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-gray-200">
+            <button
+              onClick={() => setMode('day')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'day' ? 'text-white' : 'text-gray-500'
+              }`}
+              style={mode === 'day' ? { background: NAVY } : {}}
+            >
+              <Sun className="w-3.5 h-3.5" />
+              Jour
+            </button>
+            <button
+              onClick={() => setMode('night')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'night' ? 'text-white' : 'text-gray-500'
+              }`}
+              style={mode === 'night' ? { background: NAVY } : {}}
+            >
+              <Moon className="w-3.5 h-3.5" />
+              Nuit
+            </button>
+          </div>
+
+          {/* Time-lapse button */}
           <button
-            onClick={() => setMode('day')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mode === 'day' ? 'text-white' : 'text-gray-500'
-            }`}
-            style={mode === 'day' ? { background: NAVY } : {}}
+            onClick={() => {
+              setShowTimeLapse(true);
+              setTimeout(() => {
+                setMode(mode === 'day' ? 'night' : 'day');
+                setShowTimeLapse(false);
+              }, 2000);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-white transition-colors"
           >
-            <Sun className="w-3.5 h-3.5" />
-            Jour
-          </button>
-          <button
-            onClick={() => setMode('night')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mode === 'night' ? 'text-white' : 'text-gray-500'
-            }`}
-            style={mode === 'night' ? { background: NAVY } : {}}
-          >
-            <Moon className="w-3.5 h-3.5" />
-            Nuit
+            <Clock className="w-3.5 h-3.5" />
+            Time-lapse
           </button>
         </div>
-
-        {/* Time-lapse button */}
-        <button
-          onClick={() => {
-            setShowTimeLapse(true);
-            setTimeout(() => {
-              setMode(mode === 'day' ? 'night' : 'day');
-              setShowTimeLapse(false);
-            }, 2000);
-          }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:bg-white transition-colors"
-        >
-          <Clock className="w-3.5 h-3.5" />
-          Time-lapse
-        </button>
-      </div>
+      )}
     </div>
   );
 }

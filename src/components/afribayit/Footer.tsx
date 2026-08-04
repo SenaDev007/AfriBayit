@@ -71,46 +71,50 @@ export default function Footer() {
   // Footer link data — AfriBayit specific
   const footerLinks = [
     {
-      title: 'Acheter',
+      titleKey: 'footer.section.acheter',
+      titleFallback: 'Acheter',
       icon: <Home size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'Villas', href: '/acheter?type=villa', icon: <LandPlot size={14} /> },
-        { label: 'Appartements', href: '/acheter?type=appartement', icon: <Building size={14} /> },
-        { label: 'Terrains', href: '/acheter?type=terrain', icon: <Warehouse size={14} /> },
-        { label: 'Bureaux', href: '/acheter?type=bureau', icon: <Briefcase size={14} /> },
-        { label: 'Commerces', href: '/acheter?type=commerce', icon: <ShoppingBag size={14} /> },
+        { labelKey: 'footer.link.villas', labelFallback: 'Villas', href: '/acheter?type=villa', icon: <LandPlot size={14} /> },
+        { labelKey: 'footer.link.appartements', labelFallback: 'Appartements', href: '/acheter?type=appartement', icon: <Building size={14} /> },
+        { labelKey: 'footer.link.terrains', labelFallback: 'Terrains', href: '/acheter?type=terrain', icon: <Warehouse size={14} /> },
+        { labelKey: 'footer.link.bureaux', labelFallback: 'Bureaux', href: '/acheter?type=bureau', icon: <Briefcase size={14} /> },
+        { labelKey: 'footer.link.commerces', labelFallback: 'Commerces', href: '/acheter?type=commerce', icon: <ShoppingBag size={14} /> },
       ],
     },
     {
-      title: 'Services',
+      titleKey: 'footer.section.services',
+      titleFallback: 'Services',
       icon: <Shield size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'GeoTrust', href: '/geotrust', icon: <BadgeCheck size={14} /> },
-        { label: 'ProMatch Artisans', href: '/artisans', icon: <Wrench size={14} /> },
-        { label: 'Rebecca IA', href: '#', icon: <Bot size={14} /> },
-        { label: 'Académie', href: '/academy', icon: <GraduationCap size={14} /> },
+        { labelKey: 'footer.link.geotrust', labelFallback: 'GeoTrust', href: '/geotrust', icon: <BadgeCheck size={14} /> },
+        { labelKey: 'footer.link.proMatchArtisans', labelFallback: 'ProMatch Artisans', href: '/artisans', icon: <Wrench size={14} /> },
+        { labelKey: 'footer.link.rebeccaIA', labelFallback: 'Rebecca IA', href: '#', icon: <Bot size={14} /> },
+        { labelKey: 'footer.link.academy', labelFallback: 'Académie', href: '/academy', icon: <GraduationCap size={14} /> },
       ],
     },
     {
-      title: 'Entreprise',
+      titleKey: 'footer.section.entreprise',
+      titleFallback: 'Entreprise',
       icon: <Building2 size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'Communauté', href: '/community', icon: <HeartHandshake size={14} /> },
-        { label: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: <Plane size={14} /> },
-        { label: 'Notaires', href: '/notary', icon: <Scale size={14} /> },
-        { label: 'Publier une annonce', href: '/publish', icon: <PlusCircle size={14} /> },
+        { labelKey: 'footer.link.community', labelFallback: 'Communauté', href: '/community', icon: <HeartHandshake size={14} /> },
+        { labelKey: 'footer.link.sejours', labelFallback: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: <Plane size={14} /> },
+        { labelKey: 'footer.link.notaries', labelFallback: 'Notaires', href: '/notary', icon: <Scale size={14} /> },
+        { labelKey: 'footer.link.publishAd', labelFallback: 'Publier une annonce', href: '/publish', icon: <PlusCircle size={14} /> },
       ],
     },
     {
-      title: 'Légal',
+      titleKey: 'footer.section.legal',
+      titleFallback: 'Légal',
       icon: <Scale size={16} className="text-[#D4AF37]" />,
       links: [
-        { label: 'CGU', href: '/terms', icon: <FileText size={14} /> },
-        { label: 'Confidentialité', href: '/privacy', icon: <Lock size={14} /> },
-        { label: 'Cookies', href: '/privacy#cookies', icon: <Cookie size={14} /> },
-        { label: 'Mentions légales', href: '/terms#droit-applicable', icon: <FileText size={14} /> },
-        { label: 'Suppression de données', href: '/delete-data', icon: <Trash2 size={14} /> },
-        { label: 'Signaler', href: 'mailto:contact@afribayit.com', icon: <AlertTriangle size={14} /> },
+        { labelKey: 'footer.link.cgu', labelFallback: 'CGU', href: '/terms', icon: <FileText size={14} /> },
+        { labelKey: 'footer.link.privacy', labelFallback: 'Confidentialité', href: '/privacy', icon: <Lock size={14} /> },
+        { labelKey: 'footer.link.cookies', labelFallback: 'Cookies', href: '/privacy#cookies', icon: <Cookie size={14} /> },
+        { labelKey: 'footer.link.legalMentions', labelFallback: 'Mentions légales', href: '/terms#droit-applicable', icon: <FileText size={14} /> },
+        { labelKey: 'footer.link.deleteData', labelFallback: 'Suppression de données', href: '/delete-data', icon: <Trash2 size={14} /> },
+        { labelKey: 'footer.link.report', labelFallback: 'Signaler', href: 'mailto:contact@afribayit.com', icon: <AlertTriangle size={14} /> },
       ],
     },
   ];
@@ -221,11 +225,11 @@ export default function Footer() {
 
   // Countries covered
   const countries = [
-    { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-    { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-    { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
-    { code: 'TG', name: 'Togo', flag: '🇹🇬' },
-    { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
+    { code: 'BJ', nameKey: 'footer.country.benin', nameFallback: 'Bénin', flag: '🇧🇯' },
+    { code: 'CI', nameKey: 'footer.country.civ', nameFallback: "Côte d'Ivoire", flag: '🇨🇮' },
+    { code: 'SN', nameKey: 'footer.country.senegal', nameFallback: 'Sénégal', flag: '🇸🇳' },
+    { code: 'TG', nameKey: 'footer.country.togo', nameFallback: 'Togo', flag: '🇹🇬' },
+    { code: 'BF', nameKey: 'footer.country.burkina', nameFallback: 'Burkina Faso', flag: '🇧🇫' },
   ];
 
   return (
@@ -262,7 +266,7 @@ export default function Footer() {
                     className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-[10px] text-white hover:text-[#D4AF37]"
                   >
                     <span>{c.flag}</span>
-                    <span>{c.name}</span>
+                    <span>{t(c.nameKey, c.nameFallback)}</span>
                   </button>
                 ))}
               </div>
@@ -365,14 +369,14 @@ export default function Footer() {
         {/* Main Footer Links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pb-6">
           {footerLinks.map((section) => (
-            <div key={section.title}>
+            <div key={section.titleKey}>
               <h4 className="text-white text-xs font-semibold mb-2.5 flex items-center gap-1.5">
                 {section.icon}
-                {section.title}
+                {t(section.titleKey, section.titleFallback)}
               </h4>
               <ul className="space-y-1.5">
                 {section.links.map((link) => (
-                  <li key={link.label} className="relative">
+                  <li key={link.labelKey} className="relative">
                     <button
                       onClick={() => navigateTo(link.href)}
                       className="flex items-center gap-1.5 text-gray-100 hover:text-[#D4AF37] transition-colors text-xs group"
@@ -380,7 +384,7 @@ export default function Footer() {
                       <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-300">
                         {link.icon}
                       </span>
-                      {link.label}
+                      {t(link.labelKey, link.labelFallback)}
                     </button>
                   </li>
                 ))}

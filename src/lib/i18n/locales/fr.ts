@@ -146,6 +146,40 @@ export const fr = {
       terms: 'CGU',
       privacy: 'Confidentialité',
     },
+    section: {
+      acheter: 'Acheter',
+      services: 'Services',
+      entreprise: 'Entreprise',
+      legal: 'Légal',
+    },
+    link: {
+      villas: 'Villas',
+      appartements: 'Appartements',
+      terrains: 'Terrains',
+      bureaux: 'Bureaux',
+      commerces: 'Commerces',
+      geotrust: 'GeoTrust',
+      proMatchArtisans: 'ProMatch Artisans',
+      rebeccaIA: 'Rebecca IA',
+      academy: 'Académie',
+      community: 'Communauté',
+      sejours: 'Séjours (Hôtels & Guesthouses)',
+      notaries: 'Notaires',
+      publishAd: 'Publier une annonce',
+      cgu: 'CGU',
+      privacy: 'Confidentialité',
+      cookies: 'Cookies',
+      legalMentions: 'Mentions légales',
+      deleteData: 'Suppression de données',
+      report: 'Signaler',
+    },
+    country: {
+      benin: 'Bénin',
+      civ: "Côte d'Ivoire",
+      senegal: 'Sénégal',
+      togo: 'Togo',
+      burkina: 'Burkina Faso',
+    },
   },
   property: {
     title: 'Titre',
@@ -779,6 +813,135 @@ export const fr = {
     responseTime: 'Temps de réponse',
     completedMissions: 'Missions réalisées',
     proMatch: 'ProMatch',
+  },
+  howItWorks: {
+    eyebrow: 'Processus Simplifié',
+    title: 'Comment ça marche ?',
+    subtitle:
+      'En 4 étapes simples, de la recherche à la signature. Transparent, sécurisé, sans stress.',
+    stepLabel: 'Étape',
+    step1Title: 'Trouvez votre bien',
+    step1Desc:
+      'Recherchez parmi des centaines de propriétés avec filtres avancés et assistance IA Rebecca.',
+    step2Title: 'Vérifiez les documents',
+    step2Desc:
+      'GeoTrust vérifie les titres fonciers et documents juridiques. Rien ne vous échappe.',
+    step3Title: 'Sécurisez avec Escrow',
+    step3Desc:
+      "Vos fonds sont protégés via un compte séquestre jusqu'à la signature notariale finale.",
+    step4Title: 'Devenez propriétaire',
+    step4Desc:
+      "Notaire signe l'acte, ANDF enregistre — vous êtes officiellement propriétaire.",
+  },
+  modules: {
+    eyebrow: 'Écosystème Complet',
+    title: 'Nos modules',
+    subtitle:
+      "Une plateforme tout-en-un pour l'immobilier en Afrique. Chaque module est conçu pour répondre à un besoin spécifique.",
+    explore: 'Explorer',
+    immobilier: {
+      name: 'Immobilier',
+      description:
+        'Achat, location et investissement immobilier avec documents vérifiés et escrow sécurisé.',
+    },
+    guesthouses: {
+      name: 'Guesthouses',
+      description:
+        "Location courte durée avec maisons d'hôtes certifiées et réservation instantanée.",
+    },
+    hospitality: {
+      name: 'Hôtellerie & Séjour',
+      description:
+        'La plateforme hôtelière de référence en Afrique — Réservez hôtels, guesthouses et séjours en toute confiance.',
+    },
+    artisans: {
+      name: 'Artisans BTP',
+      description:
+        "Marketplace d'artisans certifiés : maçons, électriciens, plombiers. Devis et suivi en ligne.",
+    },
+    academy: {
+      name: 'Académie',
+      description:
+        'Formation immobilière : droit foncier, investissement, certification agent. Apprenez des experts.',
+    },
+    community: {
+      name: 'Communauté',
+      description:
+        'Échangez avec investisseurs, agents et propriétaires. Événements, groupes et mentorat.',
+    },
+    badges: {
+      popular: 'Populaire',
+      new: 'Nouveau',
+      premium: 'Premium',
+      proMatch: 'ProMatch',
+      certifying: 'Certifiant',
+      social: 'Social',
+    },
+  },
+  advancedFeatures: {
+    eyebrow: 'Outils avancés',
+    title: 'Décidez avec les meilleurs outils',
+    subtitle:
+      'Carte interactive, comparateur de biens et simulateur de financement — tout ce qu\'il faut pour choisir intelligemment.',
+    tabMap: 'Carte interactive',
+    tabCompare: 'Comparateur',
+    tabFinancing: 'Simulateur',
+    propertiesGeolocated: 'bien(s) géolocalisé(s) sur la carte',
+    properties: 'biens',
+    compareUpTo5: 'Comparez jusqu\'à 5 biens',
+    compareHint:
+      'Cliquez sur le bouton « Comparer » sous chaque bien pour l\'ajouter au comparateur. Vous pourrez voir les caractéristiques côte à côte avec scoring automatique.',
+    addOneMoreToCompare:
+      '1 bien sélectionné — ajoutez au moins 1 autre pour comparer',
+    viewComparison: 'Voir la comparaison',
+    financingSimulatorTitle: 'Simulateur de financement immobilier',
+    financingSimulatorDesc:
+      "Calculez vos mensualités de crédit, comparez les taux par pays et visualisez le tableau d'amortissement complet.",
+    openSimulator: 'Ouvrir le simulateur',
+    financingModalTitle: 'Simulateur de financement',
+  },
+  packages: {
+    eyebrow: 'Packages combinés',
+    title: 'Hôtellerie + Immobilier = l\'avantage AfriBayit',
+    subtitle:
+      "La seule plateforme qui combine réservation hôtelière et immobilier en Afrique de l'Ouest. Des packages uniques impossibles à trouver ailleurs.",
+    discover: 'Découvrir',
+    investor: {
+      title: 'Package Investisseur',
+      subtitle: 'Séjour + Visite terrain',
+      description:
+        "Réservation d'un hôtel à Cotonou ou Abidjan depuis la diaspora + planification automatique de visites de biens immobiliers à vendre dans la ville. Agenda intégré avec agent immobilier certifié AfriBayit.",
+      feature1: 'Réservation hôtel 3-7 nuits',
+      feature2: '3 visites de biens immobiliers programmées',
+      feature3: 'Agent immobilier certifié dédié',
+      feature4: 'Transport sur site inclus',
+      feature5: 'Rapport de visite détaillé',
+      price: 'À partir de 500 000 FCFA',
+    },
+    relocation: {
+      title: 'Package Relocation',
+      subtitle: 'Hôtel transition + Recherche logement',
+      description:
+        "Professionnel muté en Afrique de l'Ouest : réservation hôtel court terme (1-4 semaines) + accès prioritaire aux annonces immobilières locales + matching agent AfriBayit.",
+      feature1: 'Hôtel 1-4 semaines',
+      feature2: 'Accès prioritaire aux annonces',
+      feature3: 'Matching avec agent AfriBayit',
+      feature4: 'Visite virtuelle 360° des biens',
+      feature5: "Remise croisée 10% sur l'immobilier",
+      price: 'Sur mesure',
+    },
+    artisan: {
+      title: 'Package Artisan',
+      subtitle: 'Hébergement + Mission BTP',
+      description:
+        "Artisan en déplacement pour mission : réservation chambre dans l'hôtel partenaire le plus proche du chantier + gestion mission via marketplace artisans. Facturation unifiée AfriBayit.",
+      feature1: "Chambre d'hôtel près du chantier",
+      feature2: 'Gestion mission BTP intégrée',
+      feature3: 'Facturation unifiée AfriBayit',
+      feature4: 'Escrow sécurisé pour la mission',
+      feature5: 'Support 7j/7',
+      price: 'À partir de 25 000 FCFA/nuit',
+    },
   },
 } as const;
 

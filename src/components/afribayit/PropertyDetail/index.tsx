@@ -415,6 +415,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
         {/* Price Prediction ML Chart */}
         {property.transaction !== 'location' && property.transaction !== 'location_courte_duree' && (
           <PricePredictionChart
+            propertyId={property.id}
             currentPrice={property.price}
             city={property.city}
             country={property.country}

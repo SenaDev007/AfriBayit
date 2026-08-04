@@ -52,6 +52,24 @@ interface BackendAuthResponse {
   error?: string;
 }
 
+/**
+ * Shape of the user object returned by `authorize()` and consumed by the
+ * `jwt()` callback on first sign-in. Mirrors the `User` interface declared
+ * in `src/types/next-auth.d.ts` (which augments the next-auth types).
+ */
+interface AfribayitAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  roles: string[];
+  country: string | null;
+  kycLevel: number;
+  accessToken: string;
+  refreshToken?: string;
+  accessTokenExpiresAt: number;
+}
+
 async function callBackend(
   path: string,
   body: Record<string, unknown>,
@@ -190,7 +208,7 @@ const providers: NextAuthOptions['providers'] = [
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
           accessTokenExpiresAt: now + expiresIn,
-        } as any;
+        };
       }
 
       // Regular login
@@ -217,7 +235,7 @@ const providers: NextAuthOptions['providers'] = [
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         accessTokenExpiresAt: now + expiresIn,
-      } as any;
+      };
     },
   }),
 ];
@@ -284,14 +302,30 @@ export const authOptions: NextAuthOptions = {
           const expiresIn = data.expiresInSeconds && data.expiresInSeconds > 0
             ? data.expiresInSeconds
             : 3600;
-          (user as any).id = data.user.id;
-          (user as any).role = data.user.role;
-          (user as any).roles = data.user.roles || [data.user.role];
-          (user as any).country = data.user.country;
-          (user as any).kycLevel = data.user.kycLevel;
-          (user as any).accessToken = data.accessToken;
-          (user as any).refreshToken = data.refreshToken;
-          (user as any).accessTokenExpiresAt = now + expiresIn;
+          const enriched: AfribayitAuthUser = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role,
+            roles: data.user.roles || [data.user.role],
+            country: data.user.country,
+            kycLevel: data.user.kycLevel,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            accessTokenExpiresAt: now + expiresIn,
+          };
+          // Mutate the NextAuth `user` object in place so the jwt() callback
+          // can read these fields on first sign-in.
+          user.id = enriched.id;
+          user.email = enriched.email;
+          user.name = enriched.name;
+          user.role = enriched.role;
+          user.roles = enriched.roles;
+          user.country = enriched.country;
+          user.kycLevel = enriched.kycLevel;
+          user.accessToken = enriched.accessToken;
+          user.refreshToken = enriched.refreshToken;
+          user.accessTokenExpiresAt = enriched.accessTokenExpiresAt;
 
           return true;
         } catch (err) {
@@ -305,15 +339,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // `user` is present on first sign-in (credentials or OAuth).
       if (user) {
-        const u = user as any;
-        token.id = u.id;
-        token.role = u.role;
-        token.roles = u.roles || [u.role];
-        token.country = u.country;
-        token.kycLevel = u.kycLevel;
-        if (u.accessToken) token.accessToken = u.accessToken;
-        if (u.refreshToken) token.refreshToken = u.refreshToken;
-        if (u.accessTokenExpiresAt) token.accessTokenExpiresAt = u.accessTokenExpiresAt;
+        token.id = user.id;
+        token.role = user.role;
+        token.roles = user.roles || [user.role];
+        token.country = user.country;
+        token.kycLevel = user.kycLevel;
+        if (user.accessToken) token.accessToken = user.accessToken;
+        if (user.refreshToken) token.refreshToken = user.refreshToken;
+        if (user.accessTokenExpiresAt) token.accessTokenExpiresAt = user.accessTokenExpiresAt;
       }
 
       // Refresh 5 min before expiry
@@ -335,15 +368,15 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token.id as string) || session.user.id;
-        session.user.role = (token.role as string) || session.user.role;
-        session.user.roles = (token.roles as string[]) || [session.user.role];
-        session.user.country = (token.country as string | null) ?? session.user.country ?? null;
-        session.user.kycLevel = (token.kycLevel as number) ?? session.user.kycLevel ?? 0;
+        session.user.id = token.id || session.user.id;
+        session.user.role = token.role || session.user.role;
+        session.user.roles = token.roles || [session.user.role];
+        session.user.country = token.country ?? session.user.country ?? null;
+        session.user.kycLevel = token.kycLevel ?? session.user.kycLevel ?? 0;
       }
-      (session as any).accessToken = token.accessToken;
-      (session as any).refreshToken = token.refreshToken;
-      (session as any).accessTokenExpiresAt = token.accessTokenExpiresAt;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.accessTokenExpiresAt = token.accessTokenExpiresAt;
       return session;
     },
   },

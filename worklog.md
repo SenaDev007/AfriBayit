@@ -405,3 +405,166 @@ Stage Summary:
   - Module 7 (Property): Mapbox GL JS is now the primary interactive map provider with HTML price markers + popups + fitBounds, Google Maps and OSM remain as graceful fallbacks, `map.getBounds()` properly null-guarded, VoiceSearchButton supports 4 West-African languages and forwards language to backend Whisper endpoint
   - 0 TS errors / 0 lint warnings introduced by these changes
   - Build proceeds past compilation; remaining build blockers are in Module 1 (webauthn.ts) and Module 8 (AnalyticsDashboard) — owned by other agents
+
+---
+Task ID: i18n-any-demo
+Agent: i18n-any-demo-Agent
+Task: Wrap hardcoded French strings with t() (5 components), fix `any` casts (4 critical files), replace demo data with honest empty states (3 components)
+
+Work Log:
+- Read existing worklog.md (8 prior task entries — modules audit, infra audit, modules 5-6-7 re-application) for full context on the fix/cdc-v4-compliance-audit branch
+- Confirmed starting tree was clean (git status: nothing to commit, working tree clean) on branch fix/cdc-v4-compliance-audit
+
+Task 1 — i18n: wrap hardcoded French strings with t() calls
+
+  HowItWorks.tsx (full rewrite):
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';`
+    - Added `const { t } = useTranslation();` inside the component
+    - Refactored the `steps` array to carry `titleKey`/`titleFallback`/`descKey`/`descFallback` instead of literal French strings
+    - Replaced all user-visible French strings with `t()` calls:
+      * eyebrow "Processus Simplifié" → `t('howItWorks.eyebrow', 'Processus Simplifié')`
+      * title "Comment ça marche ?" → `t('howItWorks.title', ...)`
+      * subtitle → `t('howItWorks.subtitle', ...)`
+      * stepLabel "Étape" → `t('howItWorks.stepLabel', 'Étape')`
+      * 4 step titles + 4 step descriptions → keys howItWorks.step1Title..step4Desc
+    - Did not wrap step number (`'01'..'04'`) — it's a numeric label, not translatable copy
+
+  ModulesSection.tsx (full rewrite):
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Refactored the 6 `modules` entries to carry `nameKey`/`nameFallback`/`descKey`/`descFallback`/`badgeKey`/`badgeFallback` instead of literal `name`/`description`/`badge`
+    - Wrapped eyebrow "Écosystème Complet", title "Nos modules", subtitle, and CTA "Explorer"
+    - Keys: `modules.eyebrow`, `modules.title`, `modules.subtitle`, `modules.explore`, `modules.immobilier.{name,description}`, `modules.guesthouses.*`, `modules.hospitality.*`, `modules.artisans.*`, `modules.academy.*`, `modules.community.*`, `modules.badges.{popular,new,premium,proMatch,certifying,social}`
+
+  AdvancedFeaturesSection.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Wrapped 13 user-visible strings: eyebrow "Outils avancés", title, subtitle, 3 tab labels (Carte interactive, Comparateur, Simulateur), compare-up-to-5 heading, compare hint, add-one-more warning, view-comparison button text, financing simulator title + description + open-simulator button, financing modal title
+    - Computed `mapCountText` once via template literal so the count + label stay in sync per locale
+    - Did NOT touch the `properties: any[]` prop type (out of scope — Task 2 covers `any` casts only in 4 specific files)
+
+  PackagesSection.tsx (full rewrite):
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Refactored PACKAGES array to carry `titleKey`/`titleFallback` etc. for each of the 3 packages
+    - Wrapped eyebrow "Packages combinés", title, subtitle, CTA "Découvrir"
+    - Wrapped 3 package titles, 3 subtitles, 3 descriptions, 15 feature lines (5 per package), 3 price labels
+    - Added an explicit `FeatureKey` string-union type alias (unused at runtime but documents the canonical key set)
+
+  Footer.tsx (extended the existing 8 t() calls):
+    - Refactored `footerLinks` array entries to carry `titleKey`/`titleFallback` and per-link `labelKey`/`labelFallback` instead of `title`/`label`
+    - Wrapped 4 section titles: Acheter / Services / Entreprise / Légal
+    - Wrapped 20 link labels: Villas, Appartements, Terrains, Bureaux, Commerces, GeoTrust, ProMatch Artisans, Rebecca IA, Académie, Communauté, Séjours (Hôtels & Guesthouses), Notaires, Publier une annonce, CGU, Confidentialité, Cookies, Mentions légales, Suppression de données, Signaler
+    - Refactored `countries` array to carry `nameKey`/`nameFallback` per country (5 entries: Bénin, Côte d'Ivoire, Sénégal, Togo, Burkina Faso)
+    - Did NOT wrap: brand name "AfriBayit", payment partner labels (Visa, Mastercard, PayPal, FedaPay), mobile money names (MTN MoMo, Orange Money, Moov Money), social link labels (used as aria-labels only), contact info (email/phone/address are factual data not requiring translation)
+
+  Locale files (src/lib/i18n/locales/{fr,en}.ts):
+    - Added 4 new top-level sections to BOTH files: `howItWorks`, `modules`, `advancedFeatures`, `packages`
+    - fr.ts: extended the existing `footer` section with `section`/`link`/`country` sub-objects (no duplicate `footer:` key — fixed TS1117 collision on first tsc run)
+    - en.ts: extended the existing `footer` section with `section`/`link`/`country` sub-objects; added the 4 new top-level sections
+    - All French fallbacks in the components EXACTLY match the values in fr.ts (verified by reading each file end-to-end)
+    - English translations in en.ts cover the same keys with idiomatic English copy
+    - Total new keys added: ~70 (across both files)
+
+Task 2 — Fix `any`/`as any` casts in 4 critical files
+
+  src/types/next-auth.d.ts:
+    - Extended the `JWT` interface with `accreditionRole?: string` and `accreditationCountry?: string` (used by the RBAC gate in middleware.ts)
+    - The `User` interface already had `role`, `roles`, `country`, `kycLevel`, `accessToken`, `refreshToken`, `accessTokenExpiresAt` (declared by a prior task) so no change needed there
+
+  src/middleware.ts (6 `(token as any)` casts removed):
+    - Admin RBAC gate (lines ~313-340): replaced `(token as any)?.roles && (token as any).roles.length > 0 ? (token as any).roles : ...` with `token?.roles && token.roles.length > 0 ? token.roles : ...` — direct typed access now that JWT has `roles?: string[]`
+    - Replaced `(token as Record<string, unknown>)?.accreditationRole as string` with `token?.accreditationRole` (string | undefined)
+    - Replaced `(token as Record<string, unknown>)?.accreditationCountry as string | undefined` with `token?.accreditationCountry`
+    - Role-gated dashboard routes (lines ~349-355): same `as any` removal pattern for the second occurrence
+    - Verified with `grep -n "as any" src/middleware.ts` → 0 matches
+    - Re-verified with `npx tsc --noEmit` → 0 errors
+
+  src/hooks/useTransactions.ts (9 `any` occurrences removed):
+    - Defined 6 proper interfaces: `TransactionSummary`, `EscrowSummary`, `LeaseSummary`, `RentPaymentSummary`, `AppointmentSummary`, `PaginationMeta`, plus a `CreateAppointmentPayload` type
+    - Each interface declares only the well-known fields used by the UI plus a `[key: string]: unknown` index signature so the backend can add fields without forcing a TypeScript update — never `any`
+    - Replaced `{ transactions: any[]; pagination: any }` → `{ transactions: TransactionSummary[]; pagination: PaginationMeta }`
+    - Replaced `apiPost<{ transaction: any; escrow: any; ... }>` (purchase) → typed with `TransactionSummary`/`EscrowSummary`
+    - Replaced `apiPost<{ transaction: any; escrow: any; lease: any; rentPayment: any; ... }>` (rent) → typed with all 4 summary interfaces
+    - Replaced `apiPost<any>('/api/appointments', data)` → `apiPost<AppointmentSummary>` with the new `CreateAppointmentPayload` input type
+    - Replaced `{ appointments: any[]; pagination: any }` → typed with `AppointmentSummary[]`/`PaginationMeta`
+    - Verified: `grep -n "any" src/hooks/useTransactions.ts` → only 1 hit, which is in a comment ("for any extra properties")
+
+  src/components/afribayit/PaymentFlow.tsx (3 `any` occurrences removed):
+    - Replaced `interface anyOption { key: any; ...; provider: any; }` with `interface PaymentMethodOption { key: PaymentMethodKey; ...; provider: PaymentProvider; }`
+    - Added `export type PaymentMethodKey = 'mobile_money_mtn' | 'mobile_money_moov' | 'mobile_money_orange' | 'mobile_money_wave' | 'card_visa' | 'card_mastercard';`
+    - Added `export type PaymentProvider = 'fedapay' | 'stripe';`
+    - `useState<any | null>(null)` for selectedMethod → `useState<PaymentMethodKey | null>(null)`
+    - `useState<{ ...; provider: any }>` for paymentResult → `provider: PaymentProvider`
+    - `handleSelectMethod(method: any)` → `handleSelectMethod(method: PaymentMethodKey)`
+    - `apiPost<{ ...; provider: any }>` → `provider: PaymentProvider`
+    - Verified: `grep -nE "\\bany\\b" src/components/afribayit/PaymentFlow.tsx` → 0 matches
+
+  src/app/api/auth/[...nextauth]/route.ts (`(user as any)` casts removed in signIn + jwt callbacks):
+    - Defined `interface AfribayitAuthUser` mirroring the augmented `User` type from next-auth.d.ts (id, email, name, role, roles, country, kycLevel, accessToken, refreshToken, accessTokenExpiresAt)
+    - signIn callback (OAuth provider branch): replaced 8 `(user as any).FIELD = data.user.FIELD` assignments with a single typed `const enriched: AfribayitAuthUser = {...}` followed by direct field assignments `user.id = enriched.id; user.email = enriched.email; ...` — the NextAuth `User` interface already declares all these fields so direct assignment is type-safe
+    - jwt callback: replaced `const u = user as any;` with direct `user.FIELD` access — the User type is already augmented
+    - Also removed the residual `as any` casts in the `session` callback (lines 344-346): `(session as any).accessToken = ...` → `session.accessToken = ...` (Session interface is augmented too). The task scope was strictly `signIn` + `jwt` but this was a trivial 3-line cleanup that eliminated the last `as any` in the file
+    - Removed 2 `as any` casts on the authorize() return objects (lines 193, 220): the object literal already matches the `User` interface so the cast was unnecessary
+    - Verified: `grep -n "as any" src/app/api/auth/[...nextauth]/route.ts` → 0 matches
+
+Task 3 — Replace demo data with honest empty states
+
+  src/components/afribayit/VirtualTourViewer.tsx:
+    - Removed the entire `DEMO_SCENES` constant (5 hardcoded Unsplash URLs: salon, cuisine, chambre, salle-de-bain, jardin)
+    - Imported `Box` from lucide-react
+    - Simplified the `scenes` useMemo: no longer falls back to DEMO_SCENES when `tours.length === 0` — it now returns an empty array, and the `hotspots` fallback (`i < DEMO_SCENES.length ? DEMO_SCENES[i].hotspots...`) is gone (hotspots is now always `[]` for real tours — the previous "hotspots for real tours" was itself demo data)
+    - Simplified the `scenesKey` useMemo: removed the `if (tours.length === 0) return 'demo';` branch (no longer needed)
+    - Wrapped the entire viewer body in a conditional: `{scenes.length === 0 ? (<empty-state UI>) : (<>existing viewer</>)}`
+    - Empty state UI: `<div className="flex items-center justify-center h-full bg-gray-100 rounded-xl"><div className="text-center p-8"><Box className="w-12 h-12 text-gray-300 mx-auto mb-3" /><p className="text-sm text-gray-500">Aucune visite virtuelle disponible pour ce bien</p></div></div>` — matches the spec exactly
+
+  src/components/afribayit/DroneViewPlayer.tsx:
+    - Removed the 2 hardcoded Unsplash fallback URLs in the `aerialImage` computation (day: `photo-1486406146926-c627a92ad1ab`, night: `photo-1535313142515-9b6de1d1c83d`)
+    - Imported `Box` from lucide-react (replaced the unused `Maximize2` import)
+    - `aerialImage` is now simply `mode === 'day' ? dayImage : nightImage` (no Unsplash fallback)
+    - Added `const hasAnyContent = !!(videoUrl || aerialImage);` to drive the empty-state gate
+    - Wrapped the entire viewer + controls in `{!hasAnyContent ? (<empty-state>) : (<>video or image viewer + drone badge + play button + time-lapse indicator + controls bar</>)}`
+    - Empty state UI uses the same pattern as VirtualTourViewer: Box icon + "Aucune vue drone disponible pour ce bien"
+    - The Drone badge, Play/Pause button, time-lapse indicator, and full controls bar are now only rendered when there is actual content
+
+  src/components/afribayit/PricePredictionChart.tsx (full rewrite):
+    - Removed the simulated data: `COUNTRY_GROWTH` (BJ 12%, CI 15%, BF 8%, TG 10%) and `CITY_MULTIPLIER` constants deleted
+    - Removed the entire `useMemo` that reverse-walked prices with `Math.sin` noise to fake 5 years of history
+    - Removed the `TrendingDown` and unused imports
+    - Added `import { useQuery } from '@tanstack/react-query';` and `import { api } from '@/lib/api-client';`
+    - Added a new `propertyId?: string` prop (optional so existing callers without it still render the empty state)
+    - Added the `useQuery` call exactly as specified in the task: `queryKey: ['price-prediction', propertyId, city, country]`, `queryFn` calls `api.get<{ history: { year: number; price: number }[]; forecast: { year: number; price: number; confidence: number }[] }>('/properties/${propertyId}/price-prediction')`, returns `null` on any error (try/catch), `enabled: !!propertyId`
+    - Defined proper interfaces `HistoryPoint`, `ForecastPoint`, `PricePredictionResponse` instead of inline `any`
+    - Refactored the `useMemo` to derive `history`/`prediction`/`stats` from the backend response (no more client-side simulation)
+    - Annual growth rate is now computed from the actual history series: `(Math.pow(currentPrice / price5yAgo, 1 / (n-1)) - 1) * 100` (CAGR formula) instead of the made-up `COUNTRY_GROWTH[country] * CITY_MULTIPLIER[city]`
+    - When `predictionData` is null OR `history.length === 0`: renders an honest empty state with a Brain icon, "Prédictions de prix disponibles prochainement" heading, and a short explanation that the ML engine is still training on this market
+    - The chart SVG, stats row, and legend are only rendered when there is real data
+    - Updated `src/components/afribayit/PropertyDetail/index.tsx` (the only caller) to pass `propertyId={property.id}` as the new prop
+
+Verification (all 3 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors; only pre-existing node_modules type noise which is filtered)
+  2. `npm run build` → ✓ Compiled successfully in 38.8s — all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced
+  3. `npm run test` → 5 test files passed, 65 tests passed (31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 4.64s duration
+  4. `npm run lint` → 0 errors, 0 warnings (eslint . exited cleanly)
+
+Files touched (16 total):
+  - src/components/afribayit/HowItWorks.tsx
+  - src/components/afribayit/ModulesSection.tsx
+  - src/components/afribayit/AdvancedFeaturesSection.tsx
+  - src/components/afribayit/PackagesSection.tsx
+  - src/components/afribayit/Footer.tsx
+  - src/components/afribayit/PaymentFlow.tsx
+  - src/components/afribayit/VirtualTourViewer.tsx
+  - src/components/afribayit/DroneViewPlayer.tsx
+  - src/components/afribayit/PricePredictionChart.tsx
+  - src/components/afribayit/PropertyDetail/index.tsx (caller update for new propertyId prop)
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+  - src/hooks/useTransactions.ts
+  - src/middleware.ts
+  - src/types/next-auth.d.ts
+  - src/app/api/auth/[...nextauth]/route.ts
+
+Stage Summary:
+  - Task 1 (i18n): 5 components wrapped with t() calls + ~70 new translation keys added to both fr.ts and en.ts (4 new top-level sections howItWorks/modules/advancedFeatures/packages + footer.section/link/country sub-objects). Existing 8 t() calls in Footer.tsx preserved and extended to 28 total.
+  - Task 2 (any casts): 4 critical files cleaned — middleware.ts (6 `as any` → 0), useTransactions.ts (9 `any` → 0 via 6 new typed interfaces), PaymentFlow.tsx (3 `any` → 0 via 2 new string-union types), nextauth/route.ts (11 `as any` → 0 via 1 new AfribayitAuthUser interface + direct typed field assignment). JWT type augmented in next-auth.d.ts with accreditationRole/accreditationCountry.
+  - Task 3 (demo data): 3 components cleaned — VirtualTourViewer (5 fake Unsplash URLs + DEMO_SCENES array deleted, honest empty state added), DroneViewPlayer (2 fake Unsplash day/night URLs deleted, honest empty state added), PricePredictionChart (4 fake country growth rates + Math.sin noise generator deleted, replaced with real backend useQuery call to /properties/{id}/price-prediction, honest "available soon" empty state when no data).
+  - All 3 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 38.8s, tests 65/65 passed.
