@@ -24,6 +24,7 @@ interface ModuleItem {
   videoUrl?: string;
   content?: string;
   type?: 'video' | 'text' | 'quiz';
+  courseId?: string;
 }
 
 interface CourseLessonViewerProps {
@@ -265,7 +266,7 @@ export default function CourseLessonViewer({
               </h2>
             </div>
 
-            {/* Video player */}
+            {/* Video player with subtitle tracks (CDC §5.6.4 — subtitles in 10 languages) */}
             {currentVideoUrl ? (
               <div className="aspect-video bg-black">
                 <video
@@ -273,8 +274,21 @@ export default function CourseLessonViewer({
                   controls
                   className="w-full h-full"
                   preload="metadata"
+                  crossOrigin="anonymous"
                 >
                   <source src={currentVideoUrl} type="video/mp4" />
+                  {/* Subtitle tracks — CDC §5.6.4 requires subtitles in 10 languages.
+                      The backend should serve .vtt files at /academy/courses/:id/subtitles/:lang.vtt
+                      Browsers display a CC button to toggle them. */}
+                  {['fr', 'en', 'ar', 'sw', 'ha', 'wo', 'am', 'ln', 'fon', 'pt'].map((lang) => (
+                    <track
+                      key={lang}
+                      kind="subtitles"
+                      srcLang={lang}
+                      label={lang.toUpperCase()}
+                      src={`/api/academy/subtitles?courseId=${activeModule?.courseId || ''}&lang=${lang}`}
+                    />
+                  ))}
                   Votre navigateur ne supporte pas la lecture vidéo.
                 </video>
               </div>

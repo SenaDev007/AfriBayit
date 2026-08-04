@@ -35,11 +35,14 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://widget.fedapay.com",
+              // CDC §10.1 — removed 'unsafe-eval' (was defeating CSP XSS protection).
+              // Next.js 16 doesn't need it for production builds.
+              "script-src 'self' 'unsafe-inline' https://js.stripe.com https://widget.fedapay.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: https://*.mapbox.com",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.railway.app https://*.up.railway.app wss://*.pusher.com https://*.pusher.com",
+              // Added: Sentry ingestion, Mapbox tiles, Fixer.io FX rates
+              "connect-src 'self' https://*.railway.app https://*.up.railway.app wss://*.pusher.com https://*.pusher.com https://*.sentry.io https://*.mapbox.com https://api.apilayer.com",
               "frame-src 'self' https://js.stripe.com https://widget.fedapay.com",
               "object-src 'none'",
               "base-uri 'self'",

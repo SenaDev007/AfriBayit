@@ -49,4 +49,4 @@ export interface CourseDetailDialogProps {
 
 export const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export type AcademyTabKey = 'catalogue' | 'my_courses' | 'certifications';
+export type AcademyTabKey = 'catalogue' | 'my_courses' | 'certifications' | 'webinars' | 'peer_learning';

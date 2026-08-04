@@ -15,7 +15,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { CITIES_BY_COUNTRY, OAUTH_ERROR_MESSAGES, easeOut, registerSteps } from './constants';
@@ -146,6 +146,23 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     };
   }, []);
 
+  // ─── Client-side rate limiting (CDC §10.2.1 — 5 req/min on auth) ───
+  // The backend should also enforce this server-side. This is a first line
+  // of defense that prevents obvious brute-force attempts from even hitting
+  // the network.
+  const loginAttemptsRef = useRef<number[]>([]);
+  const checkRateLimit = (): boolean => {
+    const now = Date.now();
+    // Keep only attempts from the last 60 seconds.
+    loginAttemptsRef.current = loginAttemptsRef.current.filter(t => now - t < 60_000);
+    if (loginAttemptsRef.current.length >= 5) {
+      setLoginError('Trop de tentatives. Veuillez patienter 1 minute avant de réessayer.');
+      return false;
+    }
+    loginAttemptsRef.current.push(now);
+    return true;
+  };
+
   // ─── Login handler ───
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +172,17 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       setLoginError('Email et mot de passe requis');
       return;
     }
+
+    // Honeypot check — if the hidden "website" field was filled, silently
+    // reject (bot detected). The form element is the EventTarget.
+    const form = e.target as HTMLFormElement;
+    const honeypot = form.querySelector('input[name="website"]') as HTMLInputElement | null;
+    if (honeypot && honeypot.value) {
+      // Bot detected — pretend success but don't actually submit.
+      return;
+    }
+
+    if (!checkRateLimit()) return;
 
     setLoginLoading(true);
     try {

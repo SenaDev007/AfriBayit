@@ -136,6 +136,19 @@ export default function LoginForm(props: LoginFormProps) {
       </p>
 
       <form onSubmit={onLoginSubmit} className="space-y-4">
+        {/* Honeypot field — invisible to humans, bots fill it in (CDC §10.2.2). */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+          <label>Ne pas remplir ce champ</label>
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            name="website"
+            value=""
+            onChange={() => {}}
+          />
+        </div>
+
         {loginError && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

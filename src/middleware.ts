@@ -173,6 +173,25 @@ function detectCountry(request: NextRequest): string | null {
     return cookieCountry;
   }
 
+  // 4. Check IP geolocation via Cloudflare header (CDC §3.2).
+  // When deployed behind Cloudflare, the `CF-IPCountry` header is set
+  // automatically to the ISO 3166-1 alpha-2 country code of the client IP.
+  // Vercel also provides `x-vercel-ip-country` on edge requests.
+  const cfCountry = request.headers.get('cf-ipcountry');
+  if (cfCountry) {
+    const upper = cfCountry.toUpperCase();
+    if (Object.values(SUBDOMAIN_COUNTRY_MAP).includes(upper)) {
+      return upper;
+    }
+  }
+  const vercelCountry = request.headers.get('x-vercel-ip-country');
+  if (vercelCountry) {
+    const upper = vercelCountry.toUpperCase();
+    if (Object.values(SUBDOMAIN_COUNTRY_MAP).includes(upper)) {
+      return upper;
+    }
+  }
+
   // No country detected
   return null;
 }

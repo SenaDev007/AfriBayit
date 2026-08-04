@@ -26,7 +26,7 @@ void fmt; void channelLabel;
 function OTASyncBar({ otaSyncStatus }: { otaSyncStatus: Record<string, { status: string; lastSync: string | null }> }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      {['booking_com', 'expedia'].map((ota) => {
+      {['booking_com', 'expedia', 'airbnb'].map((ota) => {
         const info = otaSyncStatus[ota];
         return (
           <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
@@ -145,6 +145,7 @@ export default function HotelPMS() {
         ...prev,
         booking_com: { status: 'synced', lastSync: new Date().toISOString() },
         expedia: { status: 'synced', lastSync: new Date().toISOString() },
+        airbnb: { status: 'synced', lastSync: new Date().toISOString() },
       }));
       toast.success('Synchronisation OTA lancée');
     } catch {
