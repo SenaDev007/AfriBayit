@@ -62,7 +62,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry (frontend only)
+// Sentry (frontend only) — require() is the standard pattern for Next.js config
+// files since next.config.ts runs in Node CJS context before ESM is available.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { withSentryConfig } = require('@sentry/nextjs');
 const sentryEnabled = !!process.env.NEXT_PUBLIC_SENTRY_DSN;
 const finalConfig = sentryEnabled

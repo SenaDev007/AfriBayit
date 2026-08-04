@@ -133,13 +133,16 @@ export function useRealtimeNotifications(
   const [isConnected, setIsConnected] = useState(false);
 
   // Keep latest callbacks in refs so the effect doesn't resubscribe on
-  // every parent re-render.
+  // every parent re-render. Refs must be updated in an effect (not during
+  // render) per React 19 rules.
   const onNotificationRef = useRef(onNotification);
   const onNewNotificationRef = useRef(onNewNotification);
   const onCountUpdateRef = useRef(onCountUpdate);
-  onNotificationRef.current = onNotification;
-  onNewNotificationRef.current = onNewNotification;
-  onCountUpdateRef.current = onCountUpdate;
+  useEffect(() => {
+    onNotificationRef.current = onNotification;
+    onNewNotificationRef.current = onNewNotification;
+    onCountUpdateRef.current = onCountUpdate;
+  }, [onNotification, onNewNotification, onCountUpdate]);
 
   useEffect(() => {
     if (!userId) return;
@@ -206,8 +209,10 @@ export function useRealtimeTyping(
 
   const onTypingRef = useRef(onTyping);
   const onStopTypingRef = useRef(onStopTyping);
-  onTypingRef.current = onTyping;
-  onStopTypingRef.current = onStopTyping;
+  useEffect(() => {
+    onTypingRef.current = onTyping;
+    onStopTypingRef.current = onStopTyping;
+  }, [onTyping, onStopTyping]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -379,8 +384,9 @@ export function useRealtimePresence(roomName: string | undefined) {
 // Default export for backwards compatibility — exposes the three hooks as
 // a single object so legacy imports like `import * as useRealtime` still
 // work.
-export default {
+const useRealtime = {
   useRealtimeNotifications,
   useRealtimeTyping,
   useRealtimePresence,
 };
+export default useRealtime;

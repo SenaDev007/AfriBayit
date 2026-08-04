@@ -325,7 +325,7 @@ export async function authenticateBiometric(email: string): Promise<boolean> {
   }
 }
 
-export default {
+const webauthn = {
   isBiometricSupported,
   isUserVerifyingPlatformAuthenticatorAvailable,
   registerBiometric,
@@ -333,3 +333,4 @@ export default {
   base64urlToBuffer,
   bufferToBase64url,
 };
+export default webauthn;

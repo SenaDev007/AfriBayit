@@ -39,40 +39,10 @@ vi.mock('next-auth/react', () => ({
 }));
 
 // ─── API client (network) ─────────────────────────────────────────────────
-// Default mocks for the api-client helpers. Tests that need to assert on
-// specific calls should override these per-test using vi.mocked(...).
-vi.mock('@/lib/api-client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api-client')>('@/lib/api-client');
-  return {
-    ...actual,
-    api: {
-      get: vi.fn().mockResolvedValue(null),
-      post: vi.fn().mockResolvedValue({ ok: true }),
-      patch: vi.fn().mockResolvedValue({ ok: true }),
-      put: vi.fn().mockResolvedValue({ ok: true }),
-      delete: vi.fn().mockResolvedValue({ ok: true }),
-      upload: vi.fn().mockResolvedValue({ ok: true }),
-    },
-    apiFetch: vi.fn().mockResolvedValue(null),
-    apiGet: vi.fn().mockResolvedValue(null),
-    apiPost: vi.fn().mockResolvedValue({ ok: true }),
-    apiPatch: vi.fn().mockResolvedValue({ ok: true }),
-    apiDelete: vi.fn().mockResolvedValue({ ok: true }),
-    apiPut: vi.fn().mockResolvedValue({ ok: true }),
-    setAccessToken: vi.fn(),
-    getAccessToken: vi.fn().mockReturnValue(null),
-    authApi: {
-      login: vi.fn().mockResolvedValue({}),
-      login2FA: vi.fn().mockResolvedValue({}),
-      register: vi.fn().mockResolvedValue({}),
-      me: vi.fn().mockResolvedValue(null),
-      logout: vi.fn().mockResolvedValue({ ok: true }),
-      sendOTP: vi.fn().mockResolvedValue({}),
-      verifyOTP: vi.fn().mockResolvedValue({}),
-    },
-    ApiError: actual.ApiError,
-  };
-});
+// We do NOT mock @/lib/api-client globally — individual test files that
+// need to assert on network calls should mock it per-test. This allows
+// api-client shape tests (tests/unit/api-client.test.ts) to verify the
+// real module exports without interference.
 
 // ─── Test environment variables ───────────────────────────────────────────
 vi.stubEnv('NODE_ENV', 'test');

@@ -9,8 +9,33 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mocks come from tests/setup.ts (api-client + next-auth/react). We grab
-// typed references to the mocked functions so we can assert on them.
+// Mock the api-client so we can assert on api.post + setAccessToken calls
+// without hitting the network. The signout module imports from './api-client'
+// (relative), which resolves to the same file as '@/lib/api-client', so this
+// mock covers both import paths.
+vi.mock('@/lib/api-client', () => ({
+  api: {
+    get: vi.fn().mockResolvedValue(null),
+    post: vi.fn().mockResolvedValue({ ok: true }),
+    patch: vi.fn().mockResolvedValue({ ok: true }),
+    put: vi.fn().mockResolvedValue({ ok: true }),
+    delete: vi.fn().mockResolvedValue({ ok: true }),
+    upload: vi.fn().mockResolvedValue({ ok: true }),
+    downloadBlob: vi.fn().mockResolvedValue(undefined),
+  },
+  setAccessToken: vi.fn(),
+  getAccessToken: vi.fn().mockReturnValue(null),
+  ApiError: class ApiError extends Error {
+    statusCode: number;
+    data?: unknown;
+    constructor(msg: string, code: number, data?: unknown) {
+      super(msg);
+      this.statusCode = code;
+      this.data = data;
+    }
+  },
+}));
+
 import { api, setAccessToken } from '@/lib/api-client';
 import { signOut } from 'next-auth/react';
 import { signOutAndClear, LOGOUT_STORAGE_KEYS } from '@/lib/signout';

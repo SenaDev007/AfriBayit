@@ -26,6 +26,7 @@ function AnimatedCounter({
   useEffect(() => {
     // If value is 0 or undefined, show 0
     if (!value || value === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayValue(0);
       return;
     }

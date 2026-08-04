@@ -21,6 +21,27 @@ import { CheckinPanel, InvoicingPanel, CancellationPanel, LastMinutePanel, Guest
 
 void fmt; void channelLabel;
 
+// OTA Sync Status Bar — declared OUTSIDE the component to avoid
+// "Cannot create components during render" lint error.
+function OTASyncBar({ otaSyncStatus }: { otaSyncStatus: Record<string, { status: string; lastSync: string | null }> }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      {['booking_com', 'expedia'].map((ota) => {
+        const info = otaSyncStatus[ota];
+        return (
+          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+            info?.status === 'synced' ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
+          }`}>
+            <RefreshCw className={`w-3 h-3 ${info?.status === 'synced' ? '' : 'animate-spin'}`} />
+            {channelLabel(ota)}
+            <CheckCircle className="w-3 h-3" />
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function HotelPMS() {
   const [activeTab, setActiveTab] = useState<PMSTab>('dashboard');
   const [hotelId, setHotelId] = useState<string>('');
@@ -200,23 +221,7 @@ export default function HotelPMS() {
     }
   };
 
-  // ─── OTA Sync Status Bar ────────────────────────────────────
-  const OTASyncBar = () => (
-    <div className="flex items-center gap-3 mb-4">
-      {['booking_com', 'expedia'].map((ota) => {
-        const info = otaSyncStatus[ota];
-        return (
-          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-            info?.status === 'synced' ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
-          }`}>
-            <RefreshCw className={`w-3 h-3 ${info?.status === 'synced' ? '' : 'animate-spin'}`} />
-            {channelLabel(ota)}
-            <CheckCircle className="w-3 h-3" />
-          </span>
-        );
-      })}
-    </div>
-  );
+  // OTA Sync Status Bar is now declared outside the component (above).
 
   return (
     <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
@@ -241,7 +246,7 @@ export default function HotelPMS() {
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
           <div className="flex items-center gap-3">
-            <OTASyncBar />
+            <OTASyncBar otaSyncStatus={otaSyncStatus} />
             <button onClick={handleSyncOTA} className="px-4 py-2.5 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-2">
               <RefreshCw className="w-4 h-4" /> Sync OTA
             </button>

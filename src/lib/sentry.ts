@@ -121,4 +121,5 @@ export function captureWarningSync(
   void captureWarning(message, context);
 }
 
-export default { captureError, captureWarning, captureErrorSync, captureWarningSync };
+const sentry = { captureError, captureWarning, captureErrorSync, captureWarningSync };
+export default sentry;
