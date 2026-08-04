@@ -48,6 +48,61 @@ const geometerServices = [
   { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: 250000, priceLabel: '250 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions' },
 ];
 
+// CDC §7C.9 — GeoTrust bundled packs (3 tiers: Standard / Certification / Premium Drone)
+// Prices in XOF (FCFA). Each pack bundles multiple GEO_* services with extras
+// (badge, escrow, VR, rapport) at a discount vs. à la carte.
+const geotrustPacks = [
+  {
+    id: 'pack-standard',
+    name: 'Pack Standard',
+    price: 75000,
+    priceLabel: '75 000 FCFA',
+    services: ['GEO_GPS', 'GEO_SURF'] as const,
+    includes: [
+      geoServiceLabel('GEO_GPS'),
+      geoServiceLabel('GEO_SURF'),
+      'Rapport de mission',
+    ],
+    highlight: false,
+    icon: <MapPin className="w-4 h-4" />,
+    description: 'Vérification GPS et superficie du terrain avec rapport de mission.',
+  },
+  {
+    id: 'pack-certification',
+    name: 'Pack Certification',
+    price: 150000,
+    priceLabel: '150 000 FCFA',
+    services: ['GEO_TOPO', 'GEO_BORN', 'GEO_CERT'] as const,
+    includes: [
+      geoServiceLabel('GEO_TOPO'),
+      geoServiceLabel('GEO_BORN'),
+      geoServiceLabel('GEO_CERT'),
+      'Badge GeoTrust officiel',
+      'Sécurisation escrow AfriBayit',
+    ],
+    highlight: true,
+    icon: <ShieldCheck className="w-4 h-4" />,
+    description: 'Pack complet : topographie, bornage officiel, certificat de conformité, badge et escrow.',
+  },
+  {
+    id: 'pack-premium-drone',
+    name: 'Pack Premium Drone',
+    price: 350000,
+    priceLabel: '350 000 FCFA',
+    services: ['GEO_DRON', 'GEO_3D', 'GEO_CERT'] as const,
+    includes: [
+      geoServiceLabel('GEO_DRON'),
+      geoServiceLabel('GEO_3D'),
+      geoServiceLabel('GEO_CERT'),
+      'Visite VR immersive',
+      'Rapport détaillé',
+    ],
+    highlight: false,
+    icon: <Drone className="w-4 h-4" />,
+    description: 'Solution premium : cartographie drone, modélisation 3D, certificat, visite VR et rapport.',
+  },
+];
+
 function GeometerSkeleton() {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border animate-pulse">
@@ -382,6 +437,91 @@ export default function GeoTrustModule() {
                 <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.priceLabel}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+
+        {/* Bundled Packs — CDC §7C.9 */}
+        <div className="mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
+            <div>
+              <h2 className="font-display text-xl font-bold text-[#0a2a5e]">Packs GeoTrust</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Packs groupés à prix réduit — économisez jusqu&apos;à 20% vs. services à la carte.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 text-[#B8860B] text-[11px] font-semibold w-fit">
+              <Coins className="w-3.5 h-3.5" /> Prix en FCFA (XOF)
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {geotrustPacks.map((pack, i) => {
+              const primaryCode = pack.services[0];
+              const primaryService = geometerServices.find(s => s.code === primaryCode);
+              const totalPrice = pack.services.reduce((sum, code) => {
+                const svc = geometerServices.find(s => s.code === code);
+                return sum + (svc?.price ?? 0);
+              }, 0);
+              const savings = totalPrice - pack.price;
+              return (
+                <motion.div
+                  key={pack.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                  whileHover={{ y: -4 }}
+                  onClick={() => setSelectedService(primaryService?.id ?? null)}
+                  className={`relative bg-white rounded-2xl p-5 shadow-sm border-2 cursor-pointer transition-all flex flex-col ${
+                    pack.highlight
+                      ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20'
+                      : 'border-transparent hover:border-gray-200'
+                  }`}
+                >
+                  {pack.highlight && (
+                    <span className="absolute -top-3 left-5 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-sm">
+                      <Star className="w-3 h-3 fill-white" /> Recommandé
+                    </span>
+                  )}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: pack.highlight ? '#D4AF3715' : '#009CDE10' }}>
+                      <span className={pack.highlight ? 'text-[#B8860B]' : 'text-[#009CDE]'}>{pack.icon}</span>
+                    </div>
+                    {savings > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#00A651]/10 text-[#00A651] text-[10px] font-bold">
+                        −{savings.toLocaleString('fr-FR')} FCFA
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-[#0a2a5e] mb-1">{pack.name}</h3>
+                  <p className="text-xs text-gray-500 mb-3 flex-1">{pack.description}</p>
+                  <p className="font-mono-data text-lg font-bold text-[#D4AF37] mb-3">{pack.priceLabel}</p>
+                  <ul className="space-y-1.5">
+                    {pack.includes.map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
+                        <CheckCircle className="w-3.5 h-3.5 text-[#00A651] shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedService(primaryService?.id ?? null);
+                      toast({
+                        title: 'Pack sélectionné',
+                        description: `${pack.name} (${pack.priceLabel}). Choisissez un géomètre ci-dessous pour démarrer la mission.`,
+                      });
+                    }}
+                    className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                      pack.highlight
+                        ? 'bg-[#D4AF37] text-white hover:bg-[#B8860B]'
+                        : 'bg-[#003087] text-white hover:bg-[#0047b3]'
+                    }`}
+                  >
+                    Choisir ce pack
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 

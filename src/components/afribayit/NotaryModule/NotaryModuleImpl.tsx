@@ -17,7 +17,8 @@ import {
   AlertTriangle, Award, BarChart3, Bot, Check, CheckCircle, Circle,
   ClipboardList, Coins, FileText, Home, Scale, User, PenTool,
   FileSignature, Archive, TrendingUp, Search, Filter, Zap,
-  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus, ArrowLeft, Star, Briefcase, MapPin, X
+  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus, ArrowLeft, Star, Briefcase, MapPin, X,
+  Clock
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -60,6 +61,11 @@ interface EscrowAccount {
   buyer: string;
   amount: number;
   status: string;
+  // CDC §5.0bis.6 — Notarial 30-day legal timer fields.
+  // Used to compute daysRemaining for NOTARY_IN_PROGRESS escrow accounts.
+  notaryStartedAt?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 
 interface ModuleProps {
@@ -149,11 +155,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const [deedDraft, setDeedDraft] = useState('');
   const [deedGenerating, setDeedGenerating] = useState(false);
   const [signingDoc, setSigningDoc] = useState<string | null>(null);
-  const [archivedDocs, setArchivedDocs] = useState<Array<{ id: string; name: string; date: string; hash: string }>>([
-    { id: '1', name: 'Acte_Vente_Dossou_2025.pdf', date: '2025-12-10', hash: 'sha256:a3f8b2c1d4...' },
-    { id: '2', name: 'Convention_Koffi_Mensah.pdf', date: '2025-12-08', hash: 'sha256:b7c9d2e3f4...' },
-    { id: '3', name: 'Promesse_Vente_Agossa.pdf', date: '2025-11-28', hash: 'sha256:c1d3e5f7a9...' },
-  ]);
+  const [archivedDocs, setArchivedDocs] = useState<Array<{ id: string; name: string; date: string; hash: string }>>([]);
   const { selectedCountry } = useCountry();
   const { isAuthenticated } = useAuthStore();
   const [assigningNotaryId, setAssigningNotaryId] = useState<string | null>(null);
@@ -221,6 +223,45 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   // Revenue computation
   const computedRevenue = useMemo(() => {
     return escrowAccounts.reduce((sum, e) => sum + Math.round(e.amount * 0.12), 0);
+  }, [escrowAccounts]);
+
+  // CDC §5.0bis.6 — Notarial 30-day legal timer.
+  // For each escrow account in NOTARY_IN_PROGRESS, compute daysRemaining
+  // from notaryStartedAt || updatedAt || createdAt (in that order of preference).
+  // J ≤ 15  → green (on track)
+  // J > 15  → gold  (warning, approaching deadline)
+  // J > 25  → red   (critical, <5 days left)
+  // J > 30  → "DÉLAI DÉPASSÉ" (legal deadline exceeded — escalate)
+  const NOTARY_DEADLINE_DAYS = 30;
+  const notaryTimers = useMemo(() => {
+    return escrowAccounts
+      .filter(e => e.status === 'NOTARY_IN_PROGRESS')
+      .map(e => {
+        const rawTs = e.notaryStartedAt || e.updatedAt || e.createdAt;
+        let daysRemaining: number | null = null;
+        let startedAt: Date | null = null;
+        if (rawTs) {
+          const d = new Date(rawTs);
+          if (!isNaN(d.getTime())) {
+            startedAt = d;
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const elapsed = Math.floor((Date.now() - d.getTime()) / msPerDay);
+            daysRemaining = NOTARY_DEADLINE_DAYS - elapsed;
+          }
+        }
+        const isOverdue = daysRemaining !== null && daysRemaining < 0;
+        const severity =
+          daysRemaining === null
+            ? 'unknown'
+            : isOverdue
+              ? 'overdue'
+              : daysRemaining <= 5
+                ? 'critical' // J > 25 (≤ 5 days left)
+                : daysRemaining <= 15
+                  ? 'warning' // J > 15
+                  : 'ok';     // J ≤ 15
+        return { account: e, startedAt, daysRemaining, isOverdue, severity };
+      });
   }, [escrowAccounts]);
 
   const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
@@ -728,6 +769,75 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 ))}
               </div>
 
+              {/* CDC §5.0bis.6 — 30-day notarial timer */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e] flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#003087]" />
+                    Délai notarial 30 jours
+                  </h3>
+                  <Badge variant="secondary" className="text-[10px] font-semibold">
+                    {notaryTimers.length} en cours
+                  </Badge>
+                </div>
+                <p className="text-xs text-gray-500 mb-4">
+                  Compteur légal par transaction notariale en cours. À partir de la date de début notaire,
+                  un délai de <strong>30 jours</strong> s&apos;applique. Alertes: <span className="text-[#00A651] font-semibold">J≤15 (or)</span>,{' '}
+                  <span className="text-[#D4AF37] font-semibold">J&gt;15 (avertissement)</span>,{' '}
+                  <span className="text-[#D93025] font-semibold">J&gt;25 (critique)</span>,{' '}
+                  <span className="text-[#D93025] font-bold">J&gt;30 (délai dépassé)</span>.
+                </p>
+                {notaryTimers.length === 0 ? (
+                  <div className="text-center py-6">
+                    <CheckCircle className="w-8 h-8 text-[#00A651] mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">Aucune transaction notariale en cours.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    {notaryTimers.map(({ account, startedAt, daysRemaining, isOverdue, severity }) => {
+                      const color =
+                        severity === 'overdue' ? '#D93025'
+                        : severity === 'critical' ? '#D93025'
+                        : severity === 'warning' ? '#D4AF37'
+                        : severity === 'ok' ? '#00A651'
+                        : '#6b7280';
+                      const label =
+                        isOverdue ? 'DÉLAI DÉPASSÉ'
+                        : daysRemaining === null ? 'Date de début manquante'
+                        : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`;
+                      return (
+                        <div
+                          key={account.id}
+                          className={`flex items-center justify-between p-3 rounded-2xl border ${
+                            severity === 'overdue' || severity === 'critical'
+                              ? 'bg-[#D93025]/5 border-[#D93025]/20'
+                              : severity === 'warning'
+                                ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20'
+                                : 'bg-gray-50 border-gray-100'
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[#0a2a5e] truncate">{account.property || 'Transaction'}</p>
+                            <p className="text-[11px] text-gray-500">
+                              {account.buyer || '—'}
+                              {startedAt && (
+                                <span className="ml-2">· Début: {new Date(startedAt).toLocaleDateString('fr-FR')}</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ml-3">
+                            <Clock className="w-4 h-4" style={{ color }} />
+                            <span className="text-xs font-bold" style={{ color }}>
+                              {label}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* Escrow State Machine */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Cycle notarial Escrow</h3>
@@ -803,23 +913,31 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   </Badge>
                 </div>
                 <div className="space-y-2">
-                  {archivedDocs.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <FileCheck className="w-4 h-4 text-[#003087]" />
-                        <div>
-                          <p className="text-sm font-medium text-[#0a2a5e]">{doc.name}</p>
-                          <p className="text-[10px] text-gray-400 font-mono">{doc.hash}</p>
+                  {archivedDocs.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Archive className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-400">Aucun document archivé pour le moment.</p>
+                      <p className="text-[11px] text-gray-400 mt-1">Les actes finalisés apparaîtront ici une fois signés et scellés.</p>
+                    </div>
+                  ) : (
+                    archivedDocs.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <FileCheck className="w-4 h-4 text-[#003087]" />
+                          <div>
+                            <p className="text-sm font-medium text-[#0a2a5e]">{doc.name}</p>
+                            <p className="text-[10px] text-gray-400 font-mono">{doc.hash}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">{doc.date}</span>
+                          <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
+                            <Download className="w-3.5 h-3.5 text-gray-400" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400">{doc.date}</span>
-                        <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
-                          <Download className="w-3.5 h-3.5 text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 

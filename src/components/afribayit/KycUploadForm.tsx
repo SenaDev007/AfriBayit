@@ -85,7 +85,7 @@ const DOC_TYPE_OPTIONS: { value: DocTypeOption; label: string; icon: React.React
   },
 ];
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
 const MAX_FILE_SIZE_MB = 10;
 
 /* ------------------------------------------------------------------ */
@@ -111,7 +111,7 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
     setSuccess(false);
 
     if (!ALLOWED_MIME_TYPES.includes(f.type)) {
-      setError(`Type de fichier non supporté (${f.type}). Formats acceptés : JPEG, PNG, WebP, HEIC/HEIF.`);
+      setError(`Type de fichier non supporté (${f.type}). Formats acceptés : JPEG, PNG, WebP, HEIC/HEIF, PDF.`);
       return;
     }
     if (f.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -348,7 +348,7 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
                   : 'Glissez-déposez un fichier ou cliquez pour parcourir'}
               </p>
               <p className="text-xs text-gray-400">
-                JPEG, PNG, WebP ou HEIC — Max {MAX_FILE_SIZE_MB} Mo
+                JPEG, PNG, WebP, HEIC ou PDF — Max {MAX_FILE_SIZE_MB} Mo
               </p>
             </motion.div>
           )}

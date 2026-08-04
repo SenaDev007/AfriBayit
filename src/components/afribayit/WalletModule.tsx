@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { useWallet, useCreateWalletTransaction, type WalletTransaction } from '@/hooks/useWallet';
@@ -39,7 +39,81 @@ const afriPointsRedemption = [
   { points: 5000, reward: 'Visite gratuite GeoTrust', type: 'subscription', available: false },
 ];
 
-const currencyRates = { XOF: 1, EUR: 0.00152, USD: 0.00165 };
+// ─── Currency rates (BCEAO fallback + Fixer.io live with 1h cache) ─────────
+// Per CDC §5.x: AfriBayit operates in XOF (FCFA) pegged to EUR at 655.957
+// (BCEAO fixed parity). Static fallback used when Fixer API key is missing
+// or the request fails. Live rates are cached for 1 hour client-side.
+export type CurrencyCode = 'XOF' | 'EUR' | 'USD';
+
+export const STATIC_RATES: Record<CurrencyCode, number> = {
+  // BCEAO fixed parity: 1 EUR = 655.957 XOF, 1 USD ≈ 610 XOF (approx)
+  XOF: 1,
+  EUR: 1 / 655.957,
+  USD: 1 / 610,
+};
+
+// Module-level cache for live rates (1h TTL)
+let cachedRates: { rates: Record<CurrencyCode, number>; fetchedAt: number } | null = null;
+const RATES_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Fetch live currency rates from Fixer.io.
+ * Falls back to STATIC_RATES when API key is missing or fetch fails.
+ * Result is cached for 1 hour to limit API calls.
+ */
+export async function fetchCurrencyRates(): Promise<Record<CurrencyCode, number>> {
+  const apiKey = process.env.NEXT_PUBLIC_FIXER_API_KEY;
+  // Serve from cache if still fresh
+  if (cachedRates && Date.now() - cachedRates.fetchedAt < RATES_CACHE_TTL_MS) {
+    return cachedRates.rates;
+  }
+  // No API key — use static BCEAO rates
+  if (!apiKey) {
+    return STATIC_RATES;
+  }
+  try {
+    const res = await fetch(
+      `https://data.fixer.io/api/latest?access_key=${encodeURIComponent(apiKey)}&base=EUR&symbols=USD,XOF`,
+    );
+    if (!res.ok) throw new Error(`Fixer.io HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || data.success === false || !data.rates) {
+      throw new Error('Fixer.io invalid response');
+    }
+    const xofPerEur = typeof data.rates.XOF === 'number' ? data.rates.XOF : 655.957;
+    const usdPerEur = typeof data.rates.USD === 'number' ? data.rates.USD : 0.00164 * 655.957;
+    const rates: Record<CurrencyCode, number> = {
+      XOF: 1,
+      EUR: 1 / xofPerEur,
+      USD: 1 / (xofPerEur / usdPerEur),
+    };
+    cachedRates = { rates, fetchedAt: Date.now() };
+    return rates;
+  } catch {
+    // On any failure, fall back to static rates (still serve the UI)
+    return STATIC_RATES;
+  }
+}
+
+/**
+ * React hook that subscribes to live currency rates.
+ * Returns STATIC_RATES immediately, then swaps to live rates when fetched.
+ */
+export function useCurrencyRates(): Record<CurrencyCode, number> {
+  const [rates, setRates] = useState<Record<CurrencyCode, number>>(STATIC_RATES);
+  useEffect(() => {
+    let cancelled = false;
+    fetchCurrencyRates().then((live) => {
+      if (!cancelled && live) setRates(live);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  return rates;
+}
+
+// Transaction types that represent a credit (money flowing IN to the user)
+// Used to compute totalTransactedLifetime without counting debits twice.
+const CREDIT_TXN_TYPES = new Set(['deposit', 'escrow_release', 'payout', 'refund']);
 
 const paymentProviders = [
   { key: 'mtn', name: 'MTN Mobile Money', icon: <Smartphone className="w-5 h-5" style={{ color: '#FFC300' }} />, color: '#FFC300' },
@@ -77,8 +151,8 @@ function formatFCFA(amount: number): string {
   return new Intl.NumberFormat('fr-FR').format(Math.abs(amount)) + ' FCFA';
 }
 
-function convertCurrency(amount: number, currency: string): string {
-  const rate = currencyRates[currency as keyof typeof currencyRates] || 1;
+function convertCurrency(amount: number, currency: string, rates: Record<CurrencyCode, number> = STATIC_RATES): string {
+  const rate = rates[currency as CurrencyCode] ?? 1;
   const converted = amount * rate;
   if (currency === 'XOF') return formatFCFA(amount);
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 2 }).format(converted);
@@ -133,16 +207,25 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
   const summary = walletData?.summary;
   const transactions = walletData?.transactions ?? [];
 
+  // Live currency rates (1h cache, falls back to BCEAO static rates)
+  const rates = useCurrencyRates();
+
   const balance = summary?.balance ?? 0;
   const escrowHeld = summary?.escrowHeld ?? 0;
   const pendingPayout = summary?.pendingPayout ?? 0;
   const afriPoints = summary?.afriPoints ?? 0;
   const kycLevel = summary?.kycLevel ?? 0;
 
-  // Calculate total transacted lifetime
+  // Total transacted lifetime — prefer backend-computed value when available.
+  // Fall back to summing only CREDIT-type txns (deposit, escrow_release,
+  // payout, refund) — NOT abs(amount), which would double-count debits.
   const totalTransactedLifetime = useMemo(() => {
-    return transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  }, [transactions]);
+    const backend = (summary as { totalTransactedLifetime?: number } | undefined)?.totalTransactedLifetime;
+    if (typeof backend === 'number' && backend > 0) return backend;
+    return transactions
+      .filter((t) => CREDIT_TXN_TYPES.has(t.type))
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  }, [transactions, summary]);
 
   const filteredTransactions = filterType === 'all'
     ? transactions
@@ -270,20 +353,20 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                     </button>
                   </div>
                   <p className="font-mono text-3xl sm:text-4xl font-bold mb-4">
-                    {showBalance ? convertCurrency(balance, selectedCurrency) : '****'}
+                    {showBalance ? convertCurrency(balance, selectedCurrency, rates) : '****'}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 bg-white/10 rounded-2xl">
                       <p className="text-[10px] text-white/60">Escrow bloque</p>
-                      <p className="font-mono text-sm font-bold flex items-center gap-1"><Lock className="w-3 h-3" /> {showBalance ? convertCurrency(escrowHeld, selectedCurrency) : '****'}</p>
+                      <p className="font-mono text-sm font-bold flex items-center gap-1"><Lock className="w-3 h-3" /> {showBalance ? convertCurrency(escrowHeld, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
                       <p className="text-[10px] text-white/60">Paiement en attente</p>
-                      <p className="font-mono text-sm font-bold flex items-center gap-1"><Clock className="w-3 h-3" /> {showBalance ? convertCurrency(pendingPayout, selectedCurrency) : '****'}</p>
+                      <p className="font-mono text-sm font-bold flex items-center gap-1"><Clock className="w-3 h-3" /> {showBalance ? convertCurrency(pendingPayout, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
                       <p className="text-[10px] text-white/60">Total transacted</p>
-                      <p className="font-mono text-sm font-bold flex items-center gap-1"><ArrowRightLeft className="w-3 h-3" /> {showBalance ? convertCurrency(totalTransactedLifetime, selectedCurrency) : '****'}</p>
+                      <p className="font-mono text-sm font-bold flex items-center gap-1"><ArrowRightLeft className="w-3 h-3" /> {showBalance ? convertCurrency(totalTransactedLifetime, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
                       <p className="text-[10px] text-white/60">AfriPoints</p>

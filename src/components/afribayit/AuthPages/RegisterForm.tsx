@@ -23,6 +23,7 @@ interface RegisterFormProps {
   oauthLoading: OauthLoadingState;
   onGoogle: () => void;
   onFacebook: () => void;
+  onApple: () => void;
   // navigation
   onSwitch: (mode: 'login' | 'register') => void;
 }
@@ -42,6 +43,7 @@ export default function RegisterForm(props: RegisterFormProps) {
     oauthLoading,
     onGoogle,
     onFacebook,
+    onApple,
     onSwitch,
   } = props;
 
@@ -281,6 +283,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         oauthLoading={oauthLoading}
         onGoogle={onGoogle}
         onFacebook={onFacebook}
+        onApple={onApple}
       />
 
       <p className="text-center text-sm text-gray-500 mt-4 pb-6">

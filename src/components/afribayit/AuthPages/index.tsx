@@ -105,6 +105,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   const [availableProviders, setAvailableProviders] = useState<ProviderAvailability>({
     google: false,
     facebook: false,
+    apple: false,
   });
 
   useEffect(() => {
@@ -119,15 +120,30 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
   }, []);
 
   useEffect(() => {
-    // Round 3 — Gap 24 fix: `/api/auth/providers` is a NextAuth endpoint,
-    // not a backend route. We use NextAuth's `getSession()`-equivalent
-    // here. Since the OAuth providers list is also exposed via the
-    // `signIn()` callback's `providers` prop in NextAuth v4, we fall back
-    // to assuming both providers are available when the fetch fails (the
-    // buttons are hidden by CSS if the env vars are missing).
-    // TODO: expose `GET /auth/providers` on the backend and re-enable:
-    //   apiFetch('/auth/providers').then((p) => setAvailableProviders(...));
-    setAvailableProviders({ google: true, facebook: true });
+    // Detect available OAuth providers via NextAuth's /api/auth/providers
+    // endpoint. This is a NextAuth built-in route that returns the JSON list
+    // of configured providers, so we know which buttons to render.
+    let cancelled = false;
+    fetch('/api/auth/providers')
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((providers: Record<string, { id: string } | undefined>) => {
+        if (cancelled) return;
+        const ids = new Set(Object.values(providers).map((p) => p?.id).filter(Boolean) as string[]);
+        setAvailableProviders({
+          google: ids.has('google'),
+          facebook: ids.has('facebook'),
+          apple: ids.has('apple'),
+        });
+      })
+      .catch(() => {
+        // Network error or NextAuth misconfigured — leave all providers hidden.
+        if (!cancelled) {
+          setAvailableProviders({ google: false, facebook: false, apple: false });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ─── Login handler ───
@@ -251,23 +267,29 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
 
     setForgot((p) => ({ ...p, resetLoading: true }));
     try {
-      // P0-1 fix: the backend exposes `/auth/otp/verify` (verifies the
-      // code) but does not yet expose a true reset-password endpoint.
-      // We verify the OTP here; once verified, the user can use the
-      // forgot-password flow again or contact support to set a new
-      // password. (This is the same behavior the backend currently
-      // supports.)
-      const data: any = await authApi.verifyOTP(
+      // Wire to the backend `/auth/reset-password` endpoint (no fake OTP-only
+      // verification). The backend accepts { email, otpCode, newPassword }.
+      // A 404 means the endpoint doesn't exist on the backend yet — surface
+      // that honestly to the user instead of pretending success.
+      const data: any = await authApi.resetPassword(
         loginEmail.trim(),
         forgot.forgotOtpCode,
+        forgot.forgotNewPassword,
       );
-      if (data?.valid) {
+      if (data?.success || data?.ok) {
         setResetSuccess(true);
       } else {
-        setResetError(data?.error || 'Code de vérification invalide');
+        setResetError(data?.error || "Erreur lors de la réinitialisation");
       }
     } catch (err: any) {
-      setResetError(err?.message || 'Erreur de connexion au serveur');
+      const status = err?.statusCode || err?.status;
+      if (status === 404) {
+        setResetError(
+          "Le service de réinitialisation n'est pas disponible. Contactez le support.",
+        );
+      } else {
+        setResetError(err?.message || 'Erreur de connexion au serveur');
+      }
     } finally {
       setForgot((p) => ({ ...p, resetLoading: false }));
     }
@@ -291,6 +313,17 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     setOauthLoading('facebook');
     try {
       await signIn('facebook', { callbackUrl: '/' });
+    } catch {
+      setLoginError('Erreur de connexion au serveur.');
+      setOauthLoading(null);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setLoginError('');
+    setOauthLoading('apple');
+    try {
+      await signIn('apple', { callbackUrl: '/' });
     } catch {
       setLoginError('Erreur de connexion au serveur.');
       setOauthLoading(null);
@@ -486,6 +519,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   oauthLoading={oauthLoading}
                   onGoogle={handleGoogleLogin}
                   onFacebook={handleFacebookLogin}
+                  onApple={handleAppleLogin}
                   onSwitch={onSwitch}
                 />
               ) : (
@@ -502,6 +536,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
                   oauthLoading={oauthLoading}
                   onGoogle={handleGoogleLogin}
                   onFacebook={handleFacebookLogin}
+                  onApple={handleAppleLogin}
                   onSwitch={onSwitch}
                 />
               )}

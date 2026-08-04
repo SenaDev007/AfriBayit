@@ -1,5 +1,5 @@
 import {
-  BarChart3, Bell, Bot, Check, Coins, Globe, Hammer, HardHat, Home,
+  BarChart3, Bell, Bot, Building2, Check, Coins, Globe, Hammer, HardHat, Home,
   Lightbulb, Lock, Mail, Map, MessageCircle, Plane, Scale, Search,
   Smartphone, Store, Tag, TrendingUp, Umbrella, User,
 } from 'lucide-react';
@@ -22,6 +22,8 @@ export const profileTypes = [
   { value: 'investisseur', label: 'Investisseur', icon: <TrendingUp className="w-4 h-4" />, desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
   { value: 'touriste', label: 'Touriste', icon: <Plane className="w-4 h-4" />, desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
   { value: 'artisan', label: 'Artisan', icon: <Hammer className="w-4 h-4" />, desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
+  { value: 'agence', label: 'Agence immobilière', icon: <Building2 className="w-4 h-4" />, desc: 'Je suis une agence immobilière professionnelle', color: '#7c3aed' },
+  { value: 'guesthouse', label: 'Guesthouse', icon: <Store className="w-4 h-4" />, desc: 'Je gère une maison d\'hôtes / guesthouse', color: '#0d9488' },
 ];
 
 // Countries — AfriBayit pilot zone

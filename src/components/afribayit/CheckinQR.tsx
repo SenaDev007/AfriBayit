@@ -6,6 +6,7 @@ import { CheckCircle2, QrCode, LogIn, LogOut, Clock, AlertCircle, RefreshCw } fr
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api-client';
 
 interface CheckinQRProps {
   bookingId: string;
@@ -45,16 +46,19 @@ export function CheckinQR({
         checkInDate,
         checkOutDate,
       });
-      const res = await fetch(`/api/checkin/qr?${params}`);
-      const data = await res.json();
-      if (data.success) {
+      // Module 2: use `api.get` (carries JWT + X-Country-Code) instead of
+      // raw `fetch('/api/checkin/qr?...')` which 401'd for logged-in users.
+      const data = await api.get<{ success?: boolean; qrCode?: string; status?: string; error?: string }>(
+        `/api/checkin/qr?${params.toString()}`,
+      );
+      if (data?.success && data.qrCode) {
         setQrCode(data.qrCode);
         setStatus(data.status || initialStatus);
       } else {
-        setError(data.error || 'Erreur lors de la génération du QR code');
+        setError(data?.error || 'Erreur lors de la génération du QR code');
       }
     } catch (err) {
-      setError('Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
     } finally {
       setLoading(false);
     }
@@ -71,24 +75,21 @@ export function CheckinQR({
     setError(null);
 
     try {
-      const res = await fetch('/api/checkin/qr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrData: qrCode }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
+      const data = await api.post<{ success?: boolean; checkedInAt?: string; error?: string }>(
+        '/api/checkin/qr',
+        { qrData: qrCode },
+      );
+      if (data?.success) {
         setScanStatus('success');
         setStatus('checked_in');
-        setCheckedInAt(data.checkedInAt);
+        setCheckedInAt(data.checkedInAt || new Date().toISOString());
       } else {
         setScanStatus('error');
-        setError(data.error || 'Échec du check-in');
+        setError(data?.error || 'Échec du check-in');
       }
-    } catch {
+    } catch (err) {
       setScanStatus('error');
-      setError('Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
     }
   };
 
@@ -98,24 +99,21 @@ export function CheckinQR({
     setError(null);
 
     try {
-      const res = await fetch('/api/checkin/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
+      const data = await api.post<{ success?: boolean; checkedOutAt?: string; error?: string }>(
+        '/api/checkin/checkout',
+        { bookingId },
+      );
+      if (data?.success) {
         setScanStatus('success');
         setStatus('completed');
-        setCheckedOutAt(data.checkedOutAt);
+        setCheckedOutAt(data.checkedOutAt || new Date().toISOString());
       } else {
         setScanStatus('error');
-        setError(data.error || 'Échec du check-out');
+        setError(data?.error || 'Échec du check-out');
       }
-    } catch {
+    } catch (err) {
       setScanStatus('error');
-      setError('Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
     }
   };
 

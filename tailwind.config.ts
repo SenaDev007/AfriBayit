@@ -8,14 +8,24 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Module 4 — custom breakpoints aligned with the design system.
+  // Mobile-first: sm is the only small breakpoint, md/lg/xl/2xl expand
+  // progressively for tablet → laptop → desktop → ultrawide.
   theme: {
         extend: {
                 fontFamily: {
                         display: ['var(--font-cormorant)', 'Georgia', 'serif'],
-                        body: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-                        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-                        mono: ['var(--font-space-grotesk)', 'monospace'],
-                        'mono-data': ['var(--font-space-grotesk)', 'monospace'],
+                        body: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+                        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+                        mono: ['var(--font-dm-mono)', 'monospace'],
+                        'mono-data': ['var(--font-dm-mono)', 'monospace'],
+                },
+                screens: {
+                        sm: '640px',
+                        md: '1024px',
+                        lg: '1440px',
+                        xl: '1920px',
+                        '2xl': '2560px',
                 },
                 colors: {
                         background: 'hsl(var(--background))',

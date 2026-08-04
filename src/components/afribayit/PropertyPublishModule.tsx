@@ -6,6 +6,7 @@ import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { useCreateProperty } from '@/hooks/useProperties';
 import { Home, Building2, Map, Landmark, Store, BedDouble, Coins, Key, TrendingUp, ClipboardList, PenTool, Camera, FileText, Bot, CheckCircle, PartyPopper, Send, User, Hourglass, Check, X, Lightbulb, AlertTriangle } from 'lucide-react';
 import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/constants';
+import { api } from '@/lib/api-client';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -166,17 +167,16 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         }
 
         try {
-          // 1. Get a signed PUT URL from our storage API
-          const signedUrlRes = await fetch('/api/storage/signed-url', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+          // 1. Get a signed PUT URL from the backend storage API (Module 2:
+          //    use `api.post` instead of raw fetch — carries JWT + country).
+          const signedUrlRes = await api.post<{ url: string; publicUrl: string }>(
+            '/api/storage/signed-url',
+            {
               filename: `properties/${Date.now()}-${file.name}`,
               contentType: file.type,
-            }),
-          });
-          if (!signedUrlRes.ok) throw new Error('Failed to get signed URL');
-          const { url: uploadUrl, publicUrl } = await signedUrlRes.json();
+            },
+          );
+          const { url: uploadUrl, publicUrl } = signedUrlRes;
 
           // 2. Upload file directly to R2 via PUT
           const uploadRes = await fetch(uploadUrl, {

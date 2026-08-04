@@ -67,6 +67,19 @@ function AppShellInner({ children }: { children: ReactNode }) {
     }
   }, [session, sessionStatus]);
 
+  // Persist the refresh token from the NextAuth session to localStorage so
+  // the api-client's `tryRefreshAccessToken()` can use it on a 401. The
+  // `accessTokenExpiresAt` is also persisted for the same reason.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sessionRefresh = (session as any)?.refreshToken as string | undefined;
+    if (sessionRefresh) {
+      localStorage.setItem('afribayit_refresh_token', sessionRefresh);
+    } else if (sessionStatus === 'unauthenticated') {
+      localStorage.removeItem('afribayit_refresh_token');
+    }
+  }, [session, sessionStatus]);
+
   const isHomePage = pathname === '/';
   const isAuthPage = pathname.startsWith('/auth/');
   const isAdminPage = pathname.startsWith('/admin');

@@ -9,6 +9,7 @@ import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { Calendar, Coins, BarChart3, Download, Eye, Users } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 import { ANALYTICS_TABS, PERIOD_OPTIONS } from './tabs';
 import {
@@ -52,6 +53,16 @@ export default function AnalyticsDashboard() {
   const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId, selectedCountry, 1, 100);
   const { data: propsData, isLoading: propsLoading, isError: propsError } = useProperties({ country: selectedCountry, limit: 100 });
 
+  // Real analytics from backend (CDC §3.1.2). Falls back to demo data when
+  // the backend returns 404 / empty state.
+  const periodForApi: '7j' | '30j' | '90j' | '12m' =
+    period === 'custom' ? '30j' : (period as '7j' | '30j' | '90j' | '12m');
+  const roleForApi: 'agent' | 'artisan' | 'formateur' | 'investisseur' =
+    activeProfile;
+  const { data: analyticsData } = useAnalytics(periodForApi, roleForApi, {
+    enabled: !!userId,
+  });
+
   const transactions = (txnData?.transactions ?? []) as Record<string, unknown>[];
   const properties = ((propsData?.properties ?? []) as unknown) as Record<string, unknown>[];
 
@@ -63,9 +74,18 @@ export default function AnalyticsDashboard() {
   const newClients = new Set(transactions.map(t => String(t.buyerId))).size;
 
   const periodKey = period === 'custom' ? '30j' : period;
-  const profileViews = PROFILE_VIEWS_DATA[periodKey] || PROFILE_VIEWS_DATA['30j'];
-  const connectionsData = CONNECTIONS_GROWTH[periodKey] || CONNECTIONS_GROWTH['30j'];
-  const engagementData = CONTENT_ENGAGEMENT[periodKey] || CONTENT_ENGAGEMENT['30j'];
+  // Prefer real backend data; fall back to demo data when null/empty.
+  const profileViews =
+    analyticsData?.profileViews ?? PROFILE_VIEWS_DATA[periodKey] ?? PROFILE_VIEWS_DATA['30j'];
+  const connectionsData =
+    analyticsData?.connectionsGrowth ?? CONNECTIONS_GROWTH[periodKey] ?? CONNECTIONS_GROWTH['30j'];
+  const engagementData =
+    analyticsData?.contentEngagement ?? CONTENT_ENGAGEMENT[periodKey] ?? CONTENT_ENGAGEMENT['30j'];
+  const realSearchAppearances = analyticsData?.searchAppearances;
+  const searchAppearances =
+    realSearchAppearances && realSearchAppearances.length > 0
+      ? realSearchAppearances
+      : (SEARCH_APPEARANCES[periodKey] ?? SEARCH_APPEARANCES['30j']);
 
   const kpis: KPI[] = [
     { label: 'Revenus totaux', value: formatPrice(totalRevenue), change: '+12%', icon: <Coins className="w-4 h-4" />, color: '#D4AF37' },
@@ -112,7 +132,9 @@ export default function AnalyticsDashboard() {
   const isLoading = txnLoading || propsLoading;
   const hasError = txnError || propsError;
 
-  const searchAppearances = SEARCH_APPEARANCES[periodKey] || SEARCH_APPEARANCES['30j'];
+  // `searchAppearances` was already resolved above (prefers real backend data
+  // and falls back to demo). This line is kept for backwards compatibility
+  // with the lower-half of the component that re-declared it.
 
   const handleExport = async (format: 'csv' | 'pdf') => {
     if (format === 'pdf') {

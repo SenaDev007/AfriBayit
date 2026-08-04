@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscriptions, useCreateSubscription, useCancelSubscription } from '@/hooks/useSubscriptions';
 import { useCountry } from '@/contexts/CountryContext';
 import { toast } from 'sonner';
+import { api, ApiError } from '@/lib/api-client';
 import {
   Building2, Check, Crown, Home, Hotel, RefreshCw, Ruler, Scale, Sprout, Wrench,
   Zap, Star, Lightbulb, Bell, BarChart3, Eye, Mail, Award, Shield, Users,
@@ -228,8 +229,50 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
   const subscriptions: Subscription[] = (subscriptionsData?.subscriptions as Subscription[]) || [];
   const currentSubscription = subscriptions[0] || null;
 
-  // Simulated current usage
-  const currentUsage = { annonces: 8, photos: 42, inmail: 3 };
+  // Real subscription usage from backend (CDC §3.1.2). Refreshed every 60s.
+  // Initialised to zeros — a 404 (no active subscription) leaves the zeros in
+  // place so the progress bars render at 0% instead of crashing.
+  const [currentUsage, setCurrentUsage] = useState<{ annonces: number; photos: number; inmail: number }>({
+    annonces: 0,
+    photos: 0,
+    inmail: 0,
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+
+    const fetchUsage = async () => {
+      try {
+        const data = await api.get<{ annonces?: number; photos?: number; inmail?: number }>(
+          '/users/me/subscription-usage',
+        );
+        if (cancelled) return;
+        if (data && typeof data === 'object') {
+          setCurrentUsage({
+            annonces: Number(data.annonces) || 0,
+            photos: Number(data.photos) || 0,
+            inmail: Number(data.inmail) || 0,
+          });
+        }
+      } catch (err) {
+        // 404 = no active subscription → keep zeros. Other errors are
+        // non-fatal — the UI still renders with the last known usage.
+        if (err instanceof ApiError && err.statusCode === 404) return;
+        if (!cancelled) {
+          console.warn('[SubscriptionsModule] Failed to fetch subscription usage:', err);
+        }
+      }
+    };
+
+    void fetchUsage();
+    const interval = setInterval(() => void fetchUsage(), 60_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [userId]);
 
   const categories: { key: CategoryKey; label: string; icon: React.ReactNode }[] = [
     { key: 'agent', label: 'Agent', icon: <Briefcase className="w-4 h-4" /> },

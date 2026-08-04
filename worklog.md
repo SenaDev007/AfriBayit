@@ -305,3 +305,103 @@ Stage Summary:
   4. Escrow 2FA release contournable (userId from body + confirmationChecked bypass)
 - 6 risques hauts/moyens: Caddyfile SSRF/no-TLS, Dockerfile incohérent, Helmet/CSP non appliqué, RLS permissive, rate limiter non appliqué + in-memory serverless, i18n bugué
 - Recommandation: bloquer mise en production jusqu'à résolution des 4 risques critiques + tests minimum + SAST en CI
+
+---
+Task ID: 5-6-7
+Agent: Modules-5-6-7-Agent
+Task: Re-apply Modules 5, 6, 7 (Escrow, Rebecca AI, Property) on fresh clone of fix/cdc-v4-compliance-audit branch
+
+Scope: ONLY src/components/afribayit/{EscrowDashboard,WalletModule,EscrowFlow,DisputeResolution,RebeccaChat,PropertyMap,VoiceSearchButton}.tsx — Modules 1-4 and 8-13 owned by parallel agents, untouched.
+
+Work Log:
+- Read existing worklog.md (8 prior tasks) to understand context and prior fixes
+- Read all 7 target component files end-to-end to understand current state and CDC gaps
+- Verified mapbox-gl (^3.24.0) and @types/mapbox-gl (^3.5.0) already in package.json
+- Confirmed no .env file exists (only .env.example) — Fixer.io key will be optional with static BCEAO fallback
+
+Module 5 — Escrow & Transactions (4 files):
+
+  EscrowDashboard.tsx (+9/-15 lines):
+    - handle2FAVerification: added guard `if (!otpCode || otpCode.length !== 6) { toast.error('Code 2FA invalide', { description: 'Veuillez entrer le code à 6 chiffres.' }); return; }` BEFORE the API call — closes the 2FA bypass where empty/short codes were sent as `undefined` and accepted server-side
+    - Removed `confirmationChecked: confirmChecked` from the apiPost body — now sends only `{ otpCode }` so the backend TOTP verification can no longer be bypassed by the client-side checkbox
+    - Release button: changed `disabled={verifying2FA || (!otpCode && !confirmChecked)}` to `disabled={verifying2FA || !otpCode || otpCode.length !== 6}` — the checkbox no longer unlocks the button
+    - Checkbox label rewritten to irreversibility notice: "Je comprends que la libération des fonds de X au vendeur est irréversible et ne pourra être annulée ou remboursée une fois exécutée."
+    - Replaced fake `displayLedger` (3 hardcoded entries with `sha256:...` truncated fake hashes) with `const displayLedger = ledgerEntries;` — UI now only shows real backend ledger entries
+
+  WalletModule.tsx (+95/-10 lines):
+    - Added `useEffect` to React imports (was only useState, useMemo)
+    - Replaced hardcoded `currencyRates = { XOF: 1, EUR: 0.00152, USD: 0.00165 }` with three exported symbols:
+      * `STATIC_RATES` (BCEAO parity: XOF=1, EUR=1/655.957, USD=1/610)
+      * `fetchCurrencyRates()` — async function that calls Fixer.io via `NEXT_PUBLIC_FIXER_API_KEY` with 1h module-level cache, falls back to STATIC_RATES on any failure
+      * `useCurrencyRates()` hook — returns STATIC_RATES immediately, then swaps to live rates via useEffect
+    - Fixed `totalTransactedLifetime`: now prefers `summary.totalTransactedLifetime` from backend, falls back to summing ONLY CREDIT-type txns (deposit, escrow_release, payout, refund) via `CREDIT_TXN_TYPES` Set — previously used `Math.abs(t.amount)` which double-counted debits like withdrawals and escrow_fund
+    - Updated `convertCurrency()` signature to accept `rates` param (default STATIC_RATES for backward compat) and updated all 4 call sites in the balance card to pass `rates`
+
+  EscrowFlow.tsx (+19/-3 lines):
+    - Replaced `Math.round(amount * 0.015)` (1.5% — wrong rate) with priority chain: prefer backend `commission` → `fee` → `transaction.commission` → `transaction.fee` → fall back to `Math.round(amount * 0.03)` (3% per CDC §6.2)
+    - Added `commission?`, `commissionRate?`, `fee?` fields to both the escrowAccounts type and the nested transaction type
+    - Derived `escrowFeeRate` from chosen fee / amount so the label is always correct
+    - Updated label text from hardcoded "Frais escrow (1.5%)" to dynamic "Frais escrow ({(escrowFeeRate * 100).toFixed(1)}%)"
+    - Plumbed `escrowFeeRate` as a new prop to the extracted PaymentSteps sub-component (was previously only passing escrowFee and totalAmount)
+
+  DisputeResolution.tsx (+37/-16 lines):
+    - Added `useEffect` to React imports
+    - Emptied `evidence` initial state: was 3 fake entries (contrat_achat.pdf, rapport_inspection.jpg, releve_bancaire.pdf) → now `[]`
+    - Emptied `messages` initial state: was 3 fake messages (system/buyer/seller) → now `[]`
+    - Changed default props from fake demo values to empty/zero: disputeId `''` (was 'disp_demo_001'), transactionRef `''` (was 'TXN-2025-001'), amount `0` (was 15000000), buyerName/sellerName `''` (was 'Amadou Diallo'/'Marie Koffi'), currentStep `1` (was 3)
+    - Added useEffect that populates `evidence`, `messages`, and `activeStep` from real `disputeData` once the React Query resolves — uses Array.isArray guards and `typeof === 'number'` for currentStep
+
+Module 6 — Rebecca AI (1 file):
+
+  RebeccaChat.tsx (+11/-7 lines):
+    - Fixed welcome message: replaced JSX-in-string literals (`<Search className="w-4 h-4" />`, `<Lock ... />`, `<Coins ... />`, `<Hammer ... />`, `<BarChart3 ... />`, `<Scale ... />`) with plain-text bullet points (•) — the previous code rendered raw JSX text literally to the user since `dangerouslySetInnerHTML` only handles `<strong>` via the regex
+    - Fixed error fallback message: removed trailing `<HandHeart className="w-4 h-4" />` literal (same bug)
+    - Removed unused lucide-react imports (Bot, MessageCircle, HandHeart) and a stale `// eslint-disable-next-line @typescript-eslint/no-explicit-any` directive
+    - Expanded `getFunctionLabel` to include all 7 CDC §8.2.1 canonical tool names: `search_properties`, `get_property_details`, `check_escrow_status`, `book_hotel`, `request_geometer`, `contact_agent`, `get_market_prices`
+    - Kept 4 legacy aliases (`check_escrow`, `get_market_stats`, `find_artisans`, `calculate_financing`) for backward compatibility with older API versions
+
+Module 7 — Property & Search (2 files):
+
+  PropertyMap.tsx (+205/-4 lines, full rewrite):
+    - Implemented provider priority chain: Mapbox GL JS → Google Maps JS API → Google Embed iframe → OSM embed iframe
+    - Mapbox GL JS as primary provider via `import('mapbox-gl')` dynamic import (keeps mapbox-gl out of the initial bundle)
+    - Uses `streets-v12` style: `style: 'mapbox://styles/mapbox/streets-v12'`
+    - HTML price markers: builds a `div` element with colored badge + CSS triangle tip via `buildPriceMarkerEl()`, then wraps with `new mapboxgl.Marker({ element: el, anchor: 'bottom' })`
+    - Popups on click: `new mapboxgl.Popup({ offset: 25 }).setHTML(buildPopupHtml(prop))` — reuses the same HTML structure as the previous Google Maps infowindow
+    - fitBounds: `new mapboxgl.LngLatBounds().extend([lng, lat])` then `map.fitBounds(bounds, { padding: 60 })` (skipped when a single property is selected)
+    - Failure handling: `map.on('error', ...)` sets `mapboxFailed=true` which triggers re-render with Google Maps fallback; dynamic import `.catch()` does the same
+    - Google Maps JS API kept as fallback (existing code preserved with null-check guard on `map.getBounds()`)
+    - Google Embed iframe and OSM embed iframe kept as last-resort fallbacks
+    - Guarded `map.getBounds()` with null check in both Mapbox and Google paths: `const b = map.getBounds(); if (!b) return;` — prevents crash when bounds aren't yet available (idle fires before map settles in some browsers)
+    - Provider resolution memoized: `preferredProvider` recomputes when tokens change or when mapbox/google fail flags flip
+
+  VoiceSearchButton.tsx (+44/-9 lines):
+    - Added `import { apiPost } from '@/lib/api-client'`
+    - Added `language?: 'fr' | 'fon' | 'dyu' | 'moor'` prop with default `'fr'`
+    - Added `SPEECH_LANG_MAP` constant mapping all 4 languages to `'fr-FR'` (browser Web Speech API doesn't ship models for fon/dyu/moor yet — same behavior as before, but now pluggable)
+    - Computed `speechLang = SPEECH_LANG_MAP[language] || 'fr-FR'` once per render
+    - Updated `recognition.lang = speechLang` (was hardcoded `'fr-FR'`)
+    - Switched Whisper fallback from raw `fetch('/api/voice-search', { audio: base64Audio })` to `apiPost('/search/voice-search', { audio: base64Audio, language })` — now routes through api-client (adds JWT + country header + URL rewriting to NestJS backend) and forwards `language` for server-side acoustic model selection
+    - Added `language` to `startWhisperFallback` useCallback deps
+    - Added `speechLang` to `startListening` useCallback deps
+
+Verification:
+  - npx tsc --noEmit: 0 errors in any of the 7 modified files (confirmed via grep filter)
+  - npx eslint <7 files>: 0 errors, 0 warnings
+  - npm run build: compiles successfully (✓ Compiled successfully in 100s) — TS type-check phase fails ONLY on `AnalyticsDashboard/index.tsx` (Module 8, owned by parallel agent 8-13) and `webauthn.ts` (Module 1, owned by parallel agent 1-4). These errors are NOT in scope for Task 5-6-7 and must be fixed by their respective agents. No errors stem from any Module 5/6/7 file.
+
+Files touched (7):
+  - src/components/afribayit/EscrowDashboard.tsx
+  - src/components/afribayit/WalletModule.tsx
+  - src/components/afribayit/EscrowFlow.tsx
+  - src/components/afribayit/DisputeResolution.tsx
+  - src/components/afribayit/RebeccaChat.tsx
+  - src/components/afribayit/PropertyMap.tsx
+  - src/components/afribayit/VoiceSearchButton.tsx
+
+Stage Summary:
+  - Module 5 (Escrow): 2FA bypass closed (guard + body cleanup + button disabled logic), irreversibility notice on checkbox, fake SHA-256 ledger entries removed, commission rate corrected from 1.5% to 3% CDC §6.2 with backend-preferred fallback chain, fake dispute evidence/messages removed and replaced with useEffect-driven real data, wallet currency rates now use live Fixer.io with BCEAO static fallback and 1h cache, totalTransactedLifetime no longer double-counts debits
+  - Module 6 (Rebecca AI): welcome message no longer renders raw JSX text to users (plain bullet points), all 7 CDC §8.2.1 canonical tool names mapped with legacy aliases kept
+  - Module 7 (Property): Mapbox GL JS is now the primary interactive map provider with HTML price markers + popups + fitBounds, Google Maps and OSM remain as graceful fallbacks, `map.getBounds()` properly null-guarded, VoiceSearchButton supports 4 West-African languages and forwards language to backend Whisper endpoint
+  - 0 TS errors / 0 lint warnings introduced by these changes
+  - Build proceeds past compilation; remaining build blockers are in Module 1 (webauthn.ts) and Module 8 (AnalyticsDashboard) — owned by other agents

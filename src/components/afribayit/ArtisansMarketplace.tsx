@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useArtisans, useArtisanDetail, useCreateArtisanQuote } from '@/hooks/useArtisans';
+import { useArtisans, useArtisanDetail, useCreateArtisanQuote, useProMatch } from '@/hooks/useArtisans';
 import { useCreateNotification } from '@/hooks/useNotifications';
 import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
@@ -10,14 +10,12 @@ import { COUNTRY_NAMES } from '@/lib/constants';
 import { timeAgo } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
 import { apiPost } from '@/lib/api-client';
-import { AlertTriangle, Search, Siren, Wrench, ArrowLeft, Phone, MapPin, Star, CheckCircle, Clock, DollarSign, Briefcase, X } from 'lucide-react';
+import { AlertTriangle, Search, Siren, Wrench, ArrowLeft, Phone, MapPin, Star, CheckCircle, Clock, DollarSign, Briefcase, X, Sparkles } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const trades = ['Tous', 'Maçon', 'Électricien', 'Plombier', 'Peintre', 'Menuisier', 'Architecte d\'intérieur', 'Chauffagiste', 'Couvreur'];
 
 // CDC §5.5.1 — Service category labels (mapping DB IDs to readable French labels)
 const SERVICE_CATEGORY_LABELS: Record<string, string> = {
@@ -29,6 +27,41 @@ const SERVICE_CATEGORY_LABELS: Record<string, string> = {
   renovation: 'Rénovation & Maintenance',
   numerique: 'Numérique & Innovation',
 };
+
+// CDC §5.5.1 — Trades grouped by the 7 official service categories.
+// 30 trades total (excludes the synthetic "Tous" filter).
+const TRADES_BY_CATEGORY: { category: keyof typeof SERVICE_CATEGORY_LABELS; trades: string[] }[] = [
+  {
+    category: 'gros_oeuvre',
+    trades: ['Maçon', 'Coffreur / Bétonnier', 'Tailleur de pierre', 'Constructeur parpaings', 'Fondationniste'],
+  },
+  {
+    category: 'second_oeuvre',
+    trades: ['Électricien', 'Plombier', 'Menuisier', 'Charpentier', 'Couvreur'],
+  },
+  {
+    category: 'finition',
+    trades: ['Peintre en bâtiment', 'Carreleur / Faïencier', 'Plâtrier', 'Poseur de revêtement sol', 'Architecte d\'intérieur'],
+  },
+  {
+    category: 'genie_technique',
+    trades: ['Climaticien / Frigoriste', 'Chauffagiste', 'Installateur solaire photovoltaïque', 'Ascensoriste'],
+  },
+  {
+    category: 'exterieur',
+    trades: ['Paysagiste', 'Terrassier', 'Pisciniste', 'Clôturiste'],
+  },
+  {
+    category: 'renovation',
+    trades: ['Rénovateur', 'Étanchéiste', 'Technicien de maintenance', 'Traitement humidité'],
+  },
+  {
+    category: 'numerique',
+    trades: ['Domotique / Smart Home', 'Topographe BTP', 'Dessinateur 3D BIM'],
+  },
+];
+
+const trades = ['Tous', ...TRADES_BY_CATEGORY.flatMap(c => c.trades)];
 
 interface Artisan {
   id: string;
@@ -120,6 +153,14 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   const [emergencyConfirm, setEmergencyConfirm] = useState<Artisan | null>(null);
   const [devisForm, setDevisForm] = useState({ title: '', description: '', estimatedBudget: '' });
 
+  // ProMatch IA — CDC §5.5.3: AI-driven matching of artisans to project specs.
+  // `promatchResults` holds the matched artisans returned by the backend.
+  // `promatchLoading` mirrors the mutation's pending state for button feedback.
+  // `promatchBudget` is the optional project budget (FCFA) used as a matching input.
+  const [promatchResults, setPromatchResults] = useState<Artisan[] | null>(null);
+  const [promatchLoading, setPromatchLoading] = useState(false);
+  const [promatchBudget, setPromatchBudget] = useState('');
+
   const { user, isAuthenticated } = useAuthStore();
   const { selectedCountry } = useCountry();
 
@@ -133,12 +174,77 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
 
   const createQuote = useCreateArtisanQuote();
   const createNotification = useCreateNotification();
+  const proMatch = useProMatch();
 
   const artisans: Artisan[] = ((data?.artisans as Record<string, unknown>[]) || []).map(mapArtisanFromApi);
 
   const filtered = selectedTrade === 'Tous' ? artisans : artisans.filter(a => a.trade === selectedTrade);
 
   const detailArtisan = detailData?.artisan ? mapArtisanFromApi(detailData.artisan as Record<string, unknown>) : null;
+
+  // CDC §5.5.3 — ProMatch IA: ask the backend to find the best artisans for
+  // the currently selected trade + country + optional budget. The backend
+  // returns a ranked list (best match first).
+  const handleProMatch = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour utiliser ProMatch IA.',
+      });
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    if (selectedTrade === 'Tous') {
+      toast({
+        title: 'Sélectionnez un métier',
+        description: 'Choisissez d\'abord un métier pour lancer ProMatch IA.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setPromatchLoading(true);
+    try {
+      const budgetNum = promatchBudget ? Number(promatchBudget) : undefined;
+      const result = await proMatch.mutateAsync({
+        trade: selectedTrade,
+        country: selectedCountry,
+        budget: budgetNum && !isNaN(budgetNum) ? budgetNum : undefined,
+      });
+      // Defensively handle multiple possible response shapes from the backend.
+      const rawList: unknown =
+        (result as any)?.matches ??
+        (result as any)?.artisans ??
+        (result as any)?.results ??
+        (Array.isArray(result) ? result : []);
+      const matched: Artisan[] = ((rawList as Record<string, unknown>[]) || []).map(mapArtisanFromApi);
+      setPromatchResults(matched);
+      if (matched.length === 0) {
+        toast({
+          title: 'Aucun artisan trouvé',
+          description: 'ProMatch IA n\'a trouvé aucun artisan correspondant. Essayez d\'élargir votre budget ou votre métier.',
+        });
+      } else {
+        toast({
+          title: 'ProMatch IA terminé',
+          description: `${matched.length} artisan${matched.length > 1 ? 's' : ''} trouvé${matched.length > 1 ? 's' : ''} pour « ${selectedTrade} ».`,
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Erreur ProMatch IA',
+        description: err instanceof Error ? err.message : 'Impossible de lancer ProMatch IA. Réessayez plus tard.',
+        variant: 'destructive',
+      });
+      setPromatchResults(null);
+    } finally {
+      setPromatchLoading(false);
+    }
+  };
+
+  const handleResetProMatch = () => {
+    setPromatchResults(null);
+    setPromatchBudget('');
+  };
 
   const handleViewDetail = (artisan: Artisan) => {
     // CDC §5.5 — Only registered users can view artisan details
@@ -506,20 +612,158 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
           ))}
         </div>
 
+        {/* ProMatch IA — CDC §5.5.3 */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 bg-gradient-to-br from-[#003087]/5 via-white to-[#D4AF37]/5 border border-[#003087]/15 rounded-2xl p-5"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+            <div className="flex-1">
+              <h3 className="font-display text-base font-bold text-[#0a2a5e] flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                ProMatch IA
+              </h3>
+              <p className="text-xs text-gray-500">
+                Notre IA trouve les meilleurs artisans pour votre projet selon le métier, le pays et votre budget.
+                {selectedTrade !== 'Tous' && (
+                  <span className="ml-1 text-[#003087] font-semibold">Métier sélectionné : « {selectedTrade} ».</span>
+                )}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+              <div>
+                <label htmlFor="promatch-budget" className="text-[11px] font-semibold text-gray-600 mb-1 block">
+                  Budget projet (FCFA, optionnel)
+                </label>
+                <input
+                  id="promatch-budget"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={promatchBudget}
+                  onChange={(e) => setPromatchBudget(e.target.value)}
+                  placeholder="ex: 500000"
+                  className="w-full sm:w-44 px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#003087] transition-colors"
+                />
+              </div>
+              <button
+                onClick={handleProMatch}
+                disabled={promatchLoading || selectedTrade === 'Tous'}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {promatchLoading ? (
+                  <>
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    Analyse…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    ProMatch IA
+                  </>
+                )}
+              </button>
+              {promatchResults !== null && (
+                <button
+                  onClick={handleResetProMatch}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  Réinitialiser
+                </button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ProMatch Results — replaces the regular artisan list when active */}
+        {promatchResults !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-bold text-[#0a2a5e] flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#D4AF37]" />
+                Résultats ProMatch IA
+                <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/10 text-[#B8860B] text-[10px] font-bold">
+                  {promatchResults.length} match{promatchResults.length > 1 ? 'es' : ''}
+                </span>
+              </h3>
+            </div>
+            {promatchResults.length === 0 ? (
+              <div className="bg-white rounded-xl p-8 shadow-sm border text-center">
+                <Search className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600 font-semibold mb-1">Aucun artisan ne correspond</p>
+                <p className="text-sm text-gray-400">Essayez d&apos;augmenter votre budget ou de changer de métier.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-5">
+                {promatchResults.map((artisan, i) => (
+                  <motion.div
+                    key={artisan.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
+                    whileHover={{ y: -4 }}
+                    onClick={() => handleViewDetail(artisan)}
+                    className="relative bg-white rounded-xl p-5 shadow-sm border-2 border-[#D4AF37]/30 cursor-pointer w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
+                  >
+                    <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-sm">
+                      <Sparkles className="w-2.5 h-2.5" /> Match #{i + 1}
+                    </span>
+                    <div className="flex items-start gap-3 mb-4 mt-2">
+                      <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37] relative">
+                        <ImageWithFallback
+                          src={artisan.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'}
+                          alt={artisan.name}
+                          className="absolute inset-0 w-full h-full"
+                          fallbackType="avatar"
+                          fill
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-[#0a2a5e]">{artisan.name}</h3>
+                          {artisan.certified && (
+                            <CheckCircle className="w-4 h-4 text-[#009CDE]" />
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-[#D4AF37]">{artisan.trade}</p>
+                        <p className="text-xs text-gray-500">{artisan.city}, {artisan.country}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                        <span className="text-sm font-semibold text-[#0a2a5e]">{artisan.rating}</span>
+                        <span className="text-xs text-gray-400">({artisan.reviews})</span>
+                      </div>
+                      <span className="text-xs text-gray-500">{artisan.priceRange}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
         {/* Loading / Error / Empty states */}
-        {isLoading && (
+        {promatchResults === null && isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => <ArtisanSkeleton key={i} />)}
           </div>
         )}
-        {error && (
+        {promatchResults === null && error && (
           <div className="text-center py-12">
             <AlertTriangle className="w-8 h-8 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600 font-semibold mb-1">Impossible de charger les artisans</p>
             <p className="text-sm text-gray-400">{error.message}</p>
           </div>
         )}
-        {!isLoading && !error && filtered.length === 0 && (
+        {promatchResults === null && !isLoading && !error && filtered.length === 0 && (
           <div className="text-center py-12">
             <Search className="w-8 h-8 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600 font-semibold mb-1">Aucun artisan trouvé</p>
@@ -528,7 +772,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
         )}
 
         {/* Artisan Cards */}
-        {!isLoading && !error && filtered.length > 0 && (
+        {promatchResults === null && !isLoading && !error && filtered.length > 0 && (
           <div className="flex flex-wrap justify-center gap-5">
             {filtered.map((artisan, i) => (
               <motion.div

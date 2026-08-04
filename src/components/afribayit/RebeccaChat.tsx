@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiPost, apiFetch } from '@/lib/api-client';
-import { BarChart3, Bot, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, MessageCircle, HandHeart, Scale, Search, Zap } from 'lucide-react';
+import { BarChart3, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, Scale, Search, Zap } from 'lucide-react';
 
 interface RebeccaChatProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ const quickActions = [
 const welcomeMessage: Message = {
   id: 'welcome',
   sender: 'bot',
-  text: 'Bonjour ! Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n<Search className="w-4 h-4" /> Rechercher des biens immobiliers\n<Lock className="w-4 h-4" /> Suivre vos transactions escrow\n<Coins className="w-4 h-4" /> Estimer la valeur d\'un bien\n<Hammer className="w-4 h-4" /> Trouver des artisans certifiés\n<BarChart3 className="w-4 h-4" /> Analyser le marché immobilier\n<Scale className="w-4 h-4" /> Conseils sur les procédures légales\n Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?',
+  text: 'Bonjour ! Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n• Rechercher des biens immobiliers\n• Suivre vos transactions escrow\n• Estimer la valeur d\'un bien\n• Trouver des artisans certifiés\n• Analyser le marché immobilier\n• Conseils sur les procédures légales\n• Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?',
   timestamp: new Date(),
 };
 
@@ -158,7 +158,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
         {
           id: (Date.now() + 1).toString(),
           sender: 'bot',
-          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer. <HandHeart className="w-4 h-4" />',
+          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer.',
           timestamp: new Date(),
         },
       ]);
@@ -211,13 +211,22 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
   };
 
   const getFunctionLabel = (fn: string) => {
+    // CDC §8.2.1 — Rebecca IA tool catalog (7 tools).
+    // Legacy aliases are kept for backward compatibility with older backends.
     const labels: Record<string, string> = {
+      // CDC §8.2.1 canonical tool names
       search_properties: 'Recherche biens',
+      get_property_details: 'Détails bien',
+      check_escrow_status: 'Suivi escrow',
+      book_hotel: 'Réservation hôtel',
+      request_geometer: 'Demande géomètre',
+      contact_agent: 'Contacter agent',
+      get_market_prices: 'Prix du marché',
+      // Legacy aliases (older API versions)
       check_escrow: 'Vérification escrow',
       get_market_stats: 'Statistiques marché',
       find_artisans: 'Recherche artisans',
       calculate_financing: 'Simulation financement',
-      get_property_details: 'Détails bien',
     };
     return labels[fn] || fn;
   };
@@ -454,7 +463,6 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   onClick={() => {
                     // Trigger voice search
                     if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const SpeechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
                       if (SpeechRecognitionCtor) {
                         const recognition = new SpeechRecognitionCtor();

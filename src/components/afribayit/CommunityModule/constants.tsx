@@ -50,9 +50,48 @@ export const badges: Badge[] = [
 ];
 
 export const ambassadorTiers: AmbassadorTier[] = [
-  { tier: 'Bronze', commission: '5%', icon: <Medal className="w-5 h-5" style={{ color: '#CD7F32' }} />, color: '#CD7F32', benefits: ['Lien de parrainage', 'Commission 5%', 'Dashboard ambassadeur'] },
-  { tier: 'Argent', commission: '10%', icon: <Medal className="w-5 h-5" style={{ color: '#C0C0C0' }} />, color: '#C0C0C0', benefits: ['Tous les avantages Bronze', 'Commission 10%', 'Page personnalisée', 'Support prioritaire'] },
-  { tier: 'Or', commission: '15%', icon: <Medal className="w-5 h-5" style={{ color: '#FFD700' }} />, color: '#FFD700', benefits: ['Tous les avantages Argent', 'Commission 15%', 'Événements co-brandés', 'Accès VIP formations'] },
+  {
+    tier: 'Bronze',
+    commission: '2%',
+    icon: <Medal className="w-5 h-5" style={{ color: '#CD7F32' }} />,
+    color: '#CD7F32',
+    // CDC §5.7.5 — Bronze tier benefits (entry-level ambassador).
+    benefits: [
+      'Lien de parrainage personnel',
+      'Commission 2% sur filleuls actifs',
+      'Dashboard ambassadeur',
+      'Accès au groupe WhatsApp ambassadeurs',
+    ],
+  },
+  {
+    tier: 'Argent',
+    commission: '3%',
+    icon: <Medal className="w-5 h-5" style={{ color: '#C0C0C0' }} />,
+    color: '#C0C0C0',
+    // CDC §5.7.5 — Argent tier benefits (10+ filleuls actifs).
+    benefits: [
+      'Tous les avantages Bronze',
+      'Commission 3% sur filleuls actifs',
+      'Page personnalisée ambassadeur',
+      'Support prioritaire',
+      'Badge ambassadeur certifié',
+    ],
+  },
+  {
+    tier: 'Or',
+    commission: '4%',
+    icon: <Medal className="w-5 h-5" style={{ color: '#FFD700' }} />,
+    color: '#FFD700',
+    // CDC §5.7.5 — Or tier benefits (50+ filleuls actifs, top ambassador).
+    benefits: [
+      'Tous les avantages Argent',
+      'Commission 4% sur filleuls actifs',
+      'Événements co-brandés AfriBayit',
+      'Accès VIP aux formations Academy',
+      'Mentions dans la newsletter officielle',
+      'Accompagnement marketing dédié',
+    ],
+  },
 ];
 
 export const FORUM_CATEGORIES: ForumCategory[] = [

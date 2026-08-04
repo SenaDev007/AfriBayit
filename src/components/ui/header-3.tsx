@@ -13,7 +13,8 @@ import {
   NavigationMenuLink,
 } from '@/components/ui/navigation-menu';
 import { LucideIcon } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutAndClear } from '@/lib/signout';
 import { usePathname } from 'next/navigation';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
@@ -576,7 +577,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                   </div>
                   <div className="border-t border-gray-100 py-1">
                     <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
+                      onClick={() => signOutAndClear({ callbackUrl: '/' })}
                       className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                     >
                       <LogOut className="w-4 h-4" /> Déconnexion
@@ -686,7 +687,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               <Button
                 variant="outline"
                 className="w-full bg-transparent border-red-200 text-red-500 hover:bg-red-50"
-                onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
+                onClick={() => { signOutAndClear({ callbackUrl: '/' }); setOpen(false); }}
               >
                 <LogOut className="size-4 mr-1" />
                 Déconnexion

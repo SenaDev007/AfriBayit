@@ -125,7 +125,7 @@ export default function HotelPMS() {
         booking_com: { status: 'synced', lastSync: new Date().toISOString() },
         expedia: { status: 'synced', lastSync: new Date().toISOString() },
       }));
-      toast.success('Synchronisation OTA lancee');
+      toast.success('Synchronisation OTA lancée');
     } catch {
       toast.error('Erreur de synchronisation OTA');
     }
@@ -137,9 +137,9 @@ export default function HotelPMS() {
     try {
       await apiPatch('/api/hotels/pms/rooms', { roomId, hotelId, status });
       reloadRooms();
-      toast.success('Statut chambre mis a jour');
+      toast.success('Statut chambre mis à jour');
     } catch {
-      toast.error('Erreur mise a jour statut');
+      toast.error('Erreur mise à jour statut');
     }
   };
 
@@ -149,10 +149,10 @@ export default function HotelPMS() {
     try {
       if (editingRoom) {
         await apiPatch('/api/hotels/pms/rooms', { roomId: editingRoom.id, hotelId, ...data });
-        toast.success('Chambre modifiee');
+        toast.success('Chambre modifiée');
       } else {
         await apiPost('/api/hotels/pms/rooms', { hotelId, ...data });
-        toast.success('Chambre ajoutee');
+        toast.success('Chambre ajoutée');
       }
       setShowRoomModal(false);
       setEditingRoom(null);
@@ -168,7 +168,7 @@ export default function HotelPMS() {
     try {
       await apiPatch('/api/hotels/pms/rooms', { roomId, hotelId, status: 'DELETED' });
       reloadRooms();
-      toast.success('Chambre supprimee');
+      toast.success('Chambre supprimée');
     } catch {
       toast.error('Erreur suppression');
     }
@@ -178,7 +178,7 @@ export default function HotelPMS() {
   const handleCheckIn = async (bookingId: string) => {
     try {
       await apiPatch('/api/hotels/pms/reservations', { bookingId, hotelId, status: 'checked_in' });
-      toast.success('Enregistrement effectue');
+      toast.success('Enregistrement effectué');
       const params = new URLSearchParams({ hotelId, limit: '50' });
       const data = await apiFetch<{ bookings: ReservationItem[] }>(`/api/hotels/pms/reservations?${params}`);
       setReservations(data.bookings || []);

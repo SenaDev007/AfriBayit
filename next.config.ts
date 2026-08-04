@@ -9,6 +9,13 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
+  // Limit webpack/jest-worker parallelism during `next build` — the
+  // build runs in a 4 GiB cgroup and the default multi-worker mode
+  // triggers the kernel OOM killer. One worker is slower but completes.
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   serverExternalPackages: ['lightningcss', '@tailwindcss/node', '@tailwindcss/postcss'],
   images: {
     remotePatterns: [

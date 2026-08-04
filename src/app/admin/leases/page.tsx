@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminLeases, useAdminLeaseStats, type Lease } from '@/hooks/useAdminApi';
+import { api } from '@/lib/api-client';
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   ACTIVE: { label: 'Actif', variant: 'default' },
@@ -43,27 +44,14 @@ export default function AdminLeasesPage() {
 
   const handleDownloadPdf = async (lease: Lease) => {
     try {
-      const token = localStorage.getItem('afribayit_access_token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/admin/leases/${lease.id}/contract-pdf`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        alert(data.message || 'PDF non disponible pour ce bail. Générez le contrat d\'abord.');
-        return;
-      }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `bail-${lease.leaseRef || lease.id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Module 2: use `api.downloadBlob` (carries JWT + X-Country-Code).
+      await api.downloadBlob(
+        `/admin/leases/${lease.id}/contract-pdf`,
+        `bail-${lease.leaseRef || lease.id}.pdf`,
+      );
     } catch (e) {
-      alert('Erreur lors du téléchargement du PDF');
+      const msg = e instanceof Error ? e.message : 'Erreur lors du téléchargement du PDF';
+      alert(msg);
     }
   };
 

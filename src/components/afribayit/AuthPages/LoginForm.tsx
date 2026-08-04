@@ -30,6 +30,7 @@ interface LoginFormProps {
   oauthLoading: OauthLoadingState;
   onGoogle: () => void;
   onFacebook: () => void;
+  onApple: () => void;
   // navigation
   onSwitch: (mode: 'login' | 'register') => void;
 }
@@ -55,6 +56,7 @@ export default function LoginForm(props: LoginFormProps) {
     oauthLoading,
     onGoogle,
     onFacebook,
+    onApple,
     onSwitch,
   } = props;
 
@@ -207,6 +209,7 @@ export default function LoginForm(props: LoginFormProps) {
         oauthLoading={oauthLoading}
         onGoogle={onGoogle}
         onFacebook={onFacebook}
+        onApple={onApple}
       />
 
       <p className="text-center text-sm text-gray-500 mt-6 pb-6">

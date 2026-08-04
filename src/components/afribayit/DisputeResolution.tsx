@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetch, apiPost, apiPatch } from '@/lib/api-client';
+import { apiFetch, apiPost, apiPatch, api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import {
   ShieldAlert,
@@ -175,27 +175,21 @@ function formatDate(iso: string) {
 // ============ Component ============
 
 export default function DisputeResolution({
-  disputeId = 'disp_demo_001',
-  transactionRef = 'TXN-2025-001',
-  amount = 15000000,
-  buyerName = 'Amadou Diallo',
-  sellerName = 'Marie Koffi',
-  currentStep = 3,
+  disputeId = '',
+  transactionRef = '',
+  amount = 0,
+  buyerName = '',
+  sellerName = '',
+  currentStep = 1,
   isAdmin = false,
   onResolve,
 }: DisputeResolutionProps) {
   const queryClient = useQueryClient();
   const [activeStep, setActiveStep] = useState<DisputeStep>(currentStep);
-  const [evidence, setEvidence] = useState<Evidence[]>([
-    { id: '1', party: 'buyer', fileName: 'contrat_achat.pdf', uploadedAt: '2025-12-14T10:00:00', type: 'Contrat', fileSize: 245000 },
-    { id: '2', party: 'seller', fileName: 'rapport_inspection.jpg', uploadedAt: '2025-12-14T12:00:00', type: 'Photo', fileSize: 1800000 },
-    { id: '3', party: 'buyer', fileName: 'releve_bancaire.pdf', uploadedAt: '2025-12-14T14:00:00', type: 'Financier', fileSize: 89000 },
-  ]);
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', sender: 'system', content: 'Litige ouvert automatiquement. Les fonds sont gelés en escrow.', timestamp: '2025-12-14T09:00:00', type: 'message' },
-    { id: '2', sender: 'buyer', content: 'Je conteste l\'état du bien. Les photos ne correspondent pas à la description.', timestamp: '2025-12-14T09:15:00', type: 'message' },
-    { id: '3', sender: 'seller', content: 'Le bien était en bon état lors de la visite. Les photos sont anciennes.', timestamp: '2025-12-14T09:30:00', type: 'message' },
-  ]);
+  // Empty initial state — no fake/mock evidence. Populated from `disputeData`
+  // via the useEffect below once the backend query resolves.
+  const [evidence, setEvidence] = useState<Evidence[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [splitPercentage, setSplitPercentage] = useState(50);
   const [decisionReason, setDecisionReason] = useState('');
@@ -215,6 +209,24 @@ export default function DisputeResolution({
     queryFn: () => apiFetch<Record<string, unknown>>(`/api/disputes/${disputeId}`),
     enabled: !!disputeId,
   });
+
+  // Populate local state from real backend `disputeData` (no fake entries).
+  // Re-runs whenever the query resolves or refetches (e.g. after upload).
+  useEffect(() => {
+    if (!disputeData) return;
+    const rawEvidence = (disputeData as { evidence?: unknown }).evidence;
+    if (Array.isArray(rawEvidence)) {
+      setEvidence(rawEvidence as Evidence[]);
+    }
+    const rawMessages = (disputeData as { messages?: unknown }).messages;
+    if (Array.isArray(rawMessages)) {
+      setMessages(rawMessages as Message[]);
+    }
+    const rawStep = (disputeData as { currentStep?: unknown }).currentStep;
+    if (typeof rawStep === 'number' && rawStep >= 1 && rawStep <= 6) {
+      setActiveStep(rawStep as DisputeStep);
+    }
+  }, [disputeData]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
@@ -240,10 +252,7 @@ export default function DisputeResolution({
         formData.append('party', isAdmin ? 'admin' : 'buyer');
         formData.append('type', 'Document');
 
-        await fetch(`/api/disputes/${disputeId}/evidence`, {
-          method: 'POST',
-          body: formData,
-        });
+        await api.upload(`/api/disputes/${disputeId}/evidence`, formData);
 
         setEvidence(prev => [...prev, {
           id: `ev_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,

@@ -16,6 +16,10 @@ declare module 'next-auth' {
     // Surfaced from the backend so the AppShell can sync it to localStorage
     // via `setAccessToken()` for the api-client Authorization header.
     accessToken?: string;
+    // Refresh token (used by api-client.tryRefreshAccessToken() on 401).
+    refreshToken?: string;
+    // Absolute Unix-epoch seconds when the access token expires.
+    accessTokenExpiresAt?: number;
   }
 
   interface User {
@@ -27,6 +31,8 @@ declare module 'next-auth' {
     country: string | null;
     kycLevel: number;
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpiresAt?: number;
   }
 }
 
@@ -38,5 +44,7 @@ declare module 'next-auth/jwt' {
     country: string | null;
     kycLevel: number;
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpiresAt?: number;
   }
 }

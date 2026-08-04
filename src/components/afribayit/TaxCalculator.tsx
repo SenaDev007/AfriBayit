@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api-client';
 import type { ExtendedTaxCalculation, TaxLineItem } from '@/lib/constants';
 
 const COUNTRIES = [
@@ -105,24 +106,17 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
   const handleCalculate = useCallback(async () => {
     setIsCalculating(true);
     try {
-      const res = await fetch('/api/tax/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          country,
-          propertyType,
-          transactionType,
-          propertyValue: Number(propertyValue),
-          hasMortgage,
-          isPrimaryResidence,
-        }),
+      const data = await api.post<ExtendedTaxCalculation>('/api/tax/calculate', {
+        country,
+        propertyType,
+        transactionType,
+        propertyValue: Number(propertyValue),
+        hasMortgage,
+        isPrimaryResidence,
       });
-      const data = await res.json();
-      if (res.ok) {
-        setResult(data);
-      }
+      setResult(data);
     } catch {
-      // Silently handle error
+      // Silently handle error — keep the previous result if any.
     } finally {
       setIsCalculating(false);
     }
@@ -131,20 +125,15 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
   const handleCompare = useCallback(async () => {
     setIsCalculating(true);
     try {
-      const res = await fetch('/api/tax/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          country,
-          propertyType,
-          transactionType,
-          propertyValue: Number(propertyValue),
-          hasMortgage,
-          compareCountries: ['BJ', 'CI', 'BF', 'TG'],
-        }),
+      const data = await api.post<ExtendedTaxCalculation & { comparisons?: ExtendedTaxCalculation[] }>('/api/tax/calculate', {
+        country,
+        propertyType,
+        transactionType,
+        propertyValue: Number(propertyValue),
+        hasMortgage,
+        compareCountries: ['BJ', 'CI', 'BF', 'TG'],
       });
-      const data = await res.json();
-      if (res.ok && data.comparisons) {
+      if (data?.comparisons) {
         setComparisons(data.comparisons);
         setShowComparison(true);
       }

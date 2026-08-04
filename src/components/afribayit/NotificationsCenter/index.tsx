@@ -16,6 +16,7 @@ import {
   useMarkAllRead,
 } from '@/hooks/useNotifications';
 import { useRealtimeNotifications } from '@/hooks/useRealtime';
+import { api } from '@/lib/api-client';
 import { Bell, Check, Moon, Crown, Shield, Wifi, WifiOff, X } from 'lucide-react';
 import NotificationList from './NotificationList';
 import PreferencesPanel from './PreferencesPanel';
@@ -120,23 +121,38 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
   const savePreferences = useCallback(async () => {
     setSaving(true);
     try {
+      // Mirror to localStorage so the UI stays responsive offline.
       localStorage.setItem('afribayit-notification-prefs', JSON.stringify(preferences));
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Persist to backend (CDC §3.1.2). 404/401 are non-fatal — the local
+      // mirror is still authoritative for the UI.
+      try {
+        await api.post('/users/me/notification-preferences', { preferences });
+      } catch (err) {
+        console.warn('[NotificationsCenter] Failed to persist preferences to backend:', err);
+      }
     } finally {
       setSaving(false);
     }
   }, [preferences]);
 
-  const saveSilentHours = useCallback(() => {
-    localStorage.setItem(
-      'afribayit-silent-hours',
-      JSON.stringify({
-        enabled: silentHoursEnabled,
-        start: silentStart,
-        end: silentEnd,
-      })
-    );
-  }, [silentHoursEnabled, silentStart, silentEnd]);
+  const saveSilentHours = useCallback(
+    async (overrides?: { enabled?: boolean; start?: number; end?: number }) => {
+      const payload = {
+        enabled: overrides?.enabled ?? silentHoursEnabled,
+        start: overrides?.start ?? silentStart,
+        end: overrides?.end ?? silentEnd,
+      };
+      // Mirror to localStorage (used by the UI before the network resolves).
+      localStorage.setItem('afribayit-silent-hours', JSON.stringify(payload));
+      // Persist to backend. Non-fatal on failure.
+      try {
+        await api.post('/users/me/notification-preferences/silent-hours', payload);
+      } catch (err) {
+        console.warn('[NotificationsCenter] Failed to persist silent hours to backend:', err);
+      }
+    },
+    [silentHoursEnabled, silentStart, silentEnd],
+  );
 
   const handleQuickAction = useCallback(
     async (notif: NotificationData, action: QuickAction) => {
@@ -370,20 +386,20 @@ export default function NotificationsCenter({ isOpen, onClose }: NotificationsCe
                 end={silentEnd}
                 onToggleEnabled={(checked) => {
                   setSilentHoursEnabled(checked);
-                  saveSilentHours();
+                  void saveSilentHours({ enabled: checked });
                 }}
                 onChangeStart={(v) => {
                   setSilentStart(v);
-                  saveSilentHours();
+                  void saveSilentHours({ start: v });
                 }}
                 onChangeEnd={(v) => {
                   setSilentEnd(v);
-                  saveSilentHours();
+                  void saveSilentHours({ end: v });
                 }}
                 onApplyPreset={(start, end) => {
                   setSilentStart(start);
                   setSilentEnd(end);
-                  saveSilentHours();
+                  void saveSilentHours({ start, end });
                 }}
               />
             )}

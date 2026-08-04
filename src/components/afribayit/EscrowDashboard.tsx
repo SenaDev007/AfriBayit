@@ -225,11 +225,16 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
   // Handle 2FA verification for fund release
   const handle2FAVerification = async () => {
+    // Guard: enforce a real 6-digit TOTP code — no bypass via checkbox
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error('Code 2FA invalide', { description: 'Veuillez entrer le code à 6 chiffres.' });
+      return;
+    }
     setVerifying2FA(true);
     try {
+      // Only send { otpCode } — no confirmationChecked bypass flag
       const res = await apiPost(`/api/escrow/${transactionId}/release-2fa`, {
-        otpCode: otpCode || undefined,
-        confirmationChecked: confirmChecked,
+        otpCode,
       });
 
       if (res) {
@@ -277,12 +282,8 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
   const ledgerEntries = (ledgerData?.ledger as Array<Record<string, unknown>>) ||
     (escrowAccount?.ledger as Array<Record<string, unknown>>) || [];
 
-  // Demo ledger if empty
-  const displayLedger = ledgerEntries.length > 0 ? ledgerEntries : [
-    { entryType: 'CREDIT', amount: amount, balanceAfter: amount, currency: 'XOF', reference: `sha256:a3f8b2c1d4e5f6...`, createdAt: '2025-12-14T09:00:00Z' },
-    { entryType: 'HOLD', amount: -amount, balanceAfter: 0, currency: 'XOF', reference: `sha256:b7c9d2e3f4a5b6...`, createdAt: '2025-12-14T09:01:00Z' },
-    { entryType: 'COMMISSION', amount: -commission, balanceAfter: amount - commission, currency: 'XOF', reference: `sha256:c1d3e5f7a9b1c3...`, createdAt: '2025-12-14T09:02:00Z' },
-  ];
+  // Display real ledger entries only — no fake/mock SHA-256 entries
+  const displayLedger = ledgerEntries;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -660,7 +661,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   />
                 </div>
 
-                {/* Confirmation checkbox */}
+                {/* Confirmation checkbox — irreversibility notice */}
                 <label className="flex items-start gap-3 cursor-pointer p-3 bg-gray-50 rounded-xl">
                   <input
                     type="checkbox"
@@ -669,8 +670,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     className="mt-0.5 rounded border-gray-300"
                   />
                   <span className="text-xs text-gray-600">
-                    Je confirme la libération des fonds de <strong>{formatFCFA(amount)}</strong> au vendeur.
-                    Cette action est irréversible.
+                    Je comprends que la libération des fonds de <strong>{formatFCFA(amount)}</strong> au vendeur est <strong>irréversible</strong> et ne pourra être annulée ou remboursée une fois exécutée.
                   </span>
                 </label>
 
@@ -684,7 +684,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   </Button>
                   <Button
                     onClick={handle2FAVerification}
-                    disabled={verifying2FA || (!otpCode && !confirmChecked)}
+                    disabled={verifying2FA || !otpCode || otpCode.length !== 6}
                     className="flex-1 bg-[#003087] hover:bg-[#0047b3]"
                   >
                     {verifying2FA ? (

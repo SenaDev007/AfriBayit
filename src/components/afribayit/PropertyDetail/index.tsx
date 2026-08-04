@@ -71,10 +71,9 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
   // Check if property is in favorites
   useEffect(() => {
     if (!isAuthenticated || !propertyId) return;
-    fetch(`/api/favorites`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : [])
-      .then((favs: { propertyId: string }[]) => {
-        setIsFavorite(favs.some((f) => f.propertyId === propertyId));
+    apiFetch<{ propertyId: string }[]>('/api/favorites')
+      .then((favs) => {
+        setIsFavorite(Array.isArray(favs) ? favs.some((f) => f.propertyId === propertyId) : false);
       })
       .catch(() => {});
   }, [isAuthenticated, propertyId]);

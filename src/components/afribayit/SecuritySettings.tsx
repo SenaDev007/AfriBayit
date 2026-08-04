@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -32,6 +32,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { api, authApi } from '@/lib/api-client';
 
 interface SecuritySettingsProps {
   twoFactorEnabled: boolean;
@@ -64,23 +65,36 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
   const [disablePassword, setDisablePassword] = useState('');
   const [disabling2FA, setDisabling2FA] = useState(false);
 
-  // Active sessions (mock data — would need a sessions table for real data)
-  const sessions = [
-    {
-      id: '1',
-      device: 'Chrome sur Windows',
-      location: 'Cotonou, Bénin',
-      lastActive: 'Actif maintenant',
-      current: true,
-    },
-    {
-      id: '2',
-      device: 'Safari sur iPhone',
-      location: 'Abidjan, Côte d\'Ivoire',
-      lastActive: 'Il y a 2 heures',
-      current: false,
-    },
-  ];
+  // Active sessions — fetched from `/users/me/sessions` (Module 1).
+  interface SessionEntry {
+    id: string;
+    device: string;
+    location?: string;
+    lastActive: string;
+    current?: boolean;
+  }
+  const [sessions, setSessions] = useState<SessionEntry[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await api.get<SessionEntry[] | { sessions?: SessionEntry[] }>('/users/me/sessions');
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : data?.sessions || [];
+        setSessions(list);
+      } catch {
+        // Endpoint may not exist yet — leave the list empty.
+        if (!cancelled) setSessions([]);
+      } finally {
+        if (!cancelled) setSessionsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -94,17 +108,14 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
 
     setChangingPassword(true);
     try {
-      const res = await fetch('/api/user/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+      const data: any = await api.post('/users/me/password', {
+        currentPassword,
+        newPassword,
+        confirmPassword,
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors du changement de mot de passe');
+      if (data?.success === false) {
+        throw new Error(data?.error || 'Erreur lors du changement de mot de passe');
       }
-
       toast({ title: 'Succès', description: 'Mot de passe modifié avec succès' });
       setCurrentPassword('');
       setNewPassword('');
@@ -126,15 +137,9 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
     setTotpCode('');
 
     try {
-      const res = await fetch('/api/auth/2fa/setup');
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la configuration du 2FA');
-      }
-
-      setQrCodeUrl(data.qrCodeUrl);
-      setManualEntryKey(data.manualEntryKey);
+      const data: any = await authApi.setup2FA();
+      setQrCodeUrl(data?.qrCodeUrl || '');
+      setManualEntryKey(data?.manualEntryKey || data?.secret || '');
       setSetupStep('qr');
     } catch (err) {
       toast({
@@ -154,17 +159,12 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
 
     setSetupLoading(true);
     try {
-      const res = await fetch('/api/auth/2fa/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: totpCode }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Code invalide');
+      // Module 1: use the real `authApi.enable2FA(otpCode)` endpoint (was
+      // POST /api/auth/2fa/setup with `{ token }`).
+      const data: any = await authApi.enable2FA(totpCode);
+      if (data?.success === false) {
+        throw new Error(data?.error || 'Code invalide');
       }
-
       setTwoFactorEnabled(true);
       setShow2FASetup(false);
       toast({ title: 'Succès', description: '2FA activé avec succès' });
@@ -187,17 +187,10 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
 
     setDisabling2FA(true);
     try {
-      const res = await fetch('/api/auth/2fa/disable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: disablePassword }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la désactivation');
+      const data: any = await authApi.disable2FA(disablePassword);
+      if (data?.success === false) {
+        throw new Error(data?.error || 'Erreur lors de la désactivation');
       }
-
       setTwoFactorEnabled(false);
       setShow2FADisable(false);
       setDisablePassword('');
@@ -542,31 +535,41 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {sessions.map((session, i) => (
-              <React.Fragment key={session.id}>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-white border">
-                      <Smartphone className="h-4 w-4 text-[#003087]" />
+            {sessionsLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-[#003087]" />
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                Aucune session active enregistrée.
+              </div>
+            ) : (
+              sessions.map((session, i) => (
+                <React.Fragment key={session.id}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-md bg-white border">
+                        <Smartphone className="h-4 w-4 text-[#003087]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{session.device}</p>
+                        <p className="text-xs text-muted-foreground">{session.location || '—'} · {session.lastActive}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{session.device}</p>
-                      <p className="text-xs text-muted-foreground">{session.location} · {session.lastActive}</p>
-                    </div>
+                    {session.current ? (
+                      <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
+                        Actif
+                      </Badge>
+                    ) : (
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 text-xs">
+                        Révoquer
+                      </Button>
+                    )}
                   </div>
-                  {session.current ? (
-                    <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
-                      Actif
-                    </Badge>
-                  ) : (
-                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 text-xs">
-                      Révoquer
-                    </Button>
-                  )}
-                </div>
-                {i < sessions.length - 1 && <Separator />}
-              </React.Fragment>
-            ))}
+                  {i < sessions.length - 1 && <Separator />}
+                </React.Fragment>
+              ))
+            )}
           </CardContent>
         </Card>
       </motion.div>
