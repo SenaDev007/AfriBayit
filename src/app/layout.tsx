@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/logo.png",
-    apple: "/icons/icon-192x192.svg",
+    apple: "/icons/apple-touch-icon.png",
   },
   openGraph: {
     title: "AfriBayit — La Plateforme Immobilière Africaine",
