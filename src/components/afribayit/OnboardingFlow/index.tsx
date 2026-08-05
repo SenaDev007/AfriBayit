@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { OnboardingFlowProps } from './types';
 import { initialOnboardingData, easeOut } from './types';
 import { onboardingSteps } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import WelcomeStep from './WelcomeStep';
 import ProfileStep from './ProfileStep';
 import LocationStep from './LocationStep';
@@ -14,6 +15,7 @@ import TourStep from './TourStep';
 import RebeccaStep from './RebeccaStep';
 
 export default function OnboardingFlow({ isOpen, onClose, onComplete }: OnboardingFlowProps) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState(initialOnboardingData);
   const [direction, setDirection] = useState(1);
@@ -114,14 +116,14 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
               <button
                 onClick={currentStep === 1 ? onClose : () => goToStep(currentStep - 1)}
                 className="p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors"
-                aria-label={currentStep === 1 ? 'Fermer' : 'Retour'}
+                aria-label={currentStep === 1 ? t('onboardingFlow.close', 'Fermer') : t('onboardingFlow.back', 'Retour')}
               >
                 <svg className="w-5 h-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={currentStep === 1 ? "M6 18L18 6M6 6l12 12" : "M15 19l-7-7 7-7"} />
                 </svg>
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white/90 font-body">Étape {currentStep}/7</span>
+                <span className="text-sm font-semibold text-white/90 font-body">{t('onboardingFlow.step', 'Étape')} {currentStep}/7</span>
                 <span className="text-xs text-[#D4AF37] font-mono-data">{Math.round((currentStep / 7) * 100)}%</span>
               </div>
               {currentStep < 7 ? (
@@ -129,7 +131,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                   onClick={handleSkip}
                   className="text-xs text-white/50 hover:text-white/80 transition-colors font-medium"
                 >
-                  Passer
+                  {t('onboardingFlow.skip', 'Passer')}
                 </button>
               ) : <div className="w-12" />}
             </div>
@@ -195,7 +197,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                 onClick={() => goToStep(currentStep - 1)}
                 className="px-6 py-3.5 border border-white/20 rounded-lg text-sm font-semibold text-white/70 hover:bg-white/5 transition-colors"
               >
-                Retour
+                {t('onboardingFlow.back', 'Retour')}
               </motion.button>
             )}
             <motion.button
@@ -208,7 +210,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
               disabled={!canProceed()}
               className="flex-1 py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-lg font-bold text-sm hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              {currentStep === 7 ? ' Commencer !' : 'Continuer'}
+              {currentStep === 7 ? t('onboardingFlow.start', ' Commencer !') : t('onboardingFlow.continue', 'Continuer')}
             </motion.button>
           </div>
           {/* Step dots */}
@@ -226,7 +228,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                       ? 'bg-white/60 cursor-pointer'
                       : 'bg-white/20'
                 }`}
-                aria-label={`Aller à l'étape ${s.step}`}
+                aria-label={`${t('onboardingFlow.goToStep', 'Aller à l\'étape')} ${s.step}`}
               />
             ))}
           </div>

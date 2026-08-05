@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiPost, apiFetch } from '@/lib/api-client';
 import { BarChart3, ClipboardList, Coins, FileText, Hammer, HelpCircle, Home, Landmark, Lock, Scale, Search, Zap } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface RebeccaChatProps {
   isOpen: boolean;
@@ -31,24 +32,24 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Quick actions — enhanced with more options
 const quickActions = [
-  { id: 'search', label: 'Rechercher un bien', icon: <Search className="w-3.5 h-3.5" />, message: 'Je souhaite rechercher un bien immobilier' },
-  { id: 'escrow', label: 'Suivi escrow', icon: <Lock className="w-3.5 h-3.5" />, message: 'Je veux suivre l\'état de ma transaction escrow' },
-  { id: 'avm', label: 'Estimer valeur', icon: <Coins className="w-3.5 h-3.5" />, message: 'Je souhaite estimer la valeur d\'un bien immobilier' },
-  { id: 'artisan', label: 'Trouver artisan', icon: <Hammer className="w-3.5 h-3.5" />, message: 'Je cherche un artisan certifié pour des travaux' },
-  { id: 'market', label: 'Prix du marché', icon: <BarChart3 className="w-3.5 h-3.5" />, message: 'Quels sont les prix du marché immobilier ?' },
-  { id: 'legal', label: 'Conseil légal', icon: <Scale className="w-3.5 h-3.5" />, message: 'Quels documents sont nécessaires pour une transaction ?' },
-  { id: 'finance', label: 'Financement', icon: <Landmark className="w-3.5 h-3.5" />, message: 'Je souhaite simuler un financement immobilier' },
-  { id: 'docs', label: 'Analyser doc', icon: <FileText className="w-3.5 h-3.5" />, message: 'Je veux analyser un document immobilier' },
+  { id: 'search', labelKey: 'rebecca.quickActions.search', fallback: 'Rechercher un bien', icon: <Search className="w-3.5 h-3.5" />, message: 'Je souhaite rechercher un bien immobilier' },
+  { id: 'escrow', labelKey: 'rebecca.quickActions.escrow', fallback: 'Suivi escrow', icon: <Lock className="w-3.5 h-3.5" />, message: 'Je veux suivre l\'état de ma transaction escrow' },
+  { id: 'avm', labelKey: 'rebecca.quickActions.avm', fallback: 'Estimer valeur', icon: <Coins className="w-3.5 h-3.5" />, message: 'Je souhaite estimer la valeur d\'un bien immobilier' },
+  { id: 'artisan', labelKey: 'rebecca.quickActions.artisan', fallback: 'Trouver artisan', icon: <Hammer className="w-3.5 h-3.5" />, message: 'Je cherche un artisan certifié pour des travaux' },
+  { id: 'market', labelKey: 'rebecca.quickActions.market', fallback: 'Prix du marché', icon: <BarChart3 className="w-3.5 h-3.5" />, message: 'Quels sont les prix du marché immobilier ?' },
+  { id: 'legal', labelKey: 'rebecca.quickActions.legal', fallback: 'Conseil légal', icon: <Scale className="w-3.5 h-3.5" />, message: 'Quels documents sont nécessaires pour une transaction ?' },
+  { id: 'finance', labelKey: 'rebecca.quickActions.finance', fallback: 'Financement', icon: <Landmark className="w-3.5 h-3.5" />, message: 'Je souhaite simuler un financement immobilier' },
+  { id: 'docs', labelKey: 'rebecca.quickActions.docs', fallback: 'Analyser doc', icon: <FileText className="w-3.5 h-3.5" />, message: 'Je veux analyser un document immobilier' },
 ];
 
-const welcomeMessage: Message = {
-  id: 'welcome',
-  sender: 'bot',
-  text: 'Bonjour ! Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n• Rechercher des biens immobiliers\n• Suivre vos transactions escrow\n• Estimer la valeur d\'un bien\n• Trouver des artisans certifiés\n• Analyser le marché immobilier\n• Conseils sur les procédures légales\n• Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?',
-  timestamp: new Date(),
-};
-
 export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProps) {
+  const { t } = useTranslation();
+  const welcomeMessage: Message = {
+    id: 'welcome',
+    sender: 'bot',
+    text: t('rebecca.welcome', 'Bonjour ! Je suis **Rebecca**, votre assistante immobilière IA d\'AfriBayit.\n\nJe peux vous aider à :\n• Rechercher des biens immobiliers\n• Suivre vos transactions escrow\n• Estimer la valeur d\'un bien\n• Trouver des artisans certifiés\n• Analyser le marché immobilier\n• Conseils sur les procédures légales\n• Simuler un financement\n\nComment puis-je vous aider aujourd\'hui ?'),
+    timestamp: new Date(),
+  };
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -139,7 +140,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'bot',
-        text: data.message || data.response || data.text || 'Je suis désolée, je n\'ai pas pu traiter votre demande.',
+        text: data.message || data.response || data.text || t('rebecca.fallbackMessage', 'Je suis désolée, je n\'ai pas pu traiter votre demande.'),
         timestamp: new Date(),
         sources: data.sources || [],
         functionsCalled: data.functionsCalled || [],
@@ -158,7 +159,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
         {
           id: (Date.now() + 1).toString(),
           sender: 'bot',
-          text: 'Désolée, une erreur s\'est produite. Veuillez réessayer.',
+          text: t('rebecca.errorMessage', 'Désolée, une erreur s\'est produite. Veuillez réessayer.'),
           timestamp: new Date(),
         },
       ]);
@@ -263,7 +264,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                       transition={{ repeat: Infinity, duration: 2 }}
                     />
                     <span className="text-white/70 text-[10px]">
-                      {isSending ? 'Réflexion...' : 'En ligne · IA + RAG + AVM'}
+                      {isSending ? t('rebecca.thinking', 'Réflexion...') : t('rebecca.online', 'En ligne · IA + RAG + AVM')}
                     </span>
                   </div>
                 </div>
@@ -272,14 +273,14 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                 <button
                   onClick={() => setShowQuickActions(!showQuickActions)}
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  aria-label="Actions rapides"
-                  title="Actions rapides"
+                  aria-label={t('rebecca.actionsRapides', 'Actions rapides')}
+                  title={t('rebecca.actionsRapides', 'Actions rapides')}
                 >
                   <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </button>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Fermer le chat">
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label={t('rebecca.close', 'Fermer le chat')}>
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -296,7 +297,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   exit={{ opacity: 0, height: 0 }}
                   className="px-4 pt-3 pb-2 border-b bg-gradient-to-b from-[#003087]/5 to-transparent overflow-hidden"
                 >
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Actions rapides</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">{t('rebecca.actionsRapides', 'Actions rapides')}</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {quickActions.map((action) => (
                       <motion.button
@@ -308,7 +309,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                         className="flex items-center gap-1.5 px-2.5 py-2 bg-white border border-[#003087]/10 rounded-xl text-[11px] font-medium text-[#003087] hover:bg-[#003087]/5 transition-colors disabled:opacity-50 text-left"
                       >
                         {action.icon}
-                        <span className="truncate">{action.label}</span>
+                        <span className="truncate">{t(action.labelKey, action.fallback)}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -405,7 +406,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                       <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
                         <span className="text-white text-[8px] font-bold">R</span>
                       </div>
-                      <span className="text-[10px] text-gray-400">Rebecca analyse...</span>
+                      <span className="text-[10px] text-gray-400">{t('rebecca.analyzing', 'Rebecca analyse...')}</span>
                     </div>
                     <div className="bg-gray-50 rounded-2xl px-4 py-3 rounded-bl-md border border-gray-100">
                       <div className="flex gap-1.5 items-center h-4">
@@ -438,8 +439,8 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
               <div className="flex items-center gap-2">
                 <button
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-                  aria-label="Joindre un document"
-                  title="Analyser un document"
+                  aria-label={t('rebecca.attachDoc', 'Joindre un document')}
+                  title={t('rebecca.analyzeDoc', 'Analyser un document')}
                 >
                   <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
@@ -451,15 +452,15 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && input.trim() && !isSending) sendMessage(input.trim()); }}
-                  aria-label="Posez votre question à Rebecca"
-                  placeholder="Posez votre question à Rebecca..."
+                  aria-label={t('rebecca.inputPlaceholder', 'Posez votre question à Rebecca...')}
+                  placeholder={t('rebecca.inputPlaceholder', 'Posez votre question à Rebecca...')}
                   disabled={isSending}
                   className="flex-1 text-sm outline-none bg-transparent disabled:opacity-50 placeholder:text-gray-400"
                 />
                 <button
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-                  aria-label="Commande vocale"
-                  title="Recherche vocale"
+                  aria-label={t('rebecca.voice', 'Recherche vocale')}
+                  title={t('rebecca.voice', 'Recherche vocale')}
                   onClick={() => {
                     // Trigger voice search
                     if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
@@ -491,7 +492,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   onClick={() => { if (input.trim() && !isSending) sendMessage(input.trim()); }}
                   disabled={isSending || !input.trim()}
                   className="w-10 h-10 bg-[#003087] rounded-lg flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="Envoyer le message"
+                  aria-label={t('rebecca.send', 'Envoyer le message')}
                 >
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -499,13 +500,13 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                 </motion.button>
               </div>
               <div className="flex items-center justify-between mt-1 px-1">
-                <p className="text-[9px] text-gray-400">Propulsé par IA · RAG · AVM</p>
+                <p className="text-[9px] text-gray-400">{t('rebecca.poweredBy', 'Propulsé par IA · RAG · AVM')}</p>
                 {!showQuickActions && (
                   <button
                     onClick={() => setShowQuickActions(true)}
                     className="text-[9px] text-[#003087] font-medium hover:underline flex items-center gap-0.5"
                   >
-                    <Zap className="w-2.5 h-2.5" /> Actions
+                    <Zap className="w-2.5 h-2.5" /> {t('rebecca.actions', 'Actions')}
                   </button>
                 )}
               </div>

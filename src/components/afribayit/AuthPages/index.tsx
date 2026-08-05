@@ -268,14 +268,15 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
     try {
       // P0-1 fix: wire to the backend `/auth/otp/send` endpoint (the
       // previous `/api/auth/forgot-password` route was never implemented).
-      const data: any = await authApi.sendOTP(loginEmail.trim());
+      const data = await authApi.sendOTP(loginEmail.trim()) as Record<string, unknown>;
       if (data?.success) {
         setForgotSuccess(true);
       } else {
-        setForgotError(data?.error || "Erreur lors de l'envoi de l'email");
+        setForgotError((data?.error as string) || "Erreur lors de l'envoi de l'email");
       }
-    } catch (err: any) {
-      setForgotError(err?.message || 'Erreur de connexion au serveur');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur de connexion au serveur';
+      setForgotError(message);
     } finally {
       setForgot((p) => ({ ...p, forgotLoading: false }));
     }
@@ -299,24 +300,25 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       // verification). The backend accepts { email, otpCode, newPassword }.
       // A 404 means the endpoint doesn't exist on the backend yet — surface
       // that honestly to the user instead of pretending success.
-      const data: any = await authApi.resetPassword(
+      const data = await authApi.resetPassword(
         loginEmail.trim(),
         forgot.forgotOtpCode,
         forgot.forgotNewPassword,
-      );
+      ) as Record<string, unknown>;
       if (data?.success || data?.ok) {
         setResetSuccess(true);
       } else {
-        setResetError(data?.error || "Erreur lors de la réinitialisation");
+        setResetError((data?.error as string) || "Erreur lors de la réinitialisation");
       }
-    } catch (err: any) {
-      const status = err?.statusCode || err?.status;
-      if (status === 404) {
+    } catch (err: unknown) {
+      const statusCode = (err as { statusCode?: number; status?: number })?.statusCode || (err as { statusCode?: number; status?: number })?.status;
+      if (statusCode === 404) {
         setResetError(
           "Le service de réinitialisation n'est pas disponible. Contactez le support.",
         );
       } else {
-        setResetError(err?.message || 'Erreur de connexion au serveur');
+        const message = err instanceof Error ? err.message : 'Erreur de connexion au serveur';
+        setResetError(message);
       }
     } finally {
       setForgot((p) => ({ ...p, resetLoading: false }));
@@ -386,16 +388,18 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       // P0-1 fix: call the backend `/auth/register` endpoint directly
       // via `authApi.register` (bypassing NextAuth for registration).
       // The backend returns `{ success, user, accessToken }` on success.
-      const data: any = await authApi.register({
+      const data = await authApi.register({
         email: formData.email.trim(),
         password: formData.password,
         name: formData.name.trim(),
         phone: formData.phone.trim() || undefined,
         country: formData.country,
-      });
+      }) as Record<string, unknown>;
+
+      const user = (data?.user ?? null) as { id?: string; email?: string; name?: string; role?: string; country?: string; kycLevel?: number } | null;
 
       if (!data?.success) {
-        setRegisterError(data?.error || 'Erreur lors de la création du compte');
+        setRegisterError((data?.error as string) || 'Erreur lors de la création du compte');
         setRegisterLoading(false);
         return;
       }
@@ -404,16 +408,16 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
       // API calls (e.g. profile completion) carry the Authorization
       // header even before NextAuth session is established.
       if (data.accessToken) {
-        setAccessToken(data.accessToken);
+        setAccessToken(data.accessToken as string);
       }
-      if (data.user) {
+      if (user) {
         setUser({
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          role: data.user.role,
-          country: data.user.country,
-          kycLevel: data.user.kycLevel,
+          id: user.id || '',
+          email: user.email || '',
+          name: user.name || '',
+          role: user.role || 'buyer',
+          country: user.country || null,
+          kycLevel: user.kycLevel || 0,
           avatar: null,
         });
       }
@@ -438,8 +442,9 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
         // (no session), but `getAccessToken()` already returns the JWT.
         onSuccess();
       }
-    } catch (err: any) {
-      setRegisterError(err?.message || 'Erreur de connexion au serveur');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur de connexion au serveur';
+      setRegisterError(message);
     } finally {
       setRegisterLoading(false);
     }

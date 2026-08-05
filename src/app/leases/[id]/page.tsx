@@ -59,7 +59,7 @@ export default function LeaseDetailPage() {
   const [payingRentId, setPayingRentId] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('orange_money');
 
-  const lease = data;
+  const lease = data as Record<string, any> | undefined;
 
   const isTenant = useMemo(() => lease?.tenantId === user?.id, [lease, user]);
   const isOwner = useMemo(() => lease?.ownerId === user?.id, [lease, user]);

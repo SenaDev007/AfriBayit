@@ -45,6 +45,32 @@ interface CompareResponse {
   };
 }
 
+interface EnhancedSearchFiltersState {
+  transaction: string[];
+  sortBy?: SortOption;
+  page?: number;
+  limit?: number;
+  query?: string;
+  quartier?: string;
+  priceMin?: number;
+  priceMax?: number;
+  filter?: string | string[];
+  features?: string[];
+  bedroomsMin?: number;
+  bedroomsMax?: number;
+  bathroomsMin?: number;
+  surfaceMax?: number;
+  bathrooms?: number;
+  surfaceMin?: number;
+  city?: string;
+  country?: string;
+  type?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+  bounds?: { north: number; south: number; east: number; west: number };
+}
+
 function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
@@ -84,8 +110,8 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
 
 export default function EnhancedSearchResults({ initialTab = 'achat', onSelectProperty }: EnhancedSearchResultsProps) {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<any>({
-    transaction: [initialTab as any['transaction'] extends (infer T)[] ? T : never],
+  const [filters, setFilters] = useState<EnhancedSearchFiltersState>({
+    transaction: [initialTab],
     sortBy: 'newest',
     page: 1,
     limit: 24,
@@ -98,7 +124,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
     setPrevTab(initialTab);
     setFilters(prev => ({
       ...prev,
-      transaction: [initialTab as any['transaction'] extends (infer T)[] ? T : never],
+      transaction: [initialTab],
       page: 1,
     }));
   }
@@ -252,7 +278,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 </button>
               ))}
               <button
-                onClick={() => setFilters({ sortBy: 'newest', page: 1, limit: 24 })}
+                onClick={() => setFilters({ transaction: [], sortBy: 'newest', page: 1, limit: 24 })}
                 className="px-3 py-1 text-[11px] text-red-500 hover:bg-red-50 rounded-full transition-colors"
               >
                 {t('search.clearAll', 'Tout effacer')}
@@ -321,7 +347,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
             {viewMode === 'map' && (
               <div className="mb-6">
                 <PropertyMap
-                  properties={properties as unknown as any[]}
+                  properties={properties}
                   onPropertyClick={onSelectProperty}
                   onBoundsChange={handleMapBoundsChange}
                   selectedCountry={filters.country}

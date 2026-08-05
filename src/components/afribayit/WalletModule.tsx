@@ -13,6 +13,7 @@ import {
   Shield, AlertTriangle, ArrowRightLeft, TrendingUp, Eye, EyeOff,
   Wallet, Banknote, Clock, BadgeCheck
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -163,14 +164,15 @@ type TabKey = 'overview' | 'history' | 'add' | 'withdraw' | 'points';
 // ─── KYC Verification Gate ───────────────────────────────────────
 
 function KycGate({ kycLevel, requiredLevel, children }: { kycLevel: number; requiredLevel: number; children: React.ReactNode }) {
+  const { t } = useTranslation();
   if (kycLevel >= requiredLevel) return <>{children}</>;
   return (
     <div className="p-6 bg-[#D4AF37]/5 rounded-2xl border border-[#D4AF37]/20 text-center">
       <Shield className="w-10 h-10 text-[#D4AF37] mx-auto mb-3" />
-      <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-2">Verification KYC requise</h4>
+      <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-2">{t('walletModule.kycGateTitle', 'Vérification KYC requise')}</h4>
       <p className="text-sm text-gray-600 mb-3">
-        Vous devez atteindre le niveau KYC {requiredLevel} pour acceder a cette fonctionnalite.
-        Votre niveau actuel est <span className="font-bold text-[#D4AF37]">{kycLevel}</span>.
+        {t('walletModule.kycGateBody', 'Vous devez atteindre le niveau KYC')} {requiredLevel} {t('walletModule.kycGateBody2', 'pour accéder à cette fonctionnalité.')}
+        {t('walletModule.kycGateCurrent', 'Votre niveau actuel est')} <span className="font-bold text-[#D4AF37]">{kycLevel}</span>.
       </p>
       <div className="flex items-center justify-center gap-2">
         {[1, 2, 3].map((level) => (
@@ -179,7 +181,7 @@ function KycGate({ kycLevel, requiredLevel, children }: { kycLevel: number; requ
           }`}>{level}</div>
         ))}
       </div>
-      <p className="text-xs text-gray-400 mt-2">Niveau 1: Email · Niveau 2: Piece d&apos;identite · Niveau 3: Justificatif de domicile</p>
+      <p className="text-xs text-gray-400 mt-2">{t('walletModule.kycGateLevels', 'Niveau 1: Email · Niveau 2: Pièce d\'identité · Niveau 3: Justificatif de domicile')}</p>
     </div>
   );
 }
@@ -187,6 +189,7 @@ function KycGate({ kycLevel, requiredLevel, children }: { kycLevel: number; requ
 // ─── Main Component ──────────────────────────────────────────────
 
 export default function WalletModule({ onNavigate }: ModuleProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
   const [selectedCurrency, setSelectedCurrency] = useState<'XOF' | 'EUR' | 'USD'>('XOF');
@@ -238,17 +241,17 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
       metadata: { provider: addProvider, action: 'deposit' },
     }, {
       onSuccess: () => {
-        toast.success('Depot effectue', { description: `${formatFCFA(Number(addAmount))} ajoutes a votre portefeuille` });
+        toast.success(t('walletModule.toastDepositSuccess', 'Dépôt effectué'), { description: `${formatFCFA(Number(addAmount))} ${t('walletModule.toastDepositDesc', 'ajoutés à votre portefeuille')}` });
         setAddAmount(''); setAddProvider(null); setActiveTab('overview');
       },
-      onError: (error: Error) => { toast.error('Erreur lors du depot', { description: error.message }); },
+      onError: (error: Error) => { toast.error(t('walletModule.toastDepositError', 'Erreur lors du dépôt'), { description: error.message }); },
     });
   };
 
   const handleWithdraw = () => {
     if (!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance) return;
     if (kycLevel < 2) {
-      toast.error('Verification KYC requise', { description: 'Niveau 2 minimum pour les retraits' });
+      toast.error(t('walletModule.toastKycRequired', 'Vérification KYC requise'), { description: t('walletModule.toastKycRequiredDesc', 'Niveau 2 minimum pour les retraits') });
       return;
     }
     createWalletTx.mutate({
@@ -256,10 +259,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
       metadata: { provider: withdrawProvider, action: 'withdrawal' },
     }, {
       onSuccess: () => {
-        toast.success('Retrait initie', { description: `${formatFCFA(Number(withdrawAmount))} en cours de traitement` });
+        toast.success(t('walletModule.toastWithdrawInit', 'Retrait initié'), { description: `${formatFCFA(Number(withdrawAmount))} ${t('walletModule.toastWithdrawDesc', 'en cours de traitement')}` });
         setWithdrawAmount(''); setWithdrawProvider(null); setActiveTab('overview');
       },
-      onError: (error: Error) => { toast.error('Erreur lors du retrait', { description: error.message }); },
+      onError: (error: Error) => { toast.error(t('walletModule.toastWithdrawError', 'Erreur lors du retrait'), { description: error.message }); },
     });
   };
 
@@ -267,17 +270,17 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
     createWalletTx.mutate({
       type, amount: points, metadata: { points, action: 'afripoints_redemption' },
     }, {
-      onSuccess: () => { toast.success('Echange effectue', { description: `${points} AfriPoints echanges avec succes` }); },
-      onError: (error: Error) => { toast.error('Erreur', { description: error.message }); },
+      onSuccess: () => { toast.success(t('walletModule.toastExchangeSuccess', 'Échange effectué'), { description: `${points} ${t('walletModule.toastExchangeDesc', 'AfriPoints échangés avec succès')}` }); },
+      onError: (error: Error) => { toast.error(t('walletModule.toastExchangeError', 'Erreur'), { description: error.message }); },
     });
   };
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-    { key: 'overview', label: 'Apercu', icon: <Wallet className="w-4 h-4" /> },
-    { key: 'history', label: 'Historique', icon: <ClipboardList className="w-4 h-4" /> },
-    { key: 'add', label: 'Ajouter fonds', icon: <Download className="w-4 h-4" /> },
-    { key: 'withdraw', label: 'Retirer', icon: <Upload className="w-4 h-4" /> },
-    { key: 'points', label: 'AfriPoints', icon: <Star className="w-4 h-4 text-yellow-500" /> },
+    { key: 'overview', label: t('walletModule.tabOverview', 'Aperçu'), icon: <Wallet className="w-4 h-4" /> },
+    { key: 'history', label: t('walletModule.tabHistory', 'Historique'), icon: <ClipboardList className="w-4 h-4" /> },
+    { key: 'add', label: t('walletModule.tabAdd', 'Ajouter fonds'), icon: <Download className="w-4 h-4" /> },
+    { key: 'withdraw', label: t('walletModule.tabWithdraw', 'Retirer'), icon: <Upload className="w-4 h-4" /> },
+    { key: 'points', label: t('walletModule.tabPoints', 'AfriPoints'), icon: <Star className="w-4 h-4 text-yellow-500" /> },
   ];
 
   return (
@@ -286,13 +289,13 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            <Wallet className="w-4 h-4" /> Portefeuille AfriBayit
+            <Wallet className="w-4 h-4" /> {t('walletModule.eyebrow', 'Portefeuille AfriBayit')}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Mon <span className="text-[#D4AF37]">Portefeuille</span>
+            {t('walletModule.title', 'Mon Portefeuille').split(' ')[0]} <span className="text-[#D4AF37]">{t('walletModule.title', 'Mon Portefeuille').split(' ')[1]}</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            {isLoggedIn ? 'Gerez vos fonds, escrows et AfriPoints en toute securite' : 'Connectez-vous pour gerer vos fonds et AfriPoints'}
+            {isLoggedIn ? t('walletModule.subtitleLoggedIn', 'Gérez vos fonds, escrows et AfriPoints en toute sécurité') : t('walletModule.subtitleLoggedOut', 'Connectez-vous pour gérer vos fonds et AfriPoints')}
           </p>
         </motion.div>
 
@@ -300,10 +303,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
         {!isLoggedIn && (
           <div className="bg-[#003087]/5 border border-[#003087]/10 rounded-2xl p-6 text-center mb-6">
             <Shield className="w-10 h-10 text-[#003087] mx-auto mb-3" />
-            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-2">Connexion requise</h3>
-            <p className="text-sm text-gray-600 mb-4">Pour acceder a votre portefeuille, veuillez vous connecter.</p>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-2">{t('walletModule.guestTitle', 'Connexion requise')}</h3>
+            <p className="text-sm text-gray-600 mb-4">{t('walletModule.guestBody', 'Pour accéder à votre portefeuille, veuillez vous connecter.')}</p>
             <a href="/auth/login" className="px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors inline-block">
-              Se connecter
+              {t('walletModule.login', 'Se connecter')}
             </a>
           </div>
         )}
@@ -330,7 +333,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
 
         {walletError && (
           <div className="bg-red-50 rounded-2xl p-4 mb-6 text-center border border-red-200">
-            <p className="text-sm text-[#D93025]">Erreur lors du chargement des donnees du portefeuille.</p>
+            <p className="text-sm text-[#D93025]">{t('walletModule.errorLoading', 'Erreur lors du chargement des données du portefeuille.')}</p>
           </div>
         )}
 
@@ -347,7 +350,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               ) : (
                 <div className="bg-gradient-to-br from-[#003087] to-[#001a4d] rounded-xl p-6 text-white">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm text-white/60">Solde disponible (balance_available)</p>
+                    <p className="text-sm text-white/60">{t('walletModule.balanceAvailableLabel', 'Solde disponible (balance_available)')}</p>
                     <button onClick={() => setShowBalance(!showBalance)} className="p-1.5 rounded-lg hover:bg-white/10">
                       {showBalance ? <Eye className="w-4 h-4 text-white/60" /> : <EyeOff className="w-4 h-4 text-white/60" />}
                     </button>
@@ -357,19 +360,19 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 bg-white/10 rounded-2xl">
-                      <p className="text-[10px] text-white/60">Escrow bloque</p>
+                      <p className="text-[10px] text-white/60">{t('walletModule.balanceEscrowHeld', 'Escrow bloqué')}</p>
                       <p className="font-mono text-sm font-bold flex items-center gap-1"><Lock className="w-3 h-3" /> {showBalance ? convertCurrency(escrowHeld, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
-                      <p className="text-[10px] text-white/60">Paiement en attente</p>
+                      <p className="text-[10px] text-white/60">{t('walletModule.balancePendingPayout', 'Paiement en attente')}</p>
                       <p className="font-mono text-sm font-bold flex items-center gap-1"><Clock className="w-3 h-3" /> {showBalance ? convertCurrency(pendingPayout, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
-                      <p className="text-[10px] text-white/60">Total transacted</p>
+                      <p className="text-[10px] text-white/60">{t('walletModule.balanceTotalTransacted', 'Total transacted')}</p>
                       <p className="font-mono text-sm font-bold flex items-center gap-1"><ArrowRightLeft className="w-3 h-3" /> {showBalance ? convertCurrency(totalTransactedLifetime, selectedCurrency, rates) : '****'}</p>
                     </div>
                     <div className="p-3 bg-white/10 rounded-2xl">
-                      <p className="text-[10px] text-white/60">AfriPoints</p>
+                      <p className="text-[10px] text-white/60">{t('walletModule.balanceAfriPoints', 'AfriPoints')}</p>
                       <p className="font-mono text-sm font-bold text-[#D4AF37] flex items-center gap-1"><Star className="w-3.5 h-3.5" /> {afriPoints}</p>
                     </div>
                   </div>
@@ -379,10 +382,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               {/* Balance Breakdown Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Disponible', key: 'balance_available', value: balance, icon: <Banknote className="w-5 h-5" />, color: '#00A651' },
-                  { label: 'Escrow', key: 'balance_escrow_held', value: escrowHeld, icon: <Lock className="w-5 h-5" />, color: '#009CDE' },
-                  { label: 'En attente', key: 'balance_pending_payout', value: pendingPayout, icon: <Clock className="w-5 h-5" />, color: '#D4AF37' },
-                  { label: 'Total trans.', key: 'total_transacted_lifetime', value: totalTransactedLifetime, icon: <TrendingUp className="w-5 h-5" />, color: '#003087' },
+                  { label: t('walletModule.balanceCardAvailable', 'Disponible'), key: 'balance_available', value: balance, icon: <Banknote className="w-5 h-5" />, color: '#00A651' },
+                  { label: t('walletModule.balanceCardEscrow', 'Escrow'), key: 'balance_escrow_held', value: escrowHeld, icon: <Lock className="w-5 h-5" />, color: '#009CDE' },
+                  { label: t('walletModule.balanceCardPending', 'En attente'), key: 'balance_pending_payout', value: pendingPayout, icon: <Clock className="w-5 h-5" />, color: '#D4AF37' },
+                  { label: t('walletModule.balanceCardTotal', 'Total trans.'), key: 'total_transacted_lifetime', value: totalTransactedLifetime, icon: <TrendingUp className="w-5 h-5" />, color: '#003087' },
                 ].map((item) => (
                   <motion.button key={item.key} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     className="bg-white rounded-2xl p-4 shadow-sm border text-left hover:border-[#003087]/20 transition-all">
@@ -396,14 +399,14 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               {/* KYC Level Indicator */}
               <div className="bg-white rounded-2xl p-4 shadow-sm border">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-bold text-[#0a2a5e] flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-[#003087]" /> Niveau KYC</h4>
+                  <h4 className="text-sm font-bold text-[#0a2a5e] flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-[#003087]" /> {t('walletModule.kycLevelLabel', 'Niveau KYC')}</h4>
                   <span className="font-mono text-sm font-bold text-[#003087]">{kycLevel}/3</span>
                 </div>
                 <div className="flex gap-2">
                   {[
-                    { level: 1, label: 'Email', required: false },
-                    { level: 2, label: 'Identite', required: true },
-                    { level: 3, label: 'Domicile', required: true },
+                    { level: 1, label: t('walletModule.kycLevelEmail', 'Email'), required: false },
+                    { level: 2, label: t('walletModule.kycLevelIdentity', 'Identité'), required: true },
+                    { level: 3, label: t('walletModule.kycLevelDomicile', 'Domicile'), required: true },
                   ].map((item) => (
                     <div key={item.level} className={`flex-1 p-2 rounded-xl text-center ${
                       kycLevel >= item.level ? 'bg-[#00A651]/10 border border-[#00A651]/20' : 'bg-gray-50 border border-gray-200'
@@ -420,10 +423,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               {/* Quick Actions */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Ajouter fonds', icon: <Download className="w-5 h-5" />, action: () => setActiveTab('add') },
-                  { label: 'Retirer', icon: <Upload className="w-5 h-5" />, action: () => setActiveTab('withdraw') },
-                  { label: 'Historique', icon: <ClipboardList className="w-5 h-5" />, action: () => setActiveTab('history') },
-                  { label: 'AfriPoints', icon: <Star className="w-5 h-5 text-yellow-500" />, action: () => setActiveTab('points') },
+                  { label: t('walletModule.quickActionAddFunds', 'Ajouter fonds'), icon: <Download className="w-5 h-5" />, action: () => setActiveTab('add') },
+                  { label: t('walletModule.quickActionWithdraw', 'Retirer'), icon: <Upload className="w-5 h-5" />, action: () => setActiveTab('withdraw') },
+                  { label: t('walletModule.quickActionHistory', 'Historique'), icon: <ClipboardList className="w-5 h-5" />, action: () => setActiveTab('history') },
+                  { label: t('walletModule.quickActionPoints', 'AfriPoints'), icon: <Star className="w-5 h-5 text-yellow-500" />, action: () => setActiveTab('points') },
                 ].map(btn => (
                   <motion.button key={btn.label} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={btn.action}
                     className="bg-white rounded-2xl p-4 shadow-sm border text-center hover:border-[#003087]/20 transition-all">
@@ -436,15 +439,15 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
               {/* Recent Transactions */}
               <div className="bg-white rounded-xl p-5 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display text-base font-bold text-[#0a2a5e]">Transactions recentes</h3>
-                  <button onClick={() => setActiveTab('history')} className="text-xs text-[#003087] font-semibold">Voir tout &rarr;</button>
+                  <h3 className="font-display text-base font-bold text-[#0a2a5e]">{t('walletModule.recentTransactions', 'Transactions récentes')}</h3>
+                  <button onClick={() => setActiveTab('history')} className="text-xs text-[#003087] font-semibold">{t('walletModule.viewAll', 'Voir tout →')}</button>
                 </div>
                 {walletLoading ? (
                   <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-3"><Skeleton className="w-10 h-10 rounded-lg shrink-0" /><div className="flex-1"><Skeleton className="h-4 w-40 mb-1" /><Skeleton className="h-3 w-20" /></div><Skeleton className="h-4 w-20" /></div>
                   ))}</div>
                 ) : transactions.length === 0 ? (
-                  <div className="text-center py-8"><p className="text-sm text-gray-500">Aucune transaction recente</p></div>
+                  <div className="text-center py-8"><p className="text-sm text-gray-500">{t('walletModule.noRecent', 'Aucune transaction récente')}</p></div>
                 ) : (
                   <div className="space-y-3">
                     {transactions.slice(0, 4).map((txn: WalletTransaction) => (
@@ -485,7 +488,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                     </div>
                   ))}</div>
                 ) : filteredTransactions.length === 0 ? (
-                  <div className="text-center py-8"><p className="text-sm text-gray-500">Aucune transaction trouvee</p></div>
+                  <div className="text-center py-8"><p className="text-sm text-gray-500">{t('walletModule.noFound', 'Aucune transaction trouvée')}</p></div>
                 ) : (
                   <div className="space-y-3 max-h-[500px] overflow-y-auto">
                     {filteredTransactions.map((txn: WalletTransaction, i: number) => (
@@ -503,7 +506,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                           <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${
                             txn.status === 'completed' ? 'text-[#00A651]' : txn.status === 'pending' ? 'text-[#D4AF37]' : 'text-[#D93025]'
                           }`}>
-                            {txn.status === 'completed' ? <><CheckCircle className="w-3 h-3" /> Valide</> : txn.status === 'pending' ? <><Hourglass className="w-3 h-3" /> En attente</> : <><XCircle className="w-3 h-3" /> Echoue</>}
+                            {txn.status === 'completed' ? <><CheckCircle className="w-3 h-3" /> {t('walletModule.txnValid', 'Validé')}</> : txn.status === 'pending' ? <><Hourglass className="w-3 h-3" /> {t('walletModule.txnPending', 'En attente')}</> : <><XCircle className="w-3 h-3" /> {t('walletModule.txnFailed', 'Échoué')}</>}
                           </span>
                         </div>
                       </motion.div>
@@ -518,9 +521,9 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
           {activeTab === 'add' && (
             <motion.div key="add" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-lg mx-auto">
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Download className="w-5 h-5 text-[#00A651]" /> Ajouter des fonds</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Download className="w-5 h-5 text-[#00A651]" /> {t('walletModule.addFundsTitle', 'Ajouter des fonds')}</h3>
                 <div className="mb-5">
-                  <label className="text-xs text-gray-500 mb-1 block">Montant (FCFA)</label>
+                  <label className="text-xs text-gray-500 mb-1 block">{t('walletModule.amountLabel', 'Montant (FCFA)')}</label>
                   <input type="number" value={addAmount} onChange={e => setAddAmount(e.target.value)} placeholder="0"
                     className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-lg font-mono font-bold focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20" />
                   <div className="flex gap-2 mt-2">
@@ -531,7 +534,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                     ))}
                   </div>
                 </div>
-                <label className="text-xs text-gray-500 mb-2 block">Moyen de paiement</label>
+                <label className="text-xs text-gray-500 mb-2 block">{t('walletModule.paymentMethodLabel', 'Moyen de paiement')}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                   {paymentProviders.map(p => (
                     <motion.button key={p.key} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setAddProvider(p.key)}
@@ -543,7 +546,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 </div>
                 <button onClick={handleDeposit} disabled={!addAmount || !addProvider || createWalletTx.isPending}
                   className="w-full py-3 bg-[#00A651] text-white rounded-lg font-semibold text-sm hover:bg-[#008f46] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  {createWalletTx.isPending ? 'Traitement en cours...' : `Deposer ${addAmount ? formatFCFA(Number(addAmount)) : ''}`}
+                  {createWalletTx.isPending ? t('walletModule.processing', 'Traitement en cours...') : `${t('walletModule.deposit', 'Déposer')} ${addAmount ? formatFCFA(Number(addAmount)) : ''}`}
                 </button>
               </div>
             </motion.div>
@@ -553,12 +556,12 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
           {activeTab === 'withdraw' && (
             <motion.div key="withdraw" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-lg mx-auto">
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Upload className="w-5 h-5 text-[#D93025]" /> Retirer des fonds</h3>
-                <p className="text-xs text-gray-500 mb-4">Solde disponible : <span className="font-mono font-bold text-[#00A651]">{formatFCFA(balance)}</span></p>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Upload className="w-5 h-5 text-[#D93025]" /> {t('walletModule.withdrawTitle', 'Retirer des fonds')}</h3>
+                <p className="text-xs text-gray-500 mb-4">{t('walletModule.balanceLabel', 'Solde disponible :')} <span className="font-mono font-bold text-[#00A651]">{formatFCFA(balance)}</span></p>
 
                 <KycGate kycLevel={kycLevel} requiredLevel={2}>
                   <div className="mb-5">
-                    <label className="text-xs text-gray-500 mb-1 block">Montant du retrait (FCFA)</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('walletModule.withdrawAmountLabel', 'Montant du retrait (FCFA)')}</label>
                     <input type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="0"
                       className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-lg font-mono font-bold focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20" />
                     <div className="flex gap-2 mt-2">
@@ -569,7 +572,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                       ))}
                     </div>
                   </div>
-                  <label className="text-xs text-gray-500 mb-2 block">Destination Mobile Money</label>
+                  <label className="text-xs text-gray-500 mb-2 block">{t('walletModule.withdrawDestinationLabel', 'Destination Mobile Money')}</label>
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     {paymentProviders.filter(p => ['mtn', 'orange', 'moov'].includes(p.key)).map(p => (
                       <motion.button key={p.key} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setWithdrawProvider(p.key)}
@@ -581,7 +584,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   </div>
                   <button onClick={handleWithdraw} disabled={!withdrawAmount || !withdrawProvider || Number(withdrawAmount) > balance || createWalletTx.isPending}
                     className="w-full py-3 bg-[#D93025] text-white rounded-lg font-semibold text-sm hover:bg-[#b3261e] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                    {createWalletTx.isPending ? 'Traitement en cours...' : `Retirer ${withdrawAmount ? formatFCFA(Number(withdrawAmount)) : ''}`}
+                    {createWalletTx.isPending ? t('walletModule.processing', 'Traitement en cours...') : `${t('walletModule.withdraw', 'Retirer')} ${withdrawAmount ? formatFCFA(Number(withdrawAmount)) : ''}`}
                   </button>
                 </KycGate>
               </div>
@@ -597,13 +600,13 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 </div>
               ) : (
                 <div className="bg-gradient-to-br from-[#D4AF37] to-[#a08820] rounded-xl p-6 text-white text-center">
-                  <p className="text-sm text-white/60 mb-1">Vos AfriPoints</p>
+                  <p className="text-sm text-white/60 mb-1">{t('walletModule.pointsTitle', 'Vos AfriPoints')}</p>
                   <p className="font-mono text-4xl font-bold mb-2 flex items-center justify-center gap-2"><Star className="w-6 h-6" /> {afriPoints}</p>
-                  <p className="text-xs text-white/70">1 point = 1 FCFA de credit</p>
+                  <p className="text-xs text-white/70">{t('walletModule.pointsRateHint', '1 point = 1 FCFA de crédit')}</p>
                 </div>
               )}
               <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4">Options d&apos;echange</h3>
+                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4">{t('walletModule.pointsExchangeOptions', 'Options d\'échange')}</h3>
                 <div className="space-y-3">
                   {afriPointsRedemption.map((item, i) => (
                     <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, ease: easeOut }}
@@ -616,7 +619,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                         disabled={!item.available || afriPoints < item.points || createWalletTx.isPending}
                         className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                           item.available && afriPoints >= item.points ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}>{createWalletTx.isPending ? '...' : 'Echanger'}</button>
+                        }`}>{createWalletTx.isPending ? '...' : t('walletModule.pointsExchange', 'Échanger')}</button>
                     </motion.div>
                   ))}
                 </div>

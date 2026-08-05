@@ -12,6 +12,7 @@ import {
   TrendingUp, Rocket, Gem, Briefcase, ChevronRight, ArrowRight, Sparkles,
   CircleDollarSign, Target, MessageCircle, FileText, BadgeCheck,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -215,6 +216,7 @@ const comparisonFeatures = [
 type CategoryKey = 'agent' | 'hotel' | 'artisan';
 
 export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps) {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('agent');
   const [showComparison, setShowComparison] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -275,9 +277,9 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
   }, [userId]);
 
   const categories: { key: CategoryKey; label: string; icon: React.ReactNode }[] = [
-    { key: 'agent', label: 'Agent', icon: <Briefcase className="w-4 h-4" /> },
-    { key: 'hotel', label: 'PMS Hôtelier', icon: <Hotel className="w-4 h-4" /> },
-    { key: 'artisan', label: 'Artisan', icon: <Wrench className="w-4 h-4" /> },
+    { key: 'agent', label: t('subscriptionModule.categoryAgent', 'Agent'), icon: <Briefcase className="w-4 h-4" /> },
+    { key: 'hotel', label: t('subscriptionModule.categoryHotel', 'PMS Hôtelier'), icon: <Hotel className="w-4 h-4" /> },
+    { key: 'artisan', label: t('subscriptionModule.categoryArtisan', 'Artisan'), icon: <Wrench className="w-4 h-4" /> },
   ];
 
   const getTiers = () => {
@@ -297,8 +299,8 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
     createSubscription.mutate(
       { planType: selectedPlan, priceXof: selectedPlanPrice, currency: 'XOF', autoRenew: true },
       {
-        onSuccess: () => { toast.success('Abonnement activé', { description: 'Votre nouveau plan est maintenant actif' }); setShowUpgrade(false); setSelectedPlan(null); },
-        onError: (error: Error) => { toast.error('Erreur lors de l\'activation', { description: error.message }); },
+        onSuccess: () => { toast.success(t('subscriptionModule.toastActivated', 'Abonnement activé'), { description: t('subscriptionModule.toastActivatedDesc', 'Votre nouveau plan est maintenant actif') }); setShowUpgrade(false); setSelectedPlan(null); },
+        onError: (error: Error) => { toast.error(t('subscriptionModule.toastActivationError', 'Erreur lors de l\'activation'), { description: error.message }); },
       }
     );
   };
@@ -307,8 +309,8 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
     cancelSubscription.mutate(
       { id: subId },
       {
-        onSuccess: () => { toast.success('Abonnement annulé', { description: 'Votre abonnement a été annulé. Il restera actif jusqu\'à la fin de la période en cours.' }); },
-        onError: (error: Error) => { toast.error('Erreur lors de l\'annulation', { description: error.message }); },
+        onSuccess: () => { toast.success(t('subscriptionModule.toastCancelled', 'Abonnement annulé'), { description: t('subscriptionModule.toastCancelledDesc', 'Votre abonnement a été annulé. Il restera actif jusqu\'à la fin de la période en cours.') }); },
+        onError: (error: Error) => { toast.error(t('subscriptionModule.toastCancelError', 'Erreur lors de l\'annulation'), { description: error.message }); },
       }
     );
   };
@@ -320,9 +322,9 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4"><RefreshCw className="w-4 h-4" /> Abonnements Premium</span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">Plans <span className="text-[#003087]">Premium</span></h1>
-          <p className="text-gray-500 max-w-lg mx-auto">Choisissez le plan adapté à votre activité et débloquez tout le potentiel d&apos;AfriBayit</p>
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4"><RefreshCw className="w-4 h-4" /> {t('subscriptionModule.eyebrow', 'Abonnements Premium')}</span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">{t('subscriptionModule.title', 'Plans Premium').split(' ')[0]} <span className="text-[#003087]">{t('subscriptionModule.title', 'Plans Premium').split(' ')[1]}</span></h1>
+          <p className="text-gray-500 max-w-lg mx-auto">{t('subscriptionModule.subtitle', 'Choisissez le plan adapté à votre activité et débloquez tout le potentiel d\'AfriBayit')}</p>
         </motion.div>
 
         {/* Current Subscription Banner */}
@@ -332,26 +334,26 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
           ) : currentSubscription ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-white/60 mb-1">Abonnement actuel</p>
+                <p className="text-xs text-white/60 mb-1">{t('subscriptionModule.current', 'Abonnement actuel')}</p>
                 <div className="flex items-center gap-2">
                   <h3 className="font-display text-xl font-bold">{currentSubscription.plan}</h3>
-                  <span className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${currentSubscription.status === 'active' ? 'bg-[#00A651]' : 'bg-[#D4AF37]'}`}>{currentSubscription.status === 'active' ? 'Actif' : currentSubscription.status}</span>
+                  <span className={`px-2 py-0.5 text-white text-[10px] font-bold rounded-full ${currentSubscription.status === 'active' ? 'bg-[#00A651]' : 'bg-[#D4AF37]'}`}>{currentSubscription.status === 'active' ? t('subscriptionModule.statusActive', 'Actif') : currentSubscription.status}</span>
                 </div>
-                <p className="text-sm text-white/70 mt-1">Prochaine facturation : {currentSubscription.nextBilling} · {currentSubscription.paymentMethod}</p>
+                <p className="text-sm text-white/70 mt-1">{t('subscriptionModule.nextBilling', 'Prochaine facturation :')} {currentSubscription.nextBilling} · {currentSubscription.paymentMethod}</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
                   <p className="font-mono text-2xl font-bold">{new Intl.NumberFormat('fr-FR').format(currentSubscription.price)} FCFA</p>
-                  <p className="text-xs text-white/60">/mois</p>
+                  <p className="text-xs text-white/60">{t('subscriptionModule.perMonth', '/mois')}</p>
                 </div>
                 {currentSubscription.status === 'active' && (
-                  <button onClick={() => handleCancelSubscription(currentSubscription.id)} disabled={cancelSubscription.isPending} className="px-4 py-2 border border-white/30 rounded-lg text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50">{cancelSubscription.isPending ? '...' : 'Annuler'}</button>
+                  <button onClick={() => handleCancelSubscription(currentSubscription.id)} disabled={cancelSubscription.isPending} className="px-4 py-2 border border-white/30 rounded-lg text-xs font-semibold text-white hover:bg-white/10 transition-colors disabled:opacity-50">{cancelSubscription.isPending ? '...' : t('subscriptionModule.cancel', 'Annuler')}</button>
                 )}
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <div><p className="text-xs text-white/60 mb-1">Aucun abonnement actif</p><h3 className="font-display text-xl font-bold">Choisissez un plan</h3><p className="text-sm text-white/70 mt-1">Débloquez toutes les fonctionnalités d&apos;AfriBayit</p></div>
+              <div><p className="text-xs text-white/60 mb-1">{t('subscriptionModule.noActive', 'Aucun abonnement actif')}</p><h3 className="font-display text-xl font-bold">{t('subscriptionModule.choosePlan', 'Choisissez un plan')}</h3><p className="text-sm text-white/70 mt-1">{t('subscriptionModule.unlockAll', 'Débloquez toutes les fonctionnalités d\'AfriBayit')}</p></div>
             </div>
           )}
         </motion.div>
@@ -366,8 +368,8 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
         {/* Boost Algorithm Visualization (Agent only) */}
         {activeCategory === 'agent' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl p-6 shadow-sm border mb-8">
-            <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> Algorithme de Boost</h3>
-            <p className="text-sm text-gray-500 mb-4">Plus votre plan est élevé, plus vos annonces sont mises en avant dans les résultats de recherche.</p>
+            <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-[#D4AF37]" /> {t('subscriptionModule.boostTitle', 'Algorithme de Boost')}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t('subscriptionModule.boostDesc', 'Plus votre plan est élevé, plus vos annonces sont mises en avant dans les résultats de recherche.')}</p>
             <div className="flex items-end gap-3">
               {agentTiers.map((tier, i) => (
                 <div key={tier.id} className="flex-1 text-center">
@@ -388,7 +390,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
             </div>
             <div className="mt-3 flex items-center gap-2 justify-center">
               <ArrowRight className="w-4 h-4 text-[#00A651]" />
-              <p className="text-xs text-[#00A651] font-medium">Boost progressif : plus de visibilité = plus de contacts = plus de ventes</p>
+              <p className="text-xs text-[#00A651] font-medium">{t('subscriptionModule.boostHint', 'Boost progressif : plus de visibilité = plus de contacts = plus de ventes')}</p>
             </div>
           </motion.div>
         )}
@@ -402,7 +404,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                 const agentTier = isAgent ? agentTiers.find(t => t.id === tier.id) : null;
                 return (
                   <motion.div key={tier.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, ease: easeOut }} className={`bg-white rounded-xl p-5 shadow-sm border relative flex flex-col ${'popular' in tier && tier.popular ? 'ring-2 ring-[#D4AF37]' : ''}`}>
-                    {Boolean('popular' in tier && tier.popular) && (<span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>)}
+                    {Boolean('popular' in tier && tier.popular) && (<span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">{t('subscriptionModule.popular', 'Populaire')}</span>)}
                     <div className="text-center mb-3">
                       <h3 className="font-display text-base font-bold text-[#0a2a5e]">{tier.name}</h3>
                       <p className="text-xs text-gray-500 mb-1">{tier.desc}</p>
@@ -416,27 +418,27 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                     {/* Usage metrics for agent tiers */}
                     {agentTier && agentTier.limits && (
                       <div className="mb-4 p-3 bg-gray-50 rounded-xl space-y-2">
-                        <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Utilisation actuelle</p>
+                        <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{t('subscriptionModule.currentUsage', 'Utilisation actuelle')}</p>
                         {agentTier.limits.annonces > 0 && (
                           <div>
-                            <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">Annonces</span><span className="font-mono font-bold">{currentUsage.annonces}/{agentTier.limits.annonces === -1 ? '∞' : agentTier.limits.annonces}</span></div>
+                            <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">{t('subscriptionModule.annonces', 'Annonces')}</span><span className="font-mono font-bold">{currentUsage.annonces}/{agentTier.limits.annonces === -1 ? '∞' : agentTier.limits.annonces}</span></div>
                             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-lg bg-[#003087]" style={{ width: `${Math.min((currentUsage.annonces / (agentTier.limits.annonces || 1)) * 100, 100)}%` }} /></div>
                           </div>
                         )}
                         {agentTier.limits.inmail > 0 && (
                           <div>
-                            <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">InMail</span><span className="font-mono font-bold">{currentUsage.inmail}/{agentTier.limits.inmail === -1 ? '∞' : agentTier.limits.inmail}</span></div>
+                            <div className="flex justify-between text-[10px] mb-1"><span className="text-gray-500">{t('subscriptionModule.inmail', 'InMail')}</span><span className="font-mono font-bold">{currentUsage.inmail}/{agentTier.limits.inmail === -1 ? '∞' : agentTier.limits.inmail}</span></div>
                             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full rounded-lg bg-[#009CDE]" style={{ width: `${Math.min((currentUsage.inmail / (agentTier.limits.inmail || 1)) * 100, 100)}%` }} /></div>
                           </div>
                         )}
                         {agentTier.limits.annonces === -1 && agentTier.limits.inmail === -1 && (
-                          <p className="text-[10px] text-[#00A651] font-medium">Illimité</p>
+                          <p className="text-[10px] text-[#00A651] font-medium">{t('subscriptionModule.unlimited', 'Illimité')}</p>
                         )}
                       </div>
                     )}
 
                     <button onClick={() => handleChoosePlan(tier.planType, tier.price)} disabled={currentSubscription?.plan === tier.name} className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-colors ${currentSubscription?.plan === tier.name ? 'bg-gray-100 text-gray-500 cursor-default' : tier.color === '#D4AF37' ? 'bg-[#D4AF37] text-white hover:bg-[#c4a030]' : 'bg-[#003087] text-white hover:bg-[#0047b3]'}`}>
-                      {currentSubscription?.plan === tier.name ? 'Plan actuel' : tier.price === 0 && tier.id === 'starter' ? 'Commencer gratuitement' : 'Choisir'}
+                      {currentSubscription?.plan === tier.name ? t('subscriptionModule.planCurrent', 'Plan actuel') : tier.price === 0 && tier.id === 'starter' ? t('subscriptionModule.planStartFree', 'Commencer gratuitement') : t('subscriptionModule.planChoose', 'Choisir')}
                     </button>
                   </motion.div>
                 );
@@ -446,12 +448,12 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
             {/* Premium Benefits Detail (Agent only) */}
             {activeCategory === 'agent' && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8 bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-[#D4AF37]" /> Avantages Premium détaillés</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Sparkles className="w-5 h-5 text-[#D4AF37]" /> {t('subscriptionModule.premiumBenefits', 'Avantages Premium détaillés')}</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 pr-4 text-gray-500 font-medium">Avantage</th>
+                        <th className="text-left py-3 pr-4 text-gray-500 font-medium">{t('subscriptionModule.benefit', 'Avantage')}</th>
                         <th className="text-center py-3 px-2 font-bold text-gray-400">Starter</th>
                         <th className="text-center py-3 px-2 font-bold text-[#00A651]">Essentiel</th>
                         <th className="text-center py-3 px-2 font-bold text-[#009CDE]">Avancé</th>
@@ -491,7 +493,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
             {/* Feature Comparison */}
             {activeCategory === 'agent' && (
               <div className="mt-6">
-                <button onClick={() => setShowComparison(!showComparison)} className="px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-600 hover:bg-gray-50 transition-all">{showComparison ? 'Masquer' : 'Afficher'} la comparaison détaillée</button>
+                <button onClick={() => setShowComparison(!showComparison)} className="px-4 py-2 rounded-lg text-sm font-medium bg-white border text-gray-600 hover:bg-gray-50 transition-all">{showComparison ? t('subscriptionModule.hideComparison', 'Masquer la comparaison détaillée') : t('subscriptionModule.showComparison', 'Afficher la comparaison détaillée')}</button>
                 <AnimatePresence>
                   {showComparison && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 overflow-hidden">
@@ -499,7 +501,7 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b">
-                              <th className="text-left py-3 pr-4 text-gray-500 font-medium">Fonctionnalité</th>
+                              <th className="text-left py-3 pr-4 text-gray-500 font-medium">{t('subscriptionModule.feature', 'Fonctionnalité')}</th>
                               <th className="text-center py-3 px-2 font-bold text-gray-400">Starter</th>
                               <th className="text-center py-3 px-2 font-bold text-[#00A651]">Essentiel</th>
                               <th className="text-center py-3 px-2 font-bold text-[#009CDE]">Avancé</th>
@@ -534,11 +536,11 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
                   <Ruler className="w-5 h-5 text-[#009CDE]" />
-                  <div><p className="text-sm font-semibold text-[#0a2a5e]">Géomètre</p><p className="text-xs text-gray-500">Plans sur mesure — Contactez-nous</p></div>
+                  <div><p className="text-sm font-semibold text-[#0a2a5e]">{t('subscriptionModule.geometer', 'Géomètre')}</p><p className="text-xs text-gray-500">{t('subscriptionModule.geometerDesc', 'Plans sur mesure — Contactez-nous')}</p></div>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-sm border flex items-center gap-3">
                   <Scale className="w-5 h-5 text-[#D4AF37]" />
-                  <div><p className="text-sm font-semibold text-[#0a2a5e]">Notaire</p><p className="text-xs text-gray-500">Plans Standard / Premium / Elite</p></div>
+                  <div><p className="text-sm font-semibold text-[#0a2a5e]">{t('subscriptionModule.notary', 'Notaire')}</p><p className="text-xs text-gray-500">{t('subscriptionModule.notaryDesc', 'Plans Standard / Premium / Elite')}</p></div>
                 </div>
               </motion.div>
             )}
@@ -549,16 +551,16 @@ export default function SubscriptionsModule({ onNavigate, userId }: ModuleProps)
         {showUpgrade && selectedPlan && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl p-6 max-w-sm w-full">
-              <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Confirmer le changement</h3>
-              <p className="text-sm text-gray-500 mb-4">Vous allez changer votre abonnement. Le prorata sera calculé automatiquement.</p>
+              <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">{t('subscriptionModule.modalConfirmChange', 'Confirmer le changement')}</h3>
+              <p className="text-sm text-gray-500 mb-4">{t('subscriptionModule.modalDesc', 'Vous allez changer votre abonnement. Le prorata sera calculé automatiquement.')}</p>
               <div className="p-3 bg-gray-50 rounded-2xl mb-4">
-                <p className="text-xs text-gray-500">Nouveau plan</p>
+                <p className="text-xs text-gray-500">{t('subscriptionModule.modalNewPlan', 'Nouveau plan')}</p>
                 <p className="text-sm font-bold text-[#0a2a5e]">{selectedPlan.replace(/_/g, ' ').toUpperCase()}</p>
                 {selectedPlanPrice > 0 && (<p className="font-mono text-lg font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(selectedPlanPrice)} FCFA/mois</p>)}
               </div>
               <div className="flex gap-3">
-                <button onClick={() => setShowUpgrade(false)} className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">Annuler</button>
-                <button onClick={handleConfirmUpgrade} disabled={createSubscription.isPending} className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50">{createSubscription.isPending ? 'Traitement...' : 'Confirmer'}</button>
+                <button onClick={() => setShowUpgrade(false)} className="flex-1 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">{t('subscriptionModule.modalCancel', 'Annuler')}</button>
+                <button onClick={handleConfirmUpgrade} disabled={createSubscription.isPending} className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] disabled:opacity-50">{createSubscription.isPending ? t('subscriptionModule.modalProcessing', 'Traitement...') : t('subscriptionModule.modalConfirm', 'Confirmer')}</button>
               </div>
             </motion.div>
           </motion.div>

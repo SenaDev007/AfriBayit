@@ -7,6 +7,7 @@ import { useCreateProperty } from '@/hooks/useProperties';
 import { Home, Building2, Map, Landmark, Store, BedDouble, Coins, Key, TrendingUp, ClipboardList, PenTool, Camera, FileText, Bot, CheckCircle, PartyPopper, Send, User, Hourglass, Check, X, Lightbulb, AlertTriangle } from 'lucide-react';
 import { getRequiredDocs, getDocLabel, getDocDescription, normalizeCountryCode, COUNTRY_NAMES } from '@/lib/constants';
 import { api } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -50,13 +51,13 @@ const featuresList = [
 
 // Publish steps: Saisie → Upload Documents → Vérification IA → Validation → Publication
 const publishSteps = [
-  { step: 1, title: 'Saisie', desc: 'Type, prix, surface, localisation', icon: <ClipboardList className="w-4 h-4" /> },
-  { step: 2, title: 'Description', desc: 'Texte et caractéristiques', icon: <PenTool className="w-4 h-4" /> },
-  { step: 3, title: 'Photos', desc: "Jusqu'à 20 photos", icon: <Camera className="w-4 h-4" /> },
-  { step: 4, title: 'Documents', desc: 'Upload documents légaux requis', icon: <FileText className="w-4 h-4" /> },
-  { step: 5, title: 'Vérification IA', desc: 'Validation automatique des documents', icon: <Bot className="w-4 h-4" /> },
-  { step: 6, title: 'Validation', desc: 'Révision et soumission', icon: <CheckCircle className="w-4 h-4" /> },
-  { step: 7, title: 'Publication', desc: 'Mise en ligne du bien', icon: <PartyPopper className="w-4 h-4" /> },
+  { step: 1, titleKey: 'propertyPublish.stepLabel', titleFallback: 'Saisie', descKey: 'propertyPublish.stepDescSaisie', descFallback: 'Type, prix, surface, localisation', icon: <ClipboardList className="w-4 h-4" /> },
+  { step: 2, titleKey: 'propertyPublish.descLabel', titleFallback: 'Description', descKey: 'propertyPublish.stepDescDescription', descFallback: 'Texte et caractéristiques', icon: <PenTool className="w-4 h-4" /> },
+  { step: 3, titleKey: 'propertyPublish.photosLabel2', titleFallback: 'Photos', descKey: 'propertyPublish.stepDescPhotos', descFallback: 'Jusqu\'à 20 photos', icon: <Camera className="w-4 h-4" /> },
+  { step: 4, titleKey: 'propertyPublish.documentsLabel', titleFallback: 'Documents', descKey: 'propertyPublish.stepDescDocuments', descFallback: 'Upload documents légaux requis', icon: <FileText className="w-4 h-4" /> },
+  { step: 5, titleKey: 'propertyPublish.aiVerificationLabel', titleFallback: 'Vérification IA', descKey: 'propertyPublish.stepDescAiVerification', descFallback: 'Validation automatique des documents', icon: <Bot className="w-4 h-4" /> },
+  { step: 6, titleKey: 'propertyPublish.validationLabel', titleFallback: 'Validation', descKey: 'propertyPublish.stepDescValidation', descFallback: 'Révision et soumission', icon: <CheckCircle className="w-4 h-4" /> },
+  { step: 7, titleKey: 'propertyPublish.publicationLabel', titleFallback: 'Publication', descKey: 'propertyPublish.stepDescPublication', descFallback: 'Mise en ligne du bien', icon: <PartyPopper className="w-4 h-4" /> },
 ];
 
 interface FormData {
@@ -111,6 +112,7 @@ const initialFormData: FormData = {
 };
 
 export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [submitted, setSubmitted] = useState(false);
@@ -128,7 +130,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
     return getRequiredDocs(selectedCountryCode, formData.propertyType);
   }, [selectedCountryCode, formData.propertyType]);
 
-  const updateField = useCallback((field: keyof FormData, value: string | string[]) => {
+  const updateField = useCallback((field: keyof FormData, value: string | string[] | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -156,13 +158,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
       for (const file of Array.from(files)) {
         // 20-photo limit
         if (formData.photos.length >= 20) {
-          alert('Vous avez atteint la limite de 20 photos par annonce.');
+          alert(t('propertyPublish.alertPhotoLimit', 'Vous avez atteint la limite de 20 photos par annonce.'));
           break;
         }
 
         // 10 MB max per photo
         if (file.size > 10 * 1024 * 1024) {
-          alert(`La photo "${file.name}" dépasse 10 Mo et n'a pas été ajoutée.`);
+          alert(`La photo "${file.name}" ${t('propertyPublish.alertPhotoTooBig', 'dépasse 10 Mo et n\'a pas été ajoutée.')}`);
           continue;
         }
 
@@ -193,7 +195,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           }));
         } catch (err) {
           console.error('[PropertyPublish] Photo upload failed:', err);
-          alert(`Échec de l'upload de "${file.name}". Réessayez.`);
+          alert(`${t('propertyPublish.alertUploadFailed', 'Échec de l\'upload de')} "${file.name}". ${t('propertyPublish.alertUploadFailedRetry', 'Réessayez.')}`);
         }
       }
     };
@@ -268,7 +270,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
       });
       setSubmitted(true);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Erreur lors de la soumission');
+      setSubmitError(err instanceof Error ? err.message : t('propertyPublish.alertSubmitError', 'Erreur lors de la soumission'));
     }
   };
 
@@ -291,18 +293,18 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </motion.div>
-            <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">Annonce soumise !</h3>
+            <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">{t('propertyPublish.successTitle', 'Annonce soumise !')}</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.
+              {t('propertyPublish.successDesc', 'Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.')}
             </p>
 
             {/* Publication Timeline */}
             <div className="text-left space-y-3 mb-6">
               {[
-                { step: 'Soumission', status: 'completed', icon: <Send className="w-4 h-4" /> },
-                { step: 'Vérification IA documents', status: 'in_progress', icon: <Bot className="w-4 h-4" /> },
-                { step: 'Validation humaine', status: 'pending', icon: <User className="w-4 h-4" /> },
-                { step: 'Publication', status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
+                { step: t('propertyPublish.timelineSubmission', 'Soumission'), status: 'completed', icon: <Send className="w-4 h-4" /> },
+                { step: t('propertyPublish.timelineAiVerification', 'Vérification IA documents'), status: 'in_progress', icon: <Bot className="w-4 h-4" /> },
+                { step: t('propertyPublish.timelineHumanValidation', 'Validation humaine'), status: 'pending', icon: <User className="w-4 h-4" /> },
+                { step: t('propertyPublish.timelinePublication', 'Publication'), status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
               ].map((vs, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${
@@ -325,7 +327,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
               onClick={() => { setSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}
               className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
-              Publier un autre bien
+              {t('propertyPublish.publishAnother', 'Publier un autre bien')}
             </button>
           </motion.div>
         </div>
@@ -343,10 +345,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <PenTool className="w-4 h-4" /> Publier un bien
+            <PenTool className="w-4 h-4" /> {t('propertyPublish.eyebrow', 'Publier un bien')}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
-            Nouvelle <span className="text-[#003087]">Annonce</span>
+            {t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[0]} <span className="text-[#003087]">{t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[1]}</span>
           </h1>
         </motion.div>
 
@@ -365,7 +367,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
                   currentStep >= s.step ? 'text-[#003087]' : 'text-gray-400'
                 }`}>
-                  {s.title}
+                  {t(s.titleKey, s.titleFallback)}
                 </p>
               </div>
               {i < publishSteps.length - 1 && (
@@ -384,13 +386,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Informations du bien</h2>
-                  <p className="text-xs text-gray-500">Type de bien, transaction, prix et localisation</p>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step1Title', 'Informations du bien')}</h2>
+                  <p className="text-xs text-gray-500">{t('propertyPublish.step1Desc', 'Type de bien, transaction, prix et localisation')}</p>
                 </div>
 
                 {/* Property Type */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">Type de bien *</label>
+                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldPropertyType', 'Type de bien *')}</label>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {propertyTypes.map(pt => (
                       <button
@@ -409,7 +411,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
                 {/* Transaction Type */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">Type de transaction *</label>
+                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldTransactionType', 'Type de transaction *')}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {transactionTypes.map(tt => (
                       <button
@@ -429,7 +431,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Price & Surface */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Prix (FCFA) *</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldPrice', 'Prix (FCFA) *')}</label>
                     <input
                       type="number"
                       value={formData.price}
@@ -439,7 +441,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Surface (m²) *</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldSurface', 'Surface (m²) *')}</label>
                     <input
                       type="number"
                       value={formData.surface}
@@ -453,15 +455,15 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Rooms */}
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Pièces</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldRooms', 'Pièces')}</label>
                     <input type="number" value={formData.rooms} onChange={e => updateField('rooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Chambres</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldBedrooms', 'Chambres')}</label>
                     <input type="number" value={formData.bedrooms} onChange={e => updateField('bedrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">SDB</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldBathrooms', 'SDB')}</label>
                     <input type="number" value={formData.bathrooms} onChange={e => updateField('bathrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                 </div>
@@ -471,77 +473,77 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <div className="p-4 bg-[#003087]/5 rounded-2xl space-y-3 border border-[#003087]/10">
                     <p className="text-xs font-bold text-[#003087] flex items-center gap-1.5">
                       <Key className="w-3.5 h-3.5" />
-                      Conditions de location (OHADA)
+                      {t('propertyPublish.rentalConditionsTitle', 'Conditions de location (OHADA)')}
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Durée du bail</label>
+                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldLeaseTerm', 'Durée du bail')}</label>
                         <select
                           value={formData.leaseTermMonths}
                           onChange={e => updateField('leaseTermMonths', e.target.value)}
                           className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
                         >
-                          <option value="6">6 mois (bail court)</option>
-                          <option value="12">12 mois (bail standard)</option>
-                          <option value="24">24 mois (2 ans)</option>
-                          <option value="36">36 mois (3 ans — max OHADA)</option>
+                          <option value="6">{t('propertyPublish.leaseTerm6', '6 mois (bail court)')}</option>
+                          <option value="12">{t('propertyPublish.leaseTerm12', '12 mois (bail standard)')}</option>
+                          <option value="24">{t('propertyPublish.leaseTerm24', '24 mois (2 ans)')}</option>
+                          <option value="36">{t('propertyPublish.leaseTerm36', '36 mois (3 ans — max OHADA)')}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Dépôt de garantie</label>
+                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldSecurityDeposit', 'Dépôt de garantie')}</label>
                         <select
                           value={formData.securityDepositMonths}
                           onChange={e => updateField('securityDepositMonths', e.target.value)}
                           className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
                         >
-                          <option value="1">1 mois de loyer</option>
-                          <option value="2">2 mois de loyer</option>
-                          <option value="3">3 mois de loyer (max)</option>
+                          <option value="1">{t('propertyPublish.deposit1', '1 mois de loyer')}</option>
+                          <option value="2">{t('propertyPublish.deposit2', '2 mois de loyer')}</option>
+                          <option value="3">{t('propertyPublish.deposit3', '3 mois de loyer (max)')}</option>
                         </select>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">État du bien</label>
+                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldPropertyState', 'État du bien')}</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => updateField('furnished', 'true' as any)}
+                            onClick={() => updateField('furnished', true)}
                             className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                           >
-                            Meublé
+                            {t('propertyPublish.furnished', 'Meublé')}
                           </button>
                           <button
                             type="button"
-                            onClick={() => updateField('furnished', 'false' as any)}
+                            onClick={() => updateField('furnished', false)}
                             className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                           >
-                            Vide
+                            {t('propertyPublish.empty', 'Vide')}
                           </button>
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Charges</label>
+                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldCharges', 'Charges')}</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => updateField('chargesIncluded', 'true' as any)}
+                            onClick={() => updateField('chargesIncluded', true)}
                             className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                           >
-                            CC
+                            {t('propertyPublish.cc', 'CC')}
                           </button>
                           <button
                             type="button"
-                            onClick={() => updateField('chargesIncluded', 'false' as any)}
+                            onClick={() => updateField('chargesIncluded', false)}
                             className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
                           >
-                            HC
+                            {t('propertyPublish.hc', 'HC')}
                           </button>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Date d&apos;emménagement</label>
+                      <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldMoveInDate', 'Date d\'emménagement')}</label>
                       <input
                         type="date"
                         value={formData.availableFrom}
@@ -551,23 +553,22 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.petsAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
-                        <input type="checkbox" checked={formData.petsAllowed} onChange={e => updateField('petsAllowed', e.target.checked as any)} className="w-3 h-3" />
-                        Animaux
+                        <input type="checkbox" checked={formData.petsAllowed} onChange={e => updateField('petsAllowed', e.target.checked)} className="w-3 h-3" />
+                        {t('propertyPublish.pets', 'Animaux')}
                       </label>
                       <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.smokingAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
-                        <input type="checkbox" checked={formData.smokingAllowed} onChange={e => updateField('smokingAllowed', e.target.checked as any)} className="w-3 h-3" />
-                        Fumeur
+                        <input type="checkbox" checked={formData.smokingAllowed} onChange={e => updateField('smokingAllowed', e.target.checked)} className="w-3 h-3" />
+                        {t('propertyPublish.smoking', 'Fumeur')}
                       </label>
                       <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.subletAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
-                        <input type="checkbox" checked={formData.subletAllowed} onChange={e => updateField('subletAllowed', e.target.checked as any)} className="w-3 h-3" />
-                        Sous-location
+                        <input type="checkbox" checked={formData.subletAllowed} onChange={e => updateField('subletAllowed', e.target.checked)} className="w-3 h-3" />
+                        {t('propertyPublish.sublet', 'Sous-location')}
                       </label>
                     </div>
                     {/* Honoraires info (Décret 2024-1115) */}
                     <div className="p-2 bg-[#D4AF37]/5 rounded-xl">
                       <p className="text-[10px] text-gray-500">
-                        <span className="font-semibold text-[#D4AF37]">Honoraires d&apos;agence (Décret 2024-1115) :</span>{' '}
-                        répartis 50/50 entre bailleur et locataire (max 0,5 mois chacun), calculés automatiquement à la signature du bail.
+                        <span className="font-semibold text-[#D4AF37]">{t('propertyPublish.honorairesInfo', 'Honoraires d\'agence (Décret 2024-1115) : répartis 50/50 entre bailleur et locataire (max 0,5 mois chacun), calculés automatiquement à la signature du bail.')}</span>
                       </p>
                     </div>
                   </div>
@@ -576,27 +577,27 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* City & Quartier */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Ville *</label>
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldCity', 'Ville *')}</label>
                     <select value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white">
-                      <option value="">Sélectionner</option>
+                      <option value="">{t('propertyPublish.fieldSelectPlaceholder', 'Sélectionner')}</option>
                       {cities.map(c => <option key={c.value} value={c.value}>{c.label} ({c.country})</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Quartier</label>
-                    <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder="Ex: Ganhi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldQuartier', 'Quartier')}</label>
+                    <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder={t('propertyPublish.fieldQuartierPlaceholder', 'Ex: Ganhi')} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
                   </div>
                 </div>
 
                 {/* Legal doc preview */}
                 {selectedCountryCode && formData.propertyType && (
                   <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
-                    <p className="text-xs font-semibold text-[#D4AF37] mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Documents requis détectés</p>
+                    <p className="text-xs font-semibold text-[#D4AF37] mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {t('propertyPublish.requiredDocsDetected', 'Documents requis détectés')}</p>
                     <p className="text-[10px] text-gray-500">
                       Pour {COUNTRY_NAMES[selectedCountryCode] || selectedCountryCode} — {propertyTypes.find(p => p.value === formData.propertyType)?.label} :
                       {' '}{requiredDocs.map(d => getDocLabel(d)).join(', ')}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-1">Vous pourrez les télécharger à l&apos;étape 4</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{t('propertyPublish.requiredDocsHint', 'Vous pourrez les télécharger à l\'étape 4')}</p>
                   </div>
                 )}
               </motion.div>
@@ -606,34 +607,34 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Description & Caractéristiques</h2>
-                  <p className="text-xs text-gray-500">Décrivez votre bien et sélectionnez ses atouts</p>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step2Title', 'Description & Caractéristiques')}</h2>
+                  <p className="text-xs text-gray-500">{t('propertyPublish.step2Desc', 'Décrivez votre bien et sélectionnez ses atouts')}</p>
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Titre de l&apos;annonce *</label>
+                  <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldTitle', 'Titre de l\'annonce *')}</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={e => updateField('title', e.target.value)}
-                    placeholder="Ex: Villa Prestige Les Cocotiers"
+                    placeholder={t('propertyPublish.fieldTitlePlaceholder', 'Ex: Villa Prestige Les Cocotiers')}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Description détaillée *</label>
+                  <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldDetailedDesc', 'Description détaillée *')}</label>
                   <textarea
                     value={formData.description}
                     onChange={e => updateField('description', e.target.value)}
-                    placeholder="Décrivez votre bien en détail..."
+                    placeholder={t('propertyPublish.fieldDescPlaceholder', 'Décrivez votre bien en détail...')}
                     rows={5}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">Caractéristiques</label>
+                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldFeatures', 'Caractéristiques')}</label>
                   <div className="flex flex-wrap gap-2">
                     {featuresList.map(feature => (
                       <button
@@ -657,8 +658,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Photos du bien</h2>
-                  <p className="text-xs text-gray-500">Ajoutez jusqu&apos;à 20 photos. La première sera la photo principale.</p>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step3Title', 'Photos du bien')}</h2>
+                  <p className="text-xs text-gray-500">{t('propertyPublish.step3Desc', 'Ajoutez jusqu\'à 20 photos. La première sera la photo principale.')}</p>
                 </div>
 
                 {/* Drop Zone */}
@@ -670,8 +671,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   <svg className="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m-4 4h8m-9 6h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-sm font-semibold text-gray-600">Glissez-déposez vos photos ici</p>
-                  <p className="text-xs text-gray-400 mt-1">ou cliquez pour sélectionner · {formData.photos.length}/20</p>
+                  <p className="text-sm font-semibold text-gray-600">{t('propertyPublish.dropZone', 'Glissez-déposez vos photos ici')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('propertyPublish.dropZoneHint', 'ou cliquez pour sélectionner')} · {formData.photos.length}/20</p>
                 </button>
 
                 {/* Photo Grid */}
@@ -680,7 +681,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     {formData.photos.map((photo, i) => (
                       <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
                         <ImageWithFallback src={photo} alt={`Photo ${i + 1}`} className="w-full h-full" fallbackType="property" />
-                        {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">Principale</span>}
+                        {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">{t('propertyPublish.mainPhotoBadge', 'Principale')}</span>}
                         <button
                           onClick={() => setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, idx) => idx !== i) }))}
                           className="absolute top-1 right-1 w-5 h-5 rounded-lg bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -698,7 +699,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Documents légaux requis</h2>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step4Title', 'Documents légaux requis')}</h2>
                   <p className="text-xs text-gray-500">
                     {selectedCountryCode && formData.propertyType
                       ? `Documents requis pour ${COUNTRY_NAMES[selectedCountryCode] || selectedCountryName} — ${propertyTypes.find(p => p.value === formData.propertyType)?.label}`
@@ -741,28 +742,28 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                   <p className="text-sm font-semibold text-[#0a2a5e]">{docLabel}</p>
-                                  <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">REQUIS</span>
+                                  <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">{t('propertyPublish.required', 'REQUIS')}</span>
                                 </div>
                                 {docDesc && <p className="text-[10px] text-gray-400 mt-0.5">{docDesc}</p>}
-                                <p className="text-[10px] text-gray-400 mt-0.5">PDF, JPG, PNG — max 10 Mo</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">{t('propertyPublish.pdfJpgHint', 'PDF, JPG, PNG — max 10 Mo')}</p>
                                 {/* Upload zone */}
                                 {!isUploaded ? (
                                   <button
                                     onClick={() => addLegalDoc(docType)}
                                     className="mt-2 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
                                   >
-                                    <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> Télécharger le document</span>
+                                    <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {t('propertyPublish.uploadDoc', 'Télécharger le document')}</span>
                                   </button>
                                 ) : (
                                   <div className="mt-2 flex items-center gap-2">
                                     <span className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-semibold rounded-full">
-                                      <span className="flex items-center gap-1"><Hourglass className="w-3 h-3" /> Documents en attente de vérification</span>
+                                      <span className="flex items-center gap-1"><Hourglass className="w-3 h-3" /> {t('propertyPublish.docsWaitingVerification', 'Documents en attente de vérification')}</span>
                                     </span>
                                     <button
                                       onClick={() => removeLegalDoc(docType)}
                                       className="text-[10px] text-[#D93025] hover:underline"
                                     >
-                                      Supprimer
+                                      {t('propertyPublish.delete', 'Supprimer')}
                                     </button>
                                   </div>
                                 )}
@@ -781,7 +782,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         <p className={`text-sm font-semibold ${
                           allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'
                         }`}>
-                          {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents requis sont téléchargés</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> Documents en attente de vérification</span>}
+                          {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsUploaded', 'Tous les documents requis sont téléchargés')}</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsMissing', 'Documents en attente de vérification')}</span>}
                         </p>
                       </div>
                       <div className="w-full bg-gray-200 rounded-lg h-2">
@@ -793,7 +794,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         />
                       </div>
                       <p className="text-[10px] text-gray-500 mt-1">
-                        {formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length} / {requiredDocs.length} documents requis
+                        {formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length} / {requiredDocs.length} {t('propertyPublish.requiredDocsCount', 'documents requis')}
                       </p>
                     </div>
 
@@ -801,22 +802,21 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <Bot className="w-5 h-5 text-[#009CDE]" />
-                        <p className="text-sm font-semibold text-[#009CDE]">Vérification IA automatique</p>
+                        <p className="text-sm font-semibold text-[#009CDE]">{t('propertyPublish.aiVerificationTitle', 'Vérification IA automatique')}</p>
                       </div>
                       <p className="text-xs text-gray-500">
-                        Après soumission, nos algorithmes vérifieront automatiquement l&apos;authenticité
-                        et la conformité de vos documents selon les exigences légales de {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}.
+                        {t('propertyPublish.aiVerificationDesc', 'Après soumission, nos algorithmes vérifieront automatiquement l\'authenticité et la conformité de vos documents selon les exigences légales de')} {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}.
                       </p>
                     </div>
                   </>
                 ) : (
                   <div className="text-center p-8 bg-gray-50 rounded-2xl">
-                    <p className="text-sm text-gray-400">Veuillez d&apos;abord sélectionner une ville et un type de bien aux étapes précédentes</p>
+                    <p className="text-sm text-gray-400">{t('propertyPublish.step4Placeholder', 'Veuillez d\'abord sélectionner une ville et un type de bien aux étapes précédentes')}</p>
                     <button
                       onClick={() => setCurrentStep(1)}
                       className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold"
                     >
-                      Retour à l&apos;étape 1
+                      {t('propertyPublish.backToStep1', 'Retour à l\'étape 1')}
                     </button>
                   </div>
                 )}
@@ -827,8 +827,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 5 && (
               <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Vérification IA des documents</h2>
-                  <p className="text-xs text-gray-500">Nos algorithmes analysent vos documents en temps réel</p>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step5Title', 'Vérification IA des documents')}</h2>
+                  <p className="text-xs text-gray-500">{t('propertyPublish.step5Desc', 'Nos algorithmes analysent vos documents en temps réel')}</p>
                 </div>
 
                 {/* Simulated AI verification */}
@@ -844,10 +844,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                           <p className="text-sm font-semibold text-[#0a2a5e]">{getDocLabel(docType)}</p>
                           {doc ? (
                             <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
-                              {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> Vérifié</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> En attente</span>}
+                              {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> {t('propertyPublish.verified', 'Vérifié')}</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> {t('propertyPublish.docsWaitingVerification', 'En attente')}</span>}
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">Manquant</span>
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">{t('propertyPublish.missing', 'Manquant')}</span>
                           )}
                         </div>
                         {doc && (
@@ -867,8 +867,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 <div className="p-3 bg-[#009CDE]/5 rounded-xl text-xs text-[#009CDE]">
-                  <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> La vérification IA analyse l&apos;authenticité des documents, la cohérence des données,</span>
-                  et la conformité avec les exigences légales locales. Une validation humaine suivra.
+                  <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> {t('propertyPublish.aiVerificationHint', 'La vérification IA analyse l\'authenticité des documents, la cohérence des données, et la conformité avec les exigences légales locales. Une validation humaine suivra.')}</span>
                 </div>
               </motion.div>
             )}
@@ -877,8 +876,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 6 && (
               <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">Révision & Validation</h2>
-                  <p className="text-xs text-gray-500">Vérifiez les informations avant de publier</p>
+                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step6Title', 'Révision & Validation')}</h2>
+                  <p className="text-xs text-gray-500">{t('propertyPublish.step6Desc', 'Vérifiez les informations avant de publier')}</p>
                 </div>
 
                 {/* Error */}
@@ -892,8 +891,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Summary */}
                 <div className="space-y-3">
                   <div className="p-4 bg-gray-50 rounded-2xl">
-                    <p className="text-[10px] text-gray-400 mb-1">Bien</p>
-                    <p className="text-sm font-bold text-[#0a2a5e]">{formData.title || 'Sans titre'}</p>
+                    <p className="text-[10px] text-gray-400 mb-1">{t('propertyPublish.propertyLabel', 'Bien')}</p>
+                    <p className="text-sm font-bold text-[#0a2a5e]">{formData.title || t('propertyPublish.untitled', 'Sans titre')}</p>
                     <p className="text-xs text-gray-500">
                       {propertyTypes.find(p => p.value === formData.propertyType)?.label} ·
                       {' '}{transactionTypes.find(t => t.value === formData.transactionType)?.label}
@@ -901,21 +900,21 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">Prix</p>
+                      <p className="text-[10px] text-gray-400">{t('propertyPublish.priceLabel', 'Prix')}</p>
                       <p className="font-mono text-sm font-bold text-[#D4AF37]">{formData.price ? new Intl.NumberFormat('fr-FR').format(Number(formData.price)) : '—'} FCFA</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">Surface</p>
+                      <p className="text-[10px] text-gray-400">{t('propertyPublish.surfaceLabel', 'Surface')}</p>
                       <p className="font-mono text-sm font-bold text-[#0a2a5e]">{formData.surface || '—'} m²</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">Localisation</p>
+                      <p className="text-[10px] text-gray-400">{t('propertyPublish.locationLabel', 'Localisation')}</p>
                       <p className="text-sm font-bold text-[#0a2a5e]">{selectedCity?.label || '—'}</p>
                     </div>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-xl">
-                    <p className="text-[10px] text-gray-400 mb-1">Description</p>
-                    <p className="text-xs text-gray-600 line-clamp-3">{formData.description || 'Aucune description'}</p>
+                    <p className="text-[10px] text-gray-400 mb-1">{t('propertyPublish.descriptionLabel', 'Description')}</p>
+                    <p className="text-xs text-gray-600 line-clamp-3">{formData.description || t('propertyPublish.noDescription', 'Aucune description')}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {formData.features.map(f => (
@@ -924,20 +923,20 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-gray-50 rounded-xl">
-                      <p className="text-[10px] text-gray-400">Photos</p>
+                      <p className="text-[10px] text-gray-400">{t('propertyPublish.photosLabel', 'Photos')}</p>
                       <p className="text-sm font-bold text-[#0a2a5e]">{formData.photos.length}/20</p>
                     </div>
                     <div className={`p-3 rounded-xl ${allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'}`}>
-                      <p className="text-[10px] text-gray-400">Documents légaux</p>
+                      <p className="text-[10px] text-gray-400">{t('propertyPublish.legalDocsLabel', 'Documents légaux')}</p>
                       <p className={`text-sm font-bold ${allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
-                        {formData.legalDocs.length} / {requiredDocs.length} requis
+                        {formData.legalDocs.length} / {requiredDocs.length} {t('propertyPublish.requiredLabel', 'requis')}
                       </p>
                     </div>
                   </div>
                   {/* Legal docs detail */}
                   {selectedCountryCode && (
                     <div className="p-3 bg-gray-50 rounded-xl">
-                      <p className="text-[10px] text-gray-400 mb-2">Documents légaux — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
+                      <p className="text-[10px] text-gray-400 mb-2">{t('propertyPublish.legalDocsLabel', 'Documents légaux')} — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
                       <div className="space-y-1.5">
                         {requiredDocs.map(docType => {
                           const isUploaded = formData.legalDocs.some(d => d.type === docType);
@@ -957,13 +956,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
                 {/* Publication Timeline */}
                 <div className="p-4 bg-[#003087]/5 rounded-2xl">
-                  <p className="text-xs font-semibold text-[#003087] mb-2">Processus après soumission</p>
+                  <p className="text-xs font-semibold text-[#003087] mb-2">{t('propertyPublish.processAfterSubmit', 'Processus après soumission')}</p>
                   <div className="space-y-2">
                     {[
-                      { icon: <Send className="w-4 h-4" />, text: 'Soumission de l\'annonce' },
-                      { icon: <Bot className="w-4 h-4" />, text: 'Vérification IA documents' },
-                      { icon: <User className="w-4 h-4" />, text: 'Validation humaine' },
-                      { icon: <PartyPopper className="w-4 h-4" />, text: 'Publication' },
+                      { icon: <Send className="w-4 h-4" />, text: t('propertyPublish.processSubmission', 'Soumission de l\'annonce') },
+                      { icon: <Bot className="w-4 h-4" />, text: t('propertyPublish.processAiVerification', 'Vérification IA documents') },
+                      { icon: <User className="w-4 h-4" />, text: t('propertyPublish.processHumanValidation', 'Validation humaine') },
+                      { icon: <PartyPopper className="w-4 h-4" />, text: t('propertyPublish.processPublication', 'Publication') },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-xs">{item.icon}</span>
@@ -988,18 +987,18 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
                   </svg>
                 </motion.div>
-                <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">Prêt à publier ?</h3>
+                <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">{t('propertyPublish.step7Title', 'Prêt à publier ?')}</h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.
+                  {t('propertyPublish.step7Desc', 'Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.')}
                 </p>
                 {allRequiredDocsUploaded ? (
                   <div className="p-3 bg-[#00A651]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#00A651] font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Tous les documents légaux requis sont fournis</p>
+                    <p className="text-xs text-[#00A651] font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsProvided', 'Tous les documents légaux requis sont fournis')}</p>
                   </div>
                 ) : (
                   <div className="p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#D4AF37] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Certains documents requis sont manquants</p>
-                    <p className="text-[10px] text-gray-500 mt-1">Vous pouvez quand même soumettre, mais la publication sera retardée</p>
+                    <p className="text-xs text-[#D4AF37] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {t('propertyPublish.someDocsMissing', 'Certains documents requis sont manquants')}</p>
+                    <p className="text-[10px] text-gray-500 mt-1">{t('propertyPublish.someDocsMissingHint', 'Vous pouvez quand même soumettre, mais la publication sera retardée')}</p>
                   </div>
                 )}
               </motion.div>
@@ -1013,7 +1012,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 onClick={() => setCurrentStep(currentStep - 1)}
                 className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                Retour
+                {t('propertyPublish.btnBack', 'Retour')}
               </button>
             )}
             <motion.button
@@ -1027,8 +1026,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
               className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createPropertyMutation.isPending
-                ? 'Soumission en cours...'
-                : currentStep === 7 ? "Soumettre l'annonce" : 'Continuer'
+                ? t('propertyPublish.btnProcessing', 'Soumission en cours...')
+                : currentStep === 7 ? t('propertyPublish.btnSubmit', 'Soumettre l\'annonce') : t('propertyPublish.btnContinue', 'Continuer')
               }
             </motion.button>
           </div>

@@ -18,6 +18,7 @@ import {
   Link, Shield, Eye, UserCheck, Home, ShieldCheck, FileSearch,
   ShieldAlert, Timer, Fingerprint, ArrowRight
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 // ============ Types ============
 
@@ -133,6 +134,7 @@ function formatFCFA(n: number): string {
 // ============ Component ============
 
 export default function EscrowDashboard({ transactionId, userRole, onNavigate }: EscrowDashboardProps) {
+  const { t } = useTranslation();
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeInput, setShowDisputeInput] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -213,11 +215,11 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           actorType,
         });
       }
-      toast.success(`Transition vers ${targetState} réussie`);
+      toast.success(`${t('escrowDashboard.toastTransitionSuccess', 'Transition réussie')} → ${targetState}`);
       refetch();
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erreur de transition';
-      toast.error('Erreur de transition', { description: msg });
+      const msg = error instanceof Error ? error.message : t('escrowDashboard.toastTransitionError', 'Erreur de transition');
+      toast.error(t('escrowDashboard.toastTransitionError', 'Erreur de transition'), { description: msg });
     } finally {
       setIsTransitioning(false);
     }
@@ -227,7 +229,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
   const handle2FAVerification = async () => {
     // Guard: enforce a real 6-digit TOTP code — no bypass via checkbox
     if (!otpCode || otpCode.length !== 6) {
-      toast.error('Code 2FA invalide', { description: 'Veuillez entrer le code à 6 chiffres.' });
+      toast.error(t('escrowDashboard.toast2FAInvalid', 'Code 2FA invalide'), { description: t('escrowDashboard.toast2FAInvalidDesc', 'Veuillez entrer le code à 6 chiffres.') });
       return;
     }
     setVerifying2FA(true);
@@ -240,15 +242,15 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       if (res) {
         // Now proceed with the actual release
         await apiPost('/api/escrow/release', { transactionId });
-        toast.success('Vérification 2FA réussie — Fonds libérés');
+        toast.success(t('escrowDashboard.toast2FASuccess', 'Vérification 2FA réussie — Fonds libérés'));
         setShow2FA(false);
         setOtpCode('');
         setConfirmChecked(false);
         refetch();
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erreur de vérification 2FA';
-      toast.error('Erreur 2FA', { description: msg });
+      const msg = error instanceof Error ? error.message : t('escrowDashboard.toast2FAErrorDesc', 'Erreur de vérification 2FA');
+      toast.error(t('escrowDashboard.toast2FAError', 'Erreur 2FA'), { description: msg });
     } finally {
       setVerifying2FA(false);
     }
@@ -257,7 +259,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
   // Handle dispute
   const handleDispute = async () => {
     if (!disputeReason.trim()) {
-      toast.error('Veuillez indiquer la raison du litige');
+      toast.error(t('escrowDashboard.toastDisputeReasonNeeded', 'Veuillez indiquer la raison du litige'));
       return;
     }
     setIsTransitioning(true);
@@ -266,13 +268,13 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         transactionId,
         reason: disputeReason,
       });
-      toast.error('Litige signalé — Médiation en cours');
+      toast.error(t('escrowDashboard.toastDisputeSignaled', 'Litige signalé — Médiation en cours'));
       setShowDisputeInput(false);
       setDisputeReason('');
       refetch();
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erreur';
-      toast.error('Erreur', { description: msg });
+      const msg = error instanceof Error ? error.message : t('escrowDashboard.toastGenericError', 'Erreur');
+      toast.error(t('escrowDashboard.toastGenericError', 'Erreur'), { description: msg });
     } finally {
       setIsTransitioning(false);
     }
@@ -290,13 +292,13 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-          <Lock className="w-4 h-4" /> Escrow Sécurisé–7B.5
+          <Lock className="w-4 h-4" /> {t('escrowDashboard.badge', 'Escrow Sécurisé')}–7B.5
         </span>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
-          Tableau de Bord Escrow
+          {t('escrowDashboard.headerTitle', 'Tableau de Bord Escrow')}
         </h1>
         <p className="text-gray-500 text-sm">
-          {(property?.title as string) || `Transaction ${transactionId.slice(0, 8)}...`}
+          {(property?.title as string) || `${t('escrowDashboard.transactionPrefix', 'Transaction')} ${transactionId.slice(0, 8)}...`}
         </p>
       </motion.div>
 
@@ -323,9 +325,9 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* 12-State Machine Timeline */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[#0a2a5e]">Machine à états — 12 états</h3>
+          <h3 className="text-lg font-bold text-[#0a2a5e]">{t('escrowDashboard.stateMachineTitle', 'Machine à états — 12 états')}</h3>
           <Badge variant="secondary" className="text-[10px]">
-            {NORMAL_FLOW_ORDER.indexOf(currentState) + 1}/{NORMAL_FLOW_ORDER.length} étapes
+            {NORMAL_FLOW_ORDER.indexOf(currentState) + 1}/{NORMAL_FLOW_ORDER.length} {t('escrowDashboard.stepsCount', 'étapes')}
           </Badge>
         </div>
 
@@ -409,7 +411,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     : 'bg-[#003087]/5 text-[#003087]'
                 }`}
               >
-                <span className="font-semibold">Étape actuelle : </span>
+                <span className="font-semibold">{t('escrowDashboard.currentStep', 'Étape actuelle : ')}</span>
                 {ALL_STATES.find(s => s.key === currentState)?.description}
               </motion.div>
             </AnimatePresence>
@@ -448,7 +450,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
         {/* Release Conditions Checklist (7 conditions) */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-[#0a2a5e]">Conditions de libération</h3>
+            <h3 className="text-base font-bold text-[#0a2a5e]">{t('escrowDashboard.releaseConditionsTitle', 'Conditions de libération')}</h3>
             <span className="text-xs font-mono text-gray-500">
               {completedConditions}/{totalConditions}
             </span>
@@ -502,24 +504,24 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
         {/* Balance Breakdown */}
         <Card className="p-6">
-          <h3 className="text-base font-bold text-[#0a2a5e] mb-4">Répartition des fonds</h3>
+          <h3 className="text-base font-bold text-[#0a2a5e] mb-4">{t('escrowDashboard.fundsBreakdownTitle', 'Répartition des fonds')}</h3>
 
           <div className="space-y-4">
             {/* Buyer deposit */}
             <div className="p-3 rounded-2xl bg-[#009CDE]/5 border border-[#009CDE]/10">
-              <p className="text-[10px] text-[#009CDE] font-semibold mb-1">Dépôt acheteur</p>
+              <p className="text-[10px] text-[#009CDE] font-semibold mb-1">{t('escrowDashboard.buyerDeposit', 'Dépôt acheteur')}</p>
               <p className="font-mono text-xl font-bold text-[#009CDE]">{formatFCFA(amount)}</p>
             </div>
 
             {/* Escrow held vs available */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-2xl bg-[#003087]/5 border border-[#003087]/10">
-                <p className="text-[10px] text-[#003087] font-semibold mb-1">Escrow bloqué</p>
+                <p className="text-[10px] text-[#003087] font-semibold mb-1">{t('escrowDashboard.escrowHeld', 'Escrow bloqué')}</p>
                 <p className="font-mono text-lg font-bold text-[#003087]">{formatFCFA(heldAmount)}</p>
                 <p className="text-[9px] text-gray-400 mt-0.5">escrow_held</p>
               </div>
               <div className="p-3 rounded-2xl bg-[#00A651]/5 border border-[#00A651]/10">
-                <p className="text-[10px] text-[#00A651] font-semibold mb-1">Disponible</p>
+                <p className="text-[10px] text-[#00A651] font-semibold mb-1">{t('escrowDashboard.available', 'Disponible')}</p>
                 <p className="font-mono text-lg font-bold text-[#00A651]">{formatFCFA(availableAmount)}</p>
                 <p className="text-[9px] text-gray-400 mt-0.5">available</p>
               </div>
@@ -530,14 +532,14 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
             {/* Commission */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-500 flex items-center gap-1">
-                <Coins className="w-4 h-4" /> Commission ({(commissionRate * 100).toFixed(1)}%)
+                <Coins className="w-4 h-4" /> {t('escrowDashboard.commission', 'Commission')} ({(commissionRate * 100).toFixed(1)}%)
               </span>
               <span className="font-mono font-bold text-[#D4AF37]">{formatFCFA(commission)}</span>
             </div>
 
             {/* Seller payout */}
             <div className="p-3 rounded-2xl bg-[#00A651]/5 border border-[#00A651]/10">
-              <p className="text-[10px] text-[#00A651] font-semibold mb-1">Paiement vendeur</p>
+              <p className="text-[10px] text-[#00A651] font-semibold mb-1">{t('escrowDashboard.sellerPayout', 'Paiement vendeur')}</p>
               <p className="font-mono text-xl font-bold text-[#00A651]">{formatFCFA(sellerPayout)}</p>
             </div>
           </div>
@@ -547,7 +549,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Action Buttons */}
       {!isLoading && (availableActions.length > 0 || canDispute) && (
         <Card className="p-6">
-          <h4 className="text-sm font-bold text-[#0a2a5e] mb-3">Actions disponibles</h4>
+          <h4 className="text-sm font-bold text-[#0a2a5e] mb-3">{t('escrowDashboard.availableActions', 'Actions disponibles')}</h4>
           <div className="flex flex-wrap gap-3">
             {availableActions
               .filter((action) => {
@@ -577,7 +579,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   className="border-[#D93025]/20 text-[#D93025] hover:bg-[#D93025]/5"
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  Signaler un litige
+                  {t('escrowDashboard.signalDispute', 'Signaler un litige')}
                 </Button>
               </motion.div>
             )}
@@ -593,20 +595,20 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 className="mt-4 overflow-hidden"
               >
                 <div className="p-4 bg-[#D93025]/5 rounded-2xl border border-[#D93025]/10">
-                  <label className="text-xs font-semibold text-[#D93025] mb-2 block">Raison du litige</label>
+                  <label className="text-xs font-semibold text-[#D93025] mb-2 block">{t('escrowDashboard.disputeReasonLabel', 'Raison du litige')}</label>
                   <textarea
                     value={disputeReason}
                     onChange={(e) => setDisputeReason(e.target.value)}
-                    placeholder="Décrivez le problème..."
+                    placeholder={t('escrowDashboard.disputeReasonPlaceholder', 'Décrivez le problème...')}
                     className="w-full p-3 rounded-xl border border-[#D93025]/20 text-sm resize-none focus:outline-none focus:border-[#D93025] focus:ring-1 focus:ring-[#D93025]/20"
                     rows={3}
                   />
                   <div className="flex gap-2 mt-3">
                     <Button size="sm" onClick={handleDispute} disabled={isTransitioning || !disputeReason.trim()} variant="destructive">
-                      Confirmer le litige
+                      {t('escrowDashboard.confirmDispute', 'Confirmer le litige')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => { setShowDisputeInput(false); setDisputeReason(''); }}>
-                      Annuler
+                      {t('escrowDashboard.cancel', 'Annuler')}
                     </Button>
                   </div>
                 </div>
@@ -615,7 +617,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           </AnimatePresence>
 
           {isTransitioning && (
-            <p className="mt-2 text-xs text-gray-400 animate-pulse">Transition en cours...</p>
+            <p className="mt-2 text-xs text-gray-400 animate-pulse">{t('escrowDashboard.transitionInProgress', 'Transition en cours...')}</p>
           )}
         </Card>
       )}
@@ -641,16 +643,16 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 <div className="w-14 h-14 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-3">
                   <Fingerprint className="w-7 h-7 text-[#003087]" />
                 </div>
-                <h3 className="text-lg font-bold text-[#0a2a5e]">Confirmation 2FA requise</h3>
+                <h3 className="text-lg font-bold text-[#0a2a5e]">{t('escrowDashboard.confirmation2FA', 'Confirmation 2FA requise')}</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Vérification requise pour libérer les fonds de {formatFCFA(amount)}
+                  {t('escrowDashboard.verificationAmountHint', 'Vérification requise pour libérer les fonds de')} {formatFCFA(amount)}
                 </p>
               </div>
 
               <div className="space-y-4">
                 {/* OTP Input */}
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Code OTP (6 chiffres)</label>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">{t('escrowDashboard.otpCode', 'Code OTP (6 chiffres)')}</label>
                   <Input
                     type="text"
                     value={otpCode}
@@ -670,7 +672,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     className="mt-0.5 rounded border-gray-300"
                   />
                   <span className="text-xs text-gray-600">
-                    Je comprends que la libération des fonds de <strong>{formatFCFA(amount)}</strong> au vendeur est <strong>irréversible</strong> et ne pourra être annulée ou remboursée une fois exécutée.
+                    {t('escrowDashboard.irreversibilityNotice', 'Je comprends que la libération des fonds de')} <strong>{formatFCFA(amount)}</strong> {t('escrowDashboard.irreversibilityNotice2', 'au vendeur est')} <strong>{t('escrowDashboard.irreversible', 'irréversible')}</strong> {t('escrowDashboard.irreversibilityNotice3', 'et ne pourra être annulée ou remboursée une fois exécutée.')}
                   </span>
                 </label>
 
@@ -680,7 +682,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     onClick={() => { setShow2FA(false); setOtpCode(''); setConfirmChecked(false); }}
                     className="flex-1"
                   >
-                    Annuler
+                    {t('escrowDashboard.cancel', 'Annuler')}
                   </Button>
                   <Button
                     onClick={handle2FAVerification}
@@ -692,7 +694,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     ) : (
                       <ShieldCheck className="w-4 h-4 mr-2" />
                     )}
-                    {verifying2FA ? 'Vérification...' : 'Confirmer la libération'}
+                    {verifying2FA ? t('escrowDashboard.verifying', 'Vérification...') : t('escrowDashboard.confirmRelease', 'Confirmer la libération')}
                   </Button>
                 </div>
               </div>
@@ -704,9 +706,9 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
       {/* Ledger Entries with SHA-256 Checksums */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[#0a2a5e]">Grand Livre Escrow</h3>
+          <h3 className="text-base font-bold text-[#0a2a5e]">{t('escrowDashboard.grandLivre', 'Grand Livre Escrow')}</h3>
           <Badge variant="secondary" className="text-[10px]">
-            <Link className="w-3 h-3 mr-1" /> SHA-256 chaîné
+            <Link className="w-3 h-3 mr-1" /> {t('escrowDashboard.shaChained', 'SHA-256 chaîné')}
           </Badge>
         </div>
 
@@ -718,8 +720,8 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           </div>
         ) : displayLedger.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-400">Aucune entrée dans le grand livre</p>
-            <p className="text-xs text-gray-300 mt-1">Les entrées apparaîtront une fois l&apos;escrow financé</p>
+            <p className="text-sm text-gray-400">{t('escrowDashboard.noLedgerEntries', 'Aucune entrée dans le grand livre')}</p>
+            <p className="text-xs text-gray-300 mt-1">{t('escrowDashboard.ledgerEmpty', 'Les entrées apparaîtront une fois l&apos;escrow financé')}</p>
           </div>
         ) : (
           <ScrollArea className="max-h-80">
@@ -742,12 +744,12 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 };
 
                 const typeLabels: Record<string, string> = {
-                  CREDIT: 'Crédit',
-                  DEBIT: 'Débit',
-                  HOLD: 'Blocage',
-                  RELEASE: 'Libération',
-                  REFUND: 'Remboursement',
-                  COMMISSION: 'Commission',
+                  CREDIT: t('escrowDashboard.ledgerType.CREDIT', 'Crédit'),
+                  DEBIT: t('escrowDashboard.ledgerType.DEBIT', 'Débit'),
+                  HOLD: t('escrowDashboard.ledgerType.HOLD', 'Blocage'),
+                  RELEASE: t('escrowDashboard.ledgerType.RELEASE', 'Libération'),
+                  REFUND: t('escrowDashboard.ledgerType.REFUND', 'Remboursement'),
+                  COMMISSION: t('escrowDashboard.ledgerType.COMMISSION', 'Commission'),
                 };
 
                 const color = typeColors[entryType] || '#6b7280';
@@ -777,7 +779,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] text-gray-400">
-                          Solde: {formatFCFA(balanceAfter)} {entryCurrency}
+                          {t('escrowDashboard.balanceLabel', 'Solde:')} {formatFCFA(balanceAfter)} {entryCurrency}
                         </span>
                         <span className="text-[10px] text-gray-300">
                           {new Date(createdAt).toLocaleString('fr-FR', {
@@ -808,7 +810,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
 
       {/* State Transition History Timeline */}
       <Card className="p-6">
-        <h3 className="text-base font-bold text-[#0a2a5e] mb-4">Historique des transitions</h3>
+        <h3 className="text-base font-bold text-[#0a2a5e] mb-4">{t('escrowDashboard.transitionHistory', 'Historique des transitions')}</h3>
 
         {isLoading ? (
           <div className="space-y-3">
@@ -818,7 +820,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           </div>
         ) : timelineEvents.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-sm text-gray-400">Aucun événement enregistré</p>
+            <p className="text-sm text-gray-400">{t('escrowDashboard.noEvents', 'Aucun événement enregistré')}</p>
           </div>
         ) : (
           <ScrollArea className="max-h-60">

@@ -14,12 +14,12 @@ interface PropertyMapItem {
   bedrooms: number;
   surface: number;
   images: string[];
-  lat: number | null;
-  lng: number | null;
+  lat?: number | null;
+  lng?: number | null;
   verified: boolean;
   geoTrust: boolean;
   geoTrustStatus?: 'verified' | 'pending' | 'conflict';
-  investmentScore: number | null;
+  investmentScore?: number | null;
   boundaryPolygon?: number[][];
   address?: string;
 }
