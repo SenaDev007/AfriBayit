@@ -83,7 +83,7 @@ interface Artisan {
   zone?: string;
   createdAt?: string;
   userId?: string;
-  services?: any[];
+  services?: Array<{ id?: string; name?: string; serviceName?: string; description?: string; category?: string; price?: number; basePrice?: number; unit?: string; icon?: string }>;
 }
 
 function mapArtisanFromApi(raw: Record<string, unknown>): Artisan {
@@ -120,7 +120,7 @@ function mapArtisanFromApi(raw: Record<string, unknown>): Artisan {
     zone: raw.zone as string | undefined,
     createdAt: raw.createdAt as string | undefined,
     userId: raw.userId as string | undefined,
-    services: (raw.services || []) as any[],
+    services: (raw.services || []) as Array<{ id?: string; name?: string; serviceName?: string; description?: string; category?: string; price?: number; basePrice?: number; unit?: string; icon?: string }>,
   };
 }
 
@@ -212,9 +212,9 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
       });
       // Defensively handle multiple possible response shapes from the backend.
       const rawList: unknown =
-        (result as any)?.matches ??
-        (result as any)?.artisans ??
-        (result as any)?.results ??
+        (result as { matches?: Array<{ artisanId: string; score: number; reason: string }> })?.matches ??
+        (result as { artisans?: Array<{ id: string }> })?.artisans ??
+        (result as { results?: Array<{ id: string }> })?.results ??
         (Array.isArray(result) ? result : []);
       const matched: Artisan[] = ((rawList as Record<string, unknown>[]) || []).map(mapArtisanFromApi);
       setPromatchResults(matched);
@@ -301,7 +301,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
     try {
       // Log the emergency call via the API — CDC §5.5.2: everything transits
       // through the platform and is logged. Returns the artisan's phone number.
-      const result = await apiPost<{ call: any; phone: string | null }>(
+      const result = await apiPost<{ call: { id: string; status: string; phone?: string }; phone: string | null }>(
         `/api/artisans/${emergencyConfirm.id}/emergency-call`,
         { note: `Appel d'urgence — ${emergencyConfirm.trade}` },
       );
@@ -335,7 +335,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
   if (detailArtisanId && detailArtisan) {
     const portfolio: string[] = (() => {
       try {
-        const raw = (detailData?.artisan as any)?.portfolio;
+        const raw = (detailData?.artisan as { portfolio?: Array<{ title: string; image: string; type: string }> })?.portfolio;
         if (typeof raw === 'string') return JSON.parse(raw);
         if (Array.isArray(raw)) return raw;
       } catch {}
@@ -462,7 +462,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                 <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
                   <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {detailArtisan.services.map((service: any) => (
+                    {detailArtisan.services.map((service: { id?: string; name?: string; serviceName?: string; description?: string; category?: string; price?: number; basePrice?: number; unit?: string; icon?: string }) => (
                       <div key={service.id} className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
                         <div className="flex items-start justify-between mb-2">
                           <h4 className="font-semibold text-[#0a2a5e] text-sm">{service.serviceName}</h4>

@@ -37,25 +37,27 @@ interface EscrowDashboardProps {
 
 interface StateConfig {
   key: EscrowState;
-  label: string;
+  labelKey: string;
+  labelFallback: string;
   icon: React.ReactNode;
-  description: string;
+  descriptionKey: string;
+  descriptionFallback: string;
   category: 'normal' | 'success' | 'exception' | 'warning';
 }
 
 const ALL_STATES: StateConfig[] = [
-  { key: 'CREATED', label: 'Créé', icon: <ClipboardList className="w-4 h-4" />, description: 'Transaction initiée', category: 'normal' },
-  { key: 'FUNDED', label: 'Financé', icon: <Coins className="w-4 h-4" />, description: 'Fonds déposés en escrow', category: 'normal' },
-  { key: 'DOCS_VALIDATED', label: 'Docs validés', icon: <FileSearch className="w-4 h-4" />, description: 'Documents légaux validés', category: 'normal' },
-  { key: 'GEOTRUST_VALIDATED', label: 'GeoTrust validé', icon: <Globe className="w-4 h-4" />, description: 'Validation géomatique confirmée', category: 'normal' },
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, description: 'Notaire désigné pour la transaction', category: 'normal' },
-  { key: 'NOTARY_IN_PROGRESS', label: 'Notaire en cours', icon: <FileText className="w-4 h-4" />, description: 'Rédaction et vérification de l\'acte en cours', category: 'normal' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', icon: <FileText className="w-4 h-4" />, description: 'Acte de vente signé par les parties', category: 'normal' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, description: 'Enregistrement auprès de l\'ANDF', category: 'normal' },
-  { key: 'RELEASED', label: 'Libéré', icon: <CheckCircle className="w-4 h-4 text-green-500" />, description: 'Fonds libérés — Transaction terminée', category: 'success' },
-  { key: 'DISPUTED', label: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, description: 'Litige signalé — Médiation en cours', category: 'warning' },
-  { key: 'REFUNDED', label: 'Remboursé', icon: <Undo2 className="w-4 h-4" />, description: 'Fonds remboursés à l\'acheteur', category: 'exception' },
-  { key: 'EXPIRED', label: 'Expiré', icon: <Hourglass className="w-4 h-4" />, description: 'Transaction expirée sans aboutir', category: 'exception' },
+  { key: 'CREATED', labelKey: 'escrowDashboard.state.CREATED', labelFallback: 'Créé', icon: <ClipboardList className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.CREATED', descriptionFallback: 'Transaction initiée', category: 'normal' },
+  { key: 'FUNDED', labelKey: 'escrowDashboard.state.FUNDED', labelFallback: 'Financé', icon: <Coins className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.FUNDED', descriptionFallback: 'Fonds déposés en escrow', category: 'normal' },
+  { key: 'DOCS_VALIDATED', labelKey: 'escrowDashboard.state.DOCS_VALIDATED', labelFallback: 'Docs validés', icon: <FileSearch className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.DOCS_VALIDATED', descriptionFallback: 'Documents légaux validés', category: 'normal' },
+  { key: 'GEOTRUST_VALIDATED', labelKey: 'escrowDashboard.state.GEOTRUST_VALIDATED', labelFallback: 'GeoTrust validé', icon: <Globe className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.GEOTRUST_VALIDATED', descriptionFallback: 'Validation géomatique confirmée', category: 'normal' },
+  { key: 'NOTARY_ASSIGNED', labelKey: 'escrowDashboard.state.NOTARY_ASSIGNED', labelFallback: 'Notaire assigné', icon: <Scale className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.NOTARY_ASSIGNED', descriptionFallback: 'Notaire désigné pour la transaction', category: 'normal' },
+  { key: 'NOTARY_IN_PROGRESS', labelKey: 'escrowDashboard.state.NOTARY_IN_PROGRESS', labelFallback: 'Notaire en cours', icon: <FileText className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.NOTARY_IN_PROGRESS', descriptionFallback: 'Rédaction et vérification de l\'acte en cours', category: 'normal' },
+  { key: 'DEED_SIGNED', labelKey: 'escrowDashboard.state.DEED_SIGNED', labelFallback: 'Acte signé', icon: <FileText className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.DEED_SIGNED', descriptionFallback: 'Acte de vente signé par les parties', category: 'normal' },
+  { key: 'ANDF_REGISTERED', labelKey: 'escrowDashboard.state.ANDF_REGISTERED', labelFallback: 'ANDF enregistré', icon: <Landmark className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.ANDF_REGISTERED', descriptionFallback: 'Enregistrement auprès de l\'ANDF', category: 'normal' },
+  { key: 'RELEASED', labelKey: 'escrowDashboard.state.RELEASED', labelFallback: 'Libéré', icon: <CheckCircle className="w-4 h-4 text-green-500" />, descriptionKey: 'escrowDashboard.stateDesc.RELEASED', descriptionFallback: 'Fonds libérés — Transaction terminée', category: 'success' },
+  { key: 'DISPUTED', labelKey: 'escrowDashboard.state.DISPUTED', labelFallback: 'Litige', icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, descriptionKey: 'escrowDashboard.stateDesc.DISPUTED', descriptionFallback: 'Litige signalé — Médiation en cours', category: 'warning' },
+  { key: 'REFUNDED', labelKey: 'escrowDashboard.state.REFUNDED', labelFallback: 'Remboursé', icon: <Undo2 className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.REFUNDED', descriptionFallback: 'Fonds remboursés à l\'acheteur', category: 'exception' },
+  { key: 'EXPIRED', labelKey: 'escrowDashboard.state.EXPIRED', labelFallback: 'Expiré', icon: <Hourglass className="w-4 h-4" />, descriptionKey: 'escrowDashboard.stateDesc.EXPIRED', descriptionFallback: 'Transaction expirée sans aboutir', category: 'exception' },
 ];
 
 const NORMAL_FLOW_ORDER: EscrowState[] = [
@@ -69,26 +71,28 @@ const EXCEPTION_STATES = ALL_STATES.filter(s => s.category === 'exception' || s.
 
 interface ReleaseCondition {
   key: string;
-  label: string;
+  labelKey: string;
+  labelFallback: string;
   icon: React.ReactNode;
   description: string;
 }
 
 const RELEASE_CONDITIONS: ReleaseCondition[] = [
-  { key: 'buyerConfirm', label: 'Confirmation acheteur', icon: <UserCheck className="w-3 h-3" />, description: 'BUYER_CONFIRM' },
-  { key: 'sellerConfirm', label: 'Confirmation vendeur', icon: <Home className="w-3 h-3" />, description: 'SELLER_CONFIRM' },
-  { key: 'docsValid', label: 'Documents validés', icon: <FileSearch className="w-3 h-3" />, description: 'DOCS_VALID' },
-  { key: 'inspectionValid', label: 'Inspection validée', icon: <Eye className="w-3 h-3" />, description: 'INSPECTION_VALID' },
-  { key: 'fraudHold', label: 'Anti-fraude OK', icon: <ShieldCheck className="w-3 h-3" />, description: 'FRAUD_HOLD (aucune alerte)' },
-  { key: 'adminValid', label: 'Validation admin', icon: <Shield className="w-3 h-3" />, description: 'ADMIN_VALID' },
-  { key: 'checkinConfirm', label: 'Check-in confirmé', icon: <CheckCircle className="w-3 h-3" />, description: 'CHECKIN_CONFIRM' },
+  { key: 'buyerConfirm', labelKey: 'escrowDashboard.condition.buyerConfirm', labelFallback: 'Confirmation acheteur', icon: <UserCheck className="w-3 h-3" />, description: 'BUYER_CONFIRM' },
+  { key: 'sellerConfirm', labelKey: 'escrowDashboard.condition.sellerConfirm', labelFallback: 'Confirmation vendeur', icon: <Home className="w-3 h-3" />, description: 'SELLER_CONFIRM' },
+  { key: 'docsValid', labelKey: 'escrowDashboard.condition.docsValid', labelFallback: 'Documents validés', icon: <FileSearch className="w-3 h-3" />, description: 'DOCS_VALID' },
+  { key: 'inspectionValid', labelKey: 'escrowDashboard.condition.inspectionValid', labelFallback: 'Inspection validée', icon: <Eye className="w-3 h-3" />, description: 'INSPECTION_VALID' },
+  { key: 'fraudHold', labelKey: 'escrowDashboard.condition.fraudHold', labelFallback: 'Anti-fraude OK', icon: <ShieldCheck className="w-3 h-3" />, description: 'FRAUD_HOLD (aucune alerte)' },
+  { key: 'adminValid', labelKey: 'escrowDashboard.condition.adminValid', labelFallback: 'Validation admin', icon: <Shield className="w-3 h-3" />, description: 'ADMIN_VALID' },
+  { key: 'checkinConfirm', labelKey: 'escrowDashboard.condition.checkinConfirm', labelFallback: 'Check-in confirmé', icon: <CheckCircle className="w-3 h-3" />, description: 'CHECKIN_CONFIRM' },
 ];
 
 // ============ Available Actions per State ============
 
 interface ActionConfig {
   target: EscrowState;
-  label: string;
+  labelKey: string;
+  labelFallback: string;
   icon: React.ReactNode;
   actorType: string;
   variant: 'default' | 'destructive' | 'outline';
@@ -96,32 +100,32 @@ interface ActionConfig {
 
 const STATE_ACTIONS: Record<string, ActionConfig[]> = {
   CREATED: [
-    { target: 'FUNDED', label: 'Financer l\'escrow', icon: <Coins className="w-4 h-4" />, actorType: 'buyer', variant: 'default' },
+    { target: 'FUNDED', labelKey: 'escrowDashboard.action.fundEscrow', labelFallback: 'Financer l\'escrow', icon: <Coins className="w-4 h-4" />, actorType: 'buyer', variant: 'default' },
   ],
   FUNDED: [
-    { target: 'DOCS_VALIDATED', label: 'Valider les documents', icon: <FileSearch className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
+    { target: 'DOCS_VALIDATED', labelKey: 'escrowDashboard.action.validateDocs', labelFallback: 'Valider les documents', icon: <FileSearch className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
   ],
   DOCS_VALIDATED: [
-    { target: 'GEOTRUST_VALIDATED', label: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'geometer', variant: 'default' },
+    { target: 'GEOTRUST_VALIDATED', labelKey: 'escrowDashboard.action.validateGeoTrust', labelFallback: 'Valider GeoTrust', icon: <Globe className="w-4 h-4" />, actorType: 'geometer', variant: 'default' },
   ],
   GEOTRUST_VALIDATED: [
-    { target: 'NOTARY_ASSIGNED', label: 'Assigner un notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
+    { target: 'NOTARY_ASSIGNED', labelKey: 'escrowDashboard.action.assignNotary', labelFallback: 'Assigner un notaire', icon: <Scale className="w-4 h-4" />, actorType: 'admin', variant: 'default' },
   ],
   NOTARY_ASSIGNED: [
-    { target: 'NOTARY_IN_PROGRESS', label: 'Démarrer la rédaction', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
+    { target: 'NOTARY_IN_PROGRESS', labelKey: 'escrowDashboard.action.startDrafting', labelFallback: 'Démarrer la rédaction', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   NOTARY_IN_PROGRESS: [
-    { target: 'DEED_SIGNED', label: 'Signer l\'acte', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
+    { target: 'DEED_SIGNED', labelKey: 'escrowDashboard.action.signDeed', labelFallback: 'Signer l\'acte', icon: <FileText className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   DEED_SIGNED: [
-    { target: 'ANDF_REGISTERED', label: 'Enregistrer ANDF', icon: <Landmark className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
+    { target: 'ANDF_REGISTERED', labelKey: 'escrowDashboard.action.registerAndf', labelFallback: 'Enregistrer ANDF', icon: <Landmark className="w-4 h-4" />, actorType: 'notary', variant: 'default' },
   ],
   ANDF_REGISTERED: [
-    { target: 'RELEASED', label: 'Libérer les fonds', icon: <CheckCircle className="w-4 h-4 text-green-500" />, actorType: 'admin', variant: 'default' },
+    { target: 'RELEASED', labelKey: 'escrowDashboard.action.releaseFunds', labelFallback: 'Libérer les fonds', icon: <CheckCircle className="w-4 h-4 text-green-500" />, actorType: 'admin', variant: 'default' },
   ],
   DISPUTED: [
-    { target: 'FUNDED', label: 'Résoudre → Financé', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'outline' },
-    { target: 'REFUNDED', label: 'Rembourser', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'destructive' },
+    { target: 'FUNDED', labelKey: 'escrowDashboard.action.resolveToFunded', labelFallback: 'Résoudre → Financé', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'outline' },
+    { target: 'REFUNDED', labelKey: 'escrowDashboard.action.refund', labelFallback: 'Rembourser', icon: <Undo2 className="w-4 h-4" />, actorType: 'admin', variant: 'destructive' },
   ],
 };
 
@@ -318,7 +322,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
           }`}
         >
           {ALL_STATES.find(s => s.key === currentState)?.icon}{' '}
-          {ALL_STATES.find(s => s.key === currentState)?.label || currentState}
+          {t(ALL_STATES.find(s => s.key === currentState)?.labelKey || '', ALL_STATES.find(s => s.key === currentState)?.labelFallback || currentState)}
         </Badge>
       </motion.div>
 
@@ -379,7 +383,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                         status === 'current' ? 'text-[#D4AF37] font-bold' :
                         'text-gray-400'
                       }`}>
-                        {stateConfig.label}
+                        {t(stateConfig.labelKey, stateConfig.labelFallback)}
                       </p>
                     </div>
                     {i < NORMAL_FLOW_ORDER.length - 1 && (
@@ -412,7 +416,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                 }`}
               >
                 <span className="font-semibold">{t('escrowDashboard.currentStep', 'Étape actuelle : ')}</span>
-                {ALL_STATES.find(s => s.key === currentState)?.description}
+                {t(ALL_STATES.find(s => s.key === currentState)?.descriptionKey || '', ALL_STATES.find(s => s.key === currentState)?.descriptionFallback || '')}
               </motion.div>
             </AnimatePresence>
 
@@ -435,7 +439,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                       }`}
                     >
                       {state.icon}
-                      <span className="font-medium">{state.label}</span>
+                      <span className="font-medium">{t(state.labelKey, state.labelFallback)}</span>
                     </div>
                   );
                 })}
@@ -493,7 +497,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                   <span className={`text-xs font-medium ${
                     releaseConditions[condition.key as keyof typeof releaseConditions] ? 'text-[#00A651]' : 'text-gray-400'
                   }`}>
-                    {condition.label}
+                    {t(condition.labelKey, condition.labelFallback)}
                   </span>
                   <p className="text-[9px] text-gray-300 font-mono">{condition.description}</p>
                 </div>
@@ -566,7 +570,7 @@ export default function EscrowDashboard({ transactionId, userRole, onNavigate }:
                     className={action.variant === 'default' ? 'bg-[#003087] hover:bg-[#0047b3]' : ''}
                   >
                     <span className="mr-2">{action.icon}</span>
-                    {action.label}
+                    {t(action.labelKey, action.labelFallback)}
                   </Button>
                 </motion.div>
               ))}

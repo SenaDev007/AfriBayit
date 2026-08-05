@@ -262,7 +262,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
             <MapPin className="w-8 h-8 text-gray-300" />
           </div>
           <h2 className="font-display text-2xl font-bold text-gray-400">{t('propertyDetail.notFound', 'Bien non trouvé')}</h2>
-          <p className="text-sm text-gray-400 mt-2">Ce bien n&apos;existe pas ou a été retiré.</p>
+          <p className="text-sm text-gray-400 mt-2">{t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')}</p>
           <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">{t('propertyDetail.back', 'Retour')}</button>
         </div>
       </div>

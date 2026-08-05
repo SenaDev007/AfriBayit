@@ -23,21 +23,21 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 type TransactionType = 'deposit' | 'withdrawal' | 'escrow_fund' | 'escrow_release' | 'commission' | 'subscription';
 
-const filterTypes: { key: TransactionType | 'all'; label: string; icon: React.ReactNode }[] = [
-  { key: 'all', label: 'Tous', icon: <ClipboardList className="w-3.5 h-3.5" /> },
-  { key: 'deposit', label: 'Depots', icon: <Download className="w-3.5 h-3.5" /> },
-  { key: 'withdrawal', label: 'Retraits', icon: <Upload className="w-3.5 h-3.5" /> },
-  { key: 'escrow_fund', label: 'Escrow (financement)', icon: <Lock className="w-3.5 h-3.5" /> },
-  { key: 'escrow_release', label: 'Escrow (liberation)', icon: <Unlock className="w-3.5 h-3.5" /> },
-  { key: 'commission', label: 'Commissions', icon: <Coins className="w-3.5 h-3.5" /> },
-  { key: 'subscription', label: 'Abonnements', icon: <RefreshCw className="w-3.5 h-3.5" /> },
+const filterTypes: { key: TransactionType | 'all'; labelKey: string; labelFallback: string; icon: React.ReactNode }[] = [
+  { key: 'all', labelKey: 'walletModule.filterAll', labelFallback: 'Tous', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+  { key: 'deposit', labelKey: 'walletModule.filterDeposits', labelFallback: 'Dépôts', icon: <Download className="w-3.5 h-3.5" /> },
+  { key: 'withdrawal', labelKey: 'walletModule.filterWithdrawals', labelFallback: 'Retraits', icon: <Upload className="w-3.5 h-3.5" /> },
+  { key: 'escrow_fund', labelKey: 'walletModule.filterEscrowFund', labelFallback: 'Escrow (financement)', icon: <Lock className="w-3.5 h-3.5" /> },
+  { key: 'escrow_release', labelKey: 'walletModule.filterEscrowRelease', labelFallback: 'Escrow (libération)', icon: <Unlock className="w-3.5 h-3.5" /> },
+  { key: 'commission', labelKey: 'walletModule.filterCommissions', labelFallback: 'Commissions', icon: <Coins className="w-3.5 h-3.5" /> },
+  { key: 'subscription', labelKey: 'walletModule.filterSubscriptions', labelFallback: 'Abonnements', icon: <RefreshCw className="w-3.5 h-3.5" /> },
 ];
 
 const afriPointsRedemption = [
-  { points: 500, reward: '500 FCFA de credit wallet', type: 'subscription', available: true },
-  { points: 1000, reward: '1 000 FCFA de credit wallet', type: 'subscription', available: true },
-  { points: 2500, reward: 'Reduction 10% sur abonnement', type: 'subscription', available: true },
-  { points: 5000, reward: 'Visite gratuite GeoTrust', type: 'subscription', available: false },
+  { points: 500, rewardKey: 'walletModule.rewardCredit500', rewardFallback: '500 FCFA de crédit wallet', type: 'subscription', available: true },
+  { points: 1000, rewardKey: 'walletModule.rewardCredit1000', rewardFallback: '1 000 FCFA de crédit wallet', type: 'subscription', available: true },
+  { points: 2500, rewardKey: 'walletModule.rewardDiscount10', rewardFallback: 'Réduction 10% sur abonnement', type: 'subscription', available: true },
+  { points: 5000, rewardKey: 'walletModule.rewardGeotrustVisit', rewardFallback: 'Visite gratuite GeoTrust', type: 'subscription', available: false },
 ];
 
 // ─── Currency rates (BCEAO fallback + Fixer.io live with 1h cache) ─────────
@@ -476,7 +476,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   <button key={ft.key} onClick={() => setFilterType(ft.key)}
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                       filterType === ft.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
-                    }`}>{ft.icon} {ft.label}</button>
+                    }`}>{ft.icon} {t(ft.labelKey, ft.labelFallback)}</button>
                 ))}
               </div>
               <div className="bg-white rounded-xl p-5 shadow-sm border">
@@ -613,7 +613,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center font-mono text-sm font-bold text-[#D4AF37]">{item.points}</div>
-                        <p className="text-sm text-[#0a2a5e] font-medium">{item.reward}</p>
+                        <p className="text-sm text-[#0a2a5e] font-medium">{t(item.rewardKey, item.rewardFallback)}</p>
                       </div>
                       <button onClick={() => handleExchange(item.points, item.type)}
                         disabled={!item.available || afriPoints < item.points || createWalletTx.isPending}

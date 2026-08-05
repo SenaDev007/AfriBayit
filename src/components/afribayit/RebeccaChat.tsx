@@ -214,22 +214,23 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
   const getFunctionLabel = (fn: string) => {
     // CDC §8.2.1 — Rebecca IA tool catalog (7 tools).
     // Legacy aliases are kept for backward compatibility with older backends.
-    const labels: Record<string, string> = {
+    const labels: Record<string, { key: string; fallback: string }> = {
       // CDC §8.2.1 canonical tool names
-      search_properties: 'Recherche biens',
-      get_property_details: 'Détails bien',
-      check_escrow_status: 'Suivi escrow',
-      book_hotel: 'Réservation hôtel',
-      request_geometer: 'Demande géomètre',
-      contact_agent: 'Contacter agent',
-      get_market_prices: 'Prix du marché',
+      search_properties: { key: 'rebecca.function.search_properties', fallback: 'Recherche biens' },
+      get_property_details: { key: 'rebecca.function.get_property_details', fallback: 'Détails bien' },
+      check_escrow_status: { key: 'rebecca.function.check_escrow_status', fallback: 'Suivi escrow' },
+      book_hotel: { key: 'rebecca.function.book_hotel', fallback: 'Réservation hôtel' },
+      request_geometer: { key: 'rebecca.function.request_geometer', fallback: 'Demande géomètre' },
+      contact_agent: { key: 'rebecca.function.contact_agent', fallback: 'Contacter agent' },
+      get_market_prices: { key: 'rebecca.function.get_market_prices', fallback: 'Prix du marché' },
       // Legacy aliases (older API versions)
-      check_escrow: 'Vérification escrow',
-      get_market_stats: 'Statistiques marché',
-      find_artisans: 'Recherche artisans',
-      calculate_financing: 'Simulation financement',
+      check_escrow: { key: 'rebecca.function.check_escrow', fallback: 'Vérification escrow' },
+      get_market_stats: { key: 'rebecca.function.get_market_stats', fallback: 'Statistiques marché' },
+      find_artisans: { key: 'rebecca.function.find_artisans', fallback: 'Recherche artisans' },
+      calculate_financing: { key: 'rebecca.function.calculate_financing', fallback: 'Simulation financement' },
     };
-    return labels[fn] || fn;
+    const entry = labels[fn];
+    return entry ? t(entry.key, entry.fallback) : fn;
   };
 
   return (
@@ -363,7 +364,7 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                           <svg className={`w-3 h-3 transition-transform ${expandedSources.has(msg.id) ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
-                          {msg.sources.length} source{msg.sources.length > 1 ? 's' : ''}
+                          {msg.sources.length} {t('rebecca.source', 'source')}{msg.sources.length > 1 ? 's' : ''}
                         </button>
                         <AnimatePresence>
                           {expandedSources.has(msg.id) && (

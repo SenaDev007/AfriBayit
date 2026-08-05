@@ -568,3 +568,107 @@ Stage Summary:
   - Task 2 (any casts): 4 critical files cleaned — middleware.ts (6 `as any` → 0), useTransactions.ts (9 `any` → 0 via 6 new typed interfaces), PaymentFlow.tsx (3 `any` → 0 via 2 new string-union types), nextauth/route.ts (11 `as any` → 0 via 1 new AfribayitAuthUser interface + direct typed field assignment). JWT type augmented in next-auth.d.ts with accreditationRole/accreditationCountry.
   - Task 3 (demo data): 3 components cleaned — VirtualTourViewer (5 fake Unsplash URLs + DEMO_SCENES array deleted, honest empty state added), DroneViewPlayer (2 fake Unsplash day/night URLs deleted, honest empty state added), PricePredictionChart (4 fake country growth rates + Math.sin noise generator deleted, replaced with real backend useQuery call to /properties/{id}/price-prediction, honest "available soon" empty state when no data).
   - All 3 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 38.8s, tests 65/65 passed.
+
+---
+Task ID: i18n-batch3
+Agent: i18n-batch3-Agent
+Task: Wrap hardcoded French strings with t() calls in 5 high-visibility components
+
+Work Log:
+- Read worklog.md to understand prior context (i18n-any-demo task already wrapped HowItWorks, ModulesSection, AdvancedFeaturesSection, PackagesSection, Footer with t() calls + ~70 new keys). The 5 target files in this task had partial wrapping done by prior agents — this task completes the remaining module-scope arrays and unwrapped JSX strings.
+
+File 1 — src/components/afribayit/EscrowDashboard.tsx:
+  - Already had useTranslation import + `const { t } = useTranslation();` (added by prior task)
+  - The component-level JSX (badge, headers, toasts, OTP modal, dispute input, ledger, transition history) was ALREADY wrapped with `t('escrowDashboard.X', 'French fallback')` calls using ~50 existing keys
+  - The remaining unwrapped strings were in 3 module-scope arrays whose labels/descriptions were hardcoded French:
+    * `ALL_STATES` (12 entries with `label` + `description`)
+    * `RELEASE_CONDITIONS` (7 entries with `label`)
+    * `STATE_ACTIONS` (11 entries across 9 states with `label`)
+  - Refactored each array entry to carry `labelKey`/`labelFallback` and (for ALL_STATES) `descriptionKey`/`descriptionFallback` — pointing at the EXISTING locale keys `escrowDashboard.state.*`, `escrowDashboard.stateDesc.*`, `escrowDashboard.action.*`, `escrowDashboard.condition.*` (which were already defined in fr.ts/en.ts but never read by the component)
+  - Updated the JSX rendering sites:
+    * Current state badge: `ALL_STATES.find(...).label` → `t(ALL_STATES.find(...).labelKey, ...)`
+    * Timeline step labels: `stateConfig.label` → `t(stateConfig.labelKey, stateConfig.labelFallback)`
+    * Current step description: `ALL_STATES.find(...).description` → `t(...descriptionKey, ...descriptionFallback)`
+    * Exception state chips: `state.label` → `t(state.labelKey, state.labelFallback)`
+    * Release conditions: `condition.label` → `t(condition.labelKey, condition.labelFallback)`
+    * Action buttons: `action.label` → `t(action.labelKey, action.labelFallback)`
+  - ~30 user-visible strings newly routed through t() in this file (no new locale keys needed — all 30 keys already existed in the `escrowDashboard.state/stateDesc/action/condition` sub-objects)
+
+File 2 — src/components/afribayit/WalletModule.tsx:
+  - Already had useTranslation + t() for all component-level strings (eyebrow, title, tabs, balance cards, KYC gate, toasts, etc.) using `walletModule.X` keys
+  - Two module-scope arrays were still using hardcoded French:
+    * `filterTypes` (7 entries: Tous, Depots, Retraits, Escrow (financement), Escrow (liberation), Commissions, Abonnements)
+    * `afriPointsRedemption` (4 entries: "500 FCFA de credit wallet", "1 000 FCFA de credit wallet", "Reduction 10% sur abonnement", "Visite gratuite GeoTrust")
+  - Refactored `filterTypes` to carry `labelKey`/`labelFallback` and translated in JSX via `t(ft.labelKey, ft.labelFallback)` — using EXISTING `walletModule.filterAll/filterDeposits/filterWithdrawals/filterEscrowFund/filterEscrowRelease/filterCommissions/filterSubscriptions` keys
+  - Refactored `afriPointsRedemption` to carry `rewardKey`/`rewardFallback` and translated in JSX via `t(item.rewardKey, item.rewardFallback)` — using 4 NEW keys added under `walletModule`:
+    * `rewardCredit500`, `rewardCredit1000`, `rewardDiscount10`, `rewardGeotrustVisit`
+  - Also fixed the unescaped French accents in the original strings (Depots → Dépôts, liberation → libération, credit → crédit, Reduction → Réduction) — the new t() calls use proper accented French
+
+File 3 — src/components/afribayit/RebeccaChat.tsx:
+  - Already had useTranslation + t() for all component-level strings (welcome message, thinking indicator, quick action labels, input placeholder, send button, typing indicator, close button, attach doc button, voice button, etc.) using `rebecca.X` keys
+  - The `getFunctionLabel` function had a hardcoded `labels: Record<string, string>` map (11 entries: search_properties → "Recherche biens", get_property_details → "Détails bien", etc.) used to render function-call badges next to bot messages
+  - Refactored to `labels: Record<string, { key: string; fallback: string }>` and changed the return to `t(entry.key, entry.fallback)`
+  - Added 11 NEW keys under new `rebecca.function` sub-object: search_properties, get_property_details, check_escrow_status, book_hotel, request_geometer, contact_agent, get_market_prices, check_escrow, get_market_stats, find_artisans, calculate_financing
+  - Also wrapped the hardcoded "source" word in the "X source(s)" indicator with `t('rebecca.source', 'source')` (NEW key)
+
+File 4 — src/components/afribayit/PropertyDetail/index.tsx:
+  - Already had useTranslation + t() for nearly all visible strings (error states, alert messages, virtual tour title, back button, share default) using `propertyDetail.X` keys
+  - One unwrapped hardcoded French string remained at the "not found" state: `<p>Ce bien n&apos;existe pas ou a été retiré.</p>`
+  - Wrapped it with `t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')` — using the EXISTING `notFoundDesc` key already defined in fr.ts/en.ts but never read by the component
+  - No new keys needed for this file
+
+File 5 — src/components/afribayit/SubscriptionsModule.tsx:
+  - Already had useTranslation + t() for component-level strings (eyebrow, title, subtitle, current subscription banner, category tabs, boost visualization, plan buttons, modal, toasts) using `subscriptionModule.X` keys
+  - Three module-scope arrays had hardcoded French strings:
+    * `agentTiers` (5 tiers × name + desc + 5-10 features)
+    * `hotelTiers` (3 tiers × name + desc + 4-7 features)
+    * `artisanPlan` (1 plan × name + desc + 7 features)
+  - Plus `PREMIUM_BENEFITS` (6 entries with `label`) and `comparisonFeatures` (12 entries with `name`)
+  - Plus 2 occurrences of "Starter/Essentiel/Avancé/Elite" as hardcoded table headers (one in premium benefits table, one in feature comparison table)
+  - Plus 1 hardcoded "Illimité" string in the premium benefits table cell (when val === -1)
+  - Refactored each tier object to carry `nameKey`/`nameFallback`/`descKey`/`descFallback` and (where price is "Gratuit" or "Sur devis") `priceLabelKey`/`priceLabelFallback` — kept the original `name`/`desc`/`priceLabel` strings as fallbacks so the type union still works
+  - Refactored each feature entry from a plain string to `{ key, fallback, label }` so the React `key` prop is stable and the rendered text comes from `t(f.key, f.fallback)`
+  - Refactored PREMIUM_BENEFITS to use `labelKey`/`labelFallback` and translated in JSX via `t(benefit.labelKey, benefit.labelFallback)`
+  - Refactored comparisonFeatures to use `nameKey`/`nameFallback` and translated in JSX via `t(feat.nameKey, feat.nameFallback)`
+  - Wrapped both table header rows (Starter/Essentiel/Avancé/Elite) with `t('subscriptionModule.tier.X', ...)` calls
+  - Wrapped the hardcoded "Illimité" cell text with `t('subscriptionModule.unlimited', 'Illimité')` — using the EXISTING `unlimited` key already defined in the section
+  - Updated the plan-selection button to compare `currentSubscription?.plan` against `t(tier.nameKey, tier.nameFallback)` (translated tier name) instead of the raw English tier.name, so the button correctly detects the active plan in any locale
+  - Used an IIFE with a typed cast `tier as { priceLabelKey?: string; priceLabelFallback?: string; priceLabel: string }` for the priceLabel render to avoid TypeScript narrowing issues (some tiers have `priceLabelKey`, others don't)
+  - Added NEW keys under `subscriptionModule`:
+    * `tier` sub-object (12 keys): starter, proEssentiel, proAvance, proElite, agenceEntreprise, pmsStarter, pmsPro, pmsEnterprise, artisanPro, essentiel, avance, elite
+    * `desc` sub-object (9 keys): starter, proEssentiel, proAvance, proElite, agenceEntreprise, pmsStarter, pmsPro, pmsEnterprise, artisanPro
+    * `priceLabel` sub-object (2 keys): free, quote
+    * `features` sub-object (66 keys): starter1-5, proEssentiel1-7, proAvance1-10, proElite1-9, agence1-9, pmsStarter1-4, pmsPro1-7, pmsEnterprise1-6, artisanPro1-7
+    * `benefits` sub-object (6 keys): inmail, rebecca, alertes, rapport, whoViewed, badge
+    * `comparison` sub-object (12 keys): annonces, boost, inmail, rebecca, badge, alertes, rapport, whoViewed, crm, apiAccess, dedicatedAccount, support
+  - IMPORTANT: had to rename the new sub-objects from `feature`/`benefit` (singular) to `features`/`benefits` (plural) because the existing `subscriptionModule` section already had `feature: 'Fonctionnalité'` and `benefit: 'Avantage'` as string keys (TS1117 collision). Updated the SubscriptionsModule.tsx key references accordingly via sed.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 4 new walletModule keys + 12 rebecca.function keys + 1 rebecca.source key + 6 new subscriptionModule sub-objects (tier/desc/priceLabel/features/benefits/comparison totaling 107 new keys)
+  - en.ts: same structure with idiomatic English translations for all new keys
+  - Total new keys added to EACH locale file: ~124 (4 + 13 + 107)
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified the spelling and accents end-to-end)
+  - English translations cover the same keys with idiomatic English copy
+
+Verification (all 4 must pass per the task spec):
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors at all)
+  2. `npm run build` → ✓ Compiled successfully in 42s — all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced
+  3. `npm run test` → 6 test files passed, 122 tests passed (57 escrow + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.62s duration
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings
+
+Files touched (7):
+  - src/components/afribayit/EscrowDashboard.tsx
+  - src/components/afribayit/WalletModule.tsx
+  - src/components/afribayit/RebeccaChat.tsx
+  - src/components/afribayit/PropertyDetail/index.tsx
+  - src/components/afribayit/SubscriptionsModule.tsx
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+
+Stage Summary:
+  - EscrowDashboard: 3 module-scope arrays (ALL_STATES, RELEASE_CONDITIONS, STATE_ACTIONS — totaling ~30 user-visible labels and descriptions) now routed through t() using the existing `escrowDashboard.state/stateDesc/action/condition` locale sub-objects. No new keys needed.
+  - WalletModule: 2 module-scope arrays (filterTypes with 7 entries, afriPointsRedemption with 4 entries — totaling 11 user-visible strings) now routed through t(). 4 new walletModule keys added (rewardCredit500/1000, rewardDiscount10, rewardGeotrustVisit). Also fixed missing French accents in original hardcoded strings.
+  - RebeccaChat: getFunctionLabel function (11 entries) now routed through t() via `rebecca.function.*` sub-object. 1 hardcoded "source" word wrapped with `rebecca.source`. 12 new rebecca keys added.
+  - PropertyDetail/index.tsx: 1 remaining unwrapped string (notFoundDesc) wrapped with t() using existing key. No new keys needed.
+  - SubscriptionsModule: 9 tier objects (5 agent + 3 hotel + 1 artisan) refactored with nameKey/descKey/priceLabelKey/feature-key arrays. 6 PREMIUM_BENEFITS labels and 12 comparisonFeatures names wrapped. 8 table-header occurrences (Starter/Essentiel/Avancé/Elite × 2 tables) wrapped. 1 hardcoded "Illimité" cell wrapped with existing key. ~110 user-visible strings newly routed through t(). 107 new subscriptionModule keys added across 6 new sub-objects (tier/desc/priceLabel/features/benefits/comparison).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 122/122 passed, eslint 0 errors / 0 warnings.
