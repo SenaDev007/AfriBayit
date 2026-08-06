@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { CheckCircle } from 'lucide-react';
 import { easeOut, mealTypeConfig } from './constants';
 import { formatPrice } from './utils';
@@ -23,6 +24,15 @@ export default function MealsPanel({
   detailLoadingState,
   activeDetail,
 }: MealsPanelProps) {
+  const { t } = useTranslation();
+  const mealLabel = (key: string, fallback: string) => {
+    switch (key) {
+      case 'breakfast': return t('guesthouse.meals.breakfast', fallback);
+      case 'lunch': return t('guesthouse.meals.lunch', fallback);
+      case 'dinner': return t('guesthouse.meals.dinner', fallback);
+      default: return fallback;
+    }
+  };
   return (
     <motion.div
       key="meals"
@@ -62,18 +72,18 @@ export default function MealsPanel({
                 <div className="w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${mtc.color}10`, color: mtc.color }}>
                   {mtc.icon}
                 </div>
-                <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{mtc.label}</h4>
+                <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{mealLabel(mtc.key, mtc.label)}</h4>
                 {meal ? (
                   <>
                     <p className="font-mono text-2xl font-bold" style={{ color: mtc.color }}>
                       {formatPrice(meal.price)} FCFA
                     </p>
                     <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 bg-[#00A651]/10 text-[#00A651] text-[10px] font-semibold rounded-full">
-                      <CheckCircle className="w-3 h-3" /> Disponible
+                      <CheckCircle className="w-3 h-3" /> {t('guesthouse.meals.available', 'Disponible')}
                     </span>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-400 mt-2">Non proposé</p>
+                  <p className="text-sm text-gray-400 mt-2">{t('guesthouse.meals.notOffered', 'Non proposé')}</p>
                 )}
               </motion.div>
             );

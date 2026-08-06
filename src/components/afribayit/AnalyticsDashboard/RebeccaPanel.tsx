@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import {
   ChevronRight,
   Crown,
@@ -14,10 +15,10 @@ import {
 import { REBECCA_RECOMMENDATIONS, easeOut } from './demoData';
 import type { RebeccaPriority, RebeccaRecommendation } from './types';
 
-const PRIORITY_CONFIG: Record<RebeccaPriority, { label: string; color: string; bg: string; border: string }> = {
-  high: { label: 'Priorité haute', color: '#D93025', bg: 'bg-[#D93025]/5', border: 'border-[#D93025]/10' },
-  medium: { label: 'Priorité moyenne', color: '#D4AF37', bg: 'bg-[#D4AF37]/5', border: 'border-[#D4AF37]/10' },
-  low: { label: 'Suggestions', color: '#009CDE', bg: 'bg-[#009CDE]/5', border: 'border-[#009CDE]/10' },
+const PRIORITY_CONFIG: Record<RebeccaPriority, { labelKey: string; label: string; color: string; bg: string; border: string }> = {
+  high: { labelKey: 'analytics.rebecca.priorityHigh', label: 'Priorité haute', color: '#D93025', bg: 'bg-[#D93025]/5', border: 'border-[#D93025]/10' },
+  medium: { labelKey: 'analytics.rebecca.priorityMedium', label: 'Priorité moyenne', color: '#D4AF37', bg: 'bg-[#D4AF37]/5', border: 'border-[#D4AF37]/10' },
+  low: { labelKey: 'analytics.rebecca.suggestions', label: 'Suggestions', color: '#009CDE', bg: 'bg-[#009CDE]/5', border: 'border-[#009CDE]/10' },
 };
 
 function renderRecIcon(icon: RebeccaRecommendation['icon']) {
@@ -34,6 +35,7 @@ function renderRecIcon(icon: RebeccaRecommendation['icon']) {
 }
 
 export default function RebeccaPanel() {
+  const { t } = useTranslation();
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="bg-gradient-to-r from-[#003087] to-[#003087]/90 rounded-xl p-6 relative overflow-hidden">
@@ -42,8 +44,8 @@ export default function RebeccaPanel() {
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center shadow-lg"><Lightbulb className="w-7 h-7 text-white" /></div>
           <div>
-            <h2 className="text-white text-xl font-bold">Rebecca — Votre conseillère IA</h2>
-            <p className="text-white/60 text-sm mt-1">Recommandations personnalisées basées sur vos données et les tendances du marché</p>
+            <h2 className="text-white text-xl font-bold">{t('analytics.rebecca.conseillereTitle', 'Rebecca — Votre conseillère IA')}</h2>
+            <p className="text-white/60 text-sm mt-1">{t('analytics.rebecca.conseillereSubtitle', 'Recommandations personnalisées basées sur vos données et les tendances du marché')}</p>
           </div>
         </div>
       </div>
@@ -54,7 +56,7 @@ export default function RebeccaPanel() {
           const cfg = PRIORITY_CONFIG[priority];
           return (
             <div key={priority}>
-              <h3 className="text-sm font-bold mb-2" style={{ color: cfg.color }}>{cfg.label}</h3>
+              <h3 className="text-sm font-bold mb-2" style={{ color: cfg.color }}>{t(cfg.labelKey, cfg.label)}</h3>
               <div className="space-y-3">
                 {items.map((rec, i) => (
                   <motion.div

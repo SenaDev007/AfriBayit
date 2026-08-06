@@ -795,3 +795,139 @@ Stage Summary:
   - Task 1 (i18n): 5 components wrapped with t() calls + ~150 new translation keys added to both fr.ts and en.ts. OnboardingFlow: 8 sub-files updated (index + 6 steps + constants + types), 39 new onboardingFlow keys. GeoTrustModule: 3 module-scope arrays refactored (geometerServices with 8 descKeys, geotrustPacks with 3 nameKeys/descKeys/includesKeys, inline workflow with 4 titleKeys/descKeys) + 6 inline strings (toast, dialog header, escrow trust desc, reviews/missions count, certified/registered labels) → 40 new geotrust keys. NotaryModuleImpl: 3 module-scope arrays refactored (certificationSteps 6 titleKeys/descKeys, escrowNotaryStates 4 labelKeys, subscriptionTiers 3 nameKeys) + ~50 inline strings (4 toast handlers, 8 dashboard headings, 3 empty-states, deed tab labels/buttons, eSign button) → 60 new notary keys. HospitalityModule: header + 2 toasts → 7 new hospitality keys. GuesthouseModule: 3 cancellation policies + 3 toast strings → 5 new guesthouse keys.
   - Task 2 (any casts): 4 files cleaned — useAdmin.ts (7 `any` → 0 via Record<string, unknown> response types), useCommunity.ts (5 `any` → 0 via Record<string, unknown> + defensive type assertions on the unwrap chain), SecuritySettings.tsx (4 `any` → 0 via 2 new typed interfaces AuthResponse + Setup2FAResponse), NotaryModuleImpl.tsx (4 `any` → 0 via 2 new typed interfaces DeedGenerateResponse + AssignTransactionItem). Total: 20 `any` occurrences eliminated.
   - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch5
+Agent: i18n-batch5-Agent
+Task: i18n — wrap hardcoded French strings with t() calls in 10 components
+
+Work Log:
+
+Files touched (12 total):
+- src/components/afribayit/AnalyticsDashboard/OverviewPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/RebeccaPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/AgentProfile.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/InvestisseurProfile.tsx
+- src/components/afribayit/CommunityModule/AfriPointsPanel.tsx
+- src/components/afribayit/CommunityModule/NewsPanel.tsx
+- src/components/afribayit/CommunityModule/dialogs/NewPostDialog.tsx
+- src/components/afribayit/GuesthouseModule/ChambersPanel.tsx
+- src/components/afribayit/GuesthouseModule/MealsPanel.tsx
+- src/components/afribayit/CancellationPolicyDisplay.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — OverviewPanel.tsx:
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';` + `const { t } = useTranslation();` at top of component.
+    - Wrapped 13 visible strings + 2 dynamic insight strings:
+      * loadError ("Erreur lors du chargement des données analytiques")
+      * monthlyRevenue ("Revenus mensuels") + noRevenueData ("Aucune donnée de revenu disponible")
+      * byCity ("Par ville") + noCityData ("Aucune donnée par ville")
+      * connectionsFollowers ("Connexions & Abonnés")
+      * connections ("Connexions") + followers ("Abonnés")
+      * overPeriod ("sur la période") — used twice
+      * contentEngagement ("Engagement contenu")
+      * engagementLikes ("J'aime") + engagementComments ("Commentaires") + engagementShares ("Partages") + engagementSaves ("Enregistrés") — the inline `[{ label: ... }]` array was refactored to call t() for each label
+      * profileCompleteness ("Complétude du profil")
+      * missingElements ("Éléments manquants :")
+      * marketComparison ("Comparaison marché")
+      * market ("marché") — used in "marché: X" market comparison label
+      * conversionHigher ("Votre taux de conversion est 18% supérieur") + vsMarketAvg ("à la moyenne des agents de")
+      * rebeccaInsights ("Rebecca Insights") + aiAnalysis ("Analyse IA de vos données")
+      * positiveTrend ("Tendance positive") + revenueTrendDesc (template) + loginForTrends
+      * opportunityDetected ("Opportunité détectée") + opportunityDesc (template) + marketDataPending
+    - 28 new keys added under `analytics.overview` sub-object.
+
+  File 2 — RebeccaPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored module-scope `PRIORITY_CONFIG` type from `Record<RebeccaPriority, { label; color; bg; border }>` to add `labelKey: string`.
+    - Wrapped conseillereTitle ("Rebecca — Votre conseillère IA") + conseillereSubtitle.
+    - Wrapped the 3 priority labels via `t(cfg.labelKey, cfg.label)` — Priorité haute, Priorité moyenne, Suggestions.
+    - 5 new keys added under `analytics.rebecca` sub-object (priorityHigh, priorityMedium, suggestions, conseillereTitle, conseillereSubtitle). Note: this sub-object lives inside the `analytics` section, NOT the top-level `rebecca` section — they are separate namespaces.
+
+  File 3 — AgentProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped ~25 strings across:
+      * 3 KPI cards: avgSaleTime ("Temps de vente moyen") + days ("jours") + median ("Médiane") + record ("Record"), localRanking ("Classement local") + outOf ("sur") + agents ("agents"), agentScore ("Score agent") + scoreDesc
+      * Performance annonces card: listingPerformance heading + activeListings, totalViews, contactsReceived, conversionRate labels
+      * Volume transactions card: transactionVolume heading + closedSales, totalValue, inProgress labels
+      * ROI Premium card: roiPremium heading + investment, revenueGenerated, roi, extraContacts labels
+      * Carte de chaleur mini heading: heatmapTitle ("Carte de chaleur — Vos zones")
+      * Entonnoir de conversion heading: conversionFunnel ("Entonnoir de conversion")
+    - 27 new keys added under `analytics.agentProfile` sub-object.
+
+  File 4 — InvestisseurProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 4 KPI cards: portfolioValue, totalRoi, roiLocatif, monthlyRental.
+    - Activité recherche heading + 3 stat labels (propertiesViewed, activeAlerts, scheduledVisits).
+    - Portfolio immobilier heading + roi ("ROI") + rentalYield ("rendement locatif") + occupancyRate ("Taux d'occupation") + occupancyAboveMarket caption.
+    - Historique transactions heading + 4 table column headers (date, type, property, amount).
+    - Entonnoir d'investissement heading.
+    - 19 new keys added under `analytics.investisseurProfile` sub-object.
+
+  File 5 — AfriPointsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped points ("AfriPoints"), level ("Niveau"), pointsToNext/pointsUnit/forLevel for the "Plus que X points pour le niveau Y" progress text.
+    - Refactored the inline `[{ action, points, icon, color }]` array (8 entries) to call `t('community.afriPoints.earnX', 'FR fallback')` for each action.
+    - Wrapped earnTitle ("Gagner des AfriPoints") and spendTitle ("Dépenser des AfriPoints") headings.
+    - Refactored the spend array (5 entries) to call t() for each item label.
+    - Wrapped pts ("pts") label used 13 times.
+    - Wrapped the info banner rule ("1 XOF de transaction = 1 point") + ruleDesc.
+    - 24 new keys added under `community.afriPoints` sub-object.
+
+  File 6 — NewsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped news title ("Actualités immobilières"), subtitle, "Lire plus" link, info banner title + description.
+    - 5 new keys added under `community.news` sub-object.
+    - Note: the newsItems array content (titles, excerpts, categories, sources) is intentionally NOT wrapped because those are demo content, not UI labels — per task instructions to focus on USER-VISIBLE UI strings (headings, button labels, descriptions, empty-states).
+
+  File 7 — NewPostDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Nouveau sujet"), 4 form labels (Titre, Contenu, Catégorie, Tags), 4 placeholders (titlePlaceholder, contentPlaceholder, selectCategory, tagsPlaceholder), mentionHint ("💡 Utilisez @pseudo pour mentionner un membre"), 7 category <option> labels (catDiscussion, catQuestion, catSuccess, catMarket, catLegal, catEvent, catInvestment), rebeccaCheck note ("Rebecca IA vérifiera votre contenu avant publication"), cancel button ("Annuler"), publish/publishing button labels.
+    - 22 new keys added under `community.newPost` sub-object.
+
+  File 8 — ChambersPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 strings: capacity ("Capacité"), pers ("pers."), pricePerNight ("Prix/nuit"), book ("Réserver"), unavailable ("Indisponible"), noRooms empty state ("Aucune chambre disponible pour cette guesthouse.").
+    - 6 new keys added under `guesthouse.chambers` sub-object.
+
+  File 9 — MealsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Added a small `mealLabel(key, fallback)` helper that switches on the mealTypeConfig key (breakfast/lunch/dinner) and calls `t('guesthouse.meals.breakfast/lunch/dinner', fallback)`. This keeps the constants file untouched while still translating the labels at the render site.
+    - Wrapped the meal card label via `mealLabel(mtc.key, mtc.label)` instead of `{mtc.label}`.
+    - Wrapped Disponible and Non proposé labels.
+    - 5 new keys added under `guesthouse.meals` sub-object.
+
+  File 10 — CancellationPolicyDisplay.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored module-scope `POLICIES` array so each policy carries `nameKey`/`descriptionKey`/`commissionKey`, and each rule carries `conditionKey`/`refundKey`. The original `name`/`description`/`commission`/`condition`/`refund` French strings are kept as fallbacks.
+    - Wrapped policy name (4), description (4), rule condition (7), rule refund (3 — refund100/refund50/refundNone), commission text (4) with t() calls.
+    - IMPORTANT: the original code uses `rule.refund.includes('100%')` and `rule.refund.includes('Aucun')` to determine the icon (✓/✗/•) and the color (green/red/navy). I kept those checks referencing the original French `rule.refund` string (NOT the translated refund) so the visual logic remains correct in any locale. The displayed refund text is rendered via a local `const refund = t(rule.refundKey, rule.refund)` and `{refund}` in the JSX.
+    - 22 new keys added under a brand-new top-level `cancellation` section.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 4 new sub-objects under `analytics` (overview 28 keys / rebecca 5 keys / agentProfile 27 keys / investisseurProfile 19 keys), 3 new sub-objects under `community` (afriPoints 24 keys / news 5 keys / newPost 22 keys), 2 new sub-objects under `guesthouse` (chambers 6 keys / meals 5 keys), and a new top-level `cancellation` section (22 keys). Total new keys added to fr.ts: ~163.
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (exit 0). No type errors introduced by the new keys or t() calls.
+  2. `npm run build` → ✓ Compiled successfully in 45s; all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 6.13s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - OverviewPanel: 13 visible UI strings + 2 dynamic insight strings wrapped → 28 new analytics.overview keys.
+  - RebeccaPanel: PRIORITY_CONFIG refactored with labelKey + 2 header strings wrapped → 5 new analytics.rebecca keys.
+  - AgentProfile: 3 KPI cards + 3 stats cards (with 11 inner labels) + 2 section headings wrapped → 27 new analytics.agentProfile keys.
+  - InvestisseurProfile: 4 KPI cards + Activité recherche (heading + 3 labels) + Portfolio immobilier (heading + 3 labels) + Historique transactions (heading + 4 column headers) + Entonnoir heading wrapped → 19 new analytics.investisseurProfile keys.
+  - AfriPointsPanel: 8-item earn array + 5-item spend array + 4 misc strings wrapped → 24 new community.afriPoints keys.
+  - NewsPanel: 4 visible UI strings wrapped (header title, subtitle, read more, info banner) → 5 new community.news keys. Demo content NOT wrapped.
+  - NewPostDialog: dialog title + 4 form labels + 4 placeholders + mention hint + 7 category options + Rebecca note + Cancel/Publish/Publishing button labels wrapped → 22 new community.newPost keys.
+  - ChambersPanel: 5 visible UI strings wrapped (capacity, pers, price/night, book, unavailable, no-rooms empty state) → 6 new guesthouse.chambers keys.
+  - MealsPanel: 3 meal-type labels (via mealLabel helper) + Disponible + Non proposé wrapped → 5 new guesthouse.meals keys.
+  - CancellationPolicyDisplay: POLICIES array refactored with nameKey/descriptionKey/commissionKey/conditionKey/refundKey; 4 policy names + 7 rule conditions + 3 refund strings + 4 commissions + 4 descriptions wrapped → 22 new cancellation keys (new top-level section).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 45s, tests 179/179 passed, eslint 0 errors / 0 warnings.
