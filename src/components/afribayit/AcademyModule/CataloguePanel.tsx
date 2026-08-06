@@ -4,6 +4,7 @@ import { AlertTriangle, BookOpen, Search, X } from 'lucide-react';
 import type { Course } from './types';
 import { categories, CourseSkeleton, LearningPaths } from './constants';
 import CourseCard from './CourseCard';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface CataloguePanelProps {
   searchQuery: string;
@@ -28,6 +29,7 @@ export default function CataloguePanel({
   enrollingCourseId, isEnrolling,
   onSelect, onEnroll,
 }: CataloguePanelProps) {
+  const { t } = useTranslation();
   return (
     <>
       {/* Search & Filters */}
@@ -38,7 +40,7 @@ export default function CataloguePanel({
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une formation..."
+            placeholder={t('academy.catalogue.searchPlaceholder', 'Rechercher une formation...')}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
           />
           {searchQuery && (
@@ -52,19 +54,19 @@ export default function CataloguePanel({
             onClick={() => setPriceFilter('all')}
             className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'all' ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border'}`}
           >
-            Toutes
+            {t('academy.catalogue.filterAll', 'Toutes')}
           </button>
           <button
             onClick={() => setPriceFilter('free')}
             className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'free' ? 'bg-[#00A651] text-white' : 'bg-white text-gray-600 border'}`}
           >
-            Gratuites
+            {t('academy.catalogue.filterFree', 'Gratuites')}
           </button>
           <button
             onClick={() => setPriceFilter('paid')}
             className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'paid' ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border'}`}
           >
-            Payantes
+            {t('academy.catalogue.filterPaid', 'Payantes')}
           </button>
         </div>
       </div>
@@ -102,7 +104,7 @@ export default function CataloguePanel({
       {error && (
         <div className="text-center py-12">
           <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">Impossible de charger les formations</p>
+          <p className="text-gray-600 font-semibold mb-1">{t('academy.catalogue.loadError', 'Impossible de charger les formations')}</p>
           <p className="text-sm text-gray-400">{error.message}</p>
         </div>
       )}
@@ -111,8 +113,8 @@ export default function CataloguePanel({
       {!isLoading && !error && filtered.length === 0 && (
         <div className="text-center py-12">
           <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">Aucune formation trouvée</p>
-          <p className="text-sm text-gray-400">Essayez une autre catégorie ou recherche</p>
+          <p className="text-gray-600 font-semibold mb-1">{t('academy.catalogue.emptyTitle', 'Aucune formation trouvée')}</p>
+          <p className="text-sm text-gray-400">{t('academy.catalogue.emptyDesc', 'Essayez une autre catégorie ou recherche')}</p>
         </div>
       )}
 

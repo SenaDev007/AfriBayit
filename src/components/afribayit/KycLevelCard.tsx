@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   XCircle,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -86,18 +87,18 @@ function getStatusIcon(status: KycDocRequirement['status']) {
   }
 }
 
-function getStatusLabel(status: KycDocRequirement['status']): string {
+function getStatusLabel(status: KycDocRequirement['status'], t: (key: string, fallback?: string) => string): string {
   switch (status) {
     case 'human_validated':
-      return 'Validé';
+      return t('kyc.statusValidated', 'Validé');
     case 'ai_validated':
-      return 'Validé par IA';
+      return t('kyc.statusAiValidated', 'Validé par IA');
     case 'pending':
-      return 'En attente';
+      return t('kyc.statusPending', 'En attente');
     case 'rejected':
-      return 'Rejeté';
+      return t('kyc.statusRejected', 'Rejeté');
     default:
-      return 'Non soumis';
+      return t('kyc.statusNotSubmitted', 'Non soumis');
   }
 }
 
@@ -131,6 +132,7 @@ export default function KycLevelCard({
   isCurrentLevel,
   index = 0,
 }: KycLevelCardProps) {
+  const { t } = useTranslation();
   const colors = levelColors[level] ?? levelColors[0];
 
   const validatedCount = requirements.filter(
@@ -152,7 +154,7 @@ export default function KycLevelCard({
         <span
           className={`absolute -top-3 left-4 px-3 py-0.5 rounded-full text-xs font-bold ${colors.badge}`}
         >
-          Niveau actuel
+          {t('kyc.currentLevel', 'Niveau actuel')}
         </span>
       )}
 
@@ -175,7 +177,7 @@ export default function KycLevelCard({
 
       {/* Limite de transaction */}
       <div className="mb-4 px-3 py-2 rounded-lg bg-white/70 border border-gray-200/60">
-        <p className="text-xs text-gray-500 font-medium">Limite de transaction mensuelle</p>
+        <p className="text-xs text-gray-500 font-medium">{t('kyc.transactionLimit', 'Limite de transaction mensuelle')}</p>
         <p className="text-base font-bold text-gray-900">{limit}</p>
       </div>
 
@@ -183,9 +185,9 @@ export default function KycLevelCard({
       {state !== 'locked' && requirements.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-            <span>Progression</span>
+            <span>{t('kyc.progress', 'Progression')}</span>
             <span className="font-semibold">
-              {validatedCount}/{requirements.length} documents
+              {validatedCount}/{requirements.length} {t('kyc.documents', 'documents')}
             </span>
           </div>
           <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
@@ -208,7 +210,7 @@ export default function KycLevelCard({
       {/* Liste des documents requis */}
       <div className="space-y-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          Documents requis
+          {t('kyc.requiredDocuments', 'Documents requis')}
         </p>
         {requirements.map((req) => (
           <div
@@ -228,7 +230,7 @@ export default function KycLevelCard({
                       : 'text-gray-400'
               }`}
             >
-              {getStatusLabel(req.status)}
+              {getStatusLabel(req.status, t)}
             </span>
           </div>
         ))}

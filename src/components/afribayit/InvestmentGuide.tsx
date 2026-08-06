@@ -16,6 +16,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, FileText, Scale, TrendingUp, Lightbulb, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface CountryGuide {
   code: string;
@@ -155,13 +156,14 @@ const GUIDES: CountryGuide[] = [
 ];
 
 const STATUS_CONFIG = {
-  accepted: { label: 'Accepté', color: '#00A651', bg: '#00A65115' },
-  warning: { label: 'Sous conditions', color: '#D4AF37', bg: '#D4AF3715' },
-  refused: { label: 'Refusé', color: '#ef4444', bg: '#ef444415' },
+  accepted: { label: 'Accepté', labelKey: 'investment.guide.statusAccepted', color: '#00A651', bg: '#00A65115' },
+  warning: { label: 'Sous conditions', labelKey: 'investment.guide.statusWarning', color: '#D4AF37', bg: '#D4AF3715' },
+  refused: { label: 'Refusé', labelKey: 'investment.guide.statusRefused', color: '#ef4444', bg: '#ef444415' },
 };
 
 export default function InvestmentGuide() {
   const [selectedCountry, setSelectedCountry] = useState<string>('BJ');
+  const { t } = useTranslation();
   const guide = GUIDES.find(g => g.code === selectedCountry) || GUIDES[0];
 
   return (
@@ -170,11 +172,10 @@ export default function InvestmentGuide() {
       <div className="p-5 border-b bg-gradient-to-r from-[#2C2E2F] to-[#1a1c1d]">
         <div className="flex items-center gap-2 mb-1">
           <Globe className="w-5 h-5 text-[#D4AF37]" />
-          <h3 className="font-display text-sm font-bold text-white">Guide d&apos;investissement par pays</h3>
+          <h3 className="font-display text-sm font-bold text-white">{t('investment.guide.headerTitle', 'Guide d\'investissement par pays')}</h3>
         </div>
         <p className="text-[10px] text-white/70">
-          Cadre légal OHADA, documents acceptés, fiscalité immobilière et conseils
-          pour investir en Afrique de l&apos;Ouest.
+          {t('investment.guide.headerSubtitle', 'Cadre légal OHADA, documents acceptés, fiscalité immobilière et conseils pour investir en Afrique de l\'Ouest.')}
         </p>
       </div>
 
@@ -210,7 +211,7 @@ export default function InvestmentGuide() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <Scale className="w-4 h-4 text-[#003087]" />
-              <h4 className="text-xs font-bold text-[#003087]">Cadre légal</h4>
+              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.legalBase', 'Cadre légal')}</h4>
             </div>
             <p className="text-xs text-gray-600 bg-[#003087]/5 rounded-xl p-3">
               {guide.legalBase}
@@ -221,7 +222,7 @@ export default function InvestmentGuide() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <FileText className="w-4 h-4 text-[#003087]" />
-              <h4 className="text-xs font-bold text-[#003087]">Documents légaux acceptés</h4>
+              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.acceptedDocs', 'Documents légaux acceptés')}</h4>
             </div>
             <div className="space-y-1.5">
               {guide.acceptedDocs.map((doc, i) => {
@@ -240,7 +241,7 @@ export default function InvestmentGuide() {
                       className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold"
                       style={{ backgroundColor: cfg.bg, color: cfg.color }}
                     >
-                      {cfg.label}
+                      {t(cfg.labelKey, cfg.label)}
                     </span>
                   </div>
                 );
@@ -252,7 +253,7 @@ export default function InvestmentGuide() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <TrendingUp className="w-4 h-4 text-[#00A651]" />
-              <h4 className="text-xs font-bold text-[#003087]">Innovations réglementaires 2025</h4>
+              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.innovations', 'Innovations réglementaires 2025')}</h4>
             </div>
             <ul className="space-y-1.5">
               {guide.innovations.map((innov, i) => (
@@ -268,12 +269,12 @@ export default function InvestmentGuide() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <FileText className="w-4 h-4 text-[#D4AF37]" />
-              <h4 className="text-xs font-bold text-[#003087]">Fiscalité immobilière</h4>
+              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.taxation', 'Fiscalité immobilière')}</h4>
             </div>
             <div className="grid grid-cols-1 gap-2">
-              <TaxRow label="Droits de mutation" value={guide.taxation.mutationDuty} />
-              <TaxRow label="Taxe foncière (annuelle)" value={guide.taxation.propertyTax} />
-              <TaxRow label="Plus-value à la revente" value={guide.taxation.capitalGains} />
+              <TaxRow label={t('investment.guide.mutationDuty', 'Droits de mutation')} value={guide.taxation.mutationDuty} />
+              <TaxRow label={t('investment.guide.propertyTax', 'Taxe foncière (annuelle)')} value={guide.taxation.propertyTax} />
+              <TaxRow label={t('investment.guide.capitalGains', 'Plus-value à la revente')} value={guide.taxation.capitalGains} />
             </div>
           </div>
 
@@ -281,7 +282,7 @@ export default function InvestmentGuide() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <Lightbulb className="w-4 h-4 text-[#D4AF37]" />
-              <h4 className="text-xs font-bold text-[#003087]">Conseils pour investisseurs</h4>
+              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.tips', 'Conseils pour investisseurs')}</h4>
             </div>
             <ul className="space-y-1.5">
               {guide.tips.map((tip, i) => (

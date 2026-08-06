@@ -1075,3 +1075,135 @@ Stage Summary:
   - leases/[id]/page.tsx: 6 `any` occurrences replaced with proper interfaces (LeaseDetail, LeaseDocument, LeaseInventory, RentPayment, LeaseParty, LeaseProperty); SignatureStatus `signed` prop relaxed to optional to match new typing.
   - PropertyGrid.tsx, FeaturedProperties.tsx, AdvancedFilterSidebar.tsx: verified already free of `any` casts (no changes needed).
   - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 43s (82 routes), tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch7
+Agent: i18n-batch7-Agent
+Task: i18n — wrap hardcoded French strings with t() calls in 12 more components
+
+Work Log:
+
+Files touched (14 total):
+- src/components/afribayit/AcademyModule/CataloguePanel.tsx
+- src/components/afribayit/AcademyModule/WebinarsPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/ProfilesPanel.tsx
+- src/components/afribayit/HospitalityModule/HotelDetail.tsx
+- src/components/afribayit/InvestmentGuide.tsx
+- src/components/afribayit/KycLevelCard.tsx
+- src/components/afribayit/PaysCouverts.tsx
+- src/components/afribayit/PropertyDetail/PropertyGallery.tsx
+- src/components/afribayit/PropertyDetail/PropertySidebar.tsx
+- src/components/afribayit/RoleContextBanner.tsx
+- src/components/afribayit/RoleManager.tsx
+- src/components/afribayit/NotificationsCenter/NotificationItem.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — CataloguePanel.tsx (academy.catalogue):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 7 visible UI strings: search placeholder ("Rechercher une formation..."), 3 filter buttons (Toutes/Gratuites/Payantes), error title ("Impossible de charger les formations"), empty-state title + desc.
+    - 7 new keys added under `academy.catalogue` sub-object.
+
+  File 2 — WebinarsPanel.tsx (academy.webinars):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 6 visible UI strings: error message ("Impossible de charger les webinaires."), empty-state title + desc, and 3 button labels for the tri-state webinar button (Rejoindre le live / Voir le replay / S'inscrire).
+    - 6 new keys added under `academy.webinars` sub-object.
+
+  File 3 — ProfilesPanel.tsx (analytics.profilesPanel):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - tabs.tsx is a constants file (skipped per task instructions), so I added a local `Record<ProfileTab, string>` lookup mapping each tab key to its translation key, and rendered `{t(tabLabelKey[pt.key], pt.label)}` instead of `{pt.label}`.
+    - Wrapped 4 profile tab labels (Agent / Artisan / Formateur / Investisseur).
+    - 4 new keys added under `analytics.profilesPanel` sub-object.
+
+  File 4 — HotelDetail.tsx (hospitality.hotelDetail):
+    - Added `'use client';` directive at the top of the file (it was missing — the file is rendered inside a client component but didn't have its own directive, so adding the useTranslation hook required it).
+    - Added useTranslation import + `const { t } = useTranslation();` in 3 places: the main `HotelDetail` component, the `RoomsSection` sub-component, and the `ReviewsSection` sub-component (each is a separate function with its own render context).
+    - Wrapped 24 visible UI strings across all 3 components:
+      * Main HotelDetail: back button ("Retour à la liste" — used twice), availability badge (Disponible/Complet), 4 KPI labels (avis/Chambres/Réservations/FCFA/nuit), OTA sync heading + "Synchronisé" suffix, "Équipements" heading, "Réserver maintenant" button, "Hôtel non trouvé" not-found state.
+      * RoomsSection: "Types de chambres" heading, room card stats (pers./dispo.), room availability badge (Libre/Complet), "Disponibilités (30 prochains jours)" label, FCFA/nuit unit, "Réserver" button, "Aucune chambre configurée pour cet hôtel" empty state.
+      * ReviewsSection: "Avis clients" heading + 4 review category labels (Propreté/Confort/Emplacement/Service).
+    - 24 new keys added under `hospitality.hotelDetail` sub-object.
+
+  File 5 — InvestmentGuide.tsx (investment.guide):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored the module-scope `STATUS_CONFIG` constant to add a `labelKey` field for each status (statusAccepted / statusWarning / statusRefused) alongside the existing French `label` (kept as fallback).
+    - Wrapped 14 visible UI strings: header title ("Guide d'investissement par pays") + header subtitle, 5 section headings (Cadre légal / Documents légaux acceptés / Innovations réglementaires 2025 / Fiscalité immobilière / Conseils pour investisseurs), 3 TaxRow labels passed at call site (Droits de mutation / Taxe foncière (annuelle) / Plus-value à la revente), and 3 STATUS_CONFIG labels via `t(cfg.labelKey, cfg.label)`.
+    - Note: The country-specific content arrays (`legalBase`, `acceptedDocs`, `innovations`, `taxation` values, `tips`) are data-driven demo content, NOT UI labels — they were intentionally NOT wrapped (same pattern as the previous NewsPanel approach where demo content stays untouched).
+    - 14 new keys added under `investment.guide` sub-object.
+
+  File 6 — KycLevelCard.tsx (kyc):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Modified the module-scope `getStatusLabel` helper to take a `t` function parameter: `getStatusLabel(status, t)` — caller now passes the `t` from inside the component.
+    - Wrapped 10 visible UI strings: "Niveau actuel" current-level badge, "Limite de transaction mensuelle" label, "Progression" label + "documents" unit, "Documents requis" heading, and 5 status labels (Validé / Validé par IA / En attente / Rejeté / Non soumis).
+    - Note: `name`, `description`, and `limit` are props passed in from the parent — they are data-driven, not hardcoded in this component, so they were not wrapped.
+    - 10 new keys added under a new top-level `kyc` section.
+
+  File 7 — PaysCouverts.tsx (paysCouverts):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 10 visible UI strings: eyebrow ("Présence Régionale"), title ("Pays couverts"), subtitle (split into subtitlePrefix + subtitleSuffix so the dynamic country count stays in the JSX, not baked into the locale string), 4 stat labels (biens/Agents/Notaires/Artisans), and the footer "Bientôt" + "dans 3 pays supplémentaires d'Afrique de l'Ouest".
+    - IMPORTANT: The original subtitle "Déjà opérationnel dans {N} pays d'Afrique de l'Ouest, avec des équipes locales et des partenaires certifiés." had a dynamic count. To preserve this, I split it into two keys (`subtitlePrefix` + `subtitleSuffix`) and put the `{stats?.countries ?? 0}` in the JSX between them. This way the locale string is a static phrase and the dynamic count is interpolated at render time.
+    - Note: `country.cities` and `countryMeta[code].name` are data, not UI labels — left untouched.
+    - 10 new keys added under a new top-level `paysCouverts` section.
+
+  File 8 — PropertyGallery.tsx (propertyDetail.gallery):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 8 visible UI strings: "Documents vérifiés" verified badge, "Visite VR disponible" VR badge button + its `aria-label` ("Ouvrir la visite virtuelle 360°"), 2 favorite-button aria-labels (Retirer/Ajouter des favoris) + login-required title, VR tour banner heading ("Visite virtuelle 360°") + description ("Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce").
+    - Note: "VR 360°" label is a short brand label and was left as-is (no translation needed).
+    - 8 new keys added under `propertyDetail.gallery` sub-object.
+
+  File 9 — PropertySidebar.tsx (propertyDetail.sidebar):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored the module-scope `trustBadges` array (5 entries) from inline string literals to call `t()` for each badge text.
+    - Wrapped 27 visible UI strings: 5 trust-badge labels (Documents vérifiés/GeoTrust certifié/Visite VR disponible/Escrow sécurisé/Assistance notariale), "Charges comprises si indiqué" caption, Escrow badge (title + desc), 3 main CTA buttons (Visite virtuelle 360° / Acheter ce bien / Louer ce bien), 2 secondary CTA buttons (Demander une visite / Contacter l'agent), favorite button (login/remove/add titles + Enregistré/Enregistrer states), share button (Partager) + native share (Partager...) + copy link (Lien copié !/Copier le lien), agent card (Certifié badge / "Agent immobilier" fallback / "annonces" listings unit / "Voir le numéro" phone button), and "Garanties AfriBayit" trust badges heading.
+    - Note: `SHARE_PLATFORMS` array labels (WhatsApp, Facebook, X (Twitter), Telegram) are brand names — left untouched.
+    - 27 new keys added under `propertyDetail.sidebar` sub-object.
+
+  File 10 — RoleContextBanner.tsx (roleContext):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 visible UI strings: banner main text (split into `viewingAs` prefix + role label which stays dynamic), roles-active count (split into `rolesActive` prefix + `rolesActiveSuffix`), "Tableau de bord général" button, "Gérer mes rôles" button.
+    - Note: `roleDef.label` is data from role-catalog.ts — left dynamic inside the JSX between translated prefix and the role name.
+    - 5 new keys added under a new top-level `roleContext` section.
+
+  File 11 — RoleManager.tsx (roleManager):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 25 visible UI strings: active roles heading ("Vos rôles actifs") + description, role counter (singular/plural forms: rôle/rôles), "Aucun rôle — sélectionnez-en ci-dessous" empty state, "Principal" primary badge (used twice), "Catalogue des rôles" heading + description, 3 button titles (Définir comme rôle principal / Retirer ce rôle / Ajouter ce rôle), "Rôle actif" badge, "Ouvrir le dashboard" link, multi-role explainer heading ("💡 Comment fonctionne le multi-rôle ?") + 4 tip bullets (each split into multiple keys for the dynamic `rôle principal` / `Administrateur` phrases that needed `<strong>` styling).
+    - Note: `role.label` and `role.description` come from ROLE_CATALOG (a constants file) — left dynamic.
+    - 25 new keys added under a new top-level `roleManager` section.
+
+  File 12 — NotificationItem.tsx (notificationsCenter):
+    - Added `'use client';` directive at the top of the file (it was missing — needed for the useTranslation hook).
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - utils.tsx is a constants file (skipped per task instructions), so the action labels and the `formatTimeAgo` return strings originate from there. I added two translation layers in NotificationItem itself:
+      1. A module-scope `ACTION_LABEL_KEYS: Record<string, string>` lookup that maps each French action label string ("Repondre", "Voir", "Voir le bien", "Details", "Lire", "Valider", "Ignorer") to its translation key. At the render site, `title={ACTION_LABEL_KEYS[action.label] ? t(ACTION_LABEL_KEYS[action.label], action.label) : action.label}` falls back to the original label if no mapping exists.
+      2. A local `translateTimeAgo(raw: string)` helper that regex-matches the 4 possible `formatTimeAgo` outputs ("A l'instant", "Il y a X min", "Il y a Xh", "Il y a Xj") and returns the translated version. The dynamic count is preserved by capturing it from the regex and interpolating it into the translated prefix + unit. Date strings (e.g. "5 nov.") are passed through unchanged.
+    - Wrapped 10 visible UI strings: 7 action labels (reply/view/viewProperty/details/read/validate/dismiss) + 3 time-ago components (now/ago/min).
+    - 10 new keys added under a new top-level `notificationsCenter` section.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 3 new sub-objects to existing sections (`academy.catalogue` 7 keys / `academy.webinars` 6 keys / `analytics.profilesPanel` 4 keys / `hospitality.hotelDetail` 24 keys / `propertyDetail.gallery` 8 keys / `propertyDetail.sidebar` 27 keys / `investment.guide` 14 keys) and 5 new top-level sections (`kyc` 10 keys / `paysCouverts` 10 keys / `roleContext` 5 keys / `roleManager` 25 keys / `notificationsCenter` 10 keys). Total new keys added to fr.ts: 150.
+  - en.ts: same structure with idiomatic English translations for all 150 new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → exit code 0 (0 errors). No type errors introduced by the new keys, t() calls, or the modified `getStatusLabel(status, t)` signature.
+  2. `npm run build` → ✓ Compiled successfully in 42s; all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.97s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - CataloguePanel: 7 visible UI strings wrapped (search + 3 filters + error + empty state title/desc) → 7 new `academy.catalogue` keys.
+  - WebinarsPanel: 6 visible UI strings wrapped (error + empty state + 3 button states) → 6 new `academy.webinars` keys.
+  - ProfilesPanel: 4 profile tab labels wrapped via local Record lookup (since tabs.tsx is a constants file) → 4 new `analytics.profilesPanel` keys.
+  - HotelDetail: 24 strings wrapped across main component + RoomsSection + ReviewsSection (added 'use client' + 3 useTranslation hooks) → 24 new `hospitality.hotelDetail` keys.
+  - InvestmentGuide: STATUS_CONFIG refactored with labelKey + 14 strings wrapped (header + 5 headings + 3 TaxRow labels + 3 status labels + subtitle) → 14 new `investment.guide` keys. Demo content arrays left untouched.
+  - KycLevelCard: getStatusLabel refactored to take `t` parameter + 10 strings wrapped (badge + limit + progress + docs heading + 5 status labels) → 10 new `kyc` keys (new top-level section).
+  - PaysCouverts: 10 strings wrapped, with the dynamic-country-count subtitle split into prefix+suffix to keep the count out of the locale string → 10 new `paysCouverts` keys (new top-level section).
+  - PropertyGallery: 8 strings wrapped (verified badge + VR badge + aria-labels + VR banner) → 8 new `propertyDetail.gallery` keys.
+  - PropertySidebar: trustBadges array refactored + 27 strings wrapped (5 trust badges + escrow + 5 CTAs + favorite + share dropdown + agent card + guarantees heading) → 27 new `propertyDetail.sidebar` keys.
+  - RoleContextBanner: 5 strings wrapped, with the dynamic roles.length split into prefix+suffix → 5 new `roleContext` keys (new top-level section).
+  - RoleManager: 25 strings wrapped including the multi-role explainer with its 4 bullets split into per-phrase keys for proper styling → 25 new `roleManager` keys (new top-level section).
+  - NotificationItem: 10 strings wrapped via local ACTION_LABEL_KEYS lookup + translateTimeAgo regex helper (since utils.tsx is a constants file) + added 'use client' directive → 10 new `notificationsCenter` keys (new top-level section).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 179/179 passed, eslint 0 errors / 0 warnings.

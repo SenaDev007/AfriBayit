@@ -7,6 +7,7 @@ import {
   Map, Share2, Star,
 } from 'lucide-react';
 import { easeOut } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface AgentData {
   name: string;
@@ -71,12 +72,13 @@ export default function PropertySidebar({
   onContactAgent,
   property,
 }: PropertySidebarProps) {
+  const { t } = useTranslation();
   const trustBadges = [
-    { icon: <Check className="w-4 h-4" />, text: 'Documents vérifiés', active: verified },
-    { icon: <Map className="w-4 h-4" />, text: 'GeoTrust certifié', active: geoTrust },
-    { icon: <Eye className="w-4 h-4" />, text: 'Visite VR disponible', active: hasVR },
-    { icon: <Lock className="w-4 h-4" />, text: 'Escrow sécurisé', active: true },
-    { icon: <ClipboardList className="w-4 h-4" />, text: 'Assistance notariale', active: true },
+    { icon: <Check className="w-4 h-4" />, text: t('propertyDetail.sidebar.verifiedDocs', 'Documents vérifiés'), active: verified },
+    { icon: <Map className="w-4 h-4" />, text: t('propertyDetail.sidebar.geoTrustCertified', 'GeoTrust certifié'), active: geoTrust },
+    { icon: <Eye className="w-4 h-4" />, text: t('propertyDetail.sidebar.vrAvailable', 'Visite VR disponible'), active: hasVR },
+    { icon: <Lock className="w-4 h-4" />, text: t('propertyDetail.sidebar.escrowSecured', 'Escrow sécurisé'), active: true },
+    { icon: <ClipboardList className="w-4 h-4" />, text: t('propertyDetail.sidebar.notaryAssist', 'Assistance notariale'), active: true },
   ];
 
   return (
@@ -93,7 +95,7 @@ export default function PropertySidebar({
             {priceLabel}
           </p>
           {transaction === 'location' && (
-            <p className="text-xs text-gray-400">Charges comprises si indiqué</p>
+            <p className="text-xs text-gray-400">{t('propertyDetail.sidebar.chargesIncluded', 'Charges comprises si indiqué')}</p>
           )}
         </div>
 
@@ -105,8 +107,8 @@ export default function PropertySidebar({
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-[#00A651]">Escrow Sécurisé</p>
-            <p className="text-[10px] text-gray-500">Fonds protégés jusqu&apos;à signature</p>
+            <p className="text-xs font-semibold text-[#00A651]">{t('propertyDetail.sidebar.escrowTitle', 'Escrow Sécurisé')}</p>
+            <p className="text-[10px] text-gray-500">{t('propertyDetail.sidebar.escrowDesc', 'Fonds protégés jusqu\'à signature')}</p>
           </div>
         </div>
 
@@ -121,7 +123,7 @@ export default function PropertySidebar({
               className="w-full py-3.5 bg-[#003087] hover:bg-[#0047b3] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2"
             >
               <Eye className="w-4 h-4 text-[#D4AF37]" />
-              Visite virtuelle 360°
+              {t('propertyDetail.sidebar.vrTour', 'Visite virtuelle 360°')}
             </motion.button>
           )}
 
@@ -136,7 +138,7 @@ export default function PropertySidebar({
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Acheter ce bien
+              {t('propertyDetail.sidebar.buy', 'Acheter ce bien')}
             </motion.button>
           )}
 
@@ -151,7 +153,7 @@ export default function PropertySidebar({
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
-              Louer ce bien
+              {t('propertyDetail.sidebar.rent', 'Louer ce bien')}
             </motion.button>
           )}
 
@@ -161,7 +163,7 @@ export default function PropertySidebar({
             onClick={() => onContactAgent?.()}
             className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg transition-colors"
           >
-            Demander une visite
+            {t('propertyDetail.sidebar.requestVisit', 'Demander une visite')}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.01 }}
@@ -169,7 +171,7 @@ export default function PropertySidebar({
             onClick={() => onContactAgent?.()}
             className="w-full py-3.5 bg-transparent border-2 border-[#003087] text-[#003087] rounded-lg font-semibold text-sm hover:bg-[#003087] hover:text-white transition-colors"
           >
-            Contacter l&apos;agent
+            {t('propertyDetail.sidebar.contactAgent', 'Contacter l\'agent')}
           </motion.button>
         </div>
 
@@ -183,10 +185,10 @@ export default function PropertySidebar({
                 ? 'bg-red-50 text-red-500 hover:bg-red-100'
                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
             } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={!isAuthenticated ? 'Connectez-vous' : isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+            title={!isAuthenticated ? t('propertyDetail.sidebar.login', 'Connectez-vous') : isFavorite ? t('propertyDetail.sidebar.removeFavorite', 'Retirer des favoris') : t('propertyDetail.sidebar.addFavorite', 'Ajouter aux favoris')}
           >
             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-            {isFavorite ? 'Enregistré' : 'Enregistrer'}
+            {isFavorite ? t('propertyDetail.sidebar.saved', 'Enregistré') : t('propertyDetail.sidebar.save', 'Enregistrer')}
           </button>
 
           {/* Share Button */}
@@ -196,7 +198,7 @@ export default function PropertySidebar({
               className="w-full flex items-center justify-center gap-2 py-2.5 bg-gray-50 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
             >
               <Share2 className="w-4 h-4" />
-              Partager
+              {t('propertyDetail.sidebar.share', 'Partager')}
             </button>
 
             {/* Share Dropdown */}
@@ -216,7 +218,7 @@ export default function PropertySidebar({
                       className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-left"
                     >
                       <ExternalLink className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-700">Partager...</span>
+                      <span className="text-sm text-gray-700">{t('propertyDetail.sidebar.shareNative', 'Partager...')}</span>
                     </button>
                   )}
                   {SHARE_PLATFORMS.map((p) => (
@@ -239,7 +241,7 @@ export default function PropertySidebar({
                       <Copy className="w-4 h-4 text-gray-500" />
                     )}
                     <span className="text-sm text-gray-700">
-                      {copied ? 'Lien copié !' : 'Copier le lien'}
+                      {copied ? t('propertyDetail.sidebar.linkCopied', 'Lien copié !') : t('propertyDetail.sidebar.copyLink', 'Copier le lien')}
                     </span>
                   </button>
                 </motion.div>
@@ -266,10 +268,10 @@ export default function PropertySidebar({
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-sm text-[#0a2a5e]">{agent.name}</h3>
                 {agent.certified && (
-                  <span className="px-1.5 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[9px] font-bold rounded-full">Certifié</span>
+                  <span className="px-1.5 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[9px] font-bold rounded-full">{t('propertyDetail.sidebar.certified', 'Certifié')}</span>
                 )}
               </div>
-              <p className="text-xs text-gray-500">{agent.company || 'Agent immobilier'}</p>
+              <p className="text-xs text-gray-500">{agent.company || t('propertyDetail.sidebar.realEstateAgent', 'Agent immobilier')}</p>
             </div>
           </div>
           {(agent.rating !== undefined && agent.rating > 0) && (
@@ -278,7 +280,7 @@ export default function PropertySidebar({
                 <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
                 {agent.rating} ({agent.reviews})
               </span>
-              {agent.listings !== undefined && <span>{agent.listings} annonces</span>}
+              {agent.listings !== undefined && <span>{agent.listings} {t('propertyDetail.sidebar.listings', 'annonces')}</span>}
             </div>
           )}
           {agent.phone && (
@@ -286,7 +288,7 @@ export default function PropertySidebar({
               onClick={() => setShowPhone(!showPhone)}
               className="w-full py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
             >
-              {showPhone ? agent.phone : 'Voir le numéro'}
+              {showPhone ? agent.phone : t('propertyDetail.sidebar.viewPhone', 'Voir le numéro')}
             </button>
           )}
         </div>
@@ -294,7 +296,7 @@ export default function PropertySidebar({
 
       {/* Trust Badges */}
       <div className="bg-white rounded-xl p-5 shadow-sm border">
-        <h3 className="text-sm font-semibold text-[#0a2a5e] mb-3">Garanties AfriBayit</h3>
+        <h3 className="text-sm font-semibold text-[#0a2a5e] mb-3">{t('propertyDetail.sidebar.guarantees', 'Garanties AfriBayit')}</h3>
         <div className="space-y-2.5">
           {trustBadges.map((badge) => (
             <div key={badge.text} className="flex items-center gap-2">

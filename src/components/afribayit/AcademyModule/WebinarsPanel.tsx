@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Video, Calendar, Clock, Users, Loader2, AlertCircle } from 'lucide-react';
 import { api, ApiError } from '@/lib/api-client';
 import { easeOut } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface Webinar {
   id: string;
@@ -23,6 +24,7 @@ interface Webinar {
 }
 
 export default function WebinarsPanel() {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useQuery({
     queryKey: ['academy-webinars'],
     queryFn: async () => {
@@ -53,7 +55,7 @@ export default function WebinarsPanel() {
     return (
       <div className="text-center py-16">
         <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-sm text-gray-500">Impossible de charger les webinaires.</p>
+        <p className="text-sm text-gray-500">{t('academy.webinars.loadError', 'Impossible de charger les webinaires.')}</p>
       </div>
     );
   }
@@ -64,9 +66,9 @@ export default function WebinarsPanel() {
         <div className="w-20 h-20 rounded-lg bg-[#009CDE]/10 flex items-center justify-center mx-auto mb-4">
           <Video className="w-10 h-10 text-[#009CDE]" />
         </div>
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">Aucun webinaire programmé</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">{t('academy.webinars.emptyTitle', 'Aucun webinaire programmé')}</h3>
         <p className="text-sm text-gray-500 mb-4">
-          Les webinaires live avec experts locaux seront bientôt disponibles. Revenez bientôt !
+          {t('academy.webinars.emptyDesc', 'Les webinaires live avec experts locaux seront bientôt disponibles. Revenez bientôt !')}
         </p>
       </div>
     );
@@ -122,7 +124,7 @@ export default function WebinarsPanel() {
                     : 'bg-[#009CDE] text-white hover:bg-[#0077e6]'
               }`}
             >
-              {webinar.isLive ? 'Rejoindre le live' : webinar.isRecorded ? 'Voir le replay' : 'S\'inscrire'}
+              {webinar.isLive ? t('academy.webinars.joinLive', 'Rejoindre le live') : webinar.isRecorded ? t('academy.webinars.watchReplay', 'Voir le replay') : t('academy.webinars.register', 'S\'inscrire')}
             </button>
           </div>
         </motion.div>
