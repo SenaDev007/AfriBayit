@@ -6,8 +6,10 @@ import type { StepProps } from './types';
 import {
   profileTypes, countries, goalOptions, alertFrequencies, rebeccaCapabilities,
 } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function RebeccaStep({ data, updateData, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step7"
@@ -35,7 +37,7 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         transition={{ delay: 0.2 }}
         className="font-display text-3xl font-bold text-white mb-3"
       >
-        Activez Rebecca, votre assistante IA
+        {t('onboardingFlow.rebeccaTitle', 'Activez Rebecca, votre assistante IA')}
       </motion.h2>
 
       <motion.p
@@ -44,8 +46,7 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         transition={{ delay: 0.3 }}
         className="text-sm text-white/60 max-w-md mx-auto mb-8 leading-relaxed"
       >
-        Rebecca est votre assistante IA personnelle. Elle peut rechercher des biens, suivre vos transactions,
-        contacter des agents, et bien plus — disponible 24/7.
+        {t('onboardingFlow.rebeccaDesc', 'Rebecca est votre assistante IA personnelle. Elle peut rechercher des biens, suivre vos transactions, contacter des agents, et bien plus — disponible 24/7.')}
       </motion.p>
 
       {/* Rebecca capabilities */}
@@ -78,8 +79,8 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
       >
         <div className="flex items-center justify-between">
           <div className="text-left">
-            <p className="text-sm font-semibold text-white">Activer Rebecca IA</p>
-            <p className="text-[10px] text-white/40">Rebecca sera accessible depuis le chat en bas à droite</p>
+            <p className="text-sm font-semibold text-white">{t('onboardingFlow.enableRebecca', 'Activer Rebecca IA')}</p>
+            <p className="text-[10px] text-white/40">{t('onboardingFlow.rebeccaHint', 'Rebecca sera accessible depuis le chat en bas à droite')}</p>
           </div>
           <button
             onClick={() => updateData({ rebeccaEnabled: !data.rebeccaEnabled })}
@@ -104,38 +105,38 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
         transition={{ delay: 0.7 }}
         className="p-5 rounded-xl bg-white/5 border border-white/10 max-w-sm mx-auto text-left"
       >
-        <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-4">Récapitulatif de votre configuration</p>
+        <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-4">{t('onboardingFlow.configSummary', 'Récapitulatif de votre configuration')}</p>
         <div className="space-y-3 text-xs">
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Profil</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryProfile', 'Profil')}</span>
             <span className="font-semibold text-white">
               {profileTypes.find(p => p.value === data.profileType)?.label || '—'}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Zone</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryZone', 'Zone')}</span>
             <span className="font-semibold text-white">
               {data.countries.map(c => countries.find(co => co.code === c)?.name).join(', ') || '—'}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Villes</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryCities', 'Villes')}</span>
             <span className="font-semibold text-white">
-              {data.cities.length > 0 ? `${data.cities.length} ville${data.cities.length > 1 ? 's' : ''}` : '—'}
+              {data.cities.length > 0 ? t('onboardingFlow.summaryCitiesCount', `${data.cities.length} ville${data.cities.length > 1 ? 's' : ''}`) : '—'}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Budget max</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryBudgetMax', 'Budget max')}</span>
             <span className="font-semibold text-white font-mono-data">
               {data.budgetMax ? new Intl.NumberFormat('fr-FR').format(data.budgetMax) + ' FCFA' : '—'}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Objectifs</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryGoals', 'Objectifs')}</span>
             <span className="font-semibold text-white">
               {data.goals.length > 0
                 ? data.goals.map(g => goalOptions.find(o => o.value === g)?.label).join(', ')
@@ -144,16 +145,16 @@ export default function RebeccaStep({ data, updateData, direction, slideVariants
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Alertes</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryAlerts', 'Alertes')}</span>
             <span className="font-semibold text-white">
               {alertFrequencies.find(f => f.value === data.alertFrequency)?.label || '—'}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between items-center">
-            <span className="text-white/50">Rebecca IA</span>
+            <span className="text-white/50">{t('onboardingFlow.summaryRebecca', 'Rebecca IA')}</span>
             <span className={`font-semibold ${data.rebeccaEnabled ? 'text-[#00A651]' : 'text-white/30'}`}>
-              {data.rebeccaEnabled ? <><Check className="w-4 h-4" /> Activée</> : 'Désactivée'}
+              {data.rebeccaEnabled ? <><Check className="w-4 h-4" /> {t('onboardingFlow.rebeccaEnabled', 'Activée')}</> : t('onboardingFlow.rebeccaDisabled', 'Désactivée')}
             </span>
           </div>
         </div>

@@ -672,3 +672,126 @@ Stage Summary:
   - PropertyDetail/index.tsx: 1 remaining unwrapped string (notFoundDesc) wrapped with t() using existing key. No new keys needed.
   - SubscriptionsModule: 9 tier objects (5 agent + 3 hotel + 1 artisan) refactored with nameKey/descKey/priceLabelKey/feature-key arrays. 6 PREMIUM_BENEFITS labels and 12 comparisonFeatures names wrapped. 8 table-header occurrences (Starter/Essentiel/Avancé/Elite × 2 tables) wrapped. 1 hardcoded "Illimité" cell wrapped with existing key. ~110 user-visible strings newly routed through t(). 107 new subscriptionModule keys added across 6 new sub-objects (tier/desc/priceLabel/features/benefits/comparison).
   - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 122/122 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch4-any-batch4
+Agent: i18n-batch4-any-batch4-Agent
+Task: i18n — wrap hardcoded French strings in 5 more components + fix `any` casts in 4 more files
+
+Work Log:
+
+Task 1 — i18n (5 components, ~140 new locale keys):
+
+  File 1 — src/components/afribayit/OnboardingFlow/ (index.tsx + 6 step files + constants.tsx + types.ts):
+    - constants.tsx: refactored `onboardingSteps` array to carry `titleKey` pointing at EXISTING locale keys (stepWelcome/stepProfile/stepLocation/stepBudget/stepAlerts/stepTour/stepRebecca). The 7 step titles were previously defined in locale but never read by the component.
+    - types.ts: extended `StepDefinition` interface with optional `titleKey?: string` (kept `title` for backward compat).
+    - index.tsx: updated the step-label rendering site to use `{s.titleKey ? t(s.titleKey, s.title) : s.title}` (line ~162) — was `{s.title}` (hardcoded).
+    - WelcomeStep.tsx: added useTranslation import + `const { t } = useTranslation()`. Wrapped 4 hardcoded strings: "Bienvenue sur" (welcomeTitle), the welcome paragraph (welcomeSubtitle), "Commencer la configuration" (startConfig), "Explorer d'abord la plateforme" (exploreFirst).
+    - ProfileStep.tsx: added useTranslation + t(). Wrapped 2 strings: "Quel est votre profil ?" (profileQuestion) + "Cela nous aide à personnaliser votre expérience" (profileHelp).
+    - LocationStep.tsx: added useTranslation + t(). Wrapped 5 strings: title + help + "Pays d'intérêt" + "Villes d'intérêt" + "Sélectionnez au moins une ville".
+    - BudgetStep.tsx: added useTranslation + t(). Wrapped 6 strings: title + help + budget range label + "Minimum" + "Maximum" + max placeholder + "Vos objectifs".
+    - AlertsStep.tsx: added useTranslation + t(). Wrapped 4 strings: title + help + alert frequency label + notification channels label.
+    - TourStep.tsx: added useTranslation + t(). Wrapped 3 strings: title + help + the "Astuce : Vous pouvez accéder..." tip.
+    - RebeccaStep.tsx: added useTranslation + t(). Wrapped 14 strings: title + desc + "Activer Rebecca IA" + "Rebecca sera accessible..." + "Récapitulatif de votre configuration" + 7 summary row labels (Profil, Zone, Villes, Budget max, Objectifs, Alertes, Rebecca IA) + "Activée" + "Désactivée". Also routed the `ville(s)` pluralization through `t('onboardingFlow.summaryCitiesCount', ...)`.
+
+  File 2 — src/components/afribayit/GeoTrustModule.tsx:
+    - geometerServices array: refactored 8 entries to carry `descKey` pointing at new keys `geotrust.serviceGpsDesc`/`serviceSurfDesc`/`serviceInspDesc`/`serviceBornDesc`/`serviceTopoDesc`/`serviceDronDesc`/`serviceCertDesc`/`service3dDesc`. Service name remains `geoServiceLabel(...)` (already translated).
+    - geotrustPacks array: refactored 3 packs to carry `nameKey`/`descKey`/`includesKeys` (parallel array to `includes` for translatable items). Pack name keys: `packStandardName`/`packCertificationName`/`packPremiumName`. Pack desc keys: `packStandardDesc`/`packCertificationDesc`/`packPremiumDesc`. Include keys (only for non-geoServiceLabel items): `packIncludeReport`/`packIncludeBadge`/`packIncludeEscrow`/`packIncludeVr`/`packIncludeDetailedReport`.
+    - Mission workflow: refactored the inline `{ step, title, desc, icon }` array (4 entries) to carry `titleKey`/`descKey` (`workflowDemande`/`workflowDevis`/`workflowMission`/`workflowRapport` + matching `Desc` keys).
+    - Toast error in `handleSubmitMission.onError`: replaced `toast({ title: 'Erreur', description: err.message || 'Impossible de créer la mission.' })` with `toast({ title: t('common.error', 'Erreur'), description: errMsg || t('geotrust.missionCreateError', '...') })` and changed `(err)` → `(err: unknown)` + `err instanceof Error ? err.message : ''`.
+    - Toast success in `handleSubmitMission.onSuccess`: wrapped the description template `Votre demande de mission a été envoyée à ${name}.` with `t('geotrust.missionCreatedDesc', ...)`.
+    - MissionDialog header: wrapped "À {geometer.name} — {city}" prefix "À" with `t('geotrust.toGeometer', 'À')`.
+    - Detail view escrow trust description: wrapped the long "Toute mission GeoTrust transite par AfriBayit..." paragraph with `t('geotrust.escrowTrustDesc', ...)`.
+    - Geometer card "X avis"/"Y missions" labels: wrapped with `t('geotrust.reviewsLabel', 'avis')` and `t('geotrust.missionsCount', 'missions')`. Same for the detail view.
+    - Geometer card "Certifié X ago"/"Inscrit Y ago" labels: wrapped with `t('geotrust.certifiedAgo', 'Certifié')` and `t('geotrust.registeredAgo', 'Inscrit')`.
+    - Pack render site: changed `{pack.name}` → `{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}`, same for description. For `includes.map`, added idx-based lookup into `includesKeys` and rendered `itemKey ? t(itemKey, item) : item`. The pack-selected toast description now uses the translated pack name.
+
+  File 3 — src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx:
+    - certificationSteps array (6 entries): refactored to carry `titleKey`/`descKey` pointing at new keys `notary.certStepInscription`/`certStepKyc`/`certStepAi`/`certStepHuman`/`certStepCert`/`certStepActivation` (+ matching `Desc` keys for each).
+    - escrowNotaryStates array (4 entries): refactored to carry `labelKey` (`notary.escrowAssigned`/`escrowInProgress`/`escrowDeedSigned`/`escrowAndf`).
+    - subscriptionTiers array (3 entries): refactored to carry `nameKey` (`notary.tierStandard`/`tierPremium`/`tierElite`).
+    - Certification tab JSX (line ~975): wrapped step title `{s.title}` → `{s.titleKey ? t(s.titleKey, s.title) : s.title}`. Step detail heading "Étape X : {title}" wrapped with `t('notary.stepLabel', 'Étape')` + translated step title + translated step description.
+    - Escrow state machine JSX (line ~856): wrapped `{state.label}` → `{state.labelKey ? t(state.labelKey, state.label) : state.label}`.
+    - Subscription tiers JSX (line ~1258): wrapped `{tier.name}` → `{tier.nameKey ? t(tier.nameKey, tier.name) : tier.name}`. Wrapped "Commission :" label, "Populaire" badge, "Actuel"/"Choisir" buttons.
+    - 4 toast handlers (handleContactNotary, handleOpenDetail, handleAssignNotary, handleChooseNotaryPlan): wrapped all hardcoded French toast titles/descriptions with t() calls. 9 new keys: `loginRequired`, `loginContactDesc`, `loginProfileDesc`, `loginAssignDesc`, `conversationCreated`, `conversationCreatedDesc`, `conversationError`, `notaryAssigned`, `notaryAssignedDesc`, `assignError`, `subscriptionActivated`, `subscriptionActivatedDesc`, `activationError`. Also changed `catch (err)` → `catch (err: unknown)` in handleAssignNotary with `err instanceof Error ? err.message : ...` pattern.
+    - handleGenerateDeed + handleESign toasts: wrapped with `t('notary.deedGenerated', ...)`, `t('notary.deedGeneratedDemo', ...)`, `t('notary.esignApplied', ...)`, `t('notary.esignAppliedDemo', ...)`.
+    - 8 dashboard section headings: wrapped with `t('notary.statAssigned'/'statInProgress'/'statAndf'/'statRevenue'/'deadlineTitle'/'inProgress'/'escrowCycleTitle'/'assignedTransactionsTitle'/'secureArchiveTitle'/'andfStatusTitle'/'escrowReleaseTitle')`.
+    - 3 empty-state messages: `t('notary.noActiveTransaction')`, `t('notary.noAssignedTransaction')`, `t('notary.noArchivedDoc')`.
+    - Deed tab: wrapped "Type d'acte" label, 3 deed type options (Sale/Promise/Donation), "Vendeur"/"Acheteur" labels + placeholders, "Description / Instructions" label, "Génération en cours..."/"Générer le projet d'acte" button text, "Aperçu du projet" preview label, and the "Ce projet est généré par IA..." warning text.
+    - ESignature tab: wrapped "Signer" button label with `t('notary.signBtn', 'Signer')`.
+
+  File 4 — src/components/afribayit/HospitalityModule/index.tsx:
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';` and `const { t } = useTranslation();` at top of component.
+    - Wrapped the "AfriBayit Hospitality" badge text with `t('hospitality.badge', 'AfriBayit Hospitality')`.
+    - Wrapped header title "Hôtels & Séjours" → `{t('hospitality.headerTitle1', 'Hôtels')} & <span>{t('hospitality.headerTitleAccent', 'Séjours')}</span>`.
+    - Wrapped header subtitle with `t('hospitality.headerSubtitle', '...')`.
+    - handleSubmitBooking toasts: wrapped 4 strings — `bookingConfirmed`, `bookingConfirmedDesc`, error title via `t('common.error', 'Erreur')`, `bookingErrorDesc`. Also changed `(err)` → `(err: unknown)` with `err instanceof Error ? err.message : ''` pattern.
+
+  File 5 — src/components/afribayit/GuesthouseModule/index.tsx:
+    - useTranslation already imported and `const { t } = useTranslation();` already present.
+    - useEffect cancellation policy: refactored initial state from hardcoded `'Flexible — Annulation gratuite 24h avant'` to empty string `''`. Wrapped 3 `setCancellationPolicy()` calls in the useEffect with `t('guesthouse.policyModerate'/'policyFlexible', ...)`. (Note: `t` is not in the useEffect deps because it changes identity on every render — exhaustive-deps rule is disabled in eslint config.)
+    - handleSubmitBooking toasts: wrapped 3 strings — `t('guesthouse.bookingConfirmed', 'Réservation confirmée')`, `t('guesthouse.bookingConfirmedDesc', '${name} réservée pour ${nights} nuit(s)')`, `t('guesthouse.bookingError', 'Erreur lors de la réservation')`.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 39 new `onboardingFlow` keys (welcomeTitle through rebeccaDisabled) + 40 new `geotrust` keys (missionCreatedDesc through workflowRapportDesc) + 60 new `notary` keys (certStepInscription through signBtn) + 7 new `hospitality` keys (badge through bookingErrorDesc) + 5 new `guesthouse` keys (policyFlexible through bookingError).
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - Total new keys added to EACH locale file: ~150. All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Task 2 — `any` casts (4 files, 20 occurrences removed):
+
+  File 1 — src/hooks/useAdmin.ts (7 `any` occurrences removed):
+    - 7 `api.get<any>(...)` calls in `useAdminProperties`/`useAdminCommunity`/`useAdminShortTermRentals`/`useAdminBookings`/`useAdminDisputes`/`useAdminPayouts`/`useAdminContent` → `api.get<Record<string, unknown>>(...)`.
+    - Verified: `grep -nE "\bany\b" src/hooks/useAdmin.ts` → 0 matches.
+
+  File 2 — src/hooks/useCommunity.ts (5 `any` occurrences removed):
+    - 5 `const res: any = await api.get(...)` in `useCommunityPost`/`useCommunityPostReplies`/`useCommunityGroup`/`useCommunityGroupMembers`/`useCommunityEvent` → `const res: Record<string, unknown> = await api.get(...)`. Updated the defensive unwraps to use proper type assertions: `(res?.data as Record<string, unknown> | undefined) ?? res`, `(res?.data as unknown[] | undefined) ?? (res?.replies as unknown[] | undefined) ?? []`, `(res?.pagination as Record<string, unknown> | null | undefined) ?? null`.
+    - Verified: `grep -nE "\bany\b" src/hooks/useCommunity.ts` → 0 matches.
+
+  File 3 — src/components/afribayit/SecuritySettings.tsx (4 `any` occurrences removed):
+    - Defined 2 proper interfaces: `AuthResponse` (success?, error?) and `Setup2FAResponse extends AuthResponse` (qrCodeUrl?, manualEntryKey?, secret?).
+    - handleChangePassword: `const data: any = await api.post(...)` → `const data = await api.post<AuthResponse>(...)`.
+    - handleStart2FASetup: `const data: any = await authApi.setup2FA()` → `const data = await authApi.setup2FA() as Setup2FAResponse` (cast needed because `authApi.setup2FA()` returns `Promise<any>` from the untyped api-client).
+    - handleVerify2FA: `const data: any = await authApi.enable2FA(totpCode)` → `const data = await authApi.enable2FA(totpCode) as AuthResponse`.
+    - handleDisable2FA: `const data: any = await authApi.disable2FA(disablePassword)` → `const data = await authApi.disable2FA(disablePassword) as AuthResponse`.
+    - Verified: `grep -nE "\bany\b" src/components/afribayit/SecuritySettings.tsx` → 0 matches.
+
+  File 4 — src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx (4 `any` occurrences removed):
+    - Defined 2 proper interfaces: `DeedGenerateResponse` (deedText?, deed?.content?) and `AssignTransactionItem` (id, property?: { title?: string } | string, amount?, status?).
+    - handleGenerateDeed: `apiFetch<any>('/notaries/deeds/generate', ...)` → `apiFetch<DeedGenerateResponse>(...)`. The subsequent `data?.deedText || data?.deed?.content || '...'` access is now type-safe.
+    - handleESign: `apiFetch<any>('/notaries/signatures/confirm', ...)` → `apiFetch<Record<string, unknown>>(...)`. The response isn't used (the function just awaits the call), so a generic Record is sufficient.
+    - AssignNotaryModal component signature: `transactions: any[]` → `transactions: AssignTransactionItem[]`. The modal receives `escrowAccounts` (EscrowAccount[]) which is compatible because EscrowAccount's `property: string` matches `property?: { title?: string } | string` and the other optional fields are compatible. (Initially added a `[key: string]: unknown` index signature but TS rejected it as incompatible with EscrowAccount's strict shape — removed the index signature and the build passed.)
+    - AssignNotaryModal map function: `{transactions.map((tx: any) => ...)` → `{transactions.map((tx: AssignTransactionItem) => ...)`. Updated the `tx.property?.title || 'Transaction'` access to handle the union type: `(typeof tx.property === 'object' ? tx.property?.title : tx.property) || t('notary.transactionLabel', 'Transaction')`.
+    - Verified: `grep -nE "\bany\b" src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx` → 0 matches.
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors at all). The only mid-way error (`EscrowAccount[]` not assignable to `AssignTransactionItem[]` due to index signature mismatch) was fixed by removing the `[key: string]: unknown` index signature from `AssignTransactionItem`.
+  2. `npm run build` → ✓ Compiled successfully in 42s — all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 6.89s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Files touched (11 total):
+  - src/components/afribayit/OnboardingFlow/index.tsx
+  - src/components/afribayit/OnboardingFlow/constants.tsx
+  - src/components/afribayit/OnboardingFlow/types.ts
+  - src/components/afribayit/OnboardingFlow/WelcomeStep.tsx
+  - src/components/afribayit/OnboardingFlow/ProfileStep.tsx
+  - src/components/afribayit/OnboardingFlow/LocationStep.tsx
+  - src/components/afribayit/OnboardingFlow/BudgetStep.tsx
+  - src/components/afribayit/OnboardingFlow/AlertsStep.tsx
+  - src/components/afribayit/OnboardingFlow/TourStep.tsx
+  - src/components/afribayit/OnboardingFlow/RebeccaStep.tsx
+  - src/components/afribayit/GeoTrustModule.tsx
+  - src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx
+  - src/components/afribayit/HospitalityModule/index.tsx
+  - src/components/afribayit/GuesthouseModule/index.tsx
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+  - src/hooks/useAdmin.ts
+  - src/hooks/useCommunity.ts
+  - src/components/afribayit/SecuritySettings.tsx
+
+Stage Summary:
+  - Task 1 (i18n): 5 components wrapped with t() calls + ~150 new translation keys added to both fr.ts and en.ts. OnboardingFlow: 8 sub-files updated (index + 6 steps + constants + types), 39 new onboardingFlow keys. GeoTrustModule: 3 module-scope arrays refactored (geometerServices with 8 descKeys, geotrustPacks with 3 nameKeys/descKeys/includesKeys, inline workflow with 4 titleKeys/descKeys) + 6 inline strings (toast, dialog header, escrow trust desc, reviews/missions count, certified/registered labels) → 40 new geotrust keys. NotaryModuleImpl: 3 module-scope arrays refactored (certificationSteps 6 titleKeys/descKeys, escrowNotaryStates 4 labelKeys, subscriptionTiers 3 nameKeys) + ~50 inline strings (4 toast handlers, 8 dashboard headings, 3 empty-states, deed tab labels/buttons, eSign button) → 60 new notary keys. HospitalityModule: header + 2 toasts → 7 new hospitality keys. GuesthouseModule: 3 cancellation policies + 3 toast strings → 5 new guesthouse keys.
+  - Task 2 (any casts): 4 files cleaned — useAdmin.ts (7 `any` → 0 via Record<string, unknown> response types), useCommunity.ts (5 `any` → 0 via Record<string, unknown> + defensive type assertions on the unwrap chain), SecuritySettings.tsx (4 `any` → 0 via 2 new typed interfaces AuthResponse + Setup2FAResponse), NotaryModuleImpl.tsx (4 `any` → 0 via 2 new typed interfaces DeedGenerateResponse + AssignTransactionItem). Total: 20 `any` occurrences eliminated.
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 179/179 passed, eslint 0 errors / 0 warnings.

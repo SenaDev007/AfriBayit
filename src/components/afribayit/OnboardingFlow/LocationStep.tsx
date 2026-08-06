@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Check, Globe } from 'lucide-react';
 import type { StepProps } from './types';
 import { countries, citiesByCountry } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function LocationStep({ data, toggleArrayItem, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step3"
@@ -27,15 +29,15 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
           <Globe className="w-4 h-4" />
         </motion.span>
         <h2 className="font-display text-3xl font-bold text-white mb-2">
-          Vos préférences géographiques
+          {t('onboardingFlow.locationTitle', 'Vos préférences géographiques')}
         </h2>
-        <p className="text-sm text-white/60">Dans quels pays et villes recherchez-vous ?</p>
+        <p className="text-sm text-white/60">{t('onboardingFlow.locationHelp', 'Dans quels pays et villes recherchez-vous ?')}</p>
       </div>
 
       {/* Country Selection */}
       <div className="mb-8">
         <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-          Pays d&apos;intérêt
+          {t('onboardingFlow.countryLabel', 'Pays d\'intérêt')}
         </label>
         <div className="grid grid-cols-2 gap-4">
           {countries.map((c, i) => (
@@ -79,7 +81,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
           transition={{ duration: 0.3 }}
         >
           <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-            Villes d&apos;intérêt
+            {t('onboardingFlow.cityLabel', 'Villes d\'intérêt')}
           </label>
           <div className="flex flex-wrap gap-2">
             {data.countries.flatMap(countryCode =>
@@ -103,7 +105,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
             )}
           </div>
           {data.cities.length === 0 && (
-            <p className="text-xs text-white/40 mt-2 italic">Sélectionnez au moins une ville</p>
+            <p className="text-xs text-white/40 mt-2 italic">{t('onboardingFlow.selectCity', 'Sélectionnez au moins une ville')}</p>
           )}
         </motion.div>
       )}

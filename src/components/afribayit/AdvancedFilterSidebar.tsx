@@ -17,12 +17,78 @@ import {
   TRANSACTION_TYPE_OPTIONS,
   SORT_OPTIONS,
   countActiveFilters,
+  type SearchFilters,
 } from '@/lib/constants';
 import VoiceSearchButton from './VoiceSearchButton';
 
+/**
+ * FilterState — shape of the filter object passed between AdvancedFilterSidebar
+ * and its parent (EnhancedSearchResults). All fields are optional because
+ * any given filter state may only set a subset of the available filters.
+ */
+export interface FilterState {
+  // Location
+  country?: string;
+  city?: string;
+  quartier?: string;
+  // Transaction & type
+  type?: string | string[];
+  transaction?: string[];
+  // Price
+  priceMin?: number;
+  priceMax?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  // Surface & rooms
+  surfaceMin?: number;
+  surfaceMax?: number;
+  bedroomsMin?: number;
+  bedroomsMax?: number;
+  bathroomsMin?: number;
+  roomsMin?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  // Amenities (boolean toggles)
+  hasPool?: boolean;
+  hasGarden?: boolean;
+  hasGarage?: boolean;
+  hasAirCon?: boolean;
+  hasSecurity?: boolean;
+  furnished?: boolean;
+  hasTerrace?: boolean;
+  hasGenerator?: boolean;
+  hasWifi?: boolean;
+  hasParking?: boolean;
+  hasElevator?: boolean;
+  hasStorage?: boolean;
+  // Quality flags
+  verified?: boolean;
+  geoTrust?: boolean;
+  premium?: boolean;
+  // Investment criteria
+  investmentScoreMin?: number;
+  roiMin?: number;
+  // Search & misc
+  query?: string;
+  filter?: string | string[];
+  features?: string[];
+  // Pagination & sort
+  sortBy?: string | import('@/lib/constants').SortOption;
+  page?: number;
+  limit?: number;
+  // Geo bounds (map view)
+  bounds?: { north: number; south: number; east: number; west: number };
+}
+
+/** Amenity keys toggleable in the Equipment section. */
+type AmenityKey =
+  | 'hasPool' | 'hasGarden' | 'hasGarage' | 'hasAirCon' | 'hasSecurity'
+  | 'furnished' | 'hasTerrace' | 'hasGenerator' | 'hasWifi'
+  | 'hasParking' | 'hasElevator' | 'hasStorage';
+
 interface AdvancedFilterSidebarProps {
-  filters: any;
-  onFiltersChange: (filters: any) => void;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
   facets?: {
     types: { value: string; count: number }[];
     transactions: { value: string; count: number }[];
@@ -35,7 +101,7 @@ interface AdvancedFilterSidebarProps {
 }
 
 // Extended amenities list per CDC §5.1.1
-const AMENITY_OPTIONS: { key: string; label: string; icon: React.ReactNode }[] = [
+const AMENITY_OPTIONS: { key: AmenityKey; label: string; icon: React.ReactNode }[] = [
   { key: 'hasPool', label: 'Piscine', icon: <Waves className="w-3 h-3" /> },
   { key: 'hasGarden', label: 'Jardin', icon: <TreePine className="w-3 h-3" /> },
   { key: 'hasGarage', label: 'Garage', icon: <Car className="w-3 h-3" /> },
@@ -91,11 +157,11 @@ export default function AdvancedFilterSidebar({
   // Saved searches
   const { data: savedSearchesData } = useQuery({
     queryKey: ['saved-searches'],
-    queryFn: () => apiFetch<{ searches: Array<{ id: string; name: string; filters: any; newMatches?: number }> }>('/api/properties/saved-searches'),
+    queryFn: () => apiFetch<{ searches: Array<{ id: string; name: string; filters: FilterState; newMatches?: number }> }>('/api/properties/saved-searches'),
   });
 
   const saveSearchMutation = useMutation({
-    mutationFn: (data: { name: string; filters: any }) =>
+    mutationFn: (data: { name: string; filters: FilterState }) =>
       apiPost('/api/properties/saved-searches', data),
     onSuccess: () => {
       toast.success('Recherche sauvegardée');
@@ -106,7 +172,7 @@ export default function AdvancedFilterSidebar({
 
   // Price alerts
   const alertMutation = useMutation({
-    mutationFn: (data: { filters: any; targetPrice: number }) =>
+    mutationFn: (data: { filters: FilterState; targetPrice: number }) =>
       apiPost('/api/properties/alerts', { ...data.filters, priceMax: data.targetPrice }),
     onSuccess: () => {
       toast.success('Alerte de prix créée');
@@ -114,7 +180,11 @@ export default function AdvancedFilterSidebar({
     },
   });
 
-  const activeCount = countActiveFilters(filters);
+  // countActiveFilters expects the narrower SearchFilters shape from
+  // @/lib/constants. FilterState is a wider superset (it carries the amenity
+  // toggles, transaction array, etc.) so we narrow via a type assertion —
+  // SearchFilters is assignable to FilterState, making this cast safe.
+  const activeCount = countActiveFilters(filters as SearchFilters);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -125,8 +195,9 @@ export default function AdvancedFilterSidebar({
   };
 
   const toggleType = (type: string) => {
-    const current = filters.type || [];
-    const next = current.includes(type as never)
+    const raw = filters.type;
+    const current: string[] = Array.isArray(raw) ? raw : (typeof raw === 'string' ? [raw] : []);
+    const next = current.includes(type)
       ? current.filter(t => t !== type)
       : [...current, type];
     updateFilter('type', next.length > 0 ? next : undefined);
@@ -140,8 +211,8 @@ export default function AdvancedFilterSidebar({
     updateFilter('transaction', next.length > 0 ? next : undefined);
   };
 
-  const toggleAmenity = (key: string) => {
-    const current = (filters as any)[key] || false;
+  const toggleAmenity = (key: AmenityKey) => {
+    const current = filters[key] ?? false;
     updateFilter(key, !current);
   };
 
@@ -531,11 +602,11 @@ export default function AdvancedFilterSidebar({
                   <button
                     onClick={() => toggleAmenity(key)}
                     className={`w-9 h-5 rounded-lg transition-colors relative ${
-                      filters[key as keyof any] ? 'bg-[#00A651]' : 'bg-gray-200'
+                      filters[key] ? 'bg-[#00A651]' : 'bg-gray-200'
                     }`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-lg shadow-sm transition-transform ${
-                      filters[key as keyof any] ? 'left-4.5' : 'left-0.5'
+                      filters[key] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
                 </label>

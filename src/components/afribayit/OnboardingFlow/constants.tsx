@@ -6,13 +6,13 @@ import {
 import type { StepDefinition } from './types';
 
 export const onboardingSteps: StepDefinition[] = [
-  { step: 1, title: 'Bienvenue', icon: <Home className="w-4 h-4" /> },
-  { step: 2, title: 'Profil', icon: <User className="w-4 h-4" /> },
-  { step: 3, title: 'Localisation', icon: <Globe className="w-4 h-4" /> },
-  { step: 4, title: 'Budget', icon: <Coins className="w-4 h-4" /> },
-  { step: 5, title: 'Alertes', icon: <Bell className="w-4 h-4" /> },
-  { step: 6, title: 'Découverte', icon: <Map className="w-4 h-4" /> },
-  { step: 7, title: 'Rebecca IA', icon: <Bot className="w-4 h-4" /> },
+  { step: 1, title: 'Bienvenue', titleKey: 'onboardingFlow.stepWelcome', icon: <Home className="w-4 h-4" /> },
+  { step: 2, title: 'Profil', titleKey: 'onboardingFlow.stepProfile', icon: <User className="w-4 h-4" /> },
+  { step: 3, title: 'Localisation', titleKey: 'onboardingFlow.stepLocation', icon: <Globe className="w-4 h-4" /> },
+  { step: 4, title: 'Budget', titleKey: 'onboardingFlow.stepBudget', icon: <Coins className="w-4 h-4" /> },
+  { step: 5, title: 'Alertes', titleKey: 'onboardingFlow.stepAlerts', icon: <Bell className="w-4 h-4" /> },
+  { step: 6, title: 'Découverte', titleKey: 'onboardingFlow.stepTour', icon: <Map className="w-4 h-4" /> },
+  { step: 7, title: 'Rebecca IA', titleKey: 'onboardingFlow.stepRebecca', icon: <Bot className="w-4 h-4" /> },
 ];
 
 // Profile types — CDC §4.2

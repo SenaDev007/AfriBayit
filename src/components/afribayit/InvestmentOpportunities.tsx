@@ -17,8 +17,10 @@ import { useTopOpportunities } from '@/hooks/useInvestment';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, MapPin, Maximize, Coins, ArrowUpRight, Brain } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function InvestmentOpportunities({ limit = 6 }: { limit?: number }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useTopOpportunities(limit);
 
   if (isLoading) {
@@ -40,11 +42,10 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
           <TrendingUp className="w-8 h-8 text-[#003087]" />
         </div>
         <h3 className="font-display text-xl font-bold text-gray-700 mb-2">
-          Aucune opportunité d&apos;investissement
+          {t('investment.noOpportunities', "Aucune opportunité d'investissement")}
         </h3>
         <p className="text-sm text-gray-500 max-w-md mx-auto">
-          Les biens d&apos;investissement apparaîtront ici dès qu&apos;ils seront publiés.
-          Chaque bien reçoit un score d&apos;investissement 0-100 calculé par notre algorithme IA.
+          {t('investment.noOpportunitiesDesc', "Les biens d'investissement apparaîtront ici dès qu'ils seront publiés. Chaque bien reçoit un score d'investissement 0-100 calculé par notre algorithme IA.")}
         </p>
       </div>
     );
@@ -60,9 +61,10 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
 }
 
 function OpportunityCard({ opportunity, index }: { opportunity: any; index: number }) {
+  const { t } = useTranslation();
   const score = opportunity.investmentScore || 0;
   const scoreColor = score >= 80 ? '#00A651' : score >= 60 ? '#D4AF37' : score >= 40 ? '#009CDE' : '#9ca3af';
-  const scoreLabel = score >= 80 ? 'Excellent' : score >= 60 ? 'Bon' : score >= 40 ? 'Moyen' : 'Faible';
+  const scoreLabel = score >= 80 ? t('investment.scoreExcellent', 'Excellent') : score >= 60 ? t('investment.scoreGood', 'Bon') : score >= 40 ? t('investment.scoreMedium', 'Moyen') : t('investment.scoreLow', 'Faible');
 
   const roi = opportunity.roi;
   const pricePerSqm = opportunity.surface > 0 ? Math.round(opportunity.price / opportunity.surface) : 0;
@@ -105,7 +107,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
           <div className="absolute bottom-3 left-3 flex gap-1.5">
             {opportunity.verified && (
               <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-[#00A651]/80 backdrop-blur-sm">
-                ✓ Vérifié
+                ✓ {t('investment.verified', 'Vérifié')}
               </span>
             )}
             {opportunity.geoTrust && (
@@ -138,15 +140,15 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
           {roi && (
             <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-gray-50">
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">Loyer est.</p>
+                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.estimatedRent', 'Loyer est.')}</p>
                 <p className="font-mono-data font-bold text-xs text-[#0a2a5e]">{fmt(roi.estimatedMonthlyRent)}</p>
               </div>
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">Rendement</p>
+                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.yield', 'Rendement')}</p>
                 <p className="font-mono-data font-bold text-xs text-[#00A651]">{roi.grossYield}%</p>
               </div>
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">+5 ans</p>
+                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.fiveYearProj', '+5 ans')}</p>
                 <p className="font-mono-data font-bold text-xs text-[#D4AF37] flex items-center justify-center gap-0.5">
                   <ArrowUpRight className="w-3 h-3" />
                   +{roi.projectedGainPct5y}%
@@ -157,9 +159,9 @@ function OpportunityCard({ opportunity, index }: { opportunity: any; index: numb
 
           {/* Property specs */}
           <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-50 text-[10px] text-gray-400">
-            {opportunity.bedrooms > 0 && <span>{opportunity.bedrooms} ch.</span>}
-            {opportunity.bathrooms > 0 && <span>{opportunity.bathrooms} sdb</span>}
-            <span className="flex items-center gap-0.5"><Maximize className="w-3 h-3" />{opportunity.surface} m²</span>
+            {opportunity.bedrooms > 0 && <span>{opportunity.bedrooms} {t('investment.bedroomsShort', 'ch.')}</span>}
+            {opportunity.bathrooms > 0 && <span>{opportunity.bathrooms} {t('investment.bathroomsShort', 'sdb')}</span>}
+            <span className="flex items-center gap-0.5"><Maximize className="w-3 h-3" />{opportunity.surface} {t('investment.surfaceUnit', 'm²')}</span>
           </div>
         </div>
       </Link>

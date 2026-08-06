@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
 import type { StepProps } from './types';
 import { profileTypes } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function ProfileStep({ data, updateData, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step2"
@@ -27,9 +29,9 @@ export default function ProfileStep({ data, updateData, direction, slideVariants
           <User className="w-4 h-4" />
         </motion.span>
         <h2 className="font-display text-3xl font-bold text-white mb-2">
-          Quel est votre profil ?
+          {t('onboardingFlow.profileQuestion', 'Quel est votre profil ?')}
         </h2>
-        <p className="text-sm text-white/60">Cela nous aide à personnaliser votre expérience</p>
+        <p className="text-sm text-white/60">{t('onboardingFlow.profileHelp', 'Cela nous aide à personnaliser votre expérience')}</p>
       </div>
 
       <div className="space-y-3">

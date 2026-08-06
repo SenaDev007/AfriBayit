@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Coins } from 'lucide-react';
 import type { StepProps } from './types';
 import { budgetPresets, goalOptions } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function BudgetStep({ data, updateData, toggleArrayItem, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step4"
@@ -27,15 +29,15 @@ export default function BudgetStep({ data, updateData, toggleArrayItem, directio
           <Coins className="w-4 h-4" />
         </motion.span>
         <h2 className="font-display text-3xl font-bold text-white mb-2">
-          Votre budget et objectifs
+          {t('onboardingFlow.budgetTitle', 'Votre budget et objectifs')}
         </h2>
-        <p className="text-sm text-white/60">Aidez-nous à vous proposer les meilleures opportunités</p>
+        <p className="text-sm text-white/60">{t('onboardingFlow.budgetHelp', 'Aidez-nous à vous proposer les meilleures opportunités')}</p>
       </div>
 
       {/* Budget Presets */}
       <div className="mb-8">
         <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-          Fourchette de budget (FCFA)
+          {t('onboardingFlow.budgetRange', 'Fourchette de budget (FCFA)')}
         </label>
         <div className="grid grid-cols-2 gap-3 mb-4">
           {budgetPresets.map((preset, i) => (
@@ -62,7 +64,7 @@ export default function BudgetStep({ data, updateData, toggleArrayItem, directio
         {/* Custom budget range */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-white/40 mb-1 block">Minimum</label>
+            <label className="text-[10px] text-white/40 mb-1 block">{t('onboardingFlow.minimum', 'Minimum')}</label>
             <input
               type="number"
               placeholder="0"
@@ -72,10 +74,10 @@ export default function BudgetStep({ data, updateData, toggleArrayItem, directio
             />
           </div>
           <div>
-            <label className="text-[10px] text-white/40 mb-1 block">Maximum</label>
+            <label className="text-[10px] text-white/40 mb-1 block">{t('onboardingFlow.maximum', 'Maximum')}</label>
             <input
               type="number"
-              placeholder="Ex: 50 000 000"
+              placeholder={t('onboardingFlow.maxPlaceholder', 'Ex: 50 000 000')}
               value={data.budgetMax || ''}
               onChange={(e) => updateData({ budgetMax: Number(e.target.value) })}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-mono-data font-bold placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-colors"
@@ -87,7 +89,7 @@ export default function BudgetStep({ data, updateData, toggleArrayItem, directio
       {/* Goals */}
       <div>
         <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-          Vos objectifs
+          {t('onboardingFlow.goalsLabel', 'Vos objectifs')}
         </label>
         <div className="grid grid-cols-2 gap-3">
           {goalOptions.map((goal, i) => (

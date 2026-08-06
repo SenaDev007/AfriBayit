@@ -159,7 +159,7 @@ export default function OnboardingFlow({ isOpen, onClose, onComplete }: Onboardi
                     currentStep === s.step ? 'text-[#D4AF37]' : currentStep > s.step ? 'text-white/60' : 'text-white/30'
                   }`}
                 >
-                  {s.title}
+                  {s.titleKey ? t(s.titleKey, s.title) : s.title}
                 </span>
               ))}
             </div>

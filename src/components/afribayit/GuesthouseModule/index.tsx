@@ -37,8 +37,10 @@ import StaffPanel from './StaffPanel';
 import PricingPanel from './PricingPanel';
 import CertificationPanel from './CertificationPanel';
 import BookingDialog from './BookingDialog';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function GuesthouseModule({ onNavigate }: ModuleProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('listings');
   const [selectedGhId, setSelectedGhId] = useState<string | null>(null);
   const { selectedCountry } = useCountry();
@@ -64,7 +66,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const [bookingGuests, setBookingGuests] = useState(1);
   const [bookingBreakfast, setBookingBreakfast] = useState(false);
   const [dynamicPrice, setDynamicPrice] = useState<number | null>(null);
-  const [cancellationPolicy, setCancellationPolicy] = useState<string>('Flexible — Annulation gratuite 24h avant');
+  const [cancellationPolicy, setCancellationPolicy] = useState<string>('');
 
   // List query
   const { data: listData, isLoading: listLoading, isError: listError, error: listErrorObj } = useGuesthouses(undefined, selectedCountry);
@@ -140,13 +142,13 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
   const createBooking = useCreateBooking(effectiveGhId || '');
 
   const tabs: TabConfig[] = [
-    { key: 'listings', label: 'Listings', icon: <Home className="w-4 h-4" /> },
-    { key: 'chambers', label: 'Chambres', icon: <Bed className="w-4 h-4" /> },
-    { key: 'booking', label: 'Réservations', icon: <Calendar className="w-4 h-4" /> },
-    { key: 'meals', label: 'Repas', icon: <Croissant className="w-4 h-4" /> },
-    { key: 'staff', label: 'Personnel', icon: <Users className="w-4 h-4" /> },
-    { key: 'pricing', label: 'Tarifs saisonniers', icon: <TrendingUp className="w-4 h-4" /> },
-    { key: 'certification', label: 'Certification', icon: <Award className="w-4 h-4" /> },
+    { key: 'listings', label: t('guesthouse.tabListings', 'Listings'), icon: <Home className="w-4 h-4" /> },
+    { key: 'chambers', label: t('guesthouse.tabChambers', 'Chambres'), icon: <Bed className="w-4 h-4" /> },
+    { key: 'booking', label: t('guesthouse.tabBooking', 'Réservations'), icon: <Calendar className="w-4 h-4" /> },
+    { key: 'meals', label: t('guesthouse.tabMeals', 'Repas'), icon: <Croissant className="w-4 h-4" /> },
+    { key: 'staff', label: t('guesthouse.tabStaff', 'Personnel'), icon: <Users className="w-4 h-4" /> },
+    { key: 'pricing', label: t('guesthouse.tabPricing', 'Tarifs saisonniers'), icon: <TrendingUp className="w-4 h-4" /> },
+    { key: 'certification', label: t('guesthouse.tabCertification', 'Certification'), icon: <Award className="w-4 h-4" /> },
   ];
 
   // Open booking dialog for a room
@@ -185,9 +187,9 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         });
         if (!cancelled) {
           setDynamicPrice(data.dynamicPrice ?? data.total ?? data.pricePerNight);
-          if (data.season === 'haute') setCancellationPolicy('Modérée — Annulation gratuite 5 jours avant');
-          else if (data.season === 'basse') setCancellationPolicy('Flexible — Annulation gratuite 24h avant');
-          else setCancellationPolicy('Flexible — Annulation gratuite 24h avant');
+          if (data.season === 'haute') setCancellationPolicy(t('guesthouse.policyModerate', 'Modérée — Annulation gratuite 5 jours avant'));
+          else if (data.season === 'basse') setCancellationPolicy(t('guesthouse.policyFlexible', 'Flexible — Annulation gratuite 24h avant'));
+          else setCancellationPolicy(t('guesthouse.policyFlexible', 'Flexible — Annulation gratuite 24h avant'));
         }
       } catch {
         // Fallback to base price
@@ -218,12 +220,12 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
       },
       {
         onSuccess: () => {
-          toast.success('Réservation confirmée', { description: `${bookingRoom.name} réservée pour ${nights} nuit(s)` });
+          toast.success(t('guesthouse.bookingConfirmed', 'Réservation confirmée'), { description: t('guesthouse.bookingConfirmedDesc', `${bookingRoom.name} réservée pour ${nights} nuit(s)`) });
           setShowBookingDialog(false);
           setBookingRoom(null);
         },
         onError: (error: Error) => {
-          toast.error('Erreur lors de la réservation', { description: error.message });
+          toast.error(t('guesthouse.bookingError', 'Erreur lors de la réservation'), { description: error.message });
         },
       }
     );
@@ -239,19 +241,19 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           className="text-center mb-8"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#00A651]/10 text-[#00A651] text-sm font-semibold mb-4">
-            <Home className="w-4 h-4" /> PMS Hôtelier
+            <Home className="w-4 h-4" /> {t('guesthouse.badge', 'PMS Hôtelier')}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Maisons <span className="text-[#00A651]">d&apos;Hôtes</span>
+            {t('guesthouse.headerTitle1', 'Maisons')} <span className="text-[#00A651]">{t('guesthouse.headerTitleAccent', "d'Hôtes")}</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Gestion complète de votre guesthouse : chambres, réservations, repas et personnel
+            {t('guesthouse.headerSubtitle', 'Gestion complète de votre guesthouse : chambres, réservations, repas et personnel')}
           </p>
         </motion.div>
 
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="text-xs text-gray-500 font-medium">{t('guesthouse.countryLabel', 'Pays:')}</span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
@@ -267,19 +269,19 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           <div className="flex items-center gap-3">
             <Coins className="w-5 h-5 text-[#D4AF37]" />
             <div>
-              <p className="text-sm font-semibold text-[#0a2a5e]">Modèle de revenus</p>
-              <p className="text-xs text-gray-500">Commission voyageur : 10-13% · Commission propriétaire : 3%</p>
+              <p className="text-sm font-semibold text-[#0a2a5e]">{t('guesthouse.revenueModel', 'Modèle de revenus')}</p>
+              <p className="text-xs text-gray-500">{t('guesthouse.commissionInfo', 'Commission voyageur : 10-13% · Commission propriétaire : 3%')}</p>
             </div>
           </div>
           <div className="flex gap-3">
             <div className="text-center">
               <p className="font-mono text-lg font-bold text-[#00A651]">10-13%</p>
-              <p className="text-[10px] text-gray-500">Voyageur</p>
+              <p className="text-[10px] text-gray-500">{t('guesthouse.traveler', 'Voyageur')}</p>
             </div>
             <div className="w-px bg-gray-200" />
             <div className="text-center">
               <p className="font-mono text-lg font-bold text-[#003087]">3%</p>
-              <p className="text-[10px] text-gray-500">Propriétaire</p>
+              <p className="text-[10px] text-gray-500">{t('guesthouse.owner', 'Propriétaire')}</p>
             </div>
           </div>
         </motion.div>

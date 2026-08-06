@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, CheckCircle, ClipboardList, Coins, Drone, Map, MapPin, Ruler, Search, ArrowLeft, Star, Briefcase, Clock, Award, X, ShieldCheck } from 'lucide-react';
 import { geoServiceLabel } from '@/lib/constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface Geometer {
   id: string;
@@ -38,14 +39,14 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — geometer service catalog using DB service codes (GEO_*)
 const geometerServices = [
-  { id: 'geo-1', name: geoServiceLabel('GEO_GPS'), code: 'GEO_GPS', price: 50000, priceLabel: '50 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Relevé GPS de précision pour repérage et coordonnées' },
-  { id: 'geo-2', name: geoServiceLabel('GEO_SURF'), code: 'GEO_SURF', price: 75000, priceLabel: '75 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain' },
-  { id: 'geo-3', name: geoServiceLabel('GEO_INSP'), code: 'GEO_INSP', price: 120000, priceLabel: '120 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques' },
-  { id: 'geo-4', name: geoServiceLabel('GEO_BORN'), code: 'GEO_BORN', price: 150000, priceLabel: '150 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes' },
-  { id: 'geo-5', name: geoServiceLabel('GEO_TOPO'), code: 'GEO_TOPO', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan' },
-  { id: 'geo-6', name: geoServiceLabel('GEO_DRON'), code: 'GEO_DRON', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution' },
-  { id: 'geo-7', name: geoServiceLabel('GEO_CERT'), code: 'GEO_CERT', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique' },
-  { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: 250000, priceLabel: '250 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions' },
+  { id: 'geo-1', name: geoServiceLabel('GEO_GPS'), code: 'GEO_GPS', price: 50000, priceLabel: '50 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Relevé GPS de précision pour repérage et coordonnées', descKey: 'geotrust.serviceGpsDesc' },
+  { id: 'geo-2', name: geoServiceLabel('GEO_SURF'), code: 'GEO_SURF', price: 75000, priceLabel: '75 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain', descKey: 'geotrust.serviceSurfDesc' },
+  { id: 'geo-3', name: geoServiceLabel('GEO_INSP'), code: 'GEO_INSP', price: 120000, priceLabel: '120 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques', descKey: 'geotrust.serviceInspDesc' },
+  { id: 'geo-4', name: geoServiceLabel('GEO_BORN'), code: 'GEO_BORN', price: 150000, priceLabel: '150 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes', descKey: 'geotrust.serviceBornDesc' },
+  { id: 'geo-5', name: geoServiceLabel('GEO_TOPO'), code: 'GEO_TOPO', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan', descKey: 'geotrust.serviceTopoDesc' },
+  { id: 'geo-6', name: geoServiceLabel('GEO_DRON'), code: 'GEO_DRON', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution', descKey: 'geotrust.serviceDronDesc' },
+  { id: 'geo-7', name: geoServiceLabel('GEO_CERT'), code: 'GEO_CERT', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique', descKey: 'geotrust.serviceCertDesc' },
+  { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: 250000, priceLabel: '250 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions', descKey: 'geotrust.service3dDesc' },
 ];
 
 // CDC §7C.9 — GeoTrust bundled packs (3 tiers: Standard / Certification / Premium Drone)
@@ -55,6 +56,7 @@ const geotrustPacks = [
   {
     id: 'pack-standard',
     name: 'Pack Standard',
+    nameKey: 'geotrust.packStandardName',
     price: 75000,
     priceLabel: '75 000 FCFA',
     services: ['GEO_GPS', 'GEO_SURF'] as const,
@@ -63,13 +65,16 @@ const geotrustPacks = [
       geoServiceLabel('GEO_SURF'),
       'Rapport de mission',
     ],
+    includesKeys: [null, null, 'geotrust.packIncludeReport'] as const,
     highlight: false,
     icon: <MapPin className="w-4 h-4" />,
     description: 'Vérification GPS et superficie du terrain avec rapport de mission.',
+    descKey: 'geotrust.packStandardDesc',
   },
   {
     id: 'pack-certification',
     name: 'Pack Certification',
+    nameKey: 'geotrust.packCertificationName',
     price: 150000,
     priceLabel: '150 000 FCFA',
     services: ['GEO_TOPO', 'GEO_BORN', 'GEO_CERT'] as const,
@@ -80,13 +85,16 @@ const geotrustPacks = [
       'Badge GeoTrust officiel',
       'Sécurisation escrow AfriBayit',
     ],
+    includesKeys: [null, null, null, 'geotrust.packIncludeBadge', 'geotrust.packIncludeEscrow'] as const,
     highlight: true,
     icon: <ShieldCheck className="w-4 h-4" />,
     description: 'Pack complet : topographie, bornage officiel, certificat de conformité, badge et escrow.',
+    descKey: 'geotrust.packCertificationDesc',
   },
   {
     id: 'pack-premium-drone',
     name: 'Pack Premium Drone',
+    nameKey: 'geotrust.packPremiumName',
     price: 350000,
     priceLabel: '350 000 FCFA',
     services: ['GEO_DRON', 'GEO_3D', 'GEO_CERT'] as const,
@@ -97,9 +105,11 @@ const geotrustPacks = [
       'Visite VR immersive',
       'Rapport détaillé',
     ],
+    includesKeys: [null, null, null, 'geotrust.packIncludeVr', 'geotrust.packIncludeDetailedReport'] as const,
     highlight: false,
     icon: <Drone className="w-4 h-4" />,
     description: 'Solution premium : cartographie drone, modélisation 3D, certificat, visite VR et rapport.',
+    descKey: 'geotrust.packPremiumDesc',
   },
 ];
 
@@ -123,6 +133,7 @@ function GeometerSkeleton() {
 }
 
 export default function GeoTrustModule() {
+  const { t } = useTranslation();
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showMissionDialog, setShowMissionDialog] = useState(false);
   const [selectedGeometer, setSelectedGeometer] = useState<Geometer | null>(null);
@@ -170,8 +181,8 @@ export default function GeoTrustModule() {
     // CDC §7C — Only registered users can view full geometer profiles
     if (!isAuthenticated) {
       toast({
-        title: 'Connexion requise',
-        description: 'Vous devez être connecté pour voir le profil détaillé d\'un géomètre et demander une mission.',
+        title: t('geotrust.loginRequired', 'Connexion requise'),
+        description: t('geotrust.loginRequiredDesc', 'Vous devez être connecté pour voir le profil détaillé d\'un géomètre et demander une mission.'),
       });
       window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
@@ -187,8 +198,8 @@ export default function GeoTrustModule() {
     // CDC §7C — Only registered users can request missions
     if (!isAuthenticated) {
       toast({
-        title: 'Connexion requise',
-        description: 'Vous devez être connecté pour demander une mission GeoTrust.',
+        title: t('geotrust.loginRequired', 'Connexion requise'),
+        description: t('geotrust.loginRequiredMissionDesc', 'Vous devez être connecté pour demander une mission GeoTrust.'),
       });
       window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
@@ -218,13 +229,14 @@ export default function GeoTrustModule() {
       },
       {
         onSuccess: () => {
-          toast({ title: 'Mission créée', description: `Votre demande de mission a été envoyée à ${selectedGeometer.name}.` });
+          toast({ title: t('geotrust.missionCreated', 'Mission créée'), description: t('geotrust.missionCreatedDesc', `Votre demande de mission a été envoyée à ${selectedGeometer.name}.`) });
           setShowMissionDialog(false);
           setSelectedGeometer(null);
           setMissionForm({ serviceCode: '', propertyId: '', notes: '', price: 0 });
         },
-        onError: (err) => {
-          toast({ title: 'Erreur', description: err.message || 'Impossible de créer la mission.', variant: 'destructive' });
+        onError: (err: unknown) => {
+          const errMsg = err instanceof Error ? err.message : '';
+          toast({ title: t('common.error', 'Erreur'), description: errMsg || t('geotrust.missionCreateError', 'Impossible de créer la mission.'), variant: 'destructive' });
         },
       }
     );
@@ -240,7 +252,7 @@ export default function GeoTrustModule() {
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retour à la liste
+            {t('geotrust.backToList', 'Retour à la liste')}
           </button>
 
           <motion.div
@@ -268,11 +280,11 @@ export default function GeoTrustModule() {
                     {detailGeometer.certifiedAt && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00A651]/10 text-[#00A651]">
                         <CheckCircle className="w-3.5 h-3.5" />
-                        Certifié GeoTrust
+                        {t('geotrust.certifiedBadge', 'Certifié GeoTrust')}
                       </span>
                     )}
                   </div>
-                  <p className="text-[#009CDE] font-semibold mb-2">Géomètre Expert</p>
+                  <p className="text-[#009CDE] font-semibold mb-2">{t('geotrust.expertRole', 'Géomètre Expert')}</p>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
@@ -281,13 +293,13 @@ export default function GeoTrustModule() {
                     {detailGeometer.rating > 0 && (
                       <span className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-                        {detailGeometer.rating} ({detailGeometer.reviews} avis)
+                        {detailGeometer.rating} ({detailGeometer.reviews} {t('geotrust.reviewsLabel', 'avis')})
                       </span>
                     )}
                     {detailGeometer.missions > 0 && (
                       <span className="flex items-center gap-1">
                         <Briefcase className="w-4 h-4" />
-                        {detailGeometer.missions} missions
+                        {detailGeometer.missions} {t('geotrust.missionsCount', 'missions')}
                       </span>
                     )}
                   </div>
@@ -301,15 +313,13 @@ export default function GeoTrustModule() {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                 >
                   <ClipboardList className="w-4 h-4" />
-                  Demander une mission
+                  {t('geotrust.requestMission', 'Demander une mission')}
                 </button>
               </div>
               <p className="text-[10px] text-gray-400 mt-3 max-w-md flex items-start gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#00A651]" />
                 <span>
-                  Toute mission GeoTrust transite par AfriBayit. Le paiement est sécurisé via escrow
-                  (commission 8-12%). Le rapport du géomètre devient une condition de libération
-                  de l&apos;escrow : VALIDATED → progression, ALERT → litige, REJECTED → remboursement.
+                  {t('geotrust.escrowTrustDesc', 'Toute mission GeoTrust transite par AfriBayit. Le paiement est sécurisé via escrow (commission 8-12%). Le rapport du géomètre devient une condition de libération de l\'escrow : VALIDATED → progression, ALERT → litige, REJECTED → remboursement.')}
                 </span>
               </p>
             </div>
@@ -319,7 +329,7 @@ export default function GeoTrustModule() {
               <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
                 <h3 className="text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2">
                   <Award className="w-4 h-4 text-[#009CDE]" />
-                  Certifications & Spécialités
+                  {t('geotrust.certificationsTitle', 'Certifications & Spécialités')}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {detailGeometer.certifications.map((cert) => (
@@ -333,7 +343,7 @@ export default function GeoTrustModule() {
 
             {/* Services offered — horizontal scroll */}
             <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
-              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
+              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">{t('geotrust.servicesOfferedTitle', 'Services proposés')}</h3>
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
                 {geometerServices.map((service) => (
                   <div
@@ -344,7 +354,7 @@ export default function GeoTrustModule() {
                       <span className="text-[#009CDE]">{service.icon}</span>
                     </div>
                     <h4 className="font-semibold text-[#0a2a5e] text-sm mb-1">{service.name}</h4>
-                    <p className="text-xs text-gray-500 mb-2">{service.description}</p>
+                    <p className="text-xs text-gray-500 mb-2">{service.descKey ? t(service.descKey, service.description) : service.description}</p>
                     <p className="text-[#D4AF37] font-bold text-sm">{service.priceLabel}</p>
                   </div>
                 ))}
@@ -356,21 +366,21 @@ export default function GeoTrustModule() {
               {detailGeometer.rating > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Note</p>
+                  <p className="text-xs text-gray-400">{t('geotrust.ratingLabel', 'Note')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{detailGeometer.rating}/5</p>
                 </div>
               )}
               {detailGeometer.missions > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Missions</p>
+                  <p className="text-xs text-gray-400">{t('geotrust.missionsLabel', 'Missions')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{detailGeometer.missions}</p>
                 </div>
               )}
               {detailGeometer.certifiedAt && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Certifié</p>
+                  <p className="text-xs text-gray-400">{t('geotrust.certifiedLabel', 'Certifié')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{timeAgo(detailGeometer.certifiedAt)}</p>
                 </div>
               )}
@@ -398,16 +408,16 @@ export default function GeoTrustModule() {
             <Map className="w-4 h-4" /> GeoTrust
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Géomètres <span className="text-[#009CDE]">Certifiés</span>
+            {t('geotrust.headerTitle1', 'Géomètres')} <span className="text-[#009CDE]">{t('geotrust.headerTitleAccent', 'Certifiés')}</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Faites vérifier votre terrain par des géomètres professionnels certifiés GeoTrust. Superficie, bornage, et certification garantis.
+            {t('geotrust.headerSubtitle', 'Faites vérifier votre terrain par des géomètres professionnels certifiés GeoTrust. Superficie, bornage, et certification garantis.')}
           </p>
         </motion.div>
 
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="text-xs text-gray-500 font-medium">{t('geotrust.countryLabel', 'Pays:')}</span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
@@ -415,7 +425,7 @@ export default function GeoTrustModule() {
 
         {/* Service Catalog — horizontal scroll */}
         <div className="mb-10">
-          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Services</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">{t('geotrust.servicesTitle', 'Services')}</h2>
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
             {geometerServices.map((service, i) => (
               <motion.div
@@ -433,7 +443,7 @@ export default function GeoTrustModule() {
                   <span className="text-[#009CDE]">{service.icon}</span>
                 </div>
                 <h3 className="font-semibold text-[#0a2a5e] mb-1">{service.name}</h3>
-                <p className="text-xs text-gray-500 mb-3">{service.description}</p>
+                <p className="text-xs text-gray-500 mb-3">{service.descKey ? t(service.descKey, service.description) : service.description}</p>
                 <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{service.priceLabel}</p>
               </motion.div>
             ))}
@@ -444,13 +454,13 @@ export default function GeoTrustModule() {
         <div className="mb-10">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
             <div>
-              <h2 className="font-display text-xl font-bold text-[#0a2a5e]">Packs GeoTrust</h2>
+              <h2 className="font-display text-xl font-bold text-[#0a2a5e]">{t('geotrust.packsTitle', 'Packs GeoTrust')}</h2>
               <p className="text-xs text-gray-500 mt-1">
-                Packs groupés à prix réduit — économisez jusqu&apos;à 20% vs. services à la carte.
+                {t('geotrust.packsSubtitle', 'Packs groupés à prix réduit — économisez jusqu\'à 20% vs. services à la carte.')}
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 text-[#B8860B] text-[11px] font-semibold w-fit">
-              <Coins className="w-3.5 h-3.5" /> Prix en FCFA (XOF)
+              <Coins className="w-3.5 h-3.5" /> {t('geotrust.priceInFcfa', 'Prix en FCFA (XOF)')}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -478,7 +488,7 @@ export default function GeoTrustModule() {
                 >
                   {pack.highlight && (
                     <span className="absolute -top-3 left-5 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#D4AF37] text-white text-[10px] font-bold shadow-sm">
-                      <Star className="w-3 h-3 fill-white" /> Recommandé
+                      <Star className="w-3 h-3 fill-white" /> {t('geotrust.recommendedBadge', 'Recommandé')}
                     </span>
                   )}
                   <div className="flex items-start justify-between mb-3">
@@ -491,24 +501,28 @@ export default function GeoTrustModule() {
                       </span>
                     )}
                   </div>
-                  <h3 className="font-semibold text-[#0a2a5e] mb-1">{pack.name}</h3>
-                  <p className="text-xs text-gray-500 mb-3 flex-1">{pack.description}</p>
+                  <h3 className="font-semibold text-[#0a2a5e] mb-1">{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}</h3>
+                  <p className="text-xs text-gray-500 mb-3 flex-1">{pack.descKey ? t(pack.descKey, pack.description) : pack.description}</p>
                   <p className="font-mono-data text-lg font-bold text-[#D4AF37] mb-3">{pack.priceLabel}</p>
                   <ul className="space-y-1.5">
-                    {pack.includes.map((item) => (
-                      <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
-                        <CheckCircle className="w-3.5 h-3.5 text-[#00A651] shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {pack.includes.map((item, idx) => {
+                      const keyArr = (pack as { includesKeys?: ReadonlyArray<string | null> }).includesKeys;
+                      const itemKey = keyArr?.[idx];
+                      return (
+                        <li key={item} className="flex items-start gap-2 text-xs text-gray-600">
+                          <CheckCircle className="w-3.5 h-3.5 text-[#00A651] shrink-0 mt-0.5" />
+                          <span>{itemKey ? t(itemKey, item) : item}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedService(primaryService?.id ?? null);
                       toast({
-                        title: 'Pack sélectionné',
-                        description: `${pack.name} (${pack.priceLabel}). Choisissez un géomètre ci-dessous pour démarrer la mission.`,
+                        title: t('geotrust.packSelected', 'Pack sélectionné'),
+                        description: `${pack.nameKey ? t(pack.nameKey, pack.name) : pack.name} (${pack.priceLabel}). ${t('geotrust.chooseGeometerBelow', 'Choisissez un géomètre ci-dessous pour démarrer la mission.')}`,
                       });
                     }}
                     className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${
@@ -517,7 +531,7 @@ export default function GeoTrustModule() {
                         : 'bg-[#003087] text-white hover:bg-[#0047b3]'
                     }`}
                   >
-                    Choisir ce pack
+                    {t('geotrust.choosePack', 'Choisir ce pack')}
                   </button>
                 </motion.div>
               );
@@ -527,7 +541,7 @@ export default function GeoTrustModule() {
 
         {/* Geometer Profiles */}
         <div>
-          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Nos Géomètres</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">{t('geotrust.ourGeometers', 'Nos Géomètres')}</h2>
 
           {/* Loading State */}
           {geometersLoading && (
@@ -542,7 +556,7 @@ export default function GeoTrustModule() {
           {geometersError && (
             <div className="text-center py-12">
               <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
-              <p className="text-gray-600 font-semibold mb-1">Impossible de charger les géomètres</p>
+              <p className="text-gray-600 font-semibold mb-1">{t('geotrust.unableToLoad', 'Impossible de charger les géomètres')}</p>
               <p className="text-sm text-gray-400">{geometersError.message}</p>
             </div>
           )}
@@ -551,8 +565,8 @@ export default function GeoTrustModule() {
           {!geometersLoading && !geometersError && geometers.length === 0 && (
             <div className="text-center py-12">
               <span className="text-4xl block mb-3"><Map className="w-4 h-4" /></span>
-              <p className="text-gray-600 font-semibold mb-1">Aucun géomètre disponible</p>
-              <p className="text-sm text-gray-400">Revenez plus tard</p>
+              <p className="text-gray-600 font-semibold mb-1">{t('geotrust.noGeometers', 'Aucun géomètre disponible')}</p>
+              <p className="text-sm text-gray-400">{t('geotrust.comeBackLater', 'Revenez plus tard')}</p>
             </div>
           )}
 
@@ -583,13 +597,13 @@ export default function GeoTrustModule() {
                       <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
-                      {geo.rating} ({geo.reviews} avis)
+                      {geo.rating} ({geo.reviews} {t('geotrust.reviewsLabel', 'avis')})
                     </span>
-                    <span>{geo.missions} missions</span>
+                    <span>{geo.missions} {t('geotrust.missionsCount', 'missions')}</span>
                   </div>
                   {(geo.certifiedAt || geo.createdAt) && (
                     <p className="text-[10px] text-gray-400 mb-3">
-                      {geo.certifiedAt ? `Certifié ${timeAgo(geo.certifiedAt)}` : `Inscrit ${timeAgo(geo.createdAt!)}`}
+                      {geo.certifiedAt ? `${t('geotrust.certifiedAgo', 'Certifié')} ${timeAgo(geo.certifiedAt)}` : `${t('geotrust.registeredAgo', 'Inscrit')} ${timeAgo(geo.createdAt!)}`}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-1.5 mb-4">
@@ -603,7 +617,7 @@ export default function GeoTrustModule() {
                     onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
                     className="w-full py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
-                    Demander une mission
+                    {t('geotrust.requestMission', 'Demander une mission')}
                   </button>
                 </motion.div>
               ))}
@@ -618,21 +632,21 @@ export default function GeoTrustModule() {
           viewport={{ once: true }}
           className="mt-10 bg-white rounded-xl p-6 shadow-sm border"
         >
-          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">Workflow de Mission</h2>
+          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-4">{t('geotrust.missionWorkflowTitle', 'Workflow de Mission')}</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             {[
-              { step: '1', title: 'Demande', desc: 'Décrivez votre besoin', icon: <ClipboardList className="w-4 h-4" /> },
-              { step: '2', title: 'Devis', desc: 'Recevez un devis détaillé', icon: <Coins className="w-4 h-4" /> },
-              { step: '3', title: 'Mission', desc: 'Le géomètre intervient', icon: <MapPin className="w-4 h-4" /> },
-              { step: '4', title: 'Rapport', desc: 'Recevez le certificat GeoTrust', icon: <CheckCircle className="w-4 h-4" /> },
+              { step: '1', title: 'Demande', titleKey: 'geotrust.workflowDemande', desc: 'Décrivez votre besoin', descKey: 'geotrust.workflowDemandeDesc', icon: <ClipboardList className="w-4 h-4" /> },
+              { step: '2', title: 'Devis', titleKey: 'geotrust.workflowDevis', desc: 'Recevez un devis détaillé', descKey: 'geotrust.workflowDevisDesc', icon: <Coins className="w-4 h-4" /> },
+              { step: '3', title: 'Mission', titleKey: 'geotrust.workflowMission', desc: 'Le géomètre intervient', descKey: 'geotrust.workflowMissionDesc', icon: <MapPin className="w-4 h-4" /> },
+              { step: '4', title: 'Rapport', titleKey: 'geotrust.workflowRapport', desc: 'Recevez le certificat GeoTrust', descKey: 'geotrust.workflowRapportDesc', icon: <CheckCircle className="w-4 h-4" /> },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 flex-1">
                 <div className="w-10 h-10 rounded-lg bg-[#009CDE]/10 flex items-center justify-center text-lg shrink-0">
                   {item.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#0a2a5e]">{item.title}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
+                  <p className="text-sm font-semibold text-[#0a2a5e]">{t(item.titleKey, item.title)}</p>
+                  <p className="text-xs text-gray-500">{t(item.descKey, item.desc)}</p>
                 </div>
               </div>
             ))}
@@ -663,8 +677,8 @@ export default function GeoTrustModule() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-display text-xl font-bold text-[#0a2a5e]">Demander un devis</h3>
-              <p className="text-xs text-gray-500">À {selectedGeometer.name} — {selectedGeometer.city}</p>
+              <h3 className="font-display text-xl font-bold text-[#0a2a5e]">{t('geotrust.quoteDialogTitle', 'Demander un devis')}</h3>
+              <p className="text-xs text-gray-500">{t('geotrust.toGeometer', 'À')} {selectedGeometer.name} — {selectedGeometer.city}</p>
             </div>
             <button onClick={() => setShowMissionDialog(false)} className="p-2 rounded-lg hover:bg-gray-100">
               <X className="w-4 h-4 text-gray-400" />
@@ -672,7 +686,7 @@ export default function GeoTrustModule() {
           </div>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Service</label>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">{t('geotrust.serviceLabel', 'Service')}</label>
               <select
                 value={missionForm.serviceCode}
                 onChange={(e) => {
@@ -685,7 +699,7 @@ export default function GeoTrustModule() {
                 }}
                 className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#009CDE] transition-colors"
               >
-                <option value="">Sélectionnez un service</option>
+                <option value="">{t('geotrust.selectService', 'Sélectionnez un service')}</option>
                 {geometerServices.map((service) => (
                   <option key={service.code} value={service.code}>
                     {service.name} — {service.priceLabel}
@@ -694,7 +708,7 @@ export default function GeoTrustModule() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-1.5 block">ID du bien (optionnel)</label>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">{t('geotrust.propertyIdLabel', 'ID du bien (optionnel)')}</label>
               <input
                 type="text"
                 value={missionForm.propertyId}
@@ -704,12 +718,12 @@ export default function GeoTrustModule() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-1.5 block">Notes</label>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 block">{t('geotrust.notesLabel', 'Notes')}</label>
               <textarea
                 rows={3}
                 value={missionForm.notes}
                 onChange={(e) => setMissionForm(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Détails supplémentaires..."
+                placeholder={t('geotrust.notesPlaceholder', 'Détails supplémentaires...')}
                 className="w-full px-4 py-3 rounded-2xl border text-sm outline-none resize-none focus:border-[#009CDE] transition-colors"
               />
             </div>
@@ -718,14 +732,14 @@ export default function GeoTrustModule() {
                 onClick={() => setShowMissionDialog(false)}
                 className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600"
               >
-                Annuler
+                {t('geotrust.cancelBtn', 'Annuler')}
               </button>
               <button
                 onClick={handleSubmitMission}
                 disabled={createMission.isPending || !missionForm.serviceCode}
                 className="flex-1 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-wait"
               >
-                {createMission.isPending ? 'Envoi...' : 'Envoyer'}
+                {createMission.isPending ? t('geotrust.sendingBtn', 'Envoi...') : t('geotrust.sendBtn', 'Envoyer')}
               </button>
             </div>
           </div>

@@ -39,6 +39,17 @@ interface SecuritySettingsProps {
   hasPassword: boolean;
 }
 
+interface AuthResponse {
+  success?: boolean;
+  error?: string;
+}
+
+interface Setup2FAResponse extends AuthResponse {
+  qrCodeUrl?: string;
+  manualEntryKey?: string;
+  secret?: string;
+}
+
 export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPassword }: SecuritySettingsProps) {
   const { toast } = useToast();
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(initial2FA);
@@ -108,7 +119,7 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
 
     setChangingPassword(true);
     try {
-      const data: any = await api.post('/users/me/password', {
+      const data = await api.post<AuthResponse>('/users/me/password', {
         currentPassword,
         newPassword,
         confirmPassword,
@@ -137,7 +148,7 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
     setTotpCode('');
 
     try {
-      const data: any = await authApi.setup2FA();
+      const data = await authApi.setup2FA() as Setup2FAResponse;
       setQrCodeUrl(data?.qrCodeUrl || '');
       setManualEntryKey(data?.manualEntryKey || data?.secret || '');
       setSetupStep('qr');
@@ -161,7 +172,7 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
     try {
       // Module 1: use the real `authApi.enable2FA(otpCode)` endpoint (was
       // POST /api/auth/2fa/setup with `{ token }`).
-      const data: any = await authApi.enable2FA(totpCode);
+      const data = await authApi.enable2FA(totpCode) as AuthResponse;
       if (data?.success === false) {
         throw new Error(data?.error || 'Code invalide');
       }
@@ -187,7 +198,7 @@ export default function SecuritySettings({ twoFactorEnabled: initial2FA, hasPass
 
     setDisabling2FA(true);
     try {
-      const data: any = await authApi.disable2FA(disablePassword);
+      const data = await authApi.disable2FA(disablePassword) as AuthResponse;
       if (data?.success === false) {
         throw new Error(data?.error || 'Erreur lors de la désactivation');
       }

@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Lightbulb, Map } from 'lucide-react';
 import type { StepProps } from './types';
 import { tourItems } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function TourStep({ direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step6"
@@ -27,9 +29,9 @@ export default function TourStep({ direction, slideVariants, easeOut, setIsAnima
           <Map className="w-4 h-4" />
         </motion.span>
         <h2 className="font-display text-3xl font-bold text-white mb-2">
-          Découvrez la plateforme
+          {t('onboardingFlow.tourTitle', 'Découvrez la plateforme')}
         </h2>
-        <p className="text-sm text-white/60">Voici un aperçu des fonctionnalités clés d&apos;AfriBayit</p>
+        <p className="text-sm text-white/60">{t('onboardingFlow.tourHelp', 'Voici un aperçu des fonctionnalités clés d\'AfriBayit')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -61,7 +63,7 @@ export default function TourStep({ direction, slideVariants, easeOut, setIsAnima
         className="mt-6 p-4 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20"
       >
         <p className="text-xs text-[#D4AF37] text-center">
-          <Lightbulb className="w-4 h-4" /> Astuce : Vous pouvez accéder à toutes ces fonctionnalités depuis le menu principal à tout moment.
+          <Lightbulb className="w-4 h-4" /> {t('onboardingFlow.tourTip', 'Astuce : Vous pouvez accéder à toutes ces fonctionnalités depuis le menu principal à tout moment.')}
         </p>
       </motion.div>
     </motion.div>

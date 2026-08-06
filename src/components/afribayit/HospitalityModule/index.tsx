@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { toast } from '@/hooks/use-toast';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import BookingDialog from './BookingDialog';
 import HotelDetail from './HotelDetail';
 import HotelList from './HotelList';
@@ -28,6 +29,7 @@ import type {
 import { DEFAULT_BOOKING_FORM, DEFAULT_PRICE_RANGE } from './types';
 
 export default function HospitalityModule() {
+  const { t } = useTranslation();
   // View state
   const [view, setView] = useState<View>('list');
   const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null);
@@ -127,18 +129,19 @@ export default function HospitalityModule() {
       {
         onSuccess: () => {
           toast({
-            title: 'Réservation confirmée',
-            description: 'Votre réservation a été enregistrée avec succès.',
+            title: t('hospitality.bookingConfirmed', 'Réservation confirmée'),
+            description: t('hospitality.bookingConfirmedDesc', 'Votre réservation a été enregistrée avec succès.'),
           });
           setShowBookingDialog(false);
           setBookingHotelId(null);
           setSelectedRoomId(null);
           setBookingForm(DEFAULT_BOOKING_FORM);
         },
-        onError: (err) => {
+        onError: (err: unknown) => {
+          const errMsg = err instanceof Error ? err.message : '';
           toast({
-            title: 'Erreur',
-            description: err.message || 'Impossible de créer la réservation.',
+            title: t('common.error', 'Erreur'),
+            description: errMsg || t('hospitality.bookingErrorDesc', 'Impossible de créer la réservation.'),
             variant: 'destructive',
           });
         },
@@ -167,13 +170,13 @@ export default function HospitalityModule() {
           className="text-center mb-10"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-sm font-semibold mb-4">
-            <Hotel className="w-4 h-4" /> AfriBayit Hospitality
+            <Hotel className="w-4 h-4" /> {t('hospitality.badge', 'AfriBayit Hospitality')}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Hôtels & <span className="text-[#D4AF37]">Séjours</span>
+            {t('hospitality.headerTitle1', 'Hôtels')} & <span className="text-[#D4AF37]">{t('hospitality.headerTitleAccent', 'Séjours')}</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Réservez votre hébergement en Afrique de l&apos;Ouest. Hôtels, résidences, et maisons d&apos;hôtes vérifiés.
+            {t('hospitality.headerSubtitle', 'Réservez votre hébergement en Afrique de l\'Ouest. Hôtels, résidences, et maisons d\'hôtes vérifiés.')}
           </p>
         </motion.div>
 

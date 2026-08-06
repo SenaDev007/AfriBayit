@@ -184,7 +184,7 @@ export function useAdminProperties(filters: AdminPropertyFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-properties', filters],
-    queryFn: () => api.get<any>(`/api/admin/properties?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/properties?${params.toString()}`),
   });
 }
 
@@ -324,7 +324,7 @@ export function useAdminCommunity(filters: AdminCommunityFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-community', filters],
-    queryFn: () => api.get<any>(`/api/admin/community?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/community?${params.toString()}`),
   });
 }
 
@@ -649,7 +649,7 @@ export function useAdminShortTermRentals(filters: AdminShortTermRentalFilters = 
 
   return useQuery({
     queryKey: ['admin-short-term-rentals', filters],
-    queryFn: () => api.get<any>(`/api/admin/short-term-rentals?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/short-term-rentals?${params.toString()}`),
   });
 }
 
@@ -675,7 +675,7 @@ export function useAdminBookings(filters: AdminBookingFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-bookings', filters],
-    queryFn: () => api.get<any>(`/api/admin/bookings?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/bookings?${params.toString()}`),
   });
 }
 
@@ -699,7 +699,7 @@ export function useAdminDisputes(filters: AdminDisputeFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-disputes', filters],
-    queryFn: () => api.get<any>(`/api/admin/disputes?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/disputes?${params.toString()}`),
   });
 }
 
@@ -750,7 +750,7 @@ export function useAdminPayouts(filters: AdminPayoutFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-payouts', filters],
-    queryFn: () => api.get<any>(`/api/admin/payouts?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/payouts?${params.toString()}`),
   });
 }
 
@@ -777,7 +777,7 @@ export function useAdminContent(filters: AdminContentFilters = {}) {
 
   return useQuery({
     queryKey: ['admin-content', filters],
-    queryFn: () => api.get<any>(`/api/admin/content?${params.toString()}`),
+    queryFn: () => api.get<Record<string, unknown>>(`/api/admin/content?${params.toString()}`),
   });
 }
 

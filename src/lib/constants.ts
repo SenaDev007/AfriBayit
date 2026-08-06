@@ -101,7 +101,7 @@ export function normalizeCountryCode(code: string): string {
 export type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'popular';
 
 export interface SearchFilters {
-  type?: string;
+  type?: string | string[];
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;

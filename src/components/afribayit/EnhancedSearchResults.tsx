@@ -46,8 +46,8 @@ interface CompareResponse {
 }
 
 interface EnhancedSearchFiltersState {
-  transaction: string[];
-  sortBy?: SortOption;
+  transaction?: string[];
+  sortBy?: string;
   page?: number;
   limit?: number;
   query?: string;
@@ -64,7 +64,7 @@ interface EnhancedSearchFiltersState {
   surfaceMin?: number;
   city?: string;
   country?: string;
-  type?: string;
+  type?: string | string[];
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
