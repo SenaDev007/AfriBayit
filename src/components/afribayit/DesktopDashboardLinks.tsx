@@ -16,6 +16,7 @@ import { usePathname } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
 import { getRoleDefinition } from '@/lib/role-catalog';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface DesktopDashboardLinksProps {
   onNavigate: (href: string) => void;
@@ -24,6 +25,7 @@ interface DesktopDashboardLinksProps {
 export default function DesktopDashboardLinks({ onNavigate }: DesktopDashboardLinksProps) {
   const pathname = usePathname();
   const { availableDashboards } = useRoleAccess();
+  const { t } = useTranslation();
 
   // Skip the generic /dashboard (it's already in PROFILE_MENU_ITEMS)
   const roleDashboards = availableDashboards.filter((d) => d.path !== '/dashboard');
@@ -49,7 +51,7 @@ export default function DesktopDashboardLinks({ onNavigate }: DesktopDashboardLi
             <span className="flex-1">{dash.label}</span>
             {dash.isPrimary && (
               <span className="text-[9px] font-bold uppercase bg-[#D4AF37]/20 text-[#D4AF37] px-1 py-0.5 rounded">
-                Principal
+                {t('roleManager.primary', 'Principal')}
               </span>
             )}
             {isActive && <Check className="w-3 h-3 text-[#003087]" />}

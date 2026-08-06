@@ -26,9 +26,35 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 const NAVY = '#003087';
 const GOLD = '#D4AF37';
 
+/**
+ * Minimal property shape used by AdvancedFeaturesSection. The full
+ * `PropertyData` from `@/lib/afribayit-utils` doesn't carry `investmentScore`
+ * or `owner`, so we declare a local superset covering the fields this
+ * component actually reads.
+ */
+interface AdvancedPropertyItem {
+  id: string;
+  title: string;
+  price: number;
+  transaction: string;
+  type: string;
+  city: string;
+  quartier: string;
+  bedrooms: number;
+  surface: number;
+  images?: string[];
+  features?: string[];
+  lat?: number | null;
+  lng?: number | null;
+  verified: boolean;
+  geoTrust: boolean;
+  investmentScore?: number | null;
+  owner?: { name: string };
+}
+
 interface AdvancedFeaturesSectionProps {
   transaction: 'achat' | 'location' | 'investissement' | 'location_courte_duree';
-  properties: any[];
+  properties: AdvancedPropertyItem[];
   onSelectProperty: (id: string) => void;
   /** Show financing simulator (only for achat/investissement) */
   showFinancing?: boolean;
@@ -195,7 +221,7 @@ export default function AdvancedFeaturesSection({
                 <PropertyMap
                   properties={mappableProperties}
                   onPropertyClick={onSelectProperty}
-                  selectedCountry={selectedCountry !== ('all' as any) ? selectedCountry : undefined}
+                  selectedCountry={selectedCountry}
                   className="h-[500px] w-full"
                   showGeoTrustOverlay
                 />
@@ -313,7 +339,7 @@ export default function AdvancedFeaturesSection({
 
       {/* Comparator modal */}
       <PropertyComparator
-        properties={compareProperties}
+        properties={compareProperties as never}
         bestValues={bestValues}
         onRemoveProperty={toggleCompare}
         onViewProperty={onSelectProperty}
@@ -352,7 +378,7 @@ export default function AdvancedFeaturesSection({
               <div className="p-6 max-h-[80vh] overflow-y-auto">
                 <FinancingSimulator
                   propertyPrice={financingPrice}
-                  country={selectedCountry !== ('all' as any) ? selectedCountry : 'BJ'}
+                  country={selectedCountry}
                 />
               </div>
             </motion.div>

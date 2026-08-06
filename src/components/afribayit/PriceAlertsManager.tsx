@@ -19,6 +19,7 @@ import {
   useAlerts, useAlertNotifications,
   useCreateAlert, useDeleteAlert, useToggleAlert,
   useMarkAlertRead, useMarkAllAlertsRead,
+  type PriceAlert, type AlertNotification, type CreateAlertInput,
 } from '@/hooks/useAlerts';
 import {
   Bell, Plus, Trash2, MapPin, Home, Coins, Brain, X,
@@ -165,7 +166,7 @@ export default function PriceAlertsManager() {
 }
 
 function AlertRow({ alert, onToggle, onDelete }: {
-  alert: any;
+  alert: PriceAlert;
   onToggle: (active: boolean) => void;
   onDelete: () => void;
 }) {
@@ -215,7 +216,7 @@ function AlertRow({ alert, onToggle, onDelete }: {
 
 function CreateAlertModal({ onClose, onCreate, isPending }: {
   onClose: () => void;
-  onCreate: (data: any) => void;
+  onCreate: (data: CreateAlertInput) => void;
   isPending: boolean;
 }) {
   const [name, setName] = useState('');
@@ -367,7 +368,7 @@ function CreateAlertModal({ onClose, onCreate, isPending }: {
 }
 
 function NotificationsModal({ notifications, onClose, onRead, onReadAll }: {
-  notifications: any[];
+  notifications: AlertNotification[];
   onClose: () => void;
   onRead: (id: string) => void;
   onReadAll: () => void;

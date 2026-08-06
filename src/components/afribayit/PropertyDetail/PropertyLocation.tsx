@@ -112,7 +112,7 @@ export default function PropertyLocation({ property }: PropertyLocationProps) {
               <MapPin className="w-6 h-6 text-[#003087]" />
             </div>
             <p className="text-sm font-semibold text-[#0a2a5e] mt-2">{property.quartier}, {property.city}</p>
-            <p className="text-xs text-gray-400 mt-1">Coordonnées GPS non disponibles</p>
+            <p className="text-xs text-gray-400 mt-1">{t('propertyDetail.location.gpsUnavailable', 'Coordonnées GPS non disponibles')}</p>
           </div>
         </div>
       )}

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface CheckinQRProps {
   bookingId: string;
@@ -34,6 +35,7 @@ export function CheckinQR({
   const [loading, setLoading] = useState(false);
   const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
   const [checkedOutAt, setCheckedOutAt] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Fetch QR code on mount
   const fetchQR = useCallback(async () => {
@@ -55,14 +57,14 @@ export function CheckinQR({
         setQrCode(data.qrCode);
         setStatus(data.status || initialStatus);
       } else {
-        setError(data?.error || 'Erreur lors de la génération du QR code');
+        setError(data?.error || t('checkinQR.errorGenerate', 'Erreur lors de la génération du QR code'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : t('checkinQR.errorNetwork', 'Erreur réseau — veuillez réessayer'));
     } finally {
       setLoading(false);
     }
-  }, [bookingId, propertyId, checkInDate, checkOutDate, initialStatus]);
+  }, [bookingId, propertyId, checkInDate, checkOutDate, initialStatus, t]);
 
   useEffect(() => {
     fetchQR();
@@ -85,11 +87,11 @@ export function CheckinQR({
         setCheckedInAt(data.checkedInAt || new Date().toISOString());
       } else {
         setScanStatus('error');
-        setError(data?.error || 'Échec du check-in');
+        setError(data?.error || t('checkinQR.errorCheckin', 'Échec du check-in'));
       }
     } catch (err) {
       setScanStatus('error');
-      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : t('checkinQR.errorNetwork', 'Erreur réseau — veuillez réessayer'));
     }
   };
 
@@ -109,11 +111,11 @@ export function CheckinQR({
         setCheckedOutAt(data.checkedOutAt || new Date().toISOString());
       } else {
         setScanStatus('error');
-        setError(data?.error || 'Échec du check-out');
+        setError(data?.error || t('checkinQR.errorCheckout', 'Échec du check-out'));
       }
     } catch (err) {
       setScanStatus('error');
-      setError(err instanceof Error ? err.message : 'Erreur réseau — veuillez réessayer');
+      setError(err instanceof Error ? err.message : t('checkinQR.errorNetwork', 'Erreur réseau — veuillez réessayer'));
     }
   };
 
@@ -121,13 +123,13 @@ export function CheckinQR({
   const getStatusConfig = () => {
     switch (status) {
       case 'confirmed':
-        return { label: 'Confirmée', variant: 'default' as const, color: 'bg-emerald-100 text-emerald-800' };
+        return { label: t('checkinQR.statusConfirmed', 'Confirmée'), variant: 'default' as const, color: 'bg-emerald-100 text-emerald-800' };
       case 'checked_in':
-        return { label: 'Enregistré', variant: 'default' as const, color: 'bg-blue-100 text-blue-800' };
+        return { label: t('checkinQR.statusCheckedIn', 'Enregistré'), variant: 'default' as const, color: 'bg-blue-100 text-blue-800' };
       case 'completed':
-        return { label: 'Terminé', variant: 'default' as const, color: 'bg-gray-100 text-gray-800' };
+        return { label: t('checkinQR.statusCompleted', 'Terminé'), variant: 'default' as const, color: 'bg-gray-100 text-gray-800' };
       case 'cancelled':
-        return { label: 'Annulée', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' };
+        return { label: t('checkinQR.statusCancelled', 'Annulée'), variant: 'destructive' as const, color: 'bg-red-100 text-red-800' };
       default:
         return { label: status, variant: 'secondary' as const, color: 'bg-gray-100 text-gray-700' };
     }
@@ -154,7 +156,7 @@ export function CheckinQR({
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <QrCode className="h-5 w-5" />
-            Check-in Digital
+            {t('checkinQR.title', 'Check-in Digital')}
           </CardTitle>
           <Badge className={statusConfig.color}>
             {statusConfig.label}
@@ -185,7 +187,7 @@ export function CheckinQR({
             <div className="relative p-3 bg-white rounded-xl border shadow-sm">
               <img
                 src={qrCode}
-                alt="QR Code de check-in"
+                alt={t('checkinQR.qrAlt', 'QR Code de check-in')}
                 className="w-64 h-64 object-contain"
               />
               {/* Success overlay */}
@@ -230,7 +232,7 @@ export function CheckinQR({
         {checkedInAt && (
           <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 p-2 rounded-lg">
             <Clock className="h-4 w-4" />
-            <span>Check-in: {new Date(checkedInAt).toLocaleString('fr-FR')}</span>
+            <span>{t('checkinQR.checkinAt', 'Check-in')}: {new Date(checkedInAt).toLocaleString('fr-FR')}</span>
           </div>
         )}
 
@@ -238,7 +240,7 @@ export function CheckinQR({
         {checkedOutAt && (
           <div className="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 p-2 rounded-lg">
             <Clock className="h-4 w-4" />
-            <span>Check-out: {new Date(checkedOutAt).toLocaleString('fr-FR')}</span>
+            <span>{t('checkinQR.checkoutAt', 'Check-out')}: {new Date(checkedOutAt).toLocaleString('fr-FR')}</span>
           </div>
         )}
 
@@ -253,12 +255,12 @@ export function CheckinQR({
               {scanStatus === 'scanning' ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Enregistrement...
+                  {t('checkinQR.scanning', 'Enregistrement...')}
                 </>
               ) : (
                 <>
                   <LogIn className="h-4 w-4 mr-2" />
-                  Check-in
+                  {t('checkinQR.checkinLabel', 'Check-in')}
                 </>
               )}
             </Button>
@@ -274,12 +276,12 @@ export function CheckinQR({
               {scanStatus === 'scanning' ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Départ...
+                  {t('checkinQR.checkoutScanning', 'Départ...')}
                 </>
               ) : (
                 <>
                   <LogOut className="h-4 w-4 mr-2" />
-                  Check-out
+                  {t('checkinQR.checkoutLabel', 'Check-out')}
                 </>
               )}
             </Button>
@@ -288,7 +290,7 @@ export function CheckinQR({
           {status === 'completed' && (
             <div className="flex items-center gap-2 text-sm text-emerald-700 w-full justify-center py-2">
               <CheckCircle2 className="h-5 w-5" />
-              <span className="font-medium">Séjour terminé</span>
+              <span className="font-medium">{t('checkinQR.stayCompleted', 'Séjour terminé')}</span>
             </div>
           )}
         </div>
@@ -302,7 +304,7 @@ export function CheckinQR({
             className="w-full text-muted-foreground"
           >
             <RefreshCw className="h-3 w-3 mr-1" />
-            Régénérer le QR code
+            {t('checkinQR.regenerate', 'Régénérer le QR code')}
           </Button>
         )}
       </CardContent>
