@@ -23,6 +23,7 @@ import { api, setAccessToken } from './api-client';
 // wiped on logout.
 export const LOGOUT_STORAGE_KEYS = [
   'afribayit_access_token',
+  'afribayit_refresh_token',
   'afribayit-notification-prefs',
   'afribayit-silent-hours',
   'afribayit-premium-notifs',
@@ -47,6 +48,15 @@ export async function signOutAndClear(options?: SignOutOptions): Promise<void> {
     await api.post('/auth/logout', {});
   } catch (err) {
     console.warn('[signOutAndClear] Backend logout failed (continuing with local cleanup):', err);
+  }
+
+  // Step 1b — clear httpOnly cookies via the BFF token route.
+  // This deletes the httpOnly afribayit_at and afribayit_rt cookies
+  // that can't be cleared from client-side JavaScript.
+  try {
+    await fetch('/api/auth/token', { method: 'DELETE' });
+  } catch {
+    // Best-effort — don't block sign-out if this fails.
   }
 
   // Step 2 — clear all afribayit_* localStorage keys. Wrapped in try/catch
