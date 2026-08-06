@@ -11,67 +11,69 @@ import {
 } from 'lucide-react';
 import { FORMATEUR_ANALYTICS, easeOut } from '../demoData';
 import { formatPrice } from '../utils';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function FormateurProfile() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <BookOpen className="w-5 h-5 text-[#009CDE] mb-1" />
           <p className="font-mono text-xl font-bold text-[#0a2a5e]">{FORMATEUR_ANALYTICS.coursesPublished}</p>
-          <p className="text-xs text-gray-500">Cours publiés</p>
+          <p className="text-xs text-gray-500">{t('analytics.formateurProfile.coursesPublished', 'Cours publiés')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <GraduationCap className="w-5 h-5 text-[#003087] mb-1" />
           <p className="font-mono text-xl font-bold text-[#0a2a5e]">{FORMATEUR_ANALYTICS.totalStudents}</p>
-          <p className="text-xs text-gray-500">Inscrits total</p>
+          <p className="text-xs text-gray-500">{t('analytics.formateurProfile.totalStudents', 'Inscrits total')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Percent className="w-5 h-5 text-[#00A651] mb-1" />
           <p className="font-mono text-xl font-bold text-[#00A651]">{FORMATEUR_ANALYTICS.completionRate}%</p>
-          <p className="text-xs text-gray-500">Taux complétion</p>
+          <p className="text-xs text-gray-500">{t('analytics.formateurProfile.completionRate', 'Taux complétion')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Star className="w-5 h-5 text-[#D4AF37] mb-1" />
           <p className="font-mono text-xl font-bold text-[#0a2a5e]">{FORMATEUR_ANALYTICS.avgRating}</p>
-          <p className="text-xs text-gray-500">Notes & avis ({FORMATEUR_ANALYTICS.notesAvis.total})</p>
+          <p className="text-xs text-gray-500">{t('analytics.formateurProfile.reviewsLabel', 'Notes & avis')} ({FORMATEUR_ANALYTICS.notesAvis.total})</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <BadgeCheck className="w-5 h-5 text-[#00A651] mb-1" />
           <p className="font-mono text-xl font-bold text-[#00A651]">{FORMATEUR_ANALYTICS.certificationsDelivrees}</p>
-          <p className="text-xs text-gray-500">Certifications délivrées</p>
+          <p className="text-xs text-gray-500">{t('analytics.formateurProfile.certificationsIssued', 'Certifications délivrées')}</p>
         </div>
       </div>
 
       {/* Inscrits par cours + Revenus générés */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-[#009CDE]" /> Inscrits par cours</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-[#009CDE]" /> {t('analytics.formateurProfile.studentsPerCourse', 'Inscrits par cours')}</h3>
           <div className="space-y-3">
             {FORMATEUR_ANALYTICS.inscritsParCours.map(course => (
               <div key={course.name} className="p-3 bg-gray-50 rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-semibold text-sm text-[#0a2a5e]">{course.name}</p>
-                  <span className="font-mono text-sm font-bold text-[#003087]">{course.students} inscrits</span>
+                  <span className="font-mono text-sm font-bold text-[#003087]">{course.students} {t('analytics.formateurProfile.enrolled', 'inscrits')}</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div className="h-full rounded-lg bg-[#009CDE]" style={{ width: `${course.completion}%` }} />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Taux complétion : {course.completion}%</p>
+                <p className="text-xs text-gray-500 mt-1">{t('analytics.formateurProfile.completionRateColon', 'Taux complétion')}: {course.completion}%</p>
               </div>
             ))}
           </div>
         </div>
         <div className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><CircleDollarSign className="w-5 h-5 text-[#00A651]" /> Revenus générés</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><CircleDollarSign className="w-5 h-5 text-[#00A651]" /> {t('analytics.formateurProfile.revenueGenerated', 'Revenus générés')}</h3>
           <div className="text-center mb-4">
             <p className="font-mono text-3xl font-bold text-[#00A651]">{formatPrice(FORMATEUR_ANALYTICS.monthlyRevenue)}</p>
-            <p className="text-xs text-gray-500">ce mois</p>
+            <p className="text-xs text-gray-500">{t('analytics.formateurProfile.thisMonth', 'ce mois')}</p>
           </div>
           <div className="space-y-3">
             {FORMATEUR_ANALYTICS.topCourses.map(course => (
               <div key={course.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                <div><p className="font-semibold text-sm text-[#0a2a5e]">{course.name}</p><p className="text-xs text-gray-500">{course.students} étudiants · <span className="text-[#D4AF37]">{course.rating}/5</span></p></div>
+                <div><p className="font-semibold text-sm text-[#0a2a5e]">{course.name}</p><p className="text-xs text-gray-500">{course.students} {t('analytics.formateurProfile.students', 'étudiants')} · <span className="text-[#D4AF37]">{course.rating}/5</span></p></div>
                 <p className="font-mono text-sm font-bold text-[#00A651]">{formatPrice(course.revenue)}</p>
               </div>
             ))}
@@ -80,7 +82,7 @@ export default function FormateurProfile() {
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Entonnoir de conversion formateur</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.formateurProfile.conversionFunnel', 'Entonnoir de conversion formateur')}</h3>
         <div className="space-y-3">
           {FORMATEUR_ANALYTICS.conversionFunnel.map((stage, i) => (
             <div key={stage.stage} className="flex items-center gap-4">

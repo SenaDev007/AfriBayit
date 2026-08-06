@@ -931,3 +931,147 @@ Stage Summary:
   - MealsPanel: 3 meal-type labels (via mealLabel helper) + Disponible + Non proposé wrapped → 5 new guesthouse.meals keys.
   - CancellationPolicyDisplay: POLICIES array refactored with nameKey/descriptionKey/commissionKey/conditionKey/refundKey; 4 policy names + 7 rule conditions + 3 refund strings + 4 commissions + 4 descriptions wrapped → 22 new cancellation keys (new top-level section).
   - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 45s, tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch6-any-batch5
+Agent: i18n-batch6-any-batch5 Agent
+Task: Wrap more hardcoded French strings in 10 components (batch 6) + fix `any` casts in 4 files (batch 5)
+
+Work Log:
+- Read worklog.md to understand prior context (previous i18n batches 1-5 + any-fix batches 1-4)
+- Explored target files and existing locale file structure (analytics, community, guesthouse sections)
+- For each target file, added `import { useTranslation } from '@/lib/i18n/use-translate';` and `const { t } = useTranslation();`, then wrapped the most visible hardcoded French strings with `t('namespace.key', 'French fallback')` calls
+- Added new translation keys to `src/lib/i18n/locales/fr.ts` and `src/lib/i18n/locales/en.ts` (same structure in both)
+- Verified all 4 gates: `npx tsc --noEmit` 0 errors, `npm run build` ✓ Compiled successfully in 43s (82 routes), `npm run test` 7 files / 179 tests passed, `npx eslint .` 0 errors / 0 warnings
+
+Files updated (i18n Task 1 — 10 components):
+- src/components/afribayit/AnalyticsDashboard/HeatmapPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/ProfileViewsPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/SearchPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/ArtisanProfile.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/FormateurProfile.tsx
+- src/components/afribayit/CommunityModule/dialogs/PollDialog.tsx
+- src/components/afribayit/CommunityModule/dialogs/ReportDialog.tsx
+- src/components/afribayit/GuesthouseModule/BookingCalendarPanel.tsx
+- src/components/afribayit/GuesthouseModule/CertificationPanel.tsx
+- src/components/afribayit/GuesthouseModule/ListingsPanel.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — HeatmapPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 9 strings: panel title ("Performance par zone") + subtitle ("Carte de chaleur des performances immobilières par quartier et ville.") + 3 trend labels (En hausse / En baisse / Stable) + "Prix moy:" label + 4 legend labels (Excellent / Bon / Moyen / Faible).
+    - 9 new keys added under `analytics.heatmap` sub-object.
+    - IMPORTANT: The legend "Faible (<40)" originally used `&lt;40` in JSX text (where JSX decodes the entity). I used the literal `<` character in the translation string and fallback because the t() function returns a plain string — JSX does NOT decode HTML entities inside `{}` expressions, so `&lt;40` would render literally as the text "&lt;40".
+
+  File 2 — ProfileViewsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI labels (Vues totales, Accès direct, Via recherche, Via referral, Évolution) + "Origine des vues" heading + 3 origin labels (Recherche, Accès direct, Referral). The inline `[{label, value, total, color}]` array was refactored so each `label` calls t().
+    - 9 new keys added under `analytics.profileViews` sub-object.
+
+  File 3 — SearchPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped panel title ("Apparitions en recherche") + subtitle + 4 table column headers (Mot-clé, Apparitions, Clics, CTR).
+    - 6 new keys added under `analytics.searchPanel` sub-object.
+
+  File 4 — ArtisanProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI cards (Missions terminées, Taux satisfaction, Temps de réponse, Classement, Note moyenne) + "Demandes devis" heading + 4 quote-status labels (Reçues, Envoyées, Acceptées, En attente) + "Entonnoir de conversion artisan" heading + "Spécialités" heading + "missions" unit.
+    - 13 new keys added under `analytics.artisanProfile` sub-object.
+
+  File 5 — FormateurProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI cards (Cours publiés, Inscrits total, Taux complétion, Notes & avis, Certifications délivrées) + "Inscrits par cours" heading + "inscrits" unit + "Taux complétion:" inline label + "Revenus générés" heading + "ce mois" caption + "étudiants" unit + "Entonnoir de conversion formateur" heading.
+    - 12 new keys added under `analytics.formateurProfile` sub-object.
+
+  File 6 — PollDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Créer un sondage") + Question label + question placeholder + "Option" template (used in `Option ${i+1}` placeholder) + "+ Ajouter une option" button + Annuler + Publication... + Publier le sondage.
+    - 8 new keys added under `community.pollDialog` sub-object.
+    - IMPORTANT: originally named the new sub-object `poll` but had to rename to `pollDialog` because the existing `community` section already had `poll: 'Sondage'` as a string key (TS1117 collision with the new object). Updated PollDialog.tsx key references accordingly via sed.
+
+  File 7 — ReportDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Signaler ce contenu") + moderation note + "Raison du signalement" label + "Sélectionnez une raison" placeholder + 7 reason <option> labels (Spam, Discours de haine, Harcèlement, Fausse information, Contenu inapproprié, Arnaque / fraude, Autre) + Annuler + Envoi... + Signaler button labels.
+    - 13 new keys added under `community.report` sub-object. (No collision — only `reportContent` exists as a string key in community.)
+
+  File 8 — BookingCalendarPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped "Calendrier" title (the `— ${month year}` suffix is left dynamic via toLocaleDateString) + 2 legend labels (Disponible, Réservé).
+    - 3 new keys added under `guesthouse.bookingCalendar` sub-object.
+
+  File 9 — CertificationPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped "Certification Guesthouse" heading + 3 status labels (Guesthouse certifiée, En cours de certification, Non certifiée) + 3 status descriptions. The status text and description for the no-activeDetail fallback (the `{!activeDetail && ...}` block at the bottom) was also wrapped using the same `statusPending` and `descPending` keys.
+    - 7 new keys added under `guesthouse.certification` sub-object.
+
+  File 10 — ListingsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 21 strings:
+      * Search bar: searchPlaceholder
+      * Filter buttons: "Filtres" + "Publier une guesthouse" (used twice)
+      * Filter panel: "Certification:" label + "résultat(s)" counter
+      * Error state: loadErrorTitle + loadErrorDesc
+      * Empty state: emptySearchTitle/Desc + emptyCountryTitle/Desc + resetFilters + publishGuesthouse
+      * How it works mini-section: howItWorks heading + step1Title/Desc + step2Title/Desc + step3Title/Desc (the inline `[{icon, title, desc}]` array was refactored to call t() for each title and desc)
+      * Property cards: "chambre(s)" room count unit + "Nouveau" badge + "À partir de" price prefix
+      * Results count footer: "guesthouse(s) trouvée(s)" + "pour" query prefix
+    - 21 new keys added under `guesthouse.listings` sub-object.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 5 new sub-objects under `analytics` (heatmap 9 keys / profileViews 9 keys / searchPanel 6 keys / artisanProfile 13 keys / formateurProfile 12 keys), 2 new sub-objects under `community` (pollDialog 8 keys / report 13 keys), 3 new sub-objects under `guesthouse` (bookingCalendar 3 keys / certification 7 keys / listings 21 keys). Total new keys added to fr.ts: ~101.
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Task 2 — `any` cast fixes:
+
+  Note: The task description mentioned 6 + 5 + 6 + 5 = 22 `any` occurrences across the 4 target files, but in practice PropertyGrid.tsx, FeaturedProperties.tsx, and AdvancedFilterSidebar.tsx already had ZERO `any` occurrences (verified via `grep -nE "(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)"`). These had been cleaned up by earlier `any` batches logged in worklog.md (AdvancedFilterSidebar had its FilterState interface defined, PropertyGrid had PropertyListItem interface, FeaturedProperties had FeaturedPropertiesResponse type alias). Only `src/app/leases/[id]/page.tsx` actually had `any` casts remaining.
+
+  File 1 — PropertyGrid.tsx: NO `any` found. Skipped (already clean).
+  File 2 — FeaturedProperties.tsx: NO `any` found. Skipped (already clean).
+  File 3 — AdvancedFilterSidebar.tsx: NO `any` found. Skipped (already clean). (The word "any" appears only in a JSDoc comment on line 27, not as a type cast.)
+
+  File 4 — src/app/leases/[id]/page.tsx: 6 `any` occurrences fixed.
+    - Defined 6 new TypeScript interfaces near the top of the file:
+      * `LeaseDocument` — id, documentType, url?, ownerSigned?, ownerSignedAt?, tenantSigned?, tenantSignedAt?
+      * `LeaseInventory` — id, type ('in'|'out'), conductedAt, tenantSigned?, ownerSigned?, items?
+      * `RentPayment` — id, dueDate, amountDue, amountPaid?, paidAt?, releasedAt?, status, isInitial?
+      * `LeaseParty` — id?, name?, email?, phone?, avatar?
+      * `LeaseProperty` — title?, city?, images? (string | string[] | null)
+      * `LeaseDetail` — id, leaseRef, status, country, currency, monthlyRent, securityDeposit, leaseTermMonths, startDate, endDate, furnished?, chargesIncluded?, noticePeriodDays?, tenantId?, ownerId?, owner?, tenant?, property?, documents?, inventories?, rentPayments?
+    - Replaced `const lease = data as Record<string, any> | undefined;` → `const lease = data as LeaseDetail | undefined;`
+    - Replaced `(d: any)` and `(inv: any)` in the three `.find()` callbacks with implicit-typed parameters (now inferred from `LeaseDetail.documents: LeaseDocument[]` and `LeaseDetail.inventories: LeaseInventory[]`).
+    - Replaced `inventory?: any;` (in InventoryRow component props) → `inventory?: LeaseInventory;`
+    - Replaced `payments: any[];` (in RentPaymentsList component props) → `payments: RentPayment[];`
+    - Side-effect fix: the `SignatureStatus` component's `signed: boolean` prop was incompatible with `contractDoc.ownerSigned` (now `boolean | undefined` from the new `LeaseDocument` interface). Changed the prop type to `signed?: boolean` so undefined is allowed (the JSX still treats undefined as falsy via `signed ? ... : ...` ternaries — same visual behavior).
+
+After the fix, `grep -nE "(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)" src/app/leases/[id]/page.tsx` returns no matches.
+
+Total `any` count in src/ (excluding node_modules and .test. files):
+  - Before this task: 133
+  - After this task: 128 (reduction of 5)
+  - Note: the reduction is 5 instead of 6 because the original grep pattern in the task (`: any\b\|as any\|<any>`) does not match `Record<string, any>` or `any[]`. The actual `any` count reduced is 6 (all in leases/[id]/page.tsx). With the broader pattern `(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)` the count went from 134 → 128.
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (exit 0). No type errors introduced by the new keys, t() calls, or LeaseDetail/LeaseDocument/LeaseInventory/RentPayment interfaces.
+  2. `npm run build` → ✓ Compiled successfully in 43s; all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced. (The pre-existing "middleware" deprecation warning and metadataBase warning are unchanged.)
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.80s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - HeatmapPanel: 9 visible UI strings wrapped (title + subtitle + 3 trends + 1 avg-price label + 4 legend labels) → 9 new analytics.heatmap keys.
+  - ProfileViewsPanel: 5 KPI labels + heading + 3 origin labels wrapped → 9 new analytics.profileViews keys.
+  - SearchPanel: title + subtitle + 4 column headers wrapped → 6 new analytics.searchPanel keys.
+  - ArtisanProfile: 5 KPI cards + Demandes devis heading + 4 quote-status labels + Entonnoir heading + Spécialités heading + missions unit wrapped → 13 new analytics.artisanProfile keys.
+  - FormateurProfile: 5 KPI cards + Inscrits par cours heading + enrolled unit + Taux complétion: inline label + Revenus générés heading + ce mois caption + étudiants unit + Entonnoir heading wrapped → 12 new analytics.formateurProfile keys.
+  - PollDialog: title + Question label + question placeholder + Option template + add-option button + Cancel + Publishing + Publish button labels wrapped → 8 new community.pollDialog keys (renamed from `poll` to avoid TS1117 collision).
+  - ReportDialog: title + moderation note + reason label + select-reason placeholder + 7 reason options + Cancel + Sending + Submit button labels wrapped → 13 new community.report keys.
+  - BookingCalendarPanel: title + 2 legend labels wrapped → 3 new guesthouse.bookingCalendar keys.
+  - CertificationPanel: title + 3 status labels + 3 status descriptions wrapped → 7 new guesthouse.certification keys.
+  - ListingsPanel: 21 strings wrapped (search bar + filter buttons + filter panel + error/empty states + how-it-works mini-section + property card labels + results footer) → 21 new guesthouse.listings keys.
+  - leases/[id]/page.tsx: 6 `any` occurrences replaced with proper interfaces (LeaseDetail, LeaseDocument, LeaseInventory, RentPayment, LeaseParty, LeaseProperty); SignatureStatus `signed` prop relaxed to optional to match new typing.
+  - PropertyGrid.tsx, FeaturedProperties.tsx, AdvancedFilterSidebar.tsx: verified already free of `any` casts (no changes needed).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 43s (82 routes), tests 179/179 passed, eslint 0 errors / 0 warnings.
