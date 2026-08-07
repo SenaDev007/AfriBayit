@@ -79,7 +79,7 @@ export function useInvestmentScore(propertyId: string | null) {
     queryKey: ['investment-score', propertyId],
     queryFn: () => api.get<{
       score: number;
-      breakdown: any;
+      breakdown: Record<string, unknown>;
       roi: RoiEstimate;
     }>(`/api/investment/score/${propertyId}`),
     enabled: !!propertyId,

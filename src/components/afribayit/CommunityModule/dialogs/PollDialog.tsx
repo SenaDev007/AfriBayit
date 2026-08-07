@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { BarChart3, X } from 'lucide-react';
 import type { PollFormState } from '../types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface PollDialogProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface PollDialogProps {
 }
 
 export default function PollDialog({ open, onClose, form, setForm, onSubmit, isPending }: PollDialogProps) {
+  const { t } = useTranslation();
   if (!open) return null;
   return (
     <motion.div
@@ -28,15 +30,15 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
         className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#D4AF37]" /> Créer un sondage</h3>
+        <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#D4AF37]" /> {t('community.pollDialog.title', 'Créer un sondage')}</h3>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1.5 block">Question</label>
+            <label className="text-xs font-medium text-gray-500 mb-1.5 block">{t('community.pollDialog.questionLabel', 'Question')}</label>
             <input
               type="text"
               value={form.question}
               onChange={e => setForm(p => ({ ...p, question: e.target.value }))}
-              placeholder="Posez votre question..."
+              placeholder={t('community.pollDialog.questionPlaceholder', 'Posez votre question...')}
               className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
             />
           </div>
@@ -51,7 +53,7 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
                   newOpts[i] = e.target.value;
                   setForm(p => ({ ...p, options: newOpts }));
                 }}
-                placeholder={`Option ${i + 1}`}
+                placeholder={`${t('community.pollDialog.optionLabel', 'Option')} ${i + 1}`}
                 className="flex-1 px-4 py-2.5 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
               />
               {i >= 2 && (
@@ -69,17 +71,17 @@ export default function PollDialog({ open, onClose, form, setForm, onSubmit, isP
               onClick={() => setForm(p => ({ ...p, options: [...p.options, ''] }))}
               className="w-full py-2 border-2 border-dashed rounded-2xl text-xs text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors"
             >
-              + Ajouter une option
+              + {t('community.pollDialog.addOption', 'Ajouter une option')}
             </button>
           )}
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">Annuler</button>
+            <button onClick={onClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">{t('community.pollDialog.cancel', 'Annuler')}</button>
             <button
               onClick={onSubmit}
               disabled={isPending}
               className="flex-1 py-3 bg-[#D4AF37] text-[#003087] rounded-lg text-sm font-bold disabled:opacity-50"
             >
-              {isPending ? 'Publication...' : 'Publier le sondage'}
+              {isPending ? t('community.pollDialog.publishing', 'Publication...') : t('community.pollDialog.publish', 'Publier le sondage')}
             </button>
           </div>
         </div>

@@ -14,6 +14,93 @@ import {
 } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 
+/**
+ * LeaseDocument — A signed contract PDF attached to a lease
+ * (e.g. the OHADA lease contract generated via /generate-contract).
+ */
+interface LeaseDocument {
+  id: string;
+  documentType: string;
+  url?: string;
+  ownerSigned?: boolean;
+  ownerSignedAt?: string | Date | null;
+  tenantSigned?: boolean;
+  tenantSignedAt?: string | Date | null;
+}
+
+/**
+ * LeaseInventory — An entry/exit inventory signed by both parties.
+ */
+interface LeaseInventory {
+  id: string;
+  type: 'in' | 'out';
+  conductedAt: string | Date;
+  tenantSigned?: boolean;
+  ownerSigned?: boolean;
+  items?: Array<{ room: string; condition: string; observations?: string }>;
+}
+
+/**
+ * RentPayment — A monthly rent payment record (CDC §7B.5).
+ */
+interface RentPayment {
+  id: string;
+  dueDate: string;
+  amountDue: number;
+  amountPaid?: number;
+  paidAt?: string | null;
+  releasedAt?: string | null;
+  status: string;
+  isInitial?: boolean;
+}
+
+/**
+ * LeaseParty — Owner or tenant party on a lease.
+ */
+interface LeaseParty {
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
+}
+
+/**
+ * LeaseProperty — Property info embedded in a lease detail response.
+ */
+interface LeaseProperty {
+  title?: string;
+  city?: string;
+  images?: string | string[] | null;
+}
+
+/**
+ * LeaseDetail — Shape of the /api/leases/:id response.
+ */
+interface LeaseDetail {
+  id: string;
+  leaseRef: string;
+  status: string;
+  country: string;
+  currency: string;
+  monthlyRent: number;
+  securityDeposit: number;
+  leaseTermMonths: number;
+  startDate: string;
+  endDate: string;
+  furnished?: boolean;
+  chargesIncluded?: boolean;
+  noticePeriodDays?: number;
+  tenantId?: string;
+  ownerId?: string;
+  owner?: LeaseParty;
+  tenant?: LeaseParty;
+  property?: LeaseProperty;
+  documents?: LeaseDocument[];
+  inventories?: LeaseInventory[];
+  rentPayments?: RentPayment[];
+}
+
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   DRAFT: { label: 'Brouillon', color: '#9ca3af' },
   PENDING_SIGNATURE: { label: 'En attente de signature', color: '#D4AF37' },
@@ -59,14 +146,14 @@ export default function LeaseDetailPage() {
   const [payingRentId, setPayingRentId] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('orange_money');
 
-  const lease = data;
+  const lease = data as LeaseDetail | undefined;
 
   const isTenant = useMemo(() => lease?.tenantId === user?.id, [lease, user]);
   const isOwner = useMemo(() => lease?.ownerId === user?.id, [lease, user]);
 
-  const contractDoc = lease?.documents?.find((d: any) => d.documentType === 'lease_contract');
-  const inventoryIn = lease?.inventories?.find((inv: any) => inv.type === 'in');
-  const inventoryOut = lease?.inventories?.find((inv: any) => inv.type === 'out');
+  const contractDoc = lease?.documents?.find((d) => d.documentType === 'lease_contract');
+  const inventoryIn = lease?.inventories?.find((inv) => inv.type === 'in');
+  const inventoryOut = lease?.inventories?.find((inv) => inv.type === 'out');
 
   const handleGenerate = useCallback(async () => {
     if (!leaseId) return;
@@ -475,7 +562,7 @@ function PartyCard({ label, name, email, phone, avatar, isMe }: { label: string;
   );
 }
 
-function SignatureStatus({ label, signed, signedAt, isMe }: { label: string; signed: boolean; signedAt: Date | null; isMe?: boolean }) {
+function SignatureStatus({ label, signed, signedAt, isMe }: { label: string; signed?: boolean; signedAt: Date | null; isMe?: boolean }) {
   return (
     <div className={`p-3 rounded-2xl border ${signed ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-gray-100'}`}>
       <div className="flex items-center gap-2 mb-1">
@@ -499,7 +586,7 @@ function InventoryRow({
   label, inventory, canCreate, onCreate, onSign, onRecordDamages,
 }: {
   label: string;
-  inventory?: any;
+  inventory?: LeaseInventory;
   canCreate: boolean;
   onCreate: () => void;
   onSign: (inventoryId: string) => void;
@@ -781,7 +868,7 @@ function RentPaymentsList({
   payments, isTenant, payingRentId, setPayingRentId,
   selectedPaymentMethod, setSelectedPaymentMethod, onPay, isPaying, currency,
 }: {
-  payments: any[];
+  payments: RentPayment[];
   isTenant: boolean;
   payingRentId: string | null;
   setPayingRentId: (v: string | null) => void;

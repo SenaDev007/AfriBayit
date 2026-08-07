@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, Space_Grotesk } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,24 +8,29 @@ import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
 import { LocaleProvider } from "@/lib/i18n/context";
 
+// Module 4 — Design System:
+//   - Cormorant Garamond → `--font-cormorant` (display/headings) — fixed bug
+//     where it was aliased to `--font-inter` (clobbered Inter).
+//   - DM Sans → `--font-dm-sans` (body, replaces Inter).
+//   - DM Mono → `--font-dm-mono` (mono/data, replaces Space Grotesk).
 const cormorant = Cormorant_Garamond({
-  variable: "--font-inter",
+  variable: "--font-cormorant",
   subsets: ["latin"],
   weight: ["300", "400", "600", "700"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -56,9 +61,10 @@ export const metadata: Metadata = {
     "terrain",
   ],
   authors: [{ name: "AfriBayit" }],
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/logo.png",
-    apple: "/icons/icon-192x192.svg",
+    apple: "/icons/apple-touch-icon.png",
   },
   openGraph: {
     title: "AfriBayit — La Plateforme Immobilière Africaine",
@@ -77,7 +83,7 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <head />
       <body
-        className={`${inter.variable} ${cormorant.variable} ${spaceGrotesk.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${dmSans.variable} ${cormorant.variable} ${dmMono.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

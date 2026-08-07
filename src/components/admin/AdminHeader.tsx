@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutAndClear } from '@/lib/signout';
 import {
   Search,
   Bell,
@@ -225,7 +226,7 @@ export default function AdminHeader({
             </button>
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button
-                onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                onClick={() => signOutAndClear({ callbackUrl: '/auth/login' })}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
               >
                 <LogOut className="w-4 h-4" />

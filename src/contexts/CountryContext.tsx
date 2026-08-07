@@ -15,9 +15,10 @@ const CountryContext = createContext<CountryContextValue>({
 });
 
 const STORAGE_KEY = 'afribayit_selected_country';
+const STORAGE_KEY_LEGACY = 'afribayit_country';
 const COOKIE_KEY = 'afribayit_country';
 
-const VALID_COUNTRIES: CountryCode[] = ['BJ', 'CI', 'BF', 'TG'];
+const VALID_COUNTRIES: CountryCode[] = ['BJ', 'CI', 'BF', 'TG', 'SN'];
 
 // Subdomain-to-country mapping (must match middleware.ts)
 const SUBDOMAIN_COUNTRY_MAP: Record<string, CountryCode> = {
@@ -136,12 +137,16 @@ function setCountryCookie(country: CountryCode): void {
 }
 
 /**
- * Set the country in localStorage for persistence.
+ * Set the country in localStorage (both keys for backward compat) so the
+ * api-client `getCountryCode()` and any legacy consumer can read it.
  */
 function setCountryStorage(country: CountryCode): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, country);
+    // Also write the legacy key so older api-client versions and the
+    // middleware-set cookie stay in sync.
+    localStorage.setItem(STORAGE_KEY_LEGACY, country);
   } catch {
     // localStorage may not be available
   }
@@ -151,7 +156,7 @@ function setCountryStorage(country: CountryCode): void {
 function useStoredCountry() {
   const subscribe = useCallback((callback: () => void) => {
     const handler = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) callback();
+      if (e.key === STORAGE_KEY || e.key === STORAGE_KEY_LEGACY) callback();
     };
     window.addEventListener('storage', handler);
     return () => window.removeEventListener('storage', handler);
@@ -187,7 +192,9 @@ export function CountryProvider({ children }: { children: React.ReactNode }) {
 
   const setSelectedCountry = useCallback((country: CountryCode) => {
     setSelectedCountryState(country);
-    // Persist to both cookie (for middleware) and localStorage (for client)
+    // Persist to both cookie (for middleware) and BOTH localStorage keys
+    // (current + legacy) so the api-client `getCountryCode()` resolves the
+    // user's selection reliably.
     setCountryCookie(country);
     setCountryStorage(country);
   }, []);

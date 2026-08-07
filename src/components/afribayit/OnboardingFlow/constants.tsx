@@ -1,18 +1,18 @@
 import {
-  BarChart3, Bell, Bot, Check, Coins, Globe, Hammer, HardHat, Home,
+  BarChart3, Bell, Bot, Building2, Check, Coins, Globe, Hammer, HardHat, Home,
   Lightbulb, Lock, Mail, Map, MessageCircle, Plane, Scale, Search,
   Smartphone, Store, Tag, TrendingUp, Umbrella, User,
 } from 'lucide-react';
 import type { StepDefinition } from './types';
 
 export const onboardingSteps: StepDefinition[] = [
-  { step: 1, title: 'Bienvenue', icon: <Home className="w-4 h-4" /> },
-  { step: 2, title: 'Profil', icon: <User className="w-4 h-4" /> },
-  { step: 3, title: 'Localisation', icon: <Globe className="w-4 h-4" /> },
-  { step: 4, title: 'Budget', icon: <Coins className="w-4 h-4" /> },
-  { step: 5, title: 'Alertes', icon: <Bell className="w-4 h-4" /> },
-  { step: 6, title: 'Découverte', icon: <Map className="w-4 h-4" /> },
-  { step: 7, title: 'Rebecca IA', icon: <Bot className="w-4 h-4" /> },
+  { step: 1, title: 'Bienvenue', titleKey: 'onboardingFlow.stepWelcome', icon: <Home className="w-4 h-4" /> },
+  { step: 2, title: 'Profil', titleKey: 'onboardingFlow.stepProfile', icon: <User className="w-4 h-4" /> },
+  { step: 3, title: 'Localisation', titleKey: 'onboardingFlow.stepLocation', icon: <Globe className="w-4 h-4" /> },
+  { step: 4, title: 'Budget', titleKey: 'onboardingFlow.stepBudget', icon: <Coins className="w-4 h-4" /> },
+  { step: 5, title: 'Alertes', titleKey: 'onboardingFlow.stepAlerts', icon: <Bell className="w-4 h-4" /> },
+  { step: 6, title: 'Découverte', titleKey: 'onboardingFlow.stepTour', icon: <Map className="w-4 h-4" /> },
+  { step: 7, title: 'Rebecca IA', titleKey: 'onboardingFlow.stepRebecca', icon: <Bot className="w-4 h-4" /> },
 ];
 
 // Profile types — CDC §4.2
@@ -22,6 +22,8 @@ export const profileTypes = [
   { value: 'investisseur', label: 'Investisseur', icon: <TrendingUp className="w-4 h-4" />, desc: 'Je cherche des opportunités d\'investissement', color: '#009CDE' },
   { value: 'touriste', label: 'Touriste', icon: <Plane className="w-4 h-4" />, desc: 'Je cherche un hébergement temporaire', color: '#00A651' },
   { value: 'artisan', label: 'Artisan', icon: <Hammer className="w-4 h-4" />, desc: 'Je suis artisan et propose mes services', color: '#2C2E2F' },
+  { value: 'agence', label: 'Agence immobilière', icon: <Building2 className="w-4 h-4" />, desc: 'Je suis une agence immobilière professionnelle', color: '#7c3aed' },
+  { value: 'guesthouse', label: 'Guesthouse', icon: <Store className="w-4 h-4" />, desc: 'Je gère une maison d\'hôtes / guesthouse', color: '#0d9488' },
 ];
 
 // Countries — AfriBayit pilot zone

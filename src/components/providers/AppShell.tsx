@@ -58,12 +58,23 @@ function AppShellInner({ children }: { children: ReactNode }) {
   // a hard refresh doesn't lose the token between the first paint and the
   // session resolving.
   useEffect(() => {
-    const sessionToken = (session as any)?.accessToken as string | undefined;
+    const sessionToken = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
     if (sessionToken) {
       setAccessToken(sessionToken);
+      // Also sync to httpOnly cookie via BFF route (CDC §10.1 — XSS-safe storage).
+      fetch('/api/auth/token', { method: 'GET' }).catch(() => {});
     } else if (sessionStatus === 'unauthenticated') {
-      // Session explicitly gone → drop any stale localStorage token.
       setAccessToken(null);
+    }
+  }, [session, sessionStatus]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sessionRefresh = (session as unknown as Record<string, unknown>)?.refreshToken as string | undefined;
+    if (sessionRefresh) {
+      localStorage.setItem('afribayit_refresh_token', sessionRefresh);
+    } else if (sessionStatus === 'unauthenticated') {
+      localStorage.removeItem('afribayit_refresh_token');
     }
   }, [session, sessionStatus]);
 

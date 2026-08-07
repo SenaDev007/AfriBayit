@@ -17,9 +17,11 @@ import {
   AlertTriangle, Award, BarChart3, Bot, Check, CheckCircle, Circle,
   ClipboardList, Coins, FileText, Home, Scale, User, PenTool,
   FileSignature, Archive, TrendingUp, Search, Filter, Zap,
-  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus, ArrowLeft, Star, Briefcase, MapPin, X
+  Lock, Shield, ArrowRight, FileCheck, Download, Eye, Plus, ArrowLeft, Star, Briefcase, MapPin, X,
+  Clock
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface NotaryUser {
   id: string;
@@ -60,37 +62,54 @@ interface EscrowAccount {
   buyer: string;
   amount: number;
   status: string;
+  // CDC §5.0bis.6 — Notarial 30-day legal timer fields.
+  // Used to compute daysRemaining for NOTARY_IN_PROGRESS escrow accounts.
+  notaryStartedAt?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
 }
 
+interface DeedGenerateResponse {
+  deedText?: string;
+  deed?: { content?: string };
+}
+
+interface AssignTransactionItem {
+  id: string;
+  property?: { title?: string } | string;
+  amount?: number;
+  status?: string;
+}
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // 6-step certification process per CDC §5.0bis
 const certificationSteps = [
-  { step: 1, title: 'Inscription', desc: 'Création du compte notaire sur AfriBayit', icon: ClipboardList },
-  { step: 2, title: 'Documents KYC', desc: 'Carte ANDF, diplôme, extrait casier judiciaire', icon: FileText },
-  { step: 3, title: 'Vérification IA', desc: 'Analyse automatique des documents et antécédents', icon: Bot },
-  { step: 4, title: 'Validation humaine', desc: 'Revue par un comité de notaires certifiés', icon: User },
-  { step: 5, title: 'Certification', desc: 'Badge Notaire Certifié AfriBayit délivré', icon: Award },
-  { step: 6, title: 'Activation', desc: 'Accès complet à l\'Espace Notaire, signature électronique et rédaction IA', icon: Shield },
+  { step: 1, title: 'Inscription', titleKey: 'notary.certStepInscription', desc: 'Création du compte notaire sur AfriBayit', descKey: 'notary.certStepInscriptionDesc', icon: ClipboardList },
+  { step: 2, title: 'Documents KYC', titleKey: 'notary.certStepKyc', desc: 'Carte ANDF, diplôme, extrait casier judiciaire', descKey: 'notary.certStepKycDesc', icon: FileText },
+  { step: 3, title: 'Vérification IA', titleKey: 'notary.certStepAi', desc: 'Analyse automatique des documents et antécédents', descKey: 'notary.certStepAiDesc', icon: Bot },
+  { step: 4, title: 'Validation humaine', titleKey: 'notary.certStepHuman', desc: 'Revue par un comité de notaires certifiés', descKey: 'notary.certStepHumanDesc', icon: User },
+  { step: 5, title: 'Certification', titleKey: 'notary.certStepCert', desc: 'Badge Notaire Certifié AfriBayit délivré', descKey: 'notary.certStepCertDesc', icon: Award },
+  { step: 6, title: 'Activation', titleKey: 'notary.certStepActivation', desc: 'Accès complet à l\'Espace Notaire, signature électronique et rédaction IA', descKey: 'notary.certStepActivationDesc', icon: Shield },
 ];
 
 // Escrow notary state machine
 const escrowNotaryStates = [
-  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', color: '#009CDE' },
-  { key: 'NOTARY_IN_PROGRESS', label: 'En cours notaire', color: '#D4AF37' },
-  { key: 'DEED_SIGNED', label: 'Acte signé', color: '#00A651' },
-  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', color: '#003087' },
+  { key: 'NOTARY_ASSIGNED', label: 'Notaire assigné', labelKey: 'notary.escrowAssigned', color: '#009CDE' },
+  { key: 'NOTARY_IN_PROGRESS', label: 'En cours notaire', labelKey: 'notary.escrowInProgress', color: '#D4AF37' },
+  { key: 'DEED_SIGNED', label: 'Acte signé', labelKey: 'notary.escrowDeedSigned', color: '#00A651' },
+  { key: 'ANDF_REGISTERED', label: 'ANDF enregistré', labelKey: 'notary.escrowAndf', color: '#003087' },
 ];
 
 // Subscription tiers
 const subscriptionTiers = [
-  { name: 'Standard', planType: 'notary_standard', price: 0, priceLabel: 'Gratuit', commission: '15%', features: ['5 missions/mois', 'Profil basique', 'Support email'] },
-  { name: 'Premium', planType: 'notary_premium', price: 25000, priceLabel: '25 000 FCFA/mois', commission: '12%', features: ['Missions illimitées', 'Profil avancé', 'Support prioritaire', 'Statistiques', 'Rédaction IA basique'] },
-  { name: 'Elite', planType: 'notary_elite', price: 50000, priceLabel: '50 000 FCFA/mois', commission: '10%', features: ['Tout Premium +', 'Mise en avant', 'API Access', 'Compte dédié', 'Rédaction IA avancée', 'Signature électronique'] },
+  { name: 'Standard', nameKey: 'notary.tierStandard', planType: 'notary_standard', price: 0, priceLabel: 'Gratuit', commission: '15%', features: ['5 missions/mois', 'Profil basique', 'Support email'] },
+  { name: 'Premium', nameKey: 'notary.tierPremium', planType: 'notary_premium', price: 25000, priceLabel: '25 000 FCFA/mois', commission: '12%', features: ['Missions illimitées', 'Profil avancé', 'Support prioritaire', 'Statistiques', 'Rédaction IA basique'] },
+  { name: 'Elite', nameKey: 'notary.tierElite', planType: 'notary_elite', price: 50000, priceLabel: '50 000 FCFA/mois', commission: '10%', features: ['Tout Premium +', 'Mise en avant', 'API Access', 'Compte dédié', 'Rédaction IA avancée', 'Signature électronique'] },
 ];
 
 // Filter options
@@ -138,6 +157,7 @@ function getEscrowStateLabel(status: string): string {
 }
 
 export default function NotaryModule({ onNavigate }: ModuleProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedZone, setSelectedZone] = useState('Toutes');
   const [selectedLevel, setSelectedLevel] = useState('Tous');
@@ -149,11 +169,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const [deedDraft, setDeedDraft] = useState('');
   const [deedGenerating, setDeedGenerating] = useState(false);
   const [signingDoc, setSigningDoc] = useState<string | null>(null);
-  const [archivedDocs, setArchivedDocs] = useState<Array<{ id: string; name: string; date: string; hash: string }>>([
-    { id: '1', name: 'Acte_Vente_Dossou_2025.pdf', date: '2025-12-10', hash: 'sha256:a3f8b2c1d4...' },
-    { id: '2', name: 'Convention_Koffi_Mensah.pdf', date: '2025-12-08', hash: 'sha256:b7c9d2e3f4...' },
-    { id: '3', name: 'Promesse_Vente_Agossa.pdf', date: '2025-11-28', hash: 'sha256:c1d3e5f7a9...' },
-  ]);
+  const [archivedDocs, setArchivedDocs] = useState<Array<{ id: string; name: string; date: string; hash: string }>>([]);
   const { selectedCountry } = useCountry();
   const { isAuthenticated } = useAuthStore();
   const [assigningNotaryId, setAssigningNotaryId] = useState<string | null>(null);
@@ -223,13 +239,52 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     return escrowAccounts.reduce((sum, e) => sum + Math.round(e.amount * 0.12), 0);
   }, [escrowAccounts]);
 
+  // CDC §5.0bis.6 — Notarial 30-day legal timer.
+  // For each escrow account in NOTARY_IN_PROGRESS, compute daysRemaining
+  // from notaryStartedAt || updatedAt || createdAt (in that order of preference).
+  // J ≤ 15  → green (on track)
+  // J > 15  → gold  (warning, approaching deadline)
+  // J > 25  → red   (critical, <5 days left)
+  // J > 30  → "DÉLAI DÉPASSÉ" (legal deadline exceeded — escalate)
+  const NOTARY_DEADLINE_DAYS = 30;
+  const notaryTimers = useMemo(() => {
+    return escrowAccounts
+      .filter(e => e.status === 'NOTARY_IN_PROGRESS')
+      .map(e => {
+        const rawTs = e.notaryStartedAt || e.updatedAt || e.createdAt;
+        let daysRemaining: number | null = null;
+        let startedAt: Date | null = null;
+        if (rawTs) {
+          const d = new Date(rawTs);
+          if (!isNaN(d.getTime())) {
+            startedAt = d;
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const elapsed = Math.floor((Date.now() - d.getTime()) / msPerDay);
+            daysRemaining = NOTARY_DEADLINE_DAYS - elapsed;
+          }
+        }
+        const isOverdue = daysRemaining !== null && daysRemaining < 0;
+        const severity =
+          daysRemaining === null
+            ? 'unknown'
+            : isOverdue
+              ? 'overdue'
+              : daysRemaining <= 5
+                ? 'critical' // J > 25 (≤ 5 days left)
+                : daysRemaining <= 15
+                  ? 'warning' // J > 15
+                  : 'ok';     // J ≤ 15
+        return { account: e, startedAt, daysRemaining, isOverdue, severity };
+      });
+  }, [escrowAccounts]);
+
   const formatFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
   const handleContactNotary = (notary: Notary) => {
     // CDC §5.0bis — Only registered users can contact notaries
     if (!isAuthenticated) {
-      toast.info('Connexion requise', {
-        description: 'Vous devez être connecté pour contacter un notaire.',
+      toast.info(t('notary.loginRequired', 'Connexion requise'), {
+        description: t('notary.loginContactDesc', 'Vous devez être connecté pour contacter un notaire.'),
       });
       window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
@@ -243,12 +298,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       },
       {
         onSuccess: () => {
-          toast.success('Conversation créée', { description: `Vous pouvez maintenant contacter ${notary.name}` });
+          toast.success(t('notary.conversationCreated', 'Conversation créée'), { description: t('notary.conversationCreatedDesc', `Vous pouvez maintenant contacter ${notary.name}`) });
           setContactingNotaryId(null);
           if (onNavigate) onNavigate('chat');
         },
         onError: (error: Error) => {
-          toast.error('Erreur lors de la création de la conversation', { description: error.message });
+          toast.error(t('notary.conversationError', 'Erreur lors de la création de la conversation'), { description: error.message });
           setContactingNotaryId(null);
         },
       }
@@ -258,8 +313,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
   const handleOpenDetail = (notary: Notary) => {
     // CDC §5.0bis — Only registered users can view full notary profiles
     if (!isAuthenticated) {
-      toast.info('Connexion requise', {
-        description: 'Vous devez être connecté pour voir le profil détaillé d\'un notaire et utiliser ses services.',
+      toast.info(t('notary.loginRequired', 'Connexion requise'), {
+        description: t('notary.loginProfileDesc', 'Vous devez être connecté pour voir le profil détaillé d\'un notaire et utiliser ses services.'),
       });
       window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
@@ -269,8 +324,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
   const handleAssignNotary = async (notary: Notary, transactionId: string) => {
     if (!isAuthenticated) {
-      toast.info('Connexion requise', {
-        description: 'Vous devez être connecté pour assigner un notaire à votre transaction.',
+      toast.info(t('notary.loginRequired', 'Connexion requise'), {
+        description: t('notary.loginAssignDesc', 'Vous devez être connecté pour assigner un notaire à votre transaction.'),
       });
       window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
@@ -278,13 +333,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     setAssigningNotaryId(notary.id);
     try {
       await apiPost(`/api/notaries/${notary.id}/assign`, { transactionId });
-      toast.success('Notaire assigné', {
-        description: `${notary.name} a été assigné à votre transaction. Le dossier a été transmis à son Espace Notaire.`,
+      toast.success(t('notary.notaryAssigned', 'Notaire assigné'), {
+        description: t('notary.notaryAssignedDesc', `${notary.name} a été assigné à votre transaction. Le dossier a été transmis à son Espace Notaire.`),
       });
       setShowAssignModal(null);
-    } catch (err) {
-      toast.error('Erreur', {
-        description: err instanceof Error ? err.message : 'Impossible d\'assigner le notaire.',
+    } catch (err: unknown) {
+      toast.error(t('common.error', 'Erreur'), {
+        description: err instanceof Error ? err.message : t('notary.assignError', 'Impossible d\'assigner le notaire.'),
       });
     } finally {
       setAssigningNotaryId(null);
@@ -295,8 +350,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     createSubscription.mutate(
       { planType: tier.planType, priceXof: tier.price, currency: 'XOF', autoRenew: true },
       {
-        onSuccess: () => toast.success('Abonnement activé', { description: `Plan ${tier.name} activé avec succès` }),
-        onError: (error: Error) => toast.error('Erreur lors de l\'activation', { description: error.message }),
+        onSuccess: () => toast.success(t('notary.subscriptionActivated', 'Abonnement activé'), { description: t('notary.subscriptionActivatedDesc', `Plan ${tier.name} activé avec succès`) }),
+        onError: (error: Error) => toast.error(t('notary.activationError', 'Erreur lors de l\'activation'), { description: error.message }),
       }
     );
   };
@@ -308,7 +363,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT) and the correct
       // backend route `/notaries/deeds/generate` (plural — the controller
       // is mounted at `notaries`, not `notary`).
-      const data = await apiFetch<any>('/notaries/deeds/generate', {
+      const data = await apiFetch<DeedGenerateResponse>('/notaries/deeds/generate', {
         method: 'POST',
         body: {
           transactionId: 'demo_property',
@@ -316,10 +371,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         },
       });
       setDeedDraft(data?.deedText || data?.deed?.content || 'ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés...\n\n[Projet généré par IA — À réviser par le notaire]');
-      toast.success('Projet d\'acte généré par IA');
+      toast.success(t('notary.deedGenerated', 'Projet d\'acte généré par IA'));
     } catch {
       setDeedDraft('ACTE DE VENTE IMMOBILIÈRE\n\nEntre les soussignés :\n- Le vendeur : M./Mme [NOM]\n- L\'acheteur : M./Mme [NOM]\n\nObjet : Villa 3 chambres, Cotonou\nMontant : 15 000 000 FCFA\n\n[Projet généré par IA — À réviser par le notaire]');
-      toast.success('Projet d\'acte généré (demo)');
+      toast.success(t('notary.deedGeneratedDemo', 'Projet d\'acte généré (demo)'));
     } finally {
       setDeedGenerating(false);
     }
@@ -332,16 +387,16 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       // Round 3 — Gap 24 fix: use `apiFetch` and the correct backend route
       // `/notaries/signatures/confirm`. The backend expects
       // `{ signatureId, signatureData }` (no `code` field).
-      await apiFetch<any>('/notaries/signatures/confirm', {
+      await apiFetch<Record<string, unknown>>('/notaries/signatures/confirm', {
         method: 'POST',
         body: {
           signatureId: docId,
           signatureData: 'esign-confirmed',
         },
       });
-      toast.success('Signature électronique appliquée');
+      toast.success(t('notary.esignApplied', 'Signature électronique appliquée'));
     } catch {
-      toast.success('Signature électronique appliquée (demo)');
+      toast.success(t('notary.esignAppliedDemo', 'Signature électronique appliquée (demo)'));
     } finally {
       setSigningDoc(null);
     }
@@ -367,7 +422,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retour à la liste
+            {t('notary.backToList', 'Retour à la liste')}
           </button>
 
           <motion.div
@@ -399,7 +454,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       </span>
                     )}
                   </div>
-                  <p className="text-[#D4AF37] font-semibold mb-1">Notaire Certifié</p>
+                  <p className="text-[#D4AF37] font-semibold mb-1">{t('notary.certifiedBadge', 'Notaire Certifié')}</p>
                   <p className="text-xs text-gray-400 font-mono mb-2">Licence: {detailNotary.license}</p>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
@@ -420,7 +475,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     )}
                     <span className={`flex items-center gap-1 ${detailNotary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
                       <Circle className={`w-3 h-3 ${detailNotary.available ? 'fill-[#00A651]' : 'fill-gray-300'}`} />
-                      {detailNotary.available ? 'Disponible' : 'Indisponible'}
+                      {detailNotary.available ? t('notary.available', 'Disponible') : t('notary.unavailable', 'Indisponible')}
                     </span>
                   </div>
                 </div>
@@ -433,7 +488,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   disabled={contactingNotaryId === detailNotary.id || createConversation.isPending}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {contactingNotaryId === detailNotary.id || createConversation.isPending ? 'Connexion...' : 'Contacter le notaire'}
+                  {contactingNotaryId === detailNotary.id || createConversation.isPending ? t('notary.contactingButton', 'Connexion...') : t('notary.contactButton', 'Contacter le notaire')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
@@ -441,7 +496,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors"
                 >
                   <Scale className="w-4 h-4" />
-                  Assigner à ma transaction
+                  {t('notary.assignToTransaction', 'Assigner à ma transaction')}
                 </button>
               </div>
               <p className="text-[10px] text-gray-400 mt-3 max-w-md">
@@ -456,7 +511,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
                 <h3 className="text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2">
                   <Scale className="w-4 h-4 text-[#003087]" />
-                  Spécialités
+                  {t('notary.specialitiesTitle', 'Spécialités')}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {detailNotary.specialities.map((s) => (
@@ -470,7 +525,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
             {/* Services offered */}
             <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
-              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">Services proposés</h3>
+              <h3 className="text-sm font-bold text-[#0a2a5e] mb-4">{t('notary.servicesOfferedTitle', 'Services proposés')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { name: 'Rédaction d\'actes', desc: 'Actes de vente, bail, donation, succession', icon: FileText },
@@ -498,21 +553,21 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {detailNotary.rating > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Star className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Note</p>
+                  <p className="text-xs text-gray-400">{t('notary.ratingLabel', 'Note')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{detailNotary.rating}/5</p>
                 </div>
               )}
               {detailNotary.missions > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <Briefcase className="w-5 h-5 text-[#003087] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Missions</p>
+                  <p className="text-xs text-gray-400">{t('notary.missionsLabel', 'Missions')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{detailNotary.missions}</p>
                 </div>
               )}
               {detailNotary.certifiedAt && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
                   <CheckCircle className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">Certifié</p>
+                  <p className="text-xs text-gray-400">{t('notary.certifiedLabel', 'Certifié')}</p>
                   <p className="text-sm font-bold text-[#0a2a5e]">{timeAgo(detailNotary.certifiedAt)}</p>
                 </div>
               )}
@@ -530,19 +585,19 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <Scale className="w-4 h-4" /> Notaire Certifié
+            <Scale className="w-4 h-4" /> {t('notary.headerBadge', 'Notaire Certifié')}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Espace <span className="text-[#003087]">Notarial</span>
+            {t('notary.headerTitle1', 'Espace')} <span className="text-[#003087]">{t('notary.headerTitleAccent', 'Notarial')}</span>
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Notaires certifiés, rédaction IA, signature électronique et gestion des actes immobiliers
+            {t('notary.headerSubtitle', 'Notaires certifiés, rédaction IA, signature électronique et gestion des actes immobiliers')}
           </p>
         </motion.div>
 
         {/* Country Filter */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500 font-medium">Pays:</span>
+          <span className="text-xs text-gray-500 font-medium">{t('notary.countryLabel', 'Pays:')}</span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
@@ -551,12 +606,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
         {/* Tabs - Extended with new tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {[
-            { key: 'notaries' as const, label: 'Répertoire Notaires', icon: <Scale className="w-4 h-4" /> },
-            { key: 'dashboard' as const, label: 'Tableau de bord', icon: <BarChart3 className="w-4 h-4" /> },
-            { key: 'certification' as const, label: 'Certification', icon: <Award className="w-4 h-4" /> },
-            { key: 'deeds' as const, label: 'Rédaction IA', icon: <Bot className="w-4 h-4" /> },
-            { key: 'esignature' as const, label: 'Signature e-', icon: <FileSignature className="w-4 h-4" /> },
-            { key: 'revenue' as const, label: 'Modèle revenus', icon: <Coins className="w-4 h-4" /> },
+            { key: 'notaries' as const, label: t('notary.tabDirectory', 'Répertoire Notaires'), icon: <Scale className="w-4 h-4" /> },
+            { key: 'dashboard' as const, label: t('notary.tabDashboard', 'Tableau de bord'), icon: <BarChart3 className="w-4 h-4" /> },
+            { key: 'certification' as const, label: t('notary.tabCertification', 'Certification'), icon: <Award className="w-4 h-4" /> },
+            { key: 'deeds' as const, label: t('notary.tabDeeds', 'Rédaction IA'), icon: <Bot className="w-4 h-4" /> },
+            { key: 'esignature' as const, label: t('notary.tabEsignature', 'Signature e-'), icon: <FileSignature className="w-4 h-4" /> },
+            { key: 'revenue' as const, label: t('notary.tabRevenue', 'Modèle revenus'), icon: <Coins className="w-4 h-4" /> },
           ].map(tab => (
             <button
               key={tab.key}
@@ -580,7 +635,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Rechercher un notaire..."
+                    placeholder={t('notary.searchPlaceholder', 'Rechercher un notaire...')}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20 bg-white"
@@ -591,21 +646,21 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   onChange={e => setSelectedZone(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
-                  {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? 'Toutes les zones' : z}</option>)}
+                  {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? t('notary.allZones', 'Toutes les zones') : z}</option>)}
                 </select>
                 <select
                   value={selectedLevel}
                   onChange={e => setSelectedLevel(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
-                  {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? 'Tous niveaux' : l}</option>)}
+                  {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? t('notary.allLevels', 'Tous niveaux') : l}</option>)}
                 </select>
                 <select
                   value={selectedSpeciality}
                   onChange={e => setSelectedSpeciality(e.target.value)}
                   className="px-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087]"
                 >
-                  <option value="Toutes">Toutes spécialités</option>
+                  <option value="Toutes">{t('notary.allSpecialities', 'Toutes spécialités')}</option>
                   {specialityOptions.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
@@ -621,7 +676,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {notariesError && (
                 <div className="text-center py-12">
                   <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600 font-semibold mb-1">Impossible de charger les notaires</p>
+                  <p className="text-gray-600 font-semibold mb-1">{t('notary.unableToLoad', 'Impossible de charger les notaires')}</p>
                   <p className="text-sm text-gray-400">{notariesError.message}</p>
                 </div>
               )}
@@ -630,8 +685,8 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {!notariesLoading && !notariesError && filteredNotaries.length === 0 && (
                 <div className="text-center py-12">
                   <Scale className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600 font-semibold mb-1">Aucun notaire trouvé</p>
-                  <p className="text-sm text-gray-400">Modifiez vos critères de recherche</p>
+                  <p className="text-gray-600 font-semibold mb-1">{t('notary.noNotaries', 'Aucun notaire trouvé')}</p>
+                  <p className="text-sm text-gray-400">{t('notary.modifySearch', 'Modifiez vos critères de recherche')}</p>
                 </div>
               )}
 
@@ -690,14 +745,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <div className="flex items-center justify-between pt-3 border-t">
                         <span className={`text-xs font-medium flex items-center gap-1 ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
                           <Circle className={`w-3 h-3 ${notary.available ? 'fill-[#00A651]' : 'fill-gray-300'}`} />
-                          {notary.available ? 'Disponible' : 'Indisponible'}
+                          {notary.available ? t('notary.available', 'Disponible') : t('notary.unavailable', 'Indisponible')}
                         </span>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleContactNotary(notary); }}
                           disabled={contactingNotaryId === notary.id || createConversation.isPending}
                           className="px-4 py-1.5 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {contactingNotaryId === notary.id ? '...' : 'Contacter'}
+                          {contactingNotaryId === notary.id ? '...' : t('notary.contactBtn', 'Contacter')}
                         </button>
                       </div>
                     </motion.div>
@@ -713,10 +768,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Transactions assignées', value: String(escrowAccounts.length), icon: <ClipboardList className="w-4 h-4" />, color: '#009CDE' },
-                  { label: 'Actes en cours', value: String(escrowAccounts.filter(e => e.status === 'NOTARY_IN_PROGRESS').length), icon: <FileText className="w-4 h-4" />, color: '#D4AF37' },
-                  { label: 'ANDF enregistrés', value: String(escrowAccounts.filter(e => e.status === 'ANDF_REGISTERED').length), icon: <CheckCircle className="w-4 h-4" />, color: '#00A651' },
-                  { label: 'Revenus ce mois', value: formatFCFA(computedRevenue), icon: <Coins className="w-4 h-4" />, color: '#003087' },
+                  { label: t('notary.statAssigned', 'Transactions assignées'), value: String(escrowAccounts.length), icon: <ClipboardList className="w-4 h-4" />, color: '#009CDE' },
+                  { label: t('notary.statInProgress', 'Actes en cours'), value: String(escrowAccounts.filter(e => e.status === 'NOTARY_IN_PROGRESS').length), icon: <FileText className="w-4 h-4" />, color: '#D4AF37' },
+                  { label: t('notary.statAndf', 'ANDF enregistrés'), value: String(escrowAccounts.filter(e => e.status === 'ANDF_REGISTERED').length), icon: <CheckCircle className="w-4 h-4" />, color: '#00A651' },
+                  { label: t('notary.statRevenue', 'Revenus ce mois'), value: formatFCFA(computedRevenue), icon: <Coins className="w-4 h-4" />, color: '#003087' },
                 ].map((stat, i) => (
                   <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, ease: easeOut }} className="bg-white rounded-2xl p-4 shadow-sm border">
                     <div className="flex items-center gap-2 mb-2">
@@ -728,9 +783,78 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 ))}
               </div>
 
+              {/* CDC §5.0bis.6 — 30-day notarial timer */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e] flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-[#003087]" />
+                    {t('notary.deadlineTitle', 'Délai notarial 30 jours')}
+                  </h3>
+                  <Badge variant="secondary" className="text-[10px] font-semibold">
+                    {notaryTimers.length} {t('notary.inProgress', 'en cours')}
+                  </Badge>
+                </div>
+                <p className="text-xs text-gray-500 mb-4">
+                  Compteur légal par transaction notariale en cours. À partir de la date de début notaire,
+                  un délai de <strong>30 jours</strong> s&apos;applique. Alertes: <span className="text-[#00A651] font-semibold">J≤15 (or)</span>,{' '}
+                  <span className="text-[#D4AF37] font-semibold">J&gt;15 (avertissement)</span>,{' '}
+                  <span className="text-[#D93025] font-semibold">J&gt;25 (critique)</span>,{' '}
+                  <span className="text-[#D93025] font-bold">J&gt;30 (délai dépassé)</span>.
+                </p>
+                {notaryTimers.length === 0 ? (
+                  <div className="text-center py-6">
+                    <CheckCircle className="w-8 h-8 text-[#00A651] mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">{t('notary.noActiveTransaction', 'Aucune transaction notariale en cours.')}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    {notaryTimers.map(({ account, startedAt, daysRemaining, isOverdue, severity }) => {
+                      const color =
+                        severity === 'overdue' ? '#D93025'
+                        : severity === 'critical' ? '#D93025'
+                        : severity === 'warning' ? '#D4AF37'
+                        : severity === 'ok' ? '#00A651'
+                        : '#6b7280';
+                      const label =
+                        isOverdue ? 'DÉLAI DÉPASSÉ'
+                        : daysRemaining === null ? 'Date de début manquante'
+                        : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} restant${daysRemaining > 1 ? 's' : ''}`;
+                      return (
+                        <div
+                          key={account.id}
+                          className={`flex items-center justify-between p-3 rounded-2xl border ${
+                            severity === 'overdue' || severity === 'critical'
+                              ? 'bg-[#D93025]/5 border-[#D93025]/20'
+                              : severity === 'warning'
+                                ? 'bg-[#D4AF37]/5 border-[#D4AF37]/20'
+                                : 'bg-gray-50 border-gray-100'
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-[#0a2a5e] truncate">{account.property || 'Transaction'}</p>
+                            <p className="text-[11px] text-gray-500">
+                              {account.buyer || '—'}
+                              {startedAt && (
+                                <span className="ml-2">· Début: {new Date(startedAt).toLocaleDateString('fr-FR')}</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ml-3">
+                            <Clock className="w-4 h-4" style={{ color }} />
+                            <span className="text-xs font-bold" style={{ color }}>
+                              {label}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* Escrow State Machine */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Cycle notarial Escrow</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('notary.escrowCycleTitle', 'Cycle notarial Escrow')}</h3>
                 <div className="flex items-start gap-2 overflow-x-auto pb-2">
                   {escrowNotaryStates.map((state, i) => (
                     <div key={state.key} className="flex items-start shrink-0">
@@ -742,7 +866,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                           {i === 3 && <Landmark className="w-5 h-5" style={{ color: state.color }} />}
                         </div>
                         <p className="text-[10px] font-medium mt-1 text-center w-24" style={{ color: state.color }}>
-                          {state.label}
+                          {state.labelKey ? t(state.labelKey, state.label) : state.label}
                         </p>
                         {/* Escrow release trigger */}
                         {state.key === 'DEED_SIGNED' && (
@@ -767,11 +891,11 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
               {/* Assigned Transactions */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Transactions assignées</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('notary.assignedTransactionsTitle', 'Transactions assignées')}</h3>
                 {escrowLoading ? (
                   <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}</div>
                 ) : escrowAccounts.length === 0 ? (
-                  <div className="text-center py-8"><p className="text-sm text-gray-400">Aucune transaction assignée</p></div>
+                  <div className="text-center py-8"><p className="text-sm text-gray-400">{t('notary.noAssignedTransaction', 'Aucune transaction assignée')}</p></div>
                 ) : (
                   <div className="space-y-3">
                     {escrowAccounts.map((txn) => (
@@ -796,36 +920,44 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-display text-lg font-bold text-[#0a2a5e] flex items-center gap-2">
-                    <Archive className="w-5 h-5 text-[#003087]" /> Archivage sécurisé
+                    <Archive className="w-5 h-5 text-[#003087]" /> {t('notary.secureArchiveTitle', 'Archivage sécurisé')}
                   </h3>
                   <Badge variant="secondary" className="text-[10px]">
                     <Lock className="w-3 h-3 mr-1" /> Chiffré
                   </Badge>
                 </div>
                 <div className="space-y-2">
-                  {archivedDocs.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <FileCheck className="w-4 h-4 text-[#003087]" />
-                        <div>
-                          <p className="text-sm font-medium text-[#0a2a5e]">{doc.name}</p>
-                          <p className="text-[10px] text-gray-400 font-mono">{doc.hash}</p>
+                  {archivedDocs.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Archive className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-400">{t('notary.noArchivedDoc', 'Aucun document archivé pour le moment.')}</p>
+                      <p className="text-[11px] text-gray-400 mt-1">Les actes finalisés apparaîtront ici une fois signés et scellés.</p>
+                    </div>
+                  ) : (
+                    archivedDocs.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <FileCheck className="w-4 h-4 text-[#003087]" />
+                          <div>
+                            <p className="text-sm font-medium text-[#0a2a5e]">{doc.name}</p>
+                            <p className="text-[10px] text-gray-400 font-mono">{doc.hash}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">{doc.date}</span>
+                          <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
+                            <Download className="w-3.5 h-3.5 text-gray-400" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-400">{doc.date}</span>
-                        <button className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
-                          <Download className="w-3.5 h-3.5 text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 
               {/* ANDF Registration Status */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Statut ANDF</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('notary.andfStatusTitle', 'Statut ANDF')}</h3>
                 <div className="space-y-3">
                   {andfStatusItems.map(item => (
                     <div key={item.label} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
@@ -844,7 +976,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
           {activeTab === 'certification' && (
             <motion.div key="certification" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="max-w-2xl mx-auto">
               <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">Processus de certification notaire — 6 étapes</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">{t('notary.certificationProcessTitle', 'Processus de certification notaire — 6 étapes')}</h3>
 
                 {/* Progress Stepper */}
                 <div className="flex items-center gap-1 mb-8">
@@ -861,7 +993,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                           <p className={`text-[9px] font-medium mt-1 text-center w-14 ${
                             i <= certStep ? 'text-[#003087]' : 'text-gray-400'
                           }`}>
-                            {s.title}
+                            {s.titleKey ? t(s.titleKey, s.title) : s.title}
                           </p>
                         </button>
                         {i < certificationSteps.length - 1 && (
@@ -887,9 +1019,9 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       {React.createElement(certificationSteps[certStep].icon, { className: 'w-6 h-6 text-[#003087]' })}
                       <div>
                         <h4 className="font-display text-base font-bold text-[#0a2a5e]">
-                          Étape {certificationSteps[certStep].step} : {certificationSteps[certStep].title}
+                          {t('notary.stepLabel', 'Étape')} {certificationSteps[certStep].step} : {certificationSteps[certStep].titleKey ? t(certificationSteps[certStep].titleKey, certificationSteps[certStep].title) : certificationSteps[certStep].title}
                         </h4>
-                        <p className="text-sm text-gray-500">{certificationSteps[certStep].desc}</p>
+                        <p className="text-sm text-gray-500">{certificationSteps[certStep].descKey ? t(certificationSteps[certStep].descKey, certificationSteps[certStep].desc) : certificationSteps[certStep].desc}</p>
                       </div>
                     </div>
                     {certStep === 1 && (
@@ -929,13 +1061,13 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     disabled={certStep === 0}
                     className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40"
                   >
-                    Précédent
+                    {t('notary.previousBtn', 'Précédent')}
                   </button>
                   <button
                     onClick={() => setCertStep(Math.min(certificationSteps.length - 1, certStep + 1))}
                     className="flex-1 px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
                   >
-                    {certStep === certificationSteps.length - 1 ? 'Terminer' : 'Étape suivante'}
+                    {certStep === certificationSteps.length - 1 ? t('notary.finishBtn', 'Terminer') : t('notary.nextStepBtn', 'Étape suivante')}
                   </button>
                 </div>
               </div>
@@ -951,7 +1083,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <Bot className="w-5 h-5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Rédaction d&apos;actes assistée par IA</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('notary.deedsTitle', 'Rédaction d\'actes assistée par IA')}</h3>
                     <p className="text-xs text-gray-500">Générez un projet d&apos;acte en quelques clics</p>
                   </div>
                 </div>
@@ -959,14 +1091,18 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 <div className="space-y-4">
                   {/* Deed type selector */}
                   <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-2 block">Type d&apos;acte</label>
+                    <label className="text-xs font-semibold text-gray-600 mb-2 block">{t('notary.deedType', 'Type d\'acte')}</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {['Acte de vente', 'Promesse de vente', 'Donation'].map((type, i) => (
-                        <button key={type} className={`p-3 rounded-xl border text-xs font-medium transition-all ${
+                      {[
+                        { label: t('notary.deedTypeSale', 'Acte de vente') },
+                        { label: t('notary.deedTypePromise', 'Promesse de vente') },
+                        { label: t('notary.deedTypeDonation', 'Donation') },
+                      ].map((type, i) => (
+                        <button key={type.label} className={`p-3 rounded-xl border text-xs font-medium transition-all ${
                           i === 0 ? 'border-[#003087] bg-[#003087]/5 text-[#003087]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
                         }`}>
                           <FileText className="w-4 h-4 mx-auto mb-1" />
-                          {type}
+                          {type.label}
                         </button>
                       ))}
                     </div>
@@ -975,18 +1111,18 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                   {/* Quick info */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] text-gray-500 mb-1 block">Vendeur</label>
-                      <input type="text" placeholder="Nom du vendeur" className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]" />
+                      <label className="text-[10px] text-gray-500 mb-1 block">{t('notary.deedSeller', 'Vendeur')}</label>
+                      <input type="text" placeholder={t('notary.deedSellerPlaceholder', 'Nom du vendeur')} className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]" />
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-500 mb-1 block">Acheteur</label>
-                      <input type="text" placeholder="Nom de l'acheteur" className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]" />
+                      <label className="text-[10px] text-gray-500 mb-1 block">{t('notary.deedBuyer', 'Acheteur')}</label>
+                      <input type="text" placeholder={t('notary.deedBuyerPlaceholder', 'Nom de l\'acheteur')} className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]" />
                     </div>
                   </div>
 
                   {/* Additional context */}
                   <div>
-                    <label className="text-[10px] text-gray-500 mb-1 block">Description / Instructions</label>
+                    <label className="text-[10px] text-gray-500 mb-1 block">{t('notary.deedDescription', 'Description / Instructions')}</label>
                     <textarea
                       value={deedDraft}
                       onChange={(e) => setDeedDraft(e.target.value)}
@@ -1003,14 +1139,14 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     className="w-full py-3 bg-[#D4AF37] text-white rounded-xl text-sm font-semibold hover:bg-[#c4a030] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {deedGenerating ? <Timer className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
-                    {deedGenerating ? 'Génération en cours...' : 'Générer le projet d\'acte'}
+                    {deedGenerating ? t('notary.generating', 'Génération en cours...') : t('notary.generateDeed', 'Générer le projet d\'acte')}
                   </button>
 
                   {/* Preview */}
                   {deedDraft && deedDraft.includes('ACTE') && (
                     <div className="p-4 bg-gray-50 rounded-xl border">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-600">Aperçu du projet</span>
+                        <span className="text-xs font-semibold text-gray-600">{t('notary.deedPreview', 'Aperçu du projet')}</span>
                         <div className="flex gap-1">
                           <button className="p-1 hover:bg-gray-200 rounded"><Eye className="w-3.5 h-3.5 text-gray-400" /></button>
                           <button className="p-1 hover:bg-gray-200 rounded"><Download className="w-3.5 h-3.5 text-gray-400" /></button>
@@ -1019,7 +1155,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                       <pre className="text-[10px] font-mono text-gray-600 whitespace-pre-wrap">{deedDraft}</pre>
                       <div className="mt-3 flex items-center gap-1 text-[9px] text-amber-600">
                         <AlertTriangle className="w-3 h-3" />
-                        Ce projet est généré par IA et doit être révisé par le notaire avant signature.
+                        {t('notary.deedReviewWarning', 'Ce projet est généré par IA et doit être révisé par le notaire avant signature.')}
                       </div>
                     </div>
                   )}
@@ -1037,7 +1173,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     <FileSignature className="w-5 h-5 text-[#00A651]" />
                   </div>
                   <div>
-                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Signature électronique</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('notary.esignatureTitle', 'Signature électronique')}</h3>
                     <p className="text-xs text-gray-500">Signez les actes en toute sécurité avec vérification OTP</p>
                   </div>
                 </div>
@@ -1072,7 +1208,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                             className="px-3 py-1.5 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] disabled:opacity-50 flex items-center gap-1"
                           >
                             {signingDoc === doc.id ? <Timer className="w-3 h-3 animate-spin" /> : <PenTool className="w-3 h-3" />}
-                            Signer
+                            {t('notary.signBtn', 'Signer')}
                           </button>
                         )}
                       </div>
@@ -1089,7 +1225,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               {/* Escrow Release Trigger */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
                 <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-[#00A651]" /> Déclencheur de libération Escrow
+                  <Zap className="w-5 h-5 text-[#00A651]" /> {t('notary.escrowReleaseTitle', 'Déclencheur de libération Escrow')}
                 </h3>
                 <div className="p-4 bg-[#00A651]/5 border border-[#00A651]/10 rounded-2xl">
                   <p className="text-sm font-semibold text-[#0a2a5e] mb-2">DEED_SIGNED → Libération automatique</p>
@@ -1144,11 +1280,11 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                     className={`bg-white rounded-xl p-6 shadow-sm border relative ${tier.name === 'Premium' ? 'ring-2 ring-[#D4AF37]' : ''}`}
                   >
                     {tier.name === 'Premium' && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Populaire</span>
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">{t('notary.popular', 'Populaire')}</span>
                     )}
-                    <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{tier.name}</h3>
+                    <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{tier.nameKey ? t(tier.nameKey, tier.name) : tier.name}</h3>
                     <p className="font-mono text-2xl font-bold text-[#D4AF37] mb-1">{tier.priceLabel}</p>
-                    <p className="text-xs text-gray-500 mb-4">Commission : <span className="font-bold text-[#0a2a5e]">{tier.commission}</span></p>
+                    <p className="text-xs text-gray-500 mb-4">{t('notary.commissionLabel', 'Commission :')} <span className="font-bold text-[#0a2a5e]">{tier.commission}</span></p>
                     <div className="space-y-2">
                       {tier.features.map(f => (
                         <div key={f} className="flex items-center gap-2 text-sm text-gray-600">
@@ -1165,7 +1301,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                         'bg-[#003087] text-white hover:bg-[#0047b3]'
                       }`}
                     >
-                      {createSubscription.isPending ? '...' : tier.name === 'Standard' ? 'Actuel' : 'Choisir'}
+                      {createSubscription.isPending ? '...' : tier.name === 'Standard' ? t('notary.currentPlan', 'Actuel') : t('notary.chooseBtn', 'Choisir')}
                     </button>
                   </motion.div>
                 ))}
@@ -1173,7 +1309,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
               {/* Revenue breakdown */}
               <div className="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Détail du modèle de revenus</h3>
+                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('notary.revenueDetailsTitle', 'Détail du modèle de revenus')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 bg-[#00A651]/5 rounded-2xl">
                     <p className="text-xs text-[#00A651] font-semibold mb-1">Commission par transaction</p>
@@ -1209,11 +1345,12 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 // ─── Assign Notary Modal ──────────────────────────────────────────────
 function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssigning }: {
   notary: Notary;
-  transactions: any[];
+  transactions: AssignTransactionItem[];
   onAssign: (transactionId: string) => void;
   onClose: () => void;
   isAssigning: boolean;
 }) {
+  const { t } = useTranslation();
   const [selectedTransaction, setSelectedTransaction] = useState<string>('');
 
   return (
@@ -1233,7 +1370,7 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
           <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
             <Scale className="w-5 h-5 text-[#D4AF37]" />
           </div>
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Assigner un notaire</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('notary.assignNotaryTitle', 'Assigner un notaire')}</h3>
         </div>
         <p className="text-sm text-gray-600 mb-4">
           Assignez <strong>{notary.name}</strong> à l&apos;une de vos transactions en cours.
@@ -1248,7 +1385,7 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
         ) : (
           <>
             <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
-              {transactions.map((tx: any) => (
+              {transactions.map((tx: AssignTransactionItem) => (
                 <button
                   key={tx.id}
                   onClick={() => setSelectedTransaction(tx.id)}
@@ -1259,7 +1396,7 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
                   }`}
                 >
                   <p className="text-sm font-semibold text-[#0a2a5e] truncate">
-                    {tx.property?.title || 'Transaction'}
+                    {(typeof tx.property === 'object' ? tx.property?.title : tx.property) || t('notary.transactionLabel', 'Transaction')}
                   </p>
                   <p className="text-xs text-gray-400">
                     {new Intl.NumberFormat('fr-FR').format(tx.amount || 0)} FCFA · {tx.status}
@@ -1272,14 +1409,14 @@ function AssignNotaryModal({ notary, transactions, onAssign, onClose, isAssignin
                 onClick={onClose}
                 className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold"
               >
-                Annuler
+                {t('notary.cancelBtn', 'Annuler')}
               </button>
               <button
                 onClick={() => selectedTransaction && onAssign(selectedTransaction)}
                 disabled={!selectedTransaction || isAssigning}
                 className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isAssigning ? 'Assignation...' : 'Assigner le notaire'}
+                {isAssigning ? t('notary.assigningBtn', 'Assignation...') : t('notary.assignBtn', 'Assigner le notaire')}
               </button>
             </div>
           </>

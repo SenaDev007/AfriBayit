@@ -22,8 +22,8 @@ export interface RegisterFormData {
   role: string;
 }
 
-export type ProviderAvailability = { google: boolean; facebook: boolean };
-export type OauthLoadingState = 'google' | 'facebook' | null;
+export type ProviderAvailability = { google: boolean; facebook: boolean; apple: boolean };
+export type OauthLoadingState = 'google' | 'facebook' | 'apple' | null;
 export type QuickAction = 'reply' | 'view' | 'validate' | 'dismiss';
 
 export interface ForgotPasswordState {

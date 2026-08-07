@@ -9,6 +9,13 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
+  // Limit webpack/jest-worker parallelism during `next build` — the
+  // build runs in a 4 GiB cgroup and the default multi-worker mode
+  // triggers the kernel OOM killer. One worker is slower but completes.
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   serverExternalPackages: ['lightningcss', '@tailwindcss/node', '@tailwindcss/postcss'],
   images: {
     remotePatterns: [
@@ -28,11 +35,14 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://widget.fedapay.com",
+              // CDC §10.1 — removed 'unsafe-eval' (was defeating CSP XSS protection).
+              // Next.js 16 doesn't need it for production builds.
+              "script-src 'self' 'unsafe-inline' https://js.stripe.com https://widget.fedapay.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https: https://*.mapbox.com",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.railway.app https://*.up.railway.app wss://*.pusher.com https://*.pusher.com",
+              // Added: Sentry ingestion, Mapbox tiles, Fixer.io FX rates
+              "connect-src 'self' https://*.railway.app https://*.up.railway.app wss://*.pusher.com https://*.pusher.com https://*.sentry.io https://*.mapbox.com https://api.apilayer.com",
               "frame-src 'self' https://js.stripe.com https://widget.fedapay.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -55,7 +65,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry (frontend only)
+// Sentry (frontend only) — require() is the standard pattern for Next.js config
+// files since next.config.ts runs in Node CJS context before ESM is available.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { withSentryConfig } = require('@sentry/nextjs');
 const sentryEnabled = !!process.env.NEXT_PUBLIC_SENTRY_DSN;
 const finalConfig = sentryEnabled

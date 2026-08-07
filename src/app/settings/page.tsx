@@ -128,11 +128,8 @@ export default function SettingsPage() {
   // Fetch user profile
   const fetchProfile = useCallback(async () => {
     try {
-      // Round 3 — Gap 24 fix: use `apiFetch` and the correct backend
-      // route `/users/me` (no `/api/user/me` — the NestJS backend mounts
-      // the users controller at `users`).
-      const data = await apiFetch<any>('/users/me');
-      const user = data?.user || data;
+      const data = await apiFetch<{ user?: UserProfile } & Partial<UserProfile>>('/users/me');
+      const user = (data?.user ?? data) as UserProfile;
       setProfile(user);
       setFormName(user.name || '');
       setFormBio(user.bio || '');
@@ -164,7 +161,7 @@ export default function SettingsPage() {
     try {
       // Round 3 — Gap 24 fix: PATCH /users/me on the backend (no
       // `/api/user/update-profile` route exists).
-      const data = await apiFetch<any>('/users/me', {
+      const data = await apiFetch<{ user?: UserProfile } & Partial<UserProfile>>('/users/me', {
         method: 'PATCH',
         body: {
           name: formName,
@@ -174,13 +171,13 @@ export default function SettingsPage() {
           country: formCountry,
         },
       });
-      const user = data?.user || data;
+      const user = (data?.user ?? data) as UserProfile;
       setProfile(user);
       toast({ title: 'Succès', description: 'Profil mis à jour' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Erreur lors de la sauvegarde',
+        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
         variant: 'destructive',
       });
     } finally {
@@ -193,20 +190,20 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       // Round 3 — Gap 24 fix: PATCH /users/me.
-      const data = await apiFetch<any>('/users/me', {
+      const data = await apiFetch<{ user?: UserProfile } & Partial<UserProfile>>('/users/me', {
         method: 'PATCH',
         body: {
           preferredLanguage: formLanguage,
           currency: formCurrency,
         },
       });
-      const user = data?.user || data;
+      const user = (data?.user ?? data) as UserProfile;
       setProfile(user);
       toast({ title: 'Succès', description: 'Préférences mises à jour' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Erreur lors de la sauvegarde',
+        description: err instanceof Error ? err.message : 'Erreur lors de la sauvegarde',
         variant: 'destructive',
       });
     } finally {
@@ -220,16 +217,16 @@ export default function SettingsPage() {
     try {
       // Round 3 — Gap 24 fix: the backend exposes `POST /auth/otp/send`
       // which takes `{ identifier }` (an email or phone) and sends a code.
-      await apiFetch<any>('/auth/otp/send', {
+      await apiFetch<{ success: boolean; message?: string }>('/auth/otp/send', {
         method: 'POST',
         body: { identifier: profile?.email || '' },
       });
       setEmailOtpSent(true);
       toast({ title: 'Code envoyé', description: 'Vérifiez votre boîte mail' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Erreur lors de l\'envoi',
+        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
         variant: 'destructive',
       });
     } finally {
@@ -243,7 +240,7 @@ export default function SettingsPage() {
     try {
       // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/verify`
       // with `{ identifier, code }`.
-      await apiFetch<any>('/auth/otp/verify', {
+      await apiFetch<{ success: boolean; valid?: boolean; message?: string }>('/auth/otp/verify', {
         method: 'POST',
         body: { identifier: profile?.email, code: emailOtpCode },
       });
@@ -251,10 +248,10 @@ export default function SettingsPage() {
       setEmailOtpSent(false);
       setEmailOtpCode('');
       toast({ title: 'Succès', description: 'Email vérifié avec succès' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Code invalide',
+        description: err instanceof Error ? err.message : 'Code invalide',
         variant: 'destructive',
       });
     } finally {
@@ -271,16 +268,16 @@ export default function SettingsPage() {
     setSendingPhoneOtp(true);
     try {
       // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/send`.
-      await apiFetch<any>('/auth/otp/send', {
+      await apiFetch<{ success: boolean; message?: string }>('/auth/otp/send', {
         method: 'POST',
         body: { identifier: formPhone },
       });
       setPhoneOtpSent(true);
       toast({ title: 'Code envoyé', description: 'Vérifiez votre téléphone' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Erreur lors de l\'envoi',
+        description: err instanceof Error ? err.message : 'Erreur lors de l\'envoi',
         variant: 'destructive',
       });
     } finally {
@@ -293,7 +290,7 @@ export default function SettingsPage() {
     setVerifyingPhone(true);
     try {
       // Round 3 — Gap 24 fix: backend exposes `POST /auth/otp/verify`.
-      await apiFetch<any>('/auth/otp/verify', {
+      await apiFetch<{ success: boolean; valid?: boolean; message?: string }>('/auth/otp/verify', {
         method: 'POST',
         body: { identifier: formPhone, code: phoneOtpCode },
       });
@@ -301,10 +298,10 @@ export default function SettingsPage() {
       setPhoneOtpSent(false);
       setPhoneOtpCode('');
       toast({ title: 'Succès', description: 'Téléphone vérifié avec succès' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
-        description: err?.message || 'Code invalide',
+        description: err instanceof Error ? err.message : 'Code invalide',
         variant: 'destructive',
       });
     } finally {
@@ -327,7 +324,7 @@ export default function SettingsPage() {
       // the backend (with password verification) and re-enable.
       // For now we just sign the user out client-side.
       throw new Error('La suppression de compte n\'est pas encore disponible via l\'API. Contactez le support.');
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erreur',
         description: err instanceof Error ? err.message : 'Erreur lors de la suppression',

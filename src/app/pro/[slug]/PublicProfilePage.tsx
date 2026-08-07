@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
+import { api, ApiError } from '@/lib/api-client';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { AlertTriangle, Award, BarChart3, Camera, Circle, Coins, GraduationCap, MessageCircle, User } from 'lucide-react';
 import { geoServiceLabel } from '@/lib/constants';
 
 interface ProfileData {
   profile: {
+    userId: string;
     slug: string;
     headline: string | null;
     bio: string | null;
@@ -60,19 +62,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('about');
+  const [isContacting, setIsContacting] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/pro/${slug}`);
-        if (!res.ok) {
-          throw new Error('Profil introuvable.');
-        }
-        const data = await res.json();
+        // Module 2: use `api.get` (carries JWT + country) instead of raw fetch.
+        const data = await api.get<ProfileData>(`/api/pro/${slug}`);
         setProfileData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur de chargement.');
+        setError(err instanceof Error ? err.message : 'Profil introuvable.');
       } finally {
         setIsLoading(false);
       }
@@ -83,8 +83,48 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
     }
   }, [slug]);
 
-  const handleContact = () => {
-    toast({ title: 'Conversation créée', description: 'Vous pouvez maintenant contacter ce professionnel.' });
+  const handleContact = async () => {
+    if (!profileData) return;
+    const targetUserId = profileData.profile.userId || profileData.user.id;
+    if (!targetUserId) {
+      toast({
+        title: 'Impossible de contacter',
+        description: 'Identifiant du professionnel introuvable.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsContacting(true);
+    try {
+      const title = `Conversation avec ${profileData.user.name}`;
+      await api.post('/chat/conversations', {
+        participantIds: [targetUserId],
+        type: 'professional',
+        title,
+      });
+      toast({
+        title: 'Conversation créée',
+        description: 'Vous pouvez maintenant contacter ce professionnel.',
+      });
+      // Let the UI know a new conversation is available so the messaging
+      // module can refresh its list.
+      window.dispatchEvent(new CustomEvent('afribayit:conversation-created'));
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : 'Erreur lors de la création de la conversation.';
+      toast({
+        title: 'Erreur',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsContacting(false);
+    }
   };
 
   const handleShare = async () => {
@@ -193,9 +233,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ slug: 
             <div className="flex gap-2">
               <button
                 onClick={handleContact}
-                className="px-5 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                disabled={isContacting}
+                className="px-5 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Contacter
+                {isContacting ? 'Création…' : 'Contacter'}
               </button>
               <button
                 onClick={handleShare}

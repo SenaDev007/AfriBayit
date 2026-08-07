@@ -2,11 +2,34 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiPost } from '@/lib/api-client';
 
 interface VoiceSearchButtonProps {
   onTranscript: (text: string) => void;
   currentQuery?: string;
+  /**
+   * Spoken language for recognition. Per CDC §X the UI exposes 4 West-African
+   * languages, but the Web Speech API in browsers does not yet ship models for
+   * fon/dyu/moor — we fall back to `fr-FR` for all of them (same behavior as
+   * before, but now pluggable for future SpeechRecognition model upgrades).
+   * The selected language is also forwarded to the backend `/search/voice-search`
+   * route so Whisper can pick the correct acoustic model server-side.
+   */
+  language?: 'fr' | 'fon' | 'dyu' | 'moor';
 }
+
+/**
+ * Map AfriBayit UI languages to BCP-47 codes accepted by the Web Speech API.
+ * All four West-African languages fall back to `fr-FR` until native models
+ * ship in browsers; the backend Whisper fallback receives the original
+ * language code so it can use a specialized acoustic model.
+ */
+const SPEECH_LANG_MAP: Record<NonNullable<VoiceSearchButtonProps['language']>, string> = {
+  fr: 'fr-FR',
+  fon: 'fr-FR',
+  dyu: 'fr-FR',
+  moor: 'fr-FR',
+};
 
 // Types for the Web Speech API
 interface SpeechRecognitionEvent {
@@ -35,7 +58,7 @@ interface SpeechRecognitionInstance {
 
 type VoiceState = 'idle' | 'listening' | 'processing' | 'error' | 'unsupported';
 
-export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: VoiceSearchButtonProps) {
+export default function VoiceSearchButton({ onTranscript, currentQuery = '', language = 'fr' }: VoiceSearchButtonProps) {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
@@ -43,6 +66,10 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
   const audioChunksRef = useRef<Blob[]>([]);
   const showUnsupportedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Resolve the BCP-47 locale once per render — drives recognition.lang
+  // and is forwarded to the backend Whisper endpoint.
+  const speechLang = SPEECH_LANG_MAP[language] || 'fr-FR';
 
   // Check if Web Speech API is supported
   const isSpeechRecognitionSupported = useCallback(() => {
@@ -89,18 +116,16 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
 
           try {
             setVoiceState('processing');
-            const response = await fetch('/api/voice-search', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ audio: base64Audio }),
+            // Route through apiPost so the call hits the NestJS backend
+            // `/search/voice-search` route (with JWT + country headers).
+            // The selected `language` is forwarded so Whisper can select the
+            // correct acoustic model server-side.
+            const data = await apiPost<{ text?: string }>('/search/voice-search', {
+              audio: base64Audio,
+              language,
             });
 
-            if (!response.ok) {
-              throw new Error('Erreur du service de transcription');
-            }
-
-            const data = await response.json();
-            if (data.text && data.text.trim()) {
+            if (data?.text && data.text.trim()) {
               const combinedText = currentQuery
                 ? `${currentQuery} ${data.text.trim()}`
                 : data.text.trim();
@@ -129,7 +154,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
       setVoiceState('error');
       setErrorMessage('Accès au microphone refusé');
     }
-  }, [currentQuery, onTranscript]);
+  }, [currentQuery, onTranscript, language]);
 
   const stopWhisperFallback = useCallback(() => {
     if (autoStopTimerRef.current) {
@@ -157,7 +182,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
     ) as new () => SpeechRecognitionInstance;
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'fr-FR';
+    recognition.lang = speechLang;
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
@@ -228,7 +253,7 @@ export default function VoiceSearchButton({ onTranscript, currentQuery = '' }: V
       // If start fails, fallback to Whisper
       startWhisperFallback();
     }
-  }, [isSpeechRecognitionSupported, currentQuery, onTranscript, startWhisperFallback]);
+  }, [isSpeechRecognitionSupported, currentQuery, onTranscript, startWhisperFallback, speechLang]);
 
   // Stop listening
   const stopListening = useCallback(() => {

@@ -50,37 +50,22 @@ interface Appointment {
   status: 'upcoming' | 'completed' | 'cancelled';
 }
 
-//  Demo Data 
-const DEMO_TRANSACTIONS: Transaction[] = [
-  { id: 'txn-001', propertyTitle: 'Villa 4ch Cotonou', buyer: 'Adama Diallo', seller: 'Kofi Mensah', amount: 35000000, status: 'NOTARY_ASSIGNED', country: 'BJ', createdAt: '2025-01-15' },
-  { id: 'txn-002', propertyTitle: 'Terrain Akpakpa', buyer: 'Fatou Ouédraogo', seller: 'Yao Koffi', amount: 12000000, status: 'NOTARY_IN_PROGRESS', country: 'BJ', createdAt: '2025-01-10' },
-  { id: 'txn-003', propertyTitle: 'Appartement Abidjan', buyer: 'Jean Brou', seller: 'Marie Koné', amount: 28000000, status: 'DEED_SIGNED', country: 'CI', createdAt: '2025-01-08' },
-  { id: 'txn-004', propertyTitle: 'Commerce Ouaga', buyer: 'Pascal Zoungrana', seller: 'Aline Traoré', amount: 45000000, status: 'NOTARY_ASSIGNED', country: 'BF', createdAt: '2025-01-05' },
-  { id: 'txn-005', propertyTitle: 'Villa Lomé', buyer: 'Essivi Agbo', seller: 'Kodjo Amegee', amount: 22000000, status: 'FUNDED', country: 'TG', createdAt: '2025-01-03' },
-];
+// Data — Demo/fake arrays removed per CDC compliance audit (Task ID 8-13).
+// These were 5 hardcoded DEMO_* arrays with fake names/transactions.
+// They are now empty arrays so the notary dashboard renders real DB-backed
+// data only (fetched via apiFetch). Types are kept so the rest of the
+// component continues to type-check.
+const DEMO_TRANSACTIONS: Transaction[] = [];
 
-const DEMO_DEEDS: DeedDraft[] = [
-  { id: 'deed-001', title: 'Acte de Vente (TF)', templateId: 'BJ-ACTE-VENTE-TF', country: 'BJ', deedType: 'acte_vente_tf', sections: [{ id: 's1', title: 'En-tête', content: 'RÉPUBLIQUE DU BÉNIN...' }, { id: 's2', title: 'Parties', content: 'LE VENDEUR : Kofi Mensah...' }], status: 'draft', generatedAt: '2025-01-15' },
-  { id: 'deed-002', title: 'Contrat de Bail', templateId: 'BJ-BAIL', country: 'BJ', deedType: 'bail', sections: [{ id: 's1', title: 'En-tête', content: 'CONTRAT DE BAIL...' }], status: 'review', generatedAt: '2025-01-12' },
-  { id: 'deed-003', title: 'Acte de Vente (ACD)', templateId: 'CI-ACTE-VENTE-ACD', country: 'CI', deedType: 'acte_vente_acd', sections: [{ id: 's1', title: 'En-tête', content: 'RÉPUBLIQUE DE CÔTE D\'IVOIRE...' }], status: 'pending_signature', generatedAt: '2025-01-10' },
-];
+const DEMO_DEEDS: DeedDraft[] = [];
 
-const DEMO_SIGNATURES: SignatureItem[] = [
-  { id: 'sig-001', documentTitle: 'Acte de Vente - Villa Cotonou', signers: [{ name: 'Kofi Mensah', role: 'Vendeur', status: 'signed' }, { name: 'Adama Diallo', role: 'Acquéreur', status: 'pending' }, { name: 'Me. Ako', role: 'Notaire', status: 'pending' }], status: 'in_progress', createdAt: '2025-01-15' },
-  { id: 'sig-002', documentTitle: 'Contrat de Bail - Appartement', signers: [{ name: 'Yao Koffi', role: 'Bailleur', status: 'signed' }, { name: 'Fatou Ouédraogo', role: 'Preneur', status: 'signed' }], status: 'completed', createdAt: '2025-01-10' },
-];
+const DEMO_SIGNATURES: SignatureItem[] = [];
 
-const DEMO_APPOINTMENTS: Appointment[] = [
-  { id: 'apt-001', title: 'Signature acte de vente', date: '2025-02-05', time: '10:00', type: 'signing', client: 'Adama Diallo', status: 'upcoming' },
-  { id: 'apt-002', title: 'Visite terrain Akpakpa', date: '2025-02-06', time: '14:00', type: 'visit', client: 'Fatou Ouédraogo', status: 'upcoming' },
-  { id: 'apt-003', title: 'Consultation succession', date: '2025-02-07', time: '09:00', type: 'consultation', client: 'Jean Brou', status: 'upcoming' },
-];
+const DEMO_APPOINTMENTS: Appointment[] = [];
 
 const DEMO_CONVENTIONS = [
-  { id: 'conv-001', transactionId: 'txn-001', type: 'Convention de séquestre', status: 'signed', signers: 2, signedCount: 2 },
-  { id: 'conv-002', transactionId: 'txn-002', type: 'Convention notariale', status: 'in_progress', signers: 3, signedCount: 1 },
-  { id: 'conv-003', transactionId: 'txn-004', type: 'Convention de mandat', status: 'pending', signers: 2, signedCount: 0 },
-];
+  { id: '', transactionId: '', type: '', status: '', signers: 0, signedCount: 0 },
+].filter(() => false); // typed empty array (preserves element shape for TS)
 
 const TABS = [
   { key: 'dashboard', label: 'Tableau de bord', icon: <BarChart3 className="w-4 h-4" /> },

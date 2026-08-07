@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Bus, Car, CloudRain, Droplets, Globe, Home, Plane, Route, Store, Sun, Thermometer, Wind } from 'lucide-react';
-import { apiFetch } from '@/lib/api-client';
+import { api } from '@/lib/api-client';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -34,11 +34,11 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
   const fetchAnalysis = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/properties/neighborhood?lat=${lat}&lng=${lng}&city=${encodeURIComponent(city)}`);
-      if (res.ok) {
-        const result = await res.json();
-        setData(result);
-      }
+      // Module 2: use `api.get` (carries JWT + X-Country-Code).
+      const result = await api.get<NeighborhoodData>(
+        `/api/properties/neighborhood?lat=${lat}&lng=${lng}&city=${encodeURIComponent(city)}`,
+      );
+      setData(result);
     } catch {
       // Use fallback data
       setData({
@@ -62,10 +62,12 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
     if (!selectedDate || !selectedTime || !propertyId) return;
     try {
       const scheduledAt = new Date(`${selectedDate}T${selectedTime}`).toISOString();
-      await fetch('/api/properties/appointments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ propertyId, agentId, clientId: 'current-user', type: 'visit', scheduledAt }),
+      await api.post('/api/properties/appointments', {
+        propertyId,
+        agentId,
+        clientId: 'current-user',
+        type: 'visit',
+        scheduledAt,
       });
       alert('Visite planifiée avec succès !');
       setShowSchedule(false);

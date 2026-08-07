@@ -1,8 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { Locale } from './index';
-import { getTranslations } from './index';
+import { getTranslations, LOCALES } from './index';
 import type { Translations } from './locales/fr';
 
 // ============ Context ============
@@ -17,12 +17,14 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue>({
   locale: 'fr',
   setLocale: () => {},
-  t: getTranslations('fr') as any,
+  t: getTranslations('fr') as unknown as Translations,
   translate: (key: string) => key,
 });
 
 const LOCALE_STORAGE_KEY = 'afribayit_locale';
-const VALID_LOCALES: Locale[] = ['fr', 'en'];
+// Module 3: all 9 locales are now valid — fr, en, ar (RTL), sw, ha, wo, am,
+// ln, fon.
+const VALID_LOCALES: Locale[] = ['fr', 'en', 'ar', 'sw', 'ha', 'wo', 'am', 'ln', 'fon'];
 
 // ============ Provider ============
 
@@ -61,7 +63,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   // Use initLocale once mounted
   const effectiveLocale = mounted ? locale : initLocale;
 
-  const t = getTranslations(effectiveLocale) as any;
+  const t = getTranslations(effectiveLocale) as unknown as Translations;
 
   const translate = useCallback((key: string): string => {
     const keys = key.split('.');
@@ -84,6 +86,17 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
     setMounted(true);
   }, []);
+
+  // Module 3: keep <html lang> + dir attributes in sync with the active
+  // locale. Arabic (and any future RTL locale in LOCALES) sets `dir=rtl`.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const meta = LOCALES[effectiveLocale];
+    if (meta) {
+      document.documentElement.lang = effectiveLocale;
+      document.documentElement.dir = meta.rtl ? 'rtl' : 'ltr';
+    }
+  }, [effectiveLocale]);
 
   return (
     <LocaleContext.Provider value={{ locale: effectiveLocale, setLocale, t, translate }}>

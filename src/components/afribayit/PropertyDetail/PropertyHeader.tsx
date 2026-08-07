@@ -49,7 +49,7 @@ export default function PropertyHeader({
       >
         <div className="flex items-center gap-2 mb-2">
           {premium && (
-            <span className="px-2.5 py-0.5 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">Premium</span>
+            <span className="px-2.5 py-0.5 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">{t('propertyDetail.header.premium', 'Premium')}</span>
           )}
           {avgRating && (
             <span className="flex items-center gap-1 px-2.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full">
@@ -117,7 +117,7 @@ export default function PropertyHeader({
           </div>
           <div>
             <span className="text-lg font-bold text-[#0a2a5e]">{views}</span>
-            <span className="text-xs text-gray-500 ml-1">Vues</span>
+            <span className="text-xs text-gray-500 ml-1">{t('propertyDetail.header.views', 'Vues')}</span>
           </div>
         </div>
         {(favorites ?? 0) > 0 && (
@@ -127,7 +127,7 @@ export default function PropertyHeader({
             </div>
             <div>
               <span className="text-lg font-bold text-[#0a2a5e]">{favorites}</span>
-              <span className="text-xs text-gray-500 ml-1">Favoris</span>
+              <span className="text-xs text-gray-500 ml-1">{t('propertyDetail.header.favorites', 'Favoris')}</span>
             </div>
           </div>
         )}

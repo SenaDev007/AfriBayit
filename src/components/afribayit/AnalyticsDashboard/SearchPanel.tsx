@@ -3,20 +3,22 @@
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import type { SearchAppearanceRow } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface SearchPanelProps {
   searchAppearances: SearchAppearanceRow[];
 }
 
 export default function SearchPanel({ searchAppearances }: SearchPanelProps) {
+  const { t } = useTranslation();
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Search className="w-5 h-5 text-[#009CDE]" /> Apparitions en recherche</h3>
-        <p className="text-sm text-gray-500 mb-4">Mots-clés par lesquels vos biens apparaissent dans les résultats de recherche.</p>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Search className="w-5 h-5 text-[#009CDE]" /> {t('analytics.searchPanel.title', 'Apparitions en recherche')}</h3>
+        <p className="text-sm text-gray-500 mb-4">{t('analytics.searchPanel.subtitle', 'Mots-clés par lesquels vos biens apparaissent dans les résultats de recherche.')}</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">Mot-clé</th><th className="text-right py-2 text-gray-500 font-medium">Apparitions</th><th className="text-right py-2 text-gray-500 font-medium">Clics</th><th className="text-right py-2 text-gray-500 font-medium">CTR</th></tr></thead>
+            <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">{t('analytics.searchPanel.colKeyword', 'Mot-clé')}</th><th className="text-right py-2 text-gray-500 font-medium">{t('analytics.searchPanel.colAppearances', 'Apparitions')}</th><th className="text-right py-2 text-gray-500 font-medium">{t('analytics.searchPanel.colClicks', 'Clics')}</th><th className="text-right py-2 text-gray-500 font-medium">{t('analytics.searchPanel.colCtr', 'CTR')}</th></tr></thead>
             <tbody>
               {searchAppearances.map((kw) => (
                 <tr key={kw.keyword} className="border-b last:border-0 hover:bg-gray-50">

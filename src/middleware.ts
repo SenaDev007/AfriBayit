@@ -173,6 +173,25 @@ function detectCountry(request: NextRequest): string | null {
     return cookieCountry;
   }
 
+  // 4. Check IP geolocation via Cloudflare header (CDC §3.2).
+  // When deployed behind Cloudflare, the `CF-IPCountry` header is set
+  // automatically to the ISO 3166-1 alpha-2 country code of the client IP.
+  // Vercel also provides `x-vercel-ip-country` on edge requests.
+  const cfCountry = request.headers.get('cf-ipcountry');
+  if (cfCountry) {
+    const upper = cfCountry.toUpperCase();
+    if (Object.values(SUBDOMAIN_COUNTRY_MAP).includes(upper)) {
+      return upper;
+    }
+  }
+  const vercelCountry = request.headers.get('x-vercel-ip-country');
+  if (vercelCountry) {
+    const upper = vercelCountry.toUpperCase();
+    if (Object.values(SUBDOMAIN_COUNTRY_MAP).includes(upper)) {
+      return upper;
+    }
+  }
+
   // No country detected
   return null;
 }
@@ -291,15 +310,32 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
         // Admin routes require admin role or accreditation
         if (path.startsWith('/admin') || path.startsWith('/api/admin')) {
           // Multi-role: check both the legacy `role` and the new `roles[]`
-          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
-            ? (token as any).roles
+          const tokenRoles: string[] = token?.roles && token.roles.length > 0
+            ? token.roles
             : token?.role
               ? [token.role]
               : [];
           if (tokenRoles.includes('admin')) return true;
-          const accreditationRole = (token as Record<string, unknown>)?.accreditationRole as string;
-          if (accreditationRole === 'SUPER_ADMIN' || accreditationRole === 'COUNTRY_ADMIN') {
-            return true;
+          const accreditationRole = token?.accreditationRole;
+          if (accreditationRole === 'SUPER_ADMIN') {
+            return true; // SUPER_ADMIN bypasses all country checks
+          }
+          if (accreditationRole === 'COUNTRY_ADMIN') {
+            // COUNTRY_ADMIN may only access their own country's admin routes.
+            // Extract [country] from URL via regex: /admin/[country]/... or /api/admin/[country]/...
+            const match = path.match(/^\/api\/admin\/([a-zA-Z]{2})(?:\/|$)/)
+              || path.match(/^\/admin\/([a-zA-Z]{2})(?:\/|$)/);
+            if (match) {
+              const urlCountry = match[1].toUpperCase();
+              const tokenCountry = token?.accreditationCountry;
+              if (tokenCountry && tokenCountry.toUpperCase() === urlCountry) {
+                return true;
+              }
+              // Country mismatch — deny
+              return false;
+            }
+            // COUNTRY_ADMIN without [country] segment in URL — deny (must scope to their country)
+            return false;
           }
           return false; // Deny — not admin
         }
@@ -310,9 +346,9 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
         const roleGate = ROLE_GATED_ROUTES.find((g) => path.startsWith(g.prefix));
         if (roleGate) {
           if (!token) return false;
-          const tokenRoles: string[] = (token as any)?.roles && (token as any).roles.length > 0
-            ? (token as any).roles
-            : token?.role
+          const tokenRoles: string[] = token.roles && token.roles.length > 0
+            ? token.roles
+            : token.role
               ? [token.role]
               : [];
           if (tokenRoles.includes('admin')) return true;
@@ -360,9 +396,35 @@ export async function middleware(request: NextRequest) {
   let response: NextResponse;
 
   const hasSecret = !!process.env.NEXTAUTH_SECRET;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   if (!hasSecret) {
-    response = fallbackMiddleware(request);
+    if (isProduction) {
+      // CRITICAL: never silently bypass auth in production. Return 500 so
+      // the misconfiguration is visible to operators instead of leaving the
+      // app wide-open via the permissive fallbackMiddleware().
+      if (pathname.startsWith('/api/')) {
+        response = NextResponse.json(
+          { error: 'Server misconfiguration: NEXTAUTH_SECRET is not set.' },
+          { status: 500 }
+        );
+      } else {
+        // Return a 500 status so operators see the misconfiguration.
+        // The Next.js global-error boundary will render a friendly page.
+        response = NextResponse.json(
+          { error: 'Server misconfiguration: NEXTAUTH_SECRET is not set.' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Dev only: warn and use the permissive fallback middleware so the
+      // developer can still browse the app without configuring secrets.
+      console.warn(
+        '[AfriBayit] NEXTAUTH_SECRET is not set. Using permissive fallback middleware. ' +
+          'Set NEXTAUTH_SECRET in .env for full auth enforcement.'
+      );
+      response = fallbackMiddleware(request);
+    }
   } else {
     try {
       response = await authMiddleware(request);
@@ -371,7 +433,14 @@ export async function middleware(request: NextRequest) {
         '[AfriBayit] Auth middleware failed, using fallback. Error:',
         error instanceof Error ? error.message : error
       );
-      response = fallbackMiddleware(request);
+      if (isProduction && pathname.startsWith('/api/')) {
+        response = NextResponse.json(
+          { error: 'Authentication service unavailable.' },
+          { status: 500 }
+        );
+      } else {
+        response = fallbackMiddleware(request);
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import {
   Crown,
   Flame,
@@ -14,62 +15,63 @@ import { AGENT_ANALYTICS, ZONE_PERFORMANCE, easeOut } from '../demoData';
 import { formatPrice } from '../utils';
 
 export default function AgentProfile() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
           <Timer className="w-8 h-8 mx-auto mb-2 text-[#003087]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">Temps de vente moyen</h4>
-          <p className="font-mono text-2xl font-bold text-[#00A651]">{AGENT_ANALYTICS.timeToSale.avg} jours</p>
-          <p className="text-xs text-gray-500 mt-1">Médiane : {AGENT_ANALYTICS.timeToSale.median}j · Record : {AGENT_ANALYTICS.timeToSale.best}j</p>
+          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.avgSaleTime', 'Temps de vente moyen')}</h4>
+          <p className="font-mono text-2xl font-bold text-[#00A651]">{AGENT_ANALYTICS.timeToSale.avg} {t('analytics.agentProfile.days', 'jours')}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.median', 'Médiane')} : {AGENT_ANALYTICS.timeToSale.median}j · {t('analytics.agentProfile.record', 'Record')} : {AGENT_ANALYTICS.timeToSale.best}j</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
           <Trophy className="w-8 h-8 mx-auto mb-2 text-[#D4AF37]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">Classement local</h4>
+          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.localRanking', 'Classement local')}</h4>
           <p className="font-mono text-2xl font-bold text-[#D4AF37]">#{AGENT_ANALYTICS.localRanking.position}</p>
-          <p className="text-xs text-gray-500 mt-1">sur {AGENT_ANALYTICS.localRanking.totalAgents} agents · {AGENT_ANALYTICS.localRanking.city}</p>
+          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.outOf', 'sur')} {AGENT_ANALYTICS.localRanking.totalAgents} {t('analytics.agentProfile.agents', 'agents')} · {AGENT_ANALYTICS.localRanking.city}</p>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
           <Target className="w-8 h-8 mx-auto mb-2 text-[#009CDE]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">Score agent</h4>
+          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.agentScore', 'Score agent')}</h4>
           <p className="font-mono text-2xl font-bold text-[#003087]">{AGENT_ANALYTICS.localRanking.score}/100</p>
-          <p className="text-xs text-gray-500 mt-1">Basé sur performance + avis + activité</p>
+          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.scoreDesc', 'Basé sur performance + avis + activité')}</p>
         </motion.div>
       </div>
 
       {/* Performance Annonces + Volume Transactions + ROI Premium */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-[#003087]" /> Performance annonces</h4>
+          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-[#003087]" /> {t('analytics.agentProfile.listingPerformance', 'Performance annonces')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Annonces actives</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.active}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Vues totales</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.vues.toLocaleString('fr-FR')}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Contacts reçus</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.contacts}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Taux conversion</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.performanceAnnonces.tauxConversion}%</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.activeListings', 'Annonces actives')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.active}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.totalViews', 'Vues totales')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.vues.toLocaleString('fr-FR')}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.contactsReceived', 'Contacts reçus')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.contacts}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.conversionRate', 'Taux conversion')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.performanceAnnonces.tauxConversion}%</span></div>
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#00A651]" /> Volume transactions</h4>
+          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#00A651]" /> {t('analytics.agentProfile.transactionVolume', 'Volume transactions')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Ventes conclues</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.volumeTransactions.total}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Valeur totale</span><span className="font-mono font-bold text-[#003087]">{formatPrice(AGENT_ANALYTICS.volumeTransactions.valeur)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">En cours</span><span className="font-mono font-bold text-[#D4AF37]">{AGENT_ANALYTICS.volumeTransactions.enCours}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.closedSales', 'Ventes conclues')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.volumeTransactions.total}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.totalValue', 'Valeur totale')}</span><span className="font-mono font-bold text-[#003087]">{formatPrice(AGENT_ANALYTICS.volumeTransactions.valeur)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.inProgress', 'En cours')}</span><span className="font-mono font-bold text-[#D4AF37]">{AGENT_ANALYTICS.volumeTransactions.enCours}</span></div>
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-[#D4AF37]" /> ROI Premium</h4>
+          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-[#D4AF37]" /> {t('analytics.agentProfile.roiPremium', 'ROI Premium')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Investissement</span><span className="font-mono font-bold text-gray-600">{formatPrice(AGENT_ANALYTICS.roiPremium.investissement)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Revenu généré</span><span className="font-mono font-bold text-[#00A651]">{formatPrice(AGENT_ANALYTICS.roiPremium.revenuGenere)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">ROI</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.roiPremium.roi}%</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">Contacts supp.</span><span className="font-mono font-bold text-[#009CDE]">+{AGENT_ANALYTICS.roiPremium.contactsSupp}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.investment', 'Investissement')}</span><span className="font-mono font-bold text-gray-600">{formatPrice(AGENT_ANALYTICS.roiPremium.investissement)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.revenueGenerated', 'Revenu généré')}</span><span className="font-mono font-bold text-[#00A651]">{formatPrice(AGENT_ANALYTICS.roiPremium.revenuGenere)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.roi', 'ROI')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.roiPremium.roi}%</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.extraContacts', 'Contacts supp.')}</span><span className="font-mono font-bold text-[#009CDE]">+{AGENT_ANALYTICS.roiPremium.contactsSupp}</span></div>
           </div>
         </motion.div>
       </div>
 
       {/* Carte de chaleur mini */}
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> Carte de chaleur — Vos zones</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> {t('analytics.agentProfile.heatmapTitle', 'Carte de chaleur — Vos zones')}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ZONE_PERFORMANCE.slice(0, 4).map(zone => {
             const heatColor = zone.performance >= 80 ? 'bg-[#00A651]' : zone.performance >= 60 ? 'bg-[#D4AF37]' : 'bg-[#F59E0B]';
@@ -84,7 +86,7 @@ export default function AgentProfile() {
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Entonnoir de conversion</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.agentProfile.conversionFunnel', 'Entonnoir de conversion')}</h3>
         <div className="space-y-3">
           {AGENT_ANALYTICS.conversionFunnel.map((stage, i) => (
             <div key={stage.stage} className="flex items-center gap-4">

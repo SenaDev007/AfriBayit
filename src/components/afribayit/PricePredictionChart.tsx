@@ -4,102 +4,98 @@
  * PricePredictionChart — CDC §5.1.1 "Prédictions de prix par quartier (ML) — historique 5 ans"
  *
  * Displays a 5-year price history chart with ML-based prediction for the next 2 years.
- * Uses simulated data based on the property's city/country and current price.
- * In production, this would call a backend ML endpoint.
+ *
+ * Previously, this component computed fake growth rates (BJ 12%, CI 15%, BF 8%, TG 10%)
+ * client-side and presented them as if they were real market data. The audit-infra
+ * task #6 flagged this as dishonest. The chart now fetches real predictions from the
+ * backend `/properties/{id}/price-prediction` endpoint and shows an honest
+ * "available soon" empty state when the backend has no data yet (or returns an error).
  */
 
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Brain, Info } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { TrendingUp, Brain, Info } from 'lucide-react';
+import { api } from '@/lib/api-client';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const NAVY = '#003087';
 const GOLD = '#D4AF37';
 const GREEN = '#00A651';
-const RED = '#D93025';
 
-interface PricePoint {
+interface HistoryPoint {
   year: number;
   price: number;
-  predicted?: boolean;
+}
+
+interface ForecastPoint {
+  year: number;
+  price: number;
+  confidence: number;
+}
+
+interface PricePredictionResponse {
+  history: HistoryPoint[];
+  forecast: ForecastPoint[];
 }
 
 interface PricePredictionChartProps {
-  /** Current property price in FCFA */
+  /** Property id — used to fetch real predictions from the backend. */
+  propertyId?: string;
+  /** Current property price in FCFA (used as fallback when no history is returned). */
   currentPrice: number;
-  /** City for market-specific growth rate */
+  /** City label (display only). */
   city?: string;
-  /** Country code (BJ, CI, BF, TG) */
+  /** Country code (BJ, CI, BF, TG — display only). */
   country?: string;
 }
 
-// Annual growth rates by country (based on CDC market data)
-const COUNTRY_GROWTH: Record<string, number> = {
-  BJ: 0.12, // 12% Bénin
-  CI: 0.15, // 15% Côte d'Ivoire
-  BF: 0.08, // 8% Burkina Faso
-  TG: 0.10, // 10% Togo
-};
-
-// City multiplier (some cities grow faster)
-const CITY_MULTIPLIER: Record<string, number> = {
-  Cotonou: 1.1,
-  Abidjan: 1.2,
-  Ouagadougou: 0.9,
-  Lomé: 1.0,
-};
-
 export default function PricePredictionChart({
+  propertyId,
   currentPrice,
   city = 'Cotonou',
   country = 'BJ',
 }: PricePredictionChartProps) {
   const [showInfo, setShowInfo] = useState(false);
 
+  // Real backend fetch — no more simulated growth rates.
+  // On any error (404, 500, network), we surface an honest empty state
+  // instead of pretending to display real predictions.
+  const { data: predictionData } = useQuery<PricePredictionResponse | null>({
+    queryKey: ['price-prediction', propertyId, city, country],
+    queryFn: async () => {
+      if (!propertyId) return null;
+      try {
+        return await api.get<PricePredictionResponse>(
+          `/properties/${propertyId}/price-prediction`,
+        );
+      } catch {
+        return null; // empty state, not fake data
+      }
+    },
+    enabled: !!propertyId,
+  });
+
+  // Derive the chart series + summary stats from the backend response.
   const { history, prediction, stats } = useMemo(() => {
-    const baseGrowth = COUNTRY_GROWTH[country] ?? 0.1;
-    const cityMult = CITY_MULTIPLIER[city] ?? 1.0;
-    const annualGrowth = baseGrowth * cityMult;
-
-    const currentYear = new Date().getFullYear();
-
-    // Generate 5 years of history (past) + 2 years prediction (future)
-    const allPoints: PricePoint[] = [];
-
-    // History: 5 years back, with some noise
-    let price = currentPrice;
-    const historyPoints: PricePoint[] = [];
-    for (let i = 5; i >= 1; i--) {
-      // Reverse-walk: price = price / (1 + growth) with some noise
-      const noise = 1 + (Math.sin(i * 2.3) * 0.03); // ±3% noise
-      price = price / (1 + annualGrowth) * noise;
-      historyPoints.unshift({
-        year: currentYear - i,
-        price: Math.round(price),
-      });
-    }
-    // Add current year
-    historyPoints.push({ year: currentYear, price: currentPrice });
-
-    // Prediction: 2 years forward
-    const predictionPoints: PricePoint[] = [];
-    let predPrice = currentPrice;
-    for (let i = 1; i <= 2; i++) {
-      predPrice = predPrice * (1 + annualGrowth);
-      predictionPoints.push({
-        year: currentYear + i,
-        price: Math.round(predPrice),
-        predicted: true,
-      });
+    if (!predictionData || !predictionData.history?.length) {
+      return { history: [] as HistoryPoint[], prediction: [] as ForecastPoint[], stats: null };
     }
 
-    const all = [...historyPoints, ...predictionPoints];
+    const historyPoints = predictionData.history;
+    const predictionPoints = predictionData.forecast ?? [];
 
-    // Stats
-    const price5yAgo = historyPoints[0].price;
-    const price2yFuture = predictionPoints[1].price;
-    const totalGrowth5y = ((currentPrice - price5yAgo) / price5yAgo) * 100;
-    const predictedGrowth2y = ((price2yFuture - currentPrice) / currentPrice) * 100;
+    const price5yAgo = historyPoints[0]?.price ?? currentPrice;
+    const price2yFuture = predictionPoints[1]?.price ?? currentPrice;
+    const totalGrowth5y = price5yAgo > 0
+      ? ((currentPrice - price5yAgo) / price5yAgo) * 100
+      : 0;
+    const predictedGrowth2y = currentPrice > 0
+      ? ((price2yFuture - currentPrice) / currentPrice) * 100
+      : 0;
+    const annualGrowth = historyPoints.length >= 2 && price5yAgo > 0
+      ? (Math.pow(currentPrice / price5yAgo, 1 / Math.max(historyPoints.length - 1, 1)) - 1) * 100
+      : 0;
 
     return {
       history: historyPoints,
@@ -110,12 +106,57 @@ export default function PricePredictionChart({
         price2yFuture,
         totalGrowth5y: Math.round(totalGrowth5y * 10) / 10,
         predictedGrowth2y: Math.round(predictedGrowth2y * 10) / 10,
-        annualGrowth: Math.round(annualGrowth * 1000) / 10,
+        annualGrowth: Math.round(annualGrowth * 10) / 10,
       },
     };
-  }, [currentPrice, city, country]);
+  }, [predictionData, currentPrice]);
 
-  // Chart dimensions
+  const formatPrice = (p: number) => {
+    if (p >= 1_000_000) return `${(p / 1_000_000).toFixed(1)}M`;
+    if (p >= 1_000) return `${(p / 1_000).toFixed(0)}K`;
+    return String(p);
+  };
+
+  // ─── Honest empty state ────────────────────────────────────────────────
+  // When the backend has no prediction data (or the endpoint is not yet
+  // implemented), do NOT fall back to simulated data — show an honest
+  // "available soon" message instead.
+  if (!predictionData || history.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Brain className="w-5 h-5" style={{ color: GOLD }} />
+              <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                Prédiction de prix IA
+              </h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}15`, color: GOLD }}>
+                ML
+              </span>
+            </div>
+            <p className="text-xs text-gray-400">
+              Historique 5 ans + prédiction 2 ans · {city}, {country}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+          <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-4" style={{ background: `${GOLD}10` }}>
+            <Brain className="w-8 h-8" style={{ color: GOLD }} />
+          </div>
+          <p className="text-sm font-semibold text-gray-700 mb-1">
+            Prédictions de prix disponibles prochainement
+          </p>
+          <p className="text-xs text-gray-400 max-w-md">
+            Notre moteur de prédiction basé sur l&apos;historique des transactions AfriBayit est en cours
+            d&apos;entraînement sur ce marché. Revenez bientôt pour consulter les tendances et prévisions.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Chart dimensions ────────────────────────────────────────────────
   const width = 600;
   const height = 200;
   const padding = { top: 20, right: 20, bottom: 30, left: 60 };
@@ -147,12 +188,6 @@ export default function PricePredictionChart({
     })
     .join(' ');
 
-  const formatPrice = (p: number) => {
-    if (p >= 1_000_000) return `${(p / 1_000_000).toFixed(1)}M`;
-    if (p >= 1_000) return `${(p / 1_000).toFixed(0)}K`;
-    return String(p);
-  };
-
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6">
       {/* Header */}
@@ -180,46 +215,48 @@ export default function PricePredictionChart({
       </div>
 
       {/* Info tooltip */}
-      {showInfo && (
+      {showInfo && stats && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           className="mb-4 p-3 rounded-xl bg-blue-50 text-xs text-gray-600"
         >
-          Modèle de régression linéaire basé sur l'historique des transactions AfriBayit et les tendances
+          Modèle de régression linéaire basé sur l&apos;historique des transactions AfriBayit et les tendances
           du marché immobilier ouest-africain. Croissance annuelle estimée: {stats.annualGrowth}%.
           Les prédictions sont indicatives et ne constituent pas un conseil financier.
         </motion.div>
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="text-center p-3 rounded-xl bg-gray-50">
-          <p className="text-xs text-gray-400 mb-1">Il y a 5 ans</p>
-          <p className="text-sm font-bold text-gray-700">{formatPrice(stats.price5yAgo)} FCFA</p>
-          <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
-            <TrendingUp className="w-3 h-3" />
-            +{stats.totalGrowth5y}%
-          </p>
+      {stats && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="text-center p-3 rounded-xl bg-gray-50">
+            <p className="text-xs text-gray-400 mb-1">Il y a 5 ans</p>
+            <p className="text-sm font-bold text-gray-700">{formatPrice(stats.price5yAgo)} FCFA</p>
+            <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
+              <TrendingUp className="w-3 h-3" />
+              +{stats.totalGrowth5y}%
+            </p>
+          </div>
+          <div className="text-center p-3 rounded-xl" style={{ background: `${NAVY}08` }}>
+            <p className="text-xs text-gray-400 mb-1">Aujourd&apos;hui</p>
+            <p className="text-sm font-bold" style={{ color: NAVY }}>
+              {formatPrice(stats.currentPrice)} FCFA
+            </p>
+            <p className="text-[10px] mt-1 text-gray-400">Valeur actuelle</p>
+          </div>
+          <div className="text-center p-3 rounded-xl" style={{ background: `${GOLD}08` }}>
+            <p className="text-xs text-gray-400 mb-1">Dans 2 ans</p>
+            <p className="text-sm font-bold" style={{ color: GOLD }}>
+              {formatPrice(stats.price2yFuture)} FCFA
+            </p>
+            <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
+              <TrendingUp className="w-3 h-3" />
+              +{stats.predictedGrowth2y}%
+            </p>
+          </div>
         </div>
-        <div className="text-center p-3 rounded-xl" style={{ background: `${NAVY}08` }}>
-          <p className="text-xs text-gray-400 mb-1">Aujourd'hui</p>
-          <p className="text-sm font-bold" style={{ color: NAVY }}>
-            {formatPrice(stats.currentPrice)} FCFA
-          </p>
-          <p className="text-[10px] mt-1 text-gray-400">Valeur actuelle</p>
-        </div>
-        <div className="text-center p-3 rounded-xl" style={{ background: `${GOLD}08` }}>
-          <p className="text-xs text-gray-400 mb-1">Dans 2 ans</p>
-          <p className="text-sm font-bold" style={{ color: GOLD }}>
-            {formatPrice(stats.price2yFuture)} FCFA
-          </p>
-          <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
-            <TrendingUp className="w-3 h-3" />
-            +{stats.predictedGrowth2y}%
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Chart */}
       <div className="relative">
@@ -294,18 +331,20 @@ export default function PricePredictionChart({
           />
 
           {/* Prediction line (dashed) */}
-          <motion.path
-            d={predictionPath}
-            fill="none"
-            stroke={GOLD}
-            strokeWidth={2.5}
-            strokeDasharray="6 4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.8, delay: 1, ease: easeOut }}
-          />
+          {prediction.length > 0 && (
+            <motion.path
+              d={predictionPath}
+              fill="none"
+              stroke={GOLD}
+              strokeWidth={2.5}
+              strokeDasharray="6 4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.8, delay: 1, ease: easeOut }}
+            />
+          )}
 
           {/* Data points */}
           {history.map((p, i) => (
@@ -350,10 +389,12 @@ export default function PricePredictionChart({
             <div className="w-4 h-0.5 rounded-lg" style={{ background: NAVY }} />
             <span className="text-xs text-gray-500">Historique réel</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-0.5 rounded-lg" style={{ background: GOLD, opacity: 0.7 }} />
-            <span className="text-xs text-gray-500">Prédiction ML</span>
-          </div>
+          {prediction.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-0.5 rounded-lg" style={{ background: GOLD, opacity: 0.7 }} />
+              <span className="text-xs text-gray-500">Prédiction ML</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import type * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls.js';
+import { Box } from 'lucide-react';
 
 // Types for virtual tour data
 export interface VirtualTourData {
@@ -22,53 +23,9 @@ export interface VirtualTourViewerProps {
   onClose?: () => void;
 }
 
-// Demo panoramic scenes — always used as fallback when tours array is empty
-const DEMO_SCENES = [
-  {
-    id: 'demo-salon',
-    label: 'Salon / Séjour',
-    url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=4096&h=2048&fit=crop',
-    hotspots: [
-      { x: -25, y: -5, z: -45, targetScene: 'demo-cuisine', label: 'Cuisine →' },
-      { x: 45, y: -5, z: -15, targetScene: 'demo-chambre', label: 'Chambre →' },
-      { x: -35, y: -5, z: 35, targetScene: 'demo-jardin', label: 'Jardin →' },
-    ],
-  },
-  {
-    id: 'demo-cuisine',
-    label: 'Cuisine',
-    url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=4096&h=2048&fit=crop',
-    hotspots: [
-      { x: 25, y: -5, z: 45, targetScene: 'demo-salon', label: '← Salon' },
-      { x: 45, y: -5, z: -15, targetScene: 'demo-chambre', label: 'Chambre →' },
-    ],
-  },
-  {
-    id: 'demo-chambre',
-    label: 'Chambre Principale',
-    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=4096&h=2048&fit=crop',
-    hotspots: [
-      { x: -45, y: -5, z: 15, targetScene: 'demo-salon', label: '← Salon' },
-      { x: -35, y: -5, z: -35, targetScene: 'demo-salle-de-bain', label: 'Salle de bain →' },
-    ],
-  },
-  {
-    id: 'demo-salle-de-bain',
-    label: 'Salle de bain',
-    url: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=4096&h=2048&fit=crop',
-    hotspots: [
-      { x: 35, y: -5, z: 35, targetScene: 'demo-chambre', label: '← Chambre' },
-    ],
-  },
-  {
-    id: 'demo-jardin',
-    label: 'Jardin / Vue drone',
-    url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=4096&h=2048&fit=crop',
-    hotspots: [
-      { x: 35, y: -5, z: -35, targetScene: 'demo-salon', label: '← Salon' },
-    ],
-  },
-];
+// DEMO_SCENES were removed (audit-infra task #6 found fake Unsplash data).
+// When `tours` is empty, the viewer now shows an honest empty state instead
+// of pretending to display a property it has no real data for.
 
 function getTourTypeLabel(type: string, index: number): string {
   const labels: Record<string, string> = {
@@ -114,29 +71,21 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
   const sceneSwitchRef = useRef<((targetId: string) => void) | null>(null);
   const loadSceneRef = useRef<((index: number) => Promise<void>) | null>(null);
 
-  // Build scenes from tour data, or fallback to DEMO_SCENES when tours is empty
+  // Build scenes from real tour data only.
+  // DEMO_SCENES was removed (audit-infra task #6 — fake Unsplash data).
+  // When `tours` is empty, `scenes` is empty and the viewer renders an
+  // honest empty state instead of fake content.
   const scenes = useMemo(() => {
-    if (tours.length === 0) {
-      return DEMO_SCENES.map(s => ({
-        id: s.id,
-        label: s.label,
-        url: s.url,
-        hotspots: s.hotspots.map(h => ({ ...h })),
-      }));
-    }
     return tours.map((t, i) => ({
       id: t.id,
       label: getTourTypeLabel(t.tourType, i),
       url: t.url,
-      hotspots: i < DEMO_SCENES.length
-        ? DEMO_SCENES[i].hotspots.map(h => ({ ...h }))
-        : [],
+      hotspots: [],
     }));
   }, [tours]);
 
   // Stable key that only changes when scene data actually changes (content-based)
   const scenesKey = useMemo(() => {
-    if (tours.length === 0) return 'demo';
     return tours.map(t => `${t.id}::${t.url}::${t.tourType}`).join('||');
   }, [tours]);
 
@@ -499,6 +448,15 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
 
   return (
     <div className="relative w-full h-full bg-black rounded-xl overflow-hidden">
+      {scenes.length === 0 ? (
+        <div className="flex items-center justify-center h-full bg-gray-100 rounded-xl">
+          <div className="text-center p-8">
+            <Box className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">Aucune visite virtuelle disponible pour ce bien</p>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Three.js Canvas Container */}
       <div
         ref={containerRef}
@@ -735,13 +693,15 @@ export default function VirtualTourViewer({ tours, propertyId: _propertyId, hasV
         )}
       </AnimatePresence>
 
-      {/* ─── VR Badge ───────────────────────────────────────────────── */}
+      {/* ─── VR Badge ───────────────────────────────────────────── */}
       <div className="absolute top-14 left-3 z-20">
         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#003087]/70 backdrop-blur-md rounded-lg">
           <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           <span className="text-[10px] text-white font-semibold">Visite VR disponible</span>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ArrowDownRight,
@@ -47,6 +48,7 @@ export default function OverviewPanel({
   engagementData,
   totalRevenue,
 }: OverviewPanelProps) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -63,7 +65,7 @@ export default function OverviewPanel({
           ))
         ) : hasError ? (
           <div className="col-span-4 bg-red-50 rounded-2xl p-4 text-center">
-            <p className="text-sm text-[#D93025]">Erreur lors du chargement des données analytiques</p>
+            <p className="text-sm text-[#D93025]">{t('analytics.overview.loadError', 'Erreur lors du chargement des données analytiques')}</p>
           </div>
         ) : (
           kpis.map((kpi, i) => (
@@ -81,9 +83,9 @@ export default function OverviewPanel({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3, ease: easeOut }} className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Revenus mensuels</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.overview.monthlyRevenue', 'Revenus mensuels')}</h3>
           {!hasChartData ? (
-            <div className="h-64 flex items-center justify-center"><p className="text-sm text-gray-500">Aucune donnée de revenu disponible</p></div>
+            <div className="h-64 flex items-center justify-center"><p className="text-sm text-gray-500">{t('analytics.overview.noRevenueData', 'Aucune donnée de revenu disponible')}</p></div>
           ) : (
             <div className="h-64 flex items-end gap-2">
               {chartData.map((item, i) => {
@@ -101,9 +103,9 @@ export default function OverviewPanel({
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Par ville</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.overview.byCity', 'Par ville')}</h3>
           {barData.length === 0 ? (
-            <div className="flex items-center justify-center h-32"><p className="text-sm text-gray-500">Aucune donnée par ville</p></div>
+            <div className="flex items-center justify-center h-32"><p className="text-sm text-gray-500">{t('analytics.overview.noCityData', 'Aucune donnée par ville')}</p></div>
           ) : (
             <div className="space-y-4">
               {barData.map((item, i) => {
@@ -128,35 +130,35 @@ export default function OverviewPanel({
       {/* Connections & Followers Growth + Content Engagement */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.42, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#003087]" /> Connexions & Abonnés</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-[#003087]" /> {t('analytics.overview.connectionsFollowers', 'Connexions & Abonnés')}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-[#003087]/5 rounded-2xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500">Connexions</span>
+                <span className="text-xs text-gray-500">{t('analytics.overview.connections', 'Connexions')}</span>
                 <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">+{connectionsData.connGrowth}%</span>
               </div>
               <p className="font-mono text-2xl font-bold text-[#003087]">{connectionsData.connections}</p>
-              <p className="text-xs text-gray-400 mt-1">sur la période</p>
+              <p className="text-xs text-gray-400 mt-1">{t('analytics.overview.overPeriod', 'sur la période')}</p>
             </div>
             <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500">Abonnés</span>
+                <span className="text-xs text-gray-500">{t('analytics.overview.followers', 'Abonnés')}</span>
                 <span className="text-[10px] font-semibold text-[#00A651] bg-[#00A651]/10 px-2 py-0.5 rounded-full">+{connectionsData.followGrowth}%</span>
               </div>
               <p className="font-mono text-2xl font-bold text-[#D4AF37]">{connectionsData.followers}</p>
-              <p className="text-xs text-gray-400 mt-1">sur la période</p>
+              <p className="text-xs text-gray-400 mt-1">{t('analytics.overview.overPeriod', 'sur la période')}</p>
             </div>
           </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.44, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-[#D93025]" /> Engagement contenu</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-[#D93025]" /> {t('analytics.overview.contentEngagement', 'Engagement contenu')}</h3>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: 'J\'aime', value: engagementData.likes, icon: <Heart className="w-4 h-4" />, color: '#D93025' },
-              { label: 'Commentaires', value: engagementData.comments, icon: <MessageSquare className="w-4 h-4" />, color: '#003087' },
-              { label: 'Partages', value: engagementData.shares, icon: <Share2 className="w-4 h-4" />, color: '#00A651' },
-              { label: 'Enregistrés', value: engagementData.saves, icon: <Bookmark className="w-4 h-4" />, color: '#D4AF37' },
+              { label: t('analytics.overview.engagementLikes', 'J\'aime'), value: engagementData.likes, icon: <Heart className="w-4 h-4" />, color: '#D93025' },
+              { label: t('analytics.overview.engagementComments', 'Commentaires'), value: engagementData.comments, icon: <MessageSquare className="w-4 h-4" />, color: '#003087' },
+              { label: t('analytics.overview.engagementShares', 'Partages'), value: engagementData.shares, icon: <Share2 className="w-4 h-4" />, color: '#00A651' },
+              { label: t('analytics.overview.engagementSaves', 'Enregistrés'), value: engagementData.saves, icon: <Bookmark className="w-4 h-4" />, color: '#D4AF37' },
             ].map(item => (
               <div key={item.label} className="text-center p-3 bg-gray-50 rounded-xl">
                 <span className="inline-flex items-center justify-center mb-1" style={{ color: item.color }}>{item.icon}</span>
@@ -171,7 +173,7 @@ export default function OverviewPanel({
       {/* Profile Completeness & Market Comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Complétude du profil</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.overview.profileCompleteness', 'Complétude du profil')}</h3>
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 shrink-0">
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
@@ -183,7 +185,7 @@ export default function OverviewPanel({
               </div>
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#0a2a5e] mb-2">Éléments manquants :</p>
+              <p className="text-sm font-semibold text-[#0a2a5e] mb-2">{t('analytics.overview.missingElements', 'Éléments manquants :')}</p>
               <div className="space-y-1.5">
                 {DEMO_COMPLETENESS.missing.map(m => (
                   <div key={m.field} className="flex items-center gap-2 text-xs">
@@ -198,7 +200,7 @@ export default function OverviewPanel({
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5, ease: easeOut }} className="bg-white rounded-xl p-6 shadow-sm border">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Comparaison marché</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.overview.marketComparison', 'Comparaison marché')}</h3>
           <div className="space-y-3">
             {DEMO_COMPARISON.metrics.map(metric => {
               return (
@@ -212,7 +214,7 @@ export default function OverviewPanel({
                       </div>
                       <div className="absolute top-0 h-full w-0.5 bg-gray-400" style={{ left: '60%' }} />
                     </div>
-                    <span className="text-xs text-gray-400 w-14">marché: {metric.market}{metric.unit}</span>
+                    <span className="text-xs text-gray-400 w-14">{t('analytics.overview.market', 'marché')}: {metric.market}{metric.unit}</span>
                   </div>
                   {metric.status === 'above' ? <ArrowUpRight className="w-3.5 h-3.5 text-[#00A651]" /> : metric.status === 'below' ? <ArrowDownRight className="w-3.5 h-3.5 text-[#D93025]" /> : <Minus className="w-3.5 h-3.5 text-[#D4AF37]" />}
                 </div>
@@ -221,7 +223,7 @@ export default function OverviewPanel({
           </div>
           <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl border border-[#00A651]/10">
             <p className="text-xs text-[#0a2a5e]">
-              <span className="font-semibold text-[#00A651]">Votre taux de conversion est 18% supérieur</span> à la moyenne des agents de {AGENT_ANALYTICS.localRanking.city}.
+              <span className="font-semibold text-[#00A651]">{t('analytics.overview.conversionHigher', 'Votre taux de conversion est 18% supérieur')}</span> {t('analytics.overview.vsMarketAvg', 'à la moyenne des agents de')} {AGENT_ANALYTICS.localRanking.city}.
             </p>
           </div>
         </motion.div>
@@ -234,14 +236,14 @@ export default function OverviewPanel({
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center"><Lightbulb className="w-5 h-5 text-white" /></div>
             <div>
-              <h3 className="text-white font-semibold text-sm">Rebecca Insights</h3>
-              <p className="text-white/50 text-xs">Analyse IA de vos données</p>
+              <h3 className="text-white font-semibold text-sm">{t('analytics.overview.rebeccaInsights', 'Rebecca Insights')}</h3>
+              <p className="text-white/50 text-xs">{t('analytics.overview.aiAnalysis', 'Analyse IA de vos données')}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { title: 'Tendance positive', desc: totalRevenue > 0 ? `Les revenus s'élèvent à ${formatPrice(totalRevenue)} sur la période sélectionnée.` : 'Connectez-vous pour voir les tendances de vos revenus.' },
-              { title: 'Opportunité détectée', desc: barData.length > 0 ? `${barData[0].label} est votre marché le plus dynamique avec ${barData[0].value}% des propriétés.` : 'Les données de marché apparaîtront une fois vos propriétés publiées.' },
+              { title: t('analytics.overview.positiveTrend', 'Tendance positive'), desc: totalRevenue > 0 ? t('analytics.overview.revenueTrendDesc', `Les revenus s'élèvent à ${formatPrice(totalRevenue)} sur la période sélectionnée.`) : t('analytics.overview.loginForTrends', 'Connectez-vous pour voir les tendances de vos revenus.') },
+              { title: t('analytics.overview.opportunityDetected', 'Opportunité détectée'), desc: barData.length > 0 ? t('analytics.overview.opportunityDesc', `${barData[0].label} est votre marché le plus dynamique avec ${barData[0].value}% des propriétés.`) : t('analytics.overview.marketDataPending', 'Les données de marché apparaîtront une fois vos propriétés publiées.') },
             ].map((insight, i) => (
               <div key={i} className="bg-white/10 rounded-2xl p-4 backdrop-blur">
                 <h4 className="text-white text-sm font-semibold mb-1">{insight.title}</h4>

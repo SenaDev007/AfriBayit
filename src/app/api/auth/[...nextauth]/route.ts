@@ -4,18 +4,26 @@
 //   - CredentialsProvider (email + password → backend /auth/login)
 //   - GoogleProvider (OAuth → backend /auth/oauth)
 //   - FacebookProvider (OAuth → backend /auth/oauth)
+//   - AppleProvider (CDC §4.1 — only registered if APPLE_CLIENT_ID + APPLE_CLIENT_SECRET set)
 //
 // For OAuth providers, the signIn callback calls the backend /auth/oauth
 // endpoint to either log in an existing user (linked via OAuthAccount) or
 // create a new user. The backend returns a JWT that we store in the
 // NextAuth session for the api-client to use.
+//
+// SECURITY: NEXTAUTH_SECRET is REQUIRED in production. We do NOT ship a
+// hardcoded fallback. `assertSecretOrThrow()` is invoked at request time
+// (inside `securedHandler`) — in production it throws 500 if missing; in
+// dev it warns and uses an ephemeral in-memory secret.
 
 import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
+import AppleProvider from 'next-auth/providers/apple';
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').trim();
+const isProduction = process.env.NODE_ENV === 'production';
 
 function normalizeApiUrl(raw: string): string {
   let url = raw.trim();
@@ -39,8 +47,27 @@ interface BackendAuthResponse {
   };
   accessToken?: string;
   refreshToken?: string;
+  expiresInSeconds?: number;
   requires2FA?: boolean;
   error?: string;
+}
+
+/**
+ * Shape of the user object returned by `authorize()` and consumed by the
+ * `jwt()` callback on first sign-in. Mirrors the `User` interface declared
+ * in `src/types/next-auth.d.ts` (which augments the next-auth types).
+ */
+interface AfribayitAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  roles: string[];
+  country: string | null;
+  kycLevel: number;
+  accessToken: string;
+  refreshToken?: string;
+  accessTokenExpiresAt: number;
 }
 
 async function callBackend(
@@ -60,8 +87,87 @@ async function callBackend(
   return (await res.json()) as BackendAuthResponse;
 }
 
-// Build the providers array — OAuth providers are only added if their
-// env vars are configured, so the app doesn't crash if they're missing.
+// ─── Secret assertion ────────────────────────────────────────────────────
+//
+// `assertSecretOrThrow()` MUST be called at request time (not module load).
+// In production: throws if NEXTAUTH_SECRET is missing.
+// In dev: warns and falls back to an ephemeral in-memory secret so the dev
+// server can still boot without forcing the developer to set the env var.
+//
+// The ephemeral secret is generated once per process — sessions will not
+// survive a server restart, but that is acceptable for local development.
+let devEphemeralSecret: string | null = null;
+
+function getDevEphemeralSecret(): string {
+  if (!devEphemeralSecret) {
+    // Use crypto.randomUUID if available (Node 16.7+); fall back to Math.random.
+    try {
+      devEphemeralSecret = `afribayit-dev-ephemeral-${crypto.randomUUID()}`;
+    } catch {
+      devEphemeralSecret = `afribayit-dev-ephemeral-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+    }
+  }
+  return devEphemeralSecret;
+}
+
+function assertSecretOrThrow(): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (secret && secret.trim()) return secret;
+
+  if (isProduction) {
+    // CRITICAL: no hardcoded fallback in production.
+    throw new Error(
+      '[AfriBayit/NextAuth] NEXTAUTH_SECRET is required in production. ' +
+        'Set it in your environment variables (e.g. Vercel project settings).',
+    );
+  }
+
+  // Dev mode: warn loudly but allow with ephemeral secret.
+  if (!devEphemeralSecret) {
+    console.warn(
+      '[AfriBayit/NextAuth] WARNING: NEXTAUTH_SECRET is not set. ' +
+        'Using an ephemeral in-memory secret for local development. ' +
+        'Sessions will NOT persist across server restarts. ' +
+        'Set NEXTAUTH_SECRET in your .env file for stable sessions.',
+    );
+  }
+  return getDevEphemeralSecret();
+}
+
+// ─── Token refresh helper ────────────────────────────────────────────────
+//
+// Called from `jwt()` 5 minutes before `accessTokenExpiresAt`. Hits the
+// backend `/auth/refresh` endpoint with the stored refresh token and
+// returns the new access/refresh pair. On failure, returns the old token
+// (the next 401 will surface the error to the user).
+
+async function refreshAccessToken(refreshToken: string): Promise<{
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
+} | null> {
+  try {
+    const data = await callBackend('/auth/refresh', { refreshToken });
+    if (!data.success || !data.accessToken) {
+      return null;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = data.expiresInSeconds && data.expiresInSeconds > 0
+      ? data.expiresInSeconds
+      : 3600; // default 1h if backend doesn't return
+    return {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken || refreshToken,
+      accessTokenExpiresAt: now + expiresIn,
+    };
+  } catch (err) {
+    console.error('[NextAuth] refreshAccessToken failed:', err);
+    return null;
+  }
+}
+
+// ─── Providers ───────────────────────────────────────────────────────────
+
 const providers: NextAuthOptions['providers'] = [
   CredentialsProvider({
     id: 'credentials',
@@ -87,6 +193,10 @@ const providers: NextAuthOptions['providers'] = [
         if (!data.success || !data.accessToken || !data.user) {
           throw new Error('2FA_INVALID');
         }
+        const now = Math.floor(Date.now() / 1000);
+        const expiresIn = data.expiresInSeconds && data.expiresInSeconds > 0
+          ? data.expiresInSeconds
+          : 3600;
         return {
           id: data.user.id,
           email: data.user.email,
@@ -96,7 +206,9 @@ const providers: NextAuthOptions['providers'] = [
           country: data.user.country,
           kycLevel: data.user.kycLevel,
           accessToken: data.accessToken,
-        } as any;
+          refreshToken: data.refreshToken,
+          accessTokenExpiresAt: now + expiresIn,
+        };
       }
 
       // Regular login
@@ -108,6 +220,10 @@ const providers: NextAuthOptions['providers'] = [
         return null;
       }
       if (!data.accessToken || !data.user) return null;
+      const now = Math.floor(Date.now() / 1000);
+      const expiresIn = data.expiresInSeconds && data.expiresInSeconds > 0
+        ? data.expiresInSeconds
+        : 3600;
       return {
         id: data.user.id,
         email: data.user.email,
@@ -117,7 +233,9 @@ const providers: NextAuthOptions['providers'] = [
         country: data.user.country,
         kycLevel: data.user.kycLevel,
         accessToken: data.accessToken,
-      } as any;
+        refreshToken: data.refreshToken,
+        accessTokenExpiresAt: now + expiresIn,
+      };
     },
   }),
 ];
@@ -127,7 +245,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.push(GoogleProvider({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    allowDangerousEmailAccountLinking: true,
+    allowDangerousEmailAccountLinking: false,
   }));
 }
 
@@ -136,7 +254,16 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
   providers.push(FacebookProvider({
     clientId: process.env.FACEBOOK_CLIENT_ID,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-    allowDangerousEmailAccountLinking: true,
+    allowDangerousEmailAccountLinking: false,
+  }));
+}
+
+// Add Apple provider if configured (CDC §4.1)
+if (process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET) {
+  providers.push(AppleProvider({
+    clientId: process.env.APPLE_CLIENT_ID,
+    clientSecret: process.env.APPLE_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: false,
   }));
 }
 
@@ -152,9 +279,9 @@ export const authOptions: NextAuthOptions = {
       // validated against the backend. Just allow.
       if (!account || account.provider === 'credentials') return true;
 
-      // For OAuth providers (google, facebook), call the backend
+      // For OAuth providers (google, facebook, apple), call the backend
       // /auth/oauth endpoint to create/link the user and get a JWT.
-      if (account.provider === 'google' || account.provider === 'facebook') {
+      if (account.provider === 'google' || account.provider === 'facebook' || account.provider === 'apple') {
         try {
           const data = await callBackend('/auth/oauth', {
             email: user.email!,
@@ -171,12 +298,34 @@ export const authOptions: NextAuthOptions = {
 
           // Attach the backend JWT + user info to the user object so
           // the jwt() callback can pick it up.
-          (user as any).id = data.user.id;
-          (user as any).role = data.user.role;
-          (user as any).roles = data.user.roles || [data.user.role];
-          (user as any).country = data.user.country;
-          (user as any).kycLevel = data.user.kycLevel;
-          (user as any).accessToken = data.accessToken;
+          const now = Math.floor(Date.now() / 1000);
+          const expiresIn = data.expiresInSeconds && data.expiresInSeconds > 0
+            ? data.expiresInSeconds
+            : 3600;
+          const enriched: AfribayitAuthUser = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role,
+            roles: data.user.roles || [data.user.role],
+            country: data.user.country,
+            kycLevel: data.user.kycLevel,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            accessTokenExpiresAt: now + expiresIn,
+          };
+          // Mutate the NextAuth `user` object in place so the jwt() callback
+          // can read these fields on first sign-in.
+          user.id = enriched.id;
+          user.email = enriched.email;
+          user.name = enriched.name;
+          user.role = enriched.role;
+          user.roles = enriched.roles;
+          user.country = enriched.country;
+          user.kycLevel = enriched.kycLevel;
+          user.accessToken = enriched.accessToken;
+          user.refreshToken = enriched.refreshToken;
+          user.accessTokenExpiresAt = enriched.accessTokenExpiresAt;
 
           return true;
         } catch (err) {
@@ -190,32 +339,63 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // `user` is present on first sign-in (credentials or OAuth).
       if (user) {
-        const u = user as any;
-        token.id = u.id;
-        token.role = u.role;
-        token.roles = u.roles || [u.role];
-        token.country = u.country;
-        token.kycLevel = u.kycLevel;
-        if (u.accessToken) token.accessToken = u.accessToken;
+        token.id = user.id;
+        token.role = user.role;
+        token.roles = user.roles || [user.role];
+        token.country = user.country;
+        token.kycLevel = user.kycLevel;
+        if (user.accessToken) token.accessToken = user.accessToken;
+        if (user.refreshToken) token.refreshToken = user.refreshToken;
+        if (user.accessTokenExpiresAt) token.accessTokenExpiresAt = user.accessTokenExpiresAt;
       }
+
+      // Refresh 5 min before expiry
+      const expiresAt = (token.accessTokenExpiresAt as number | undefined) ?? 0;
+      const now = Math.floor(Date.now() / 1000);
+      const REFRESH_WINDOW = 5 * 60; // 5 minutes
+      if (token.refreshToken && expiresAt > 0 && expiresAt - now < REFRESH_WINDOW) {
+        const refreshed = await refreshAccessToken(token.refreshToken as string);
+        if (refreshed) {
+          token.accessToken = refreshed.accessToken;
+          if (refreshed.refreshToken) token.refreshToken = refreshed.refreshToken;
+          if (refreshed.accessTokenExpiresAt) token.accessTokenExpiresAt = refreshed.accessTokenExpiresAt;
+        }
+        // If refresh failed, we keep the old token; the next 401 will
+        // surface the error to the user via the api-client.
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token.id as string) || session.user.id;
-        session.user.role = (token.role as string) || session.user.role;
-        session.user.roles = (token.roles as string[]) || [session.user.role];
-        session.user.country = (token.country as string | null) ?? session.user.country ?? null;
-        session.user.kycLevel = (token.kycLevel as number) ?? session.user.kycLevel ?? 0;
+        session.user.id = token.id || session.user.id;
+        session.user.role = token.role || session.user.role;
+        session.user.roles = token.roles || [session.user.role];
+        session.user.country = token.country ?? session.user.country ?? null;
+        session.user.kycLevel = token.kycLevel ?? session.user.kycLevel ?? 0;
       }
-      (session as any).accessToken = token.accessToken;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.accessTokenExpiresAt = token.accessTokenExpiresAt;
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || 'afribayit-dev-only-secret-change-me',
+  // `secret` is intentionally left undefined here — it is resolved at
+  // request time via `assertSecretOrThrow()` inside `securedHandler`.
   debug: false,
 };
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+/**
+ * Wrap the NextAuth handler so that the secret is asserted at REQUEST TIME
+ * (not module load). This ensures the serverless function boots even if
+ * NEXTAUTH_SECRET is missing — but each request will throw 500 in
+ * production if the secret is not configured.
+ */
+function securedHandler(req: Request) {
+  assertSecretOrThrow();
+  return handler(req);
+}
+
+export { securedHandler as GET, securedHandler as POST };

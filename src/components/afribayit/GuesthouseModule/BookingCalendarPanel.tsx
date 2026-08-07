@@ -4,12 +4,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { weekDays, easeOut } from './constants';
 import type { CalendarCell } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface BookingCalendarPanelProps {
   calendarDays: CalendarCell[];
 }
 
 export default function BookingCalendarPanel({ calendarDays }: BookingCalendarPanelProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="booking"
@@ -21,10 +23,10 @@ export default function BookingCalendarPanel({ calendarDays }: BookingCalendarPa
     >
       <div className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">Calendrier — {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h3>
+          <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('guesthouse.bookingCalendar.title', 'Calendrier')} — {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</h3>
           <div className="flex gap-2">
-            <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#00A651]/20" /> Disponible</span>
-            <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#D93025]/20" /> Réservé</span>
+            <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#00A651]/20" /> {t('guesthouse.bookingCalendar.available', 'Disponible')}</span>
+            <span className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-3 h-3 rounded bg-[#D93025]/20" /> {t('guesthouse.bookingCalendar.booked', 'Réservé')}</span>
           </div>
         </div>
         <div className="grid grid-cols-7 gap-1 mb-2">

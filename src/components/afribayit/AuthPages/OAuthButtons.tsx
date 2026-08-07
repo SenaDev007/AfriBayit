@@ -1,7 +1,10 @@
-// P3.7-2 — Google/Facebook OAuth buttons shared by LoginForm and RegisterForm.
+// P3.7-2 — Google/Facebook/Apple OAuth buttons shared by LoginForm and RegisterForm.
 // CRITICAL: OAuth providers MUST use redirect: true (the default). Using
 // redirect: false forces a popup/iframe flow which fails because Google blocks
 // third-party cookies in iframes and Facebook sends X-Frame-Options: DENY.
+//
+// Apple provider is added per CDC §4.1 — only rendered if the NextAuth
+// `providers` config exposes it (i.e. APPLE_CLIENT_ID + APPLE_CLIENT_SECRET set).
 
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
@@ -13,6 +16,7 @@ interface OAuthButtonsProps {
   oauthLoading: OauthLoadingState;
   onGoogle: () => void;
   onFacebook: () => void;
+  onApple: () => void;
 }
 
 function GoogleIcon() {
@@ -46,18 +50,36 @@ function FacebookIcon() {
   );
 }
 
+function AppleIcon() {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.05 12.04c-.03-2.93 2.39-4.34 2.5-4.41-1.36-1.99-3.48-2.26-4.24-2.29-1.81-.18-3.53 1.06-4.45 1.06-.92 0-2.33-1.04-3.83-1.01-1.98.03-3.81 1.15-4.83 2.92-2.06 3.57-.52 8.85 1.48 11.75.98 1.42 2.15 3.01 3.68 2.95 1.48-.06 2.04-.96 3.83-.96 1.79 0 2.29.96 3.85.93 1.59-.03 2.6-1.45 3.57-2.88 1.13-1.65 1.6-3.25 1.62-3.33-.04-.02-3.11-1.19-3.14-4.73M14.13 4.15c.82-.99 1.37-2.37 1.22-3.74-1.18.05-2.6.79-3.45 1.78-.76.87-1.42 2.27-1.24 3.62 1.31.1 2.65-.67 3.47-1.66" />
+    </svg>
+  );
+}
+
 export default function OAuthButtons({
   availableProviders,
   oauthLoading,
   onGoogle,
   onFacebook,
+  onApple,
 }: OAuthButtonsProps) {
   const { t } = useTranslation();
 
-  if (!availableProviders.google && !availableProviders.facebook) return null;
+  const activeCount = [
+    availableProviders.google,
+    availableProviders.facebook,
+    availableProviders.apple,
+  ].filter(Boolean).length;
+
+  if (activeCount === 0) return null;
+
+  const gridClass =
+    activeCount === 3 ? 'grid-cols-3' : activeCount === 2 ? 'grid-cols-2' : 'grid-cols-1';
 
   return (
-    <>
+    <motion.div layout>
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t" />
@@ -69,13 +91,7 @@ export default function OAuthButtons({
         </div>
       </div>
 
-      <div
-        className={`grid ${
-          availableProviders.google && availableProviders.facebook
-            ? 'grid-cols-2'
-            : ''
-        } gap-3`}
-      >
+      <div className={`grid ${gridClass} gap-3`}>
         {availableProviders.google && (
           <button
             type="button"
@@ -106,7 +122,22 @@ export default function OAuthButtons({
             {oauthLoading === 'facebook' ? 'Connexion...' : 'Facebook'}
           </button>
         )}
+        {availableProviders.apple && (
+          <button
+            type="button"
+            onClick={onApple}
+            disabled={!!oauthLoading}
+            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {oauthLoading === 'apple' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <AppleIcon />
+            )}
+            {oauthLoading === 'apple' ? 'Connexion...' : 'Apple'}
+          </button>
+        )}
       </div>
-    </>
+    </motion.div>
   );
 }

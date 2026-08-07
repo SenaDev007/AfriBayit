@@ -23,6 +23,7 @@ interface RegisterFormProps {
   oauthLoading: OauthLoadingState;
   onGoogle: () => void;
   onFacebook: () => void;
+  onApple: () => void;
   // navigation
   onSwitch: (mode: 'login' | 'register') => void;
 }
@@ -42,6 +43,7 @@ export default function RegisterForm(props: RegisterFormProps) {
     oauthLoading,
     onGoogle,
     onFacebook,
+    onApple,
     onSwitch,
   } = props;
 
@@ -87,6 +89,12 @@ export default function RegisterForm(props: RegisterFormProps) {
       )}
 
       <div className="space-y-4">
+        {/* Honeypot field — invisible to humans, bots fill it in (CDC §10.2.2). */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+          <label>Ne pas remplir ce champ</label>
+          <input type="text" tabIndex={-1} autoComplete="off" name="company_website" value="" onChange={() => {}} />
+        </div>
+
         {/* Step 0: Email & Password */}
         {registerStep === 0 && (
           <>
@@ -281,6 +289,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         oauthLoading={oauthLoading}
         onGoogle={onGoogle}
         onFacebook={onFacebook}
+        onApple={onApple}
       />
 
       <p className="text-center text-sm text-gray-500 mt-4 pb-6">

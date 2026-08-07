@@ -8,6 +8,10 @@ interface AuthUser {
   country: string | null;
   kycLevel: number;
   avatar?: string | null;
+  /** Reputation score surfaced from the backend community module. */
+  score?: number;
+  /** Reputation tier label surfaced from the backend community module. */
+  reputation?: string;
 }
 
 interface AuthState {

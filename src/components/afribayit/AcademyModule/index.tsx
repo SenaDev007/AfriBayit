@@ -14,6 +14,8 @@ import { academyTabs } from './constants';
 import CataloguePanel from './CataloguePanel';
 import MyCoursesPanel from './MyCoursesPanel';
 import CertificationsPanel from './CertificationsPanel';
+import WebinarsPanel from './WebinarsPanel';
+import PeerLearningPanel from './PeerLearningPanel';
 import CourseDetailDialog from './CourseDetailDialog';
 
 export default function AcademyModule() {
@@ -192,6 +194,12 @@ export default function AcademyModule() {
             onGoToCatalogue={() => setActiveTab('catalogue')}
           />
         )}
+
+        {/* ============ WEBINARS TAB (CDC §5.6.4) ============ */}
+        {activeTab === 'webinars' && <WebinarsPanel />}
+
+        {/* ============ PEER LEARNING TAB (CDC §5.6.4) ============ */}
+        {activeTab === 'peer_learning' && <PeerLearningPanel />}
       </div>
 
       {/* ============ COURSE DETAIL DIALOG ============ */}

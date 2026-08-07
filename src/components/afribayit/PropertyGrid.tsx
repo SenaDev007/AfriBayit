@@ -16,6 +16,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
+import type { PropertyData, PaginationData } from '@/lib/afribayit-utils';
+
+/**
+ * PropertyListItem — a property as returned by the /properties API.
+ *
+ * Extends `PropertyData` with the optional `investmentScore` (0-100, only
+ * present for investment-grade listings) and `boostLevel` (sponsorship boost
+ * level — used by PropertyCard to show the “Sponsorisé” badge).
+ */
+export interface PropertyListItem extends PropertyData {
+  investmentScore?: number;
+  boostLevel?: number;
+}
+
+interface PropertyListResponse {
+  properties: PropertyListItem[];
+  pagination: PaginationData;
+}
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -44,7 +62,7 @@ interface PropertyGridProps {
   transaction: 'achat' | 'location' | 'investissement' | 'location_courte_duree';
   emptyMessage?: string;
   /** Expose fetched properties to parent (for map, comparator, etc.) */
-  onPropertiesLoaded?: (properties: any[]) => void;
+  onPropertiesLoaded?: (properties: PropertyListItem[]) => void;
   /** Compare mode */
   compareIds?: string[];
   onToggleCompare?: (id: string) => void;
@@ -67,13 +85,13 @@ export default function PropertyGrid({
   params.set('transaction', transaction);
   params.set('limit', '24');
   params.set('page', '1');
-  if (selectedCountry && selectedCountry !== ('all' as any)) {
+  if (selectedCountry) {
     params.set('country', selectedCountry);
   }
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['transaction-properties', transaction, selectedCountry],
-    queryFn: () => apiFetch<{ properties: any[]; pagination: any }>(`/properties?${params.toString()}`),
+    queryFn: () => apiFetch<PropertyListResponse>(`/properties?${params.toString()}`),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
@@ -124,14 +142,14 @@ export default function PropertyGrid({
               {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''} disponible{filteredProperties.length > 1 ? 's' : ''}
             </span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
-              {selectedCountry && selectedCountry !== ('all' as any)
+              {selectedCountry
                 ? `Biens en ${COUNTRY_NAMES[selectedCountry] || selectedCountry}`
                 : 'Tous les biens'}
             </h2>
           </div>
 
           {/* Country indicator */}
-          {selectedCountry && selectedCountry !== ('all' as any) && (
+          {selectedCountry && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: `${NAVY}10`, border: `1px solid ${NAVY}30` }}>
               <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
               <span className="text-sm font-semibold" style={{ color: NAVY }}>
@@ -225,7 +243,7 @@ export default function PropertyGrid({
         {/* Property grid — centered */}
         {!isLoading && !isError && filteredProperties.length > 0 && (
           <div className="flex flex-wrap justify-center gap-6">
-            {filteredProperties.map((property: any, i: number) => (
+            {filteredProperties.map((property: PropertyListItem, i: number) => (
               <div key={property.id} className="relative w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">
                 <PropertyCard
                   property={property}

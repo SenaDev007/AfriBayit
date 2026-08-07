@@ -193,16 +193,26 @@ export default function NotificationToast() {
 
   // Subscribe to real-time notifications
   useRealtimeNotifications(userId, {
-    onNewNotification: useCallback((data: any) => {
+    onNewNotification: useCallback((data: unknown) => {
+      const payload = (data ?? {}) as {
+        id?: string;
+        title?: string;
+        message?: string;
+        type?: string;
+        category?: string;
+        actionUrl?: string;
+        priority?: string;
+        createdAt?: string;
+      };
       const toast: ToastNotification = {
-        id: data.id || `toast-${Date.now()}`,
-        title: data.title || 'Nouvelle notification',
-        message: data.message || '',
-        type: data.type || data.category || 'system',
-        category: data.category,
-        actionUrl: data.actionUrl,
-        priority: data.priority,
-        createdAt: data.createdAt || new Date().toISOString(),
+        id: payload.id || `toast-${Date.now()}`,
+        title: payload.title || 'Nouvelle notification',
+        message: payload.message || '',
+        type: payload.type || payload.category || 'system',
+        category: payload.category,
+        actionUrl: payload.actionUrl,
+        priority: payload.priority,
+        createdAt: payload.createdAt || new Date().toISOString(),
       };
 
       setToasts(prev => {

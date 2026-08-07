@@ -7,6 +7,7 @@ import AgentProfile from './profiles/AgentProfile';
 import ArtisanProfile from './profiles/ArtisanProfile';
 import FormateurProfile from './profiles/FormateurProfile';
 import InvestisseurProfile from './profiles/InvestisseurProfile';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ProfilesPanelProps {
   activeProfile: ProfileTab;
@@ -14,6 +15,14 @@ interface ProfilesPanelProps {
 }
 
 export default function ProfilesPanel({ activeProfile, setActiveProfile }: ProfilesPanelProps) {
+  const { t } = useTranslation();
+  // Local lookup to translate the profile tab labels (tabs.tsx is a constants file and skipped).
+  const tabLabelKey: Record<ProfileTab, string> = {
+    agent: 'analytics.profilesPanel.tabAgent',
+    artisan: 'analytics.profilesPanel.tabArtisan',
+    formateur: 'analytics.profilesPanel.tabFormateur',
+    investisseur: 'analytics.profilesPanel.tabInvestisseur',
+  };
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex gap-2 overflow-x-auto pb-2">
@@ -26,7 +35,7 @@ export default function ProfilesPanel({ activeProfile, setActiveProfile }: Profi
             }`}
             style={activeProfile === pt.key ? { backgroundColor: pt.color } : {}}
           >
-            {pt.icon}{pt.label}
+            {pt.icon}{t(tabLabelKey[pt.key], pt.label)}
           </button>
         ))}
       </div>

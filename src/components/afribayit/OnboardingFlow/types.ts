@@ -46,5 +46,6 @@ export interface StepProps {
 export interface StepDefinition {
   step: number;
   title: string;
+  titleKey?: string;
   icon: ReactNode;
 }

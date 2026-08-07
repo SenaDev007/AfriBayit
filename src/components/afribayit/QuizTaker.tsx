@@ -18,6 +18,35 @@ import { toast } from '@/hooks/use-toast';
 
 // ─── Types ────────────────────────────────────────────────────────
 
+interface QuizQuestion {
+  id: string;
+  // `type` is optional because the academy page's QuizDisplayData omits it
+  // (the constants-layer QuizQuestion only carries id/question/options/correctAnswer).
+  // Runtime data may still include a `type` discriminator for rendering.
+  type?: 'multiple_choice' | 'true_false' | 'short_answer';
+  question: string;
+  options?: string[];
+}
+
+interface QuizFeedback {
+  questionId: string;
+  question: string;
+  isCorrect: boolean;
+  userAnswer?: string;
+  correctAnswer?: string;
+  explanation?: string;
+  earnedPoints: number;
+  points: number;
+}
+
+interface QuizResult {
+  passed: boolean;
+  score: number;
+  maxScore: number;
+  percentScore: number;
+  feedback?: QuizFeedback[];
+}
+
 interface QuizData {
   id: string;
   courseId: string;
@@ -26,7 +55,16 @@ interface QuizData {
   timeLimitMinutes: number;
   passingScorePercent: number;
   maxAttempts: number;
-  questions: any[];
+  questions: QuizQuestion[];
+}
+
+interface QuizTakerProps {
+  courseId: string;
+  quiz: QuizData;
+  userId: string;
+  totalAttempts: number;
+  onComplete?: (result: QuizResult) => void;
+  onCertificateRequest?: () => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────
@@ -38,14 +76,14 @@ export default function QuizTaker({
   totalAttempts,
   onComplete,
   onCertificateRequest,
-}: any) {
+}: QuizTakerProps) {
   // ─── State ──────────────────────────────────────────────────────
   const [phase, setPhase] = useState<'intro' | 'taking' | 'results'>('intro');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimitMinutes * 60);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<QuizResult | null>(null);
   const [showReview, setShowReview] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -106,7 +144,7 @@ export default function QuizTaker({
 
     setIsSubmitting(true);
     try {
-      const res = await apiPost<any>('/api/academy/quiz/attempt', {
+      const res = await apiPost<QuizResult>('/api/academy/quiz/attempt', {
         quizId: quiz.id,
         userId,
         answers,

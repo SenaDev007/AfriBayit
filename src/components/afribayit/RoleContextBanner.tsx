@@ -16,11 +16,13 @@ import { motion } from 'framer-motion';
 import { useRoleAccess } from '@/hooks/useRoleAccess';
 import { getRoleDefinition } from '@/lib/role-catalog';
 import { LayoutDashboard, Settings } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function RoleContextBanner() {
   const router = useRouter();
   const pathname = usePathname();
   const { roles, primaryRole, availableDashboards } = useRoleAccess();
+  const { t } = useTranslation();
 
   // Don't render for single-role users
   if (roles.length <= 1) return null;
@@ -46,10 +48,10 @@ export default function RoleContextBanner() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[#0a2a5e]">
-          Vous consultez ce dashboard en tant que <span className={roleDef.color}>{roleDef.label}</span>
+          {t('roleContext.viewingAs', 'Vous consultez ce dashboard en tant que')} <span className={roleDef.color}>{roleDef.label}</span>
         </p>
         <p className="text-[11px] text-gray-500">
-          Vous avez {roles.length} rôles actifs — basculez entre vos dashboards ci-contre.
+          {t('roleContext.rolesActive', 'Vous avez')} {roles.length} {t('roleContext.rolesActiveSuffix', 'rôles actifs — basculez entre vos dashboards ci-contre.')}
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
@@ -59,7 +61,7 @@ export default function RoleContextBanner() {
             className="text-xs font-medium text-[#003087] hover:underline inline-flex items-center gap-1"
           >
             <LayoutDashboard className="w-3 h-3" />
-            Tableau de bord général
+            {t('roleContext.generalDashboard', 'Tableau de bord général')}
           </button>
         )}
         <button
@@ -67,7 +69,7 @@ export default function RoleContextBanner() {
           className="text-xs font-medium text-[#D4AF37] hover:underline inline-flex items-center gap-1"
         >
           <Settings className="w-3 h-3" />
-          Gérer mes rôles
+          {t('roleContext.manageRoles', 'Gérer mes rôles')}
         </button>
       </div>
     </motion.div>

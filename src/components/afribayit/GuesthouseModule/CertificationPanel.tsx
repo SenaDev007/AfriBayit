@@ -5,12 +5,14 @@ import { motion } from 'framer-motion';
 import { Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { easeOut, certificationProcessSteps } from './constants';
 import type { GuesthouseDetail } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface CertificationPanelProps {
   activeDetail: GuesthouseDetail | undefined;
 }
 
 export default function CertificationPanel({ activeDetail }: CertificationPanelProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="certification"
@@ -21,7 +23,7 @@ export default function CertificationPanel({ activeDetail }: CertificationPanelP
       className="max-w-2xl mx-auto"
     >
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">Certification Guesthouse</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-6">{t('guesthouse.certification.title', 'Certification Guesthouse')}</h3>
         <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2">
           {certificationProcessSteps.map((s, i) => (
             <div key={s.step} className="flex items-start shrink-0">
@@ -57,26 +59,26 @@ export default function CertificationPanel({ activeDetail }: CertificationPanelP
               )}
               <p className="text-sm text-[#0a2a5e] font-semibold">
                 {activeDetail.certificationStatus === 'certified'
-                  ? 'Guesthouse certifiée'
+                  ? t('guesthouse.certification.statusCertified', 'Guesthouse certifiée')
                   : activeDetail.certificationStatus === 'pending'
-                  ? 'En cours de certification'
-                  : 'Non certifiée'}
+                  ? t('guesthouse.certification.statusPending', 'En cours de certification')
+                  : t('guesthouse.certification.statusNotCertified', 'Non certifiée')}
               </p>
             </div>
             <p className="text-xs text-gray-500">
               {activeDetail.certificationStatus === 'certified'
-                ? 'Cette guesthouse a passé avec succès l\'inspection AfriBayit.'
+                ? t('guesthouse.certification.descCertified', 'Cette guesthouse a passé avec succès l\'inspection AfriBayit.')
                 : activeDetail.certificationStatus === 'pending'
-                ? 'Votre demande est en cours de traitement. L\'inspection sera planifiée sous 5 jours ouvrés.'
-                : 'Soumettez votre demande de certification pour rassurer vos futurs clients.'}
+                ? t('guesthouse.certification.descPending', 'Votre demande est en cours de traitement. L\'inspection sera planifiée sous 5 jours ouvrés.')
+                : t('guesthouse.certification.descNotCertified', 'Soumettez votre demande de certification pour rassurer vos futurs clients.')}
             </p>
           </div>
         )}
 
         {!activeDetail && (
           <div className="p-4 bg-[#D4AF37]/5 rounded-2xl">
-            <p className="text-sm text-[#0a2a5e] font-semibold mb-1">En cours de certification</p>
-            <p className="text-xs text-gray-500">Votre demande est en cours de traitement. L&apos;inspection sera planifiée sous 5 jours ouvrés.</p>
+            <p className="text-sm text-[#0a2a5e] font-semibold mb-1">{t('guesthouse.certification.statusPending', 'En cours de certification')}</p>
+            <p className="text-xs text-gray-500">{t('guesthouse.certification.descPending', 'Votre demande est en cours de traitement. L\'inspection sera planifiée sous 5 jours ouvrés.')}</p>
           </div>
         )}
       </div>

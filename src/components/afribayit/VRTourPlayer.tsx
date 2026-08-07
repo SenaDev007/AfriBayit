@@ -16,6 +16,22 @@ const easeOut = [0.16, 1, 0.3, 1] as const;
 const NAVY = '#003087';
 const GOLD = '#D4AF37';
 
+/**
+ * Minimal WebXR type shim. The standard `navigator.xr` API is not yet
+ * declared in TypeScript's DOM lib, so we declare the slice we use.
+ */
+interface XRSystemLike {
+  isSessionSupported(mode: string): Promise<boolean>;
+  requestSession(mode: string): Promise<unknown>;
+}
+
+function getNavigatorXR(): XRSystemLike | undefined {
+  if (typeof navigator !== 'undefined' && 'xr' in navigator) {
+    return (navigator as Navigator & { xr?: XRSystemLike }).xr;
+  }
+  return undefined;
+}
+
 interface VRTourPlayerProps {
   /** Property title for display */
   propertyTitle: string;
@@ -45,10 +61,11 @@ export default function VRTourPlayer({
 
   // Check WebXR support
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && 'xr' in navigator) {
-      (navigator as any).xr?.isSessionSupported('immersive-vr').then((supported: boolean) => {
-        setWebxrSupported(supported);
-      }).catch(() => setWebxrSupported(false));
+    const xr = getNavigatorXR();
+    if (xr) {
+      xr.isSessionSupported('immersive-vr')
+        .then((supported: boolean) => setWebxrSupported(supported))
+        .catch(() => setWebxrSupported(false));
     }
   }, []);
 
@@ -78,12 +95,13 @@ export default function VRTourPlayer({
   };
 
   const startVRSession = async () => {
-    if (!webxrSupported) {
+    const xr = getNavigatorXR();
+    if (!xr) {
       alert('Votre appareil ne supporte pas la VR. Utilisez un casque VR compatible WebXR.');
       return;
     }
     try {
-      const session = await (navigator as any).xr.requestSession('immersive-vr');
+      const session = await xr.requestSession('immersive-vr');
       // In a real implementation, this would render the scene to the VR headset
       console.log('VR session started:', session);
     } catch (err) {

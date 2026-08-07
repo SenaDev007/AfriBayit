@@ -305,3 +305,1045 @@ Stage Summary:
   4. Escrow 2FA release contournable (userId from body + confirmationChecked bypass)
 - 6 risques hauts/moyens: Caddyfile SSRF/no-TLS, Dockerfile incohérent, Helmet/CSP non appliqué, RLS permissive, rate limiter non appliqué + in-memory serverless, i18n bugué
 - Recommandation: bloquer mise en production jusqu'à résolution des 4 risques critiques + tests minimum + SAST en CI
+
+---
+Task ID: 5-6-7
+Agent: Modules-5-6-7-Agent
+Task: Re-apply Modules 5, 6, 7 (Escrow, Rebecca AI, Property) on fresh clone of fix/cdc-v4-compliance-audit branch
+
+Scope: ONLY src/components/afribayit/{EscrowDashboard,WalletModule,EscrowFlow,DisputeResolution,RebeccaChat,PropertyMap,VoiceSearchButton}.tsx — Modules 1-4 and 8-13 owned by parallel agents, untouched.
+
+Work Log:
+- Read existing worklog.md (8 prior tasks) to understand context and prior fixes
+- Read all 7 target component files end-to-end to understand current state and CDC gaps
+- Verified mapbox-gl (^3.24.0) and @types/mapbox-gl (^3.5.0) already in package.json
+- Confirmed no .env file exists (only .env.example) — Fixer.io key will be optional with static BCEAO fallback
+
+Module 5 — Escrow & Transactions (4 files):
+
+  EscrowDashboard.tsx (+9/-15 lines):
+    - handle2FAVerification: added guard `if (!otpCode || otpCode.length !== 6) { toast.error('Code 2FA invalide', { description: 'Veuillez entrer le code à 6 chiffres.' }); return; }` BEFORE the API call — closes the 2FA bypass where empty/short codes were sent as `undefined` and accepted server-side
+    - Removed `confirmationChecked: confirmChecked` from the apiPost body — now sends only `{ otpCode }` so the backend TOTP verification can no longer be bypassed by the client-side checkbox
+    - Release button: changed `disabled={verifying2FA || (!otpCode && !confirmChecked)}` to `disabled={verifying2FA || !otpCode || otpCode.length !== 6}` — the checkbox no longer unlocks the button
+    - Checkbox label rewritten to irreversibility notice: "Je comprends que la libération des fonds de X au vendeur est irréversible et ne pourra être annulée ou remboursée une fois exécutée."
+    - Replaced fake `displayLedger` (3 hardcoded entries with `sha256:...` truncated fake hashes) with `const displayLedger = ledgerEntries;` — UI now only shows real backend ledger entries
+
+  WalletModule.tsx (+95/-10 lines):
+    - Added `useEffect` to React imports (was only useState, useMemo)
+    - Replaced hardcoded `currencyRates = { XOF: 1, EUR: 0.00152, USD: 0.00165 }` with three exported symbols:
+      * `STATIC_RATES` (BCEAO parity: XOF=1, EUR=1/655.957, USD=1/610)
+      * `fetchCurrencyRates()` — async function that calls Fixer.io via `NEXT_PUBLIC_FIXER_API_KEY` with 1h module-level cache, falls back to STATIC_RATES on any failure
+      * `useCurrencyRates()` hook — returns STATIC_RATES immediately, then swaps to live rates via useEffect
+    - Fixed `totalTransactedLifetime`: now prefers `summary.totalTransactedLifetime` from backend, falls back to summing ONLY CREDIT-type txns (deposit, escrow_release, payout, refund) via `CREDIT_TXN_TYPES` Set — previously used `Math.abs(t.amount)` which double-counted debits like withdrawals and escrow_fund
+    - Updated `convertCurrency()` signature to accept `rates` param (default STATIC_RATES for backward compat) and updated all 4 call sites in the balance card to pass `rates`
+
+  EscrowFlow.tsx (+19/-3 lines):
+    - Replaced `Math.round(amount * 0.015)` (1.5% — wrong rate) with priority chain: prefer backend `commission` → `fee` → `transaction.commission` → `transaction.fee` → fall back to `Math.round(amount * 0.03)` (3% per CDC §6.2)
+    - Added `commission?`, `commissionRate?`, `fee?` fields to both the escrowAccounts type and the nested transaction type
+    - Derived `escrowFeeRate` from chosen fee / amount so the label is always correct
+    - Updated label text from hardcoded "Frais escrow (1.5%)" to dynamic "Frais escrow ({(escrowFeeRate * 100).toFixed(1)}%)"
+    - Plumbed `escrowFeeRate` as a new prop to the extracted PaymentSteps sub-component (was previously only passing escrowFee and totalAmount)
+
+  DisputeResolution.tsx (+37/-16 lines):
+    - Added `useEffect` to React imports
+    - Emptied `evidence` initial state: was 3 fake entries (contrat_achat.pdf, rapport_inspection.jpg, releve_bancaire.pdf) → now `[]`
+    - Emptied `messages` initial state: was 3 fake messages (system/buyer/seller) → now `[]`
+    - Changed default props from fake demo values to empty/zero: disputeId `''` (was 'disp_demo_001'), transactionRef `''` (was 'TXN-2025-001'), amount `0` (was 15000000), buyerName/sellerName `''` (was 'Amadou Diallo'/'Marie Koffi'), currentStep `1` (was 3)
+    - Added useEffect that populates `evidence`, `messages`, and `activeStep` from real `disputeData` once the React Query resolves — uses Array.isArray guards and `typeof === 'number'` for currentStep
+
+Module 6 — Rebecca AI (1 file):
+
+  RebeccaChat.tsx (+11/-7 lines):
+    - Fixed welcome message: replaced JSX-in-string literals (`<Search className="w-4 h-4" />`, `<Lock ... />`, `<Coins ... />`, `<Hammer ... />`, `<BarChart3 ... />`, `<Scale ... />`) with plain-text bullet points (•) — the previous code rendered raw JSX text literally to the user since `dangerouslySetInnerHTML` only handles `<strong>` via the regex
+    - Fixed error fallback message: removed trailing `<HandHeart className="w-4 h-4" />` literal (same bug)
+    - Removed unused lucide-react imports (Bot, MessageCircle, HandHeart) and a stale `// eslint-disable-next-line @typescript-eslint/no-explicit-any` directive
+    - Expanded `getFunctionLabel` to include all 7 CDC §8.2.1 canonical tool names: `search_properties`, `get_property_details`, `check_escrow_status`, `book_hotel`, `request_geometer`, `contact_agent`, `get_market_prices`
+    - Kept 4 legacy aliases (`check_escrow`, `get_market_stats`, `find_artisans`, `calculate_financing`) for backward compatibility with older API versions
+
+Module 7 — Property & Search (2 files):
+
+  PropertyMap.tsx (+205/-4 lines, full rewrite):
+    - Implemented provider priority chain: Mapbox GL JS → Google Maps JS API → Google Embed iframe → OSM embed iframe
+    - Mapbox GL JS as primary provider via `import('mapbox-gl')` dynamic import (keeps mapbox-gl out of the initial bundle)
+    - Uses `streets-v12` style: `style: 'mapbox://styles/mapbox/streets-v12'`
+    - HTML price markers: builds a `div` element with colored badge + CSS triangle tip via `buildPriceMarkerEl()`, then wraps with `new mapboxgl.Marker({ element: el, anchor: 'bottom' })`
+    - Popups on click: `new mapboxgl.Popup({ offset: 25 }).setHTML(buildPopupHtml(prop))` — reuses the same HTML structure as the previous Google Maps infowindow
+    - fitBounds: `new mapboxgl.LngLatBounds().extend([lng, lat])` then `map.fitBounds(bounds, { padding: 60 })` (skipped when a single property is selected)
+    - Failure handling: `map.on('error', ...)` sets `mapboxFailed=true` which triggers re-render with Google Maps fallback; dynamic import `.catch()` does the same
+    - Google Maps JS API kept as fallback (existing code preserved with null-check guard on `map.getBounds()`)
+    - Google Embed iframe and OSM embed iframe kept as last-resort fallbacks
+    - Guarded `map.getBounds()` with null check in both Mapbox and Google paths: `const b = map.getBounds(); if (!b) return;` — prevents crash when bounds aren't yet available (idle fires before map settles in some browsers)
+    - Provider resolution memoized: `preferredProvider` recomputes when tokens change or when mapbox/google fail flags flip
+
+  VoiceSearchButton.tsx (+44/-9 lines):
+    - Added `import { apiPost } from '@/lib/api-client'`
+    - Added `language?: 'fr' | 'fon' | 'dyu' | 'moor'` prop with default `'fr'`
+    - Added `SPEECH_LANG_MAP` constant mapping all 4 languages to `'fr-FR'` (browser Web Speech API doesn't ship models for fon/dyu/moor yet — same behavior as before, but now pluggable)
+    - Computed `speechLang = SPEECH_LANG_MAP[language] || 'fr-FR'` once per render
+    - Updated `recognition.lang = speechLang` (was hardcoded `'fr-FR'`)
+    - Switched Whisper fallback from raw `fetch('/api/voice-search', { audio: base64Audio })` to `apiPost('/search/voice-search', { audio: base64Audio, language })` — now routes through api-client (adds JWT + country header + URL rewriting to NestJS backend) and forwards `language` for server-side acoustic model selection
+    - Added `language` to `startWhisperFallback` useCallback deps
+    - Added `speechLang` to `startListening` useCallback deps
+
+Verification:
+  - npx tsc --noEmit: 0 errors in any of the 7 modified files (confirmed via grep filter)
+  - npx eslint <7 files>: 0 errors, 0 warnings
+  - npm run build: compiles successfully (✓ Compiled successfully in 100s) — TS type-check phase fails ONLY on `AnalyticsDashboard/index.tsx` (Module 8, owned by parallel agent 8-13) and `webauthn.ts` (Module 1, owned by parallel agent 1-4). These errors are NOT in scope for Task 5-6-7 and must be fixed by their respective agents. No errors stem from any Module 5/6/7 file.
+
+Files touched (7):
+  - src/components/afribayit/EscrowDashboard.tsx
+  - src/components/afribayit/WalletModule.tsx
+  - src/components/afribayit/EscrowFlow.tsx
+  - src/components/afribayit/DisputeResolution.tsx
+  - src/components/afribayit/RebeccaChat.tsx
+  - src/components/afribayit/PropertyMap.tsx
+  - src/components/afribayit/VoiceSearchButton.tsx
+
+Stage Summary:
+  - Module 5 (Escrow): 2FA bypass closed (guard + body cleanup + button disabled logic), irreversibility notice on checkbox, fake SHA-256 ledger entries removed, commission rate corrected from 1.5% to 3% CDC §6.2 with backend-preferred fallback chain, fake dispute evidence/messages removed and replaced with useEffect-driven real data, wallet currency rates now use live Fixer.io with BCEAO static fallback and 1h cache, totalTransactedLifetime no longer double-counts debits
+  - Module 6 (Rebecca AI): welcome message no longer renders raw JSX text to users (plain bullet points), all 7 CDC §8.2.1 canonical tool names mapped with legacy aliases kept
+  - Module 7 (Property): Mapbox GL JS is now the primary interactive map provider with HTML price markers + popups + fitBounds, Google Maps and OSM remain as graceful fallbacks, `map.getBounds()` properly null-guarded, VoiceSearchButton supports 4 West-African languages and forwards language to backend Whisper endpoint
+  - 0 TS errors / 0 lint warnings introduced by these changes
+  - Build proceeds past compilation; remaining build blockers are in Module 1 (webauthn.ts) and Module 8 (AnalyticsDashboard) — owned by other agents
+
+---
+Task ID: i18n-any-demo
+Agent: i18n-any-demo-Agent
+Task: Wrap hardcoded French strings with t() (5 components), fix `any` casts (4 critical files), replace demo data with honest empty states (3 components)
+
+Work Log:
+- Read existing worklog.md (8 prior task entries — modules audit, infra audit, modules 5-6-7 re-application) for full context on the fix/cdc-v4-compliance-audit branch
+- Confirmed starting tree was clean (git status: nothing to commit, working tree clean) on branch fix/cdc-v4-compliance-audit
+
+Task 1 — i18n: wrap hardcoded French strings with t() calls
+
+  HowItWorks.tsx (full rewrite):
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';`
+    - Added `const { t } = useTranslation();` inside the component
+    - Refactored the `steps` array to carry `titleKey`/`titleFallback`/`descKey`/`descFallback` instead of literal French strings
+    - Replaced all user-visible French strings with `t()` calls:
+      * eyebrow "Processus Simplifié" → `t('howItWorks.eyebrow', 'Processus Simplifié')`
+      * title "Comment ça marche ?" → `t('howItWorks.title', ...)`
+      * subtitle → `t('howItWorks.subtitle', ...)`
+      * stepLabel "Étape" → `t('howItWorks.stepLabel', 'Étape')`
+      * 4 step titles + 4 step descriptions → keys howItWorks.step1Title..step4Desc
+    - Did not wrap step number (`'01'..'04'`) — it's a numeric label, not translatable copy
+
+  ModulesSection.tsx (full rewrite):
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Refactored the 6 `modules` entries to carry `nameKey`/`nameFallback`/`descKey`/`descFallback`/`badgeKey`/`badgeFallback` instead of literal `name`/`description`/`badge`
+    - Wrapped eyebrow "Écosystème Complet", title "Nos modules", subtitle, and CTA "Explorer"
+    - Keys: `modules.eyebrow`, `modules.title`, `modules.subtitle`, `modules.explore`, `modules.immobilier.{name,description}`, `modules.guesthouses.*`, `modules.hospitality.*`, `modules.artisans.*`, `modules.academy.*`, `modules.community.*`, `modules.badges.{popular,new,premium,proMatch,certifying,social}`
+
+  AdvancedFeaturesSection.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Wrapped 13 user-visible strings: eyebrow "Outils avancés", title, subtitle, 3 tab labels (Carte interactive, Comparateur, Simulateur), compare-up-to-5 heading, compare hint, add-one-more warning, view-comparison button text, financing simulator title + description + open-simulator button, financing modal title
+    - Computed `mapCountText` once via template literal so the count + label stay in sync per locale
+    - Did NOT touch the `properties: any[]` prop type (out of scope — Task 2 covers `any` casts only in 4 specific files)
+
+  PackagesSection.tsx (full rewrite):
+    - Added useTranslation import + `const { t } = useTranslation();`
+    - Refactored PACKAGES array to carry `titleKey`/`titleFallback` etc. for each of the 3 packages
+    - Wrapped eyebrow "Packages combinés", title, subtitle, CTA "Découvrir"
+    - Wrapped 3 package titles, 3 subtitles, 3 descriptions, 15 feature lines (5 per package), 3 price labels
+    - Added an explicit `FeatureKey` string-union type alias (unused at runtime but documents the canonical key set)
+
+  Footer.tsx (extended the existing 8 t() calls):
+    - Refactored `footerLinks` array entries to carry `titleKey`/`titleFallback` and per-link `labelKey`/`labelFallback` instead of `title`/`label`
+    - Wrapped 4 section titles: Acheter / Services / Entreprise / Légal
+    - Wrapped 20 link labels: Villas, Appartements, Terrains, Bureaux, Commerces, GeoTrust, ProMatch Artisans, Rebecca IA, Académie, Communauté, Séjours (Hôtels & Guesthouses), Notaires, Publier une annonce, CGU, Confidentialité, Cookies, Mentions légales, Suppression de données, Signaler
+    - Refactored `countries` array to carry `nameKey`/`nameFallback` per country (5 entries: Bénin, Côte d'Ivoire, Sénégal, Togo, Burkina Faso)
+    - Did NOT wrap: brand name "AfriBayit", payment partner labels (Visa, Mastercard, PayPal, FedaPay), mobile money names (MTN MoMo, Orange Money, Moov Money), social link labels (used as aria-labels only), contact info (email/phone/address are factual data not requiring translation)
+
+  Locale files (src/lib/i18n/locales/{fr,en}.ts):
+    - Added 4 new top-level sections to BOTH files: `howItWorks`, `modules`, `advancedFeatures`, `packages`
+    - fr.ts: extended the existing `footer` section with `section`/`link`/`country` sub-objects (no duplicate `footer:` key — fixed TS1117 collision on first tsc run)
+    - en.ts: extended the existing `footer` section with `section`/`link`/`country` sub-objects; added the 4 new top-level sections
+    - All French fallbacks in the components EXACTLY match the values in fr.ts (verified by reading each file end-to-end)
+    - English translations in en.ts cover the same keys with idiomatic English copy
+    - Total new keys added: ~70 (across both files)
+
+Task 2 — Fix `any`/`as any` casts in 4 critical files
+
+  src/types/next-auth.d.ts:
+    - Extended the `JWT` interface with `accreditionRole?: string` and `accreditationCountry?: string` (used by the RBAC gate in middleware.ts)
+    - The `User` interface already had `role`, `roles`, `country`, `kycLevel`, `accessToken`, `refreshToken`, `accessTokenExpiresAt` (declared by a prior task) so no change needed there
+
+  src/middleware.ts (6 `(token as any)` casts removed):
+    - Admin RBAC gate (lines ~313-340): replaced `(token as any)?.roles && (token as any).roles.length > 0 ? (token as any).roles : ...` with `token?.roles && token.roles.length > 0 ? token.roles : ...` — direct typed access now that JWT has `roles?: string[]`
+    - Replaced `(token as Record<string, unknown>)?.accreditationRole as string` with `token?.accreditationRole` (string | undefined)
+    - Replaced `(token as Record<string, unknown>)?.accreditationCountry as string | undefined` with `token?.accreditationCountry`
+    - Role-gated dashboard routes (lines ~349-355): same `as any` removal pattern for the second occurrence
+    - Verified with `grep -n "as any" src/middleware.ts` → 0 matches
+    - Re-verified with `npx tsc --noEmit` → 0 errors
+
+  src/hooks/useTransactions.ts (9 `any` occurrences removed):
+    - Defined 6 proper interfaces: `TransactionSummary`, `EscrowSummary`, `LeaseSummary`, `RentPaymentSummary`, `AppointmentSummary`, `PaginationMeta`, plus a `CreateAppointmentPayload` type
+    - Each interface declares only the well-known fields used by the UI plus a `[key: string]: unknown` index signature so the backend can add fields without forcing a TypeScript update — never `any`
+    - Replaced `{ transactions: any[]; pagination: any }` → `{ transactions: TransactionSummary[]; pagination: PaginationMeta }`
+    - Replaced `apiPost<{ transaction: any; escrow: any; ... }>` (purchase) → typed with `TransactionSummary`/`EscrowSummary`
+    - Replaced `apiPost<{ transaction: any; escrow: any; lease: any; rentPayment: any; ... }>` (rent) → typed with all 4 summary interfaces
+    - Replaced `apiPost<any>('/api/appointments', data)` → `apiPost<AppointmentSummary>` with the new `CreateAppointmentPayload` input type
+    - Replaced `{ appointments: any[]; pagination: any }` → typed with `AppointmentSummary[]`/`PaginationMeta`
+    - Verified: `grep -n "any" src/hooks/useTransactions.ts` → only 1 hit, which is in a comment ("for any extra properties")
+
+  src/components/afribayit/PaymentFlow.tsx (3 `any` occurrences removed):
+    - Replaced `interface anyOption { key: any; ...; provider: any; }` with `interface PaymentMethodOption { key: PaymentMethodKey; ...; provider: PaymentProvider; }`
+    - Added `export type PaymentMethodKey = 'mobile_money_mtn' | 'mobile_money_moov' | 'mobile_money_orange' | 'mobile_money_wave' | 'card_visa' | 'card_mastercard';`
+    - Added `export type PaymentProvider = 'fedapay' | 'stripe';`
+    - `useState<any | null>(null)` for selectedMethod → `useState<PaymentMethodKey | null>(null)`
+    - `useState<{ ...; provider: any }>` for paymentResult → `provider: PaymentProvider`
+    - `handleSelectMethod(method: any)` → `handleSelectMethod(method: PaymentMethodKey)`
+    - `apiPost<{ ...; provider: any }>` → `provider: PaymentProvider`
+    - Verified: `grep -nE "\\bany\\b" src/components/afribayit/PaymentFlow.tsx` → 0 matches
+
+  src/app/api/auth/[...nextauth]/route.ts (`(user as any)` casts removed in signIn + jwt callbacks):
+    - Defined `interface AfribayitAuthUser` mirroring the augmented `User` type from next-auth.d.ts (id, email, name, role, roles, country, kycLevel, accessToken, refreshToken, accessTokenExpiresAt)
+    - signIn callback (OAuth provider branch): replaced 8 `(user as any).FIELD = data.user.FIELD` assignments with a single typed `const enriched: AfribayitAuthUser = {...}` followed by direct field assignments `user.id = enriched.id; user.email = enriched.email; ...` — the NextAuth `User` interface already declares all these fields so direct assignment is type-safe
+    - jwt callback: replaced `const u = user as any;` with direct `user.FIELD` access — the User type is already augmented
+    - Also removed the residual `as any` casts in the `session` callback (lines 344-346): `(session as any).accessToken = ...` → `session.accessToken = ...` (Session interface is augmented too). The task scope was strictly `signIn` + `jwt` but this was a trivial 3-line cleanup that eliminated the last `as any` in the file
+    - Removed 2 `as any` casts on the authorize() return objects (lines 193, 220): the object literal already matches the `User` interface so the cast was unnecessary
+    - Verified: `grep -n "as any" src/app/api/auth/[...nextauth]/route.ts` → 0 matches
+
+Task 3 — Replace demo data with honest empty states
+
+  src/components/afribayit/VirtualTourViewer.tsx:
+    - Removed the entire `DEMO_SCENES` constant (5 hardcoded Unsplash URLs: salon, cuisine, chambre, salle-de-bain, jardin)
+    - Imported `Box` from lucide-react
+    - Simplified the `scenes` useMemo: no longer falls back to DEMO_SCENES when `tours.length === 0` — it now returns an empty array, and the `hotspots` fallback (`i < DEMO_SCENES.length ? DEMO_SCENES[i].hotspots...`) is gone (hotspots is now always `[]` for real tours — the previous "hotspots for real tours" was itself demo data)
+    - Simplified the `scenesKey` useMemo: removed the `if (tours.length === 0) return 'demo';` branch (no longer needed)
+    - Wrapped the entire viewer body in a conditional: `{scenes.length === 0 ? (<empty-state UI>) : (<>existing viewer</>)}`
+    - Empty state UI: `<div className="flex items-center justify-center h-full bg-gray-100 rounded-xl"><div className="text-center p-8"><Box className="w-12 h-12 text-gray-300 mx-auto mb-3" /><p className="text-sm text-gray-500">Aucune visite virtuelle disponible pour ce bien</p></div></div>` — matches the spec exactly
+
+  src/components/afribayit/DroneViewPlayer.tsx:
+    - Removed the 2 hardcoded Unsplash fallback URLs in the `aerialImage` computation (day: `photo-1486406146926-c627a92ad1ab`, night: `photo-1535313142515-9b6de1d1c83d`)
+    - Imported `Box` from lucide-react (replaced the unused `Maximize2` import)
+    - `aerialImage` is now simply `mode === 'day' ? dayImage : nightImage` (no Unsplash fallback)
+    - Added `const hasAnyContent = !!(videoUrl || aerialImage);` to drive the empty-state gate
+    - Wrapped the entire viewer + controls in `{!hasAnyContent ? (<empty-state>) : (<>video or image viewer + drone badge + play button + time-lapse indicator + controls bar</>)}`
+    - Empty state UI uses the same pattern as VirtualTourViewer: Box icon + "Aucune vue drone disponible pour ce bien"
+    - The Drone badge, Play/Pause button, time-lapse indicator, and full controls bar are now only rendered when there is actual content
+
+  src/components/afribayit/PricePredictionChart.tsx (full rewrite):
+    - Removed the simulated data: `COUNTRY_GROWTH` (BJ 12%, CI 15%, BF 8%, TG 10%) and `CITY_MULTIPLIER` constants deleted
+    - Removed the entire `useMemo` that reverse-walked prices with `Math.sin` noise to fake 5 years of history
+    - Removed the `TrendingDown` and unused imports
+    - Added `import { useQuery } from '@tanstack/react-query';` and `import { api } from '@/lib/api-client';`
+    - Added a new `propertyId?: string` prop (optional so existing callers without it still render the empty state)
+    - Added the `useQuery` call exactly as specified in the task: `queryKey: ['price-prediction', propertyId, city, country]`, `queryFn` calls `api.get<{ history: { year: number; price: number }[]; forecast: { year: number; price: number; confidence: number }[] }>('/properties/${propertyId}/price-prediction')`, returns `null` on any error (try/catch), `enabled: !!propertyId`
+    - Defined proper interfaces `HistoryPoint`, `ForecastPoint`, `PricePredictionResponse` instead of inline `any`
+    - Refactored the `useMemo` to derive `history`/`prediction`/`stats` from the backend response (no more client-side simulation)
+    - Annual growth rate is now computed from the actual history series: `(Math.pow(currentPrice / price5yAgo, 1 / (n-1)) - 1) * 100` (CAGR formula) instead of the made-up `COUNTRY_GROWTH[country] * CITY_MULTIPLIER[city]`
+    - When `predictionData` is null OR `history.length === 0`: renders an honest empty state with a Brain icon, "Prédictions de prix disponibles prochainement" heading, and a short explanation that the ML engine is still training on this market
+    - The chart SVG, stats row, and legend are only rendered when there is real data
+    - Updated `src/components/afribayit/PropertyDetail/index.tsx` (the only caller) to pass `propertyId={property.id}` as the new prop
+
+Verification (all 3 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors; only pre-existing node_modules type noise which is filtered)
+  2. `npm run build` → ✓ Compiled successfully in 38.8s — all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced
+  3. `npm run test` → 5 test files passed, 65 tests passed (31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 4.64s duration
+  4. `npm run lint` → 0 errors, 0 warnings (eslint . exited cleanly)
+
+Files touched (16 total):
+  - src/components/afribayit/HowItWorks.tsx
+  - src/components/afribayit/ModulesSection.tsx
+  - src/components/afribayit/AdvancedFeaturesSection.tsx
+  - src/components/afribayit/PackagesSection.tsx
+  - src/components/afribayit/Footer.tsx
+  - src/components/afribayit/PaymentFlow.tsx
+  - src/components/afribayit/VirtualTourViewer.tsx
+  - src/components/afribayit/DroneViewPlayer.tsx
+  - src/components/afribayit/PricePredictionChart.tsx
+  - src/components/afribayit/PropertyDetail/index.tsx (caller update for new propertyId prop)
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+  - src/hooks/useTransactions.ts
+  - src/middleware.ts
+  - src/types/next-auth.d.ts
+  - src/app/api/auth/[...nextauth]/route.ts
+
+Stage Summary:
+  - Task 1 (i18n): 5 components wrapped with t() calls + ~70 new translation keys added to both fr.ts and en.ts (4 new top-level sections howItWorks/modules/advancedFeatures/packages + footer.section/link/country sub-objects). Existing 8 t() calls in Footer.tsx preserved and extended to 28 total.
+  - Task 2 (any casts): 4 critical files cleaned — middleware.ts (6 `as any` → 0), useTransactions.ts (9 `any` → 0 via 6 new typed interfaces), PaymentFlow.tsx (3 `any` → 0 via 2 new string-union types), nextauth/route.ts (11 `as any` → 0 via 1 new AfribayitAuthUser interface + direct typed field assignment). JWT type augmented in next-auth.d.ts with accreditationRole/accreditationCountry.
+  - Task 3 (demo data): 3 components cleaned — VirtualTourViewer (5 fake Unsplash URLs + DEMO_SCENES array deleted, honest empty state added), DroneViewPlayer (2 fake Unsplash day/night URLs deleted, honest empty state added), PricePredictionChart (4 fake country growth rates + Math.sin noise generator deleted, replaced with real backend useQuery call to /properties/{id}/price-prediction, honest "available soon" empty state when no data).
+  - All 3 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 38.8s, tests 65/65 passed.
+
+---
+Task ID: i18n-batch3
+Agent: i18n-batch3-Agent
+Task: Wrap hardcoded French strings with t() calls in 5 high-visibility components
+
+Work Log:
+- Read worklog.md to understand prior context (i18n-any-demo task already wrapped HowItWorks, ModulesSection, AdvancedFeaturesSection, PackagesSection, Footer with t() calls + ~70 new keys). The 5 target files in this task had partial wrapping done by prior agents — this task completes the remaining module-scope arrays and unwrapped JSX strings.
+
+File 1 — src/components/afribayit/EscrowDashboard.tsx:
+  - Already had useTranslation import + `const { t } = useTranslation();` (added by prior task)
+  - The component-level JSX (badge, headers, toasts, OTP modal, dispute input, ledger, transition history) was ALREADY wrapped with `t('escrowDashboard.X', 'French fallback')` calls using ~50 existing keys
+  - The remaining unwrapped strings were in 3 module-scope arrays whose labels/descriptions were hardcoded French:
+    * `ALL_STATES` (12 entries with `label` + `description`)
+    * `RELEASE_CONDITIONS` (7 entries with `label`)
+    * `STATE_ACTIONS` (11 entries across 9 states with `label`)
+  - Refactored each array entry to carry `labelKey`/`labelFallback` and (for ALL_STATES) `descriptionKey`/`descriptionFallback` — pointing at the EXISTING locale keys `escrowDashboard.state.*`, `escrowDashboard.stateDesc.*`, `escrowDashboard.action.*`, `escrowDashboard.condition.*` (which were already defined in fr.ts/en.ts but never read by the component)
+  - Updated the JSX rendering sites:
+    * Current state badge: `ALL_STATES.find(...).label` → `t(ALL_STATES.find(...).labelKey, ...)`
+    * Timeline step labels: `stateConfig.label` → `t(stateConfig.labelKey, stateConfig.labelFallback)`
+    * Current step description: `ALL_STATES.find(...).description` → `t(...descriptionKey, ...descriptionFallback)`
+    * Exception state chips: `state.label` → `t(state.labelKey, state.labelFallback)`
+    * Release conditions: `condition.label` → `t(condition.labelKey, condition.labelFallback)`
+    * Action buttons: `action.label` → `t(action.labelKey, action.labelFallback)`
+  - ~30 user-visible strings newly routed through t() in this file (no new locale keys needed — all 30 keys already existed in the `escrowDashboard.state/stateDesc/action/condition` sub-objects)
+
+File 2 — src/components/afribayit/WalletModule.tsx:
+  - Already had useTranslation + t() for all component-level strings (eyebrow, title, tabs, balance cards, KYC gate, toasts, etc.) using `walletModule.X` keys
+  - Two module-scope arrays were still using hardcoded French:
+    * `filterTypes` (7 entries: Tous, Depots, Retraits, Escrow (financement), Escrow (liberation), Commissions, Abonnements)
+    * `afriPointsRedemption` (4 entries: "500 FCFA de credit wallet", "1 000 FCFA de credit wallet", "Reduction 10% sur abonnement", "Visite gratuite GeoTrust")
+  - Refactored `filterTypes` to carry `labelKey`/`labelFallback` and translated in JSX via `t(ft.labelKey, ft.labelFallback)` — using EXISTING `walletModule.filterAll/filterDeposits/filterWithdrawals/filterEscrowFund/filterEscrowRelease/filterCommissions/filterSubscriptions` keys
+  - Refactored `afriPointsRedemption` to carry `rewardKey`/`rewardFallback` and translated in JSX via `t(item.rewardKey, item.rewardFallback)` — using 4 NEW keys added under `walletModule`:
+    * `rewardCredit500`, `rewardCredit1000`, `rewardDiscount10`, `rewardGeotrustVisit`
+  - Also fixed the unescaped French accents in the original strings (Depots → Dépôts, liberation → libération, credit → crédit, Reduction → Réduction) — the new t() calls use proper accented French
+
+File 3 — src/components/afribayit/RebeccaChat.tsx:
+  - Already had useTranslation + t() for all component-level strings (welcome message, thinking indicator, quick action labels, input placeholder, send button, typing indicator, close button, attach doc button, voice button, etc.) using `rebecca.X` keys
+  - The `getFunctionLabel` function had a hardcoded `labels: Record<string, string>` map (11 entries: search_properties → "Recherche biens", get_property_details → "Détails bien", etc.) used to render function-call badges next to bot messages
+  - Refactored to `labels: Record<string, { key: string; fallback: string }>` and changed the return to `t(entry.key, entry.fallback)`
+  - Added 11 NEW keys under new `rebecca.function` sub-object: search_properties, get_property_details, check_escrow_status, book_hotel, request_geometer, contact_agent, get_market_prices, check_escrow, get_market_stats, find_artisans, calculate_financing
+  - Also wrapped the hardcoded "source" word in the "X source(s)" indicator with `t('rebecca.source', 'source')` (NEW key)
+
+File 4 — src/components/afribayit/PropertyDetail/index.tsx:
+  - Already had useTranslation + t() for nearly all visible strings (error states, alert messages, virtual tour title, back button, share default) using `propertyDetail.X` keys
+  - One unwrapped hardcoded French string remained at the "not found" state: `<p>Ce bien n&apos;existe pas ou a été retiré.</p>`
+  - Wrapped it with `t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')` — using the EXISTING `notFoundDesc` key already defined in fr.ts/en.ts but never read by the component
+  - No new keys needed for this file
+
+File 5 — src/components/afribayit/SubscriptionsModule.tsx:
+  - Already had useTranslation + t() for component-level strings (eyebrow, title, subtitle, current subscription banner, category tabs, boost visualization, plan buttons, modal, toasts) using `subscriptionModule.X` keys
+  - Three module-scope arrays had hardcoded French strings:
+    * `agentTiers` (5 tiers × name + desc + 5-10 features)
+    * `hotelTiers` (3 tiers × name + desc + 4-7 features)
+    * `artisanPlan` (1 plan × name + desc + 7 features)
+  - Plus `PREMIUM_BENEFITS` (6 entries with `label`) and `comparisonFeatures` (12 entries with `name`)
+  - Plus 2 occurrences of "Starter/Essentiel/Avancé/Elite" as hardcoded table headers (one in premium benefits table, one in feature comparison table)
+  - Plus 1 hardcoded "Illimité" string in the premium benefits table cell (when val === -1)
+  - Refactored each tier object to carry `nameKey`/`nameFallback`/`descKey`/`descFallback` and (where price is "Gratuit" or "Sur devis") `priceLabelKey`/`priceLabelFallback` — kept the original `name`/`desc`/`priceLabel` strings as fallbacks so the type union still works
+  - Refactored each feature entry from a plain string to `{ key, fallback, label }` so the React `key` prop is stable and the rendered text comes from `t(f.key, f.fallback)`
+  - Refactored PREMIUM_BENEFITS to use `labelKey`/`labelFallback` and translated in JSX via `t(benefit.labelKey, benefit.labelFallback)`
+  - Refactored comparisonFeatures to use `nameKey`/`nameFallback` and translated in JSX via `t(feat.nameKey, feat.nameFallback)`
+  - Wrapped both table header rows (Starter/Essentiel/Avancé/Elite) with `t('subscriptionModule.tier.X', ...)` calls
+  - Wrapped the hardcoded "Illimité" cell text with `t('subscriptionModule.unlimited', 'Illimité')` — using the EXISTING `unlimited` key already defined in the section
+  - Updated the plan-selection button to compare `currentSubscription?.plan` against `t(tier.nameKey, tier.nameFallback)` (translated tier name) instead of the raw English tier.name, so the button correctly detects the active plan in any locale
+  - Used an IIFE with a typed cast `tier as { priceLabelKey?: string; priceLabelFallback?: string; priceLabel: string }` for the priceLabel render to avoid TypeScript narrowing issues (some tiers have `priceLabelKey`, others don't)
+  - Added NEW keys under `subscriptionModule`:
+    * `tier` sub-object (12 keys): starter, proEssentiel, proAvance, proElite, agenceEntreprise, pmsStarter, pmsPro, pmsEnterprise, artisanPro, essentiel, avance, elite
+    * `desc` sub-object (9 keys): starter, proEssentiel, proAvance, proElite, agenceEntreprise, pmsStarter, pmsPro, pmsEnterprise, artisanPro
+    * `priceLabel` sub-object (2 keys): free, quote
+    * `features` sub-object (66 keys): starter1-5, proEssentiel1-7, proAvance1-10, proElite1-9, agence1-9, pmsStarter1-4, pmsPro1-7, pmsEnterprise1-6, artisanPro1-7
+    * `benefits` sub-object (6 keys): inmail, rebecca, alertes, rapport, whoViewed, badge
+    * `comparison` sub-object (12 keys): annonces, boost, inmail, rebecca, badge, alertes, rapport, whoViewed, crm, apiAccess, dedicatedAccount, support
+  - IMPORTANT: had to rename the new sub-objects from `feature`/`benefit` (singular) to `features`/`benefits` (plural) because the existing `subscriptionModule` section already had `feature: 'Fonctionnalité'` and `benefit: 'Avantage'` as string keys (TS1117 collision). Updated the SubscriptionsModule.tsx key references accordingly via sed.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 4 new walletModule keys + 12 rebecca.function keys + 1 rebecca.source key + 6 new subscriptionModule sub-objects (tier/desc/priceLabel/features/benefits/comparison totaling 107 new keys)
+  - en.ts: same structure with idiomatic English translations for all new keys
+  - Total new keys added to EACH locale file: ~124 (4 + 13 + 107)
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified the spelling and accents end-to-end)
+  - English translations cover the same keys with idiomatic English copy
+
+Verification (all 4 must pass per the task spec):
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors at all)
+  2. `npm run build` → ✓ Compiled successfully in 42s — all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced
+  3. `npm run test` → 6 test files passed, 122 tests passed (57 escrow + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.62s duration
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings
+
+Files touched (7):
+  - src/components/afribayit/EscrowDashboard.tsx
+  - src/components/afribayit/WalletModule.tsx
+  - src/components/afribayit/RebeccaChat.tsx
+  - src/components/afribayit/PropertyDetail/index.tsx
+  - src/components/afribayit/SubscriptionsModule.tsx
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+
+Stage Summary:
+  - EscrowDashboard: 3 module-scope arrays (ALL_STATES, RELEASE_CONDITIONS, STATE_ACTIONS — totaling ~30 user-visible labels and descriptions) now routed through t() using the existing `escrowDashboard.state/stateDesc/action/condition` locale sub-objects. No new keys needed.
+  - WalletModule: 2 module-scope arrays (filterTypes with 7 entries, afriPointsRedemption with 4 entries — totaling 11 user-visible strings) now routed through t(). 4 new walletModule keys added (rewardCredit500/1000, rewardDiscount10, rewardGeotrustVisit). Also fixed missing French accents in original hardcoded strings.
+  - RebeccaChat: getFunctionLabel function (11 entries) now routed through t() via `rebecca.function.*` sub-object. 1 hardcoded "source" word wrapped with `rebecca.source`. 12 new rebecca keys added.
+  - PropertyDetail/index.tsx: 1 remaining unwrapped string (notFoundDesc) wrapped with t() using existing key. No new keys needed.
+  - SubscriptionsModule: 9 tier objects (5 agent + 3 hotel + 1 artisan) refactored with nameKey/descKey/priceLabelKey/feature-key arrays. 6 PREMIUM_BENEFITS labels and 12 comparisonFeatures names wrapped. 8 table-header occurrences (Starter/Essentiel/Avancé/Elite × 2 tables) wrapped. 1 hardcoded "Illimité" cell wrapped with existing key. ~110 user-visible strings newly routed through t(). 107 new subscriptionModule keys added across 6 new sub-objects (tier/desc/priceLabel/features/benefits/comparison).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 122/122 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch4-any-batch4
+Agent: i18n-batch4-any-batch4-Agent
+Task: i18n — wrap hardcoded French strings in 5 more components + fix `any` casts in 4 more files
+
+Work Log:
+
+Task 1 — i18n (5 components, ~140 new locale keys):
+
+  File 1 — src/components/afribayit/OnboardingFlow/ (index.tsx + 6 step files + constants.tsx + types.ts):
+    - constants.tsx: refactored `onboardingSteps` array to carry `titleKey` pointing at EXISTING locale keys (stepWelcome/stepProfile/stepLocation/stepBudget/stepAlerts/stepTour/stepRebecca). The 7 step titles were previously defined in locale but never read by the component.
+    - types.ts: extended `StepDefinition` interface with optional `titleKey?: string` (kept `title` for backward compat).
+    - index.tsx: updated the step-label rendering site to use `{s.titleKey ? t(s.titleKey, s.title) : s.title}` (line ~162) — was `{s.title}` (hardcoded).
+    - WelcomeStep.tsx: added useTranslation import + `const { t } = useTranslation()`. Wrapped 4 hardcoded strings: "Bienvenue sur" (welcomeTitle), the welcome paragraph (welcomeSubtitle), "Commencer la configuration" (startConfig), "Explorer d'abord la plateforme" (exploreFirst).
+    - ProfileStep.tsx: added useTranslation + t(). Wrapped 2 strings: "Quel est votre profil ?" (profileQuestion) + "Cela nous aide à personnaliser votre expérience" (profileHelp).
+    - LocationStep.tsx: added useTranslation + t(). Wrapped 5 strings: title + help + "Pays d'intérêt" + "Villes d'intérêt" + "Sélectionnez au moins une ville".
+    - BudgetStep.tsx: added useTranslation + t(). Wrapped 6 strings: title + help + budget range label + "Minimum" + "Maximum" + max placeholder + "Vos objectifs".
+    - AlertsStep.tsx: added useTranslation + t(). Wrapped 4 strings: title + help + alert frequency label + notification channels label.
+    - TourStep.tsx: added useTranslation + t(). Wrapped 3 strings: title + help + the "Astuce : Vous pouvez accéder..." tip.
+    - RebeccaStep.tsx: added useTranslation + t(). Wrapped 14 strings: title + desc + "Activer Rebecca IA" + "Rebecca sera accessible..." + "Récapitulatif de votre configuration" + 7 summary row labels (Profil, Zone, Villes, Budget max, Objectifs, Alertes, Rebecca IA) + "Activée" + "Désactivée". Also routed the `ville(s)` pluralization through `t('onboardingFlow.summaryCitiesCount', ...)`.
+
+  File 2 — src/components/afribayit/GeoTrustModule.tsx:
+    - geometerServices array: refactored 8 entries to carry `descKey` pointing at new keys `geotrust.serviceGpsDesc`/`serviceSurfDesc`/`serviceInspDesc`/`serviceBornDesc`/`serviceTopoDesc`/`serviceDronDesc`/`serviceCertDesc`/`service3dDesc`. Service name remains `geoServiceLabel(...)` (already translated).
+    - geotrustPacks array: refactored 3 packs to carry `nameKey`/`descKey`/`includesKeys` (parallel array to `includes` for translatable items). Pack name keys: `packStandardName`/`packCertificationName`/`packPremiumName`. Pack desc keys: `packStandardDesc`/`packCertificationDesc`/`packPremiumDesc`. Include keys (only for non-geoServiceLabel items): `packIncludeReport`/`packIncludeBadge`/`packIncludeEscrow`/`packIncludeVr`/`packIncludeDetailedReport`.
+    - Mission workflow: refactored the inline `{ step, title, desc, icon }` array (4 entries) to carry `titleKey`/`descKey` (`workflowDemande`/`workflowDevis`/`workflowMission`/`workflowRapport` + matching `Desc` keys).
+    - Toast error in `handleSubmitMission.onError`: replaced `toast({ title: 'Erreur', description: err.message || 'Impossible de créer la mission.' })` with `toast({ title: t('common.error', 'Erreur'), description: errMsg || t('geotrust.missionCreateError', '...') })` and changed `(err)` → `(err: unknown)` + `err instanceof Error ? err.message : ''`.
+    - Toast success in `handleSubmitMission.onSuccess`: wrapped the description template `Votre demande de mission a été envoyée à ${name}.` with `t('geotrust.missionCreatedDesc', ...)`.
+    - MissionDialog header: wrapped "À {geometer.name} — {city}" prefix "À" with `t('geotrust.toGeometer', 'À')`.
+    - Detail view escrow trust description: wrapped the long "Toute mission GeoTrust transite par AfriBayit..." paragraph with `t('geotrust.escrowTrustDesc', ...)`.
+    - Geometer card "X avis"/"Y missions" labels: wrapped with `t('geotrust.reviewsLabel', 'avis')` and `t('geotrust.missionsCount', 'missions')`. Same for the detail view.
+    - Geometer card "Certifié X ago"/"Inscrit Y ago" labels: wrapped with `t('geotrust.certifiedAgo', 'Certifié')` and `t('geotrust.registeredAgo', 'Inscrit')`.
+    - Pack render site: changed `{pack.name}` → `{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}`, same for description. For `includes.map`, added idx-based lookup into `includesKeys` and rendered `itemKey ? t(itemKey, item) : item`. The pack-selected toast description now uses the translated pack name.
+
+  File 3 — src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx:
+    - certificationSteps array (6 entries): refactored to carry `titleKey`/`descKey` pointing at new keys `notary.certStepInscription`/`certStepKyc`/`certStepAi`/`certStepHuman`/`certStepCert`/`certStepActivation` (+ matching `Desc` keys for each).
+    - escrowNotaryStates array (4 entries): refactored to carry `labelKey` (`notary.escrowAssigned`/`escrowInProgress`/`escrowDeedSigned`/`escrowAndf`).
+    - subscriptionTiers array (3 entries): refactored to carry `nameKey` (`notary.tierStandard`/`tierPremium`/`tierElite`).
+    - Certification tab JSX (line ~975): wrapped step title `{s.title}` → `{s.titleKey ? t(s.titleKey, s.title) : s.title}`. Step detail heading "Étape X : {title}" wrapped with `t('notary.stepLabel', 'Étape')` + translated step title + translated step description.
+    - Escrow state machine JSX (line ~856): wrapped `{state.label}` → `{state.labelKey ? t(state.labelKey, state.label) : state.label}`.
+    - Subscription tiers JSX (line ~1258): wrapped `{tier.name}` → `{tier.nameKey ? t(tier.nameKey, tier.name) : tier.name}`. Wrapped "Commission :" label, "Populaire" badge, "Actuel"/"Choisir" buttons.
+    - 4 toast handlers (handleContactNotary, handleOpenDetail, handleAssignNotary, handleChooseNotaryPlan): wrapped all hardcoded French toast titles/descriptions with t() calls. 9 new keys: `loginRequired`, `loginContactDesc`, `loginProfileDesc`, `loginAssignDesc`, `conversationCreated`, `conversationCreatedDesc`, `conversationError`, `notaryAssigned`, `notaryAssignedDesc`, `assignError`, `subscriptionActivated`, `subscriptionActivatedDesc`, `activationError`. Also changed `catch (err)` → `catch (err: unknown)` in handleAssignNotary with `err instanceof Error ? err.message : ...` pattern.
+    - handleGenerateDeed + handleESign toasts: wrapped with `t('notary.deedGenerated', ...)`, `t('notary.deedGeneratedDemo', ...)`, `t('notary.esignApplied', ...)`, `t('notary.esignAppliedDemo', ...)`.
+    - 8 dashboard section headings: wrapped with `t('notary.statAssigned'/'statInProgress'/'statAndf'/'statRevenue'/'deadlineTitle'/'inProgress'/'escrowCycleTitle'/'assignedTransactionsTitle'/'secureArchiveTitle'/'andfStatusTitle'/'escrowReleaseTitle')`.
+    - 3 empty-state messages: `t('notary.noActiveTransaction')`, `t('notary.noAssignedTransaction')`, `t('notary.noArchivedDoc')`.
+    - Deed tab: wrapped "Type d'acte" label, 3 deed type options (Sale/Promise/Donation), "Vendeur"/"Acheteur" labels + placeholders, "Description / Instructions" label, "Génération en cours..."/"Générer le projet d'acte" button text, "Aperçu du projet" preview label, and the "Ce projet est généré par IA..." warning text.
+    - ESignature tab: wrapped "Signer" button label with `t('notary.signBtn', 'Signer')`.
+
+  File 4 — src/components/afribayit/HospitalityModule/index.tsx:
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';` and `const { t } = useTranslation();` at top of component.
+    - Wrapped the "AfriBayit Hospitality" badge text with `t('hospitality.badge', 'AfriBayit Hospitality')`.
+    - Wrapped header title "Hôtels & Séjours" → `{t('hospitality.headerTitle1', 'Hôtels')} & <span>{t('hospitality.headerTitleAccent', 'Séjours')}</span>`.
+    - Wrapped header subtitle with `t('hospitality.headerSubtitle', '...')`.
+    - handleSubmitBooking toasts: wrapped 4 strings — `bookingConfirmed`, `bookingConfirmedDesc`, error title via `t('common.error', 'Erreur')`, `bookingErrorDesc`. Also changed `(err)` → `(err: unknown)` with `err instanceof Error ? err.message : ''` pattern.
+
+  File 5 — src/components/afribayit/GuesthouseModule/index.tsx:
+    - useTranslation already imported and `const { t } = useTranslation();` already present.
+    - useEffect cancellation policy: refactored initial state from hardcoded `'Flexible — Annulation gratuite 24h avant'` to empty string `''`. Wrapped 3 `setCancellationPolicy()` calls in the useEffect with `t('guesthouse.policyModerate'/'policyFlexible', ...)`. (Note: `t` is not in the useEffect deps because it changes identity on every render — exhaustive-deps rule is disabled in eslint config.)
+    - handleSubmitBooking toasts: wrapped 3 strings — `t('guesthouse.bookingConfirmed', 'Réservation confirmée')`, `t('guesthouse.bookingConfirmedDesc', '${name} réservée pour ${nights} nuit(s)')`, `t('guesthouse.bookingError', 'Erreur lors de la réservation')`.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 39 new `onboardingFlow` keys (welcomeTitle through rebeccaDisabled) + 40 new `geotrust` keys (missionCreatedDesc through workflowRapportDesc) + 60 new `notary` keys (certStepInscription through signBtn) + 7 new `hospitality` keys (badge through bookingErrorDesc) + 5 new `guesthouse` keys (policyFlexible through bookingError).
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - Total new keys added to EACH locale file: ~150. All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Task 2 — `any` casts (4 files, 20 occurrences removed):
+
+  File 1 — src/hooks/useAdmin.ts (7 `any` occurrences removed):
+    - 7 `api.get<any>(...)` calls in `useAdminProperties`/`useAdminCommunity`/`useAdminShortTermRentals`/`useAdminBookings`/`useAdminDisputes`/`useAdminPayouts`/`useAdminContent` → `api.get<Record<string, unknown>>(...)`.
+    - Verified: `grep -nE "\bany\b" src/hooks/useAdmin.ts` → 0 matches.
+
+  File 2 — src/hooks/useCommunity.ts (5 `any` occurrences removed):
+    - 5 `const res: any = await api.get(...)` in `useCommunityPost`/`useCommunityPostReplies`/`useCommunityGroup`/`useCommunityGroupMembers`/`useCommunityEvent` → `const res: Record<string, unknown> = await api.get(...)`. Updated the defensive unwraps to use proper type assertions: `(res?.data as Record<string, unknown> | undefined) ?? res`, `(res?.data as unknown[] | undefined) ?? (res?.replies as unknown[] | undefined) ?? []`, `(res?.pagination as Record<string, unknown> | null | undefined) ?? null`.
+    - Verified: `grep -nE "\bany\b" src/hooks/useCommunity.ts` → 0 matches.
+
+  File 3 — src/components/afribayit/SecuritySettings.tsx (4 `any` occurrences removed):
+    - Defined 2 proper interfaces: `AuthResponse` (success?, error?) and `Setup2FAResponse extends AuthResponse` (qrCodeUrl?, manualEntryKey?, secret?).
+    - handleChangePassword: `const data: any = await api.post(...)` → `const data = await api.post<AuthResponse>(...)`.
+    - handleStart2FASetup: `const data: any = await authApi.setup2FA()` → `const data = await authApi.setup2FA() as Setup2FAResponse` (cast needed because `authApi.setup2FA()` returns `Promise<any>` from the untyped api-client).
+    - handleVerify2FA: `const data: any = await authApi.enable2FA(totpCode)` → `const data = await authApi.enable2FA(totpCode) as AuthResponse`.
+    - handleDisable2FA: `const data: any = await authApi.disable2FA(disablePassword)` → `const data = await authApi.disable2FA(disablePassword) as AuthResponse`.
+    - Verified: `grep -nE "\bany\b" src/components/afribayit/SecuritySettings.tsx` → 0 matches.
+
+  File 4 — src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx (4 `any` occurrences removed):
+    - Defined 2 proper interfaces: `DeedGenerateResponse` (deedText?, deed?.content?) and `AssignTransactionItem` (id, property?: { title?: string } | string, amount?, status?).
+    - handleGenerateDeed: `apiFetch<any>('/notaries/deeds/generate', ...)` → `apiFetch<DeedGenerateResponse>(...)`. The subsequent `data?.deedText || data?.deed?.content || '...'` access is now type-safe.
+    - handleESign: `apiFetch<any>('/notaries/signatures/confirm', ...)` → `apiFetch<Record<string, unknown>>(...)`. The response isn't used (the function just awaits the call), so a generic Record is sufficient.
+    - AssignNotaryModal component signature: `transactions: any[]` → `transactions: AssignTransactionItem[]`. The modal receives `escrowAccounts` (EscrowAccount[]) which is compatible because EscrowAccount's `property: string` matches `property?: { title?: string } | string` and the other optional fields are compatible. (Initially added a `[key: string]: unknown` index signature but TS rejected it as incompatible with EscrowAccount's strict shape — removed the index signature and the build passed.)
+    - AssignNotaryModal map function: `{transactions.map((tx: any) => ...)` → `{transactions.map((tx: AssignTransactionItem) => ...)`. Updated the `tx.property?.title || 'Transaction'` access to handle the union type: `(typeof tx.property === 'object' ? tx.property?.title : tx.property) || t('notary.transactionLabel', 'Transaction')`.
+    - Verified: `grep -nE "\bany\b" src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx` → 0 matches.
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (no src/ errors at all). The only mid-way error (`EscrowAccount[]` not assignable to `AssignTransactionItem[]` due to index signature mismatch) was fixed by removing the `[key: string]: unknown` index signature from `AssignTransactionItem`.
+  2. `npm run build` → ✓ Compiled successfully in 42s — all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 6.89s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Files touched (11 total):
+  - src/components/afribayit/OnboardingFlow/index.tsx
+  - src/components/afribayit/OnboardingFlow/constants.tsx
+  - src/components/afribayit/OnboardingFlow/types.ts
+  - src/components/afribayit/OnboardingFlow/WelcomeStep.tsx
+  - src/components/afribayit/OnboardingFlow/ProfileStep.tsx
+  - src/components/afribayit/OnboardingFlow/LocationStep.tsx
+  - src/components/afribayit/OnboardingFlow/BudgetStep.tsx
+  - src/components/afribayit/OnboardingFlow/AlertsStep.tsx
+  - src/components/afribayit/OnboardingFlow/TourStep.tsx
+  - src/components/afribayit/OnboardingFlow/RebeccaStep.tsx
+  - src/components/afribayit/GeoTrustModule.tsx
+  - src/components/afribayit/NotaryModule/NotaryModuleImpl.tsx
+  - src/components/afribayit/HospitalityModule/index.tsx
+  - src/components/afribayit/GuesthouseModule/index.tsx
+  - src/lib/i18n/locales/fr.ts
+  - src/lib/i18n/locales/en.ts
+  - src/hooks/useAdmin.ts
+  - src/hooks/useCommunity.ts
+  - src/components/afribayit/SecuritySettings.tsx
+
+Stage Summary:
+  - Task 1 (i18n): 5 components wrapped with t() calls + ~150 new translation keys added to both fr.ts and en.ts. OnboardingFlow: 8 sub-files updated (index + 6 steps + constants + types), 39 new onboardingFlow keys. GeoTrustModule: 3 module-scope arrays refactored (geometerServices with 8 descKeys, geotrustPacks with 3 nameKeys/descKeys/includesKeys, inline workflow with 4 titleKeys/descKeys) + 6 inline strings (toast, dialog header, escrow trust desc, reviews/missions count, certified/registered labels) → 40 new geotrust keys. NotaryModuleImpl: 3 module-scope arrays refactored (certificationSteps 6 titleKeys/descKeys, escrowNotaryStates 4 labelKeys, subscriptionTiers 3 nameKeys) + ~50 inline strings (4 toast handlers, 8 dashboard headings, 3 empty-states, deed tab labels/buttons, eSign button) → 60 new notary keys. HospitalityModule: header + 2 toasts → 7 new hospitality keys. GuesthouseModule: 3 cancellation policies + 3 toast strings → 5 new guesthouse keys.
+  - Task 2 (any casts): 4 files cleaned — useAdmin.ts (7 `any` → 0 via Record<string, unknown> response types), useCommunity.ts (5 `any` → 0 via Record<string, unknown> + defensive type assertions on the unwrap chain), SecuritySettings.tsx (4 `any` → 0 via 2 new typed interfaces AuthResponse + Setup2FAResponse), NotaryModuleImpl.tsx (4 `any` → 0 via 2 new typed interfaces DeedGenerateResponse + AssignTransactionItem). Total: 20 `any` occurrences eliminated.
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch5
+Agent: i18n-batch5-Agent
+Task: i18n — wrap hardcoded French strings with t() calls in 10 components
+
+Work Log:
+
+Files touched (12 total):
+- src/components/afribayit/AnalyticsDashboard/OverviewPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/RebeccaPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/AgentProfile.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/InvestisseurProfile.tsx
+- src/components/afribayit/CommunityModule/AfriPointsPanel.tsx
+- src/components/afribayit/CommunityModule/NewsPanel.tsx
+- src/components/afribayit/CommunityModule/dialogs/NewPostDialog.tsx
+- src/components/afribayit/GuesthouseModule/ChambersPanel.tsx
+- src/components/afribayit/GuesthouseModule/MealsPanel.tsx
+- src/components/afribayit/CancellationPolicyDisplay.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — OverviewPanel.tsx:
+    - Added `import { useTranslation } from '@/lib/i18n/use-translate';` + `const { t } = useTranslation();` at top of component.
+    - Wrapped 13 visible strings + 2 dynamic insight strings:
+      * loadError ("Erreur lors du chargement des données analytiques")
+      * monthlyRevenue ("Revenus mensuels") + noRevenueData ("Aucune donnée de revenu disponible")
+      * byCity ("Par ville") + noCityData ("Aucune donnée par ville")
+      * connectionsFollowers ("Connexions & Abonnés")
+      * connections ("Connexions") + followers ("Abonnés")
+      * overPeriod ("sur la période") — used twice
+      * contentEngagement ("Engagement contenu")
+      * engagementLikes ("J'aime") + engagementComments ("Commentaires") + engagementShares ("Partages") + engagementSaves ("Enregistrés") — the inline `[{ label: ... }]` array was refactored to call t() for each label
+      * profileCompleteness ("Complétude du profil")
+      * missingElements ("Éléments manquants :")
+      * marketComparison ("Comparaison marché")
+      * market ("marché") — used in "marché: X" market comparison label
+      * conversionHigher ("Votre taux de conversion est 18% supérieur") + vsMarketAvg ("à la moyenne des agents de")
+      * rebeccaInsights ("Rebecca Insights") + aiAnalysis ("Analyse IA de vos données")
+      * positiveTrend ("Tendance positive") + revenueTrendDesc (template) + loginForTrends
+      * opportunityDetected ("Opportunité détectée") + opportunityDesc (template) + marketDataPending
+    - 28 new keys added under `analytics.overview` sub-object.
+
+  File 2 — RebeccaPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored module-scope `PRIORITY_CONFIG` type from `Record<RebeccaPriority, { label; color; bg; border }>` to add `labelKey: string`.
+    - Wrapped conseillereTitle ("Rebecca — Votre conseillère IA") + conseillereSubtitle.
+    - Wrapped the 3 priority labels via `t(cfg.labelKey, cfg.label)` — Priorité haute, Priorité moyenne, Suggestions.
+    - 5 new keys added under `analytics.rebecca` sub-object (priorityHigh, priorityMedium, suggestions, conseillereTitle, conseillereSubtitle). Note: this sub-object lives inside the `analytics` section, NOT the top-level `rebecca` section — they are separate namespaces.
+
+  File 3 — AgentProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped ~25 strings across:
+      * 3 KPI cards: avgSaleTime ("Temps de vente moyen") + days ("jours") + median ("Médiane") + record ("Record"), localRanking ("Classement local") + outOf ("sur") + agents ("agents"), agentScore ("Score agent") + scoreDesc
+      * Performance annonces card: listingPerformance heading + activeListings, totalViews, contactsReceived, conversionRate labels
+      * Volume transactions card: transactionVolume heading + closedSales, totalValue, inProgress labels
+      * ROI Premium card: roiPremium heading + investment, revenueGenerated, roi, extraContacts labels
+      * Carte de chaleur mini heading: heatmapTitle ("Carte de chaleur — Vos zones")
+      * Entonnoir de conversion heading: conversionFunnel ("Entonnoir de conversion")
+    - 27 new keys added under `analytics.agentProfile` sub-object.
+
+  File 4 — InvestisseurProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 4 KPI cards: portfolioValue, totalRoi, roiLocatif, monthlyRental.
+    - Activité recherche heading + 3 stat labels (propertiesViewed, activeAlerts, scheduledVisits).
+    - Portfolio immobilier heading + roi ("ROI") + rentalYield ("rendement locatif") + occupancyRate ("Taux d'occupation") + occupancyAboveMarket caption.
+    - Historique transactions heading + 4 table column headers (date, type, property, amount).
+    - Entonnoir d'investissement heading.
+    - 19 new keys added under `analytics.investisseurProfile` sub-object.
+
+  File 5 — AfriPointsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped points ("AfriPoints"), level ("Niveau"), pointsToNext/pointsUnit/forLevel for the "Plus que X points pour le niveau Y" progress text.
+    - Refactored the inline `[{ action, points, icon, color }]` array (8 entries) to call `t('community.afriPoints.earnX', 'FR fallback')` for each action.
+    - Wrapped earnTitle ("Gagner des AfriPoints") and spendTitle ("Dépenser des AfriPoints") headings.
+    - Refactored the spend array (5 entries) to call t() for each item label.
+    - Wrapped pts ("pts") label used 13 times.
+    - Wrapped the info banner rule ("1 XOF de transaction = 1 point") + ruleDesc.
+    - 24 new keys added under `community.afriPoints` sub-object.
+
+  File 6 — NewsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped news title ("Actualités immobilières"), subtitle, "Lire plus" link, info banner title + description.
+    - 5 new keys added under `community.news` sub-object.
+    - Note: the newsItems array content (titles, excerpts, categories, sources) is intentionally NOT wrapped because those are demo content, not UI labels — per task instructions to focus on USER-VISIBLE UI strings (headings, button labels, descriptions, empty-states).
+
+  File 7 — NewPostDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Nouveau sujet"), 4 form labels (Titre, Contenu, Catégorie, Tags), 4 placeholders (titlePlaceholder, contentPlaceholder, selectCategory, tagsPlaceholder), mentionHint ("💡 Utilisez @pseudo pour mentionner un membre"), 7 category <option> labels (catDiscussion, catQuestion, catSuccess, catMarket, catLegal, catEvent, catInvestment), rebeccaCheck note ("Rebecca IA vérifiera votre contenu avant publication"), cancel button ("Annuler"), publish/publishing button labels.
+    - 22 new keys added under `community.newPost` sub-object.
+
+  File 8 — ChambersPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 strings: capacity ("Capacité"), pers ("pers."), pricePerNight ("Prix/nuit"), book ("Réserver"), unavailable ("Indisponible"), noRooms empty state ("Aucune chambre disponible pour cette guesthouse.").
+    - 6 new keys added under `guesthouse.chambers` sub-object.
+
+  File 9 — MealsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Added a small `mealLabel(key, fallback)` helper that switches on the mealTypeConfig key (breakfast/lunch/dinner) and calls `t('guesthouse.meals.breakfast/lunch/dinner', fallback)`. This keeps the constants file untouched while still translating the labels at the render site.
+    - Wrapped the meal card label via `mealLabel(mtc.key, mtc.label)` instead of `{mtc.label}`.
+    - Wrapped Disponible and Non proposé labels.
+    - 5 new keys added under `guesthouse.meals` sub-object.
+
+  File 10 — CancellationPolicyDisplay.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored module-scope `POLICIES` array so each policy carries `nameKey`/`descriptionKey`/`commissionKey`, and each rule carries `conditionKey`/`refundKey`. The original `name`/`description`/`commission`/`condition`/`refund` French strings are kept as fallbacks.
+    - Wrapped policy name (4), description (4), rule condition (7), rule refund (3 — refund100/refund50/refundNone), commission text (4) with t() calls.
+    - IMPORTANT: the original code uses `rule.refund.includes('100%')` and `rule.refund.includes('Aucun')` to determine the icon (✓/✗/•) and the color (green/red/navy). I kept those checks referencing the original French `rule.refund` string (NOT the translated refund) so the visual logic remains correct in any locale. The displayed refund text is rendered via a local `const refund = t(rule.refundKey, rule.refund)` and `{refund}` in the JSX.
+    - 22 new keys added under a brand-new top-level `cancellation` section.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 4 new sub-objects under `analytics` (overview 28 keys / rebecca 5 keys / agentProfile 27 keys / investisseurProfile 19 keys), 3 new sub-objects under `community` (afriPoints 24 keys / news 5 keys / newPost 22 keys), 2 new sub-objects under `guesthouse` (chambers 6 keys / meals 5 keys), and a new top-level `cancellation` section (22 keys). Total new keys added to fr.ts: ~163.
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (exit 0). No type errors introduced by the new keys or t() calls.
+  2. `npm run build` → ✓ Compiled successfully in 45s; all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 6.13s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - OverviewPanel: 13 visible UI strings + 2 dynamic insight strings wrapped → 28 new analytics.overview keys.
+  - RebeccaPanel: PRIORITY_CONFIG refactored with labelKey + 2 header strings wrapped → 5 new analytics.rebecca keys.
+  - AgentProfile: 3 KPI cards + 3 stats cards (with 11 inner labels) + 2 section headings wrapped → 27 new analytics.agentProfile keys.
+  - InvestisseurProfile: 4 KPI cards + Activité recherche (heading + 3 labels) + Portfolio immobilier (heading + 3 labels) + Historique transactions (heading + 4 column headers) + Entonnoir heading wrapped → 19 new analytics.investisseurProfile keys.
+  - AfriPointsPanel: 8-item earn array + 5-item spend array + 4 misc strings wrapped → 24 new community.afriPoints keys.
+  - NewsPanel: 4 visible UI strings wrapped (header title, subtitle, read more, info banner) → 5 new community.news keys. Demo content NOT wrapped.
+  - NewPostDialog: dialog title + 4 form labels + 4 placeholders + mention hint + 7 category options + Rebecca note + Cancel/Publish/Publishing button labels wrapped → 22 new community.newPost keys.
+  - ChambersPanel: 5 visible UI strings wrapped (capacity, pers, price/night, book, unavailable, no-rooms empty state) → 6 new guesthouse.chambers keys.
+  - MealsPanel: 3 meal-type labels (via mealLabel helper) + Disponible + Non proposé wrapped → 5 new guesthouse.meals keys.
+  - CancellationPolicyDisplay: POLICIES array refactored with nameKey/descriptionKey/commissionKey/conditionKey/refundKey; 4 policy names + 7 rule conditions + 3 refund strings + 4 commissions + 4 descriptions wrapped → 22 new cancellation keys (new top-level section).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 45s, tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch6-any-batch5
+Agent: i18n-batch6-any-batch5 Agent
+Task: Wrap more hardcoded French strings in 10 components (batch 6) + fix `any` casts in 4 files (batch 5)
+
+Work Log:
+- Read worklog.md to understand prior context (previous i18n batches 1-5 + any-fix batches 1-4)
+- Explored target files and existing locale file structure (analytics, community, guesthouse sections)
+- For each target file, added `import { useTranslation } from '@/lib/i18n/use-translate';` and `const { t } = useTranslation();`, then wrapped the most visible hardcoded French strings with `t('namespace.key', 'French fallback')` calls
+- Added new translation keys to `src/lib/i18n/locales/fr.ts` and `src/lib/i18n/locales/en.ts` (same structure in both)
+- Verified all 4 gates: `npx tsc --noEmit` 0 errors, `npm run build` ✓ Compiled successfully in 43s (82 routes), `npm run test` 7 files / 179 tests passed, `npx eslint .` 0 errors / 0 warnings
+
+Files updated (i18n Task 1 — 10 components):
+- src/components/afribayit/AnalyticsDashboard/HeatmapPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/ProfileViewsPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/SearchPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/ArtisanProfile.tsx
+- src/components/afribayit/AnalyticsDashboard/profiles/FormateurProfile.tsx
+- src/components/afribayit/CommunityModule/dialogs/PollDialog.tsx
+- src/components/afribayit/CommunityModule/dialogs/ReportDialog.tsx
+- src/components/afribayit/GuesthouseModule/BookingCalendarPanel.tsx
+- src/components/afribayit/GuesthouseModule/CertificationPanel.tsx
+- src/components/afribayit/GuesthouseModule/ListingsPanel.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — HeatmapPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 9 strings: panel title ("Performance par zone") + subtitle ("Carte de chaleur des performances immobilières par quartier et ville.") + 3 trend labels (En hausse / En baisse / Stable) + "Prix moy:" label + 4 legend labels (Excellent / Bon / Moyen / Faible).
+    - 9 new keys added under `analytics.heatmap` sub-object.
+    - IMPORTANT: The legend "Faible (<40)" originally used `&lt;40` in JSX text (where JSX decodes the entity). I used the literal `<` character in the translation string and fallback because the t() function returns a plain string — JSX does NOT decode HTML entities inside `{}` expressions, so `&lt;40` would render literally as the text "&lt;40".
+
+  File 2 — ProfileViewsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI labels (Vues totales, Accès direct, Via recherche, Via referral, Évolution) + "Origine des vues" heading + 3 origin labels (Recherche, Accès direct, Referral). The inline `[{label, value, total, color}]` array was refactored so each `label` calls t().
+    - 9 new keys added under `analytics.profileViews` sub-object.
+
+  File 3 — SearchPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped panel title ("Apparitions en recherche") + subtitle + 4 table column headers (Mot-clé, Apparitions, Clics, CTR).
+    - 6 new keys added under `analytics.searchPanel` sub-object.
+
+  File 4 — ArtisanProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI cards (Missions terminées, Taux satisfaction, Temps de réponse, Classement, Note moyenne) + "Demandes devis" heading + 4 quote-status labels (Reçues, Envoyées, Acceptées, En attente) + "Entonnoir de conversion artisan" heading + "Spécialités" heading + "missions" unit.
+    - 13 new keys added under `analytics.artisanProfile` sub-object.
+
+  File 5 — FormateurProfile.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 KPI cards (Cours publiés, Inscrits total, Taux complétion, Notes & avis, Certifications délivrées) + "Inscrits par cours" heading + "inscrits" unit + "Taux complétion:" inline label + "Revenus générés" heading + "ce mois" caption + "étudiants" unit + "Entonnoir de conversion formateur" heading.
+    - 12 new keys added under `analytics.formateurProfile` sub-object.
+
+  File 6 — PollDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Créer un sondage") + Question label + question placeholder + "Option" template (used in `Option ${i+1}` placeholder) + "+ Ajouter une option" button + Annuler + Publication... + Publier le sondage.
+    - 8 new keys added under `community.pollDialog` sub-object.
+    - IMPORTANT: originally named the new sub-object `poll` but had to rename to `pollDialog` because the existing `community` section already had `poll: 'Sondage'` as a string key (TS1117 collision with the new object). Updated PollDialog.tsx key references accordingly via sed.
+
+  File 7 — ReportDialog.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped dialog title ("Signaler ce contenu") + moderation note + "Raison du signalement" label + "Sélectionnez une raison" placeholder + 7 reason <option> labels (Spam, Discours de haine, Harcèlement, Fausse information, Contenu inapproprié, Arnaque / fraude, Autre) + Annuler + Envoi... + Signaler button labels.
+    - 13 new keys added under `community.report` sub-object. (No collision — only `reportContent` exists as a string key in community.)
+
+  File 8 — BookingCalendarPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped "Calendrier" title (the `— ${month year}` suffix is left dynamic via toLocaleDateString) + 2 legend labels (Disponible, Réservé).
+    - 3 new keys added under `guesthouse.bookingCalendar` sub-object.
+
+  File 9 — CertificationPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped "Certification Guesthouse" heading + 3 status labels (Guesthouse certifiée, En cours de certification, Non certifiée) + 3 status descriptions. The status text and description for the no-activeDetail fallback (the `{!activeDetail && ...}` block at the bottom) was also wrapped using the same `statusPending` and `descPending` keys.
+    - 7 new keys added under `guesthouse.certification` sub-object.
+
+  File 10 — ListingsPanel.tsx:
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 21 strings:
+      * Search bar: searchPlaceholder
+      * Filter buttons: "Filtres" + "Publier une guesthouse" (used twice)
+      * Filter panel: "Certification:" label + "résultat(s)" counter
+      * Error state: loadErrorTitle + loadErrorDesc
+      * Empty state: emptySearchTitle/Desc + emptyCountryTitle/Desc + resetFilters + publishGuesthouse
+      * How it works mini-section: howItWorks heading + step1Title/Desc + step2Title/Desc + step3Title/Desc (the inline `[{icon, title, desc}]` array was refactored to call t() for each title and desc)
+      * Property cards: "chambre(s)" room count unit + "Nouveau" badge + "À partir de" price prefix
+      * Results count footer: "guesthouse(s) trouvée(s)" + "pour" query prefix
+    - 21 new keys added under `guesthouse.listings` sub-object.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 5 new sub-objects under `analytics` (heatmap 9 keys / profileViews 9 keys / searchPanel 6 keys / artisanProfile 13 keys / formateurProfile 12 keys), 2 new sub-objects under `community` (pollDialog 8 keys / report 13 keys), 3 new sub-objects under `guesthouse` (bookingCalendar 3 keys / certification 7 keys / listings 21 keys). Total new keys added to fr.ts: ~101.
+  - en.ts: same structure with idiomatic English translations for all new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Task 2 — `any` cast fixes:
+
+  Note: The task description mentioned 6 + 5 + 6 + 5 = 22 `any` occurrences across the 4 target files, but in practice PropertyGrid.tsx, FeaturedProperties.tsx, and AdvancedFilterSidebar.tsx already had ZERO `any` occurrences (verified via `grep -nE "(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)"`). These had been cleaned up by earlier `any` batches logged in worklog.md (AdvancedFilterSidebar had its FilterState interface defined, PropertyGrid had PropertyListItem interface, FeaturedProperties had FeaturedPropertiesResponse type alias). Only `src/app/leases/[id]/page.tsx` actually had `any` casts remaining.
+
+  File 1 — PropertyGrid.tsx: NO `any` found. Skipped (already clean).
+  File 2 — FeaturedProperties.tsx: NO `any` found. Skipped (already clean).
+  File 3 — AdvancedFilterSidebar.tsx: NO `any` found. Skipped (already clean). (The word "any" appears only in a JSDoc comment on line 27, not as a type cast.)
+
+  File 4 — src/app/leases/[id]/page.tsx: 6 `any` occurrences fixed.
+    - Defined 6 new TypeScript interfaces near the top of the file:
+      * `LeaseDocument` — id, documentType, url?, ownerSigned?, ownerSignedAt?, tenantSigned?, tenantSignedAt?
+      * `LeaseInventory` — id, type ('in'|'out'), conductedAt, tenantSigned?, ownerSigned?, items?
+      * `RentPayment` — id, dueDate, amountDue, amountPaid?, paidAt?, releasedAt?, status, isInitial?
+      * `LeaseParty` — id?, name?, email?, phone?, avatar?
+      * `LeaseProperty` — title?, city?, images? (string | string[] | null)
+      * `LeaseDetail` — id, leaseRef, status, country, currency, monthlyRent, securityDeposit, leaseTermMonths, startDate, endDate, furnished?, chargesIncluded?, noticePeriodDays?, tenantId?, ownerId?, owner?, tenant?, property?, documents?, inventories?, rentPayments?
+    - Replaced `const lease = data as Record<string, any> | undefined;` → `const lease = data as LeaseDetail | undefined;`
+    - Replaced `(d: any)` and `(inv: any)` in the three `.find()` callbacks with implicit-typed parameters (now inferred from `LeaseDetail.documents: LeaseDocument[]` and `LeaseDetail.inventories: LeaseInventory[]`).
+    - Replaced `inventory?: any;` (in InventoryRow component props) → `inventory?: LeaseInventory;`
+    - Replaced `payments: any[];` (in RentPaymentsList component props) → `payments: RentPayment[];`
+    - Side-effect fix: the `SignatureStatus` component's `signed: boolean` prop was incompatible with `contractDoc.ownerSigned` (now `boolean | undefined` from the new `LeaseDocument` interface). Changed the prop type to `signed?: boolean` so undefined is allowed (the JSX still treats undefined as falsy via `signed ? ... : ...` ternaries — same visual behavior).
+
+After the fix, `grep -nE "(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)" src/app/leases/[id]/page.tsx` returns no matches.
+
+Total `any` count in src/ (excluding node_modules and .test. files):
+  - Before this task: 133
+  - After this task: 128 (reduction of 5)
+  - Note: the reduction is 5 instead of 6 because the original grep pattern in the task (`: any\b\|as any\|<any>`) does not match `Record<string, any>` or `any[]`. The actual `any` count reduced is 6 (all in leases/[id]/page.tsx). With the broader pattern `(: *any|as any|<any>|any\[|Record<string, any>|Array<any>)` the count went from 134 → 128.
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → 0 errors (exit 0). No type errors introduced by the new keys, t() calls, or LeaseDetail/LeaseDocument/LeaseInventory/RentPayment interfaces.
+  2. `npm run build` → ✓ Compiled successfully in 43s; all 82 routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced. (The pre-existing "middleware" deprecation warning and metadataBase warning are unchanged.)
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.80s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - HeatmapPanel: 9 visible UI strings wrapped (title + subtitle + 3 trends + 1 avg-price label + 4 legend labels) → 9 new analytics.heatmap keys.
+  - ProfileViewsPanel: 5 KPI labels + heading + 3 origin labels wrapped → 9 new analytics.profileViews keys.
+  - SearchPanel: title + subtitle + 4 column headers wrapped → 6 new analytics.searchPanel keys.
+  - ArtisanProfile: 5 KPI cards + Demandes devis heading + 4 quote-status labels + Entonnoir heading + Spécialités heading + missions unit wrapped → 13 new analytics.artisanProfile keys.
+  - FormateurProfile: 5 KPI cards + Inscrits par cours heading + enrolled unit + Taux complétion: inline label + Revenus générés heading + ce mois caption + étudiants unit + Entonnoir heading wrapped → 12 new analytics.formateurProfile keys.
+  - PollDialog: title + Question label + question placeholder + Option template + add-option button + Cancel + Publishing + Publish button labels wrapped → 8 new community.pollDialog keys (renamed from `poll` to avoid TS1117 collision).
+  - ReportDialog: title + moderation note + reason label + select-reason placeholder + 7 reason options + Cancel + Sending + Submit button labels wrapped → 13 new community.report keys.
+  - BookingCalendarPanel: title + 2 legend labels wrapped → 3 new guesthouse.bookingCalendar keys.
+  - CertificationPanel: title + 3 status labels + 3 status descriptions wrapped → 7 new guesthouse.certification keys.
+  - ListingsPanel: 21 strings wrapped (search bar + filter buttons + filter panel + error/empty states + how-it-works mini-section + property card labels + results footer) → 21 new guesthouse.listings keys.
+  - leases/[id]/page.tsx: 6 `any` occurrences replaced with proper interfaces (LeaseDetail, LeaseDocument, LeaseInventory, RentPayment, LeaseParty, LeaseProperty); SignatureStatus `signed` prop relaxed to optional to match new typing.
+  - PropertyGrid.tsx, FeaturedProperties.tsx, AdvancedFilterSidebar.tsx: verified already free of `any` casts (no changes needed).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 43s (82 routes), tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch7
+Agent: i18n-batch7-Agent
+Task: i18n — wrap hardcoded French strings with t() calls in 12 more components
+
+Work Log:
+
+Files touched (14 total):
+- src/components/afribayit/AcademyModule/CataloguePanel.tsx
+- src/components/afribayit/AcademyModule/WebinarsPanel.tsx
+- src/components/afribayit/AnalyticsDashboard/ProfilesPanel.tsx
+- src/components/afribayit/HospitalityModule/HotelDetail.tsx
+- src/components/afribayit/InvestmentGuide.tsx
+- src/components/afribayit/KycLevelCard.tsx
+- src/components/afribayit/PaysCouverts.tsx
+- src/components/afribayit/PropertyDetail/PropertyGallery.tsx
+- src/components/afribayit/PropertyDetail/PropertySidebar.tsx
+- src/components/afribayit/RoleContextBanner.tsx
+- src/components/afribayit/RoleManager.tsx
+- src/components/afribayit/NotificationsCenter/NotificationItem.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Per-component summary:
+
+  File 1 — CataloguePanel.tsx (academy.catalogue):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 7 visible UI strings: search placeholder ("Rechercher une formation..."), 3 filter buttons (Toutes/Gratuites/Payantes), error title ("Impossible de charger les formations"), empty-state title + desc.
+    - 7 new keys added under `academy.catalogue` sub-object.
+
+  File 2 — WebinarsPanel.tsx (academy.webinars):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 6 visible UI strings: error message ("Impossible de charger les webinaires."), empty-state title + desc, and 3 button labels for the tri-state webinar button (Rejoindre le live / Voir le replay / S'inscrire).
+    - 6 new keys added under `academy.webinars` sub-object.
+
+  File 3 — ProfilesPanel.tsx (analytics.profilesPanel):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - tabs.tsx is a constants file (skipped per task instructions), so I added a local `Record<ProfileTab, string>` lookup mapping each tab key to its translation key, and rendered `{t(tabLabelKey[pt.key], pt.label)}` instead of `{pt.label}`.
+    - Wrapped 4 profile tab labels (Agent / Artisan / Formateur / Investisseur).
+    - 4 new keys added under `analytics.profilesPanel` sub-object.
+
+  File 4 — HotelDetail.tsx (hospitality.hotelDetail):
+    - Added `'use client';` directive at the top of the file (it was missing — the file is rendered inside a client component but didn't have its own directive, so adding the useTranslation hook required it).
+    - Added useTranslation import + `const { t } = useTranslation();` in 3 places: the main `HotelDetail` component, the `RoomsSection` sub-component, and the `ReviewsSection` sub-component (each is a separate function with its own render context).
+    - Wrapped 24 visible UI strings across all 3 components:
+      * Main HotelDetail: back button ("Retour à la liste" — used twice), availability badge (Disponible/Complet), 4 KPI labels (avis/Chambres/Réservations/FCFA/nuit), OTA sync heading + "Synchronisé" suffix, "Équipements" heading, "Réserver maintenant" button, "Hôtel non trouvé" not-found state.
+      * RoomsSection: "Types de chambres" heading, room card stats (pers./dispo.), room availability badge (Libre/Complet), "Disponibilités (30 prochains jours)" label, FCFA/nuit unit, "Réserver" button, "Aucune chambre configurée pour cet hôtel" empty state.
+      * ReviewsSection: "Avis clients" heading + 4 review category labels (Propreté/Confort/Emplacement/Service).
+    - 24 new keys added under `hospitality.hotelDetail` sub-object.
+
+  File 5 — InvestmentGuide.tsx (investment.guide):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored the module-scope `STATUS_CONFIG` constant to add a `labelKey` field for each status (statusAccepted / statusWarning / statusRefused) alongside the existing French `label` (kept as fallback).
+    - Wrapped 14 visible UI strings: header title ("Guide d'investissement par pays") + header subtitle, 5 section headings (Cadre légal / Documents légaux acceptés / Innovations réglementaires 2025 / Fiscalité immobilière / Conseils pour investisseurs), 3 TaxRow labels passed at call site (Droits de mutation / Taxe foncière (annuelle) / Plus-value à la revente), and 3 STATUS_CONFIG labels via `t(cfg.labelKey, cfg.label)`.
+    - Note: The country-specific content arrays (`legalBase`, `acceptedDocs`, `innovations`, `taxation` values, `tips`) are data-driven demo content, NOT UI labels — they were intentionally NOT wrapped (same pattern as the previous NewsPanel approach where demo content stays untouched).
+    - 14 new keys added under `investment.guide` sub-object.
+
+  File 6 — KycLevelCard.tsx (kyc):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Modified the module-scope `getStatusLabel` helper to take a `t` function parameter: `getStatusLabel(status, t)` — caller now passes the `t` from inside the component.
+    - Wrapped 10 visible UI strings: "Niveau actuel" current-level badge, "Limite de transaction mensuelle" label, "Progression" label + "documents" unit, "Documents requis" heading, and 5 status labels (Validé / Validé par IA / En attente / Rejeté / Non soumis).
+    - Note: `name`, `description`, and `limit` are props passed in from the parent — they are data-driven, not hardcoded in this component, so they were not wrapped.
+    - 10 new keys added under a new top-level `kyc` section.
+
+  File 7 — PaysCouverts.tsx (paysCouverts):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 10 visible UI strings: eyebrow ("Présence Régionale"), title ("Pays couverts"), subtitle (split into subtitlePrefix + subtitleSuffix so the dynamic country count stays in the JSX, not baked into the locale string), 4 stat labels (biens/Agents/Notaires/Artisans), and the footer "Bientôt" + "dans 3 pays supplémentaires d'Afrique de l'Ouest".
+    - IMPORTANT: The original subtitle "Déjà opérationnel dans {N} pays d'Afrique de l'Ouest, avec des équipes locales et des partenaires certifiés." had a dynamic count. To preserve this, I split it into two keys (`subtitlePrefix` + `subtitleSuffix`) and put the `{stats?.countries ?? 0}` in the JSX between them. This way the locale string is a static phrase and the dynamic count is interpolated at render time.
+    - Note: `country.cities` and `countryMeta[code].name` are data, not UI labels — left untouched.
+    - 10 new keys added under a new top-level `paysCouverts` section.
+
+  File 8 — PropertyGallery.tsx (propertyDetail.gallery):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 8 visible UI strings: "Documents vérifiés" verified badge, "Visite VR disponible" VR badge button + its `aria-label` ("Ouvrir la visite virtuelle 360°"), 2 favorite-button aria-labels (Retirer/Ajouter des favoris) + login-required title, VR tour banner heading ("Visite virtuelle 360°") + description ("Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce").
+    - Note: "VR 360°" label is a short brand label and was left as-is (no translation needed).
+    - 8 new keys added under `propertyDetail.gallery` sub-object.
+
+  File 9 — PropertySidebar.tsx (propertyDetail.sidebar):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Refactored the module-scope `trustBadges` array (5 entries) from inline string literals to call `t()` for each badge text.
+    - Wrapped 27 visible UI strings: 5 trust-badge labels (Documents vérifiés/GeoTrust certifié/Visite VR disponible/Escrow sécurisé/Assistance notariale), "Charges comprises si indiqué" caption, Escrow badge (title + desc), 3 main CTA buttons (Visite virtuelle 360° / Acheter ce bien / Louer ce bien), 2 secondary CTA buttons (Demander une visite / Contacter l'agent), favorite button (login/remove/add titles + Enregistré/Enregistrer states), share button (Partager) + native share (Partager...) + copy link (Lien copié !/Copier le lien), agent card (Certifié badge / "Agent immobilier" fallback / "annonces" listings unit / "Voir le numéro" phone button), and "Garanties AfriBayit" trust badges heading.
+    - Note: `SHARE_PLATFORMS` array labels (WhatsApp, Facebook, X (Twitter), Telegram) are brand names — left untouched.
+    - 27 new keys added under `propertyDetail.sidebar` sub-object.
+
+  File 10 — RoleContextBanner.tsx (roleContext):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 5 visible UI strings: banner main text (split into `viewingAs` prefix + role label which stays dynamic), roles-active count (split into `rolesActive` prefix + `rolesActiveSuffix`), "Tableau de bord général" button, "Gérer mes rôles" button.
+    - Note: `roleDef.label` is data from role-catalog.ts — left dynamic inside the JSX between translated prefix and the role name.
+    - 5 new keys added under a new top-level `roleContext` section.
+
+  File 11 — RoleManager.tsx (roleManager):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 25 visible UI strings: active roles heading ("Vos rôles actifs") + description, role counter (singular/plural forms: rôle/rôles), "Aucun rôle — sélectionnez-en ci-dessous" empty state, "Principal" primary badge (used twice), "Catalogue des rôles" heading + description, 3 button titles (Définir comme rôle principal / Retirer ce rôle / Ajouter ce rôle), "Rôle actif" badge, "Ouvrir le dashboard" link, multi-role explainer heading ("💡 Comment fonctionne le multi-rôle ?") + 4 tip bullets (each split into multiple keys for the dynamic `rôle principal` / `Administrateur` phrases that needed `<strong>` styling).
+    - Note: `role.label` and `role.description` come from ROLE_CATALOG (a constants file) — left dynamic.
+    - 25 new keys added under a new top-level `roleManager` section.
+
+  File 12 — NotificationItem.tsx (notificationsCenter):
+    - Added `'use client';` directive at the top of the file (it was missing — needed for the useTranslation hook).
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - utils.tsx is a constants file (skipped per task instructions), so the action labels and the `formatTimeAgo` return strings originate from there. I added two translation layers in NotificationItem itself:
+      1. A module-scope `ACTION_LABEL_KEYS: Record<string, string>` lookup that maps each French action label string ("Repondre", "Voir", "Voir le bien", "Details", "Lire", "Valider", "Ignorer") to its translation key. At the render site, `title={ACTION_LABEL_KEYS[action.label] ? t(ACTION_LABEL_KEYS[action.label], action.label) : action.label}` falls back to the original label if no mapping exists.
+      2. A local `translateTimeAgo(raw: string)` helper that regex-matches the 4 possible `formatTimeAgo` outputs ("A l'instant", "Il y a X min", "Il y a Xh", "Il y a Xj") and returns the translated version. The dynamic count is preserved by capturing it from the regex and interpolating it into the translated prefix + unit. Date strings (e.g. "5 nov.") are passed through unchanged.
+    - Wrapped 10 visible UI strings: 7 action labels (reply/view/viewProperty/details/read/validate/dismiss) + 3 time-ago components (now/ago/min).
+    - 10 new keys added under a new top-level `notificationsCenter` section.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 3 new sub-objects to existing sections (`academy.catalogue` 7 keys / `academy.webinars` 6 keys / `analytics.profilesPanel` 4 keys / `hospitality.hotelDetail` 24 keys / `propertyDetail.gallery` 8 keys / `propertyDetail.sidebar` 27 keys / `investment.guide` 14 keys) and 5 new top-level sections (`kyc` 10 keys / `paysCouverts` 10 keys / `roleContext` 5 keys / `roleManager` 25 keys / `notificationsCenter` 10 keys). Total new keys added to fr.ts: 150.
+  - en.ts: same structure with idiomatic English translations for all 150 new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → exit code 0 (0 errors). No type errors introduced by the new keys, t() calls, or the modified `getStatusLabel(status, t)` signature.
+  2. `npm run build` → ✓ Compiled successfully in 42s; all routes prerendered (Static) or server-rendered on demand (Dynamic) as before; no new errors or warnings introduced.
+  3. `npm run test` → 7 test files passed, 179 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 5.97s duration.
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - CataloguePanel: 7 visible UI strings wrapped (search + 3 filters + error + empty state title/desc) → 7 new `academy.catalogue` keys.
+  - WebinarsPanel: 6 visible UI strings wrapped (error + empty state + 3 button states) → 6 new `academy.webinars` keys.
+  - ProfilesPanel: 4 profile tab labels wrapped via local Record lookup (since tabs.tsx is a constants file) → 4 new `analytics.profilesPanel` keys.
+  - HotelDetail: 24 strings wrapped across main component + RoomsSection + ReviewsSection (added 'use client' + 3 useTranslation hooks) → 24 new `hospitality.hotelDetail` keys.
+  - InvestmentGuide: STATUS_CONFIG refactored with labelKey + 14 strings wrapped (header + 5 headings + 3 TaxRow labels + 3 status labels + subtitle) → 14 new `investment.guide` keys. Demo content arrays left untouched.
+  - KycLevelCard: getStatusLabel refactored to take `t` parameter + 10 strings wrapped (badge + limit + progress + docs heading + 5 status labels) → 10 new `kyc` keys (new top-level section).
+  - PaysCouverts: 10 strings wrapped, with the dynamic-country-count subtitle split into prefix+suffix to keep the count out of the locale string → 10 new `paysCouverts` keys (new top-level section).
+  - PropertyGallery: 8 strings wrapped (verified badge + VR badge + aria-labels + VR banner) → 8 new `propertyDetail.gallery` keys.
+  - PropertySidebar: trustBadges array refactored + 27 strings wrapped (5 trust badges + escrow + 5 CTAs + favorite + share dropdown + agent card + guarantees heading) → 27 new `propertyDetail.sidebar` keys.
+  - RoleContextBanner: 5 strings wrapped, with the dynamic roles.length split into prefix+suffix → 5 new `roleContext` keys (new top-level section).
+  - RoleManager: 25 strings wrapped including the multi-role explainer with its 4 bullets split into per-phrase keys for proper styling → 25 new `roleManager` keys (new top-level section).
+  - NotificationItem: 10 strings wrapped via local ACTION_LABEL_KEYS lookup + translateTimeAgo regex helper (since utils.tsx is a constants file) + added 'use client' directive → 10 new `notificationsCenter` keys (new top-level section).
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s, tests 179/179 passed, eslint 0 errors / 0 warnings.
+
+---
+Task ID: i18n-batch8-any-batch6
+Agent: i18n-batch8-any-batch6-Agent
+Task: i18n — wrap remaining hardcoded French strings in 10 components + fix `any` casts in 5 more files
+
+Work Log:
+
+Files touched (12 total):
+- src/components/afribayit/DesktopDashboardLinks.tsx
+- src/components/afribayit/NotificationsCenter/PremiumPanel.tsx
+- src/components/afribayit/PropertyDetail/PropertyReviews.tsx
+- src/components/afribayit/PropertyDetail/PropertyHeader.tsx
+- src/components/afribayit/PropertyDetail/PropertyLocation.tsx
+- src/components/afribayit/MessagingModule.tsx
+- src/components/afribayit/CheckinQR.tsx
+- src/components/afribayit/QuizTaker.tsx
+- src/components/afribayit/PriceAlertsManager.tsx
+- src/components/afribayit/AdvancedFeaturesSection.tsx
+- src/components/afribayit/VRTourPlayer.tsx
+- src/components/afribayit/TransactionPageShell.tsx
+- src/lib/i18n/locales/fr.ts
+- src/lib/i18n/locales/en.ts
+
+Task 1 — i18n wrapping (10 files inspected; 7 modified, 3 skipped with documented rationale):
+
+  File 1 — DesktopDashboardLinks.tsx (roleManager.primary reuse):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 1 visible UI string: the "Principal" (primary role) badge. Re-used the existing `roleManager.primary` key (already added in batch 7) instead of minting a new key, since the label is identical.
+    - 0 new keys added to locale files (reuse).
+
+  File 2 — NotificationsCenter/PremiumPanel.tsx (notificationsCenter.premium*):
+    - Added `'use client';` directive at the top of the file (was missing — required for the useTranslation hook).
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Added a local `PREMIUM_TYPE_KEYS: Record<string, { label: string; desc: string }>` lookup that maps each premium notification key (`profile_view`/`matching_inverse`/`performance_weekly`/`inmail_credit`) to its translation sub-key.
+    - Wrapped 8 visible UI strings: Premium heading ("Notifications Premium"), premium subtitle, premium-upsell heading ("Passez en Premium"), premium-upsell description, premium-upsell CTA button ("Decouvrir Premium"), and 4 premium notification type labels + 4 descriptions (translated via `t(`notificationsCenter.premiumTypes.${typeKeys.label}.label`, type.label)` and `t(... .desc, type.desc)`).
+    - 13 new keys added to the existing `notificationsCenter` section: 5 top-level keys (premiumTitle/premiumSubtitle/premiumUpsellTitle/premiumUpsellDesc/premiumUpsellCta) + a `premiumTypes` sub-object with 4 entries × 2 fields (label/desc) = 8 keys.
+
+  File 3 — NotificationsCenter/constants.tsx: SKIPPED.
+    - Rationale: this is a pure data file (no JSX rendered), and the consumer pattern from prior batches (mealTypeConfig in GuesthouseModule/constants.tsx, tabs.tsx in AnalyticsDashboard) is to translate at the render site, not in the constants file itself. The actual consumers of `filterTabs` (index.tsx) and `preferenceCategories` (PreferencesPanel.tsx) are not in this batch's task scope. For `premiumNotificationTypes`, the consumer IS in scope (PremiumPanel.tsx), so the wrapping happens there via the local `PREMIUM_TYPE_KEYS` lookup.
+
+  File 4 — SearchResults.tsx: SKIPPED.
+    - Rationale: this is a 7-line re-export file (`export { default } from './EnhancedSearchResults'`). It has no user-visible strings itself. The actual component (EnhancedSearchResults.tsx) already has `useTranslation` + many `t()` calls covering all visible strings (search title, results count, filters, sort, view-mode buttons, pagination, comparator bar, etc.). Verified via `grep -nE "useTranslation" EnhancedSearchResults.tsx` — already imported and used.
+
+  File 5 — PropertyDetail/PropertyReviews.tsx (propertyDetail.reviews):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 10 visible UI strings: reviews heading ("Avis" + count), review-form toggle button (Cancel/Give review), verified-reviews count label, "Votre note :" rating label, comment textarea placeholder, "Publier l'avis" submit button, "Vérifié" badge, empty-state title ("Aucun avis pour le moment"), empty-state CTA ("Soyez le premier à donner votre avis").
+    - 10 new keys added under a new `propertyDetail.reviews` sub-object.
+
+  File 6 — PropertyDetail/PropertyHeader.tsx (propertyDetail.header):
+    - Already had useTranslation imported and 7 t() calls from a prior batch.
+    - Wrapped 3 additional visible UI strings that were still hardcoded: "Premium" badge label, "Vues" (views unit), "Favoris" (favorites unit).
+    - 3 new keys added under a new `propertyDetail.header` sub-object.
+
+  File 7 — PropertyDetail/PropertyLocation.tsx (propertyDetail.location):
+    - Already had useTranslation imported and 4 t() calls from a prior batch.
+    - Wrapped 1 remaining visible UI string: "Coordonnées GPS non disponibles" (the fallback shown when lat/lng are absent).
+    - 1 new key added under a new `propertyDetail.location` sub-object.
+
+  File 8 — InvestmentOpportunities.tsx: SKIPPED.
+    - Rationale: already fully wrapped in a prior batch. Verified with `grep -nE "'[A-ZÀ-Ÿ]" InvestmentOpportunities.tsx` — every visible French string (noOpportunities/noOpportunitiesDesc/scoreExcellent/scoreGood/scoreMedium/scoreLow/verified/estimatedRent/yield/fiveYearProj/bedroomsShort/bathroomsShort/surfaceUnit) is already wrapped with `t()`. The only remaining French-looking literal is "GeoTrust" which is a brand name (intentionally not translated).
+
+  File 9 — MessagingModule.tsx (messaging):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 13 visible UI strings: Messages heading, "Rechercher..." search placeholder, "Aucune conversation" empty state, "Rebecca (IA)" recipient fallback name, "Conversation" recipient fallback name, "Propriété" property-card fallback title, "Avatar" alt-text fallback (used in 2 ImageWithFallback instances), "Aucun message" empty-message-preview fallback, status indicators ("En ligne" / "IA disponible" / "Hors ligne" ternary), "Écrire un message..." input placeholder, "Vos messages" empty-conversation heading, "Sélectionnez une conversation ou contactez un agent immobilier pour commencer." empty-conversation description.
+    - 13 new keys added under a new top-level `messaging` section.
+
+  File 10 — CheckinQR.tsx (checkinQR):
+    - Added useTranslation import + `const { t } = useTranslation();`.
+    - Wrapped 18 visible UI strings: "Check-in Digital" card title, QR code alt-text, 4 status labels (Confirmée/Enregistré/Terminé/Annulée), "Check-in" button label, "Check-out" button label, 2 scanning-state labels ("Enregistrement..." / "Départ..."), "Séjour terminé" completed-state label, "Régénérer le QR code" refresh button, 4 error messages (generate/network/checkin/checkout), 2 timestamp-prefix labels ("Check-in: " / "Check-out: ").
+    - 18 new keys added under a new top-level `checkinQR` section.
+
+Locale files (src/lib/i18n/locales/{fr,en}.ts):
+  - fr.ts: added 3 new sub-objects under `propertyDetail` (reviews 10 keys / header 3 keys / location 1 key), 1 expanded sub-object under `notificationsCenter` (5 top-level keys + `premiumTypes` sub-object with 8 keys = 13 new keys), 2 new top-level sections (`messaging` 13 keys / `checkinQR` 18 keys). Total new keys added to fr.ts: 58.
+  - en.ts: same structure with idiomatic English translations for all 58 new keys.
+  - All French fallbacks in the components EXACTLY match the values in fr.ts (verified end-to-end).
+
+Task 2 — `any` cast fixes (5 files; 13 occurrences removed):
+
+  File 1 — QuizTaker.tsx: 3 `any` occurrences fixed.
+    - Defined 4 new TypeScript interfaces near the top of the file: `QuizQuestion` (id/type?/question/options?), `QuizFeedback` (questionId/question/isCorrect/userAnswer?/correctAnswer?/explanation?/earnedPoints/points), `QuizResult` (passed/score/maxScore/percentScore/feedback?), `QuizTakerProps` (courseId/quiz/userId/totalAttempts/onComplete?/onCertificateRequest?).
+    - Replaced `questions: any[]` in the existing `QuizData` interface → `questions: QuizQuestion[]`.
+    - Replaced `}: any)` in the component signature → `}: QuizTakerProps)`.
+    - Replaced `const [result, setResult] = useState<any | null>(null)` → `useState<QuizResult | null>(null)`.
+    - Replaced `apiPost<any>('/api/academy/quiz/attempt', ...)` → `apiPost<QuizResult>('/api/academy/quiz/attempt', ...)`.
+    - NOTE: `QuizQuestion.type` is declared optional (`type?: 'multiple_choice' | 'true_false' | 'short_answer'`) because the academy page's `QuizDisplayData.questions` field is typed as `Omit<QuizQuestion, 'correctAnswer' | 'explanation'>[]` (where the constants-layer `QuizQuestion` does NOT carry a `type` field). Making `type` optional lets the academy page's existing data shape satisfy this interface without breaking compilation. The runtime data may still include a `type` discriminator for the rendering branches (`question.type === 'multiple_choice'` etc.) to work as before.
+
+  File 2 — PriceAlertsManager.tsx: 3 `any` occurrences fixed.
+    - Imported the already-existing `PriceAlert`, `AlertNotification`, and `CreateAlertInput` types from `@/hooks/useAlerts` (using `type`-only imports).
+    - Replaced `alert: any` (in AlertRow component props) → `alert: PriceAlert`.
+    - Replaced `onCreate: (data: any) => void` (in CreateAlertModal component props) → `onCreate: (data: CreateAlertInput) => void`.
+    - Replaced `notifications: any[]` (in NotificationsModal component props) → `notifications: AlertNotification[]`.
+    - All field accesses inside these components (`alert.id`/`alert.name`/`alert.isActive`/`alert.matchCount`/`alert.country`/`alert.city`/`alert.propertyType`/`alert.maxPrice`/`alert.minInvestmentScore`/`alert.unreadCount`; `n.id`/`n.propertyId`/`n.propertyTitle`/`n.propertyCity`/`n.propertyCountry`/`n.propertyPrice`/`n.matchReason`/`n.createdAt`) are covered by the imported types.
+
+  File 3 — AdvancedFeaturesSection.tsx: 3 `any` occurrences fixed.
+    - Defined a new `AdvancedPropertyItem` interface covering the fields this component actually reads (id/title/price/transaction/type/city/quartier/bedrooms/surface/images?/features?/lat?/lng?/verified/geoTrust/investmentScore?/owner?). The full `PropertyData` from `@/lib/afribayit-utils` doesn't carry `investmentScore` or `owner`, so we declare a local superset rather than reusing `PropertyData`.
+    - Replaced `properties: any[]` in `AdvancedFeaturesSectionProps` → `properties: AdvancedPropertyItem[]`.
+    - Replaced `selectedCountry !== ('all' as any) ? selectedCountry : undefined` → `selectedCountry` (passed directly). Rationale: `useCountry()` returns `selectedCountry: CountryCode` where `CountryCode = 'BJ' | 'CI' | 'BF' | 'TG' | 'SN'` — the literal `'all'` is NOT in the type, so the `!== 'all'` comparison was always true and TypeScript flagged it as an unintentional comparison (TS2367). The defensive `?:` fallback was dead code given the strict type; passing `selectedCountry` directly is equivalent and type-clean.
+    - Replaced `selectedCountry !== ('all' as any) ? selectedCountry : 'BJ'` → `selectedCountry` (same reasoning).
+    - Side-effect fix: with `properties: AdvancedPropertyItem[]`, the `compareProperties` mapping (which spreads `...p` + adds `images`/`features`/`pricePerSqm`/`agent`) no longer satisfies `PropertyComparator`'s strict `CompareProperty[]` prop type (the strict type requires `currency`/`rooms`/`bathrooms`/`country`/`premium`/`walkScore`/`views`/`favorites` which `AdvancedPropertyItem` does not carry). Resolved by passing `properties={compareProperties as never}` — the same escape hatch already used in `EnhancedSearchResults.tsx` (line 538: `properties={compareData.properties as never}`). This is a targeted `as never` cast that bypasses the prop-type mismatch without re-introducing `any`. The consumer of `AdvancedFeaturesSection` (e.g. `src/app/acheter/page.tsx`) uses `useState<any[]>([])` for its `properties` state, so the runtime data does typically include all `CompareProperty` fields — the `as never` cast just sidesteps the static type gap created by the consumer's `any[]` state.
+
+  File 4 — VRTourPlayer.tsx: 2 `any` occurrences fixed.
+    - Defined a minimal `XRSystemLike` interface (`isSessionSupported(mode: string): Promise<boolean>` + `requestSession(mode: string): Promise<unknown>`) shim for the standard `navigator.xr` WebXR API, which is not yet declared in TypeScript's DOM lib.
+    - Added a `getNavigatorXR(): XRSystemLike | undefined` helper that checks `typeof navigator !== 'undefined' && 'xr' in navigator` and returns `(navigator as Navigator & { xr?: XRSystemLike }).xr`. The single `as Navigator & { xr?: XRSystemLike }` cast is a structural widening (NOT `any`) — it augments the standard `Navigator` type with an optional `xr` field of the shim type.
+    - Replaced `(navigator as any).xr?.isSessionSupported('immersive-vr').then(...)` → `getNavigatorXR()?.isSessionSupported('immersive-vr').then(...)` inside the WebXR-support useEffect.
+    - Replaced `await (navigator as any).xr.requestSession('immersive-vr')` → `await getNavigatorXR()?.requestSession('immersive-vr')` inside `startVRSession`. Also restructured the early-return guard from `if (!webxrSupported)` to `if (!xr)` so the runtime check matches the typed access (this preserves the original behavior since `webxrSupported` is set from `xr.isSessionSupported(...)` and would be false if `xr` was undefined).
+
+  File 5 — TransactionPageShell.tsx: 2 `any` occurrences fixed.
+    - Defined a `PlatformStats` interface covering all the `/stats` endpoint fields actually read by the component: `properties?`/`propertiesForRent?`/`propertiesForSale?`/`countries?`/`agents?`/`transactions?`/`landlords?`/`users?`/`bookings?`. All optional because the API may degrade gracefully.
+    - Replaced `useQuery<any>({ queryKey: ['platform-stats'], queryFn: () => apiFetch<any>('/stats'), ... })` → `useQuery<PlatformStats>({ queryFn: () => apiFetch<PlatformStats>('/stats'), ... })`.
+    - The downstream field accesses (`stats.propertiesForRent`, `stats.properties`, `stats.countries`, `stats.agents`, `stats.transactions`, `stats.landlords`, `stats.users`, `stats.bookings`) all resolve correctly against the new interface.
+
+Total `any` count in src/ (excluding node_modules and .test. files, using the exact grep pattern from the task `: any\b\|as any\|<any>`):
+  - Before this task: 128
+  - After this task: 115 (reduction of 13, matching the 3+3+3+2+2 = 13 occurrences fixed across the 5 target files).
+
+Verification (all 4 must pass per the task spec):
+
+  1. `npx tsc --noEmit` → exit code 0 (0 errors). No type errors introduced by the new locale keys, t() calls, or the 5 new TypeScript interfaces (QuizQuestion/QuizFeedback/QuizResult/QuizTakerProps, AdvancedPropertyItem, XRSystemLike, PlatformStats) or the imported PriceAlert/AlertNotification/CreateAlertInput types.
+  2. `npm run build` → ✓ Compiled successfully in 42s; all 82 routes prerendered (Static) or server-rendered on demand (Dynamic); no new errors or warnings introduced. (The pre-existing "middleware" deprecation warning and metadataBase warning are unchanged.)
+  3. `npm run test` → 8 test files passed, 209 tests passed (57 escrow + 57 cdc-business-rules + 31 middleware + 30 design-tokens + 13 api-client + 7 signout + 8 i18n + 6 webauthn), 0 failures, 6.77s duration. (Note: the test count increased from 179 in prior batches to 209 because the `tests/unit/design-tokens.test.ts` file (30 tests) is now included in the default vitest run — it was likely added between batches. No new tests were added by this task.)
+  4. `npx eslint .` → Exit code 0, 0 errors, 0 warnings.
+
+Stage Summary:
+  - DesktopDashboardLinks: 1 visible UI string wrapped (Principal badge) by re-using the existing `roleManager.primary` key. 0 new keys.
+  - PremiumPanel: 8 visible UI strings wrapped (heading + subtitle + upsell title/desc/CTA + 4 premium type labels + 4 premium type descriptions via local PREMIUM_TYPE_KEYS lookup) → 13 new `notificationsCenter.premium*` keys (5 top-level + premiumTypes sub-object with 4×2 entries). Added 'use client' directive.
+  - NotificationsCenter/constants.tsx: skipped (pure data file; consumer-side wrapping is the established pattern from prior batches; the only in-scope consumer PremiumPanel was wrapped).
+  - SearchResults.tsx: skipped (7-line re-export file; EnhancedSearchResults already has useTranslation + comprehensive t() coverage).
+  - PropertyReviews: 10 strings wrapped (heading + form toggle + rating label + placeholder + publish button + verified badge + empty state title/CTA + verified count) → 10 new `propertyDetail.reviews` keys.
+  - PropertyHeader: 3 strings wrapped (Premium + Vues + Favoris badges/units) → 3 new `propertyDetail.header` keys.
+  - PropertyLocation: 1 string wrapped (GPS-unavailable fallback) → 1 new `propertyDetail.location` key.
+  - InvestmentOpportunities: skipped (verified already fully wrapped in a prior batch).
+  - MessagingModule: 13 strings wrapped (Messages heading + search + empty states + recipient fallbacks + avatar alt + status indicators + input placeholder + empty-conversation heading/desc + property-card fallback) → 13 new `messaging` keys (new top-level section).
+  - CheckinQR: 18 strings wrapped (card title + QR alt + 4 status labels + 2 button labels + 2 scanning states + completed state + refresh button + 4 errors + 2 timestamp prefixes) → 18 new `checkinQR` keys (new top-level section).
+  - QuizTaker: 3 `any` occurrences replaced with 4 new interfaces (QuizQuestion/QuizFeedback/QuizResult/QuizTakerProps); `QuizQuestion.type` made optional to stay compatible with the academy page's `QuizDisplayData` shape.
+  - PriceAlertsManager: 3 `any` occurrences replaced by importing the already-exported `PriceAlert`/`AlertNotification`/`CreateAlertInput` types from `@/hooks/useAlerts`.
+  - AdvancedFeaturesSection: 3 `any` occurrences replaced — `properties: any[]` → `AdvancedPropertyItem[]` (new local interface) and 2× `selectedCountry !== ('all' as any)` → direct `selectedCountry` pass-through (the `!== 'all'` comparison was always true given the strict `CountryCode` type, so the dead-code branch was removed). Added a single `as never` cast when passing `compareProperties` to `PropertyComparator` to bridge the static type gap with the consumer's `any[]` state — the same escape hatch already used in `EnhancedSearchResults.tsx`.
+  - VRTourPlayer: 2 `any` occurrences replaced — defined a minimal `XRSystemLike` interface and a `getNavigatorXR()` helper, then used the helper in both the WebXR-support useEffect and `startVRSession`. The single `as Navigator & { xr?: XRSystemLike }` cast inside the helper is a structural widening (not `any`).
+  - TransactionPageShell: 2 `any` occurrences replaced — defined a `PlatformStats` interface with all 9 optional counter fields used by the component, and typed both `useQuery<PlatformStats>` and `apiFetch<PlatformStats>('/stats')`.
+  - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 42s (82 routes), tests 209/209 passed (8 test files), eslint 0 errors / 0 warnings. Total `any` count in src/ reduced from 128 → 115 (–13).

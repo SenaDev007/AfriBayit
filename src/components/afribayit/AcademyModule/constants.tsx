@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import {
   Award, BadgeCheck, BarChart3, BookOpen, GraduationCap, Zap,
+  Video, Users,
 } from 'lucide-react';
 import type { AcademyTabKey } from './types';
 
@@ -15,10 +16,13 @@ export const categories = [
   'BTP & Rénovation',
 ];
 
+// CDC §5.6.4 — Added webinars + peer learning tabs
 export const academyTabs: { key: AcademyTabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'catalogue', label: 'Catalogue', icon: <BookOpen className="w-4 h-4" /> },
   { key: 'my_courses', label: 'Mes Formations', icon: <GraduationCap className="w-4 h-4" /> },
   { key: 'certifications', label: 'Certifications', icon: <Award className="w-4 h-4" /> },
+  { key: 'webinars', label: 'Webinaires', icon: <Video className="w-4 h-4" /> },
+  { key: 'peer_learning', label: 'Communauté', icon: <Users className="w-4 h-4" /> },
 ];
 
 // CDC §5.6 — 5 learning paths (Débutant, Investisseur, Professionnel, Légal, Artisan)

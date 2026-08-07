@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Bed } from 'lucide-react';
 import { easeOut } from './constants';
 import { parseJsonArray, formatPrice } from './utils';
@@ -25,6 +26,7 @@ export default function ChambersPanel({
   activeDetail,
   onOpenBooking,
 }: ChambersPanelProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="chambers"
@@ -68,11 +70,11 @@ export default function ChambersPanel({
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="p-2 bg-gray-50 rounded-xl">
-                    <p className="text-[10px] text-gray-500">Capacité</p>
-                    <p className="font-mono text-sm font-bold text-[#0a2a5e]">{ch.capacity} pers.</p>
+                    <p className="text-[10px] text-gray-500">{t('guesthouse.chambers.capacity', 'Capacité')}</p>
+                    <p className="font-mono text-sm font-bold text-[#0a2a5e]">{ch.capacity} {t('guesthouse.chambers.pers', 'pers.')}</p>
                   </div>
                   <div className="p-2 bg-gray-50 rounded-xl">
-                    <p className="text-[10px] text-gray-500">Prix/nuit</p>
+                    <p className="text-[10px] text-gray-500">{t('guesthouse.chambers.pricePerNight', 'Prix/nuit')}</p>
                     <p className="font-mono text-sm font-bold text-[#D4AF37]">{formatPrice(ch.basePrice)} FCFA</p>
                   </div>
                 </div>
@@ -88,7 +90,7 @@ export default function ChambersPanel({
                     ch.available ? 'bg-[#003087] text-white hover:bg-[#0047b3]' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  {ch.available ? 'Réserver' : 'Indisponible'}
+                  {ch.available ? t('guesthouse.chambers.book', 'Réserver') : t('guesthouse.chambers.unavailable', 'Indisponible')}
                 </button>
               </motion.div>
             );
@@ -97,7 +99,7 @@ export default function ChambersPanel({
       ) : (
         <div className="text-center py-12">
           <Bed className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Aucune chambre disponible pour cette guesthouse.</p>
+          <p className="text-sm text-gray-500">{t('guesthouse.chambers.noRooms', 'Aucune chambre disponible pour cette guesthouse.')}</p>
         </div>
       )}
     </motion.div>

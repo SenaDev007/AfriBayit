@@ -18,6 +18,7 @@ import {
 import { FORUM_CATEGORIES, easeOut } from './constants';
 import { PostSkeleton } from './utils';
 import type { Post, PostAuthor, TrendingTopic } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ForumPanelProps {
   postsLoading: boolean;
@@ -48,6 +49,7 @@ export default function ForumPanel({
   onNewPost,
   onNewPoll,
 }: ForumPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       {/* Search + Category Filter + Trending */}
@@ -60,7 +62,7 @@ export default function ForumPanel({
               type="text"
               value={forumSearch}
               onChange={e => setForumSearch(e.target.value)}
-              placeholder="Rechercher dans le forum..."
+              placeholder={t('community.forumSearchPlaceholder', 'Rechercher dans le forum...')}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
             />
             {forumSearch && (
@@ -84,20 +86,20 @@ export default function ForumPanel({
 
         {/* Trending Topics */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <h4 className="text-xs font-semibold text-[#0a2a5e] mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> Tendances</h4>
+          <h4 className="text-xs font-semibold text-[#0a2a5e] mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> {t('community.trendingTitle', 'Tendances')}</h4>
           {trendingTopics.length > 0 ? (
             <div className="space-y-2">
-              {trendingTopics.map(t => (
+              {trendingTopics.map(topic => (
                 <button
-                  key={t.category}
-                  onClick={() => setForumCategory(t.category)}
+                  key={topic.category}
+                  onClick={() => setForumCategory(topic.category)}
                   className="w-full flex items-center justify-between text-left hover:bg-gray-50 rounded-lg p-1.5 transition-colors"
                 >
                   <span className="text-xs text-gray-700 flex items-center gap-1.5">
                     <Hash className="w-3 h-3 text-[#003087]" />
-                    {t.category}
+                    {topic.category}
                   </span>
-                  <span className="text-[10px] text-gray-400">{t.count} sujets</span>
+                  <span className="text-[10px] text-gray-400">{topic.count} {t('community.topicsCount', 'sujets')}</span>
                 </button>
               ))}
             </div>
@@ -119,15 +121,15 @@ export default function ForumPanel({
       {postsError && (
         <div className="text-center py-12">
           <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">Impossible de charger les posts</p>
+          <p className="text-gray-600 font-semibold mb-1">{t('community.unableToLoadPosts', 'Impossible de charger les posts')}</p>
           <p className="text-sm text-gray-400">{postsError.message}</p>
         </div>
       )}
       {!postsLoading && !postsError && filteredPosts.length === 0 && (
         <div className="text-center py-12">
           <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">Aucun sujet de discussion</p>
-          <p className="text-sm text-gray-400">Soyez le premier à lancer un débat !</p>
+          <p className="text-gray-600 font-semibold mb-1">{t('community.noDiscussion', 'Aucun sujet de discussion')}</p>
+          <p className="text-sm text-gray-400">{t('community.beFirstToPost', 'Soyez le premier à lancer un débat !')}</p>
         </div>
       )}
       {!postsLoading && !postsError && filteredPosts.map((post, i) => (
@@ -175,7 +177,7 @@ export default function ForumPanel({
                 </div>
               </div>
               {/* Report button */}
-              <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Signaler ce contenu">
+              <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title={t('community.reportContent', 'Signaler ce contenu')}>
                 <Flag className="w-3.5 h-3.5 text-gray-300 hover:text-[#D93025]" />
               </button>
             </div>
@@ -184,17 +186,17 @@ export default function ForumPanel({
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-3.5 h-3.5" />
-                  {post.replies} réponses
+                  {post.replies} {t('community.repliesLabel', 'réponses')}
                 </span>
                 <span className="flex items-center gap-1">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  {post.views} vues
+                  {post.views} {t('community.viewsLabel', 'vues')}
                 </span>
               </div>
-              <span className="text-[10px] text-gray-300">Cliquez pour ouvrir →</span>
+              <span className="text-[10px] text-gray-300">{t('community.clickToOpen', 'Cliquez pour ouvrir →')}</span>
             </div>
           </div>
         </motion.div>
@@ -203,10 +205,10 @@ export default function ForumPanel({
       {/* Action buttons */}
       <div className="flex gap-3">
         <button onClick={onNewPost} className="flex-1 py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4" /> Nouveau sujet
+          <Plus className="w-4 h-4" /> {t('community.newTopic', 'Nouveau sujet')}
         </button>
         <button onClick={onNewPoll} className="py-3 px-4 border-2 border-dashed border-[#D4AF37]/40 rounded-2xl text-sm text-[#D4AF37] hover:border-[#D4AF37] transition-colors flex items-center gap-2">
-          <BarChart3 className="w-4 h-4" /> Sondage
+          <BarChart3 className="w-4 h-4" /> {t('community.poll', 'Sondage')}
         </button>
       </div>
     </div>

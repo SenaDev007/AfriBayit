@@ -1,10 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Newspaper, TrendingUp, FileText, Calendar, ExternalLink } from 'lucide-react';
 import { easeOut } from './constants';
 
 export default function NewsPanel() {
+  const { t } = useTranslation();
   // CDC §5.7.1 — Fil actualités immobilières: regulatory updates, market trends,
   // premium announcements. Curated by IA + human editor.
   const newsItems = [
@@ -51,8 +53,8 @@ export default function NewsPanel() {
             <Newspaper className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <h3 className="font-display text-base font-bold text-[#0a2a5e]">Actualités immobilières</h3>
-            <p className="text-xs text-gray-500">Réglementation, tendances de marché et annonces premium — curaté par IA + éditeur humain</p>
+            <h3 className="font-display text-base font-bold text-[#0a2a5e]">{t('community.news.title', 'Actualités immobilières')}</h3>
+            <p className="text-xs text-gray-500">{t('community.news.subtitle', 'Réglementation, tendances de marché et annonces premium — curaté par IA + éditeur humain')}</p>
           </div>
         </div>
       </div>
@@ -90,7 +92,7 @@ export default function NewsPanel() {
                 {news.source}
               </span>
               <span className="flex items-center gap-1 text-[10px] text-[#003087] font-semibold group-hover:gap-2 transition-all">
-                Lire plus
+                {t('community.news.readMore', 'Lire plus')}
                 <ExternalLink className="w-3 h-3" />
               </span>
             </div>
@@ -102,8 +104,7 @@ export default function NewsPanel() {
       <div className="bg-gradient-to-r from-[#003087]/5 to-[#009CDE]/5 rounded-2xl p-4 border flex items-start gap-3">
         <TrendingUp className="w-5 h-5 text-[#009CDE] shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500">
-          <strong className="text-[#0a2a5e]">Fil actualités AfriBayit</strong> — Agrégation automatique des nouvelles
-          réglementaires (Section 10B), tendances de marché (données AVM), et annonces premium de la plateforme.
+          <strong className="text-[#0a2a5e]">{t('community.news.bannerTitle', 'Fil actualités AfriBayit')}</strong> — {t('community.news.bannerDesc', 'Agrégation automatique des nouvelles réglementaires (Section 10B), tendances de marché (données AVM), et annonces premium de la plateforme.')}
         </p>
       </div>
     </motion.div>

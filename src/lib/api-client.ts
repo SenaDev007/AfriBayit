@@ -1,6 +1,13 @@
 // AfriBayit — API Client (CDC §3.1.2 — frontend calls NestJS backend)
 // This module replaces the old apiFetch helper that called Next.js API routes.
 // All requests now go to the separate NestJS backend (afribayit-api on Fly.io).
+//
+// Module 2 enhancements:
+//   - `readCookie(name)` + `getCountryCode()` (multi-tenant X-Country-Code header)
+//   - `tryRefreshAccessToken()` (deduped refresh on 401)
+//   - `parseResponse<T>(response)` helper
+//   - On 401 with auth: refresh + retry once
+//   - `api.downloadBlob(path, filename?)` for PDFs/images
 
 // Normalize the API URL: ensure it has a protocol and no trailing slash.
 // Guards against misconfigured Vercel env vars like "afribayit-api-production.up.railway.app"
@@ -46,29 +53,163 @@ export function getAccessToken(): string | null {
   return null;
 }
 
+// ─── Cookie / Country helpers (Module 2 — Multi-tenant) ──────────────────
+
+/**
+ * Read a cookie by name from `document.cookie`. Returns the decoded value
+ * or `null` if not found / not in browser.
+ */
+export function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  try {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [rawKey, ...rawValueParts] = cookie.trim().split('=');
+      if (rawKey === name) {
+        const value = rawValueParts.join('=');
+        try {
+          return decodeURIComponent(value);
+        } catch {
+          return value;
+        }
+      }
+    }
+  } catch {
+    // document not available
+  }
+  return null;
+}
+
+/**
+ * Resolve the current country code for the `X-Country-Code` header.
+ * Priority: `afribayit_selected_country` → `afribayit_country` (legacy)
+ *           → cookie → default `'BJ'`.
+ */
+export function getCountryCode(): string {
+  if (typeof window !== 'undefined') {
+    try {
+      const fromSelected = localStorage.getItem('afribayit_selected_country');
+      if (fromSelected && /^[A-Z]{2}$/.test(fromSelected)) return fromSelected;
+      const fromLegacy = localStorage.getItem('afribayit_country');
+      if (fromLegacy && /^[A-Z]{2}$/.test(fromLegacy)) return fromLegacy;
+    } catch {
+      // localStorage not available
+    }
+    const fromCookie = readCookie('afribayit_country');
+    if (fromCookie && /^[A-Z]{2}$/.test(fromCookie)) return fromCookie;
+  }
+  return 'BJ';
+}
+
+// ─── Refresh token dedup ─────────────────────────────────────────────────
+//
+// On a 401 with auth, we POST `/auth/refresh` with the refresh token. If
+// multiple parallel requests 401 at the same time, we dedup them through
+// a single shared `refreshPromise` so the backend isn't hammered.
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function tryRefreshAccessToken(): Promise<string | null> {
+  // Server-side: no refresh possible.
+  if (typeof window === 'undefined') return null;
+
+  // Already in-flight — piggyback on the existing promise.
+  if (refreshPromise) return refreshPromise;
+
+  const refreshToken =
+    localStorage.getItem('afribayit_refresh_token') || null;
+  if (!refreshToken) return null;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) {
+        // Refresh failed — clear tokens so the user is forced to re-login.
+        localStorage.removeItem('afribayit_access_token');
+        localStorage.removeItem('afribayit_refresh_token');
+        accessToken = null;
+        return null;
+      }
+      const data = (await res.json()) as {
+        accessToken?: string;
+        refreshToken?: string;
+        expiresInSeconds?: number;
+      };
+      if (!data.accessToken) return null;
+      setAccessToken(data.accessToken);
+      if (data.refreshToken) {
+        localStorage.setItem('afribayit_refresh_token', data.refreshToken);
+      }
+      return data.accessToken;
+    } catch {
+      return null;
+    } finally {
+      // Clear the in-flight promise so the next 401 can start a new refresh.
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 // ─── API Client ──────────────────────────────────────────────────────────
 
 export interface ApiOptions extends Omit<RequestInit, 'body'> {
   auth?: boolean; // Include Authorization header (default: true)
   formData?: boolean; // Don't set Content-Type JSON (for file uploads)
   body?: BodyInit | Record<string, unknown> | null;
+  /**
+   * Internal: when set, skip the 401 refresh+retry loop (used by the
+   * retry itself to avoid infinite recursion).
+   */
+  _retried?: boolean;
+}
+
+/**
+ * Parse a fetch Response into the requested type. JSON responses are
+ * parsed; text responses are returned as-is; non-OK responses throw an
+ * `ApiError` carrying the parsed body.
+ */
+export async function parseResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+    if (!response.ok) {
+      throw new ApiError(
+        (data && (data.error || data.message)) ||
+          `HTTP ${response.status}: ${response.statusText}`,
+        response.status,
+        data,
+      );
+    }
+    return data as T;
+  }
+  if (!response.ok) {
+    throw new ApiError(
+      `HTTP ${response.status}: ${response.statusText}`,
+      response.status,
+    );
+  }
+  return (await response.text()) as unknown as T;
 }
 
 export async function apiFetch<T = any>(
   path: string,
   options: ApiOptions = {},
 ): Promise<T> {
-  const { auth = true, formData, ...fetchOptions } = options;
+  const { auth = true, formData, _retried, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
-  // Add country header for multitenancy (CDC §3.2)
-  if (typeof window !== 'undefined') {
-    const country = localStorage.getItem('afribayit_country') || 'BJ';
-    headers['X-Country-Code'] = country;
-  }
+  // Add country header for multitenancy (CDC §3.2 — Module 2)
+  const country = getCountryCode();
+  if (country) headers['X-Country-Code'] = country;
 
   // Add auth header
   if (auth) {
@@ -106,41 +247,25 @@ export async function apiFetch<T = any>(
     headers,
   });
 
-  // Handle 401 — token expired or missing.
-  // CRITICAL: On a public site, do NOT auto-redirect to /auth/login.
-  // The middleware already handles auth for protected routes.
-  // For public pages calling protected endpoints (e.g. /auth/me to check session),
-  // a 401 just means "not logged in" — the calling component should handle it
-  // gracefully (e.g. show "Connexion" button, hide authenticated UI).
+  // Handle 401 — try to refresh the access token once, then retry.
+  if (response.status === 401 && auth && !_retried) {
+    const newToken = await tryRefreshAccessToken();
+    if (newToken) {
+      // Retry the original request once with the fresh token.
+      return apiFetch<T>(path, { ...options, _retried: true });
+    }
+    // Refresh failed — drop the stale token and surface the 401.
+    setAccessToken(null);
+    throw new ApiError('Authentication required', 401);
+  }
+
+  // Hard 401 after retry (or non-auth 401) — clear token + throw.
   if (response.status === 401 && auth) {
     setAccessToken(null);
     throw new ApiError('Authentication required', 401);
   }
 
-  // Parse response
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new ApiError(
-        data.error || data.message || 'Une erreur est survenue',
-        response.status,
-        data,
-      );
-    }
-
-    return data as T;
-  }
-
-  if (!response.ok) {
-    throw new ApiError(
-      `HTTP ${response.status}: ${response.statusText}`,
-      response.status,
-    );
-  }
-
-  return response.text() as unknown as T;
+  return parseResponse<T>(response);
 }
 
 // ─── API Error ───────────────────────────────────────────────────────────
@@ -176,6 +301,58 @@ export const api = {
 
   upload: <T = any>(path: string, formData: FormData, options?: ApiOptions) =>
     apiFetch<T>(path, { ...options, method: 'POST', body: formData, formData: true }),
+
+  /**
+   * Download a binary file (PDF, image, …) from the backend and trigger
+   * a browser save dialog. Uses the same auth + country headers as `apiFetch`.
+   * Falls back to a window.location navigation if the Blob API is unavailable.
+   */
+  async downloadBlob(path: string, filename?: string): Promise<void> {
+    const rewrittenPath = rewritePath(path);
+    const headers: Record<string, string> = {
+      Accept: 'application/octet-stream,*/*;q=0.8',
+    };
+    const country = getCountryCode();
+    if (country) headers['X-Country-Code'] = country;
+    const token = getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_URL}${rewrittenPath}`, { headers });
+    if (!res.ok) {
+      // Try to parse a JSON error body, otherwise surface the status.
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await res.json().catch(() => ({}));
+        throw new ApiError(
+          (data && (data.error || data.message)) ||
+            `HTTP ${res.status}: ${res.statusText}`,
+          res.status,
+          data,
+        );
+      }
+      throw new ApiError(
+        `HTTP ${res.status}: ${res.statusText}`,
+        res.status,
+      );
+    }
+    const blob = await res.blob();
+    // Try to extract a filename from Content-Disposition, else use the
+    // provided fallback, else derive from the URL.
+    const cd = res.headers.get('content-disposition') || '';
+    const cdMatch = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)/i);
+    const finalName =
+      filename ||
+      (cdMatch ? decodeURIComponent(cdMatch[1]) : path.split('/').pop() || 'download');
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = finalName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 // ─── Auth Helpers ─────────────────────────────────────────────────────────
@@ -199,6 +376,17 @@ export const authApi = {
   sendOTP: (identifier: string) => api.post('/auth/otp/send', { identifier }, { auth: false }),
   verifyOTP: (identifier: string, code: string) =>
     api.post('/auth/otp/verify', { identifier, code }, { auth: false }),
+
+  /** True reset-password endpoint (Module 1) — accepts OTP + new password. */
+  resetPassword: (email: string, otpCode: string, newPassword: string) =>
+    api.post(
+      '/auth/reset-password',
+      { email, otpCode, newPassword },
+      { auth: false },
+    ),
+
+  /** Logout — invalidate the refresh token server-side (Module 1). */
+  logout: () => api.post('/auth/logout', {}),
 };
 
 // ─── Properties Helpers ───────────────────────────────────────────────────

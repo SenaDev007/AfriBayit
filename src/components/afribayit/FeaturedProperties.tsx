@@ -8,6 +8,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
+import type { PropertyListItem } from './PropertyGrid';
+
+type FeaturedPropertiesResponse =
+  | { properties: PropertyListItem[]; pagination?: unknown }
+  | PropertyListItem[];
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -54,36 +59,38 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   const { selectedCountry } = useCountry();
 
   // Fetch properties directly from backend API
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<FeaturedPropertiesResponse>({
     queryKey: ['featured-properties', selectedCountry],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set('limit', '12');
       params.set('page', '1');
-      if (selectedCountry && selectedCountry !== ('all' as any)) {
+      if (selectedCountry) {
         params.set('country', selectedCountry);
       }
-      const res = await api.get<any>(`/properties?${params.toString()}`);
+      const res = await api.get<FeaturedPropertiesResponse>(`/properties?${params.toString()}`);
       return res;
     },
     retry: 2,
     staleTime: 5 * 60 * 1000,
   });
 
-  const allProperties = data?.properties || data || [];
+  const allProperties: PropertyListItem[] = Array.isArray(data)
+    ? data
+    : (data?.properties ?? []);
 
-  const featured = Array.isArray(allProperties)
-    ? allProperties.filter((p: any) => p.premium || p.verified).slice(0, 12)
-    : [];
+  const featured = allProperties
+    .filter((p) => p.premium || p.verified)
+    .slice(0, 12);
 
   const baseProperties = featured.length > 0
     ? featured
-    : (Array.isArray(allProperties) ? allProperties.slice(0, 12) : []);
+    : allProperties.slice(0, 12);
 
   const displayProperties = useMemo(() => {
     if (activeFilter === 'all') return baseProperties.slice(0, 6);
     if (activeFilter === 'sejour') return [];
-    return baseProperties.filter((p: any) => p.type === activeFilter).slice(0, 6);
+    return baseProperties.filter((p) => p.type === activeFilter).slice(0, 6);
   }, [baseProperties, activeFilter]);
 
   return (
@@ -196,7 +203,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Grid */}
         {!isLoading && !isError && displayProperties.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {displayProperties.map((property: any, i: number) => (
+            {displayProperties.map((property: PropertyListItem, i: number) => (
               <PropertyCard
                 key={property.id}
                 property={property}

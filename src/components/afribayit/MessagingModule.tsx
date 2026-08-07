@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Bot, MessageCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface MessagingModuleProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ interface Message {
 }
 
 export default function MessagingModule({ isOpen, onClose, initialRecipientId }: MessagingModuleProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const userId = user?.id;
 
@@ -175,9 +177,9 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
   };
 
   const getRecipientName = (conv: Conversation) => {
-    if (conv.type === 'rebecca') return 'Rebecca (IA)';
+    if (conv.type === 'rebecca') return t('messaging.rebecca', 'Rebecca (IA)');
     const other = getOtherParticipant(conv);
-    return other?.name || 'Conversation';
+    return other?.name || t('messaging.conversation', 'Conversation');
   };
 
   const renderMessageContent = (msg: Message) => {
@@ -187,7 +189,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
           const property = msg.metadata ? JSON.parse(msg.metadata) : null;
           return (
             <div className="bg-[#003087]/5 border border-[#003087]/20 rounded-lg p-3 max-w-[250px]">
-              <p className="text-xs font-semibold text-[#003087]">{property?.title || 'Propriété'}</p>
+              <p className="text-xs font-semibold text-[#003087]">{property?.title || t('messaging.propertyFallback', 'Propriété')}</p>
               <p className="text-[10px] text-gray-500">{property?.city}, {property?.price}</p>
             </div>
           );
@@ -230,7 +232,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
             {/* Header */}
             <div className="p-4 border-b bg-white">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-bold text-[#0a2a5e] font-display">Messages</h2>
+                <h2 className="font-bold text-[#0a2a5e] font-display">{t('messaging.title', 'Messages')}</h2>
                 <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
                   <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -238,7 +240,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                 </button>
               </div>
               <Input
-                placeholder="Rechercher..."
+                placeholder={t('messaging.searchPlaceholder', 'Rechercher...')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="text-sm h-9"
@@ -250,7 +252,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
               {conversations.length === 0 ? (
                 <div className="p-6 text-center">
                   <span className="text-3xl block mb-2"><MessageCircle className="w-4 h-4" /></span>
-                  <p className="text-sm text-gray-500">Aucune conversation</p>
+                  <p className="text-sm text-gray-500">{t('messaging.noConversations', 'Aucune conversation')}</p>
                 </div>
               ) : (
                 conversations.map((conv) => {
@@ -272,7 +274,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                         ) : (
                           <ImageWithFallback
                             src={other?.avatar || ''}
-                            alt={other?.name || 'Avatar'}
+                            alt={other?.name || t('messaging.avatar', 'Avatar')}
                             className="w-10 h-10 rounded-lg object-cover"
                             fallbackType="avatar"
                           />
@@ -291,7 +293,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 truncate mt-0.5">
-                          {conv.messages?.[0]?.content || 'Aucun message'}
+                          {conv.messages?.[0]?.content || t('messaging.noMessage', 'Aucun message')}
                         </p>
                       </div>
                       {conv.unreadCount && conv.unreadCount > 0 && (
@@ -323,7 +325,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                         ) : (
                           <ImageWithFallback
                             src={other?.avatar || ''}
-                            alt={other?.name || 'Avatar'}
+                            alt={other?.name || t('messaging.avatar', 'Avatar')}
                             className="w-8 h-8 rounded-lg object-cover"
                             fallbackType="avatar"
                           />
@@ -333,7 +335,11 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                             {getRecipientName(selectedConversation)}
                           </p>
                           <p className="text-[10px] text-gray-400">
-                            {other?.isOnline ? 'En ligne' : selectedConversation.type === 'rebecca' ? 'IA disponible' : 'Hors ligne'}
+                            {other?.isOnline
+                              ? t('messaging.online', 'En ligne')
+                              : selectedConversation.type === 'rebecca'
+                                ? t('messaging.iaAvailable', 'IA disponible')
+                                : t('messaging.offline', 'Hors ligne')}
                           </p>
                         </div>
                       </>
@@ -379,7 +385,7 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
                 <div className="p-4 border-t bg-white">
                   <div className="flex items-center gap-2">
                     <Input
-                      placeholder="Écrire un message..."
+                      placeholder={t('messaging.inputPlaceholder', 'Écrire un message...')}
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -407,9 +413,9 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <span className="text-5xl block mb-4"><MessageCircle className="w-4 h-4" /></span>
-                  <h3 className="text-lg font-semibold text-[#0a2a5e]">Vos messages</h3>
+                  <h3 className="text-lg font-semibold text-[#0a2a5e]">{t('messaging.yourMessages', 'Vos messages')}</h3>
                   <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                    Sélectionnez une conversation ou contactez un agent immobilier pour commencer.
+                    {t('messaging.emptyDesc', 'Sélectionnez une conversation ou contactez un agent immobilier pour commencer.')}
                   </p>
                 </div>
               </div>

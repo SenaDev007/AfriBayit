@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { signOut } from 'next-auth/react';
+import { signOutAndClear } from '@/lib/signout';
 import SafeModule from '@/components/safe/SafeModule';
 import RoleContextBanner from '@/components/afribayit/RoleContextBanner';
 
@@ -25,7 +25,7 @@ const AgentDashboard = dynamic(() => import('@/components/afribayit/AgentDashboa
 
 export default function AgentDashboardPage() {
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOutAndClear({ callbackUrl: '/' });
   };
 
   return (

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Home } from 'lucide-react';
 import type { StepProps } from './types';
 import { welcomeFeatures } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface WelcomeStepProps extends StepProps {
   onNext: () => void;
@@ -11,6 +12,7 @@ interface WelcomeStepProps extends StepProps {
 }
 
 export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, easeOut, setIsAnimating }: WelcomeStepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step1"
@@ -38,7 +40,7 @@ export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, 
         transition={{ delay: 0.2 }}
         className="font-display text-4xl sm:text-5xl font-bold text-white mb-4"
       >
-        Bienvenue sur{' '}
+        {t('onboardingFlow.welcomeTitle', 'Bienvenue sur')}{' '}
         <span className="bg-gradient-to-r from-[#D4AF37] to-[#FFD700] bg-clip-text text-transparent">
           AfriBayit
         </span>
@@ -50,8 +52,7 @@ export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, 
         transition={{ delay: 0.3 }}
         className="text-white/70 text-base sm:text-lg max-w-lg mx-auto mb-10 leading-relaxed"
       >
-        La première plateforme immobilière sécurisée d&apos;Afrique de l&apos;Ouest.
-        Escrow, GeoTrust, notaires certifiés — tout pour une transaction en toute confiance.
+        {t('onboardingFlow.welcomeSubtitle', 'La première plateforme immobilière sécurisée d\'Afrique de l\'Ouest. Escrow, GeoTrust, notaires certifiés — tout pour une transaction en toute confiance.')}
       </motion.p>
 
       <motion.div
@@ -87,13 +88,13 @@ export default function WelcomeStep({ onNext, onSkip, direction, slideVariants, 
           onClick={onNext}
           className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-[#003087] rounded-lg font-bold text-base hover:shadow-lg gold-glow transition-shadow"
         >
-          Commencer la configuration 
+          {t('onboardingFlow.startConfig', 'Commencer la configuration')}
         </motion.button>
         <button
           onClick={onSkip}
           className="px-6 py-4 text-white/60 hover:text-white/90 transition-colors text-sm font-medium"
         >
-          Explorer d&apos;abord la plateforme
+          {t('onboardingFlow.exploreFirst', 'Explorer d\'abord la plateforme')}
         </button>
       </motion.div>
     </motion.div>

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useAfriBayitNav } from '@/hooks/useAfriBayitNav';
-import { signOut } from 'next-auth/react';
+import { signOutAndClear } from '@/lib/signout';
 import SafeModule from '@/components/safe/SafeModule';
 import { Loader2 } from 'lucide-react';
 
@@ -48,7 +48,7 @@ export default function DashboardPage() {
   }, [status, session, router]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOutAndClear({ callbackUrl: '/' });
   };
 
   // Show loading while checking session or redirecting

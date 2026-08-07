@@ -1,3 +1,19 @@
+// ────────────────────────────────────────────────────────────────────────
+// @deprecated — Demo fallback data for the AnalyticsDashboard.
+//
+// These constants are loaded ONLY when the backend
+//   GET /analytics/me?period=…&role=…
+// returns 404 / empty state (e.g. new user with no analytics yet) or when
+// the network is unreachable. The AnalyticsDashboard (index.tsx) prefers
+// real backend data via the `useAnalytics` hook and only falls back to
+// these constants for fields that are null/empty.
+//
+// Do NOT extend this file with new metrics. New analytics fields belong on
+// the backend `/analytics/me` endpoint and the `AnalyticsResponse` type in
+// `src/hooks/useAnalytics.ts`. This file is scheduled for removal in P5
+// once the backend covers 100% of the dashboard surface.
+// ────────────────────────────────────────────────────────────────────────
+
 import type {
   SearchAppearanceRow,
   ProfileViewsRow,

@@ -17,17 +17,29 @@ import { CreditCard, Lock, Smartphone, Waves } from 'lucide-react';
 
 // ============ Payment Method Config ============
 
-interface anyOption {
-  key: any;
+/** Payment method identifiers known to the backend `/api/payments/initiate`. */
+export type PaymentMethodKey =
+  | 'mobile_money_mtn'
+  | 'mobile_money_moov'
+  | 'mobile_money_orange'
+  | 'mobile_money_wave'
+  | 'card_visa'
+  | 'card_mastercard';
+
+/** Payment gateway providers routed by the backend. */
+export type PaymentProvider = 'fedapay' | 'stripe';
+
+interface PaymentMethodOption {
+  key: PaymentMethodKey;
   name: string;
   icon: React.ReactNode;
-  provider: any;
+  provider: PaymentProvider;
   color: string;
   description: string;
   countries: string[];
 }
 
-const PAYMENT_METHODS: anyOption[] = [
+const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     key: 'mobile_money_mtn',
     name: 'MTN Mobile Money',
@@ -120,13 +132,13 @@ export default function PaymentFlow({
   onFailure,
 }: PaymentFlowProps) {
   const [step, setStep] = useState<PaymentStep>('method');
-  const [selectedMethod, setSelectedMethod] = useState<any | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState<{
     paymentId: string;
     providerRef: string;
     redirectUrl?: string;
-    provider: any;
+    provider: PaymentProvider;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -140,7 +152,7 @@ export default function PaymentFlow({
 
   const selectedMethodConfig = PAYMENT_METHODS.find((m) => m.key === selectedMethod);
 
-  const handleSelectMethod = (method: any) => {
+  const handleSelectMethod = (method: PaymentMethodKey) => {
     setSelectedMethod(method);
     setStep('details');
   };
@@ -159,7 +171,7 @@ export default function PaymentFlow({
         providerRef: string;
         redirectUrl?: string;
         status: string;
-        provider: any;
+        provider: PaymentProvider;
       }>('/api/payments/initiate', {
         amount: totalAmount,
         currency,

@@ -25,10 +25,17 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/api-client';
+
+interface OAuthAccountStatus {
+  linked: boolean;
+  linkedAt: string | null;
+}
 
 interface OAuthStatus {
-  google: { linked: boolean; linkedAt: string | null };
-  facebook: { linked: boolean; linkedAt: string | null };
+  google: OAuthAccountStatus;
+  facebook: OAuthAccountStatus;
+  apple: OAuthAccountStatus;
   hasPassword: boolean;
   canUnlink: boolean;
 }
@@ -43,7 +50,7 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
   const [loading, setLoading] = useState(true);
 
   // Unlink dialog state
-  const [unlinkProvider, setUnlinkProvider] = useState<'google' | 'facebook' | null>(null);
+  const [unlinkProvider, setUnlinkProvider] = useState<'google' | 'facebook' | 'apple' | null>(null);
   const [unlinkPassword, setUnlinkPassword] = useState('');
   const [unlinking, setUnlinking] = useState(false);
 
@@ -53,11 +60,10 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
 
   const fetchOAuthStatus = async () => {
     try {
-      const res = await fetch('/api/auth/oauth-status');
-      if (res.ok) {
-        const data = await res.json();
-        setOauthStatus(data);
-      }
+      // Module 1: use real `api.get('/users/me/oauth-accounts')` (was
+      // fetch('/api/auth/oauth-status') which never existed).
+      const data = await api.get<OAuthStatus>('/users/me/oauth-accounts');
+      setOauthStatus(data);
     } catch (err) {
       console.error('Error fetching OAuth status:', err);
     } finally {
@@ -70,20 +76,13 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
 
     setUnlinking(true);
     try {
-      const res = await fetch('/api/auth/oauth-unlink', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: unlinkProvider, password: unlinkPassword }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la dissociation');
-      }
+      // Module 1: use real `api.delete('/users/me/oauth-accounts/${provider}')`
+      // (was POST /api/auth/oauth-unlink which never existed).
+      await api.delete(`/users/me/oauth-accounts/${unlinkProvider}`);
 
       toast({
         title: 'Succès',
-        description: `Compte ${unlinkProvider === 'google' ? 'Google' : 'Facebook'} dissocié`,
+        description: `Compte ${unlinkProvider === 'google' ? 'Google' : unlinkProvider === 'facebook' ? 'Facebook' : 'Apple'} dissocié`,
       });
       setUnlinkProvider(null);
       setUnlinkPassword('');
@@ -99,7 +98,7 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
     }
   };
 
-  const handleLink = (provider: 'google' | 'facebook') => {
+  const handleLink = (provider: 'google' | 'facebook' | 'apple') => {
     // Redirect to OAuth provider sign-in
     const callbackUrl = encodeURIComponent(window.location.pathname);
     window.location.href = `/api/auth/signin/${provider}?callbackUrl=${callbackUrl}`;
@@ -141,6 +140,18 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
       ),
       linked: oauthStatus?.facebook?.linked || false,
       linkedAt: oauthStatus?.facebook?.linkedAt,
+    },
+    {
+      key: 'apple' as const,
+      name: 'Apple',
+      description: 'Connectez votre identifiant Apple pour vous connecter rapidement',
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.05 12.04c-.03-2.93 2.39-4.34 2.5-4.41-1.36-1.99-3.48-2.26-4.24-2.29-1.81-.18-3.53 1.06-4.45 1.06-.92 0-2.33-1.04-3.83-1.01-1.98.03-3.81 1.15-4.83 2.92-2.06 3.57-.52 8.85 1.48 11.75.98 1.42 2.15 3.01 3.68 2.95 1.48-.06 2.04-.96 3.83-.96 1.79 0 2.29.96 3.85.93 1.59-.03 2.6-1.45 3.57-2.88 1.13-1.65 1.6-3.25 1.62-3.33-.04-.02-3.11-1.19-3.14-4.73M14.13 4.15c.82-.99 1.37-2.37 1.22-3.74-1.18.05-2.6.79-3.45 1.78-.76.87-1.42 2.27-1.24 3.62 1.31.1 2.65-.67 3.47-1.66" />
+        </svg>
+      ),
+      linked: oauthStatus?.apple?.linked || false,
+      linkedAt: oauthStatus?.apple?.linkedAt,
     },
   ];
 
@@ -230,10 +241,10 @@ export default function ConnectedAccounts({ userEmail }: ConnectedAccountsProps)
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-red-600">
-              Dissocier le compte {unlinkProvider === 'google' ? 'Google' : 'Facebook'}
+              Dissocier le compte {unlinkProvider === 'google' ? 'Google' : unlinkProvider === 'facebook' ? 'Facebook' : 'Apple'}
             </DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir dissocier votre compte {unlinkProvider === 'google' ? 'Google' : 'Facebook'} ?
+              Êtes-vous sûr de vouloir dissocier votre compte {unlinkProvider === 'google' ? 'Google' : unlinkProvider === 'facebook' ? 'Facebook' : 'Apple'} ?
               Vous ne pourrez plus vous connecter avec ce fournisseur.
             </DialogDescription>
           </DialogHeader>

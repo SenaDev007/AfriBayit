@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import {
   Banknote,
   Building2,
@@ -14,44 +15,45 @@ import { INVESTISSEUR_ANALYTICS, easeOut } from '../demoData';
 import { formatPrice } from '../utils';
 
 export default function InvestisseurProfile() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Landmark className="w-5 h-5 text-[#00A651] mb-1" />
           <p className="font-mono text-lg font-bold text-[#0a2a5e]">{formatPrice(INVESTISSEUR_ANALYTICS.portfolioValue)}</p>
-          <p className="text-xs text-gray-500">Portfolio immobilier</p>
+          <p className="text-xs text-gray-500">{t('analytics.investisseurProfile.portfolioValue', 'Portfolio immobilier')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <TrendingUp className="w-5 h-5 text-[#00A651] mb-1" />
           <p className="font-mono text-xl font-bold text-[#00A651]">{INVESTISSEUR_ANALYTICS.totalROI}%</p>
-          <p className="text-xs text-gray-500">ROI total</p>
+          <p className="text-xs text-gray-500">{t('analytics.investisseurProfile.totalRoi', 'ROI total')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Percent className="w-5 h-5 text-[#009CDE] mb-1" />
           <p className="font-mono text-xl font-bold text-[#009CDE]">{INVESTISSEUR_ANALYTICS.roiLocatif}%</p>
-          <p className="text-xs text-gray-500">ROI locatif</p>
+          <p className="text-xs text-gray-500">{t('analytics.investisseurProfile.roiLocatif', 'ROI locatif')}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border">
           <Banknote className="w-5 h-5 text-[#D4AF37] mb-1" />
           <p className="font-mono text-lg font-bold text-[#0a2a5e]">{formatPrice(INVESTISSEUR_ANALYTICS.monthlyRentalIncome)}</p>
-          <p className="text-xs text-gray-500">Revenus locatifs/mois</p>
+          <p className="text-xs text-gray-500">{t('analytics.investisseurProfile.monthlyRental', 'Revenus locatifs/mois')}</p>
         </div>
       </div>
 
       {/* Activité recherche */}
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Search className="w-5 h-5 text-[#003087]" /> Activité recherche</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Search className="w-5 h-5 text-[#003087]" /> {t('analytics.investisseurProfile.searchActivity', 'Activité recherche')}</h3>
         <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#003087]">{INVESTISSEUR_ANALYTICS.activiteRecherche.biensConsultes}</p><p className="text-xs text-gray-500">Biens consultés</p></div>
-          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#D4AF37]">{INVESTISSEUR_ANALYTICS.activiteRecherche.alertesActives}</p><p className="text-xs text-gray-500">Alertes actives</p></div>
-          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#00A651]">{INVESTISSEUR_ANALYTICS.activiteRecherche.visitesPlanifiees}</p><p className="text-xs text-gray-500">Visites planifiées</p></div>
+          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#003087]">{INVESTISSEUR_ANALYTICS.activiteRecherche.biensConsultes}</p><p className="text-xs text-gray-500">{t('analytics.investisseurProfile.propertiesViewed', 'Biens consultés')}</p></div>
+          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#D4AF37]">{INVESTISSEUR_ANALYTICS.activiteRecherche.alertesActives}</p><p className="text-xs text-gray-500">{t('analytics.investisseurProfile.activeAlerts', 'Alertes actives')}</p></div>
+          <div className="p-4 bg-gray-50 rounded-xl text-center"><p className="font-mono text-2xl font-bold text-[#00A651]">{INVESTISSEUR_ANALYTICS.activiteRecherche.visitesPlanifiees}</p><p className="text-xs text-gray-500">{t('analytics.investisseurProfile.scheduledVisits', 'Visites planifiées')}</p></div>
         </div>
       </div>
 
       {/* Portfolio immobilier with ROI locatif */}
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Portfolio immobilier</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.investisseurProfile.portfolioTitle', 'Portfolio immobilier')}</h3>
         <div className="space-y-3">
           {INVESTISSEUR_ANALYTICS.investments.map(inv => (
             <div key={inv.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
@@ -63,23 +65,23 @@ export default function InvestisseurProfile() {
                 </div>
               </div>
               <div className="text-right">
-                <span className={`font-mono text-sm font-bold ${inv.roi >= 15 ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>{inv.roi}% ROI</span>
-                {inv.rentalYield > 0 && <p className="text-xs text-[#009CDE]">{inv.rentalYield}% rendement locatif</p>}
+                <span className={`font-mono text-sm font-bold ${inv.roi >= 15 ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>{inv.roi}% {t('analytics.investisseurProfile.roi', 'ROI')}</span>
+                {inv.rentalYield > 0 && <p className="text-xs text-[#009CDE]">{inv.rentalYield}% {t('analytics.investisseurProfile.rentalYield', 'rendement locatif')}</p>}
               </div>
             </div>
           ))}
         </div>
         <div className="mt-4 p-3 bg-[#00A651]/5 rounded-xl border border-[#00A651]/10">
-          <p className="text-xs text-[#0a2a5e]"><span className="font-semibold text-[#00A651]">Taux d&apos;occupation : {INVESTISSEUR_ANALYTICS.occupancyRate}%</span> — Supérieur de 7% à la moyenne du marché.</p>
+          <p className="text-xs text-[#0a2a5e]"><span className="font-semibold text-[#00A651]">{t('analytics.investisseurProfile.occupancyRate', 'Taux d\'occupation')}: {INVESTISSEUR_ANALYTICS.occupancyRate}%</span> — {t('analytics.investisseurProfile.occupancyAboveMarket', 'Supérieur de 7% à la moyenne du marché.')}</p>
         </div>
       </div>
 
       {/* Historique transactions */}
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><History className="w-5 h-5 text-[#003087]" /> Historique transactions</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><History className="w-5 h-5 text-[#003087]" /> {t('analytics.investisseurProfile.transactionHistory', 'Historique transactions')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">Date</th><th className="text-left py-2 text-gray-500 font-medium">Type</th><th className="text-left py-2 text-gray-500 font-medium">Bien</th><th className="text-right py-2 text-gray-500 font-medium">Montant</th></tr></thead>
+            <thead><tr className="border-b"><th className="text-left py-2 text-gray-500 font-medium">{t('analytics.investisseurProfile.date', 'Date')}</th><th className="text-left py-2 text-gray-500 font-medium">{t('analytics.investisseurProfile.type', 'Type')}</th><th className="text-left py-2 text-gray-500 font-medium">{t('analytics.investisseurProfile.property', 'Bien')}</th><th className="text-right py-2 text-gray-500 font-medium">{t('analytics.investisseurProfile.amount', 'Montant')}</th></tr></thead>
             <tbody>
               {INVESTISSEUR_ANALYTICS.historiqueTransactions.map((txn, i) => (
                 <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
@@ -95,7 +97,7 @@ export default function InvestisseurProfile() {
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">Entonnoir d&apos;investissement</h3>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.investisseurProfile.investmentFunnel', 'Entonnoir d\'investissement')}</h3>
         <div className="space-y-3">
           {INVESTISSEUR_ANALYTICS.conversionFunnel.map((stage, i) => (
             <div key={stage.stage} className="flex items-center gap-4">

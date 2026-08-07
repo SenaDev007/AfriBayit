@@ -44,6 +44,7 @@ import {
   type AdminAuditLog,
   type AdminAuditLogFilters,
 } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = {
   BJ: '🇧🇯',
@@ -83,23 +84,23 @@ const ACTION_CATEGORIES: Record<string, { label: string; color: string }> = {
   logout: { label: 'Déconnexion', color: 'bg-gray-50 text-gray-700 border-gray-200' },
 };
 
-const TARGET_TYPE_LABELS: Record<string, string> = {
-  user: 'Utilisateur',
-  property: 'Propriété',
-  kyc_document: 'Doc KYC',
-  transaction: 'Transaction',
-  escrow: 'Escrow',
-  subscription: 'Abonnement',
-  course: 'Formation',
-  hotel: 'Hôtel',
-  guesthouse: 'Guesthouse',
-  review: 'Avis',
-  community: 'Communauté',
-  notification: 'Notification',
-  artisan: 'Artisan',
-  notary: 'Notaire',
-  geometer: 'Géomètre',
-};
+const TARGET_TYPE_KEYS: string[] = [
+  'user',
+  'property',
+  'kyc_document',
+  'transaction',
+  'escrow',
+  'subscription',
+  'course',
+  'hotel',
+  'guesthouse',
+  'review',
+  'community',
+  'notification',
+  'artisan',
+  'notary',
+  'geometer',
+];
 
 function getActionCategory(action: string) {
   const actionLower = action.toLowerCase();
@@ -121,7 +122,10 @@ function formatDate(dateStr: string) {
   });
 }
 
-function formatRelativeTime(dateStr: string) {
+function formatRelativeTime(
+  dateStr: string,
+  t: (path: string, fallback?: string) => string
+) {
   const d = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
@@ -129,14 +133,35 @@ function formatRelativeTime(dateStr: string) {
   const diffH = Math.floor(diffMin / 60);
   const diffD = Math.floor(diffH / 24);
 
-  if (diffMin < 1) return 'À l\'instant';
-  if (diffMin < 60) return `Il y a ${diffMin} min`;
-  if (diffH < 24) return `Il y a ${diffH}h`;
-  if (diffD < 7) return `Il y a ${diffD}j`;
+  if (diffMin < 1) return t('adminAuditLogs.relativeNow', "À l'instant");
+  if (diffMin < 60)
+    return `${t('adminAuditLogs.relativeMinutesPrefix', 'Il y a')} ${diffMin} ${t(
+      'adminAuditLogs.relativeMinutesSuffix',
+      'min'
+    )}`;
+  if (diffH < 24)
+    return `${t('adminAuditLogs.relativeHoursPrefix', 'Il y a')} ${diffH}h`;
+  if (diffD < 7)
+    return `${t('adminAuditLogs.relativeDaysPrefix', 'Il y a')} ${diffD}j`;
   return formatDate(dateStr);
 }
 
+function targetLabel(
+  targetType: string,
+  t: (path: string, fallback?: string) => string
+): string {
+  return t(`adminAuditLogs.targetTypes.${targetType}`, targetType);
+}
+
+function countryLabel(
+  countryCode: string,
+  t: (path: string, fallback?: string) => string
+): string {
+  return t(`adminAuditLogs.countries.${countryCode}`, countryCode);
+}
+
 export default function AdminAuditLogsPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<AdminAuditLogFilters>({ page: 1, limit: 25 });
   const [searchAction, setSearchAction] = useState('');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
@@ -176,16 +201,18 @@ export default function AdminAuditLogsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#003087]" />
-            Journaux d&apos;audit
+            {t('adminAuditLogs.pageTitle', "Journaux d'audit")}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {pagination ? `${pagination.total} entrées au total` : 'Chargement...'}
+            {pagination
+              ? `${pagination.total} ${t('adminAuditLogs.totalEntries', 'entrées au total')}`
+              : t('adminAuditLogs.loading', 'Chargement...')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="text-xs">
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            Exporter CSV
+            {t('adminAuditLogs.exportCsv', 'Exporter CSV')}
           </Button>
         </div>
       </div>
@@ -197,7 +224,10 @@ export default function AdminAuditLogsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par action (ex: user.update_role)..."
+              placeholder={t(
+                'adminAuditLogs.searchPlaceholder',
+                'Rechercher par action (ex: user.update_role)...'
+              )}
               value={searchAction}
               onChange={(e) => setSearchAction(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -214,22 +244,15 @@ export default function AdminAuditLogsPage() {
               }
             >
               <SelectTrigger className="w-[150px] h-9 text-xs">
-                <SelectValue placeholder="Type de cible" />
+                <SelectValue placeholder={t('adminAuditLogs.targetTypeLabel', 'Type de cible')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les types</SelectItem>
-                <SelectItem value="user">Utilisateur</SelectItem>
-                <SelectItem value="property">Propriété</SelectItem>
-                <SelectItem value="kyc_document">Doc KYC</SelectItem>
-                <SelectItem value="transaction">Transaction</SelectItem>
-                <SelectItem value="escrow">Escrow</SelectItem>
-                <SelectItem value="subscription">Abonnement</SelectItem>
-                <SelectItem value="course">Formation</SelectItem>
-                <SelectItem value="hotel">Hôtel</SelectItem>
-                <SelectItem value="guesthouse">Guesthouse</SelectItem>
-                <SelectItem value="review">Avis</SelectItem>
-                <SelectItem value="notary">Notaire</SelectItem>
-                <SelectItem value="geometer">Géomètre</SelectItem>
+                <SelectItem value="all">{t('adminAuditLogs.allTypes', 'Tous les types')}</SelectItem>
+                {TARGET_TYPE_KEYS.map((tt) => (
+                  <SelectItem key={tt} value={tt}>
+                    {targetLabel(tt, t)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -240,15 +263,15 @@ export default function AdminAuditLogsPage() {
               }
             >
               <SelectTrigger className="w-[140px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminAuditLogs.countryLabel', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
-                <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+                <SelectItem value="all">{t('adminAuditLogs.allCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {countryLabel('BJ', t)}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {countryLabel('CI', t)}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {countryLabel('BF', t)}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {countryLabel('TG', t)}</SelectItem>
+                <SelectItem value="SN">🇸🇳 {countryLabel('SN', t)}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -260,7 +283,7 @@ export default function AdminAuditLogsPage() {
                 setFilters((prev) => ({ ...prev, dateFrom: e.target.value || undefined, page: 1 }))
               }
               className="w-[140px] h-9 text-xs"
-              placeholder="Date début"
+              placeholder={t('adminAuditLogs.dateFromPlaceholder', 'Date début')}
             />
 
             {/* Date to */}
@@ -271,7 +294,7 @@ export default function AdminAuditLogsPage() {
                 setFilters((prev) => ({ ...prev, dateTo: e.target.value || undefined, page: 1 }))
               }
               className="w-[140px] h-9 text-xs"
-              placeholder="Date fin"
+              placeholder={t('adminAuditLogs.dateToPlaceholder', 'Date fin')}
             />
 
             <Button
@@ -281,7 +304,7 @@ export default function AdminAuditLogsPage() {
               onClick={handleSearch}
             >
               <Filter className="w-3.5 h-3.5 mr-1" />
-              Filtrer
+              {t('adminAuditLogs.filterButton', 'Filtrer')}
             </Button>
 
             {hasActiveFilters && (
@@ -292,7 +315,7 @@ export default function AdminAuditLogsPage() {
                 onClick={clearFilters}
               >
                 <X className="w-3.5 h-3.5 mr-1" />
-                Réinitialiser
+                {t('adminAuditLogs.resetButton', 'Réinitialiser')}
               </Button>
             )}
           </div>
@@ -303,7 +326,7 @@ export default function AdminAuditLogsPage() {
           <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-gray-100">
             {filters.targetType && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                Type: {TARGET_TYPE_LABELS[filters.targetType] || filters.targetType}
+                {t('adminAuditLogs.typePill', 'Type:')} {targetLabel(filters.targetType, t)}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => setFilters((prev) => ({ ...prev, targetType: undefined, page: 1 }))}
@@ -312,7 +335,7 @@ export default function AdminAuditLogsPage() {
             )}
             {filters.country && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                Pays: {COUNTRY_FLAGS[filters.country] || ''} {filters.country}
+                {t('adminAuditLogs.countryPill', 'Pays:')} {COUNTRY_FLAGS[filters.country] || ''} {countryLabel(filters.country, t)}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => setFilters((prev) => ({ ...prev, country: undefined, page: 1 }))}
@@ -321,7 +344,7 @@ export default function AdminAuditLogsPage() {
             )}
             {filters.action && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                Action: {filters.action}
+                {t('adminAuditLogs.actionPill', 'Action:')} {filters.action}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => {
@@ -333,7 +356,7 @@ export default function AdminAuditLogsPage() {
             )}
             {filters.dateFrom && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                Du: {filters.dateFrom}
+                {t('adminAuditLogs.dateFromPill', 'Du:')} {filters.dateFrom}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => setFilters((prev) => ({ ...prev, dateFrom: undefined, page: 1 }))}
@@ -342,7 +365,7 @@ export default function AdminAuditLogsPage() {
             )}
             {filters.dateTo && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                Au: {filters.dateTo}
+                {t('adminAuditLogs.dateToPill', 'Au:')} {filters.dateTo}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => setFilters((prev) => ({ ...prev, dateTo: undefined, page: 1 }))}
@@ -373,9 +396,11 @@ export default function AdminAuditLogsPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun journal d&apos;audit trouvé</p>
+            <p className="text-lg font-medium text-gray-900">
+              {t('adminAuditLogs.emptyTitle', "Aucun journal d'audit trouvé")}
+            </p>
             <p className="text-sm text-gray-500 mt-1">
-              Essayez de modifier vos filtres de recherche
+              {t('adminAuditLogs.emptyDesc', 'Essayez de modifier vos filtres de recherche')}
             </p>
           </div>
         ) : (
@@ -385,25 +410,25 @@ export default function AdminAuditLogsPage() {
                 <TableHeader>
                   <TableRow className="bg-gray-50/80">
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[160px]">
-                      Date
+                      {t('adminAuditLogs.colDate', 'Date')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[120px]">
-                      Acteur
+                      {t('adminAuditLogs.colActor', 'Acteur')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[160px]">
-                      Action
+                      {t('adminAuditLogs.colAction', 'Action')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[140px]">
-                      Cible
+                      {t('adminAuditLogs.colTarget', 'Cible')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[80px]">
-                      Pays
+                      {t('adminAuditLogs.colCountry', 'Pays')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[100px]">
-                      Détails
+                      {t('adminAuditLogs.colDetails', 'Détails')}
                     </TableHead>
                     <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 min-w-[110px]">
-                      IP
+                      {t('adminAuditLogs.colIp', 'IP')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -417,6 +442,7 @@ export default function AdminAuditLogsPage() {
                         setExpandedLogId((prev) => (prev === log.id ? null : log.id))
                       }
                       onViewDetail={() => setDetailLog(log)}
+                      t={t}
                     />
                   ))}
                 </TableBody>
@@ -428,8 +454,8 @@ export default function AdminAuditLogsPage() {
               <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
                 <p className="text-xs text-gray-500">
                   {(pagination.page - 1) * pagination.limit + 1}–
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} sur{' '}
-                  {pagination.total}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)}{' '}
+                  {t('adminAuditLogs.paginationOf', 'sur')} {pagination.total}
                 </p>
                 <div className="flex items-center gap-1">
                   <Button
@@ -489,7 +515,7 @@ export default function AdminAuditLogsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-[#003087]" />
-              Détail du journal d&apos;audit
+              {t('adminAuditLogs.detailDialogTitle', "Détail du journal d'audit")}
             </DialogTitle>
           </DialogHeader>
           {detailLog && (
@@ -497,17 +523,17 @@ export default function AdminAuditLogsPage() {
               {/* Meta info */}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-gray-500 text-xs">ID</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailId', 'ID')}</span>
                   <p className="font-mono text-xs mt-0.5">{detailLog.id}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Date</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailDate', 'Date')}</span>
                   <p className="text-xs mt-0.5">{formatDate(detailLog.createdAt)}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Acteur</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailActor', 'Acteur')}</span>
                   <p className="text-xs mt-0.5">
-                    {detailLog.actorId || 'Système'}
+                    {detailLog.actorId || t('adminAuditLogs.systemActor', 'Système')}
                     {detailLog.actorRole && (
                       <Badge variant="outline" className="ml-1 text-[10px]">
                         {detailLog.actorRole}
@@ -516,7 +542,7 @@ export default function AdminAuditLogsPage() {
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Action</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailAction', 'Action')}</span>
                   <p className="mt-0.5">
                     <Badge className={cn('text-[11px]', getActionCategory(detailLog.action).color)}>
                       {detailLog.action}
@@ -524,10 +550,10 @@ export default function AdminAuditLogsPage() {
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Cible</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailTarget', 'Cible')}</span>
                   <p className="text-xs mt-0.5">
                     {detailLog.targetType
-                      ? `${TARGET_TYPE_LABELS[detailLog.targetType] || detailLog.targetType}`
+                      ? targetLabel(detailLog.targetType, t)
                       : '—'}
                     {detailLog.targetId && (
                       <span className="text-gray-400 font-mono ml-1">
@@ -537,19 +563,19 @@ export default function AdminAuditLogsPage() {
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Pays</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailCountry', 'Pays')}</span>
                   <p className="text-xs mt-0.5">
                     {detailLog.country
-                      ? `${COUNTRY_FLAGS[detailLog.country] || ''} ${detailLog.country}`
+                      ? `${COUNTRY_FLAGS[detailLog.country] || ''} ${countryLabel(detailLog.country, t)}`
                       : '—'}
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">Adresse IP</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailIpAddress', 'Adresse IP')}</span>
                   <p className="font-mono text-xs mt-0.5">{detailLog.ipAddress || '—'}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500 text-xs">User Agent</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailUserAgent', 'User Agent')}</span>
                   <p className="text-xs mt-0.5 truncate max-w-[250px]" title={detailLog.userAgent || ''}>
                     {detailLog.userAgent || '—'}
                   </p>
@@ -559,7 +585,7 @@ export default function AdminAuditLogsPage() {
               {/* JSON details */}
               {detailLog.details && (
                 <div>
-                  <span className="text-gray-500 text-xs">Détails (JSON)</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailJsonDetails', 'Détails (JSON)')}</span>
                   <div className="mt-1 bg-gray-50 rounded-lg border border-gray-200 p-3 max-h-80 overflow-y-auto custom-scrollbar-thin">
                     <JsonViewer data={detailLog.details} />
                   </div>
@@ -573,16 +599,20 @@ export default function AdminAuditLogsPage() {
   );
 }
 
+type TranslateFn = (path: string, fallback?: string) => string;
+
 function AuditLogRow({
   log,
   isExpanded,
   onToggleExpand,
   onViewDetail,
+  t,
 }: {
   log: AdminAuditLog;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onViewDetail: () => void;
+  t: TranslateFn;
 }) {
   const category = getActionCategory(log.action);
 
@@ -591,7 +621,7 @@ function AuditLogRow({
       <TableRow className="hover:bg-gray-50/50 cursor-pointer" onClick={onToggleExpand}>
         <TableCell>
           <div className="text-xs text-gray-900 font-medium">
-            {formatRelativeTime(log.createdAt)}
+            {formatRelativeTime(log.createdAt, t)}
           </div>
           <div className="text-[10px] text-gray-400">{formatDate(log.createdAt)}</div>
         </TableCell>
@@ -604,7 +634,7 @@ function AuditLogRow({
             </div>
             <div className="min-w-0">
               <p className="text-xs font-mono text-gray-700 truncate">
-                {log.actorId ? log.actorId.slice(0, 12) + '...' : 'Système'}
+                {log.actorId ? log.actorId.slice(0, 12) + '...' : t('adminAuditLogs.systemActor', 'Système')}
               </p>
               {log.actorRole && (
                 <p className="text-[10px] text-gray-400">{log.actorRole}</p>
@@ -620,9 +650,7 @@ function AuditLogRow({
         <TableCell>
           <div className="text-xs">
             {log.targetType ? (
-              <span className="text-gray-700">
-                {TARGET_TYPE_LABELS[log.targetType] || log.targetType}
-              </span>
+              <span className="text-gray-700">{targetLabel(log.targetType, t)}</span>
             ) : (
               <span className="text-gray-400">—</span>
             )}
@@ -635,7 +663,9 @@ function AuditLogRow({
         </TableCell>
         <TableCell>
           <span className="text-xs">
-            {log.country ? `${COUNTRY_FLAGS[log.country] || ''} ${log.country}` : '—'}
+            {log.country
+              ? `${COUNTRY_FLAGS[log.country] || ''} ${countryLabel(log.country, t)}`
+              : '—'}
           </span>
         </TableCell>
         <TableCell>
@@ -650,7 +680,7 @@ function AuditLogRow({
               }}
             >
               <FileText className="w-3 h-3 mr-1" />
-              Voir
+              {t('adminAuditLogs.viewButton', 'Voir')}
             </Button>
           ) : (
             <span className="text-[11px] text-gray-400">—</span>
@@ -670,27 +700,27 @@ function AuditLogRow({
             <div className="px-6 py-3 border-l-4 border-[#D4AF37]">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-2">
                 <div>
-                  <span className="text-gray-500">ID:</span>{' '}
+                  <span className="text-gray-500">{t('adminAuditLogs.detailId', 'ID')}:</span>{' '}
                   <span className="font-mono">{log.id}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Acteur ID:</span>{' '}
-                  <span className="font-mono">{log.actorId || 'Système'}</span>
+                  <span className="text-gray-500">{t('adminAuditLogs.detailActorId', 'Acteur ID')}:</span>{' '}
+                  <span className="font-mono">{log.actorId || t('adminAuditLogs.systemActor', 'Système')}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">User Agent:</span>{' '}
+                  <span className="text-gray-500">{t('adminAuditLogs.detailUserAgent', 'User Agent')}:</span>{' '}
                   <span className="truncate block max-w-[200px]" title={log.userAgent || ''}>
                     {log.userAgent || '—'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Cible ID:</span>{' '}
+                  <span className="text-gray-500">{t('adminAuditLogs.detailTargetId', 'Cible ID')}:</span>{' '}
                   <span className="font-mono">{log.targetId || '—'}</span>
                 </div>
               </div>
               {log.details && (
                 <div className="mt-2">
-                  <span className="text-gray-500 text-xs">Détails:</span>
+                  <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailDetails', 'Détails:')}</span>
                   <div className="mt-1 bg-white rounded border border-gray-200 p-2 max-h-40 overflow-y-auto custom-scrollbar-thin">
                     <JsonViewer data={log.details} />
                   </div>
@@ -703,7 +733,7 @@ function AuditLogRow({
                   className="h-7 text-[11px]"
                   onClick={onViewDetail}
                 >
-                  Voir le détail complet
+                  {t('adminAuditLogs.viewFullDetail', 'Voir le détail complet')}
                 </Button>
                 {isExpanded ? (
                   <ChevronUp className="w-3 h-3 text-gray-400" />

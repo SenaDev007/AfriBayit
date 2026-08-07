@@ -14,12 +14,12 @@ interface PropertyMapItem {
   bedrooms: number;
   surface: number;
   images: string[];
-  lat: number | null;
-  lng: number | null;
+  lat?: number | null;
+  lng?: number | null;
   verified: boolean;
   geoTrust: boolean;
   geoTrustStatus?: 'verified' | 'pending' | 'conflict';
-  investmentScore: number | null;
+  investmentScore?: number | null;
   boundaryPolygon?: number[][];
   address?: string;
 }
@@ -60,6 +60,18 @@ const GEOTRUST_LABELS: Record<string, string> = {
   pending: 'Vérification en cours',
   conflict: 'Conflit détecté',
 };
+
+// ─── Provider priority ──────────────────────────────────────────────────────
+// Mapbox GL JS (interactive HTML markers + popups) → Google Maps JS API →
+// Google Embed iframe → OpenStreetMap embed iframe.
+
+type MapProvider = 'mapbox' | 'google' | 'google-embed' | 'osm';
+
+function resolveProvider(): MapProvider {
+  if (process.env.NEXT_PUBLIC_MAPBOX_TOKEN) return 'mapbox';
+  if (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) return 'google';
+  return 'osm';
+}
 
 // ─── Google Maps loader ───────────────────────────────────────────────────
 let googleMapsLoaded = false;
@@ -117,6 +129,43 @@ function buildOsmEmbedUrl(props: PropertyMapItem[], selId?: string): string {
   return `https://www.openstreetmap.org/export/embed.html?bbox=${cLng - d}%2C${cLat - d}%2C${cLng + d}%2C${cLat + d}&marker=${cLat}%2C${cLng}&layer=mapnik`;
 }
 
+// ─── HTML price marker builder (used by Mapbox GL JS) ──────────────────────
+function buildPriceMarkerEl(prop: PropertyMapItem, isSelected: boolean): HTMLElement {
+  const color = TRANSACTION_COLORS[prop.transaction] || '#003087';
+  const el = document.createElement('div');
+  el.style.cssText = [
+    'display:flex',
+    'flex-direction:column',
+    'align-items:center',
+    'cursor:pointer',
+    'transform:translateY(-4px)',
+    isSelected ? 'z-index:10' : 'z-index:1',
+  ].join(';');
+  const badge = document.createElement('div');
+  badge.style.cssText = [
+    `background:${color}`,
+    'color:#fff',
+    'font:bold 11px/1 Arial,sans-serif',
+    'padding:4px 8px',
+    'border-radius:8px',
+    'border:2px solid #fff',
+    'box-shadow:0 2px 6px rgba(0,0,0,.25)',
+    'white-space:nowrap',
+    isSelected ? 'transform:scale(1.1)' : '',
+  ].join(';');
+  badge.textContent = priceLabel(prop.price);
+  const tip = document.createElement('div');
+  tip.style.cssText = `width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${color};margin-top:-1px;`;
+  el.appendChild(badge);
+  el.appendChild(tip);
+  return el;
+}
+
+function buildPopupHtml(prop: PropertyMapItem): string {
+  const img = prop.images?.[0] || '';
+  return `<div style="min-width:220px;padding:4px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><div style="width:64px;height:64px;border-radius:8px;overflow:hidden;background:#f3f4f6;flex-shrink:0;">${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" alt="${prop.title}" />` : ''}</div><div style="flex:1;min-width:0;"><h4 style="font-size:12px;font-weight:600;color:#0a2a5e;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${prop.title}</h4><p style="font-size:10px;color:#6b7280;margin:2px 0;">${prop.quartier}, ${prop.city}</p><p style="font-size:13px;font-weight:bold;color:#D4AF37;margin:0;">${formatPrice(prop.price, prop.transaction)}</p></div></div><div style="display:flex;gap:8px;font-size:10px;color:#6b7280;margin-bottom:8px;">${prop.bedrooms > 0 ? `<span>${prop.bedrooms} ch.</span>` : ''}<span>${prop.surface} m²</span>${prop.investmentScore ? `<span style="color:#00A651;font-weight:600;">Score: ${prop.investmentScore}</span>` : ''}</div><a href="/property/${prop.id}" style="display:block;text-align:center;padding:6px;background:#003087;color:white;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;">Voir le bien</a></div>`;
+}
+
 export default function PropertyMap({
   properties, onPropertyClick, onBoundsChange, selectedCountry,
   className = '', showGeoTrustOverlay = false, selectedPropertyId,
@@ -127,9 +176,21 @@ export default function PropertyMap({
   const markersRef = useRef<any[]>([]);
   const infoWindowRef = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [apiFailed, setApiFailed] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<MapProvider | null>(null);
+  const [mapboxFailed, setMapboxFailed] = useState(false);
+  const [googleFailed, setGoogleFailed] = useState(false);
 
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  // Resolve which provider to try first (Mapbox → Google → OSM)
+  const preferredProvider = useMemo<MapProvider>(() => {
+    if (mapboxFailed && googleFailed) return 'osm';
+    if (mapboxFailed && googleApiKey) return 'google';
+    if (mapboxFailed && !googleApiKey) return 'osm';
+    if (googleFailed && mapboxToken) return 'mapbox';
+    return resolveProvider();
+  }, [mapboxToken, googleApiKey, mapboxFailed, googleFailed]);
 
   const mapProperties = useMemo(
     () => properties.filter(p => p.lat !== null && p.lng !== null),
@@ -150,13 +211,110 @@ export default function PropertyMap({
     return { lat: 9.5, lng: 2.3, zoom: 5 };
   }, [mapProperties, selectedCountry, selectedPropertyId]);
 
-  // ─── Google Maps init ──────────────────────────────────────────────────
+  // ─── Mapbox GL JS init (dynamic import) ────────────────────────────────
   useEffect(() => {
-    if (!googleApiKey || apiFailed || !mapContainerRef.current) return;
+    if (preferredProvider !== 'mapbox' || !mapboxToken || !mapContainerRef.current) return;
+    let cancelled = false;
+    let map: any = null;
+    const markers: any[] = [];
+    const popups: any[] = [];
+
+    // Dynamic import keeps mapbox-gl out of the initial bundle
+    import('mapbox-gl')
+      .then((mapboxglModule) => {
+        const mapboxgl = mapboxglModule.default || mapboxglModule;
+        if (cancelled || !mapContainerRef.current) return;
+        try {
+          mapboxgl.accessToken = mapboxToken;
+          map = new mapboxgl.Map({
+            container: mapContainerRef.current,
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [initialView.lng, initialView.lat],
+            zoom: initialView.zoom,
+          });
+
+          map.on('load', () => {
+            if (cancelled) return;
+            setMapLoaded(true);
+            setActiveProvider('mapbox');
+          });
+
+          map.on('error', () => {
+            // Token invalid / rate limited — fall back to Google/OSM
+            setMapboxFailed(true);
+          });
+
+          // Add HTML price markers + popups
+          mapProperties.forEach((prop) => {
+            if (prop.lat == null || prop.lng == null) return;
+            const isSel = prop.id === selectedPropertyId;
+            const el = buildPriceMarkerEl(prop, isSel);
+            const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+              .setLngLat([prop.lng, prop.lat])
+              .addTo(map);
+            markers.push(marker);
+
+            const popup = new mapboxgl.Popup({ offset: 25, closeButton: true, maxWidth: '260px' })
+              .setHTML(buildPopupHtml(prop));
+            popups.push(popup);
+
+            el.addEventListener('click', (ev: Event) => {
+              ev.stopPropagation();
+              popup.setLngLat([prop.lng!, prop.lat!]).addTo(map);
+              setPopupInfo(prop);
+              onPropertyClick?.(prop.id);
+            });
+          });
+
+          // fitBounds to include all markers (unless single property selected)
+          if (mapProperties.length > 1 && !selectedPropertyId) {
+            const bounds = new mapboxgl.LngLatBounds();
+            mapProperties.forEach(p => bounds.extend([p.lng!, p.lat!]));
+            map.fitBounds(bounds, { padding: 60 });
+          }
+
+          // Report bounds changes — guarded against null (map may not be ready)
+          if (onBoundsChange) {
+            map.on('idle', () => {
+              const b = map.getBounds();
+              if (!b) return; // Guard: bounds can be null before map settles
+              try {
+                const ne = b.getNorthEast();
+                const sw = b.getSouthWest();
+                onBoundsChange({
+                  north: ne.lat,
+                  south: sw.lat,
+                  east: ne.lng,
+                  west: sw.lng,
+                });
+              } catch {
+                /* bounds not yet available — ignore */
+              }
+            });
+          }
+        } catch {
+          setMapboxFailed(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMapboxFailed(true);
+      });
+
+    return () => {
+      cancelled = true;
+      popups.forEach(p => p?.remove?.());
+      markers.forEach(m => m?.remove?.());
+      if (map) map.remove?.();
+    };
+  }, [mapboxToken, preferredProvider, JSON.stringify(mapProperties), selectedPropertyId, JSON.stringify(initialView)]);
+
+  // ─── Google Maps JS API init (fallback) ──────────────────────────────────
+  useEffect(() => {
+    if (preferredProvider !== 'google' || !googleApiKey || !mapContainerRef.current) return;
     let cancelled = false;
 
     loadGoogleMapsApi(googleApiKey).then((loaded) => {
-      if (cancelled || !loaded || !mapContainerRef.current) { setApiFailed(true); return; }
+      if (cancelled || !loaded || !mapContainerRef.current) { setGoogleFailed(true); return; }
       const g = (window as any).google;
       const map = new g.maps.Map(mapContainerRef.current, {
         center: { lat: initialView.lat, lng: initialView.lng },
@@ -180,9 +338,7 @@ export default function PropertyMap({
           zIndex: isSel ? 999 : 1,
         });
         marker.addListener('click', () => {
-          const img = prop.images?.[0] || '';
-          const content = `<div style="min-width:220px;padding:4px;"><div style="display:flex;gap:8px;margin-bottom:8px;"><div style="width:64px;height:64px;border-radius:8px;overflow:hidden;background:#f3f4f6;flex-shrink:0;">${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" alt="${prop.title}" />` : ''}</div><div style="flex:1;min-width:0;"><h4 style="font-size:12px;font-weight:600;color:#0a2a5e;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${prop.title}</h4><p style="font-size:10px;color:#6b7280;margin:2px 0;">${prop.quartier}, ${prop.city}</p><p style="font-size:13px;font-weight:bold;color:#D4AF37;margin:0;">${formatPrice(prop.price, prop.transaction)}</p></div></div><div style="display:flex;gap:8px;font-size:10px;color:#6b7280;margin-bottom:8px;">${prop.bedrooms > 0 ? `<span>${prop.bedrooms} ch.</span>` : ''}<span>${prop.surface} m²</span>${prop.investmentScore ? `<span style="color:#00A651;font-weight:600;">Score: ${prop.investmentScore}</span>` : ''}</div><a href="/property/${prop.id}" style="display:block;text-align:center;padding:6px;background:#003087;color:white;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;">Voir le bien</a></div>`;
-          infoWindowRef.current.setContent(content);
+          infoWindowRef.current.setContent(buildPopupHtml(prop));
           infoWindowRef.current.open(map, marker);
           setPopupInfo(prop);
           onPropertyClick?.(prop.id);
@@ -198,16 +354,32 @@ export default function PropertyMap({
       if (onBoundsChange) {
         map.addListener('idle', () => {
           const b = map.getBounds();
-          if (b) onBoundsChange({ north: b.getNorthEast().lat(), south: b.getSouthWest().lat(), east: b.getNorthEast().lng(), west: b.getSouthWest().lng() });
+          if (!b) return; // Guard: bounds can be null until map is ready
+          try {
+            onBoundsChange({
+              north: b.getNorthEast().lat(),
+              south: b.getSouthWest().lat(),
+              east: b.getNorthEast().lng(),
+              west: b.getSouthWest().lng(),
+            });
+          } catch {
+            /* bounds not yet available — ignore */
+          }
         });
       }
       setMapLoaded(true);
+      setActiveProvider('google');
     });
-    return () => { cancelled = true; markersRef.current.forEach(m => m?.setMap?.(null)); markersRef.current = []; };
-  }, [googleApiKey, mapProperties, selectedPropertyId, initialView, onBoundsChange, onPropertyClick, apiFailed]);
+
+    return () => {
+      cancelled = true;
+      markersRef.current.forEach(m => m?.setMap?.(null));
+      markersRef.current = [];
+    };
+  }, [googleApiKey, preferredProvider, JSON.stringify(mapProperties), selectedPropertyId, JSON.stringify(initialView)]);
 
   useEffect(() => {
-    if (!googleMapRef.current || !mapLoaded) return;
+    if (!googleMapRef.current || activeProvider !== 'google') return;
     if (selectedPropertyId) {
       const sel = mapProperties.find(p => p.id === selectedPropertyId);
       if (sel && sel.lat != null && sel.lng != null) {
@@ -215,10 +387,10 @@ export default function PropertyMap({
         googleMapRef.current.setZoom(16);
       }
     }
-  }, [selectedPropertyId, mapProperties, mapLoaded]);
+  }, [selectedPropertyId, mapProperties, activeProvider]);
 
   // ═══ FALLBACK: Google Embed iframe ═══
-  if (apiFailed && googleApiKey) {
+  if (preferredProvider === 'google-embed' && googleApiKey) {
     const url = buildGoogleEmbedUrl(googleApiKey, mapProperties, selectedPropertyId);
     return (
       <div className={`relative rounded-2xl overflow-hidden bg-gray-100 ${className}`} style={{ minHeight: 400 }}>
@@ -230,7 +402,7 @@ export default function PropertyMap({
   }
 
   // ═══ FALLBACK: OSM embed (no key at all) ═══
-  if (apiFailed && !googleApiKey) {
+  if (preferredProvider === 'osm') {
     const url = buildOsmEmbedUrl(mapProperties, selectedPropertyId);
     return (
       <div className={`relative rounded-2xl overflow-hidden bg-gray-100 ${className}`} style={{ minHeight: 400 }}>
@@ -247,15 +419,18 @@ export default function PropertyMap({
     );
   }
 
-  // ═══ MAIN: Google Maps JS API (interactive) ═══
+  // ═══ MAIN: Mapbox GL JS or Google Maps JS API (interactive) ═══
+  const isLoading = !mapLoaded || activeProvider !== preferredProvider;
   return (
     <div className={`relative rounded-2xl overflow-hidden ${className}`} style={{ minHeight: 400 }}>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%', minHeight: 400, backgroundColor: '#e5e7eb' }} />
-      {!mapLoaded && !apiFailed && (
+      {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="text-center">
             <div className="w-10 h-10 border-4 border-[#003087] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-xs text-gray-500">Chargement de Google Maps...</p>
+            <p className="text-xs text-gray-500">
+              {preferredProvider === 'mapbox' ? 'Chargement de Mapbox…' : 'Chargement de Google Maps…'}
+            </p>
           </div>
         </div>
       )}

@@ -69,9 +69,9 @@ export function useCommunityPost(id: string) {
   return useQuery({
     queryKey: ['community-post', id],
     queryFn: async () => {
-      const res: any = await api.get(`/api/community/posts/${id}`);
+      const res: Record<string, unknown> = await api.get(`/api/community/posts/${id}`);
       // Backend returns the post directly; some legacy routes wrap in `{ data }`.
-      const post = res?.data ?? res;
+      const post = (res?.data as Record<string, unknown> | undefined) ?? res;
       return { post, data: post };
     },
     enabled: !!id,
@@ -82,11 +82,11 @@ export function useCommunityPostReplies(id: string) {
   return useQuery({
     queryKey: ['community-post-replies', id],
     queryFn: async () => {
-      const res: any = await api.get(`/api/community/posts/${id}/replies`);
+      const res: Record<string, unknown> = await api.get(`/api/community/posts/${id}/replies`);
       // Backend wraps replies in `{ replies: [...] }`; some legacy routes
       // wrap in `{ data: [...] }`. Unwrap defensively.
-      const replies = res?.data ?? res?.replies ?? [];
-      const pagination = res?.pagination ?? null;
+      const replies = (res?.data as unknown[] | undefined) ?? (res?.replies as unknown[] | undefined) ?? [];
+      const pagination = (res?.pagination as Record<string, unknown> | null | undefined) ?? null;
       return { replies, data: replies, pagination };
     },
     enabled: !!id,
@@ -135,8 +135,8 @@ export function useCommunityGroup(id: string) {
   return useQuery({
     queryKey: ['community-group', id],
     queryFn: async () => {
-      const res: any = await api.get(`/api/community/groups/${id}`);
-      const group = res?.data ?? res;
+      const res: Record<string, unknown> = await api.get(`/api/community/groups/${id}`);
+      const group = (res?.data as Record<string, unknown> | undefined) ?? res;
       return { group, data: group };
     },
     enabled: !!id,
@@ -147,9 +147,9 @@ export function useCommunityGroupMembers(id: string) {
   return useQuery({
     queryKey: ['community-group-members', id],
     queryFn: async () => {
-      const res: any = await api.get(`/api/community/groups/${id}/members`);
-      const members = res?.data ?? res?.members ?? [];
-      const pagination = res?.pagination ?? null;
+      const res: Record<string, unknown> = await api.get(`/api/community/groups/${id}/members`);
+      const members = (res?.data as unknown[] | undefined) ?? (res?.members as unknown[] | undefined) ?? [];
+      const pagination = (res?.pagination as Record<string, unknown> | null | undefined) ?? null;
       return { members, data: members, pagination };
     },
     enabled: !!id,
@@ -175,8 +175,8 @@ export function useCommunityEvent(id: string) {
   return useQuery({
     queryKey: ['community-event', id],
     queryFn: async () => {
-      const res: any = await api.get(`/api/community/events/${id}`);
-      const event = res?.data ?? res;
+      const res: Record<string, unknown> = await api.get(`/api/community/events/${id}`);
+      const event = (res?.data as Record<string, unknown> | undefined) ?? res;
       return { event, data: event };
     },
     enabled: !!id,

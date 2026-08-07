@@ -99,15 +99,8 @@ export function useUploadEvidence() {
       formData.append('file', file);
       formData.append('party', party);
       formData.append('type', type);
-      const res = await fetch(`/api/disputes/${disputeId}/evidence`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: 'Upload failed' }));
-        throw new Error(err.message || 'Upload failed');
-      }
-      return res.json();
+      // Module 2: use `api.upload` (carries JWT + country) instead of raw fetch.
+      return api.upload(`/api/disputes/${disputeId}/evidence`, formData);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['dispute', variables.disputeId] });

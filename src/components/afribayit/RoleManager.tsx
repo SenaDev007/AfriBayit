@@ -6,11 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Crown, Loader2, Plus, X, AlertCircle, Star } from 'lucide-react';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { ROLE_CATALOG, getRoleDefinition } from '@/lib/role-catalog';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function RoleManager() {
   const router = useRouter();
   const { roles, primaryRole, loading, error, addRole, removeRole, setPrimaryRole } = useUserRoles();
   const [pendingRole, setPendingRole] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleToggle = async (roleKey: string) => {
     setPendingRole(roleKey);
@@ -32,16 +34,16 @@ export default function RoleManager() {
       <div className="rounded-2xl border-2 border-[#003087]/20 bg-gradient-to-br from-[#003087]/5 to-[#D4AF37]/5 p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">Vos rôles actifs</h2>
-            <p className="text-sm text-gray-600">Cumulez plusieurs casquettes sur AfriBayit — acheteur, investisseur, vendeur, etc.</p>
+            <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">{t('roleManager.activeRolesTitle', 'Vos rôles actifs')}</h2>
+            <p className="text-sm text-gray-600">{t('roleManager.activeRolesDesc', 'Cumulez plusieurs casquettes sur AfriBayit — acheteur, investisseur, vendeur, etc.')}</p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-[#003087]">{roles.length}</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">rôle{roles.length !== 1 ? 's' : ''}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider">{roles.length !== 1 ? t('roleManager.rolesPlural', 'rôles') : t('roleManager.rolesSingular', 'rôle')}</div>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {roles.length === 0 && <span className="text-sm text-gray-400 italic">Aucun rôle — sélectionnez-en ci-dessous</span>}
+          {roles.length === 0 && <span className="text-sm text-gray-400 italic">{t('roleManager.noRoles', 'Aucun rôle — sélectionnez-en ci-dessous')}</span>}
           {roles.map((roleKey) => {
             const role = getRoleDefinition(roleKey);
             const Icon = role.icon;
@@ -50,7 +52,7 @@ export default function RoleManager() {
               <span key={roleKey} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 text-sm font-medium ${role.bgColor} ${role.color} ${role.borderColor}`}>
                 <Icon className="w-3.5 h-3.5" />
                 {role.label}
-                {isPrimary && (<span className="ml-1 inline-flex items-center gap-0.5 text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full"><Star className="w-2.5 h-2.5 fill-current" />Principal</span>)}
+                {isPrimary && (<span className="ml-1 inline-flex items-center gap-0.5 text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full"><Star className="w-2.5 h-2.5 fill-current" />{t('roleManager.primary', 'Principal')}</span>)}
               </span>
             );
           })}
@@ -68,8 +70,8 @@ export default function RoleManager() {
       </AnimatePresence>
 
       <div>
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-3">Catalogue des rôles</h3>
-        <p className="text-sm text-gray-500 mb-4">Cliquez pour activer/désactiver un rôle. Cliquez sur l'étoile pour définir votre rôle principal.</p>
+        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-3">{t('roleManager.catalogTitle', 'Catalogue des rôles')}</h3>
+        <p className="text-sm text-gray-500 mb-4">{t('roleManager.catalogDesc', 'Cliquez pour activer/désactiver un rôle. Cliquez sur l\'étoile pour définir votre rôle principal.')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {ROLE_CATALOG.map((role) => {
             const isActive = roles.includes(role.key);
@@ -82,14 +84,14 @@ export default function RoleManager() {
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${role.bgColor}`}><Icon className={`w-5 h-5 ${role.color}`} /></div>
                   <div className="flex items-center gap-1">
                     {isActive && (
-                      <button onClick={() => handleSetPrimary(role.key)} disabled={loading || isPending} title="Définir comme rôle principal"
+                      <button onClick={() => handleSetPrimary(role.key)} disabled={loading || isPending} title={t('roleManager.setPrimaryTitle', 'Définir comme rôle principal')}
                         className={`p-1.5 rounded-full transition-colors ${isPrimary ? 'bg-[#D4AF37] text-white' : 'bg-white/80 text-gray-400 hover:bg-[#D4AF37]/20 hover:text-[#D4AF37]'}`}>
                         <Star className={`w-3.5 h-3.5 ${isPrimary ? 'fill-current' : ''}`} />
                       </button>
                     )}
                     <button onClick={() => handleToggle(role.key)} disabled={loading || isPending}
                       className={`p-1.5 rounded-full transition-colors ${isActive ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-[#003087] text-white hover:bg-[#001f5c]'}`}
-                      title={isActive ? 'Retirer ce rôle' : 'Ajouter ce rôle'}>
+                      title={isActive ? t('roleManager.removeRoleTitle', 'Retirer ce rôle') : t('roleManager.addRoleTitle', 'Ajouter ce rôle')}>
                       {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isActive ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                     </button>
                   </div>
@@ -99,12 +101,12 @@ export default function RoleManager() {
                 {isActive && (
                   <div className="mt-3 flex items-center gap-1 text-[10px] font-medium">
                     <Check className={`w-3 h-3 ${role.color}`} />
-                    <span className={role.color}>Rôle actif</span>
-                    {isPrimary && (<span className="ml-1 inline-flex items-center gap-0.5 text-[#D4AF37]"><Crown className="w-2.5 h-2.5" />Principal</span>)}
+                    <span className={role.color}>{t('roleManager.roleActive', 'Rôle actif')}</span>
+                    {isPrimary && (<span className="ml-1 inline-flex items-center gap-0.5 text-[#D4AF37]"><Crown className="w-2.5 h-2.5" />{t('roleManager.primary', 'Principal')}</span>)}
                   </div>
                 )}
                 {isActive && role.hasDashboard && role.dashboardUrl && (
-                  <button onClick={() => router.push(role.dashboardUrl!)} className="mt-2 text-[11px] text-[#003087] hover:underline font-medium">Ouvrir le dashboard →</button>
+                  <button onClick={() => router.push(role.dashboardUrl!)} className="mt-2 text-[11px] text-[#003087] hover:underline font-medium">{t('roleManager.openDashboard', 'Ouvrir le dashboard')} →</button>
                 )}
               </div>
             );
@@ -113,12 +115,12 @@ export default function RoleManager() {
       </div>
 
       <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
-        <p className="font-semibold mb-1">💡 Comment fonctionne le multi-rôle ?</p>
+        <p className="font-semibold mb-1">{t('roleManager.multiRoleTitle', '💡 Comment fonctionne le multi-rôle ?')}</p>
         <ul className="list-disc list-inside space-y-1 text-blue-800">
-          <li>Le <strong>rôle principal</strong> (étoile dorée) détermine le dashboard par défaut après connexion.</li>
-          <li>Tous les rôles actifs donnent accès aux features correspondantes (publier un bien, acheter, investir, etc.).</li>
-          <li>Vous pouvez cumuler autant de rôles que vous voulez — par exemple <em>touriste + investisseur + acheteur</em>.</li>
-          <li>Le rôle <strong>Administrateur</strong> ne peut pas être ajouté depuis cette page (réservé aux admins existants).</li>
+          <li>{t('roleManager.multiRoleTip1', 'Le')} <strong>{t('roleManager.primaryRole', 'rôle principal')}</strong> {t('roleManager.multiRoleTip1Suffix', '(étoile dorée) détermine le dashboard par défaut après connexion.')}</li>
+          <li>{t('roleManager.multiRoleTip2', 'Tous les rôles actifs donnent accès aux features correspondantes (publier un bien, acheter, investir, etc.).')}</li>
+          <li>{t('roleManager.multiRoleTip3', 'Vous pouvez cumuler autant de rôles que vous voulez — par exemple')} <em>{t('roleManager.multiRoleTip3Example', 'touriste + investisseur + acheteur')}</em>.</li>
+          <li>{t('roleManager.multiRoleTip4', 'Le rôle')} <strong>{t('roleManager.adminRole', 'Administrateur')}</strong> {t('roleManager.multiRoleTip4Suffix', 'ne peut pas être ajouté depuis cette page (réservé aux admins existants).')}</li>
         </ul>
       </div>
     </div>

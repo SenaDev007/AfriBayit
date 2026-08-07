@@ -101,7 +101,7 @@ export function normalizeCountryCode(code: string): string {
 export type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'popular';
 
 export interface SearchFilters {
-  type?: string;
+  type?: string | string[];
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
@@ -120,7 +120,7 @@ export function countActiveFilters(filters: SearchFilters): number {
   return Object.values(filters).filter((v) => v !== undefined && v !== null && v !== '').length;
 }
 
-export function getFilterChipLabel(key: string, value: any): string {
+export function getFilterChipLabel(key: string, value: unknown): string {
   if (key === 'minPrice') return `≥ ${value} XOF`;
   if (key === 'maxPrice') return `≤ ${value} XOF`;
   if (key === 'bedrooms') return `${value}+ ch`;
@@ -132,6 +132,14 @@ export interface TaxLineItem {
   label: string;
   rate: number;
   amount: number;
+}
+
+export interface TaxBreakdownItem {
+  name: string;
+  description?: string;
+  rate?: number;
+  amount?: number;
+  isPercentage?: boolean;
 }
 
 export interface TaxCalculation {
@@ -243,7 +251,7 @@ export interface ExtendedTaxCalculation extends TaxCalculation {
   stampDuty?: number;
   vat?: number;
   mortgageFees?: number;
-  breakdown?: any[];
+  breakdown?: TaxBreakdownItem[];
   countryName?: string;
   landTax?: number;
   municipalTax?: number;

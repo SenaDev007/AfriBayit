@@ -20,6 +20,7 @@ import { easeOut, certificationFilterOptions } from './constants';
 import { getFirstImage, getPriceRange, formatPrice } from './utils';
 import { ListingCardSkeleton, CertificationBadge } from './Skeletons';
 import type { GuesthouseListItem } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface ListingsPanelProps {
   guesthousesList: GuesthouseListItem[];
@@ -50,6 +51,7 @@ export default function ListingsPanel({
   onNavigate,
   onSelectGuesthouse,
 }: ListingsPanelProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="listings"
@@ -64,7 +66,7 @@ export default function ListingsPanel({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Rechercher par nom, ville ou pays..."
+            placeholder={t('guesthouse.listings.searchPlaceholder', 'Rechercher par nom, ville ou pays...')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-[#003087] focus:ring-1 focus:ring-[#003087]/20"
@@ -85,14 +87,14 @@ export default function ListingsPanel({
               showFilters || certFilter !== 'all' ? 'bg-[#003087] text-white border-[#003087]' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Filter className="w-4 h-4" /> Filtres
+            <Filter className="w-4 h-4" /> {t('guesthouse.listings.filters', 'Filtres')}
             {certFilter !== 'all' && <span className="w-2 h-2 bg-[#D4AF37] rounded-full" />}
           </button>
           <button
             onClick={() => onNavigate?.('publish')}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors"
           >
-            <Plus className="w-4 h-4" /> Publier une guesthouse
+            <Plus className="w-4 h-4" /> {t('guesthouse.listings.publishGuesthouse', 'Publier une guesthouse')}
           </button>
         </div>
       </div>
@@ -107,7 +109,7 @@ export default function ListingsPanel({
             className="overflow-hidden mb-4"
           >
             <div className="bg-white rounded-2xl p-4 border shadow-sm flex flex-wrap gap-3 items-center">
-              <span className="text-xs text-gray-500 font-medium">Certification:</span>
+              <span className="text-xs text-gray-500 font-medium">{t('guesthouse.listings.certificationLabel', 'Certification:')}</span>
               {certificationFilterOptions.map(opt => (
                 <button
                   key={opt.value}
@@ -122,7 +124,7 @@ export default function ListingsPanel({
                 </button>
               ))}
               <div className="flex-1" />
-              <span className="text-xs text-gray-400">{guesthousesList.length} résultat{guesthousesList.length !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-gray-400">{guesthousesList.length} {t('guesthouse.listings.resultsCount', 'résultat')}{guesthousesList.length !== 1 ? 's' : ''}</span>
             </div>
           </motion.div>
         )}
@@ -143,8 +145,8 @@ export default function ListingsPanel({
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-red-50 mb-4">
             <XCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">Impossible de charger les guesthouses</h3>
-          <p className="text-sm text-gray-500">{(listErrorObj as Error)?.message || 'Une erreur est survenue. Veuillez réessayer.'}</p>
+          <h3 className="text-lg font-semibold text-[#0a2a5e] mb-2">{t('guesthouse.listings.loadErrorTitle', 'Impossible de charger les guesthouses')}</h3>
+          <p className="text-sm text-gray-500">{(listErrorObj as Error)?.message || t('guesthouse.listings.loadErrorDesc', 'Une erreur est survenue. Veuillez réessayer.')}</p>
         </div>
       )}
 
@@ -160,13 +162,13 @@ export default function ListingsPanel({
           </div>
           <h3 className="text-xl font-display font-bold text-[#0a2a5e] mb-2">
             {searchQuery || certFilter !== 'all'
-              ? 'Aucune guesthouse ne correspond à votre recherche'
-              : 'Aucune guesthouse disponible dans ce pays'}
+              ? t('guesthouse.listings.emptySearchTitle', 'Aucune guesthouse ne correspond à votre recherche')
+              : t('guesthouse.listings.emptyCountryTitle', 'Aucune guesthouse disponible dans ce pays')}
           </h3>
           <p className="text-sm text-gray-500 max-w-md mx-auto mb-8">
             {searchQuery || certFilter !== 'all'
-              ? 'Essayez de modifier vos critères de recherche ou de réinitialiser les filtres.'
-              : 'Soyez le premier à publier une maison d\'hôtes certifiée AfriBayit dans cette région.'}
+              ? t('guesthouse.listings.emptySearchDesc', 'Essayez de modifier vos critères de recherche ou de réinitialiser les filtres.')
+              : t('guesthouse.listings.emptyCountryDesc', 'Soyez le premier à publier une maison d\'hôtes certifiée AfriBayit dans cette région.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {(searchQuery || certFilter !== 'all') && (
@@ -174,25 +176,25 @@ export default function ListingsPanel({
                 onClick={() => { setSearchQuery(''); setCertFilter('all'); }}
                 className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                <X className="w-4 h-4" /> Réinitialiser les filtres
+                <X className="w-4 h-4" /> {t('guesthouse.listings.resetFilters', 'Réinitialiser les filtres')}
               </button>
             )}
             <button
               onClick={() => onNavigate?.('publish')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors shadow-lg shadow-[#00A651]/20"
             >
-              <Plus className="w-4 h-4" /> Publier une guesthouse
+              <Plus className="w-4 h-4" /> {t('guesthouse.listings.publishGuesthouse', 'Publier une guesthouse')}
             </button>
           </div>
 
           {/* How it works mini section */}
           <div className="mt-12 max-w-2xl mx-auto">
-            <h4 className="text-sm font-semibold text-[#0a2a5e] mb-4">Comment ça marche ?</h4>
+            <h4 className="text-sm font-semibold text-[#0a2a5e] mb-4">{t('guesthouse.listings.howItWorks', 'Comment ça marche ?')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { icon: <ClipboardList className="w-5 h-5" />, title: 'Inscrivez votre guesthouse', desc: 'Ajoutez vos informations, photos et chambres' },
-                { icon: <Search className="w-5 h-5" />, title: 'Obtenez la certification', desc: 'Inspection qualité AfriBayit pour rassurer vos clients' },
-                { icon: <Coins className="w-5 h-5" />, title: 'Recevez des réservations', desc: 'Gestion complète avec paiement sécurisé via AfriBayit' },
+                { icon: <ClipboardList className="w-5 h-5" />, title: t('guesthouse.listings.step1Title', 'Inscrivez votre guesthouse'), desc: t('guesthouse.listings.step1Desc', 'Ajoutez vos informations, photos et chambres') },
+                { icon: <Search className="w-5 h-5" />, title: t('guesthouse.listings.step2Title', 'Obtenez la certification'), desc: t('guesthouse.listings.step2Desc', 'Inspection qualité AfriBayit pour rassurer vos clients') },
+                { icon: <Coins className="w-5 h-5" />, title: t('guesthouse.listings.step3Title', 'Recevez des réservations'), desc: t('guesthouse.listings.step3Desc', 'Gestion complète avec paiement sécurisé via AfriBayit') },
               ].map((step, i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 border shadow-sm text-center">
                   <div className="w-10 h-10 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-3 text-[#003087]">
@@ -239,7 +241,7 @@ export default function ListingsPanel({
                       <CertificationBadge status={gh.certificationStatus} />
                     </div>
                     <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-mono flex items-center gap-1">
-                      <Bed className="w-3 h-3" /> {(gh.rooms?.length || 0)} chambre{(gh.rooms?.length || 0) > 1 ? 's' : ''}
+                      <Bed className="w-3 h-3" /> {(gh.rooms?.length || 0)} {t('guesthouse.listings.rooms', 'chambre')}{(gh.rooms?.length || 0) > 1 ? 's' : ''}
                     </div>
                   </div>
                   <div className="p-4">
@@ -252,9 +254,9 @@ export default function ListingsPanel({
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span className="flex items-center gap-1">
                         <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
-                        {gh.overallRating > 0 ? `${gh.overallRating} (${gh.reviewCount})` : 'Nouveau'}
+                        {gh.overallRating > 0 ? `${gh.overallRating} (${gh.reviewCount})` : t('guesthouse.listings.newBadge', 'Nouveau')}
                       </span>
-                      <span>À partir de <span className="font-mono font-bold text-[#D4AF37]">{priceLabel}</span></span>
+                      <span>{t('guesthouse.listings.fromPrice', 'À partir de')} <span className="font-mono font-bold text-[#D4AF37]">{priceLabel}</span></span>
                     </div>
                   </div>
                 </motion.div>
@@ -264,8 +266,8 @@ export default function ListingsPanel({
 
           {/* Results count footer */}
           <div className="text-center mt-6 text-xs text-gray-400">
-            {guesthousesList.length} guesthouse{guesthousesList.length !== 1 ? 's' : ''} trouvée{guesthousesList.length !== 1 ? 's' : ''}
-            {searchQuery && <> pour &laquo;{searchQuery}&raquo;</>}
+            {guesthousesList.length} {t('guesthouse.listings.guesthouse', 'guesthouse')}{guesthousesList.length !== 1 ? 's' : ''} {t('guesthouse.listings.found', 'trouvée')}{guesthousesList.length !== 1 ? 's' : ''}
+            {searchQuery && <> {t('guesthouse.listings.forQuery', 'pour')} &laquo;{searchQuery}&raquo;</>}
           </div>
         </>
       )}

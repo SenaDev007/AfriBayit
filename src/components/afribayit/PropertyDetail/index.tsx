@@ -12,6 +12,7 @@ import { apiFetch, apiPost, apiDelete } from '@/lib/api-client';
 import { formatPrice } from '@/lib/afribayit-utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import type {
   PropertyDetailProps,
   ReviewData,
@@ -36,6 +37,7 @@ const VirtualTourViewer = dynamic(
 );
 
 export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavigate }: PropertyDetailProps) {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useProperty(propertyId);
   const [activeImage, setActiveImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
@@ -71,10 +73,9 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
   // Check if property is in favorites
   useEffect(() => {
     if (!isAuthenticated || !propertyId) return;
-    fetch(`/api/favorites`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : [])
-      .then((favs: { propertyId: string }[]) => {
-        setIsFavorite(favs.some((f) => f.propertyId === propertyId));
+    apiFetch<{ propertyId: string }[]>('/api/favorites')
+      .then((favs) => {
+        setIsFavorite(Array.isArray(favs) ? favs.some((f) => f.propertyId === propertyId) : false);
       })
       .catch(() => {});
   }, [isAuthenticated, propertyId]);
@@ -113,7 +114,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
       window.location.href = result.paymentUrl || '/escrow';
     } catch (err) {
       console.error('Purchase initiation error:', err);
-      alert('Erreur lors de l\'initiation de la transaction. Veuillez réessayer.');
+      alert(t('propertyDetail.alertPurchaseError', 'Erreur lors de l\'initiation de la transaction. Veuillez réessayer.'));
     }
   }, [isAuthenticated, createTransaction]);
 
@@ -131,13 +132,13 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
       window.location.href = result.paymentUrl || '/escrow';
     } catch (err) {
       console.error('Rental initiation error:', err);
-      alert('Erreur lors de l\'initiation de la location. Veuillez réessayer.');
+      alert(t('propertyDetail.alertRentError', 'Erreur lors de l\'initiation de la location. Veuillez réessayer.'));
     }
   }, [isAuthenticated, initiateRent]);
 
   // Share functionality
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/property/${propertyId}` : '';
-  const shareTitle = property?.title || 'Bien immobilier sur AfriBayit';
+  const shareTitle = property?.title || t('propertyDetail.shareDefault', 'Bien immobilier sur AfriBayit');
 
   const handleShare = useCallback(async (platform: string) => {
     const text = `${shareTitle} - ${shareUrl}`;
@@ -244,9 +245,9 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h2 className="font-display text-2xl font-bold text-gray-400">Erreur de chargement</h2>
-          <p className="text-sm text-gray-400 mt-2">Impossible de charger les détails du bien.</p>
-          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm">Retour</button>
+          <h2 className="font-display text-2xl font-bold text-gray-400">{t('propertyDetail.errorLoading', 'Erreur de chargement')}</h2>
+          <p className="text-sm text-gray-400 mt-2">{t('propertyDetail.errorLoadingDesc', 'Impossible de charger les détails du bien.')}</p>
+          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm">{t('propertyDetail.back', 'Retour')}</button>
         </div>
       </div>
     );
@@ -260,9 +261,9 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <MapPin className="w-8 h-8 text-gray-300" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-gray-400">Bien non trouvé</h2>
-          <p className="text-sm text-gray-400 mt-2">Ce bien n&apos;existe pas ou a été retiré.</p>
-          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">Retour</button>
+          <h2 className="font-display text-2xl font-bold text-gray-400">{t('propertyDetail.notFound', 'Bien non trouvé')}</h2>
+          <p className="text-sm text-gray-400 mt-2">{t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')}</p>
+          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">{t('propertyDetail.back', 'Retour')}</button>
         </div>
       </div>
     );
@@ -294,7 +295,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Retour aux résultats
+          {t('propertyDetail.backToResults', 'Retour aux résultats')}
         </motion.button>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -381,7 +382,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           showCloseButton={false}
           className="sm:max-w-[95vw] lg:max-w-[90vw] h-[85vh] sm:h-[90vh] p-0 gap-0 bg-black border-white/10 overflow-hidden rounded-2xl"
         >
-          <DialogTitle className="sr-only">Visite virtuelle 360° — {property.title}</DialogTitle>
+          <DialogTitle className="sr-only">{t('propertyDetail.virtualTourTitle', 'Visite virtuelle 360°')} — {property.title}</DialogTitle>
           <AnimatePresence>
             {showVRTour && (
               <motion.div
@@ -416,6 +417,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
         {/* Price Prediction ML Chart */}
         {property.transaction !== 'location' && property.transaction !== 'location_courte_duree' && (
           <PricePredictionChart
+            propertyId={property.id}
             currentPrice={property.price}
             city={property.city}
             country={property.country}

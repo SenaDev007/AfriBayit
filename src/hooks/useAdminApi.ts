@@ -24,9 +24,9 @@ export interface LeaseDetail extends Lease {
   tenant: { id: string; name: string; email: string; phone: string; avatar: string | null };
   owner: { id: string; name: string; email: string; phone: string; avatar: string | null };
   property: { id: string; title: string; city: string; quartier: string; address: string | null; images: string | null; type: string; surface: number; bedrooms: number; bathrooms: number };
-  rentPayments: any[];
-  documents: any[];
-  inventories: any[];
+  rentPayments: Record<string, unknown>[];
+  documents: Record<string, unknown>[];
+  inventories: Record<string, unknown>[];
   transaction: { id: string; status: string; amount: number } | null;
   securityDeposit: number;
   leaseTermMonths: number;
@@ -54,7 +54,7 @@ export interface InvestmentStats {
 export interface RebeccaStats {
   kpis: { conversations24h: number; totalMessages: number; messages30d: number; estimatedCostEur: number; tokensConsumed: number; };
   channels: Array<{ name: string; status: string; conversations24h: number; avgLatency: string; }>;
-  fraudAlerts: { count: number; recent: any[] };
+  fraudAlerts: { count: number; recent: Record<string, unknown>[] };
   documentAnalysis: { documentsAnalyzed: number; ocrAccuracy: number; anomaliesDetected: number; };
 }
 

@@ -36,6 +36,9 @@ export default function CourseDetailDialog({
     description: String((course as Record<string, unknown>).description ?? ''),
     lessons: Number((course as Record<string, unknown>).lessons ?? 0),
     reviews: Number((course as Record<string, unknown>).reviews ?? 0),
+    reviewList: Array.isArray((course as Record<string, unknown>).reviews)
+      ? ((course as Record<string, unknown>).reviews as Course['reviewList'])
+      : [],
     modules: (course as Record<string, unknown>).modules as Course['modules'],
   } : {
     id: courseId,
@@ -219,7 +222,7 @@ export default function CourseDetailDialog({
                           <Star key={s} className="w-3 h-3" fill={s <= Math.round(courseData.rating || 5) ? '#D4AF37' : '#e5e7eb'} />
                         ))}
                       </div>
-                      <p className="text-xs text-gray-500">{courseData?.reviews as any || 24} avis</p>
+                      <p className="text-xs text-gray-500">{courseData?.reviews || 24} avis</p>
                     </div>
                     <div className="flex-1 space-y-1">
                       {[5, 4, 3, 2, 1].map(star => {
@@ -239,7 +242,7 @@ export default function CourseDetailDialog({
                   </div>
 
                   {/* Reviews list — fetched from API */}
-                  {((courseData as any)?.reviews || []).map((review: any) => (
+                  {(courseData.reviewList || []).map((review) => (
                     <div key={review.id || review._id} className="p-4 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-lg bg-[#003366]/10 flex items-center justify-center text-xs font-bold text-[#003366]">

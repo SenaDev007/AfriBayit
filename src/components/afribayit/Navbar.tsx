@@ -7,14 +7,16 @@ import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { useCountry, type CountryCode } from '@/contexts/CountryContext';
 import { useLocale } from '@/lib/i18n/context';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { LOCALES, type Locale } from '@/lib/i18n';
 import { useRouter, usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutAndClear } from '@/lib/signout';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Home, Search, Building2, Key, CalendarDays, Shield, LogOut,
   CreditCard, BarChart3, User, Coins, TrendingUp, Wrench,
   GraduationCap, Users, MapPin, Hotel, BedDouble,
-  FileCheck, Wallet, Bell, Plus, Languages, ChevronDown,
+  FileCheck, Wallet, Bell, Plus, ChevronDown,
   LayoutDashboard, Briefcase, ShieldCheck, Star, Landmark,
   MessageCircle, Eye, Settings, ChevronRight, Menu, X
 } from 'lucide-react';
@@ -341,17 +343,21 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 </select>
               </div>
 
-              {/* Language Switcher */}
-              <button
-                onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-                className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              {/* Language Switcher — Module 3: 9-locale dropdown */}
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value as Locale)}
+                className={`hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer appearance-none ${
                   scrolled ? 'bg-white border-gray-200 text-[#0a2a5e] hover:bg-gray-50' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                 }`}
-                title={locale === 'fr' ? 'Switch to English' : 'Passer en Français'}
+                aria-label="Select language"
               >
-                <Languages className="w-3.5 h-3.5" />
-                <span>{locale === 'fr' ? 'FR' : 'EN'}</span>
-              </button>
+                {(Object.keys(LOCALES) as Locale[]).map((code) => (
+                  <option key={code} value={code} className="text-gray-900">
+                    {LOCALES[code].flag} {LOCALES[code].label}
+                  </option>
+                ))}
+              </select>
 
               {/* Notifications bell */}
               {isLoggedIn && (
@@ -529,7 +535,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
 
                         <div className="border-t border-gray-100 py-1">
                           <button
-                            onClick={() => signOut({ callbackUrl: '/' })}
+                            onClick={() => signOutAndClear({ callbackUrl: '/' })}
                             className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors"
                           >
                             <LogOut className="w-4 h-4" />
@@ -544,7 +550,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => signOut({ callbackUrl: '/' })}
+                    onClick={() => signOutAndClear({ callbackUrl: '/' })}
                     className={`hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       scrolled ? 'text-[#D93025] hover:bg-red-50' : 'text-white/80 hover:bg-white/10 hover:text-white'
                     }`}
@@ -791,7 +797,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                         {t('dashboard.publishAd', 'Publier une annonce')}
                       </button>
                       <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
+                        onClick={() => signOutAndClear({ callbackUrl: '/' })}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 rounded-xl text-sm font-medium transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
@@ -835,14 +841,18 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                     <option key={c.code} value={c.code}>{c.name}</option>
                   ))}
                 </select>
-                <button
-                  onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-[#0a2a5e] hover:bg-gray-50"
+                <select
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as Locale)}
+                  className="w-full appearance-none text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-[#0a2a5e] cursor-pointer"
+                  aria-label="Select language"
                 >
-                  <Languages className="w-4 h-4" />
-                  {locale === 'fr' ? 'Français' : 'English'}
-                  <span className="text-xs text-gray-400">→ {locale === 'fr' ? 'English' : 'Français'}</span>
-                </button>
+                  {(Object.keys(LOCALES) as Locale[]).map((code) => (
+                    <option key={code} value={code}>
+                      {LOCALES[code].flag} {LOCALES[code].label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </motion.div>
           </motion.div>

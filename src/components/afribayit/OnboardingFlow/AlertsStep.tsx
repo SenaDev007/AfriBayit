@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import type { StepProps } from './types';
 import { alertFrequencies, notificationChannels } from './constants';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function AlertsStep({ data, updateData, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="step5"
@@ -27,15 +29,15 @@ export default function AlertsStep({ data, updateData, direction, slideVariants,
           <Bell className="w-4 h-4" />
         </motion.span>
         <h2 className="font-display text-3xl font-bold text-white mb-2">
-          Alertes & Notifications
+          {t('onboardingFlow.alertsTitle', 'Alertes & Notifications')}
         </h2>
-        <p className="text-sm text-white/60">Configurez comment vous souhaitez être informé</p>
+        <p className="text-sm text-white/60">{t('onboardingFlow.alertsHelp', 'Configurez comment vous souhaitez être informé')}</p>
       </div>
 
       {/* Alert Frequency */}
       <div className="mb-8">
         <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-          Fréquence des alertes
+          {t('onboardingFlow.alertFrequency', 'Fréquence des alertes')}
         </label>
         <div className="space-y-3">
           {alertFrequencies.map((freq, i) => (
@@ -76,7 +78,7 @@ export default function AlertsStep({ data, updateData, direction, slideVariants,
       {/* Notification Channels */}
       <div>
         <label className="text-xs text-white/50 mb-3 block font-semibold uppercase tracking-wider">
-          Canaux de notification
+          {t('onboardingFlow.notificationChannels', 'Canaux de notification')}
         </label>
         <div className="grid grid-cols-2 gap-3">
           {notificationChannels.map((ch, i) => (

@@ -20,15 +20,15 @@ interface UserDashboardProps {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 const sideNavItems = [
-  { key: 'overview', label: "Vue d'ensemble", icon: Home, href: '/dashboard' },
-  { key: 'profile', label: 'Mon profil', icon: User, href: '/profile' },
-  { key: 'kyc', label: 'KYC Vérification', icon: ShieldCheck, href: '/kyc' },
-  { key: 'wallet', label: 'Portefeuille', icon: Wallet, href: '/wallet' },
-  { key: 'transactions', label: 'Transactions', icon: ClipboardList, href: '/escrow' },
-  { key: 'subscriptions', label: 'Mes abonnements', icon: CreditCard, href: '/subscriptions' },
-  { key: 'analytics', label: 'Analytics', icon: BarChart3, href: '/analytics' },
-  { key: 'agent-dashboard', label: 'Mes annonces', icon: Building2, href: '/agent-dashboard' },
-  { key: 'settings', label: 'Paramètres', icon: Settings, href: '/settings' },
+  { key: 'overview', labelKey: 'userDashboard.sideNav.overview', fallback: "Vue d'ensemble", icon: Home, href: '/dashboard' },
+  { key: 'profile', labelKey: 'userDashboard.sideNav.profile', fallback: 'Mon profil', icon: User, href: '/profile' },
+  { key: 'kyc', labelKey: 'userDashboard.sideNav.kyc', fallback: 'KYC Vérification', icon: ShieldCheck, href: '/kyc' },
+  { key: 'wallet', labelKey: 'userDashboard.sideNav.wallet', fallback: 'Portefeuille', icon: Wallet, href: '/wallet' },
+  { key: 'transactions', labelKey: 'userDashboard.sideNav.transactions', fallback: 'Transactions', icon: ClipboardList, href: '/escrow' },
+  { key: 'subscriptions', labelKey: 'userDashboard.sideNav.subscriptions', fallback: 'Mes abonnements', icon: CreditCard, href: '/subscriptions' },
+  { key: 'analytics', labelKey: 'userDashboard.sideNav.analytics', fallback: 'Analytics', icon: BarChart3, href: '/analytics' },
+  { key: 'agent-dashboard', labelKey: 'userDashboard.sideNav.agentDashboard', fallback: 'Mes annonces', icon: Building2, href: '/agent-dashboard' },
+  { key: 'settings', labelKey: 'userDashboard.sideNav.settings', fallback: 'Paramètres', icon: Settings, href: '/settings' },
 ];
 
 const statusColors: Record<string, string> = {
@@ -47,10 +47,10 @@ const statusLabels: Record<string, string> = {
 };
 
 const kycLevels = [
-  { level: 0, name: "Anonyme", color: "#6b7280", maxActions: "Consultation uniquement", Icon: User },
-  { level: 1, name: "Standard", color: "#009CDE", maxActions: "Contacts limités, pas de transaction", Icon: Badge },
-  { level: 2, name: "Avancé", color: "#00A651", maxActions: "Transactions, escrow, publications", Icon: CheckCircle },
-  { level: 3, name: "Pro", color: "#D4AF37", maxActions: "Accès complet, API, outils pro", Icon: Crown },
+  { level: 0, nameKey: 'userDashboard.kyc.anonymous', nameFallback: 'Anonyme', color: '#6b7280', maxActionsKey: 'userDashboard.kyc.anonymousActions', maxActionsFallback: 'Consultation uniquement', Icon: User },
+  { level: 1, nameKey: 'userDashboard.kyc.standard', nameFallback: 'Standard', color: '#009CDE', maxActionsKey: 'userDashboard.kyc.standardActions', maxActionsFallback: 'Contacts limités, pas de transaction', Icon: Badge },
+  { level: 2, nameKey: 'userDashboard.kyc.advanced', nameFallback: 'Avancé', color: '#00A651', maxActionsKey: 'userDashboard.kyc.advancedActions', maxActionsFallback: 'Transactions, escrow, publications', Icon: CheckCircle },
+  { level: 3, nameKey: 'userDashboard.kyc.pro', nameFallback: 'Pro', color: '#D4AF37', maxActionsKey: 'userDashboard.kyc.proActions', maxActionsFallback: 'Accès complet, API, outils pro', Icon: Crown },
 ];
 
 function formatPrice(price: number): string {
@@ -163,11 +163,11 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 <div>
                   <h3 className="text-sm font-semibold text-[#0a2a5e]">{userName}</h3>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
-                    <userKyc.Icon className="w-3 h-3 inline" /> {userKyc.name}
+                    <userKyc.Icon className="w-3 h-3 inline" /> {t(userKyc.nameKey, userKyc.nameFallback)}
                   </span>
                   {user?.email?.endsWith('@placeholder.afribayit.com') && (
                     <a href="/profile" className="text-[10px] text-amber-600 hover:underline block mt-1">
-                      Complétez votre profil →
+                      {t('userDashboard.completeProfile', 'Complétez votre profil →')}
                     </a>
                   )}
                 </div>
@@ -186,7 +186,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       }`}
                     >
                       <IconComp className="w-5 h-5" />
-                      {item.label}
+                      {t(item.labelKey, item.fallback)}
                     </button>
                   );
                 })}
@@ -351,16 +351,16 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <p className="text-white/40 text-[10px] mb-0.5">Escrow bloqué</p>
+                      <p className="text-white/40 text-[10px] mb-0.5">{t('userDashboard.escrowHeld', 'Escrow bloqué')}</p>
                       <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(escrowHeld)}</p>
                     </div>
                     <div>
-                      <p className="text-white/40 text-[10px] mb-0.5">En attente</p>
+                      <p className="text-white/40 text-[10px] mb-0.5">{t('userDashboard.pending', 'En attente')}</p>
                       <p className="font-mono-data text-sm font-bold text-white">{new Intl.NumberFormat('fr-FR').format(pendingPayout)}</p>
                     </div>
                     <div>
-                      <p className="text-white/40 text-[10px] mb-0.5">KYC Level</p>
-                      <p className="text-sm font-bold text-white flex items-center gap-1"><userKyc.Icon className="w-3.5 h-3.5" /> {userKyc.name}</p>
+                      <p className="text-white/40 text-[10px] mb-0.5">{t('userDashboard.kycLevelLabel', 'KYC Level')}</p>
+                      <p className="text-sm font-bold text-white flex items-center gap-1"><userKyc.Icon className="w-3.5 h-3.5" /> {t(userKyc.nameKey, userKyc.nameFallback)}</p>
                     </div>
                   </div>
                 </div>
@@ -452,9 +452,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   >
                     <level.Icon className="w-6 h-6 mx-auto mb-1" />
                     <p className="text-xs font-semibold" style={{ color: userKycLevel >= level.level ? '#00A651' : '#9ca3af' }}>
-                      {level.name}
+                      {t(level.nameKey, level.nameFallback)}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Niveau {level.level}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{t('userDashboard.levelLabel', 'Niveau')} {level.level}</p>
                   </div>
                 ))}
               </div>

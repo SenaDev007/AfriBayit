@@ -1,209 +1,309 @@
-# AfriBayit — La Plateforme Immobilière Africaine
+# AfriBayit — Frontend (Next.js 16)
 
 > « Où l'Afrique trouve sa maison. Où les rêves deviennent adresses. »
 
-Plateforme immobilière pan-africaine de nouvelle génération combinant intelligence artificielle, transactions sécurisées (escrow) et expérience utilisateur premium. Lancement sur 4 pays pilotes : Bénin, Côte d'Ivoire, Burkina Faso, Togo.
+This repository contains the **frontend only** of the AfriBayit real-estate
+platform. It is a Next.js 16 (App Router) + React 19 + TypeScript 5
+application that talks to a separate NestJS backend over HTTP.
 
-## Stack Technique
+The backend lives in another repo (`afribayit-api`) and is deployed to
+Fly.io. This repo does **not** include Prisma, server-side business logic,
+or any direct database access — those concerns belong to the backend.
 
-- **Frontend** : Next.js 16 (App Router), React 19, TypeScript 5 strict, Tailwind CSS 4, shadcn/ui (new-york), Framer Motion 12, React Query 5, Zustand 5
-- **Backend** : Prisma 6, PostgreSQL (Neon), NextAuth 4, Zod 4, z-ai-web-dev-sdk (IA Rebecca)
-- **Paiements** : Stripe + FedaPay (Mobile Money), escrow engine, payouts J+1
-- **Infrastructure** : Vercel, Cloudflare R2 (storage), Upstash Redis (cache), Sentry (monitoring), Resend (email), Africa's Talking (SMS/USSD), Pusher (realtime)
-- **Tests** (P4) : Vitest (unit), Playwright (e2e), CodeQL (SAST)
+## Stack
 
-## Démarrage Rapide
+- **Framework**: Next.js 16 (App Router), React 19, TypeScript 5 strict
+- **Styling**: Tailwind CSS 4, shadcn/ui (new-york), Framer Motion 12
+- **State**: TanStack Query 5 (server state), Zustand 5 (client state)
+- **Auth**: NextAuth.js v4 (credentials + Google + Facebook)
+- **Realtime**: Pusher (`pusher-js`) — lazy-loaded singleton client
+- **i18n**: 4 locales shipped (`fr`, `en`, `wo`, `fon`) — CDC §3.3 plans 9
+- **PWA**: service worker (`public/sw.js`) — app-shell cache, SWR images,
+  network-first API
+- **Observability**: Sentry (`@sentry/nextjs`) — wrapped via `src/lib/sentry.ts`
+- **Tests**: Vitest (unit, jsdom) + Playwright (e2e)
+
+## Getting Started
 
 ```bash
-# 1. Installer les dépendances
+# 1. Install dependencies
 npm ci
 
-# 2. Configurer l'environnement
+# 2. Configure environment
 cp .env.example .env
-# Éditer .env avec vos valeurs (DATABASE_URL, NEXTAUTH_SECRET, OAuth, etc.)
+# Edit .env — at minimum set:
+#   NEXT_PUBLIC_API_URL          backend base URL (e.g. https://afribayit-api.fly.dev)
+#   NEXTAUTH_SECRET              random 32+ char string
+#   NEXTAUTH_URL                 http://localhost:3000 (dev)
+#   NEXT_PUBLIC_PUSHER_KEY       Pusher app key (optional — realtime no-ops without it)
+#   NEXT_PUBLIC_PUSHER_CLUSTER   Pusher cluster (default: eu)
+#   GOOGLE_CLIENT_ID / SECRET    OAuth (optional in dev)
+#   FACEBOOK_CLIENT_ID / SECRET  OAuth (optional in dev)
 
-# 3. Générer le client Prisma
-npm run postinstall  # = prisma generate
-
-# 4. Démarrer la base de données
-npm run db:push  # ou npm run db:migrate pour les migrations
-
-# 5. (Optionnel) Seeder les données de dev
-npm run db:seed
-
-# 6. Lancer le serveur de développement
+# 3. Start the dev server
 npm run dev
 # → http://localhost:3000
 ```
 
-## Scripts Disponibles
+No database setup is required — the frontend talks to the backend over
+HTTP via `NEXT_PUBLIC_API_URL`.
+
+## Available Scripts
 
 | Script | Description |
 |---|---|
-| `npm run dev` | Serveur de développement (port 3000) |
-| `npm run build` | Build production (`prisma generate && next build`) |
-| `npm run start` | Serveur production |
+| `npm run dev` | Start the dev server (port 3000) |
+| `npm run build` | Production build |
+| `npm run start` | Start the production server |
 | `npm run lint` | ESLint |
-| `npm run typecheck` | Vérification TypeScript stricte (`tsc --noEmit`) |
-| `npm test` | Tests unitaires (Vitest) |
-| `npm run test:watch` | Tests unitaires en mode watch |
-| `npm run test:coverage` | Tests unitaires avec couverture |
-| `npm run test:e2e` | Tests end-to-end (Playwright) |
-| `npm run test:e2e:ui` | Tests e2e avec UI Playwright |
-| `npm run db:push` | Synchroniser le schema Prisma avec la DB |
-| `npm run db:migrate` | Créer une migration Prisma |
-| `npm run db:reset` | Reset complet de la DB |
-| `npm run db:seed` | Seeder les données de dev |
-| `npm run db:studio` | Prisma Studio (GUI DB) |
+| `npm run typecheck` | Strict TypeScript check (`tsc --noEmit`) |
+| `npm test` | Unit tests (Vitest + jsdom) |
+| `npm run test:watch` | Unit tests in watch mode |
+| `npm run test:coverage` | Unit tests with coverage report |
+| `npm run test:e2e` | End-to-end tests (Playwright) |
+| `npm run test:e2e:ui` | Playwright with UI |
 
-## Structure du Projet
+## Project Structure
 
 ```
-afribayit/
-├── prisma/
-│   ├── schema.prisma         # 78 modèles, 4 pays pilotes
-│   ├── migrations/           # Migrations + RLS policies
-│   └── seed.ts               # Données de développement
+afribayit/                       # frontend repo (this repo)
 ├── src/
-│   ├── app/                  # App Router
-│   │   ├── (pages publiques) # /, /search, /property/[id], /auth, etc.
-│   │   ├── admin/            # 47 pages admin (31 globales + 16 par pays)
-│   │   ├── api/              # 219 routes API
-│   │   ├── loading.tsx       # Loading state global
-│   │   ├── not-found.tsx     # 404 branded
-│   │   ├── sitemap.ts        # Sitemap dynamique
-│   │   ├── robots.ts         # robots.txt dynamique
-│   │   ├── layout.tsx        # Layout racine (ThemeProvider, NextAuth, etc.)
-│   │   └── globals.css       # Styles globaux + tokens CDC §2
+│   ├── app/                     # App Router pages + layouts
+│   │   ├── (public pages)      # /, /search, /property/[id], /auth, …
+│   │   ├── admin/              # admin dashboard pages
+│   │   ├── pro/[slug]/         # public professional profiles
+│   │   ├── layout.tsx          # root layout (providers + SW registration)
+│   │   └── globals.css         # Tailwind base + brand tokens
 │   ├── components/
-│   │   ├── afribayit/        # 59 composants métier
-│   │   ├── ui/               # 53 composants shadcn/ui
-│   │   ├── admin/            # AdminHeader, AdminSidebar
-│   │   └── providers/        # NextAuth, ReactQuery, AppShell
-│   ├── lib/                  # 204 fichiers logique métier
-│   │   ├── design/tokens.ts  # Tokens design (palette logo #003366/#3399FF/#FFCC00)
-│   │   ├── auth.ts           # NextAuth config
-│   │   ├── auth-guard.ts     # authGuard helper (RS256 JWT + NextAuth session)
-│   │   ├── twofa.ts          # TOTP RFC 6238
-│   │   ├── otp.ts            # OTP email (Resend) + SMS (Africa's Talking)
-│   │   ├── payments/         # Stripe, FedaPay, escrow-engine, payouts
-│   │   ├── security/         # RBAC, RLS, rate-limiter, anti-scraping, fraud-detector
-│   │   ├── rebecca/          # Agent IA (8 nœuds, guardrails, RAG, multi-canal)
-│   │   ├── search/           # Elasticsearch + Postgres FTS fallback
-│   │   ├── tenant/           # Multitenancy par pays (config, db-tenant, db-rls)
-│   │   └── ...               # 52 sous-dossiers au total
-│   ├── hooks/                # 63 hooks React Query (41 admin + 22 métier)
-│   ├── stores/               # Zustand (authStore, uiStore, searchStore)
-│   └── middleware.ts         # Routing par pays + auth middleware
-├── tests/                    # P4 — Tests
-│   ├── unit/                 # Vitest unit tests
-│   ├── e2e/                  # Playwright e2e tests
-│   └── setup.ts              # Vitest setup
-├── public/                   # Static assets (logo, manifest, sw.js, icons)
-├── .github/workflows/ci.yml  # CI/CD: typecheck + tests + build + CodeQL + audit
-├── vitest.config.ts          # P4.1 — Vitest config
-├── playwright.config.ts      # P4.2 — Playwright config
-└── next.config.ts            # P1.6 — Security headers (CSP, HSTS, etc.)
+│   │   ├── afribayit/          # business components (Hero, Footer, …)
+│   │   ├── ui/                 # shadcn/ui primitives
+│   │   ├── admin/              # AdminHeader, AdminSidebar
+│   │   └── providers/          # NextAuth, ReactQuery, AppShell, SW
+│   ├── hooks/                  # React Query hooks (useProperties, …)
+│   ├── stores/                 # Zustand stores (authStore, uiStore, …)
+│   ├── lib/
+│   │   ├── api-client.ts       # apiFetch + typed helpers (api.get/post/…)
+│   │   ├── sentry.ts           # captureError / captureWarning
+│   │   ├── webauthn.ts         # biometric register/auth (4-endpoint flow)
+│   │   ├── signout.ts          # signOutAndClear() — 4-step cleanup
+│   │   ├── i18n/               # fr/en/wo/fon dictionaries + translate()
+│   │   └── constants.ts        # COUNTRY_NAMES, geoServiceLabel, …
+│   └── middleware.ts           # routing + auth middleware
+├── public/
+│   ├── sw.js                   # service worker (cache strategies)
+│   ├── manifest.json           # PWA manifest
+│   ├── logo.svg, logo.png
+│   └── icons/                  # PWA icons
+├── tests/
+│   ├── unit/                   # Vitest unit tests (i18n, signout, …)
+│   ├── e2e/                    # Playwright e2e tests
+│   └── setup.ts                # Vitest setup (mocks for next-auth, …)
+├── .github/workflows/ci.yml    # CI: typecheck → unit → build → e2e → CodeQL
+├── vitest.config.ts            # jsdom env, frontend-only coverage
+├── playwright.config.ts
+└── next.config.ts
 ```
 
-## Charte Graphique
+## API Client
 
-Le logo officiel AfriBayit utilise la palette **PayPal + touche gold** :
+All HTTP requests go through `src/lib/api-client.ts`:
 
-| Rôle | Hex | Usage |
-|---|---|---|
-| **Dark Blue** | `#003366` | Principal, backgrounds navy, headers (corps "Afri", lettre A) |
-| **Light Blue** | `#3399FF` | Accent, innovation, CTA secondaire (corps "Bayit", lettre B) |
-| **Gold vif** | `#FFCC00` | Accents, highlights, prix, particules (pointe du A) |
-| Bronze gold | `#D4AF37` | Hover/accents sombres (variant conservé) |
+```ts
+import { api } from '@/lib/api-client';
 
-> **Note** : Le CDC V4 §2.1 mentionnait `#003087 / #D4AF37 / #009CDE` mais le logo réel utilise `#003366 / #3399FF / #FFCC00`. Les tokens ont été alignés sur le logo en juillet 2026. Le CDC devrait être mis à jour en V4.1 pour refléter la palette réelle.
+// GET
+const data = await api.get('/properties?country=BJ');
 
-## Sécurité
+// POST with body
+await api.post('/auth/login', { email, password });
 
-Ce projet implémente une sécurité multicouche (CDC §10) :
+// File upload (FormData)
+await api.upload('/kyc/submit', formData);
+```
 
-- **Auth** : NextAuth (credentials + Google + Facebook), 2FA TOTP RFC 6238, OTP email/SMS
-- **RBAC** : 14 rôles, `authGuard` appliqué sur toutes les routes admin (défense en profondeur)
-- **RLS** : PostgreSQL Row-Level Security par pays (BJ/CI/BF/TG)
-- **Headers** : CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
-- **Anti-fraud** : 5 checks parallèles (price anomaly, duplicate listings, photo hash, seller reputation, document consistency)
-- **Escrow** : State machine 8 états, 2FA obligatoire pour libération, ledger atomique, hash chaining SHA-256
+The client:
+- Adds the `Authorization: Bearer <token>` header from in-memory storage
+  (synced to `localStorage.afribayit_access_token`).
+- Adds the `X-Country-Code` header for multitenancy (BJ/CI/BF/TG).
+- Rewrites `/api/...` paths to `/...` (the backend doesn't use the
+  `/api/` prefix).
+- Throws `ApiError` (with `statusCode`) on non-2xx responses.
+- Calls `setAccessToken(null)` on 401 — the caller decides whether to
+  redirect to `/auth/login`.
 
-Voir `AUDIT_REPORT.md` pour l'audit complet de sécurité (juillet 2026).
+## Auth
 
-## Multitenancy par Pays
+Auth is handled by NextAuth.js v4 with three providers:
+- **Credentials** (email + password, with optional 2FA TOTP)
+- **Google** OAuth
+- **Facebook** OAuth
 
-Le projet suit le modèle **shared DB with `country` field + RLS** :
+The access token returned by the backend's `/auth/login` endpoint is
+stored in memory + `localStorage` and attached to all subsequent API
+requests by `api-client.ts`.
 
-- 4 pays pilotes : Bénin (BJ), Côte d'Ivoire (CI), Burkina Faso (BF), Togo (TG)
-- Sous-domaines : `bj./ci./bf./tg.afribayit.com` (Phase 1)
-- Routing middleware : `src/middleware.ts` (357 lignes)
-- Tenant client : `src/lib/db-tenant.ts` injecte automatiquement `where: { country }`
-- RLS policies : `prisma/migrations/rls.sql` (8 tables + extension prévue)
+Sign-out is centralised in `src/lib/signout.ts`:
+
+```ts
+import { signOutAndClear } from '@/lib/signout';
+
+await signOutAndClear({ callbackUrl: '/auth/login' });
+// → calls /auth/logout, clears localStorage, drops in-memory token,
+//   calls NextAuth signOut(). Resilient to failures.
+```
+
+## Realtime (Pusher)
+
+`src/hooks/useRealtime.ts` lazy-loads `pusher-js` and exposes three hooks:
+
+```ts
+import {
+  useRealtimeNotifications,
+  useRealtimeTyping,
+  useRealtimePresence,
+} from '@/hooks/useRealtime';
+
+// 1. Notifications — private-user-${userId} channel
+useRealtimeNotifications(userId, {
+  onNewNotification: (data) => { … },
+  onCountUpdate: ({ unreadCount }) => { … },
+});
+
+// 2. Typing indicators — private-conversation-${id} channel
+const { isTyping, broadcastTyping, broadcastStopTyping } =
+  useRealtimeTyping(conversationId, userId);
+
+// 3. Presence — presence-${roomName} channel
+const { onlineUsers, count } = useRealtimePresence('room-name');
+```
+
+The Pusher client is created with `{ cluster, forceTLS: true }` and uses
+the `/api/realtime/auth` endpoint for private channel authentication.
+When no hooks are listening, the singleton disconnects to free the
+WebSocket.
+
+## PWA / Service Worker
+
+- `public/sw.js` registers three cache strategies:
+  - **App shell** (HTML, JS, CSS): cache-first, falls back to `/offline`.
+  - **Images**: stale-while-revalidate.
+  - **API** (`/api/*`, `/auth/*`): network-first, never caches auth responses.
+- `src/components/providers/ServiceWorkerRegistration.tsx` registers
+  `/sw.js` in **production only** and surfaces `updatefound` /
+  `controllerchange` events via window CustomEvents so the UI can prompt
+  the user to refresh.
+- Old caches are cleaned up on activate.
+
+## WebAuthn (Biometric Auth)
+
+`src/lib/webauthn.ts` implements the 4-endpoint WebAuthn flow:
+
+```ts
+import { isBiometricSupported, registerBiometric, authenticateBiometric } from '@/lib/webauthn';
+
+if (isBiometricSupported()) {
+  await registerBiometric({ id, email, name });    // /auth/webauthn/register/{begin,finish}
+  await authenticateBiometric(email);                // /auth/webauthn/auth/{begin,finish}
+}
+```
+
+Base64url helpers (`base64urlToBuffer`, `bufferToBase64url`) are exported
+for re-use. All functions are SSR-safe (return `false`/`null` when
+`window` or `PublicKeyCredential` is unavailable).
+
+## i18n
+
+- 4 locales shipped: `fr` (default), `en`, `wo` (Wolof), `fon` (Fon).
+- CDC §3.3 plans 9 locales including Arabic (RTL) — not yet implemented.
+- Access via the `useLocale()` hook or the `translate(locale, key)`
+  function from `src/lib/i18n/index.ts`.
+- Fallback chain: requested locale → `fr` → raw key.
 
 ## Tests
 
-### Tests Unitaires (Vitest)
+### Unit Tests (Vitest + jsdom)
 
 ```bash
-npm test                    # Run once
-npm run test:watch          # Watch mode
-npm run test:coverage       # With coverage report (./coverage/)
+npm test                    # run once
+npm run test:watch          # watch mode
+npm run test:coverage       # with coverage (./coverage/)
 ```
 
-Coverage cible : 60% sur modules critiques (escrow-engine, auth, payments, security).
+The test setup (`tests/setup.ts`) mocks `next/headers`, `next-auth`,
+`next-auth/react`, and `@/lib/api-client` so unit tests can drive the
+auth flow without a live backend. jsdom polyfills `matchMedia`,
+`IntersectionObserver`, and `ResizeObserver`.
 
-### Tests E2E (Playwright)
+Coverage thresholds are set to 0 — the focus is on test **presence** and
+correctness, not coverage percentage.
+
+### E2E Tests (Playwright)
 
 ```bash
-npm run test:e2e            # Run all e2e tests
-npm run test:e2e:ui         # With Playwright UI
+npm run test:e2e            # run all e2e tests
+npm run test:e2e:ui         # with Playwright UI
 ```
 
-Les tests e2e nécessitent un serveur de dev démarré (Playwright le lance automatiquement).
+Playwright auto-starts the dev server. Tests cover the auth flow,
+protected route redirects, and the escrow 2FA security fix.
 
 ## CI/CD
 
-Le workflow GitHub Actions (`.github/workflows/ci.yml`) exécute sur chaque PR/push :
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every
+PR and push:
 
 1. **TypeScript & Lint** — `tsc --noEmit` + ESLint (blocking)
 2. **Unit Tests** — Vitest + coverage upload
-3. **Build** — Vérification du build production
-4. **E2E Tests** — Playwright (sur PR et main)
+3. **Build** — production build verification
+4. **E2E Tests** — Playwright (on PRs and `main`)
 5. **CodeQL** — SAST security-extended queries
-6. **Dependency Audit** — `npm audit --audit-level=high`
+6. **Dependency Audit** — `npm audit --audit-level=high` (blocking on
+   high/critical vulnerabilities)
 
-## Déploiement
+The CI does **not** run `prisma generate` — there is no Prisma client in
+this repo.
 
-### Vercel (recommandé)
+## Deployment
 
-1. Connecter le repo GitHub à Vercel
-2. Configurer les variables d'environnement (voir `.env.example`)
-3. Build command : `npm run build`
-4. Deploy automatiquement sur `main`
+### Vercel (recommended)
+
+1. Connect this GitHub repo to Vercel.
+2. Set the environment variables (see `.env.example`).
+3. Build command: `npm run build` (auto-detected by Vercel).
+4. Production deploys trigger automatically on push to `main`.
 
 ### Self-hosted (Docker + Caddy)
 
 ```bash
-docker build -t afribayit .
+docker build -t afribayit-frontend .
 docker-compose up -d
-# Configurer Caddyfile pour TLS automatique
 ```
+
+The included `Dockerfile` uses Next.js's `standalone` output mode. Pair
+with a reverse proxy (Caddy / nginx) for TLS termination.
+
+## Brand Colours
+
+| Role | Hex | Usage |
+|---|---|---|
+| Dark Blue | `#003087` | Primary, navy backgrounds, headers |
+| Light Blue | `#009CDE` | Accent, innovation, secondary CTA |
+| Gold | `#D4AF37` | Highlights, prices, premium |
+| Green | `#00A651` | Success, availability |
+| Charcoal | `#2C2E2F` | Body text, artisans |
 
 ## Documentation
 
-- **CDC V4** : `AfriBayit_CDC_V4.pdf` — Cahier des charges (117 pages, 16 sections)
-- **Audit Report** : `AfriBayit_Audit_Rapport_Conformite_CDC_V4.pdf` — Audit complet (juillet 2026)
-- **Worklog** : `worklog.md` — Historique des sessions de développement
+- **CDC V4** — `AfriBayit_CDC_V4.pdf` — full specification (117 pages).
+- **Worklog** — `worklog.md` — chronological development history.
 
-## Équipe
+## Team
 
-- **Chef de Projet** : Stevens T. AKPOVI
-- **Architecte Solution** : Dawes S. AKPOVI
-- **Directeur Technique** : Judicaël A. KOUAME
+- Chef de Projet: Stevens T. AKPOVI
+- Architecte Solution: Dawes S. AKPOVI
+- Directeur Technique: Judicaël A. KOUAME
 
-## Licence
+## License
 
-Propriété intellectuelle AfriBayit Technologies — Tous droits réservés.
-Document confidentiel — Usage interne uniquement.
+Proprietary — AfriBayit Technologies. All rights reserved.
+Confidential — internal use only.

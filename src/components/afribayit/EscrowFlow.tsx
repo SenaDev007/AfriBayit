@@ -88,7 +88,10 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
     currency?: string;
     createdAt?: string;
     updatedAt?: string;
-    transaction?: { id: string; propertyId: string; buyerId: string; status: string; amount: number; currency: string };
+    commission?: number;
+    commissionRate?: number;
+    fee?: number;
+    transaction?: { id: string; propertyId: string; buyerId: string; status: string; amount: number; currency: string; commission?: number; commissionRate?: number; fee?: number };
   }>) || [];
 
   const selectedEscrow = escrowAccounts[0];
@@ -100,7 +103,17 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
   const propertyName = selectedEscrow?.property || selectedEscrow?.transaction?.propertyId || 'Propriété';
   const amount = selectedEscrow?.amount || selectedEscrow?.transaction?.amount || 0;
   const currency = selectedEscrow?.currency || selectedEscrow?.transaction?.currency || 'XOF';
-  const escrowFee = Math.round(amount * 0.015);
+  // CDC §6.2 — escrow commission is 3% of transaction amount.
+  // Prefer the backend-provided `commission` / `fee` (already computed) when
+  // available; otherwise fall back to 3% of the amount (was previously 1.5%).
+  const escrowFee =
+    typeof selectedEscrow?.commission === 'number' ? selectedEscrow.commission :
+    typeof selectedEscrow?.fee === 'number' ? selectedEscrow.fee :
+    typeof selectedEscrow?.transaction?.commission === 'number' ? selectedEscrow.transaction.commission :
+    typeof selectedEscrow?.transaction?.fee === 'number' ? selectedEscrow.transaction.fee :
+    Math.round(amount * 0.03);
+  // Compute display rate from chosen fee + amount (so label is always correct)
+  const escrowFeeRate = amount > 0 ? escrowFee / amount : 0;
   const totalAmount = amount + escrowFee;
 
   // Get the escrow transaction ID for PATCH calls
@@ -483,6 +496,7 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
             propertyName={propertyName}
             amount={amount}
             escrowFee={escrowFee}
+            escrowFeeRate={escrowFeeRate}
             totalAmount={totalAmount}
             formatFCFA={formatFCFA}
             onConfirm={handleConfirm}
@@ -531,6 +545,7 @@ function PaymentSteps({
   propertyName,
   amount,
   escrowFee,
+  escrowFeeRate,
   totalAmount,
   formatFCFA,
   onConfirm,
@@ -541,6 +556,7 @@ function PaymentSteps({
   propertyName: string;
   amount: number;
   escrowFee: number;
+  escrowFeeRate: number;
   totalAmount: number;
   formatFCFA: (n: number) => string;
   onConfirm: () => void;
@@ -614,7 +630,7 @@ function PaymentSteps({
             <p className="font-mono-data text-2xl font-bold text-[#D4AF37]">{amount > 0 ? formatFCFA(amount) : '—'}</p>
           </div>
           <div className="p-4 bg-gray-50 rounded-2xl">
-            <p className="text-xs text-gray-500 mb-1">Frais escrow (1.5%)</p>
+            <p className="text-xs text-gray-500 mb-1">Frais escrow ({(escrowFeeRate * 100).toFixed(1)}%)</p>
             <p className="font-mono-data text-sm font-bold text-[#0a2a5e]">{amount > 0 ? formatFCFA(escrowFee) : '—'}</p>
           </div>
           <div className="p-4 bg-[#00A651]/5 rounded-2xl">

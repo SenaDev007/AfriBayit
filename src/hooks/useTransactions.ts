@@ -1,6 +1,85 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, apiPost } from '@/lib/api-client';
 
+/**
+ * Shared API response shapes (CDC §5.1.3 / §6.2 / §7B.3).
+ *
+ * The backend serializes Prisma rows directly, so the shapes below keep the
+ * well-known fields used by the UI and fall back to `Record<string, unknown>`
+ * for any extra properties the backend may add — never `any`.
+ */
+export interface TransactionSummary {
+  id: string;
+  reference?: string;
+  status?: string;
+  type?: string;
+  amount?: number;
+  currency?: string;
+  propertyId?: string;
+  buyerId?: string;
+  sellerId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export interface EscrowSummary {
+  id: string;
+  transactionId?: string;
+  status?: string;
+  balance?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
+export interface LeaseSummary {
+  id: string;
+  transactionId?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  monthlyRent?: number;
+  securityDeposit?: number;
+  [key: string]: unknown;
+}
+
+export interface RentPaymentSummary {
+  id: string;
+  leaseId?: string;
+  amount?: number;
+  status?: string;
+  dueDate?: string;
+  isInitial?: boolean;
+  [key: string]: unknown;
+}
+
+export interface AppointmentSummary {
+  id: string;
+  propertyId?: string;
+  visitorId?: string;
+  agentId?: string;
+  scheduledAt?: string;
+  duration?: number;
+  status?: string;
+  notes?: string;
+  [key: string]: unknown;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  [key: string]: unknown;
+}
+
+export interface CreateAppointmentPayload {
+  propertyId: string;
+  scheduledAt: string;
+  duration?: number;
+  notes?: string;
+}
+
 /** List user's transactions (as buyer/tenant or seller/owner — CDC §5.1.3) */
 export function useTransactions(userId?: string, country?: string, page = 1, limit = 20) {
   const params = new URLSearchParams();
@@ -15,7 +94,7 @@ export function useTransactions(userId?: string, country?: string, page = 1, lim
   return useQuery({
     queryKey: ['transactions', userId, country, page, limit],
     queryFn: () =>
-      api.get<{ transactions: any[]; pagination: any }>(
+      api.get<{ transactions: TransactionSummary[]; pagination: PaginationMeta }>(
         `/api/properties/me/transactions?${params.toString()}`,
       ),
     enabled: !!userId,
@@ -27,7 +106,13 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { propertyId: string }) =>
-      apiPost<{ transaction: any; escrow: any; message: string; nextStep: string; paymentUrl: string }>(
+      apiPost<{
+        transaction: TransactionSummary;
+        escrow: EscrowSummary;
+        message: string;
+        nextStep: string;
+        paymentUrl: string;
+      }>(
         `/api/properties/${data.propertyId}/purchase`,
         {},
       ),
@@ -64,10 +149,10 @@ export function useInitiateRent() {
       notes?: string;
     }) =>
       apiPost<{
-        transaction: any;
-        escrow: any;
-        lease: any;
-        rentPayment: any;
+        transaction: TransactionSummary;
+        escrow: EscrowSummary;
+        lease: LeaseSummary;
+        rentPayment: RentPaymentSummary;
         message: string;
         nextStep: string;
         paymentUrl: string;
@@ -86,12 +171,8 @@ export function useInitiateRent() {
 export function useCreateAppointment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      propertyId: string;
-      scheduledAt: string;
-      duration?: number;
-      notes?: string;
-    }) => apiPost<any>(`/api/appointments`, data),
+    mutationFn: (data: CreateAppointmentPayload) =>
+      apiPost<AppointmentSummary>(`/api/appointments`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
     },
@@ -106,6 +187,9 @@ export function useAppointments(role: 'visitor' | 'agent' | 'all' = 'all', page 
   params.set('limit', String(limit));
   return useQuery({
     queryKey: ['appointments', role, page, limit],
-    queryFn: () => api.get<{ appointments: any[]; pagination: any }>(`/api/appointments?${params.toString()}`),
+    queryFn: () =>
+      api.get<{ appointments: AppointmentSummary[]; pagination: PaginationMeta }>(
+        `/api/appointments?${params.toString()}`,
+      ),
   });
 }

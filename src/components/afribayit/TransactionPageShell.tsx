@@ -28,6 +28,23 @@ const NAVY = '#003087';
 const GOLD = '#D4AF37';
 const BLUE = '#009CDE';
 
+/**
+ * Platform-wide stats returned by the `/stats` endpoint. All fields are
+ * optional because the API may degrade gracefully and omit counters it
+ * cannot compute.
+ */
+interface PlatformStats {
+  properties?: number;
+  propertiesForRent?: number;
+  propertiesForSale?: number;
+  countries?: number;
+  agents?: number;
+  transactions?: number;
+  landlords?: number;
+  users?: number;
+  bookings?: number;
+}
+
 // ─── Hero ─────────────────────────────────────────────────────────────────
 
 interface HeroProps {
@@ -130,9 +147,9 @@ interface TransactionPageShellProps {
 
 export default function TransactionPageShell({ activeTab, hero, children }: TransactionPageShellProps) {
   // Fetch real stats for the hero stats bar
-  const { data: stats } = useQuery<any>({
+  const { data: stats } = useQuery<PlatformStats>({
     queryKey: ['platform-stats'],
-    queryFn: () => apiFetch<any>('/stats'),
+    queryFn: () => apiFetch<PlatformStats>('/stats'),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });

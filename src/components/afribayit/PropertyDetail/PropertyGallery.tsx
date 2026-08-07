@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import { Check, Eye, Map } from 'lucide-react';
 import { easeOut } from './types';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 interface PropertyGalleryProps {
   images: string[];
@@ -32,6 +33,7 @@ export default function PropertyGallery({
   onToggleFavorite,
   onOpenVRTour,
 }: PropertyGalleryProps) {
+  const { t } = useTranslation();
   return (
     <>
       <motion.div
@@ -53,7 +55,7 @@ export default function PropertyGallery({
             {verified && (
               <span className="px-3 py-1.5 bg-[#00A651] text-white text-xs font-bold rounded-lg flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5" />
-                Documents vérifiés
+                {t('propertyDetail.gallery.verifiedDocs', 'Documents vérifiés')}
               </span>
             )}
             {geoTrust && (
@@ -69,10 +71,10 @@ export default function PropertyGallery({
                 whileTap={{ scale: 0.95 }}
                 onClick={onOpenVRTour}
                 className="px-3 py-1.5 bg-[#003087] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-lg hover:bg-[#0047b3] transition-colors cursor-pointer"
-                aria-label="Ouvrir la visite virtuelle 360°"
+                aria-label={t('propertyDetail.gallery.openVrAria', 'Ouvrir la visite virtuelle 360°')}
               >
                 <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
-                Visite VR disponible
+                {t('propertyDetail.gallery.vrAvailable', 'Visite VR disponible')}
               </motion.button>
             ) : (
               <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-bold rounded-lg text-gray-700 flex items-center gap-1.5">
@@ -91,8 +93,8 @@ export default function PropertyGallery({
                 ? 'bg-red-500 text-white'
                 : 'bg-white/90 backdrop-blur text-gray-400 hover:text-red-400'
             } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-            aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-            title={!isAuthenticated ? 'Connectez-vous pour ajouter aux favoris' : ''}
+            aria-label={isFavorite ? t('propertyDetail.gallery.removeFavorite', 'Retirer des favoris') : t('propertyDetail.gallery.addFavorite', 'Ajouter aux favoris')}
+            title={!isAuthenticated ? t('propertyDetail.gallery.loginForFavorite', 'Connectez-vous pour ajouter aux favoris') : ''}
           >
             <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
           </motion.button>
@@ -158,10 +160,10 @@ export default function PropertyGallery({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-white font-bold text-sm sm:text-base">Visite virtuelle 360°</h3>
+                <h3 className="text-white font-bold text-sm sm:text-base">{t('propertyDetail.gallery.vrTourTitle', 'Visite virtuelle 360°')}</h3>
                 <span className="px-2 py-0.5 bg-[#D4AF37] text-white text-[9px] font-bold rounded-full shrink-0">VR</span>
               </div>
-              <p className="text-white/70 text-xs sm:text-sm">Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce</p>
+              <p className="text-white/70 text-xs sm:text-sm">{t('propertyDetail.gallery.vrTourDesc', 'Explorez ce bien en réalité virtuelle — naviguez de pièce en pièce')}</p>
             </div>
             <div className="shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
