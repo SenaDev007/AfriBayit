@@ -186,7 +186,7 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
         reader.readAsDataURL(file);
       });
 
-      const data = await apiFetch<any>('/kyc/submit', {
+      const data = await apiFetch<{ error?: string }>('/kyc/submit', {
         method: 'POST',
         body: {
           documentType: selectedDocType,
@@ -203,9 +203,13 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
       clearFile();
       setSelectedDocType('');
       onSubmitted?.();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // apiFetch throws an ApiError with a `message` field on non-2xx.
-      setError(err?.message || 'Erreur réseau. Veuillez vérifier votre connexion et réessayer.');
+      const message =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message)
+          : '';
+      setError(message || 'Erreur réseau. Veuillez vérifier votre connexion et réessayer.');
       console.error('[KycUploadForm] Upload error:', err);
     } finally {
       setIsUploading(false);

@@ -20,12 +20,30 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   CANCELLED: { label: 'Annulé', color: '#ef4444' },
 };
 
+interface LeaseListItem {
+  id: string;
+  leaseRef?: string;
+  status: string;
+  country?: string;
+  monthlyRent: number;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  leaseTermMonths: number;
+  documents?: Array<unknown>;
+  property?: {
+    title?: string;
+    city?: string;
+    images?: string | string[];
+  };
+}
+
 export default function LeasesPage() {
   const router = useRouter();
   const [role, setRole] = useState<'tenant' | 'owner' | 'all'>('all');
   const { data, isLoading } = useLeases(role);
 
-  const leases = data?.leases || [];
+  const leases: LeaseListItem[] = (data?.leases || []) as LeaseListItem[];
 
   const handleSelect = useCallback((id: string) => {
     router.push(`/leases/${id}`);

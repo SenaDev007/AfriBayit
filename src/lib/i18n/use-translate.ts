@@ -26,7 +26,7 @@ import { am } from '@/lib/i18n/locales/am';
 import { ln } from '@/lib/i18n/locales/ln';
 import { fon } from '@/lib/i18n/locales/fon';
 
-const translations: Record<string, Record<string, any>> = {
+const translations: Record<string, Record<string, unknown>> = {
   fr,
   en,
   ar,
@@ -44,18 +44,26 @@ export function useTranslation() {
 
   const t = (path: string, fallback?: string): string => {
     const keys = path.split('.');
-    let value: any = dict;
+    let value: unknown = dict;
     for (const key of keys) {
-      value = value?.[key];
-      if (value === undefined) break;
+      if (value && typeof value === 'object' && key in value) {
+        value = (value as Record<string, unknown>)[key];
+      } else {
+        value = undefined;
+        break;
+      }
     }
     if (typeof value === 'string') return value;
     // Try French fallback if current locale is missing the key
     if (locale !== 'fr') {
-      let frValue: any = translations.fr;
+      let frValue: unknown = translations.fr;
       for (const key of keys) {
-        frValue = frValue?.[key];
-        if (frValue === undefined) break;
+        if (frValue && typeof frValue === 'object' && key in frValue) {
+          frValue = (frValue as Record<string, unknown>)[key];
+        } else {
+          frValue = undefined;
+          break;
+        }
       }
       if (typeof frValue === 'string') return frValue;
     }

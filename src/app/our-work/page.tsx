@@ -18,10 +18,32 @@ import {
   Star,
   BarChart3,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const PROJECTS = [
+interface ProjectStat {
+  units?: number;
+  sold?: number | string;
+  rooms?: number;
+  occupancy?: string;
+  surface?: string;
+  value: string;
+}
+
+interface Project {
+  country: string;
+  flag: string;
+  title: string;
+  location: string;
+  type: string;
+  description: string;
+  stats: ProjectStat;
+  tags: string[];
+  image: string;
+}
+
+const PROJECTS: Project[] = [
   {
     country: "Côte d'Ivoire",
     flag: '🇨🇮',
@@ -84,14 +106,26 @@ const PROJECTS = [
   },
 ];
 
-const STATS = [
-  { label: 'Biens transactés', value: '2 400+', icon: Home },
-  { label: 'Volume total', value: '15.8 Mds FCFA', icon: TrendingUp },
-  { label: 'Pays couverts', value: '5', icon: Globe },
-  { label: 'Clients satisfaits', value: '98%', icon: Star },
+interface StatItem {
+  labelKey: 'statPropertiesLabel' | 'statVolumeLabel' | 'statCountriesLabel' | 'statSatisfactionLabel';
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const STATS: StatItem[] = [
+  { labelKey: 'statPropertiesLabel', value: '2 400+', icon: Home },
+  { labelKey: 'statVolumeLabel', value: '15.8 Mds FCFA', icon: TrendingUp },
+  { labelKey: 'statCountriesLabel', value: '5', icon: Globe },
+  { labelKey: 'statSatisfactionLabel', value: '98%', icon: Star },
 ];
 
-const SERVICES = [
+interface ServiceItem {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}
+
+const SERVICES: ServiceItem[] = [
   {
     icon: ShieldCheck,
     title: 'GeoTrust Certification',
@@ -102,24 +136,47 @@ const SERVICES = [
     icon: Building2,
     title: 'Escrow Sécurisé',
     description:
-      'Les fonds sont bloqués sur un compte séquestre jusqu\'à la signature de l\'acte notarié. Le système de release automatique protège acheteur et vendeur tout au long du processus.',
+      "Les fonds sont bloqués sur un compte séquestre jusqu'à la signature de l'acte notarié. Le système de release automatique protège acheteur et vendeur tout au long du processus.",
   },
   {
     icon: Hotel,
     title: 'Hospitalité Connectée',
     description:
-      'Hôtels et guesthouses intégrés au réseau OTA mondial. Gestion centralisée des réservations, tarification dynamique et programme de fidélité pour maximiser le taux d\'occupation.',
+      "Hôtels et guesthouses intégrés au réseau OTA mondial. Gestion centralisée des réservations, tarification dynamique et programme de fidélité pour maximiser le taux d'occupation.",
   },
   {
     icon: BarChart3,
     title: 'Analytics Immobilier',
     description:
-      'Données de marché en temps réel, estimation AVM automatisée et indicateurs de performance. Des outils décisionnels pour investisseurs et promoteurs immobiliers.',
+      "Données de marché en temps réel, estimation AVM automatisée et indicateurs de performance. Des outils décisionnels pour investisseurs et promoteurs immobiliers.",
   },
 ];
 
+function statUnitLabel(
+  key: string,
+  t: (path: string, fallback?: string) => string
+): string {
+  switch (key) {
+    case 'units':
+      return t('ourWorkPage.statUnitUnits', 'Unités');
+    case 'sold':
+      return t('ourWorkPage.statUnitSold', 'Vendus');
+    case 'rooms':
+      return t('ourWorkPage.statUnitRooms', 'Chambres');
+    case 'occupancy':
+      return t('ourWorkPage.statUnitOccupancy', 'Occupation');
+    case 'surface':
+      return t('ourWorkPage.statUnitSurface', 'Surface');
+    case 'value':
+      return t('ourWorkPage.statUnitValue', 'Valeur');
+    default:
+      return key;
+  }
+}
+
 export default function OurWorkPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-white">
@@ -138,15 +195,16 @@ export default function OurWorkPage() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-lg text-sm text-white/80 mb-6">
               <MapPin className="w-4 h-4" />
-              5 pays en Afrique de l&apos;Ouest
+              {t('ourWorkPage.heroBadge', "5 pays en Afrique de l'Ouest")}
             </span>
             <h1 className="font-display text-4xl sm:text-5xl font-bold text-white mb-6">
-              Nos Réalisations
+              {t('ourWorkPage.heroTitle', 'Nos Réalisations')}
             </h1>
             <p className="text-lg text-white/70 leading-relaxed">
-              Découvrez comment AfriBayit transforme le marché immobilier en Afrique de l&apos;Ouest
-              avec des transactions sécurisées, des certifications géolocalisées et une
-              technologie de pointe au service de la transparence.
+              {t(
+                'ourWorkPage.heroDesc',
+                "Découvrez comment AfriBayit transforme le marché immobilier en Afrique de l'Ouest avec des transactions sécurisées, des certifications géolocalisées et une technologie de pointe au service de la transparence."
+              )}
             </p>
           </motion.div>
 
@@ -157,16 +215,21 @@ export default function OurWorkPage() {
             transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
             className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-12"
           >
-            {STATS.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 text-center"
-              >
-                <stat.icon className="w-6 h-6 text-[#D4AF37] mx-auto mb-2" />
-                <p className="font-mono-data text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-xs text-white/60 mt-1">{stat.label}</p>
-              </div>
-            ))}
+            {STATS.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div
+                  key={stat.labelKey}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 text-center"
+                >
+                  <Icon className="w-6 h-6 text-[#D4AF37] mx-auto mb-2" />
+                  <p className="font-mono-data text-2xl font-bold text-white">{stat.value}</p>
+                  <p className="text-xs text-white/60 mt-1">
+                    {t(`ourWorkPage.${stat.labelKey}`, stat.labelKey)}
+                  </p>
+                </div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -182,11 +245,13 @@ export default function OurWorkPage() {
             className="text-center mb-12"
           >
             <h2 className="font-display text-3xl font-bold text-[#0a2a5e] mb-4">
-              Projets Phares
+              {t('ourWorkPage.projectsTitle', 'Projets Phares')}
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
-              Des projets immobiliers et hôteliers qui illustrent notre engagement pour des
-              transactions transparentes et sécurisées en Afrique de l&apos;Ouest.
+              {t(
+                'ourWorkPage.projectsDesc',
+                "Des projets immobiliers et hôteliers qui illustrent notre engagement pour des transactions transparentes et sécurisées en Afrique de l'Ouest."
+              )}
             </p>
           </motion.div>
 
@@ -246,19 +311,7 @@ export default function OurWorkPage() {
                             {val}
                           </p>
                           <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-                            {key === 'units'
-                              ? 'Unités'
-                              : key === 'sold'
-                              ? 'Vendus'
-                              : key === 'rooms'
-                              ? 'Chambres'
-                              : key === 'occupancy'
-                              ? 'Occupation'
-                              : key === 'surface'
-                              ? 'Surface'
-                              : key === 'value'
-                              ? 'Valeur'
-                              : key}
+                            {statUnitLabel(key, t)}
                           </p>
                         </div>
                       ))}
@@ -295,36 +348,40 @@ export default function OurWorkPage() {
             className="text-center mb-12"
           >
             <h2 className="font-display text-3xl font-bold text-[#0a2a5e] mb-4">
-              Notre Approche
+              {t('ourWorkPage.approachTitle', 'Notre Approche')}
             </h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
-              Une technologie propriétaire au service de la confiance immobilière en Afrique de
-              l&apos;Ouest. Chaque transaction bénéficie d&apos;un écosystème de vérification et
-              sécurité complet.
+              {t(
+                'ourWorkPage.approachDesc',
+                "Une technologie propriétaire au service de la confiance immobilière en Afrique de l'Ouest. Chaque transaction bénéficie d'un écosystème de vérification et sécurité complet."
+              )}
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICES.map((service, index) => (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
-                className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-[#003087]/10 flex items-center justify-center mb-4">
-                  <service.icon className="w-6 h-6 text-[#003087]" />
-                </div>
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  {service.description}
-                </p>
-              </motion.div>
-            ))}
+            {SERVICES.map((service, index) => {
+              const Icon = service.icon;
+              return (
+                <motion.div
+                  key={service.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1, ease: easeOut }}
+                  className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-[#003087]/10 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-[#003087]" />
+                  </div>
+                  <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {service.description}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -343,25 +400,28 @@ export default function OurWorkPage() {
             className="text-center max-w-2xl mx-auto"
           >
             <h2 className="font-display text-3xl font-bold text-white mb-4">
-              Rejoignez l&apos;aventure AfriBayit
+              {t('ourWorkPage.ctaTitle', "Rejoignez l'aventure AfriBayit")}
             </h2>
             <p className="text-white/70 mb-8">
-              Que vous soyez acheteur, vendeur, investisseur ou hôtelier, notre plateforme
-              offre les outils et la sécurité pour concrétiser vos projets immobiliers en
-              Afrique de l&apos;Ouest.
+              {t(
+                'ourWorkPage.ctaDesc',
+                "Que vous soyez acheteur, vendeur, investisseur ou hôtelier, notre plateforme offre les outils et la sécurité pour concrétiser vos projets immobiliers en Afrique de l'Ouest."
+              )}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 onClick={() => router.push('/search')}
                 className="px-8 py-3.5 bg-white text-[#003087] rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors flex items-center gap-2"
               >
-                Explorer les biens <ArrowRight className="w-4 h-4" />
+                {t('ourWorkPage.ctaExplore', 'Explorer les biens')}{' '}
+                <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={() => router.push('/publish')}
                 className="px-8 py-3.5 bg-[#D4AF37] text-white rounded-lg font-semibold text-sm hover:bg-[#b8961f] transition-colors flex items-center gap-2"
               >
-                Publier une annonce <ArrowRight className="w-4 h-4" />
+                {t('ourWorkPage.ctaPublish', 'Publier une annonce')}{' '}
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </motion.div>

@@ -73,8 +73,11 @@ async function getPusherClient(): Promise<PusherClient | null> {
       const mod = await import('pusher-js');
       // pusher-js exports the class as default in ESM builds, or as
       // `default.default` when imported via CJS interop.
-      const Pusher = (mod as any).default ?? (mod as any);
-      const client = new Pusher(key, {
+      const Pusher = (mod as { default?: unknown; [key: string]: unknown }).default ?? mod;
+      const client = new (Pusher as new (
+        key: string,
+        options: Record<string, unknown>
+      ) => PusherClient)(key, {
         cluster,
         forceTLS: true,
         authEndpoint: '/api/realtime/auth',
@@ -92,7 +95,7 @@ async function getPusherClient(): Promise<PusherClient | null> {
             })(),
           },
         },
-      } as any);
+      });
       pusherClient = client as unknown as PusherClient;
       return pusherClient;
     } catch (err) {

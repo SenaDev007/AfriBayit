@@ -40,7 +40,7 @@ interface PropertySidebarProps {
   onPurchase?: (propertyId: string) => void;
   onRent?: (propertyId: string) => void;
   onContactAgent?: () => void;
-  property?: any;
+  property?: { id?: string };
 }
 
 const SHARE_PLATFORMS = [

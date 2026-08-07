@@ -67,7 +67,10 @@ export function useCourseQuiz(courseId: string) {
   return useQuery({
     queryKey: ['course-quiz', courseId],
     queryFn: async () => {
-      const res: any = await api.get(`/api/academy/courses/${courseId}`);
+      const res = await api.get<{
+        course?: { quizzes?: Array<Record<string, unknown>> };
+        quizzes?: Array<Record<string, unknown>>;
+      }>(`/api/academy/courses/${courseId}`);
       // Backend returns the course object directly; defensively unwrap
       // `course` if a future version wraps it.
       const course = res?.course ?? res;
@@ -82,7 +85,7 @@ export function useCourseQuiz(courseId: string) {
 export function useSubmitQuizAttempt() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { courseId: string; answers: any; score?: number }) =>
+    mutationFn: (data: { courseId: string; answers: Record<string, unknown>; score?: number }) =>
       apiPost(`/api/academy/courses/${data.courseId}/quiz/attempt`, {
         answers: data.answers,
         score: data.score,

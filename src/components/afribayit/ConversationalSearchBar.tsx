@@ -56,10 +56,19 @@ export default function ConversationalSearchBar({
 
       try {
         // Try Rebecca AI agent first — it parses natural language into filters
-        const result = await apiPost<{ response?: string; filters?: any; redirect?: string }>(
-          '/rebecca/agent',
-          { query: q },
-        );
+        const result = await apiPost<{
+          response?: string;
+          filters?: {
+            type?: string;
+            transaction?: string;
+            city?: string;
+            country?: string;
+            minPrice?: number;
+            maxPrice?: number;
+            bedrooms?: number;
+          };
+          redirect?: string;
+        }>('/rebecca/agent', { query: q });
 
         // If the AI returned structured filters, build a search URL
         if (result.filters) {

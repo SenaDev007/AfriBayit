@@ -18,12 +18,20 @@ import {
   Globe,
   TrendingUp,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
-const PILOT_COUNTRIES = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯', capital: 'Cotonou', currency: 'FCFA' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮', capital: 'Abidjan', currency: 'FCFA' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫', capital: 'Ouagadougou', currency: 'FCFA' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬', capital: 'Lomé', currency: 'FCFA' },
+interface PilotCountry {
+  code: string;
+  flag: string;
+  capital: string;
+  currency: string;
+}
+
+const PILOT_COUNTRIES: PilotCountry[] = [
+  { code: 'BJ', flag: '🇧🇯', capital: 'Cotonou', currency: 'FCFA' },
+  { code: 'CI', flag: '🇨🇮', capital: 'Abidjan', currency: 'FCFA' },
+  { code: 'BF', flag: '🇧🇫', capital: 'Ouagadougou', currency: 'FCFA' },
+  { code: 'TG', flag: '🇹🇬', capital: 'Lomé', currency: 'FCFA' },
 ];
 
 interface AdminStats {
@@ -37,6 +45,7 @@ interface AdminStats {
 }
 
 export default function CountriesPage() {
+  const { t } = useTranslation();
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['admin-stats'],
     queryFn: () => apiFetch<AdminStats>('/api/admin/stats'),
@@ -68,6 +77,8 @@ export default function CountriesPage() {
     return Math.round(stats.transactions.totalVolume * (countryUsers / totalUsers));
   };
 
+  const countryName = (code: string) => t(`adminCountries.countries.${code}`, code);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -75,16 +86,22 @@ export default function CountriesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Globe className="w-6 h-6 text-[#003087]" />
-            Pays & Backoffices
+            {t('adminCountries.pageTitle', 'Pays & Backoffices')}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestion des backoffices par pays — Accréditations et statistiques
+            {t(
+              'adminCountries.pageDesc',
+              'Gestion des backoffices par pays — Accréditations et statistiques'
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]">
+          <Badge
+            variant="outline"
+            className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]"
+          >
             <TrendingUp className="w-3 h-3 mr-1" />
-            4 pays pilotes
+            {t('adminCountries.pilotCountriesBadge', '4 pays pilotes')}
           </Badge>
         </div>
       </div>
@@ -96,28 +113,36 @@ export default function CountriesPage() {
             <Globe className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold">AfriBayit — Zone FCFA</h2>
-            <p className="text-sm text-white/70">Union Économique et Monétaire Ouest-Africaine</p>
+            <h2 className="text-lg font-bold">{t('adminCountries.bannerTitle', 'AfriBayit — Zone FCFA')}</h2>
+            <p className="text-sm text-white/70">
+              {t('adminCountries.bannerSubtitle', 'Union Économique et Monétaire Ouest-Africaine')}
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white/10 rounded-2xl p-3">
-            <p className="text-2xl font-bold">{stats?.users.total?.toLocaleString('fr-FR') ?? '—'}</p>
-            <p className="text-xs text-white/70">Utilisateurs totaux</p>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-3">
-            <p className="text-2xl font-bold">{stats?.properties.total?.toLocaleString('fr-FR') ?? '—'}</p>
-            <p className="text-xs text-white/70">Propriétés</p>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-3">
-            <p className="text-2xl font-bold">{stats?.transactions.total?.toLocaleString('fr-FR') ?? '—'}</p>
-            <p className="text-xs text-white/70">Transactions</p>
+            <p className="text-2xl font-bold">
+              {stats?.users.total?.toLocaleString('fr-FR') ?? '—'}
+            </p>
+            <p className="text-xs text-white/70">{t('adminCountries.statTotalUsers', 'Utilisateurs totaux')}</p>
           </div>
           <div className="bg-white/10 rounded-2xl p-3">
             <p className="text-2xl font-bold">
-              {stats ? ((stats.transactions.totalVolume / 1000000).toFixed(1) + 'M') : '—'}
+              {stats?.properties.total?.toLocaleString('fr-FR') ?? '—'}
             </p>
-            <p className="text-xs text-white/70">Volume (FCFA)</p>
+            <p className="text-xs text-white/70">{t('adminCountries.statProperties', 'Propriétés')}</p>
+          </div>
+          <div className="bg-white/10 rounded-2xl p-3">
+            <p className="text-2xl font-bold">
+              {stats?.transactions.total?.toLocaleString('fr-FR') ?? '—'}
+            </p>
+            <p className="text-xs text-white/70">{t('adminCountries.statTransactions', 'Transactions')}</p>
+          </div>
+          <div className="bg-white/10 rounded-2xl p-3">
+            <p className="text-2xl font-bold">
+              {stats ? (stats.transactions.totalVolume / 1000000).toFixed(1) + 'M' : '—'}
+            </p>
+            <p className="text-xs text-white/70">{t('adminCountries.statVolume', 'Volume (FCFA)')}</p>
           </div>
         </div>
       </div>
@@ -149,7 +174,7 @@ export default function CountriesPage() {
                       {country.flag}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{country.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">{countryName(country.code)}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
                         <Badge variant="outline" className="text-[10px] font-mono text-gray-500">
                           {country.code}
@@ -160,7 +185,9 @@ export default function CountriesPage() {
                   </div>
                   <div className="flex items-center gap-1.5 bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span className="text-xs font-semibold text-[#D4AF37]">{accCount} admins</span>
+                    <span className="text-xs font-semibold text-[#D4AF37]">
+                      {accCount} {t('adminCountries.adminsSuffix', 'admins')}
+                    </span>
                   </div>
                 </div>
 
@@ -176,22 +203,34 @@ export default function CountriesPage() {
                     <div className="flex items-center gap-2.5 p-3 bg-[#003087]/5 rounded-xl">
                       <Users className="w-4 h-4 text-[#003087]" />
                       <div>
-                        <p className="text-lg font-bold text-[#003087]">{userCount.toLocaleString('fr-FR')}</p>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Utilisateurs</p>
+                        <p className="text-lg font-bold text-[#003087]">
+                          {userCount.toLocaleString('fr-FR')}
+                        </p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                          {t('adminCountries.cardStatUsers', 'Utilisateurs')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2.5 p-3 bg-[#003087]/5 rounded-xl">
                       <Building2 className="w-4 h-4 text-[#003087]" />
                       <div>
-                        <p className="text-lg font-bold text-[#003087]">{propCount.toLocaleString('fr-FR')}</p>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Propriétés</p>
+                        <p className="text-lg font-bold text-[#003087]">
+                          {propCount.toLocaleString('fr-FR')}
+                        </p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                          {t('adminCountries.cardStatProperties', 'Propriétés')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2.5 p-3 bg-[#003087]/5 rounded-xl">
                       <ArrowLeftRight className="w-4 h-4 text-[#003087]" />
                       <div>
-                        <p className="text-lg font-bold text-[#003087]">{txCount.toLocaleString('fr-FR')}</p>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Transactions</p>
+                        <p className="text-lg font-bold text-[#003087]">
+                          {txCount.toLocaleString('fr-FR')}
+                        </p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                          {t('adminCountries.cardStatTransactions', 'Transactions')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2.5 p-3 bg-[#D4AF37]/10 rounded-xl">
@@ -200,7 +239,9 @@ export default function CountriesPage() {
                         <p className="text-lg font-bold text-[#D4AF37]">
                           {(revenue / 1000000).toFixed(1)}M
                         </p>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">Revenus (FCFA)</p>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                          {t('adminCountries.cardStatRevenue', 'Revenus (FCFA)')}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -210,7 +251,7 @@ export default function CountriesPage() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Link href={`/admin/${country.code}/dashboard`} className="flex-1">
                     <Button className="w-full bg-[#003087] hover:bg-[#0047b3] text-white rounded-xl h-10">
-                      Accéder au backoffice
+                      {t('adminCountries.accessBackoffice', 'Accéder au backoffice')}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>
@@ -220,7 +261,7 @@ export default function CountriesPage() {
                       className="w-full border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-xl h-10"
                     >
                       <KeyRound className="w-4 h-4 mr-2" />
-                      Gérer les accréditations
+                      {t('adminCountries.manageAccreditations', 'Gérer les accréditations')}
                     </Button>
                   </Link>
                 </div>

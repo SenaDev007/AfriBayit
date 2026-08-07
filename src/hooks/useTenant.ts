@@ -9,7 +9,9 @@ export function useTenant() {
   const [selectedCountry, setSelectedCountry] = useState<string>('BJ');
 
   const countries = COUNTRIES_CONFIG;
-  const currentCountry = COUNTRIES_CONFIG.find((c: any) => c.code === selectedCountry) || COUNTRIES_CONFIG[0];
+  const currentCountry =
+    COUNTRIES_CONFIG.find((c: { code: string; name: string; cities: string[] }) => c.code === selectedCountry) ||
+    COUNTRIES_CONFIG[0];
 
   const setCountry = useCallback((code: string) => {
     setSelectedCountry(code);

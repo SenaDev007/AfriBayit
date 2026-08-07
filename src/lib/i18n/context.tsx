@@ -17,7 +17,7 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue>({
   locale: 'fr',
   setLocale: () => {},
-  t: getTranslations('fr') as any,
+  t: getTranslations('fr') as unknown as Translations,
   translate: (key: string) => key,
 });
 
@@ -63,7 +63,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   // Use initLocale once mounted
   const effectiveLocale = mounted ? locale : initLocale;
 
-  const t = getTranslations(effectiveLocale) as any;
+  const t = getTranslations(effectiveLocale) as unknown as Translations;
 
   const translate = useCallback((key: string): string => {
     const keys = key.split('.');

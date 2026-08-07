@@ -364,7 +364,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(result as any).breakdown || [].map((item: any, i) => (
+                        {(result.breakdown || []).map((item, i) => (
                           <TableRow key={i}>
                             <TableCell className="text-sm font-medium">{item.name}</TableCell>
                             <TableCell className="text-xs text-gray-500 max-w-[200px] truncate">{item.description}</TableCell>

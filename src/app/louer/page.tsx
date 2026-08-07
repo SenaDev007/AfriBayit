@@ -8,16 +8,18 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import TransactionPageShell from '@/components/afribayit/TransactionPageShell';
-import PropertyGrid from '@/components/afribayit/PropertyGrid';
+import PropertyGrid, { type PropertyListItem } from '@/components/afribayit/PropertyGrid';
 import AdvancedFeaturesSection from '@/components/afribayit/AdvancedFeaturesSection';
 import ConversationalSearchBar from '@/components/afribayit/ConversationalSearchBar';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function LouerPage() {
   const router = useRouter();
-  const [properties, setProperties] = useState<any[]>([]);
+  const { t } = useTranslation();
+  const [properties, setProperties] = useState<PropertyListItem[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
 
-  const handlePropertiesLoaded = useCallback((props: any[]) => {
+  const handlePropertiesLoaded = useCallback((props: PropertyListItem[]) => {
     setProperties(props);
   }, []);
 
@@ -37,17 +39,24 @@ export default function LouerPage() {
     <TransactionPageShell
       activeTab="louer"
       hero={{
-        badge: 'Location longue durée',
-        title: 'Louez votre prochain chez-vous en toute sérénité',
-        subtitle: 'Appartements, villas et bureaux à louer avec bail numérique sécurisé. Paiement Mobile Money intégré et dépôt de garantie protégé par Escrow.',
-        backgroundImage: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1600&h=900&fit=crop',
+        badge: t('transactionPages.louer.badge', 'Location longue durée'),
+        title: t(
+          'transactionPages.louer.title',
+          'Louez votre prochain chez-vous en toute sérénité'
+        ),
+        subtitle: t(
+          'transactionPages.louer.subtitle',
+          'Appartements, villas et bureaux à louer avec bail numérique sécurisé. Paiement Mobile Money intégré et dépôt de garantie protégé par Escrow.'
+        ),
+        backgroundImage:
+          'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1600&h=900&fit=crop',
         stats: [
-          { value: 0, suffix: '+', label: 'Biens à louer' },
-          { value: 0, suffix: '', label: 'Pays couverts' },
-          { value: 0, suffix: '+', label: 'Agents certifiés' },
-          { value: 0, suffix: '+', label: 'Bailleurs' },
+          { value: 0, suffix: '+', label: t('transactionPages.louer.statPropertiesForRent', 'Biens à louer') },
+          { value: 0, suffix: '', label: t('transactionPages.louer.statCountriesCovered', 'Pays couverts') },
+          { value: 0, suffix: '+', label: t('transactionPages.louer.statCertifiedAgents', 'Agents certifiés') },
+          { value: 0, suffix: '+', label: t('transactionPages.louer.statLandlords', 'Bailleurs') },
         ],
-        ctaLabel: 'Voir les biens à louer',
+        ctaLabel: t('transactionPages.louer.ctaLabel', 'Voir les biens à louer'),
         ctaHref: '#properties',
       }}
     >
@@ -62,7 +71,10 @@ export default function LouerPage() {
       <div id="properties">
         <PropertyGrid
           transaction="location"
-          emptyMessage="Aucun bien à louer pour le moment"
+          emptyMessage={t(
+            'transactionPages.louer.emptyMessage',
+            'Aucun bien à louer pour le moment'
+          )}
           onPropertiesLoaded={handlePropertiesLoaded}
           compareIds={compareIds}
           onToggleCompare={handleToggleCompare}

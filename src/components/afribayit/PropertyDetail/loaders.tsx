@@ -1,13 +1,19 @@
+'use client';
+
 import { MapPin } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 // Loading skeleton for the VirtualTourViewer (Three.js)
 export function VirtualTourLoader() {
+  const { t } = useTranslation();
   return (
     <div className="w-full h-[70vh] sm:h-[80vh] bg-black rounded-xl flex flex-col items-center justify-center">
       <div className="w-16 h-16 rounded-lg border-4 border-[#D4AF37]/30 flex items-center justify-center mb-4">
         <div className="w-10 h-10 rounded-full border-4 border-transparent border-t-[#D4AF37] border-r-[#D4AF37] animate-spin" />
       </div>
-      <p className="text-white/60 text-sm">Chargement du lecteur 3D...</p>
+      <p className="text-white/60 text-sm">
+        {t('propertyDetailLoaders.virtualTour', 'Chargement du lecteur 3D...')}
+      </p>
     </div>
   );
 }

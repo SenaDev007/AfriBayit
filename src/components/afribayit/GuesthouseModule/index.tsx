@@ -171,7 +171,12 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
         // Round 3 — Gap 24 fix: use `apiFetch` (carries JWT + country
         // header) and the correct backend route
         // (`/hotels/pricing/calculate`, no `/api/` prefix).
-        const data = await apiFetch<any>('/hotels/pricing/calculate', {
+        const data = await apiFetch<{
+          dynamicPrice?: number;
+          total?: number;
+          pricePerNight?: number;
+          season?: string;
+        }>('/hotels/pricing/calculate', {
           method: 'POST',
           body: {
             // Backend expects `hotelId` + `roomId`; we don't have a
@@ -186,7 +191,7 @@ export default function GuesthouseModule({ onNavigate }: ModuleProps) {
           },
         });
         if (!cancelled) {
-          setDynamicPrice(data.dynamicPrice ?? data.total ?? data.pricePerNight);
+          setDynamicPrice(data.dynamicPrice ?? data.total ?? data.pricePerNight ?? null);
           if (data.season === 'haute') setCancellationPolicy(t('guesthouse.policyModerate', 'Modérée — Annulation gratuite 5 jours avant'));
           else if (data.season === 'basse') setCancellationPolicy(t('guesthouse.policyFlexible', 'Flexible — Annulation gratuite 24h avant'));
           else setCancellationPolicy(t('guesthouse.policyFlexible', 'Flexible — Annulation gratuite 24h avant'));

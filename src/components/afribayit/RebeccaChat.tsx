@@ -28,6 +28,25 @@ interface Message {
   isStreaming?: boolean;
 }
 
+/**
+ * Minimal shim for the Web Speech API (SpeechRecognition), which is not yet
+ * declared in TypeScript's DOM lib. We only model the fields actually used
+ * by the chat widget.
+ */
+interface SpeechRecognitionResultLike {
+  transcript: string;
+}
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<ArrayLike<SpeechRecognitionResultLike>>;
+}
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: (event: SpeechRecognitionEventLike) => void;
+  start: () => void;
+}
+
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Quick actions — enhanced with more options
@@ -126,7 +145,14 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
         ? chatMessages[chatMessages.length - 1]
         : { role: 'user', content: '' };
 
-      const data = await apiFetch<any>('/rebecca/chat', {
+      const data = await apiFetch<{
+        message?: string;
+        response?: string;
+        text?: string;
+        sources?: Array<{ type: string; source: string; score: number }>;
+        functionsCalled?: string[];
+        sessionId?: string;
+      }>('/rebecca/chat', {
         method: 'POST',
         body: {
           message: lastUserMessage.content,
@@ -465,13 +491,21 @@ export default function RebeccaChat({ isOpen, onClose, userId }: RebeccaChatProp
                   onClick={() => {
                     // Trigger voice search
                     if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-                      const SpeechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      const SpeechRecognitionCtor =
+                        (window as unknown as {
+                          SpeechRecognition?: new () => SpeechRecognitionLike;
+                          webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+                        }).SpeechRecognition ||
+                        (window as unknown as {
+                          SpeechRecognition?: new () => SpeechRecognitionLike;
+                          webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+                        }).webkitSpeechRecognition;
                       if (SpeechRecognitionCtor) {
                         const recognition = new SpeechRecognitionCtor();
                         recognition.lang = 'fr-FR';
                         recognition.continuous = false;
                         recognition.interimResults = false;
-                        recognition.onresult = (event: any) => {
+                        recognition.onresult = (event: SpeechRecognitionEventLike) => {
                           const transcript = event.results?.[0]?.[0]?.transcript;
                           if (transcript) {
                             setInput(transcript);

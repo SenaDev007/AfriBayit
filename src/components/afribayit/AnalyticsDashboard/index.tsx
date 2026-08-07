@@ -10,6 +10,7 @@ import { COUNTRY_NAMES } from '@/lib/constants';
 import { Calendar, Coins, BarChart3, Download, Eye, Users } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 import { ANALYTICS_TABS, PERIOD_OPTIONS } from './tabs';
 import {
@@ -48,6 +49,7 @@ export default function AnalyticsDashboard() {
   const [customEnd, setCustomEnd] = useState('');
   const { user } = useAuthStore();
   const { selectedCountry } = useCountry();
+  const { t } = useTranslation();
   const userId = user?.id;
 
   const { data: txnData, isLoading: txnLoading, isError: txnError } = useTransactions(userId, selectedCountry, 1, 100);
@@ -295,7 +297,7 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
               }`}
             >
               {tab.icon}
-              {tab.label}
+              {t(`analytics.tabs.${tab.key}`, tab.label)}
             </button>
           ))}
         </div>

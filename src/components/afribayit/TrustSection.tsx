@@ -202,7 +202,12 @@ export default function TrustSection() {
   // Fetch real platform stats from the public /stats endpoint
   const { data: stats } = useQuery({
     queryKey: ['platform-stats'],
-    queryFn: () => api.get<any>('/stats'),
+    queryFn: () => api.get<{
+      properties?: number;
+      countries?: number;
+      users?: number;
+      satisfaction?: number;
+    }>('/stats'),
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });

@@ -1,5 +1,8 @@
+'use client';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export function ListingCardSkeleton() {
   return (
@@ -71,6 +74,7 @@ export function PricingCardSkeleton() {
 }
 
 export function CertificationBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const isCertified = status === 'certified';
   const isInProgress = status === 'pending';
 
@@ -79,7 +83,11 @@ export function CertificationBadge({ status }: { status: string }) {
       isCertified ? 'bg-[#00A651]' : isInProgress ? 'bg-[#D4AF37]' : 'bg-gray-500'
     }`}>
       {isCertified ? <CheckCircle className="w-3 h-3" /> : isInProgress ? <Calendar className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-      {isCertified ? 'Certifié' : isInProgress ? 'En cours' : 'Non certifié'}
+      {isCertified
+        ? t('guesthouseSkeleton.certified', 'Certifié')
+        : isInProgress
+        ? t('guesthouseSkeleton.inProgress', 'En cours')
+        : t('guesthouseSkeleton.notCertified', 'Non certifié')}
     </span>
   );
 }

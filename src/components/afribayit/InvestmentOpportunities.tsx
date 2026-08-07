@@ -13,7 +13,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useTopOpportunities } from '@/hooks/useInvestment';
+import { useTopOpportunities, type InvestmentOpportunity } from '@/hooks/useInvestment';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, MapPin, Maximize, Coins, ArrowUpRight, Brain } from 'lucide-react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
@@ -60,7 +60,7 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
   );
 }
 
-function OpportunityCard({ opportunity, index }: { opportunity: any; index: number }) {
+function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpportunity; index: number }) {
   const { t } = useTranslation();
   const score = opportunity.investmentScore || 0;
   const scoreColor = score >= 80 ? '#00A651' : score >= 60 ? '#D4AF37' : score >= 40 ? '#009CDE' : '#9ca3af';
