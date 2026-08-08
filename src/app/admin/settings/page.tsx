@@ -13,6 +13,7 @@ import {
   useAdminCommissions, useAdminSettingsPayments, useAdminSettingsKycLevels,
   useAdminSettingsCountries, useAdminSettingsPremiumTiers,
 } from '@/hooks/useAdminApi';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const TABS = [
   { id: 'commissions', label: 'Commissions', icon: Percent },
@@ -25,6 +26,7 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 export default function AdminSettingsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabId>('commissions');
   const [saving, setSaving] = useState(false);
   const handleSave = () => { setSaving(true); setTimeout(() => setSaving(false), 1000); };
@@ -33,12 +35,12 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Settings className="w-6 h-6" />Paramètres plateforme</h1>
-          <p className="text-sm text-gray-500 mt-1">Configuration globale — commissions, paiements, KYC, pays, Premium</p>
+          <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Settings className="w-6 h-6" />{t('adminSettings.pageTitle', 'Paramètres')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('adminSettings.pageSubtitle', 'Configuration de la plateforme')}</p>
         </div>
         <Button onClick={handleSave} disabled={saving} className="bg-[#003087] hover:bg-[#001f5c]">
           {saving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+          {saving ? t('adminSettings.saving', 'Sauvegarde...') : t('adminSettings.btnSave', 'Sauvegarder')}
         </Button>
       </div>
 

@@ -9,10 +9,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAdminInvestmentsStats, useAdminInvestmentsRecentAlerts } from '@/hooks/useAdminApi';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(Math.round(n));
 
 export default function AdminInvestmentsPage() {
+  const { t } = useTranslation();
   // Polls every 30s for real-time alerts
   const { data, isLoading } = useAdminInvestmentsStats();
   const { data: liveAlerts = [] } = useAdminInvestmentsRecentAlerts(10);
@@ -39,9 +41,9 @@ export default function AdminInvestmentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2">
             <TrendingUp className="w-6 h-6" />
-            Investissements
+            {t('adminInvestments.pageTitle', 'Investissements')}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Monitoring du module investissement — scores IA, alertes prix, ROI, portfolios</p>
+          <p className="text-sm text-gray-500 mt-1">{t('adminInvestments.pageSubtitle', 'Gérer les opportunités et investissements')}</p>
         </div>
         <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
           <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" style={{ animationDuration: '3s' }} />

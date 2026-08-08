@@ -39,6 +39,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminContent, useUpdateContent } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const SECTION_CONFIG = [
   { key: 'homepage', label: 'Homepage', icon: Layout, color: 'bg-[#003087]/10 text-[#003087]' },
@@ -63,6 +64,7 @@ interface ContentSection {
 }
 
 export default function AdminContentPage() {
+  const { t } = useTranslation();
   const [country, setCountry] = useState<string>('');
   const [editOpen, setEditOpen] = useState<{ sectionKey: string; itemKey: string } | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -93,11 +95,11 @@ export default function AdminContentPage() {
       },
       {
         onSuccess: () => {
-          toast.success('Contenu mis à jour avec succès');
+          toast.success(t('adminContent.toastUpdated', 'Contenu mis à jour avec succès'));
           setEditOpen(null);
           setEditValue('');
         },
-        onError: () => toast.error('Erreur lors de la mise à jour'),
+        onError: () => toast.error(t('adminContent.toastUpdateError', 'Erreur lors de la mise à jour')),
       }
     );
   };
@@ -111,9 +113,9 @@ export default function AdminContentPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion du contenu</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminContent.pageTitle', 'Gestion du contenu')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gérer le contenu et les textes de la plateforme
+            {t('adminContent.pageSubtitle', 'Gérer le contenu éditorial et les pages')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -123,14 +125,14 @@ export default function AdminContentPage() {
             onValueChange={(v) => setCountry(v === 'all' ? '' : v)}
           >
             <SelectTrigger className="w-[180px] h-9 text-xs">
-              <SelectValue placeholder="Tous les pays (défaut)" />
+              <SelectValue placeholder={t('adminContent.placeholderCountry', 'Tous les pays (défaut)')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">🌐 Par défaut (global)</SelectItem>
-              <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-              <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-              <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-              <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+              <SelectItem value="all">{t('adminContent.selectDefault', '🌐 Par défaut (global)')}</SelectItem>
+              <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+              <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+              <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+              <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

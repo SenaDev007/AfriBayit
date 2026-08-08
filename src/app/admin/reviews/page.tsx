@@ -53,6 +53,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useAdminReviews } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
@@ -69,6 +70,7 @@ interface ReviewRow {
 }
 
 export default function AdminReviewsPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<{ country?: string; rating?: string; search?: string; page: number; limit: number }>({
     page: 1,
     limit: 20,
@@ -87,16 +89,16 @@ export default function AdminReviewsPage() {
   }, [searchInput]);
 
   const handleApprove = (review: ReviewRow) => {
-    toast.success(`Avis approuvé`);
+    toast.success(t('adminReviews.actionApprove', 'Avis approuvé'));
   };
 
   const handleHide = (review: ReviewRow) => {
-    toast.success(review.hidden ? 'Avis rendu visible' : 'Avis masqué');
+    toast.success(review.hidden ? t('adminReviews.toastUnhidden', 'Avis rendu visible') : t('adminReviews.actionHide', 'Avis masqué'));
   };
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Avis supprimé');
+    toast.success(t('adminReviews.toastDeleted', 'Avis supprimé'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
@@ -132,9 +134,9 @@ export default function AdminReviewsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des avis</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminReviews.pageTitle', 'Gestion des avis')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Modérer et gérer les avis des utilisateurs
+            {t('adminReviews.pageSubtitle', 'Modérer les avis des utilisateurs sur les propriétés')}
           </p>
         </div>
       </div>
@@ -146,7 +148,7 @@ export default function AdminReviewsPage() {
             <MessageSquare className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total avis</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminReviews.statTotal', 'Total')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>

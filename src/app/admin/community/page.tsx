@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRIES = [
   { value: '', label: 'Tous les pays' },
@@ -49,6 +50,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function AdminCommunityPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('posts');
@@ -149,8 +151,8 @@ export default function AdminCommunityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Communauté</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Modération du contenu communautaire</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminCommunity.pageTitle', 'Communauté')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('adminCommunity.pageSubtitle', 'Modérer les posts, groupes et événements de la communauté')}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setFilters({ category: '', country: '', rating: '', search: '', page: 1 }); }}>

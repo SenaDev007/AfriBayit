@@ -20,6 +20,7 @@ import {
   ChevronLeft, ChevronRight, Ban, ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -55,6 +56,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function CountryArtisansPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const queryClient = useQueryClient();
@@ -105,10 +107,10 @@ export default function CountryArtisansPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Hammer className="w-6 h-6 text-[#003087]" />
-            Artisans — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryArtisans.pageTitle', 'Artisans')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gestion des artisans du {COUNTRY_NAMES[country]}
+            {t('adminCountryArtisans.pageSubtitle', 'Gestion des artisans du')} {COUNTRY_NAMES[country]}
           </p>
         </div>
         <Badge variant="outline" className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]">

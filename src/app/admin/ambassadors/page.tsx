@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useAdminAmbassadors } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
@@ -125,6 +126,7 @@ function formatXOF(n: number) {
 }
 
 export default function AdminAmbassadorsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'ambassadors' | 'commissions'>('ambassadors');
   const [filters, setFilters] = useState<{ tier?: string; status?: string; country?: string; search?: string; page: number; limit: number }>({
     page: 1,
@@ -147,7 +149,7 @@ export default function AdminAmbassadorsPage() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Supprimé avec succès');
+    toast.success(t('adminCommon.deletedSuccess', 'Supprimé avec succès'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
@@ -165,9 +167,9 @@ export default function AdminAmbassadorsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Programme Ambassadeurs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminAmbassadors.pageTitle', 'Programme Ambassadeurs')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gérer les ambassadeurs et les commissions de parrainage
+            {t('adminAmbassadors.pageSubtitle', 'Gérer les ambassadeurs et les commissions de parrainage')}
           </p>
         </div>
       </div>
@@ -179,7 +181,7 @@ export default function AdminAmbassadorsPage() {
             <Megaphone className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total ambassadeurs</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminAmbassadors.statTotal', 'Total ambassadeurs')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.totalAmbassadors ?? 0}</p>
           </div>
         </div>
@@ -188,7 +190,7 @@ export default function AdminAmbassadorsPage() {
             <Crown className="w-5 h-5 text-[#B8962E]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Commissions totales</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminAmbassadors.statCommissions', 'Commissions totales')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.totalCommissions ?? 0}</p>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function AdminAmbassadorsPage() {
             <DollarSign className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Revenus totaux</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminAmbassadors.statEarnings', 'Revenus totaux')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.totalEarnings != null ? formatXOF(summary.totalEarnings) : '—'}</p>
           </div>
         </div>
@@ -206,7 +208,7 @@ export default function AdminAmbassadorsPage() {
             <Award className="w-5 h-5 text-purple-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Par tier</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminAmbassadors.statByTier', 'Par tier')}</p>
             <div className="flex items-center gap-1">
               {summary?.byTier && Object.entries(summary.byTier).map(([tier, count]) => (
                 <span key={tier} className="text-xs" title={TIER_LABELS[tier] || tier}>
@@ -230,7 +232,7 @@ export default function AdminAmbassadorsPage() {
           )}
           onClick={() => { setActiveTab('ambassadors'); setFilters((prev) => ({ ...prev, page: 1 })); }}
         >
-          Ambassadeurs
+          {t('adminAmbassadors.tabAmbassadors', 'Ambassadeurs')}
         </button>
         <button
           className={cn(
@@ -241,7 +243,7 @@ export default function AdminAmbassadorsPage() {
           )}
           onClick={() => { setActiveTab('commissions'); setFilters((prev) => ({ ...prev, page: 1 })); }}
         >
-          Commissions
+          {t('adminAmbassadors.tabCommissions', 'Commissions')}
         </button>
       </div>
 
@@ -251,7 +253,7 @@ export default function AdminAmbassadorsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder={activeTab === 'ambassadors' ? 'Rechercher par nom, email...' : 'Rechercher par ambassadeur, filleul...'}
+              placeholder={activeTab === 'ambassadors' ? t('adminAmbassadors.searchAmbassadors', 'Rechercher par nom, email...') : t('adminAmbassadors.searchCommissions', 'Rechercher par ambassadeur, filleul...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -268,14 +270,14 @@ export default function AdminAmbassadorsPage() {
                   }
                 >
                   <SelectTrigger className="w-[130px] h-9 text-xs">
-                    <SelectValue placeholder="Tier" />
+                    <SelectValue placeholder={t('adminAmbassadors.placeholderTier', 'Tier')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les tiers</SelectItem>
-                    <SelectItem value="bronze">🥉 Bronze</SelectItem>
-                    <SelectItem value="silver">🥈 Argent</SelectItem>
-                    <SelectItem value="gold">🥇 Or</SelectItem>
-                    <SelectItem value="platinum">💎 Platine</SelectItem>
+                    <SelectItem value="all">{t('adminAmbassadors.selectAllTiers', 'Tous les tiers')}</SelectItem>
+                    <SelectItem value="bronze">🥉 {t('adminAmbassadors.tierBronze', 'Bronze')}</SelectItem>
+                    <SelectItem value="silver">🥈 {t('adminAmbassadors.tierSilver', 'Argent')}</SelectItem>
+                    <SelectItem value="gold">🥇 {t('adminAmbassadors.tierGold', 'Or')}</SelectItem>
+                    <SelectItem value="platinum">💎 {t('adminAmbassadors.tierPlatinum', 'Platine')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
@@ -285,13 +287,13 @@ export default function AdminAmbassadorsPage() {
                   }
                 >
                   <SelectTrigger className="w-[130px] h-9 text-xs">
-                    <SelectValue placeholder="Statut" />
+                    <SelectValue placeholder={t('adminAmbassadors.placeholderStatus', 'Statut')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="active">Actif</SelectItem>
-                    <SelectItem value="inactive">Inactif</SelectItem>
-                    <SelectItem value="suspended">Suspendu</SelectItem>
+                    <SelectItem value="all">{t('adminAmbassadors.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                    <SelectItem value="active">{t('adminAmbassadors.statusActive', 'Actif')}</SelectItem>
+                    <SelectItem value="inactive">{t('adminAmbassadors.statusInactive', 'Inactif')}</SelectItem>
+                    <SelectItem value="suspended">{t('adminAmbassadors.statusSuspended', 'Suspendu')}</SelectItem>
                   </SelectContent>
                 </Select>
               </>
@@ -304,13 +306,13 @@ export default function AdminAmbassadorsPage() {
                 }
               >
                 <SelectTrigger className="w-[140px] h-9 text-xs">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder={t('adminAmbassadors.placeholderStatus', 'Statut')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="paid">Payée</SelectItem>
-                  <SelectItem value="cancelled">Annulée</SelectItem>
+                  <SelectItem value="all">{t('adminAmbassadors.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                  <SelectItem value="pending">{t('adminAmbassadors.commissionPending', 'En attente')}</SelectItem>
+                  <SelectItem value="paid">{t('adminAmbassadors.commissionPaid', 'Payée')}</SelectItem>
+                  <SelectItem value="cancelled">{t('adminAmbassadors.commissionCancelled', 'Annulée')}</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -321,18 +323,18 @@ export default function AdminAmbassadorsPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminAmbassadors.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminAmbassadors.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -358,22 +360,22 @@ export default function AdminAmbassadorsPage() {
               <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
                 <Megaphone className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-lg font-medium text-gray-900">Aucun ambassadeur trouvé</p>
-              <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <p className="text-lg font-medium text-gray-900">{t('adminAmbassadors.emptyAmbassadors', 'Aucun ambassadeur trouvé')}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('adminCommon.modifyFilters', 'Modifiez vos filtres')}</p>
             </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50/80">
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ambassadeur</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Email</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pays</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Tier</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Parrainages</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Revenus</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colAmbassador', 'Ambassadeur')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colEmail', 'Email')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colCountry', 'Pays')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colTier', 'Tier')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colReferrals', 'Parrainages')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colEarnings', 'Revenus')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colStatus', 'Statut')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminAmbassadors.colActions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -411,13 +413,13 @@ export default function AdminAmbassadorsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                            <DropdownMenuItem><Eye className="w-4 h-4" /> {t('adminAmbassadors.actionView', 'Voir')}</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => { setDeleteTarget({ id: amb.id, name: amb.name }); setDeleteOpen(true); }}
                               className="text-red-600"
                             >
-                              <Trash2 className="w-4 h-4" /> Supprimer
+                              <Trash2 className="w-4 h-4" /> {t('adminAmbassadors.actionDelete', 'Supprimer')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -450,20 +452,20 @@ export default function AdminAmbassadorsPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <DollarSign className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucune commission trouvée</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminAmbassadors.emptyCommissions', 'Aucune commission trouvée')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminCommon.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ambassadeur</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Filleul</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Montant</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colAmbassador', 'Ambassadeur')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colReferral', 'Filleul')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colAmount', 'Montant')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colStatus', 'Statut')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminAmbassadors.colDate', 'Date')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminAmbassadors.colActions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -486,13 +488,13 @@ export default function AdminAmbassadorsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem><Eye className="w-4 h-4" /> Voir</DropdownMenuItem>
+                          <DropdownMenuItem><Eye className="w-4 h-4" /> {t('adminAmbassadors.actionView', 'Voir')}</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => { setDeleteTarget({ id: comm.id, name: `Commission ${comm.id.slice(0, 8)}` }); setDeleteOpen(true); }}
                             className="text-red-600"
                           >
-                            <Trash2 className="w-4 h-4" /> Supprimer
+                            <Trash2 className="w-4 h-4" /> {t('adminAmbassadors.actionDelete', 'Supprimer')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -526,15 +528,15 @@ export default function AdminAmbassadorsPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t('adminAmbassadors.dialogConfirmDelete', 'Confirmer la suppression')}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer {deleteTarget?.name} ? Cette action est irréversible.
+              {t('adminAmbassadors.dialogDeleteWarning', 'Cette action est irréversible.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('adminAmbassadors.btnCancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Supprimer
+              {t('adminAmbassadors.btnDelete', 'Supprimer')}
             </Button>
           </DialogFooter>
         </DialogContent>

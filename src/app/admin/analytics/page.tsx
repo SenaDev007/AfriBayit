@@ -3,6 +3,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -64,6 +65,7 @@ function MiniBarChart({ data, labels, colors }: { data: number[]; labels: string
 }
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation();
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
     queryKey: ['admin-analytics'],
     queryFn: () => apiFetch<AnalyticsData>('/api/admin/analytics'),
@@ -80,10 +82,10 @@ export default function AnalyticsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <BarChart3 className="w-6 h-6 text-[#003087]" />
-          Analytics — Global
+          {t('adminAnalytics.pageTitle', 'Analytics')} — Global
         </h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          Analyse comparative des 4 pays pilotes
+          {t('adminAnalytics.pageSubtitle', 'Statistiques et analyses de la plateforme')}
         </p>
       </div>
 

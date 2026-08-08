@@ -57,6 +57,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminNotifications, useCreateNotification } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
@@ -93,6 +94,7 @@ interface NotificationRow {
 }
 
 export default function AdminNotificationsPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<{ type?: string; country?: string; search?: string; page: number; limit: number }>({
     page: 1,
     limit: 20,
@@ -121,23 +123,23 @@ export default function AdminNotificationsPage() {
   }, [searchInput]);
 
   const handleMarkAsRead = (notif: NotificationRow) => {
-    toast.success(notif.read ? 'Déjà lu' : 'Marqué comme lu');
+    toast.success(notif.read ? t('adminNotifications.toastAlreadyRead', 'Déjà lu') : t('adminNotifications.toastMarkedRead', 'Marqué comme lu'));
   };
 
   const handleSend = (notif: NotificationRow) => {
-    toast.success('Notification envoyée');
+    toast.success(t('adminNotifications.toastSent', 'Notification envoyée'));
   };
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Notification supprimée');
+    toast.success(t('adminNotifications.toastDeleted', 'Notification supprimée'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
 
   const handleCreateNotification = () => {
     if (!formTitle.trim() || !formMessage.trim()) {
-      toast.error('Veuillez remplir le titre et le message');
+      toast.error(t('adminNotifications.toastFillRequired', 'Veuillez remplir le titre et le message'));
       return;
     }
     createNotification.mutate(
@@ -150,7 +152,7 @@ export default function AdminNotificationsPage() {
       },
       {
         onSuccess: () => {
-          toast.success('Notification créée avec succès');
+          toast.success(t('adminNotifications.toastCreateSuccess', 'Notification créée avec succès'));
           setCreateOpen(false);
           setFormUserId('');
           setFormType('info');
@@ -159,7 +161,7 @@ export default function AdminNotificationsPage() {
           setFormCountry('');
         },
         onError: () => {
-          toast.error('Erreur lors de la création');
+          toast.error(t('adminNotifications.toastCreateError', 'Erreur lors de la création'));
         },
       }
     );
@@ -183,16 +185,16 @@ export default function AdminNotificationsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminNotifications.pageTitle', 'Gestion des notifications')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Créer et gérer les notifications de la plateforme
+            {t('adminNotifications.pageSubtitle', 'Créer et gérer les notifications de la plateforme')}
           </p>
         </div>
         <Button
           className="bg-[#003087] hover:bg-[#003087]/90 text-white"
           onClick={() => setCreateOpen(true)}
         >
-          <Plus className="w-4 h-4 mr-2" /> Nouvelle notification
+          <Plus className="w-4 h-4 mr-2" /> {t('adminNotifications.btnNew', 'Nouvelle notification')}
         </Button>
       </div>
 
@@ -203,7 +205,7 @@ export default function AdminNotificationsPage() {
             <Bell className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotifications.statTotal', 'Total')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>
@@ -212,7 +214,7 @@ export default function AdminNotificationsPage() {
             <Mail className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Non lues</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotifications.statUnread', 'Non lues')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.unread ?? 0}</p>
           </div>
         </div>
@@ -221,7 +223,7 @@ export default function AdminNotificationsPage() {
             <MailOpen className="w-5 h-5 text-[#B8962E]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Par type</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotifications.statByType', 'Par type')}</p>
             <div className="flex items-center gap-2">
               {summary?.byType && Object.entries(summary.byType).map(([type, count]) => (
                 <span key={type} className="flex items-center gap-0.5 text-xs text-gray-600">
@@ -240,7 +242,7 @@ export default function AdminNotificationsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par destinataire, titre..."
+              placeholder={t('adminNotifications.searchPlaceholder', 'Rechercher par destinataire, titre...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -255,14 +257,14 @@ export default function AdminNotificationsPage() {
               }
             >
               <SelectTrigger className="w-[150px] h-9 text-xs">
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder={t('adminNotifications.placeholderType', 'Type')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les types</SelectItem>
-                <SelectItem value="info">Information</SelectItem>
-                <SelectItem value="warning">Avertissement</SelectItem>
-                <SelectItem value="success">Succès</SelectItem>
-                <SelectItem value="alert">Alerte</SelectItem>
+                <SelectItem value="all">{t('adminNotifications.selectAllTypes', 'Tous les types')}</SelectItem>
+                <SelectItem value="info">{t('adminNotifications.typeInfo', 'Information')}</SelectItem>
+                <SelectItem value="warning">{t('adminNotifications.typeWarning', 'Avertissement')}</SelectItem>
+                <SelectItem value="success">{t('adminNotifications.typeSuccess', 'Succès')}</SelectItem>
+                <SelectItem value="alert">{t('adminNotifications.typeAlert', 'Alerte')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -272,18 +274,18 @@ export default function AdminNotificationsPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminNotifications.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminNotifications.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -308,8 +310,8 @@ export default function AdminNotificationsPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Bell className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucune notification trouvée</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres ou créez-en une</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminNotifications.empty', 'Aucune notification trouvée')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminNotifications.emptyHint', 'Modifiez vos filtres ou créez-en une')}</p>
           </div>
         ) : (
           <>
@@ -317,28 +319,28 @@ export default function AdminNotificationsPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Destinataire
+                    {t('adminNotifications.colRecipient', 'Destinataire')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Type
+                    {t('adminNotifications.colType', 'Type')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Titre
+                    {t('adminNotifications.colTitle', 'Titre')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Message
+                    {t('adminNotifications.colMessage', 'Message')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Pays
+                    {t('adminNotifications.colCountry', 'Pays')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Lu
+                    {t('adminNotifications.colRead', 'Lu')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Date
+                    {t('adminNotifications.colDate', 'Date')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminNotifications.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -381,17 +383,17 @@ export default function AdminNotificationsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuItem onClick={() => handleMarkAsRead(notif)} disabled={notif.read}>
-                            <Eye className="w-4 h-4" /> Marquer comme lu
+                            <Eye className="w-4 h-4" /> {t('adminNotifications.actionView', 'Marquer comme lu')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleSend(notif)}>
-                            <Send className="w-4 h-4" /> Envoyer
+                            <Send className="w-4 h-4" /> {t('adminNotifications.actionSend', 'Envoyer')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => { setDeleteTarget(notif); setDeleteOpen(true); }}
                             className="text-red-600"
                           >
-                            <Trash2 className="w-4 h-4" /> Supprimer
+                            <Trash2 className="w-4 h-4" /> {t('adminNotifications.actionDelete', 'Supprimer')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -439,77 +441,77 @@ export default function AdminNotificationsPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nouvelle notification</DialogTitle>
-            <DialogDescription>Créer et envoyer une notification aux utilisateurs</DialogDescription>
+            <DialogTitle>{t('adminNotifications.dialogNew', 'Nouvelle notification')}</DialogTitle>
+            <DialogDescription>{t('adminNotifications.dialogNewDesc', 'Créer et envoyer une notification aux utilisateurs')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">ID Utilisateur (optionnel)</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">{t('adminNotifications.labelUserId', 'ID Utilisateur (optionnel)')}</label>
               <Input
-                placeholder="Laisser vide pour diffusion globale"
+                placeholder={t('adminNotifications.placeholderUserId', 'Laisser vide pour diffusion globale')}
                 value={formUserId}
                 onChange={(e) => setFormUserId(e.target.value)}
                 className="h-9 text-sm"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Type</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">{t('adminNotifications.labelType', 'Type')}</label>
               <Select value={formType} onValueChange={setFormType}>
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="info">ℹ️ Information</SelectItem>
-                  <SelectItem value="warning">⚠️ Avertissement</SelectItem>
-                  <SelectItem value="success">✅ Succès</SelectItem>
-                  <SelectItem value="alert">🚨 Alerte</SelectItem>
+                  <SelectItem value="info">ℹ️ {t('adminNotifications.typeInfo', 'Information')}</SelectItem>
+                  <SelectItem value="warning">⚠️ {t('adminNotifications.typeWarning', 'Avertissement')}</SelectItem>
+                  <SelectItem value="success">✅ {t('adminNotifications.typeSuccess', 'Succès')}</SelectItem>
+                  <SelectItem value="alert">🚨 {t('adminNotifications.typeAlert', 'Alerte')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Titre</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">{t('adminNotifications.labelTitle', 'Titre')}</label>
               <Input
-                placeholder="Titre de la notification"
+                placeholder={t('adminNotifications.placeholderTitle', 'Titre de la notification')}
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 className="h-9 text-sm"
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Message</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">{t('adminNotifications.labelMessage', 'Message')}</label>
               <Textarea
-                placeholder="Contenu de la notification..."
+                placeholder={t('adminNotifications.placeholderMessage', 'Contenu de la notification...')}
                 value={formMessage}
                 onChange={(e) => setFormMessage(e.target.value)}
                 rows={4}
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Pays (optionnel)</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">{t('adminNotifications.labelCountry', 'Pays (optionnel)')}</label>
               <Select value={formCountry || 'all'} onValueChange={(v) => setFormCountry(v === 'all' ? '' : v)}>
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Tous les pays" />
+                  <SelectValue placeholder={t('adminNotifications.selectAllCountries', 'Tous les pays')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les pays</SelectItem>
-                  <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                  <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                  <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                  <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                  <SelectItem value="all">{t('adminNotifications.selectAllCountries', 'Tous les pays')}</SelectItem>
+                  <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                  <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                  <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                  <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{t('adminNotifications.btnCancel', 'Annuler')}</Button>
             <Button
               className="bg-[#003087] hover:bg-[#003087]/90 text-white"
               onClick={handleCreateNotification}
               disabled={createNotification.isPending}
             >
-              {createNotification.isPending ? 'Envoi...' : (
+              {createNotification.isPending ? t('adminNotifications.btnSending', 'Envoi...') : (
                 <>
-                  <Send className="w-4 h-4 mr-1" /> Envoyer
+                  <Send className="w-4 h-4 mr-1" /> {t('adminNotifications.btnSend', 'Envoyer')}
                 </>
               )}
             </Button>
@@ -521,15 +523,15 @@ export default function AdminNotificationsPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer la notification</DialogTitle>
+            <DialogTitle>{t('adminNotifications.dialogDelete', 'Supprimer la notification')}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette notification ? Cette action est irréversible.
+              {t('adminNotifications.dialogDeleteDesc', 'Êtes-vous sûr de vouloir supprimer cette notification ? Cette action est irréversible.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('adminNotifications.btnCancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Supprimer
+              {t('adminNotifications.btnDelete', 'Supprimer')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import {
   Users, Search, ShieldCheck, Mail, MapPin, Calendar, ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -28,6 +29,7 @@ interface UserRow {
 }
 
 export default function CountryUsersPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const [search, setSearch] = useState('');
@@ -53,14 +55,14 @@ export default function CountryUsersPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="w-6 h-6 text-[#003087]" />
-            Utilisateurs — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryUsers.pageTitle', 'Utilisateurs')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gestion des utilisateurs du {COUNTRY_NAMES[country]}
+            {t('adminCountryUsers.pageSubtitle', 'Gestion des utilisateurs du')} {COUNTRY_NAMES[country]}
           </p>
         </div>
         <Badge variant="outline" className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]">
-          {total} utilisateur{total !== 1 ? 's' : ''}
+          {total} {t('adminCountryUsers.statTotal', 'utilisateurs')}
         </Badge>
       </div>
 
@@ -68,7 +70,7 @@ export default function CountryUsersPage() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
-          placeholder="Rechercher par nom, email..."
+          placeholder={t('adminCountryUsers.searchPlaceholder', 'Rechercher par nom, email...')}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           className="pl-9"

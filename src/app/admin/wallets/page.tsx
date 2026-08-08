@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +51,7 @@ interface WalletsResponse {
 }
 
 export default function AdminWalletsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ search: '', country: '', page: 1 });
@@ -92,8 +94,8 @@ export default function AdminWalletsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Portefeuilles</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Gestion des portefeuilles utilisateurs</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminWallets.pageTitle', 'Portefeuilles')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('adminWallets.pageSubtitle', 'Gérer les portefeuilles utilisateurs et transactions')}</p>
       </div>
 
       {/* Summary Cards */}
@@ -123,14 +125,14 @@ export default function AdminWalletsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par nom ou email..."
+              placeholder={t('adminWallets.searchPlaceholder', 'Rechercher par utilisateur, email...')}
               className="pl-10"
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
             />
           </div>
           <Select value={filters.country} onValueChange={(v) => setFilters((f) => ({ ...f, country: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pays" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminWallets.placeholderCountry', 'Pays')} /></SelectTrigger>
             <SelectContent>
               {COUNTRIES.map((c) => (
                 <SelectItem key={c.value || '__all'} value={c.value || '__all'}>{c.label}</SelectItem>
@@ -147,7 +149,7 @@ export default function AdminWalletsPage() {
         ) : !data?.wallets.length ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <Wallet className="w-12 h-12 mb-3" />
-            <p className="text-sm font-medium">Aucun portefeuille trouvé</p>
+            <p className="text-sm font-medium">{t('adminWallets.empty', 'Aucun portefeuille trouvé')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -9,8 +9,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAdminRebeccaStats, useAdminRebeccaFraudAlerts, useAdminRebeccaTimeseries } from '@/hooks/useAdminApi';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function AdminRebeccaPage() {
+  const { t } = useTranslation();
   const { data: stats, isLoading } = useAdminRebeccaStats();
   const { data: fraudAlerts = [] } = useAdminRebeccaFraudAlerts(20);
   const { data: timeseries = [] } = useAdminRebeccaTimeseries();
@@ -41,8 +43,8 @@ export default function AdminRebeccaPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Bot className="w-6 h-6" />Rebecca IA — Console</h1>
-          <p className="text-sm text-gray-500 mt-1">Monitoring de l'agent IA Rebecca — multi-canal, anti-fraude, analyse documentaire</p>
+          <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Bot className="w-6 h-6" />{t('adminRebecca.pageTitle', 'Rebecca IA')} — Console</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('adminRebecca.pageSubtitle', 'Configuration et statistiques de l\'assistant IA Rebecca')}</p>
         </div>
         <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100"><span className="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse" />Temps réel · refresh 30s</Badge>
       </div>

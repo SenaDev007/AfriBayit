@@ -21,6 +21,7 @@ import {
   MessageSquare, Mail, Smartphone,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -53,6 +54,7 @@ const channelColors: Record<string, string> = {
 };
 
 export default function CountryNotificationsPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const queryClient = useQueryClient();
@@ -111,10 +113,10 @@ export default function CountryNotificationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Bell className="w-6 h-6 text-[#003087]" />
-            Notifications — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryNotifications.pageTitle', 'Notifications')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Envoyer et consulter les notifications du {COUNTRY_NAMES[country]}
+            {t('adminCountryNotifications.pageSubtitle', 'Gestion des notifications du')} {COUNTRY_NAMES[country]}
           </p>
         </div>
       </div>

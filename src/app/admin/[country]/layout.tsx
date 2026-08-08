@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_CONFIG: Record<string, { name: string; flag: string }> = {
   BJ: { name: 'Bénin', flag: '🇧🇯' },
@@ -29,36 +30,36 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-function getNavGroups(country: string): NavGroup[] {
+function getNavGroups(country: string, t: (path: string, fallback?: string) => string): NavGroup[] {
   const base = `/admin/${country}`;
   return [
     {
-      label: 'TABLEAU DE BORD',
+      label: t('adminCountryLayout.groupDashboard', 'TABLEAU DE BORD'),
       items: [
-        { label: "Vue d'ensemble", href: `${base}/dashboard`, icon: LayoutDashboard },
-        { label: 'Analytics', href: `${base}/dashboard?tab=analytics`, icon: BarChart3 },
+        { label: t("adminCountryLayout.navOverview", "Vue d'ensemble"), href: `${base}/dashboard`, icon: LayoutDashboard },
+        { label: t('adminCountryLayout.navAnalytics', 'Analytics'), href: `${base}/dashboard?tab=analytics`, icon: BarChart3 },
       ],
     },
     {
-      label: 'GESTION',
+      label: t('adminCountryLayout.groupManagement', 'GESTION'),
       items: [
-        { label: 'Utilisateurs', href: `${base}/users`, icon: Users },
-        { label: 'Propriétés', href: `${base}/properties`, icon: Building2 },
-        { label: 'Transactions', href: `${base}/transactions`, icon: ArrowLeftRight },
+        { label: t('adminCountryLayout.navUsers', 'Utilisateurs'), href: `${base}/users`, icon: Users },
+        { label: t('adminCountryLayout.navProperties', 'Propriétés'), href: `${base}/properties`, icon: Building2 },
+        { label: t('adminCountryLayout.navTransactions', 'Transactions'), href: `${base}/transactions`, icon: ArrowLeftRight },
       ],
     },
     {
-      label: 'HÔTELLERIE',
+      label: t('adminCountryLayout.groupHospitality', 'HÔTELLERIE'),
       items: [
-        { label: 'Hôtels & Séjours', href: `${base}/hospitality`, icon: Hotel },
-        { label: 'Guesthouses', href: `${base}/hospitality?tab=guesthouses`, icon: Home },
+        { label: t('adminCountryLayout.navHospitality', 'Hôtels & Séjours'), href: `${base}/hospitality`, icon: Hotel },
+        { label: t('adminCountryLayout.navGuesthouses', 'Guesthouses'), href: `${base}/hospitality?tab=guesthouses`, icon: Home },
       ],
     },
     {
-      label: 'ADMINISTRATION',
+      label: t('adminCountryLayout.groupAdmin', 'ADMINISTRATION'),
       items: [
-        { label: 'Accréditations', href: `${base}/accreditations`, icon: ShieldCheck },
-        { label: 'Paramètres', href: `${base}/dashboard?tab=settings`, icon: Settings },
+        { label: t('adminCountryLayout.navAccreditations', 'Accréditations'), href: `${base}/accreditations`, icon: ShieldCheck },
+        { label: t('adminCountryLayout.navSettings', 'Paramètres'), href: `${base}/dashboard?tab=settings`, icon: Settings },
       ],
     },
   ];
@@ -69,11 +70,12 @@ interface CountryLayoutProps {
 }
 
 function CountryLayoutInner({ children }: CountryLayoutProps) {
+  const { t } = useTranslation();
   const params = useParams();
   const pathname = usePathname();
   const country = (params.country as string) || 'BJ';
   const config = COUNTRY_CONFIG[country] || { name: country, flag: '🌐' };
-  const navGroups = getNavGroups(country);
+  const navGroups = getNavGroups(country, t);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -130,7 +132,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
             <div className="min-w-0">
               <h1 className="text-base font-bold tracking-tight truncate">{config.name}</h1>
               <p className="text-[10px] text-white/60 uppercase tracking-widest">
-                Backoffice {country}
+                {t('adminCountryLayout.backoffice', 'Backoffice')} {country}
               </p>
             </div>
           )}
@@ -158,7 +160,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
           )}
         >
           <ArrowLeft className="w-4 h-4 shrink-0" />
-          {!sidebarCollapsed && <span>Retour au backoffice global</span>}
+          {!sidebarCollapsed && <span>{t('adminCountryLayout.backToGlobal', 'Retour au backoffice global')}</span>}
         </Link>
       </div>
 
@@ -168,7 +170,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
             <Input
-              placeholder="Rechercher..."
+              placeholder={t('adminCountryLayout.search', 'Rechercher...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-8 text-xs bg-white/10 border-white/10 text-white placeholder:text-white/40 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
@@ -240,7 +242,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
               <p className="text-xs font-semibold text-white truncate">
                 {config.flag} {config.name}
               </p>
-              <p className="text-[10px] text-white/50">Pays verrouillé</p>
+              <p className="text-[10px] text-white/50">{t('adminCountryLayout.lockedCountry', 'Pays verrouillé')}</p>
             </div>
           </div>
         ) : (
@@ -276,7 +278,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
                   </div>
                   <div>
                     <h1 className="text-base font-bold">{config.name}</h1>
-                    <p className="text-[10px] text-white/60 uppercase tracking-widest">Backoffice {country}</p>
+                    <p className="text-[10px] text-white/60 uppercase tracking-widest">{t('adminCountryLayout.backoffice', 'Backoffice')} {country}</p>
                   </div>
                 </div>
                 <button

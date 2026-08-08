@@ -56,6 +56,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminNotaries } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   verified: 'Vérifié',
@@ -85,6 +86,7 @@ interface NotaryRow {
 }
 
 export default function AdminNotariesPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<{ status?: string; country?: string; search?: string; page: number; limit: number }>({
     page: 1,
     limit: 20,
@@ -119,7 +121,7 @@ export default function AdminNotariesPage() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Notaire supprimé');
+    toast.success(t('adminNotaries.toastDeleted', 'Notaire supprimé'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
@@ -143,9 +145,9 @@ export default function AdminNotariesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des notaires</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminNotaries.pageTitle', 'Gestion des notaires')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Vérifier et gérer les notaires de la plateforme
+            {t('adminNotaries.pageSubtitle', 'Vérifier et gérer les notaires de la plateforme')}
           </p>
         </div>
       </div>
@@ -157,7 +159,7 @@ export default function AdminNotariesPage() {
             <Scale className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total notaires</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotaries.statTotal', 'Total notaires')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>
@@ -166,7 +168,7 @@ export default function AdminNotariesPage() {
             <ShieldCheck className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Vérifiés</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotaries.statVerified', 'Vérifiés')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.verified ?? 0}</p>
           </div>
         </div>
@@ -175,7 +177,7 @@ export default function AdminNotariesPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">En attente</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotaries.statPending', 'En attente')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -184,7 +186,7 @@ export default function AdminNotariesPage() {
             <Award className="w-5 h-5 text-[#B8962E]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Note moyenne</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminNotaries.statAvgRating', 'Note moyenne')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.avgRating?.toFixed(1) ?? '—'}</p>
           </div>
         </div>
@@ -196,7 +198,7 @@ export default function AdminNotariesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par nom, licence, ville..."
+              placeholder={t('adminNotaries.searchPlaceholder', 'Rechercher par nom, licence, ville...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -211,13 +213,13 @@ export default function AdminNotariesPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminNotaries.placeholderStatus', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="verified">Vérifié</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="rejected">Rejeté</SelectItem>
+                <SelectItem value="all">{t('adminNotaries.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                <SelectItem value="verified">{t('adminNotaries.statusVerified', 'Vérifié')}</SelectItem>
+                <SelectItem value="pending">{t('adminNotaries.statusPending', 'En attente')}</SelectItem>
+                <SelectItem value="rejected">{t('adminNotaries.statusRejected', 'Rejeté')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -227,18 +229,18 @@ export default function AdminNotariesPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminNotaries.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminNotaries.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -263,8 +265,8 @@ export default function AdminNotariesPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Scale className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun notaire trouvé</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminNotaries.empty', 'Aucun notaire trouvé')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminNotaries.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
@@ -272,28 +274,28 @@ export default function AdminNotariesPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Notaire
+                    {t('adminNotaries.colNotary', 'Notaire')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Licence
+                    {t('adminNotaries.colLicense', 'Licence')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Spécialisations
+                    {t('adminNotaries.colSpecializations', 'Spécialisations')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Pays
+                    {t('adminNotaries.colCountry', 'Pays')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Ville
+                    {t('adminNotaries.colCity', 'Ville')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Note
+                    {t('adminNotaries.colRating', 'Note')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Vérifié
+                    {t('adminNotaries.colVerified', 'Vérifié')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminNotaries.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -350,26 +352,26 @@ export default function AdminNotariesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem>
-                            <Eye className="w-4 h-4" /> Voir
+                            <Eye className="w-4 h-4" /> {t('adminNotaries.actionView', 'Voir')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleVerify(notary)}
                             disabled={notary.verified}
                           >
-                            <CheckCircle2 className="w-4 h-4" /> Vérifier
+                            <CheckCircle2 className="w-4 h-4" /> {t('adminNotaries.actionVerify', 'Vérifier')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => { setRejectTarget(notary); setRejectOpen(true); }}
                             disabled={notary.status === 'rejected'}
                           >
-                            <XCircle className="w-4 h-4" /> Rejeter
+                            <XCircle className="w-4 h-4" /> {t('adminNotaries.actionReject', 'Rejeter')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => { setDeleteTarget(notary); setDeleteOpen(true); }}
                             className="text-red-600"
                           >
-                            <Trash2 className="w-4 h-4" /> Supprimer
+                            <Trash2 className="w-4 h-4" /> {t('adminNotaries.actionDelete', 'Supprimer')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -417,8 +419,8 @@ export default function AdminNotariesPage() {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter le notaire</DialogTitle>
-            <DialogDescription>Indiquez la raison du rejet pour {rejectTarget?.name}</DialogDescription>
+            <DialogTitle>{t('adminNotaries.dialogReject', 'Rejeter le notaire')}</DialogTitle>
+            <DialogDescription>{t('adminNotaries.dialogRejectDesc', 'Indiquez la raison du rejet')}</DialogDescription>
           </DialogHeader>
           <Textarea
             placeholder="Raison du rejet..."

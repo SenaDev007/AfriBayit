@@ -20,6 +20,7 @@ import {
   Save, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -45,6 +46,7 @@ const sections = [
 ];
 
 export default function CountryContentPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const queryClient = useQueryClient();
@@ -97,10 +99,10 @@ export default function CountryContentPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <FileText className="w-6 h-6 text-[#003087]" />
-            Contenu — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryContent.pageTitle', 'Contenu')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gestion du contenu du {COUNTRY_NAMES[country]}
+            {t('adminCountryContent.pageSubtitle', 'Gestion du contenu du')} {COUNTRY_NAMES[country]}
           </p>
         </div>
         <Badge variant="outline" className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]">
