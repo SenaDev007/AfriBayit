@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAdminRevenue, type AdminRevenueResponse } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
@@ -233,6 +234,7 @@ function exportRevenueCSV(data: AdminRevenueResponse) {
 export default function AdminRevenuePage() {
   const [period, setPeriod] = useState('month');
   const { data, isLoading, error } = useAdminRevenue({ period });
+  const { t } = useTranslation();
 
   const handleExportCSV = useCallback(() => {
     if (data) exportRevenueCSV(data);
@@ -241,10 +243,10 @@ export default function AdminRevenuePage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Analyse des Revenus</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminRevenue.pageTitle', 'Analyse des Revenus')}</h1>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm font-medium text-red-600">Erreur lors du chargement des données</p>
+            <p className="text-sm font-medium text-red-600">{t('adminRevenue.loadError', 'Erreur lors du chargement des données')}</p>
             <p className="text-xs text-gray-500 mt-1">{error.message}</p>
           </CardContent>
         </Card>
@@ -263,8 +265,8 @@ export default function AdminRevenuePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analyse des Revenus</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Suivi des revenus par source et par pays</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminRevenue.pageTitle', 'Analyse des Revenus')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('adminRevenue.pageSubtitle', 'Suivi des revenus par source et par pays')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={period} onValueChange={setPeriod}>
@@ -272,10 +274,10 @@ export default function AdminRevenuePage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="day">Jour</SelectItem>
-              <SelectItem value="month">Mois</SelectItem>
-              <SelectItem value="quarter">Trimestre</SelectItem>
-              <SelectItem value="year">Année</SelectItem>
+              <SelectItem value="day">{t('adminRevenue.periodDay', 'Jour')}</SelectItem>
+              <SelectItem value="month">{t('adminRevenue.periodMonth', 'Mois')}</SelectItem>
+              <SelectItem value="quarter">{t('adminRevenue.periodQuarter', 'Trimestre')}</SelectItem>
+              <SelectItem value="year">{t('adminRevenue.periodYear', 'Année')}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -285,7 +287,7 @@ export default function AdminRevenuePage() {
             onClick={handleExportCSV}
             disabled={!data}
           >
-            <Download className="w-3.5 h-3.5 mr-1" /> Export CSV
+            <Download className="w-3.5 h-3.5 mr-1" /> {t('adminRevenue.exportCsv', 'Export CSV')}
           </Button>
         </div>
       </div>
@@ -306,9 +308,9 @@ export default function AdminRevenuePage() {
                 <DollarSign className="w-5 h-5 text-[#003087]" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Revenu total</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminRevenue.kpiTotalRevenue', 'Revenu total')}</p>
                 <p className="text-lg font-bold text-gray-900">{formatXOF(totalRevenue)}</p>
-                <p className="text-[11px] text-gray-400">{transactionCount} transactions</p>
+                <p className="text-[11px] text-gray-400">{transactionCount} {t('adminRevenue.transactionsSuffix', 'transactions')}</p>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
@@ -316,9 +318,9 @@ export default function AdminRevenuePage() {
                 <Users className="w-5 h-5 text-[#D4AF37]" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Commission totale</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminRevenue.kpiTotalCommission', 'Commission totale')}</p>
                 <p className="text-lg font-bold text-gray-900">{formatXOF(totalCommission)}</p>
-                <p className="text-[11px] text-gray-400">{avgCommissionRate.toFixed(1)}% du revenu</p>
+                <p className="text-[11px] text-gray-400">{avgCommissionRate.toFixed(1)}% {t('adminRevenue.revenueShare', 'du revenu')}</p>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
@@ -326,9 +328,9 @@ export default function AdminRevenuePage() {
                 <TrendingUp className="w-5 h-5 text-[#00A651]" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Revenu mensuel moyen</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminRevenue.kpiAvgMonthly', 'Revenu mensuel moyen')}</p>
                 <p className="text-lg font-bold text-gray-900">{formatXOF(avgMonthly)}</p>
-                <p className="text-[11px] text-gray-400">Sur {monthsCount} mois</p>
+                <p className="text-[11px] text-gray-400">{t('adminRevenue.overMonths', 'Sur')} {monthsCount} {t('adminRevenue.months', 'mois')}</p>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
@@ -336,9 +338,9 @@ export default function AdminRevenuePage() {
                 <CreditCard className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Taux de commission</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminRevenue.kpiCommissionRate', 'Taux de commission')}</p>
                 <p className="text-lg font-bold text-gray-900">{avgCommissionRate.toFixed(1)}%</p>
-                <p className="text-[11px] text-gray-400">Moyenne plateforme</p>
+                <p className="text-[11px] text-gray-400">{t('adminRevenue.platformAverage', 'Moyenne plateforme')}</p>
               </div>
             </div>
           </>
@@ -347,11 +349,11 @@ export default function AdminRevenuePage() {
 
       <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
-          <TabsTrigger value="byCountry">Par pays</TabsTrigger>
-          <TabsTrigger value="bySource">Par source</TabsTrigger>
-          <TabsTrigger value="agents">Agents</TabsTrigger>
-          <TabsTrigger value="subscriptions">Abonnements</TabsTrigger>
+          <TabsTrigger value="overview">{t('adminRevenue.tabOverview', "Vue d'ensemble")}</TabsTrigger>
+          <TabsTrigger value="byCountry">{t('adminRevenue.tabByCountry', 'Par pays')}</TabsTrigger>
+          <TabsTrigger value="bySource">{t('adminRevenue.tabBySource', 'Par source')}</TabsTrigger>
+          <TabsTrigger value="agents">{t('adminRevenue.tabAgents', 'Agents')}</TabsTrigger>
+          <TabsTrigger value="subscriptions">{t('adminRevenue.tabSubscriptions', 'Abonnements')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 mt-4">
@@ -361,15 +363,15 @@ export default function AdminRevenuePage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-[#003087]" /> Tendance mensuelle
+                  <BarChart3 className="w-4 h-4 text-[#003087]" /> {t('adminRevenue.monthlyTrend', 'Tendance mensuelle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {(data?.monthlyTrend.length ?? 0) === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <BarChart3 className="w-10 h-10 text-gray-300 mb-3" />
-                    <p className="text-sm font-medium text-gray-900">Aucune donnée disponible</p>
-                    <p className="text-xs text-gray-500 mt-1">Les données de tendance apparaîtront ici</p>
+                    <p className="text-sm font-medium text-gray-900">{t('adminRevenue.noData', 'Aucune donnée disponible')}</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('adminRevenue.noDataHint', 'Les données de tendance apparaîtront ici')}</p>
                   </div>
                 ) : (
                   <div className="flex items-end gap-1.5 h-40">
@@ -402,8 +404,8 @@ export default function AdminRevenuePage() {
           ) : (data?.byCountry.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-sm font-medium text-gray-900">Aucune donnée par pays</p>
-                <p className="text-xs text-gray-500 mt-1">Les données apparaîtront avec les transactions</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminRevenue.noCountryData', 'Aucune donnée par pays')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminRevenue.noCountryDataHint', 'Les données apparaîtront avec les transactions')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -412,10 +414,10 @@ export default function AdminRevenuePage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Pays</TableHead>
-                      <TableHead className="text-xs text-right">Revenu</TableHead>
-                      <TableHead className="text-xs text-right">Transactions</TableHead>
-                      <TableHead className="text-xs text-right">Part</TableHead>
+                      <TableHead className="text-xs">{t('adminRevenue.colCountry', 'Pays')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colRevenue', 'Revenu')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colTransactions', 'Transactions')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colShare', 'Part')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -454,8 +456,8 @@ export default function AdminRevenuePage() {
           ) : (data?.bySource.length ?? 0) === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-sm font-medium text-gray-900">Aucune donnée par source</p>
-                <p className="text-xs text-gray-500 mt-1">Les données apparaîtront avec les transactions</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminRevenue.noSourceData', 'Aucune donnée par source')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminRevenue.noSourceDataHint', 'Les données apparaîtront avec les transactions')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -497,23 +499,23 @@ export default function AdminRevenuePage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Users className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucun agent</p>
-                <p className="text-xs text-gray-500 mt-1">Les top agents apparaîtront avec les transactions</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminRevenue.noAgents', 'Aucun agent')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminRevenue.noAgentsHint', 'Les top agents apparaîtront avec les transactions')}</p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Top Agents par Revenu</CardTitle>
+                <CardTitle className="text-sm font-semibold">{t('adminRevenue.topAgentsTitle', 'Top Agents par Revenu')}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Agent</TableHead>
-                      <TableHead className="text-xs text-right">Revenu généré</TableHead>
-                      <TableHead className="text-xs text-right">Commission</TableHead>
-                      <TableHead className="text-xs text-right">Part</TableHead>
+                      <TableHead className="text-xs">{t('adminRevenue.colAgent', 'Agent')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colGeneratedRevenue', 'Revenu généré')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colCommission', 'Commission')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminRevenue.colShare', 'Part')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -567,14 +569,14 @@ export default function AdminRevenuePage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Users className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucun abonnement</p>
-                <p className="text-xs text-gray-500 mt-1">Les données d&apos;abonnement apparaîtront ici</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminRevenue.noSubscriptions', 'Aucun abonnement')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminRevenue.noSubscriptionsHint', "Les données d'abonnement apparaîtront ici")}</p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Distribution des Abonnements</CardTitle>
+                <CardTitle className="text-sm font-semibold">{t('adminRevenue.distributionTitle', 'Distribution des Abonnements')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -589,7 +591,7 @@ export default function AdminRevenuePage() {
                         <div className="w-24 text-sm font-medium">{label}</div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-gray-500">{tier.count.toLocaleString()} utilisateurs</span>
+                            <span className="text-gray-500">{tier.count.toLocaleString()} {t('adminRevenue.usersSuffix', 'utilisateurs')}</span>
                             <span className="font-mono">{pct.toFixed(1)}%</span>
                           </div>
                           <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -603,11 +605,11 @@ export default function AdminRevenuePage() {
                 </div>
                 <Separator className="my-4" />
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium">Total abonnements</span>
+                  <span className="font-medium">{t('adminRevenue.totalSubscriptions', 'Total abonnements')}</span>
                   <span className="font-mono font-bold">{data!.subscriptionTiers.reduce((s, t) => s + t.count, 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
-                  <span className="font-medium">Revenu abonnements payants</span>
+                  <span className="font-medium">{t('adminRevenue.paidSubRevenue', 'Revenu abonnements payants')}</span>
                   <span className="font-mono font-bold">{formatXOF(data!.subscriptionTiers.reduce((s, t) => s + t.revenue, 0))}</span>
                 </div>
               </CardContent>

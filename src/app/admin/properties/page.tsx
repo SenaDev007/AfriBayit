@@ -58,6 +58,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminProperties, useUpdateProperty } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon',
@@ -131,6 +132,7 @@ export default function AdminPropertiesPage() {
   const [searchInput, setSearchInput] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchAction, setBatchAction] = useState<'approve' | 'reject' | null>(null);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminProperties(filters);
   const properties = (data?.properties as PropertyRow[]) || [];
@@ -163,9 +165,9 @@ export default function AdminPropertiesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Modération des propriétés</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminProperties.pageTitle', 'Modération des propriétés')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Valider, rejeter et gérer les annonces immobilières
+            {t('adminProperties.pageSubtitle', 'Valider, rejeter et gérer les annonces immobilières')}
           </p>
         </div>
       </div>
@@ -177,7 +179,7 @@ export default function AdminPropertiesPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">En attente</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminProperties.statPending', 'En attente')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -186,7 +188,7 @@ export default function AdminPropertiesPage() {
             <CheckCircle className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Publiées aujourd&apos;hui</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminProperties.statPublishedToday', "Publiées aujourd'hui")}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.published ?? 0}</p>
           </div>
         </div>
@@ -195,7 +197,7 @@ export default function AdminPropertiesPage() {
             <XCircleIcon className="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Rejetées</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminProperties.statRejected', 'Rejetées')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.flagged ?? 0}</p>
           </div>
         </div>
@@ -207,7 +209,7 @@ export default function AdminPropertiesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par titre, ville, quartier..."
+              placeholder={t('adminProperties.searchPlaceholder', 'Rechercher par titre, ville, quartier...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -222,10 +224,10 @@ export default function AdminPropertiesPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminProperties.statusPlaceholder', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">{t('adminProperties.allStatuses', 'Tous les statuts')}</SelectItem>
                 <SelectItem value="draft">Brouillon</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="ai_review">Revue IA</SelectItem>
@@ -241,10 +243,10 @@ export default function AdminPropertiesPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminProperties.countryPlaceholder', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminProperties.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -252,7 +254,7 @@ export default function AdminPropertiesPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminProperties.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -260,14 +262,14 @@ export default function AdminPropertiesPage() {
         {/* Batch Actions */}
         {selected.size > 0 && (
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-            <span className="text-xs text-gray-500">{selected.size} sélectionnée(s)</span>
+            <span className="text-xs text-gray-500">{selected.size} {t('adminProperties.selectedCount', 'sélectionnée(s)')}</span>
             <Button
               size="sm"
               className="text-xs bg-green-600 hover:bg-green-700 h-8"
               onClick={() => setBatchAction('approve')}
             >
               <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-              Approuver
+              {t('adminProperties.approve', 'Approuver')}
             </Button>
             <Button
               variant="outline"
@@ -276,7 +278,7 @@ export default function AdminPropertiesPage() {
               onClick={() => setBatchAction('reject')}
             >
               <XCircle className="w-3.5 h-3.5 mr-1" />
-              Rejeter
+              {t('adminProperties.reject', 'Rejeter')}
             </Button>
           </div>
         )}
@@ -301,8 +303,8 @@ export default function AdminPropertiesPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Building2 className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucune propriété trouvée</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminProperties.noProperties', 'Aucune propriété trouvée')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminProperties.noPropertiesHint', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
@@ -316,25 +318,25 @@ export default function AdminPropertiesPage() {
                     />
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Propriété
+                    {t('adminProperties.colProperty', 'Propriété')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Type
+                    {t('adminProperties.colType', 'Type')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Prix
+                    {t('adminProperties.colPrice', 'Prix')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Pays
+                    {t('adminProperties.colCountry', 'Pays')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Statut
+                    {t('adminProperties.colStatus', 'Statut')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Agent
+                    {t('adminProperties.colAgent', 'Agent')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminProperties.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -389,15 +391,15 @@ export default function AdminPropertiesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {batchAction === 'approve' ? 'Approuver' : 'Rejeter'} les propriétés sélectionnées
+              {batchAction === 'approve' ? t('adminProperties.batchApproveTitle', 'Approuver les propriétés sélectionnées') : t('adminProperties.batchRejectTitle', 'Rejeter les propriétés sélectionnées')}
             </DialogTitle>
             <DialogDescription>
-              {selected.size} propriété(s) seront {batchAction === 'approve' ? 'approuvées' : 'rejetées'}.
+              {selected.size} {batchAction === 'approve' ? t('adminProperties.batchApproveDesc', 'propriété(s) seront approuvées.') : t('adminProperties.batchRejectDesc', 'propriété(s) seront rejetées.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBatchAction(null)}>
-              Annuler
+              {t('adminProperties.cancel', 'Annuler')}
             </Button>
             <Button
               className={batchAction === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
@@ -407,7 +409,7 @@ export default function AdminPropertiesPage() {
                 setBatchAction(null);
               }}
             >
-              Confirmer
+              {t('adminProperties.confirm', 'Confirmer')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -428,13 +430,14 @@ function PropertyRow({
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const updateProperty = useUpdateProperty(property.id);
+  const { t } = useTranslation();
 
   const handleApprove = () => {
     updateProperty.mutate(
       { status: 'published', publishedAt: new Date().toISOString() },
       {
-        onSuccess: () => toast.success('Propriété approuvée'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminProperties.propertyApproved', 'Propriété approuvée')),
+        onError: () => toast.error(t('adminProperties.error', 'Erreur')),
       }
     );
   };
@@ -444,11 +447,11 @@ function PropertyRow({
       { status: 'rejected', rejectionReason: rejectReason },
       {
         onSuccess: () => {
-          toast.success('Propriété rejetée');
+          toast.success(t('adminProperties.propertyRejected', 'Propriété rejetée'));
           setRejectOpen(false);
           setRejectReason('');
         },
-        onError: () => toast.error('Erreur'),
+        onError: () => toast.error(t('adminProperties.error', 'Erreur')),
       }
     );
   };
@@ -457,8 +460,8 @@ function PropertyRow({
     updateProperty.mutate(
       { premium: !property.premium },
       {
-        onSuccess: () => toast.success(property.premium ? 'Mis en avant retiré' : 'Mis en avant'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(property.premium ? t('adminProperties.featureRemoved', 'Mis en avant retiré') : t('adminProperties.featureAdded', 'Mis en avant')),
+        onError: () => toast.error(t('adminProperties.error', 'Erreur')),
       }
     );
   };
@@ -467,8 +470,8 @@ function PropertyRow({
     updateProperty.mutate(
       { status: 'rejected' },
       {
-        onSuccess: () => toast.success('Propriété supprimée'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminProperties.propertyDeleted', 'Propriété supprimée')),
+        onError: () => toast.error(t('adminProperties.error', 'Erreur')),
       }
     );
   };
@@ -535,20 +538,20 @@ function PropertyRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem>
-                <Eye className="w-4 h-4" /> Voir
+                <Eye className="w-4 h-4" /> {t('adminProperties.view', 'Voir')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleApprove} disabled={property.status === 'published'}>
-                <CheckCircle2 className="w-4 h-4" /> Approuver
+                <CheckCircle2 className="w-4 h-4" /> {t('adminProperties.approve', 'Approuver')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setRejectOpen(true)} disabled={property.status === 'rejected'}>
-                <XCircle className="w-4 h-4" /> Rejeter
+                <XCircle className="w-4 h-4" /> {t('adminProperties.reject', 'Rejeter')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleFeature}>
-                <Star className="w-4 h-4" /> {property.premium ? 'Retirer mise en avant' : 'Mettre en avant'}
+                <Star className="w-4 h-4" /> {property.premium ? t('adminProperties.removeFeature', 'Retirer mise en avant') : t('adminProperties.feature', 'Mettre en avant')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                <Trash2 className="w-4 h-4" /> Supprimer
+                <Trash2 className="w-4 h-4" /> {t('adminProperties.delete', 'Supprimer')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -559,19 +562,19 @@ function PropertyRow({
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter la propriété</DialogTitle>
-            <DialogDescription>Indiquez la raison du rejet</DialogDescription>
+            <DialogTitle>{t('adminProperties.rejectDialogTitle', 'Rejeter la propriété')}</DialogTitle>
+            <DialogDescription>{t('adminProperties.rejectDialogDesc', 'Indiquez la raison du rejet')}</DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison du rejet..."
+            placeholder={t('adminProperties.rejectReasonPlaceholder', 'Raison du rejet...')}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{t('adminProperties.cancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleReject} disabled={updateProperty.isPending}>
-              {updateProperty.isPending ? 'Rejet...' : 'Rejeter'}
+              {updateProperty.isPending ? t('adminProperties.rejecting', 'Rejet...') : t('adminProperties.reject', 'Rejeter')}
             </Button>
           </DialogFooter>
         </DialogContent>

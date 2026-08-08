@@ -54,6 +54,7 @@ import {
   type AdminKycFilters,
   type AdminKycDocument,
 } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   id_card: "Carte d'identité",
@@ -97,6 +98,7 @@ export default function AdminKycPage() {
   const [filters, setFilters] = useState<AdminKycFilters>({ page: 1, limit: 20 });
   const [searchInput, setSearchInput] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminKyc(filters);
   const documents = data?.documents || [];
@@ -112,9 +114,9 @@ export default function AdminKycPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vérifications KYC</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminKyc.pageTitle', 'Vérifications KYC')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Examiner et valider les documents d&apos;identité
+            {t('adminKyc.pageSubtitle', "Examiner et valider les documents d'identité")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -144,7 +146,7 @@ export default function AdminKycPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">En attente</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminKyc.pending', 'En attente')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -153,7 +155,7 @@ export default function AdminKycPage() {
             <ShieldCheck className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Score IA moyen</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminKyc.avgAiScore', 'Score IA moyen')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.avgAiScore ?? 0}%</p>
           </div>
         </div>
@@ -162,7 +164,7 @@ export default function AdminKycPage() {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Validés aujourd&apos;hui</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminKyc.validatedToday', "Validés aujourd'hui")}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.validatedToday ?? 0}</p>
           </div>
         </div>
@@ -174,7 +176,7 @@ export default function AdminKycPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par nom d'utilisateur..."
+              placeholder={t('adminKyc.searchPlaceholder', "Rechercher par nom d'utilisateur...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -189,10 +191,10 @@ export default function AdminKycPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminKyc.statusPlaceholder', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">{t('adminKyc.allStatuses', 'Tous les statuts')}</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="ai_validated">Validé IA</SelectItem>
                 <SelectItem value="human_validated">Validé</SelectItem>
@@ -206,10 +208,10 @@ export default function AdminKycPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminKyc.countryPlaceholder', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminKyc.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -223,10 +225,10 @@ export default function AdminKycPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Type de doc" />
+                <SelectValue placeholder={t('adminKyc.docTypePlaceholder', 'Type de doc')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les types</SelectItem>
+                <SelectItem value="all">{t('adminKyc.allDocTypes', 'Tous les types')}</SelectItem>
                 <SelectItem value="id_card">Carte d&apos;identité</SelectItem>
                 <SelectItem value="passport">Passeport</SelectItem>
                 <SelectItem value="selfie">Selfie</SelectItem>
@@ -252,8 +254,8 @@ export default function AdminKycPage() {
           <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
             <FileCheck className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-lg font-medium text-gray-900">Aucun document trouvé</p>
-          <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+          <p className="text-lg font-medium text-gray-900">{t('adminKyc.noDocuments', 'Aucun document trouvé')}</p>
+          <p className="text-sm text-gray-500 mt-1">{t('adminKyc.noDocumentsHint', 'Modifiez vos filtres')}</p>
         </div>
       ) : viewMode === 'cards' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -266,13 +268,13 @@ export default function AdminKycPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/80">
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Utilisateur</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Type</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Pays</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Score IA</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Statut</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500">Date</TableHead>
-                <TableHead className="text-xs font-semibold uppercase text-gray-500 text-right">Actions</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colUser', 'Utilisateur')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colType', 'Type')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colCountry', 'Pays')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colAiScore', 'Score IA')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colStatus', 'Statut')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500">{t('adminKyc.colDate', 'Date')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase text-gray-500 text-right">{t('adminKyc.colActions', 'Actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -318,13 +320,14 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const validateKyc = useValidateKyc(doc.id);
+  const { t } = useTranslation();
 
   const handleApprove = () => {
     validateKyc.mutate(
       { status: 'human_validated' },
       {
-        onSuccess: () => toast.success('Document validé'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminKyc.documentValidated', 'Document validé')),
+        onError: () => toast.error(t('adminKyc.error', 'Erreur')),
       }
     );
   };
@@ -334,11 +337,11 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
       { status: 'rejected', rejectionReason: rejectReason },
       {
         onSuccess: () => {
-          toast.success('Document rejeté');
+          toast.success(t('adminKyc.documentRejected', 'Document rejeté'));
           setRejectOpen(false);
           setRejectReason('');
         },
-        onError: () => toast.error('Erreur'),
+        onError: () => toast.error(t('adminKyc.error', 'Erreur')),
       }
     );
   };
@@ -378,17 +381,17 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
           {/* Document info */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Type</span>
+              <span className="text-gray-500">{t('adminKyc.type', 'Type')}</span>
               <span className="font-medium text-gray-900">{DOC_TYPE_LABELS[doc.docType] || doc.docType}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Pays</span>
+              <span className="text-gray-500">{t('adminKyc.country', 'Pays')}</span>
               <span className="text-gray-900">
                 {doc.country ? `${COUNTRY_FLAGS[doc.country] || ''} ${doc.country}` : '—'}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Score IA</span>
+              <span className="text-gray-500">{t('adminKyc.aiScore', 'Score IA')}</span>
               <div className="flex items-center gap-1.5">
                 <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -403,7 +406,7 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Soumis</span>
+              <span className="text-gray-500">{t('adminKyc.submitted', 'Soumis')}</span>
               <span className="text-xs text-gray-500">{formatDate(doc.createdAt)}</span>
             </div>
           </div>
@@ -428,7 +431,7 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
                 disabled={validateKyc.isPending}
               >
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                Valider
+                {t('adminKyc.validate', 'Valider')}
               </Button>
               <Button
                 variant="outline"
@@ -437,7 +440,7 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
                 onClick={() => setRejectOpen(true)}
               >
                 <XCircle className="w-3.5 h-3.5 mr-1" />
-                Rejeter
+                {t('adminKyc.reject', 'Rejeter')}
               </Button>
               <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                 <Eye className="w-3.5 h-3.5" />
@@ -451,21 +454,21 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter le document</DialogTitle>
+            <DialogTitle>{t('adminKyc.rejectDialogTitle', 'Rejeter le document')}</DialogTitle>
             <DialogDescription>
-              Document de {doc.user?.name} — {DOC_TYPE_LABELS[doc.docType]}
+              {t('adminKyc.rejectDialogDesc', 'Document de')} {doc.user?.name} — {DOC_TYPE_LABELS[doc.docType]}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison du rejet..."
+            placeholder={t('adminKyc.rejectReasonPlaceholder', 'Raison du rejet...')}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{t('adminKyc.cancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleReject} disabled={validateKyc.isPending}>
-              {validateKyc.isPending ? 'Rejet...' : 'Rejeter'}
+              {validateKyc.isPending ? t('adminKyc.rejecting', 'Rejet...') : t('adminKyc.reject', 'Rejeter')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -478,13 +481,14 @@ function KycListRow({ doc }: { doc: AdminKycDocument }) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const validateKyc = useValidateKyc(doc.id);
+  const { t } = useTranslation();
 
   const handleApprove = () => {
     validateKyc.mutate(
       { status: 'human_validated' },
       {
-        onSuccess: () => toast.success('Document validé'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminKyc.documentValidated', 'Document validé')),
+        onError: () => toast.error(t('adminKyc.error', 'Erreur')),
       }
     );
   };
@@ -494,11 +498,11 @@ function KycListRow({ doc }: { doc: AdminKycDocument }) {
       { status: 'rejected', rejectionReason: rejectReason },
       {
         onSuccess: () => {
-          toast.success('Document rejeté');
+          toast.success(t('adminKyc.documentRejected', 'Document rejeté'));
           setRejectOpen(false);
           setRejectReason('');
         },
-        onError: () => toast.error('Erreur'),
+        onError: () => toast.error(t('adminKyc.error', 'Erreur')),
       }
     );
   };
@@ -570,14 +574,14 @@ function KycListRow({ doc }: { doc: AdminKycDocument }) {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter le document</DialogTitle>
-            <DialogDescription>Document de {doc.user?.name}</DialogDescription>
+            <DialogTitle>{t('adminKyc.rejectDialogTitle', 'Rejeter le document')}</DialogTitle>
+            <DialogDescription>{t('adminKyc.rejectDialogDesc', 'Document de')} {doc.user?.name}</DialogDescription>
           </DialogHeader>
-          <Textarea placeholder="Raison du rejet..." value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={3} />
+          <Textarea placeholder={t('adminKyc.rejectReasonPlaceholder', 'Raison du rejet...')} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={3} />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{t('adminKyc.cancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleReject} disabled={validateKyc.isPending}>
-              {validateKyc.isPending ? 'Rejet...' : 'Rejeter'}
+              {validateKyc.isPending ? t('adminKyc.rejecting', 'Rejet...') : t('adminKyc.reject', 'Rejeter')}
             </Button>
           </DialogFooter>
         </DialogContent>

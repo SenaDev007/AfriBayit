@@ -59,6 +59,7 @@ import {
   type AdminUser,
   type AdminUserFilters,
 } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const ROLE_LABELS: Record<string, string> = {
   buyer: 'Acheteur',
@@ -97,6 +98,7 @@ const KYC_COLORS: Record<number, string> = {
 export default function AdminUsersPage() {
   const [filters, setFilters] = useState<AdminUserFilters>({ page: 1, limit: 20 });
   const [searchInput, setSearchInput] = useState('');
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminUsers(filters);
   const users = data?.users || [];
@@ -111,19 +113,19 @@ export default function AdminUsersPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminUsers.pageTitle', 'Gestion des utilisateurs')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {pagination ? `${pagination.total} utilisateurs au total` : 'Chargement...'}
+            {pagination ? `${pagination.total} ${t('adminUsers.totalUsers', 'utilisateurs au total')}` : t('adminUsers.loading', 'Chargement...')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="text-xs">
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            Exporter
+            {t('adminUsers.export', 'Exporter')}
           </Button>
           <Button size="sm" className="text-xs bg-[#003087] hover:bg-[#002a70]">
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-            Nouvel utilisateur
+            {t('adminUsers.newUser', 'Nouvel utilisateur')}
           </Button>
         </div>
       </div>
@@ -135,7 +137,7 @@ export default function AdminUsersPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par nom, email..."
+              placeholder={t('adminUsers.searchPlaceholder', 'Rechercher par nom, email...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -152,10 +154,10 @@ export default function AdminUsersPage() {
               }
             >
               <SelectTrigger className="w-[140px] h-9 text-xs">
-                <SelectValue placeholder="Rôle" />
+                <SelectValue placeholder={t('adminUsers.role', 'Rôle')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les rôles</SelectItem>
+                <SelectItem value="all">{t('adminUsers.allRoles', 'Tous les rôles')}</SelectItem>
                 <SelectItem value="buyer">Acheteur</SelectItem>
                 <SelectItem value="seller">Vendeur</SelectItem>
                 <SelectItem value="agent">Agent</SelectItem>
@@ -173,10 +175,10 @@ export default function AdminUsersPage() {
               }
             >
               <SelectTrigger className="w-[140px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminUsers.country', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminUsers.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -191,12 +193,12 @@ export default function AdminUsersPage() {
               }
             >
               <SelectTrigger className="w-[140px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminUsers.status', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="verified">Vérifié</SelectItem>
-                <SelectItem value="unverified">Non vérifié</SelectItem>
+                <SelectItem value="all">{t('adminUsers.all', 'Tous')}</SelectItem>
+                <SelectItem value="verified">{t('adminUsers.verified', 'Vérifié')}</SelectItem>
+                <SelectItem value="unverified">{t('adminUsers.unverified', 'Non vérifié')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -207,7 +209,7 @@ export default function AdminUsersPage() {
               onClick={handleSearch}
             >
               <Filter className="w-3.5 h-3.5 mr-1" />
-              Filtrer
+              {t('adminUsers.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -232,9 +234,9 @@ export default function AdminUsersPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun utilisateur trouvé</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminUsers.noUsers', 'Aucun utilisateur trouvé')}</p>
             <p className="text-sm text-gray-500 mt-1">
-              Essayez de modifier vos filtres de recherche
+              {t('adminUsers.noUsersHint', 'Essayez de modifier vos filtres de recherche')}
             </p>
           </div>
         ) : (
@@ -243,28 +245,28 @@ export default function AdminUsersPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Utilisateur
+                    {t('adminUsers.colUser', 'Utilisateur')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Email
+                    {t('adminUsers.colEmail', 'Email')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Rôle
+                    {t('adminUsers.colRole', 'Rôle')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Pays
+                    {t('adminUsers.colCountry', 'Pays')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    KYC
+                    {t('adminUsers.colKyc', 'KYC')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Score
+                    {t('adminUsers.colScore', 'Score')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Statut
+                    {t('adminUsers.colStatus', 'Statut')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminUsers.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -341,16 +343,17 @@ function UserRow({ user }: { user: AdminUser }) {
   const [newRole, setNewRole] = useState(user.role);
   const [banReason, setBanReason] = useState('');
   const updateUser = useUpdateUser(user.id);
+  const { t } = useTranslation();
 
   const handleUpdateRole = () => {
     updateUser.mutate(
       { role: newRole } as Partial<AdminUser>,
       {
         onSuccess: () => {
-          toast.success(`Rôle mis à jour : ${ROLE_LABELS[newRole] || newRole}`);
+          toast.success(`${t('adminUsers.roleUpdatedToast', 'Rôle mis à jour')} : ${ROLE_LABELS[newRole] || newRole}`);
           setEditRoleOpen(false);
         },
-        onError: () => toast.error('Erreur lors de la mise à jour du rôle'),
+        onError: () => toast.error(t('adminUsers.roleUpdateError', 'Erreur lors de la mise à jour du rôle')),
       }
     );
   };
@@ -360,10 +363,10 @@ function UserRow({ user }: { user: AdminUser }) {
       { role: 'banned' } as Partial<AdminUser>,
       {
         onSuccess: () => {
-          toast.success('Utilisateur banni');
+          toast.success(t('adminUsers.userBannedToast', 'Utilisateur banni'));
           setBanOpen(false);
         },
-        onError: () => toast.error('Erreur lors du bannissement'),
+        onError: () => toast.error(t('adminUsers.banError', 'Erreur lors du bannissement')),
       }
     );
   };
@@ -372,8 +375,8 @@ function UserRow({ user }: { user: AdminUser }) {
     updateUser.mutate(
       { verified: true } as Partial<AdminUser>,
       {
-        onSuccess: () => toast.success('Utilisateur vérifié'),
-        onError: () => toast.error('Erreur lors de la vérification'),
+        onSuccess: () => toast.success(t('adminUsers.userVerifiedToast', 'Utilisateur vérifié')),
+        onError: () => toast.error(t('adminUsers.verifyError', 'Erreur lors de la vérification')),
       }
     );
   };
@@ -382,8 +385,8 @@ function UserRow({ user }: { user: AdminUser }) {
     updateUser.mutate(
       { role: 'buyer' } as Partial<AdminUser>,
       {
-        onSuccess: () => toast.success('Utilisateur rétabli'),
-        onError: () => toast.error('Erreur lors du rétablissement'),
+        onSuccess: () => toast.success(t('adminUsers.userReinstatedToast', 'Utilisateur rétabli')),
+        onError: () => toast.error(t('adminUsers.reinstateError', 'Erreur lors du rétablissement')),
       }
     );
   };
@@ -457,14 +460,14 @@ function UserRow({ user }: { user: AdminUser }) {
         </TableCell>
         <TableCell>
           {isBanned ? (
-            <Badge className="bg-red-50 text-red-600 border-red-200 text-[11px]">Banni</Badge>
+            <Badge className="bg-red-50 text-red-600 border-red-200 text-[11px]">{t('adminUsers.banned', 'Banni')}</Badge>
           ) : user.verified ? (
             <Badge className="bg-green-50 text-green-700 border-green-200 text-[11px]">
-              Vérifié
+              {t('adminUsers.verified', 'Vérifié')}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-[11px] text-gray-500">
-              Non vérifié
+              {t('adminUsers.unverified', 'Non vérifié')}
             </Badge>
           )}
         </TableCell>
@@ -479,29 +482,29 @@ function UserRow({ user }: { user: AdminUser }) {
               <DropdownMenuItem asChild>
                 <Link href={`/admin/users/${user.id}`} className="flex items-center gap-2">
                   <Eye className="w-4 h-4" />
-                  Voir le détail
+                  {t('adminUsers.viewDetails', 'Voir le détail')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEditRoleOpen(true)}>
                 <Edit3 className="w-4 h-4" />
-                Modifier le rôle
+                {t('adminUsers.editRole', 'Modifier le rôle')}
               </DropdownMenuItem>
               {!user.verified && !isBanned && (
                 <DropdownMenuItem onClick={handleVerify}>
                   <ShieldCheck className="w-4 h-4" />
-                  Vérifier
+                  {t('adminUsers.verify', 'Vérifier')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
               {isBanned ? (
                 <DropdownMenuItem onClick={handleUnban} className="text-green-600">
                   <ShieldCheck className="w-4 h-4" />
-                  Rétablir
+                  {t('adminUsers.reinstate', 'Rétablir')}
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem onClick={() => setBanOpen(true)} className="text-red-600">
                   <Ban className="w-4 h-4" />
-                  Bannir
+                  {t('adminUsers.ban', 'Bannir')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -513,9 +516,9 @@ function UserRow({ user }: { user: AdminUser }) {
       <Dialog open={editRoleOpen} onOpenChange={setEditRoleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modifier le rôle</DialogTitle>
+            <DialogTitle>{t('adminUsers.editRoleTitle', 'Modifier le rôle')}</DialogTitle>
             <DialogDescription>
-              Changer le rôle de {user.name}
+              {t('adminUsers.editRoleDesc', 'Changer le rôle de')} {user.name}
             </DialogDescription>
           </DialogHeader>
           <Select value={newRole} onValueChange={setNewRole}>
@@ -535,14 +538,14 @@ function UserRow({ user }: { user: AdminUser }) {
           </Select>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditRoleOpen(false)}>
-              Annuler
+              {t('adminUsers.cancel', 'Annuler')}
             </Button>
             <Button
               className="bg-[#003087] hover:bg-[#002a70]"
               onClick={handleUpdateRole}
               disabled={updateUser.isPending}
             >
-              {updateUser.isPending ? 'Enregistrement...' : 'Enregistrer'}
+              {updateUser.isPending ? t('adminUsers.saving', 'Enregistrement...') : t('adminUsers.save', 'Enregistrer')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -552,23 +555,23 @@ function UserRow({ user }: { user: AdminUser }) {
       <Dialog open={banOpen} onOpenChange={setBanOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bannir {user.name}</DialogTitle>
+            <DialogTitle>{t('adminUsers.banTitle', 'Bannir')} {user.name}</DialogTitle>
             <DialogDescription>
-              Cette action désactivera le compte de cet utilisateur.
+              {t('adminUsers.banDesc', "Cette action désactivera le compte de cet utilisateur.")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison du bannissement (optionnel)"
+            placeholder={t('adminUsers.banReasonPlaceholder', 'Raison du bannissement (optionnel)')}
             value={banReason}
             onChange={(e) => setBanReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setBanOpen(false)}>
-              Annuler
+              {t('adminUsers.cancel', 'Annuler')}
             </Button>
             <Button variant="destructive" onClick={handleBan} disabled={updateUser.isPending}>
-              {updateUser.isPending ? 'Bannissement...' : 'Bannir'}
+              {updateUser.isPending ? t('adminUsers.banning', 'Bannissement...') : t('adminUsers.ban', 'Bannir')}
             </Button>
           </DialogFooter>
         </DialogContent>

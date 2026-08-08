@@ -51,6 +51,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminDisputes, useResolveDispute, useEscalateDispute } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   open: 'Ouvert',
@@ -117,6 +118,7 @@ export default function AdminDisputesPage() {
   const [sellerPercentage, setSellerPercentage] = useState(50);
   const [resolutionText, setResolutionText] = useState('');
   const [detailsOpen, setDetailsOpen] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminDisputes(filters);
   const disputes = (data?.disputes as DisputeRow[]) || [];
@@ -147,7 +149,7 @@ export default function AdminDisputesPage() {
 
   const handleResolve = () => {
     if (buyerPercentage + sellerPercentage !== 100) {
-      toast.error('Les pourcentages doivent totaliser 100%');
+      toast.error(t('adminDisputes.percentagesError', 'Les pourcentages doivent totaliser 100%'));
       return;
     }
     resolveDispute.mutate(
@@ -159,13 +161,13 @@ export default function AdminDisputesPage() {
       },
       {
         onSuccess: () => {
-          toast.success('Litige résolu avec succès');
+          toast.success(t('adminDisputes.resolvedToast', 'Litige résolu avec succès'));
           setResolveOpen(null);
           setBuyerPercentage(50);
           setSellerPercentage(50);
           setResolutionText('');
         },
-        onError: () => toast.error('Erreur lors de la résolution'),
+        onError: () => toast.error(t('adminDisputes.resolveError', 'Erreur lors de la résolution')),
       }
     );
   };
@@ -174,8 +176,8 @@ export default function AdminDisputesPage() {
     escalateDispute.mutate(
       { id },
       {
-        onSuccess: () => toast.success('Litige escaladé'),
-        onError: () => toast.error('Erreur lors de l\'escalade'),
+        onSuccess: () => toast.success(t('adminDisputes.escalatedToast', 'Litige escaladé')),
+        onError: () => toast.error(t('adminDisputes.escalateError', "Erreur lors de l'escalade")),
       }
     );
   };
@@ -185,9 +187,9 @@ export default function AdminDisputesPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des litiges</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminDisputes.pageTitle', 'Gestion des litiges')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Examiner, escalader et résoudre les litiges entre acheteurs et vendeurs
+            {t('adminDisputes.pageSubtitle', 'Examiner, escalader et résoudre les litiges entre acheteurs et vendeurs')}
           </p>
         </div>
       </div>
@@ -199,7 +201,7 @@ export default function AdminDisputesPage() {
             <Scale className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total litiges</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminDisputes.statTotal', 'Total litiges')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>
@@ -208,7 +210,7 @@ export default function AdminDisputesPage() {
             <AlertTriangle className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Ouverts</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminDisputes.statOpen', 'Ouverts')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.open ?? 0}</p>
           </div>
         </div>
@@ -217,7 +219,7 @@ export default function AdminDisputesPage() {
             <Shield className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">En médiation</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminDisputes.statMediation', 'En médiation')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.mediation ?? 0}</p>
           </div>
         </div>
@@ -226,7 +228,7 @@ export default function AdminDisputesPage() {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Résolus</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminDisputes.statResolved', 'Résolus')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.resolved ?? 0}</p>
           </div>
         </div>
@@ -238,7 +240,7 @@ export default function AdminDisputesPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par transaction, acheteur, vendeur..."
+              placeholder={t('adminDisputes.searchPlaceholder', 'Rechercher par transaction, acheteur, vendeur...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -253,10 +255,10 @@ export default function AdminDisputesPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminDisputes.statusPlaceholder', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">{t('adminDisputes.allStatuses', 'Tous les statuts')}</SelectItem>
                 <SelectItem value="open">Ouvert</SelectItem>
                 <SelectItem value="mediation">En médiation</SelectItem>
                 <SelectItem value="escalated">Escaladé</SelectItem>
@@ -270,10 +272,10 @@ export default function AdminDisputesPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminDisputes.countryPlaceholder', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminDisputes.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -281,7 +283,7 @@ export default function AdminDisputesPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminDisputes.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -306,23 +308,23 @@ export default function AdminDisputesPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Scale className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun litige trouvé</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminDisputes.noDisputes', 'Aucun litige trouvé')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminDisputes.noDisputesHint', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Transaction</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Acheteur</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Vendeur</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Montant</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Raison</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Étape</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colTransaction', 'Transaction')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colBuyer', 'Acheteur')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colSeller', 'Vendeur')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colAmount', 'Montant')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colReason', 'Raison')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colStep', 'Étape')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colStatus', 'Statut')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminDisputes.colDate', 'Date')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminDisputes.colActions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -371,13 +373,13 @@ export default function AdminDisputesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onClick={() => setDetailsOpen(dispute.id)}>
-                            <Eye className="w-4 h-4" /> Voir détails
+                            <Eye className="w-4 h-4" /> {t('adminDisputes.viewDetails', 'Voir détails')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleEscalate(dispute.id)}
                             disabled={dispute.status === 'escalated' || dispute.status === 'resolved'}
                           >
-                            <AlertTriangle className="w-4 h-4" /> Escalader
+                            <AlertTriangle className="w-4 h-4" /> {t('adminDisputes.escalate', 'Escalader')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -388,7 +390,7 @@ export default function AdminDisputesPage() {
                             }}
                             disabled={dispute.status === 'resolved'}
                           >
-                            <CheckCircle2 className="w-4 h-4" /> Résoudre
+                            <CheckCircle2 className="w-4 h-4" /> {t('adminDisputes.resolve', 'Résoudre')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -429,14 +431,14 @@ export default function AdminDisputesPage() {
       <Dialog open={!!resolveOpen} onOpenChange={() => setResolveOpen(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Résoudre le litige</DialogTitle>
-            <DialogDescription>Définissez la répartition du montant entre l&apos;acheteur et le vendeur</DialogDescription>
+            <DialogTitle>{t('adminDisputes.resolveDialogTitle', 'Résoudre le litige')}</DialogTitle>
+            <DialogDescription>{t('adminDisputes.resolveDialogDesc', "Définissez la répartition du montant entre l'acheteur et le vendeur")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-2">
             {/* Buyer percentage */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Part acheteur</label>
+                <label className="text-sm font-medium text-gray-700">{t('adminDisputes.buyerShare', 'Part acheteur')}</label>
                 <span className={cn(
                   'text-lg font-bold',
                   buyerPercentage < 30 ? 'text-red-600' : buyerPercentage > 70 ? 'text-green-600' : 'text-[#003087]'
@@ -457,7 +459,7 @@ export default function AdminDisputesPage() {
             {/* Seller percentage */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Part vendeur</label>
+                <label className="text-sm font-medium text-gray-700">{t('adminDisputes.sellerShare', 'Part vendeur')}</label>
                 <span className={cn(
                   'text-lg font-bold',
                   sellerPercentage < 30 ? 'text-red-600' : sellerPercentage > 70 ? 'text-green-600' : 'text-[#D4AF37]'
@@ -483,14 +485,14 @@ export default function AdminDisputesPage() {
                 : 'bg-red-50 text-red-700'
             )}>
               Total : {buyerPercentage + sellerPercentage}%
-              {buyerPercentage + sellerPercentage !== 100 && ' (doit être 100%)'}
+              {buyerPercentage + sellerPercentage !== 100 && ` ${t('adminDisputes.mustBe100', '(doit être 100%)')}`}
             </div>
 
             {/* Resolution text */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Texte de résolution</label>
+              <label className="text-sm font-medium text-gray-700">{t('adminDisputes.resolutionText', 'Texte de résolution')}</label>
               <Textarea
-                placeholder="Expliquez la décision de résolution..."
+                placeholder={t('adminDisputes.resolutionPlaceholder', 'Expliquez la décision de résolution...')}
                 value={resolutionText}
                 onChange={(e) => setResolutionText(e.target.value)}
                 rows={3}
@@ -499,13 +501,13 @@ export default function AdminDisputesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResolveOpen(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setResolveOpen(null)}>{t('adminDisputes.cancel', 'Annuler')}</Button>
             <Button
               className="bg-[#003087] hover:bg-[#003087]/90"
               onClick={handleResolve}
               disabled={buyerPercentage + sellerPercentage !== 100 || resolveDispute.isPending}
             >
-              {resolveDispute.isPending ? 'Résolution...' : 'Résoudre le litige'}
+              {resolveDispute.isPending ? t('adminDisputes.resolving', 'Résolution...') : t('adminDisputes.confirmResolve', 'Résoudre le litige')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -515,40 +517,40 @@ export default function AdminDisputesPage() {
       <Dialog open={!!detailsOpen} onOpenChange={() => setDetailsOpen(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Détails du litige</DialogTitle>
-            <DialogDescription>Informations détaillées sur le litige</DialogDescription>
+            <DialogTitle>{t('adminDisputes.detailsDialogTitle', 'Détails du litige')}</DialogTitle>
+            <DialogDescription>{t('adminDisputes.detailsDialogDesc', 'Informations détaillées sur le litige')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             {disputes.find((d) => d.id === detailsOpen) && (
               <>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">ID Transaction</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailTransactionId', 'ID Transaction')}</span>
                   <span className="font-mono font-medium">{disputes.find((d) => d.id === detailsOpen)!.transactionId?.slice(0, 12) || '—'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Acheteur</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailBuyer', 'Acheteur')}</span>
                   <span className="font-medium">{disputes.find((d) => d.id === detailsOpen)!.buyer?.name || '—'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Vendeur</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailSeller', 'Vendeur')}</span>
                   <span className="font-medium">{disputes.find((d) => d.id === detailsOpen)!.seller?.name || '—'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Montant</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailAmount', 'Montant')}</span>
                   <span className="font-mono font-medium">{formatXOF(disputes.find((d) => d.id === detailsOpen)!.amount)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Raison</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailReason', 'Raison')}</span>
                   <span className="font-medium">{disputes.find((d) => d.id === detailsOpen)!.reason || '—'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Étape</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailStep', 'Étape')}</span>
                   <Badge variant="outline" className="text-[10px]">
                     {STEP_LABELS[disputes.find((d) => d.id === detailsOpen)!.step] || disputes.find((d) => d.id === detailsOpen)!.step}
                   </Badge>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-500">Statut</span>
+                  <span className="text-gray-500">{t('adminDisputes.detailStatus', 'Statut')}</span>
                   <Badge variant="outline" className={cn('text-[10px]', STATUS_COLORS[disputes.find((d) => d.id === detailsOpen)!.status] || '')}>
                     {STATUS_LABELS[disputes.find((d) => d.id === detailsOpen)!.status] || disputes.find((d) => d.id === detailsOpen)!.status}
                   </Badge>
@@ -557,7 +559,7 @@ export default function AdminDisputesPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailsOpen(null)}>Fermer</Button>
+            <Button variant="outline" onClick={() => setDetailsOpen(null)}>{t('adminDisputes.close', 'Fermer')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

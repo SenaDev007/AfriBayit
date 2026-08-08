@@ -62,6 +62,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useAdminUser, useUpdateUser, type AdminUser } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const ROLE_LABELS: Record<string, string> = {
   buyer: 'Acheteur',
@@ -128,6 +129,7 @@ export default function AdminUserDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminUser(id);
   const updateUser = useUpdateUser(id);
@@ -158,9 +160,9 @@ export default function AdminUserDetailPage() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-lg font-medium text-gray-900">Utilisateur non trouvé</p>
+        <p className="text-lg font-medium text-gray-900">{t('adminUserDetail.userNotFound', 'Utilisateur non trouvé')}</p>
         <Button variant="outline" className="mt-4" onClick={() => router.push('/admin/users')}>
-          Retour à la liste
+          {t('adminUserDetail.backToList', 'Retour à la liste')}
         </Button>
       </div>
     );
@@ -185,10 +187,10 @@ export default function AdminUserDetailPage() {
       { role: newRole } as Partial<AdminUser>,
       {
         onSuccess: () => {
-          toast.success(`Rôle mis à jour : ${ROLE_LABELS[newRole] || newRole}`);
+          toast.success(`${t('adminUserDetail.roleUpdated', 'Rôle mis à jour')} : ${ROLE_LABELS[newRole] || newRole}`);
           setEditRoleOpen(false);
         },
-        onError: () => toast.error('Erreur lors de la mise à jour'),
+        onError: () => toast.error(t('adminUserDetail.updateError', 'Erreur lors de la mise à jour')),
       }
     );
   };
@@ -198,10 +200,10 @@ export default function AdminUserDetailPage() {
       { role: 'banned' } as Partial<AdminUser>,
       {
         onSuccess: () => {
-          toast.success('Utilisateur banni');
+          toast.success(t('adminUserDetail.userBanned', 'Utilisateur banni'));
           setBanOpen(false);
         },
-        onError: () => toast.error('Erreur'),
+        onError: () => toast.error(t('adminUserDetail.error', 'Erreur')),
       }
     );
   };
@@ -210,8 +212,8 @@ export default function AdminUserDetailPage() {
     updateUser.mutate(
       { role: 'buyer' } as Partial<AdminUser>,
       {
-        onSuccess: () => toast.success('Utilisateur rétabli'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminUserDetail.userReinstated', 'Utilisateur rétabli')),
+        onError: () => toast.error(t('adminUserDetail.error', 'Erreur')),
       }
     );
   };
@@ -220,14 +222,14 @@ export default function AdminUserDetailPage() {
     updateUser.mutate(
       { verified: true } as Partial<AdminUser>,
       {
-        onSuccess: () => toast.success('Compte vérifié'),
-        onError: () => toast.error('Erreur'),
+        onSuccess: () => toast.success(t('adminUserDetail.accountVerifiedToast', 'Compte vérifié')),
+        onError: () => toast.error(t('adminUserDetail.error', 'Erreur')),
       }
     );
   };
 
   const handleResetPw = () => {
-    toast.success('Email de réinitialisation envoyé');
+    toast.success(t('adminUserDetail.resetEmailSent', 'Email de réinitialisation envoyé'));
     setResetPwOpen(false);
   };
 
@@ -239,7 +241,7 @@ export default function AdminUserDetailPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/admin/users">
               <ArrowLeft className="w-4 h-4 mr-1" />
-              Utilisateurs
+              {t('adminUserDetail.users', 'Utilisateurs')}
             </Link>
           </Button>
           <Separator orientation="vertical" className="h-5" />
@@ -252,27 +254,27 @@ export default function AdminUserDetailPage() {
             onClick={() => { setNewRole(user.role); setEditRoleOpen(true); }}
           >
             <Edit3 className="w-3.5 h-3.5 mr-1.5" />
-            Modifier rôle
+            {t('adminUserDetail.editRole', 'Modifier rôle')}
           </Button>
           {!user.verified && !isBanned && (
             <Button variant="outline" size="sm" onClick={handleVerify} className="text-green-600 border-green-200 hover:bg-green-50">
               <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
-              Vérifier
+              {t('adminUserDetail.verify', 'Vérifier')}
             </Button>
           )}
           {isBanned ? (
             <Button variant="outline" size="sm" onClick={handleUnban} className="text-green-600 border-green-200 hover:bg-green-50">
-              Rétablir
+              {t('adminUserDetail.reinstate', 'Rétablir')}
             </Button>
           ) : (
             <Button variant="outline" size="sm" onClick={() => setBanOpen(true)} className="text-red-600 border-red-200 hover:bg-red-50">
               <Ban className="w-3.5 h-3.5 mr-1.5" />
-              Bannir
+              {t('adminUserDetail.ban', 'Bannir')}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => setResetPwOpen(true)}>
             <Key className="w-3.5 h-3.5 mr-1.5" />
-            Reset MDP
+            {t('adminUserDetail.resetPassword', 'Reset MDP')}
           </Button>
         </div>
       </div>
@@ -299,12 +301,12 @@ export default function AdminUserDetailPage() {
               </Badge>
               {user.verified && (
                 <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
-                  <ShieldCheck className="w-3 h-3 mr-1" /> Vérifié
+                  <ShieldCheck className="w-3 h-3 mr-1" /> {t('adminUserDetail.verified', 'Vérifié')}
                 </Badge>
               )}
               {isBanned && (
                 <Badge className="bg-red-50 text-red-600 border-red-200 text-xs">
-                  <Ban className="w-3 h-3 mr-1" /> Banni
+                  <Ban className="w-3 h-3 mr-1" /> {t('adminUserDetail.banned', 'Banni')}
                 </Badge>
               )}
               {user.premiumTier && (
@@ -334,12 +336,12 @@ export default function AdminUserDetailPage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 mt-6 pt-6 border-t border-gray-100">
           {[
-            { label: 'KYC', value: `Niveau ${user.kycLevel}`, sub: KYC_LABELS[user.kycLevel] },
-            { label: 'Score', value: user.score, sub: '/ 1000' },
-            { label: 'Réputation', value: user.reputation, sub: '' },
-            { label: 'Portefeuille', value: formatXOF(user.walletBalance), sub: '' },
-            { label: 'Escrow bloqué', value: formatXOF(user.escrowHeld), sub: '' },
-            { label: 'AfriPoints', value: user.afriPoints, sub: 'pts' },
+            { label: t('adminUserDetail.statKyc', 'KYC'), value: `${t('adminUserDetail.kycLevelPrefix', 'Niveau')} ${user.kycLevel}`, sub: KYC_LABELS[user.kycLevel] },
+            { label: t('adminUserDetail.statScore', 'Score'), value: user.score, sub: '/ 1000' },
+            { label: t('adminUserDetail.statReputation', 'Réputation'), value: user.reputation, sub: '' },
+            { label: t('adminUserDetail.statWallet', 'Portefeuille'), value: formatXOF(user.walletBalance), sub: '' },
+            { label: t('adminUserDetail.statEscrowHeld', 'Escrow bloqué'), value: formatXOF(user.escrowHeld), sub: '' },
+            { label: t('adminUserDetail.statAfriPoints', 'AfriPoints'), value: user.afriPoints, sub: t('adminUserDetail.ptsSuffix', 'pts') },
           ].map((stat) => (
             <div key={stat.label} className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-[11px] text-gray-500 uppercase tracking-wider">{stat.label}</p>
@@ -353,18 +355,18 @@ export default function AdminUserDetailPage() {
       {/* Tabs */}
       <Tabs defaultValue="profil" className="space-y-4">
         <TabsList className="bg-gray-100 p-1">
-          <TabsTrigger value="profil" className="text-xs">Profil</TabsTrigger>
+          <TabsTrigger value="profil" className="text-xs">{t('adminUserDetail.tabProfile', 'Profil')}</TabsTrigger>
           <TabsTrigger value="proprietes" className="text-xs">
-            Propriétés ({counts?.properties ?? properties.length})
+            {t('adminUserDetail.tabProperties', 'Propriétés')} ({counts?.properties ?? properties.length})
           </TabsTrigger>
           <TabsTrigger value="transactions" className="text-xs">
-            Transactions ({counts?.transactions ?? transactions.length})
+            {t('adminUserDetail.tabTransactions', 'Transactions')} ({counts?.transactions ?? transactions.length})
           </TabsTrigger>
-          <TabsTrigger value="portefeuille" className="text-xs">Portefeuille</TabsTrigger>
+          <TabsTrigger value="portefeuille" className="text-xs">{t('adminUserDetail.tabWallet', 'Portefeuille')}</TabsTrigger>
           <TabsTrigger value="abonnements" className="text-xs">
-            Abonnements ({subscriptions.length})
+            {t('adminUserDetail.tabSubscriptions', 'Abonnements')} ({subscriptions.length})
           </TabsTrigger>
-          <TabsTrigger value="actions" className="text-xs">Actions</TabsTrigger>
+          <TabsTrigger value="actions" className="text-xs">{t('adminUserDetail.tabActions', 'Actions')}</TabsTrigger>
         </TabsList>
 
         {/* Profil Tab */}
@@ -375,12 +377,12 @@ export default function AdminUserDetailPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <FileCheck className="w-4 h-4 text-[#003087]" />
-                  Documents KYC
+                  {t('adminUserDetail.kycDocuments', 'Documents KYC')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {kycDocs.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">Aucun document KYC</p>
+                  <p className="text-sm text-gray-500 text-center py-4">{t('adminUserDetail.noKycDocuments', 'Aucun document KYC')}</p>
                 ) : (
                   <div className="space-y-2">
                     {kycDocs.map((doc: Record<string, unknown>) => (
@@ -420,15 +422,15 @@ export default function AdminUserDetailPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[#003087]" />
-                  Activité récente
+                  {t('adminUserDetail.recentActivity', 'Activité récente')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { icon: Calendar, color: 'bg-blue-50 text-blue-500', text: 'Inscription', time: formatDate(user.createdAt) },
-                    ...(user.lastSeenAt ? [{ icon: Eye, color: 'bg-green-50 text-green-500', text: 'Dernière connexion', time: timeAgo(user.lastSeenAt) }] : []),
-                    ...(user.verified ? [{ icon: ShieldCheck, color: 'bg-green-50 text-green-500', text: 'Compte vérifié', time: formatDate(user.updatedAt) }] : []),
+                    { icon: Calendar, color: 'bg-blue-50 text-blue-500', text: t('adminUserDetail.signup', 'Inscription'), time: formatDate(user.createdAt) },
+                    ...(user.lastSeenAt ? [{ icon: Eye, color: 'bg-green-50 text-green-500', text: t('adminUserDetail.lastLogin', 'Dernière connexion'), time: timeAgo(user.lastSeenAt) }] : []),
+                    ...(user.verified ? [{ icon: ShieldCheck, color: 'bg-green-50 text-green-500', text: t('adminUserDetail.accountVerified', 'Compte vérifié'), time: formatDate(user.updatedAt) }] : []),
                     ...(kycDocs.length > 0 ? [{ icon: FileCheck, color: 'bg-amber-50 text-amber-500', text: `${kycDocs.length} document(s) KYC`, time: formatDate(kycDocs[0]?.createdAt as string || user.createdAt) }] : []),
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
@@ -454,16 +456,16 @@ export default function AdminUserDetailPage() {
               {properties.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Building2 className="w-10 h-10 text-gray-300 mb-3" />
-                  <p className="text-sm text-gray-500">Aucune propriété</p>
+                  <p className="text-sm text-gray-500">{t('adminUserDetail.noProperties', 'Aucune propriété')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Titre</TableHead>
-                      <TableHead className="text-xs">Type</TableHead>
-                      <TableHead className="text-xs">Prix</TableHead>
-                      <TableHead className="text-xs">Statut</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colTitle', 'Titre')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colType', 'Type')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colPrice', 'Prix')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colStatus', 'Statut')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -491,17 +493,17 @@ export default function AdminUserDetailPage() {
               {transactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <ArrowLeftRight className="w-10 h-10 text-gray-300 mb-3" />
-                  <p className="text-sm text-gray-500">Aucune transaction</p>
+                  <p className="text-sm text-gray-500">{t('adminUserDetail.noTransactions', 'Aucune transaction')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">ID</TableHead>
-                      <TableHead className="text-xs">Montant</TableHead>
-                      <TableHead className="text-xs">Commission</TableHead>
-                      <TableHead className="text-xs">Statut</TableHead>
-                      <TableHead className="text-xs">Date</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colId', 'ID')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colAmount', 'Montant')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colCommission', 'Commission')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colStatus', 'Statut')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colDate', 'Date')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -529,21 +531,21 @@ export default function AdminUserDetailPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <Wallet className="w-8 h-8 text-[#003087] mx-auto mb-2" />
-                <p className="text-[11px] text-gray-500 uppercase">Solde</p>
+                <p className="text-[11px] text-gray-500 uppercase">{t('adminUserDetail.balance', 'Solde')}</p>
                 <p className="text-xl font-bold text-gray-900">{formatXOF(user.walletBalance)}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
                 <Shield className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-                <p className="text-[11px] text-gray-500 uppercase">Escrow bloqué</p>
+                <p className="text-[11px] text-gray-500 uppercase">{t('adminUserDetail.escrowHeld', 'Escrow bloqué')}</p>
                 <p className="text-xl font-bold text-gray-900">{formatXOF(user.escrowHeld)}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
                 <Award className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" />
-                <p className="text-[11px] text-gray-500 uppercase">AfriPoints</p>
+                <p className="text-[11px] text-gray-500 uppercase">{t('adminUserDetail.statAfriPoints', 'AfriPoints')}</p>
                 <p className="text-xl font-bold text-gray-900">{user.afriPoints} pts</p>
               </CardContent>
             </Card>
@@ -557,15 +559,15 @@ export default function AdminUserDetailPage() {
               {subscriptions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <CreditCard className="w-10 h-10 text-gray-300 mb-3" />
-                  <p className="text-sm text-gray-500">Aucun abonnement</p>
+                  <p className="text-sm text-gray-500">{t('adminUserDetail.noSubscriptions', 'Aucun abonnement')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Plan</TableHead>
-                      <TableHead className="text-xs">Prix</TableHead>
-                      <TableHead className="text-xs">Statut</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colPlan', 'Plan')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colPrice', 'Prix')}</TableHead>
+                      <TableHead className="text-xs">{t('adminUserDetail.colStatus', 'Statut')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -594,8 +596,8 @@ export default function AdminUserDetailPage() {
                   <Edit3 className="w-5 h-5 text-[#003087]" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Modifier le rôle</p>
-                  <p className="text-xs text-gray-500">Actuel : {ROLE_LABELS[user.role]}</p>
+                  <p className="text-sm font-medium text-gray-900">{t('adminUserDetail.actionEditRole', 'Modifier le rôle')}</p>
+                  <p className="text-xs text-gray-500">{t('adminUserDetail.currentRole', 'Actuel :')} {ROLE_LABELS[user.role]}</p>
                 </div>
               </CardContent>
             </Card>
@@ -606,8 +608,8 @@ export default function AdminUserDetailPage() {
                   <ShieldCheck className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Vérifier le compte</p>
-                  <p className="text-xs text-gray-500">{user.verified ? 'Déjà vérifié' : 'Non vérifié'}</p>
+                  <p className="text-sm font-medium text-gray-900">{t('adminUserDetail.verifyAccount', 'Vérifier le compte')}</p>
+                  <p className="text-xs text-gray-500">{user.verified ? t('adminUserDetail.alreadyVerified', 'Déjà vérifié') : t('adminUserDetail.notVerified', 'Non vérifié')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -618,8 +620,8 @@ export default function AdminUserDetailPage() {
                   {isBanned ? <ShieldCheck className="w-5 h-5 text-green-600" /> : <Ban className="w-5 h-5 text-red-500" />}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{isBanned ? 'Rétablir le compte' : 'Bannir le compte'}</p>
-                  <p className="text-xs text-gray-500">{isBanned ? 'Réactiver l\'utilisateur' : 'Désactiver l\'utilisateur'}</p>
+                  <p className="text-sm font-medium text-gray-900">{isBanned ? t('adminUserDetail.reinstateAccount', 'Rétablir le compte') : t('adminUserDetail.banAccount', 'Bannir le compte')}</p>
+                  <p className="text-xs text-gray-500">{isBanned ? t('adminUserDetail.reactivateUser', "Réactiver l'utilisateur") : t('adminUserDetail.deactivateUser', "Désactiver l'utilisateur")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -630,8 +632,8 @@ export default function AdminUserDetailPage() {
                   <Key className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Réinitialiser le mot de passe</p>
-                  <p className="text-xs text-gray-500">Envoyer un email de reset</p>
+                  <p className="text-sm font-medium text-gray-900">{t('adminUserDetail.resetPasswordTitle', 'Réinitialiser le mot de passe')}</p>
+                  <p className="text-xs text-gray-500">{t('adminUserDetail.sendResetEmail', 'Envoyer un email de reset')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -643,8 +645,8 @@ export default function AdminUserDetailPage() {
       <Dialog open={editRoleOpen} onOpenChange={setEditRoleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Modifier le rôle de {user.name}</DialogTitle>
-            <DialogDescription>Sélectionnez le nouveau rôle</DialogDescription>
+            <DialogTitle>{t('adminUserDetail.editRoleDialogTitle', 'Modifier le rôle de')} {user.name}</DialogTitle>
+            <DialogDescription>{t('adminUserDetail.editRoleDialogDesc', 'Sélectionnez le nouveau rôle')}</DialogDescription>
           </DialogHeader>
           <Select value={newRole} onValueChange={setNewRole}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -660,9 +662,9 @@ export default function AdminUserDetailPage() {
             </SelectContent>
           </Select>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditRoleOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setEditRoleOpen(false)}>{t('adminUserDetail.cancel', 'Annuler')}</Button>
             <Button className="bg-[#003087] hover:bg-[#002a70]" onClick={handleUpdateRole} disabled={updateUser.isPending}>
-              {updateUser.isPending ? 'Enregistrement...' : 'Enregistrer'}
+              {updateUser.isPending ? t('adminUserDetail.saving', 'Enregistrement...') : t('adminUserDetail.save', 'Enregistrer')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -672,13 +674,13 @@ export default function AdminUserDetailPage() {
       <Dialog open={banOpen} onOpenChange={setBanOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bannir {user.name}</DialogTitle>
-            <DialogDescription>Cette action désactivera le compte.</DialogDescription>
+            <DialogTitle>{t('adminUserDetail.banDialogTitle', 'Bannir')} {user.name}</DialogTitle>
+            <DialogDescription>{t('adminUserDetail.banDialogDesc', 'Cette action désactivera le compte.')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBanOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setBanOpen(false)}>{t('adminUserDetail.cancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleBan} disabled={updateUser.isPending}>
-              {updateUser.isPending ? 'Bannissement...' : 'Confirmer le bannissement'}
+              {updateUser.isPending ? t('adminUserDetail.banning', 'Bannissement...') : t('adminUserDetail.confirmBan', 'Confirmer le bannissement')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -688,13 +690,13 @@ export default function AdminUserDetailPage() {
       <Dialog open={resetPwOpen} onOpenChange={setResetPwOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
-            <DialogDescription>Un email de réinitialisation sera envoyé à {user.email}</DialogDescription>
+            <DialogTitle>{t('adminUserDetail.resetPasswordTitle', 'Réinitialiser le mot de passe')}</DialogTitle>
+            <DialogDescription>{t('adminUserDetail.resetPasswordDialogDesc', 'Un email de réinitialisation sera envoyé à')} {user.email}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResetPwOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setResetPwOpen(false)}>{t('adminUserDetail.cancel', 'Annuler')}</Button>
             <Button className="bg-[#003087] hover:bg-[#002a70]" onClick={handleResetPw}>
-              Envoyer
+              {t('adminUserDetail.send', 'Envoyer')}
             </Button>
           </DialogFooter>
         </DialogContent>

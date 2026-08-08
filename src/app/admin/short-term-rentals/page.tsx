@@ -53,6 +53,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminShortTermRentals } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const LISTING_STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon',
@@ -136,6 +137,7 @@ export default function AdminShortTermRentalsPage() {
     tab: 'listings',
   });
   const [searchInput, setSearchInput] = useState('');
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminShortTermRentals({ ...filters, tab: activeTab });
   const listings = (data?.listings as ShortTermRentalRow[]) || [];
@@ -162,9 +164,9 @@ export default function AdminShortTermRentalsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Locations courte durée</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminShortTermRentals.pageTitle', 'Locations courte durée')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gérer les annonces et réservations de locations courte durée
+            {t('adminShortTermRentals.pageSubtitle', 'Gérer les annonces et réservations de locations courte durée')}
           </p>
         </div>
       </div>
@@ -176,7 +178,7 @@ export default function AdminShortTermRentalsPage() {
             <Home className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total annonces</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminShortTermRentals.statTotalListings', 'Total annonces')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.totalListings ?? 0}</p>
           </div>
         </div>
@@ -185,7 +187,7 @@ export default function AdminShortTermRentalsPage() {
             <CalendarCheck className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total réservations</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminShortTermRentals.statTotalBookings', 'Total réservations')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.totalBookings ?? 0}</p>
           </div>
         </div>
@@ -194,7 +196,7 @@ export default function AdminShortTermRentalsPage() {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Annonces actives</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminShortTermRentals.statActiveListings', 'Annonces actives')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.activeListings ?? 0}</p>
           </div>
         </div>
@@ -203,7 +205,7 @@ export default function AdminShortTermRentalsPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Réservations en attente</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminShortTermRentals.statPendingBookings', 'Réservations en attente')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.pendingBookings ?? 0}</p>
           </div>
         </div>
@@ -220,7 +222,7 @@ export default function AdminShortTermRentalsPage() {
           )}
           onClick={() => handleTabChange('listings')}
         >
-          Annonces
+          {t('adminShortTermRentals.tabListings', 'Annonces')}
         </button>
         <button
           className={cn(
@@ -231,7 +233,7 @@ export default function AdminShortTermRentalsPage() {
           )}
           onClick={() => handleTabChange('bookings')}
         >
-          Réservations
+          {t('adminShortTermRentals.tabBookings', 'Réservations')}
         </button>
       </div>
 
@@ -241,7 +243,7 @@ export default function AdminShortTermRentalsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder={activeTab === 'listings' ? 'Rechercher par titre, ville...' : 'Rechercher par location, client...'}
+              placeholder={activeTab === 'listings' ? t('adminShortTermRentals.searchListings', 'Rechercher par titre, ville...') : t('adminShortTermRentals.searchBookings', 'Rechercher par location, client...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -256,10 +258,10 @@ export default function AdminShortTermRentalsPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminShortTermRentals.statusPlaceholder', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">{t('adminShortTermRentals.allStatuses', 'Tous les statuts')}</SelectItem>
                 {activeTab === 'listings' ? (
                   <>
                     <SelectItem value="draft">Brouillon</SelectItem>
@@ -285,10 +287,10 @@ export default function AdminShortTermRentalsPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminShortTermRentals.countryPlaceholder', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminShortTermRentals.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -296,7 +298,7 @@ export default function AdminShortTermRentalsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminShortTermRentals.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -321,22 +323,22 @@ export default function AdminShortTermRentalsPage() {
               <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
                 <Home className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-lg font-medium text-gray-900">Aucune annonce trouvée</p>
-              <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <p className="text-lg font-medium text-gray-900">{t('adminShortTermRentals.noListings', 'Aucune annonce trouvée')}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('adminShortTermRentals.noListingsHint', 'Modifiez vos filtres')}</p>
             </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50/80">
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Annonce</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Hôte</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pays</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ville</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Prix/nuit</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Réservations</TableHead>
-                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colListing', 'Annonce')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colHost', 'Hôte')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colCountry', 'Pays')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colCity', 'Ville')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colPricePerNight', 'Prix/nuit')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colStatus', 'Statut')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colBookings', 'Réservations')}</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminShortTermRentals.colActions', 'Actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -376,21 +378,21 @@ export default function AdminShortTermRentalsPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <CalendarCheck className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucune réservation trouvée</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminShortTermRentals.noBookings', 'Aucune réservation trouvée')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminShortTermRentals.noBookingsHint', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Location</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Client</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Arrivée</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Départ</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Montant</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colRental', 'Location')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colGuest', 'Client')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colCheckIn', 'Arrivée')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colCheckOut', 'Départ')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colStatus', 'Statut')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminShortTermRentals.colAmount', 'Montant')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminShortTermRentals.colActions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -433,19 +435,20 @@ export default function AdminShortTermRentalsPage() {
 function RentalListingRow({ rental }: { rental: ShortTermRentalRow }) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const { t } = useTranslation();
 
   const handleApprove = () => {
-    toast.success('Annonce approuvée');
+    toast.success(t('adminShortTermRentals.listingApproved', 'Annonce approuvée'));
   };
 
   const handleReject = () => {
-    toast.success('Annonce rejetée');
+    toast.success(t('adminShortTermRentals.listingRejected', 'Annonce rejetée'));
     setRejectOpen(false);
     setRejectReason('');
   };
 
   const handleHide = () => {
-    toast.success('Annonce masquée');
+    toast.success(t('adminShortTermRentals.listingHidden', 'Annonce masquée'));
   };
 
   return (
@@ -487,16 +490,16 @@ function RentalListingRow({ rental }: { rental: ShortTermRentalRow }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem>
-                <Eye className="w-4 h-4" /> Voir
+                <Eye className="w-4 h-4" /> {t('adminShortTermRentals.view', 'Voir')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleApprove} disabled={rental.status === 'published'}>
-                <CheckCircle2 className="w-4 h-4" /> Approuver
+                <CheckCircle2 className="w-4 h-4" /> {t('adminShortTermRentals.approve', 'Approuver')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setRejectOpen(true)} disabled={rental.status === 'rejected'}>
-                <XCircle className="w-4 h-4" /> Rejeter
+                <XCircle className="w-4 h-4" /> {t('adminShortTermRentals.reject', 'Rejeter')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleHide} disabled={rental.status === 'hidden'}>
-                <EyeOff className="w-4 h-4" /> Masquer
+                <EyeOff className="w-4 h-4" /> {t('adminShortTermRentals.hide', 'Masquer')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -507,18 +510,18 @@ function RentalListingRow({ rental }: { rental: ShortTermRentalRow }) {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter l&apos;annonce</DialogTitle>
-            <DialogDescription>Indiquez la raison du rejet</DialogDescription>
+            <DialogTitle>{t('adminShortTermRentals.rejectDialogTitle', "Rejeter l'annonce")}</DialogTitle>
+            <DialogDescription>{t('adminShortTermRentals.rejectDialogDesc', 'Indiquez la raison du rejet')}</DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison du rejet..."
+            placeholder={t('adminShortTermRentals.rejectReasonPlaceholder', 'Raison du rejet...')}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Annuler</Button>
-            <Button variant="destructive" onClick={handleReject}>Rejeter</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{t('adminShortTermRentals.cancel', 'Annuler')}</Button>
+            <Button variant="destructive" onClick={handleReject}>{t('adminShortTermRentals.reject', 'Rejeter')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -527,12 +530,13 @@ function RentalListingRow({ rental }: { rental: ShortTermRentalRow }) {
 }
 
 function BookingRowComponent({ booking }: { booking: BookingRow }) {
+  const { t } = useTranslation();
   const handleConfirm = () => {
-    toast.success('Réservation confirmée');
+    toast.success(t('adminShortTermRentals.bookingConfirmed', 'Réservation confirmée'));
   };
 
   const handleCancel = () => {
-    toast.success('Réservation annulée');
+    toast.success(t('adminShortTermRentals.bookingCancelled', 'Réservation annulée'));
   };
 
   return (
@@ -565,13 +569,13 @@ function BookingRowComponent({ booking }: { booking: BookingRow }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem>
-              <Eye className="w-4 h-4" /> Voir
+              <Eye className="w-4 h-4" /> {t('adminShortTermRentals.view', 'Voir')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleConfirm} disabled={booking.status === 'confirmed' || booking.status === 'completed'}>
-              <CheckCircle2 className="w-4 h-4" /> Confirmer
+              <CheckCircle2 className="w-4 h-4" /> {t('adminShortTermRentals.confirm', 'Confirmer')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleCancel} disabled={booking.status === 'cancelled'}>
-              <XCircle className="w-4 h-4" /> Annuler
+              <XCircle className="w-4 h-4" /> {t('adminShortTermRentals.cancel', 'Annuler')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
