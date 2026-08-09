@@ -56,6 +56,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminArtisans, useAdminAction } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   verified: 'Vérifié',
@@ -84,6 +85,7 @@ interface ArtisanRow {
 }
 
 export default function AdminArtisansPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<{ status?: string; country?: string; search?: string; page: number; limit: number }>({
     page: 1,
     limit: 20,
@@ -109,8 +111,8 @@ export default function AdminArtisansPage() {
     adminAction.mutate(
       { path: `/api/artisans/${artisan.id}`, method: 'patch', data: { verified: true, status: 'verified' } },
       {
-        onSuccess: () => toast.success('Artisan vérifié avec succès'),
-        onError: () => toast.error('Erreur lors de la vérification'),
+        onSuccess: () => toast.success(t('adminArtisans.toastVerified', 'Artisan vérifié avec succès')),
+        onError: () => toast.error(t('adminArtisans.toastVerifyError', 'Erreur lors de la vérification')),
       }
     );
   };
@@ -121,19 +123,19 @@ export default function AdminArtisansPage() {
       { path: `/api/artisans/${rejectTarget.id}`, method: 'patch', data: { verified: false, status: 'rejected' } },
       {
         onSuccess: () => {
-          toast.success('Artisan rejeté');
+          toast.success(t('adminArtisans.toastRejected', 'Artisan rejeté'));
           setRejectOpen(false);
           setRejectTarget(null);
           setRejectReason('');
         },
-        onError: () => toast.error('Erreur'),
+        onError: () => toast.error(t('adminArtisans.toastRejectError', 'Erreur')),
       }
     );
   };
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Artisan supprimé');
+    toast.success(t('adminArtisans.toastDeleted', 'Artisan supprimé'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
@@ -157,9 +159,9 @@ export default function AdminArtisansPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des artisans</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminArtisans.pageTitle', 'Gestion des artisans')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Vérifier, approuver et gérer les artisans de la plateforme
+            {t('adminArtisans.pageSubtitle', 'Vérifier, approuver et gérer les artisans de la plateforme')}
           </p>
         </div>
       </div>
@@ -171,7 +173,7 @@ export default function AdminArtisansPage() {
             <Users className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total artisans</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminArtisans.statTotal', 'Total artisans')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>
@@ -180,7 +182,7 @@ export default function AdminArtisansPage() {
             <ShieldCheck className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Vérifiés</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminArtisans.statVerified', 'Vérifiés')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.verified ?? 0}</p>
           </div>
         </div>
@@ -189,7 +191,7 @@ export default function AdminArtisansPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">En attente</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminArtisans.statPending', 'En attente')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -198,7 +200,7 @@ export default function AdminArtisansPage() {
             <Globe2 className="w-5 h-5 text-[#B8962E]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Par pays</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminArtisans.statByCountry', 'Par pays')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.byCountry ? Object.keys(summary.byCountry).length : 0}</p>
           </div>
         </div>
@@ -210,7 +212,7 @@ export default function AdminArtisansPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par nom, spécialité, ville..."
+              placeholder={t('adminArtisans.searchPlaceholder', 'Rechercher par nom, spécialité, ville...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -225,13 +227,13 @@ export default function AdminArtisansPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminArtisans.placeholderStatus', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="verified">Vérifié</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="rejected">Rejeté</SelectItem>
+                <SelectItem value="all">{t('adminArtisans.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                <SelectItem value="verified">{t('adminArtisans.statusVerified', 'Vérifié')}</SelectItem>
+                <SelectItem value="pending">{t('adminArtisans.statusPending', 'En attente')}</SelectItem>
+                <SelectItem value="rejected">{t('adminArtisans.statusRejected', 'Rejeté')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -241,18 +243,18 @@ export default function AdminArtisansPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminArtisans.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminArtisans.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -277,8 +279,8 @@ export default function AdminArtisansPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Users className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun artisan trouvé</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminArtisans.empty', 'Aucun artisan trouvé')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminArtisans.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
@@ -286,28 +288,28 @@ export default function AdminArtisansPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Artisan
+                    {t('adminArtisans.colArtisan', 'Artisan')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Spécialité
+                    {t('adminArtisans.colSpecialty', 'Spécialité')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Pays
+                    {t('adminArtisans.colCountry', 'Pays')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Ville
+                    {t('adminArtisans.colCity', 'Ville')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Note
+                    {t('adminArtisans.colRating', 'Note')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Vérifié
+                    {t('adminArtisans.colVerified', 'Vérifié')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Statut
+                    {t('adminArtisans.colStatus', 'Statut')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminArtisans.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -362,26 +364,26 @@ export default function AdminArtisansPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem>
-                            <Eye className="w-4 h-4" /> Voir
+                            <Eye className="w-4 h-4" /> {t('adminArtisans.actionView', 'Voir')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleVerify(artisan)}
                             disabled={artisan.verified || artisan.status === 'verified'}
                           >
-                            <CheckCircle2 className="w-4 h-4" /> Approuver / Vérifier
+                            <CheckCircle2 className="w-4 h-4" /> {t('adminArtisans.actionApprove', 'Approuver / Vérifier')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => { setRejectTarget(artisan); setRejectOpen(true); }}
                             disabled={artisan.status === 'rejected'}
                           >
-                            <XCircle className="w-4 h-4" /> Rejeter
+                            <XCircle className="w-4 h-4" /> {t('adminArtisans.actionReject', 'Rejeter')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => { setDeleteTarget(artisan); setDeleteOpen(true); }}
                             className="text-red-600"
                           >
-                            <Trash2 className="w-4 h-4" /> Supprimer
+                            <Trash2 className="w-4 h-4" /> {t('adminArtisans.actionDelete', 'Supprimer')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -429,19 +431,19 @@ export default function AdminArtisansPage() {
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rejeter l&apos;artisan</DialogTitle>
-            <DialogDescription>Indiquez la raison du rejet pour {rejectTarget?.name}</DialogDescription>
+            <DialogTitle>{t('adminArtisans.dialogReject', "Rejeter l'artisan")}</DialogTitle>
+            <DialogDescription>{t('adminArtisans.dialogRejectDesc', 'Indiquez la raison du rejet')}</DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison du rejet..."
+            placeholder={t('adminArtisans.placeholderRejectReason', 'Raison du rejet...')}
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{t('adminArtisans.btnCancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleReject}>
-              Rejeter
+              {t('adminArtisans.btnReject', 'Rejeter')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -451,15 +453,15 @@ export default function AdminArtisansPage() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer l&apos;artisan</DialogTitle>
+            <DialogTitle>{t('adminArtisans.dialogDelete', "Supprimer l'artisan")}</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer {deleteTarget?.name} ? Cette action est irréversible.
+              {t('adminArtisans.dialogDeleteDesc', 'Cette action est irréversible.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('adminArtisans.btnCancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Supprimer
+              {t('adminArtisans.btnDelete', 'Supprimer')}
             </Button>
           </DialogFooter>
         </DialogContent>

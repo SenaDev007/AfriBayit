@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -64,6 +65,7 @@ const roleLabels: Record<string, { label: string; color: string; description: st
 };
 
 export default function CountryAccreditationsPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const queryClient = useQueryClient();
@@ -147,10 +149,10 @@ export default function CountryAccreditationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <KeyRound className="w-6 h-6 text-[#D4AF37]" />
-            Accréditations — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryAccreditations.pageTitle', 'Accréditations')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestion des accès administrateurs pour le backoffice {COUNTRY_NAMES[country]}
+            {t('adminCountryAccreditations.pageSubtitle', 'Gestion des accès administrateurs pour le backoffice')} {COUNTRY_NAMES[country]}
           </p>
         </div>
         <Dialog open={grantDialogOpen} onOpenChange={setGrantDialogOpen}>

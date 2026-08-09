@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import {
   Hotel, Home, Search, Star, MapPin, ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -39,6 +40,7 @@ interface GuesthouseRow {
 }
 
 export default function CountryHospitalityPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const [tab, setTab] = useState<'hotels' | 'guesthouses'>('hotels');
@@ -70,9 +72,9 @@ export default function CountryHospitalityPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Hotel className="w-6 h-6 text-[#003087]" />
-            Hôtellerie — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryHospitality.pageTitle', 'Hôtellerie')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Hôtels & Guesthouses du {COUNTRY_NAMES[country]}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{t('adminCountryHospitality.pageSubtitle', 'Hôtels, guesthouses et séjours')} — {COUNTRY_NAMES[country]}</p>
         </div>
       </div>
 

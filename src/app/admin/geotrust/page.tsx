@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useAdminGeotrust } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
@@ -91,6 +92,7 @@ interface MissionRow {
 }
 
 export default function AdminGeotrustPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'geometers' | 'missions'>('geometers');
   const [filters, setFilters] = useState<{ status?: string; country?: string; search?: string; page: number; limit: number }>({
     page: 1,
@@ -113,7 +115,7 @@ export default function AdminGeotrustPage() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
-    toast.success('Supprimé avec succès');
+    toast.success(t('adminCommon.deletedSuccess', 'Supprimé avec succès'));
     setDeleteOpen(false);
     setDeleteTarget(null);
   };
@@ -133,10 +135,10 @@ export default function AdminGeotrustPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             <span className="text-[#003087]">Geo</span>
-            <span className="text-[#D4AF37]">Trust</span> — Géomètres &amp; Missions
+            <span className="text-[#D4AF37]">Trust</span> — {t('adminGeotrust.pageTitle', 'Géomètres & Missions')}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gérer les géomètres et les missions de vérification terrain
+            {t('adminGeotrust.pageSubtitle', 'Gérer les géomètres et les missions de vérification terrain')}
           </p>
         </div>
       </div>
@@ -148,7 +150,7 @@ export default function AdminGeotrustPage() {
             <Users className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total géomètres</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminGeotrust.statTotalGeometers', 'Total géomètres')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.totalGeometers ?? 0}</p>
           </div>
         </div>
@@ -157,7 +159,7 @@ export default function AdminGeotrustPage() {
             <MapPin className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Missions en cours</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminGeotrust.statMissionsInProgress', 'Missions en cours')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.missionsInProgress ?? 0}</p>
           </div>
         </div>
@@ -166,7 +168,7 @@ export default function AdminGeotrustPage() {
             <ClipboardCheck className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Missions terminées</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminGeotrust.statMissionsCompleted', 'Missions terminées')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.missionsCompleted ?? 0}</p>
           </div>
         </div>
@@ -175,7 +177,7 @@ export default function AdminGeotrustPage() {
             <TrendingUp className="w-5 h-5 text-[#B8962E]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Taux de complétion</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminGeotrust.statCompletionRate', 'Taux de complétion')}</p>
             <p className="text-2xl font-bold text-gray-900">{summary?.completionRate != null ? `${summary.completionRate}%` : '—'}</p>
           </div>
         </div>
@@ -192,7 +194,7 @@ export default function AdminGeotrustPage() {
           )}
           onClick={() => { setActiveTab('geometers'); setFilters((prev) => ({ ...prev, page: 1 })); }}
         >
-          Géomètres
+          {t('adminGeotrust.tabGeometers', 'Géomètres')}
         </button>
         <button
           className={cn(
@@ -203,7 +205,7 @@ export default function AdminGeotrustPage() {
           )}
           onClick={() => { setActiveTab('missions'); setFilters((prev) => ({ ...prev, page: 1 })); }}
         >
-          Missions
+          {t('adminGeotrust.tabMissions', 'Missions')}
         </button>
       </div>
 
@@ -213,7 +215,7 @@ export default function AdminGeotrustPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder={activeTab === 'geometers' ? 'Rechercher par nom, licence...' : 'Rechercher par propriété, géomètre...'}
+              placeholder={activeTab === 'geometers' ? t('adminGeotrust.searchGeometers', 'Rechercher par nom, licence...') : t('adminGeotrust.searchMissions', 'Rechercher par propriété, géomètre...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -229,14 +231,14 @@ export default function AdminGeotrustPage() {
                 }
               >
                 <SelectTrigger className="w-[160px] h-9 text-xs">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder={t('adminGeotrust.placeholderStatus', 'Statut')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="scheduled">Planifiée</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="completed">Terminée</SelectItem>
-                  <SelectItem value="cancelled">Annulée</SelectItem>
+                  <SelectItem value="all">{t('adminGeotrust.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                  <SelectItem value="scheduled">{t('adminGeotrust.statusScheduled', 'Planifiée')}</SelectItem>
+                  <SelectItem value="in_progress">{t('adminGeotrust.statusInProgress', 'En cours')}</SelectItem>
+                  <SelectItem value="completed">{t('adminGeotrust.statusCompleted', 'Terminée')}</SelectItem>
+                  <SelectItem value="cancelled">{t('adminGeotrust.statusCancelled', 'Annulée')}</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -247,18 +249,18 @@ export default function AdminGeotrustPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminGeotrust.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminGeotrust.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -284,8 +286,8 @@ export default function AdminGeotrustPage() {
               <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
                 <Users className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-lg font-medium text-gray-900">Aucun géomètre trouvé</p>
-              <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+              <p className="text-lg font-medium text-gray-900">{t('adminGeotrust.emptyGeometers', 'Aucun géomètre trouvé')}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('adminGeotrust.modifyFilters', 'Modifiez vos filtres')}</p>
             </div>
           ) : (
             <>
@@ -384,8 +386,8 @@ export default function AdminGeotrustPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <MapPin className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucune mission trouvée</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminGeotrust.emptyMissions', 'Aucune mission trouvée')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminGeotrust.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>

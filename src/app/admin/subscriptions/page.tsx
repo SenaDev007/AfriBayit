@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,6 +85,7 @@ interface SubscriptionsResponse {
 }
 
 export default function AdminSubscriptionsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ planType: '', status: '', country: '', page: 1 });
@@ -120,8 +122,8 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Abonnements</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Gestion des abonnements et revenus récurrents</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminSubscriptions.pageTitle', 'Abonnements')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('adminSubscriptions.pageSubtitle', 'Gérer les abonnements et paiements récurrents')}</p>
       </div>
 
       {/* Summary */}

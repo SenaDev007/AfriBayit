@@ -15,8 +15,10 @@ import {
   type UserWithRoles,
 } from '@/hooks/useAdminApi';
 import { ROLE_CATALOG, getRoleDefinition } from '@/lib/role-catalog';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 export default function AdminMultiRolesPage() {
+  const { t: translate } = useTranslation();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -34,8 +36,8 @@ export default function AdminMultiRolesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Users className="w-6 h-6" />Multi-rôles — Gestion utilisateurs</h1>
-        <p className="text-sm text-gray-500 mt-1">Ajoutez, retirez ou modifiez les rôles des utilisateurs. Toutes les actions sont audit-trailées.</p>
+        <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2"><Users className="w-6 h-6" />{translate('adminMultiRoles.pageTitle', 'Rôles multiples')} — Gestion utilisateurs</h1>
+        <p className="text-sm text-gray-500 mt-1">{translate('adminMultiRoles.pageSubtitle', 'Gérer les utilisateurs avec plusieurs rôles')}</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

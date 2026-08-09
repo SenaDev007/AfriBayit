@@ -21,6 +21,7 @@ import { motion } from 'framer-motion';
 import { useAdminOta, type AdminOtaProvidersResponse, type AdminOtaSyncLogsResponse, type AdminOtaMappingsResponse, type AdminOtaParityResponse } from '@/hooks/useAdmin';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiPost } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   active: { label: 'Connecté', color: 'bg-green-50 text-green-700 border-green-200', icon: CheckCircle2 },
@@ -133,6 +134,7 @@ function useOtaSync() {
 export default function AdminOtaPage() {
   const [activeTab, setActiveTab] = useState('providers');
   const [autoSync, setAutoSync] = useState(true);
+  const { t } = useTranslation();
 
   // Map tab to API tab param
   const apiTabMap: Record<string, string> = {
@@ -176,10 +178,10 @@ export default function AdminOtaPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Configuration OTA</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminOta.pageTitle', 'Configuration OTA')}</h1>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm font-medium text-red-600">Erreur lors du chargement des données OTA</p>
+            <p className="text-sm font-medium text-red-600">{t('adminOta.loadError', 'Erreur lors du chargement des données OTA')}</p>
             <p className="text-xs text-gray-500 mt-1">{error.message}</p>
           </CardContent>
         </Card>
@@ -192,13 +194,13 @@ export default function AdminOtaPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuration OTA</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Gestion des canaux de distribution hôtelière</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminOta.pageTitle', 'Configuration OTA')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('adminOta.pageSubtitle', 'Gestion des canaux de distribution hôtelière')}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Switch checked={autoSync} onCheckedChange={setAutoSync} className="data-[state=checked]:bg-[#003087]" />
-            <span className="text-sm text-gray-600">Sync auto</span>
+            <span className="text-sm text-gray-600">{t('adminOta.autoSync', 'Sync auto')}</span>
           </div>
           <Button
             size="sm"
@@ -206,7 +208,7 @@ export default function AdminOtaPage() {
             onClick={handleSyncAll}
             disabled={syncMutation.isPending}
           >
-            <RefreshCw className={cn('w-3.5 h-3.5 mr-1', syncMutation.isPending && 'animate-spin')} /> Synchroniser tout
+            <RefreshCw className={cn('w-3.5 h-3.5 mr-1', syncMutation.isPending && 'animate-spin')} /> {t('adminOta.syncAll', 'Synchroniser tout')}
           </Button>
         </div>
       </div>
@@ -217,8 +219,8 @@ export default function AdminOtaPage() {
           <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800">{parityViolationCount} violation(s) de parité tarifaire</p>
-              <p className="text-xs text-amber-600">Certains tarifs diffèrent entre les canaux de distribution</p>
+              <p className="text-sm font-medium text-amber-800">{parityViolationCount} {t('adminOta.parityAlertTitle', 'violation(s) de parité tarifaire')}</p>
+              <p className="text-xs text-amber-600">{t('adminOta.parityAlertDesc', 'Certains tarifs diffèrent entre les canaux de distribution')}</p>
             </div>
           </div>
         </div>
@@ -240,7 +242,7 @@ export default function AdminOtaPage() {
                 <Cable className="w-5 h-5 text-[#003087]" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Fournisseurs connectés</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminOta.statConnected', 'Fournisseurs connectés')}</p>
                 <p className="text-lg font-bold text-gray-900">{providersData?.providers?.length ?? summary?.totalProviders ?? 0}</p>
               </div>
             </div>
@@ -249,7 +251,7 @@ export default function AdminOtaPage() {
                 <Hotel className="w-5 h-5 text-[#D4AF37]" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Hôtels mappés</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminOta.statMapped', 'Hôtels mappés')}</p>
                 <p className="text-lg font-bold text-gray-900">{mappingsData?.pagination?.total ?? providersData?.providers?.reduce((s, p) => s + p.hotelsConnected, 0) ?? 0}</p>
               </div>
             </div>
@@ -258,7 +260,7 @@ export default function AdminOtaPage() {
                 <AlertCircle className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Violations parité</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminOta.statViolations', 'Violations parité')}</p>
                 <p className="text-lg font-bold text-amber-600">{parityViolationCount}</p>
               </div>
             </div>
@@ -267,7 +269,7 @@ export default function AdminOtaPage() {
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase">Dernière sync</p>
+                <p className="text-xs text-gray-500 uppercase">{t('adminOta.statLastSync', 'Dernière sync')}</p>
                 <p className="text-sm font-bold text-gray-900">{formatDate(summary?.lastSyncAt ?? null)}</p>
               </div>
             </div>
@@ -277,10 +279,10 @@ export default function AdminOtaPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="providers">Fournisseurs</TabsTrigger>
-          <TabsTrigger value="sync">Journaux de sync</TabsTrigger>
-          <TabsTrigger value="mapping">Mapping hôtels</TabsTrigger>
-          <TabsTrigger value="parity">Parité tarifaire</TabsTrigger>
+          <TabsTrigger value="providers">{t('adminOta.tabProviders', 'Fournisseurs')}</TabsTrigger>
+          <TabsTrigger value="sync">{t('adminOta.tabSync', 'Journaux de sync')}</TabsTrigger>
+          <TabsTrigger value="mapping">{t('adminOta.tabMapping', 'Mapping hôtels')}</TabsTrigger>
+          <TabsTrigger value="parity">{t('adminOta.tabParity', 'Parité tarifaire')}</TabsTrigger>
         </TabsList>
 
         {/* ========== Providers Tab ========== */}
@@ -295,8 +297,8 @@ export default function AdminOtaPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Cable className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucun fournisseur OTA</p>
-                <p className="text-xs text-gray-500 mt-1">Configurez vos canaux de distribution</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminOta.noProviders', 'Aucun fournisseur OTA')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminOta.noProvidersHint', 'Configurez vos canaux de distribution')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -327,11 +329,11 @@ export default function AdminOtaPage() {
                       </div>
                       <div className="space-y-1.5 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Hôtels connectés</span>
+                          <span className="text-gray-500">{t('adminOta.hotelsConnected', 'Hôtels connectés')}</span>
                           <span className="font-medium">{provider.hotelsConnected}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Dernière sync</span>
+                          <span className="text-gray-500">{t('adminOta.lastSync', 'Dernière sync')}</span>
                           <span className="text-xs">{formatDate(provider.lastSync)}</span>
                         </div>
                       </div>
@@ -343,7 +345,7 @@ export default function AdminOtaPage() {
                           disabled={statusKey === 'disconnected' || statusKey === 'inactive' || syncMutation.isPending}
                           onClick={() => handleSyncProvider(provider.id)}
                         >
-                          <RefreshCw className={cn('w-3 h-3 mr-1', syncMutation.isPending && 'animate-spin')} /> Sync
+                          <RefreshCw className={cn('w-3 h-3 mr-1', syncMutation.isPending && 'animate-spin')} /> {t('adminOta.sync', 'Sync')}
                         </Button>
                         <Button variant="outline" size="sm" className="h-8 text-xs" disabled={statusKey === 'disconnected' || statusKey === 'inactive'}>
                           <ExternalLink className="w-3 h-3" />
@@ -365,26 +367,26 @@ export default function AdminOtaPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucun journal de synchronisation</p>
-                <p className="text-xs text-gray-500 mt-1">Les journaux apparaîtront après la première synchronisation</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminOta.noSyncLogs', 'Aucun journal de synchronisation')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminOta.noSyncLogsHint', 'Les journaux apparaîtront après la première synchronisation')}</p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Journaux de synchronisation</CardTitle>
+                <CardTitle className="text-sm font-semibold">{t('adminOta.syncLogsTitle', 'Journaux de synchronisation')}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Hôtel</TableHead>
-                      <TableHead className="text-xs">Fournisseur</TableHead>
-                      <TableHead className="text-xs">Opération</TableHead>
-                      <TableHead className="text-xs">Statut</TableHead>
-                      <TableHead className="text-xs text-right">Chambres</TableHead>
-                      <TableHead className="text-xs">Date/Heure</TableHead>
-                      <TableHead className="text-xs">Détail</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colHotel', 'Hôtel')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colProvider', 'Fournisseur')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colOperation', 'Opération')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colStatus', 'Statut')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('adminOta.colRooms', 'Chambres')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colDateTime', 'Date/Heure')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colDetail', 'Détail')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -395,7 +397,7 @@ export default function AdminOtaPage() {
                         <TableCell className="text-sm">{log.operation}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={cn('text-[10px]', log.status === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200')}>
-                            {log.status === 'success' ? <><Check className="w-3 h-3" /> Succès</> : <><X className="w-3 h-3" /> Erreur</>}
+                            {log.status === 'success' ? <><Check className="w-3 h-3" /> {t('adminOta.success', 'Succès')}</> : <><X className="w-3 h-3" /> {t('adminOta.error', 'Erreur')}</>}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-right">{log.roomsUpdated ?? '—'}</TableCell>
@@ -420,17 +422,17 @@ export default function AdminOtaPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Hotel className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucun hôtel mappé</p>
-                <p className="text-xs text-gray-500 mt-1">Ajoutez des hôtels pour configurer les mappings OTA</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminOta.noMappings', 'Aucun hôtel mappé')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminOta.noMappingsHint', 'Ajoutez des hôtels pour configurer les mappings OTA')}</p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold">Mapping Hôtels OTA</CardTitle>
+                  <CardTitle className="text-sm font-semibold">{t('adminOta.mappingsTitle', 'Mapping Hôtels OTA')}</CardTitle>
                   <Button variant="outline" size="sm" className="h-8 text-xs">
-                    <Upload className="w-3 h-3 mr-1" /> Import CSV
+                    <Upload className="w-3 h-3 mr-1" /> {t('adminOta.importCsv', 'Import CSV')}
                   </Button>
                 </div>
               </CardHeader>
@@ -438,11 +440,11 @@ export default function AdminOtaPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Hôtel</TableHead>
-                      <TableHead className="text-xs">Ville</TableHead>
-                      <TableHead className="text-xs">Pays</TableHead>
-                      <TableHead className="text-xs">Références OTA</TableHead>
-                      <TableHead className="text-xs">Canaux</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colHotel', 'Hôtel')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colCity', 'Ville')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colCountry', 'Pays')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colOtaRefs', 'Références OTA')}</TableHead>
+                      <TableHead className="text-xs">{t('adminOta.colChannels', 'Canaux')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -470,7 +472,7 @@ export default function AdminOtaPage() {
                                   {OTA_LABELS[key] || key}
                                 </Badge>
                               )) : (
-                                <span className="text-xs text-gray-400">Aucun</span>
+                                <span className="text-xs text-gray-400">{t('adminOta.noChannels', 'Aucun')}</span>
                               )}
                             </div>
                           </TableCell>
@@ -492,8 +494,8 @@ export default function AdminOtaPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 className="w-10 h-10 text-green-400 mb-3" />
-                <p className="text-sm font-medium text-gray-900">Aucune violation de parité</p>
-                <p className="text-xs text-gray-500 mt-1">Tous les tarifs sont alignés entre les canaux</p>
+                <p className="text-sm font-medium text-gray-900">{t('adminOta.noParityViolations', 'Aucune violation de parité')}</p>
+                <p className="text-xs text-gray-500 mt-1">{t('adminOta.noParityViolationsHint', 'Tous les tarifs sont alignés entre les canaux')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -501,18 +503,18 @@ export default function AdminOtaPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500" /> Violations de parité tarifaire
+                    <AlertTriangle className="w-4 h-4 text-amber-500" /> {t('adminOta.parityViolationsTitle', 'Violations de parité tarifaire')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-xs">Hôtel</TableHead>
-                        <TableHead className="text-xs">Chambre</TableHead>
-                        <TableHead className="text-xs">Tarifs par canal</TableHead>
-                        <TableHead className="text-xs text-right">Écart max</TableHead>
-                        <TableHead className="text-xs">Sévérité</TableHead>
+                        <TableHead className="text-xs">{t('adminOta.colHotel', 'Hôtel')}</TableHead>
+                        <TableHead className="text-xs">{t('adminOta.colRoom', 'Chambre')}</TableHead>
+                        <TableHead className="text-xs">{t('adminOta.colRatesByChannel', 'Tarifs par canal')}</TableHead>
+                        <TableHead className="text-xs text-right">{t('adminOta.colMaxDiff', 'Écart max')}</TableHead>
+                        <TableHead className="text-xs">{t('adminOta.colSeverity', 'Sévérité')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -539,7 +541,7 @@ export default function AdminOtaPage() {
                             <TableCell className="text-sm text-right font-mono text-red-600">{formatXOF(diff)}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className={cn('text-[10px]', severity === 'high' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
-                                {severity === 'high' ? 'Élevée' : 'Moyenne'}
+                                {severity === 'high' ? t('adminOta.severityHigh', 'Élevée') : t('adminOta.severityMedium', 'Moyenne')}
                               </Badge>
                             </TableCell>
                           </TableRow>

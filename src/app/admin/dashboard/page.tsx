@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import {
   Users,
   Building2,
@@ -106,6 +107,7 @@ function MiniBarChart({ data, labels, colors }: { data: number[]; labels: string
 }
 
 export default function GlobalAdminDashboard() {
+  const { t } = useTranslation();
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['admin-stats'],
     queryFn: () => apiFetch<AdminStats>('/api/admin/stats'),
@@ -157,10 +159,10 @@ export default function GlobalAdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Globe className="w-6 h-6 text-[#003087]" />
-            Tableau de bord Global
+            {t('adminDashboard.pageTitle', 'Tableau de bord')} Global
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Vue d&apos;ensemble de toutes les activités AfriBayit — Zone FCFA
+            {t('adminDashboard.pageSubtitle', "Vue d'ensemble de la plateforme")} — Zone FCFA
           </p>
         </div>
         <div className="flex items-center gap-2">

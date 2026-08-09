@@ -59,6 +59,7 @@ import {
   useEscrowTransition,
   type AdminEscrowAccount,
 } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const ESCROW_STATUS_LABELS: Record<string, string> = {
   EMPTY: 'Vide',
@@ -115,6 +116,7 @@ export default function AdminEscrowPage() {
     limit: 20,
   });
   const [searchInput, setSearchInput] = useState('');
+  const { t } = useTranslation();
 
   const { data, isLoading } = useAdminEscrow(filters);
   const accounts = data?.accounts || [];
@@ -130,9 +132,9 @@ export default function AdminEscrowPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion Escrow</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminEscrow.pageTitle', 'Gestion Escrow')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Suivi des comptes escrow et résolution des litiges
+            {t('adminEscrow.pageSubtitle', 'Suivi des comptes escrow et résolution des litiges')}
           </p>
         </div>
       </div>
@@ -144,7 +146,7 @@ export default function AdminEscrowPage() {
             <Wallet className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Total détenu</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminEscrow.statTotalHeld', 'Total détenu')}</p>
             <p className="text-lg font-bold text-gray-900">{formatXOF(summary?.totalHeld ?? 0)}</p>
           </div>
         </div>
@@ -153,7 +155,7 @@ export default function AdminEscrowPage() {
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Litiges actifs</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminEscrow.statActiveDisputes', 'Litiges actifs')}</p>
             <p className="text-lg font-bold text-gray-900">{summary?.activeDisputes ?? 0}</p>
           </div>
         </div>
@@ -162,7 +164,7 @@ export default function AdminEscrowPage() {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Libérés aujourd&apos;hui</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminEscrow.statReleasedToday', "Libérés aujourd'hui")}</p>
             <p className="text-lg font-bold text-gray-900">{summary?.releasedToday ?? 0}</p>
           </div>
         </div>
@@ -171,7 +173,7 @@ export default function AdminEscrowPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase">Temps moyen détenu</p>
+            <p className="text-xs text-gray-500 uppercase">{t('adminEscrow.statAvgHoldTime', 'Temps moyen détenu')}</p>
             <p className="text-lg font-bold text-gray-900">{summary?.avgHoldTimeHours ?? 0}h</p>
           </div>
         </div>
@@ -183,7 +185,7 @@ export default function AdminEscrowPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par réf. transaction..."
+              placeholder={t('adminEscrow.searchPlaceholder', 'Rechercher par réf. transaction...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -198,10 +200,10 @@ export default function AdminEscrowPage() {
               }
             >
               <SelectTrigger className="w-[170px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminEscrow.statusPlaceholder', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="all">{t('adminEscrow.allStatuses', 'Tous les statuts')}</SelectItem>
                 <SelectItem value="EMPTY">Vide</SelectItem>
                 <SelectItem value="FUNDED">Financé</SelectItem>
                 <SelectItem value="PARTIAL_RELEASE">Libération partielle</SelectItem>
@@ -217,10 +219,10 @@ export default function AdminEscrowPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminEscrow.countryPlaceholder', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
+                <SelectItem value="all">{t('adminEscrow.allCountries', 'Tous les pays')}</SelectItem>
                 <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
                 <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
                 <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
@@ -228,7 +230,7 @@ export default function AdminEscrowPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminEscrow.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -252,8 +254,8 @@ export default function AdminEscrowPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun compte escrow</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminEscrow.noAccounts', 'Aucun compte escrow')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminEscrow.noAccountsHint', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
@@ -261,25 +263,25 @@ export default function AdminEscrowPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Réf. Transaction
+                    {t('adminEscrow.colRef', 'Réf. Transaction')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Propriété
+                    {t('adminEscrow.colProperty', 'Propriété')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Montant
+                    {t('adminEscrow.colAmount', 'Montant')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Statut Escrow
+                    {t('adminEscrow.colEscrowStatus', 'Statut Escrow')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Acheteur
+                    {t('adminEscrow.colBuyer', 'Acheteur')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Vendeur
+                    {t('adminEscrow.colSeller', 'Vendeur')}
                   </TableHead>
                   <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
-                    Actions
+                    {t('adminEscrow.colActions', 'Actions')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -335,6 +337,7 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
   const [resolveDisputeOpen, setResolveDisputeOpen] = useState(false);
   const [targetStatus, setTargetStatus] = useState('');
   const [reason, setReason] = useState('');
+  const { t } = useTranslation();
 
   const tx = account.transaction;
   const escrowTransition = useEscrowTransition(tx?.id || '');
@@ -347,12 +350,12 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
       { targetStatus, actorType: 'admin', reason: reason || undefined },
       {
         onSuccess: () => {
-          toast.success(`Transition vers ${TX_STATUS_LABELS[targetStatus] || targetStatus} effectuée`);
+          toast.success(`${t('adminEscrow.transitionToast', 'Transition vers')} ${TX_STATUS_LABELS[targetStatus] || targetStatus} ${t('adminEscrow.done', 'effectuée')}`);
           setForceTransitionOpen(false);
           setTargetStatus('');
           setReason('');
         },
-        onError: (err: Error) => toast.error(err.message || 'Erreur de transition'),
+        onError: (err: Error) => toast.error(err.message || t('adminEscrow.transitionError', 'Erreur de transition')),
       }
     );
   };
@@ -363,12 +366,12 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
       { targetStatus, actorType: 'admin', reason: reason || 'Résolution admin du litige' },
       {
         onSuccess: () => {
-          toast.success('Litige résolu');
+          toast.success(t('adminEscrow.disputeResolved', 'Litige résolu'));
           setResolveDisputeOpen(false);
           setTargetStatus('');
           setReason('');
         },
-        onError: (err: Error) => toast.error(err.message || 'Erreur'),
+        onError: (err: Error) => toast.error(err.message || t('adminEscrow.error', 'Erreur')),
       }
     );
   };
@@ -438,14 +441,14 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem>
-                <Eye className="w-4 h-4" /> Voir détails
+                <Eye className="w-4 h-4" /> {t('adminEscrow.viewDetails', 'Voir détails')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setForceTransitionOpen(true)}>
-                <ArrowRight className="w-4 h-4" /> Forcer transition
+                <ArrowRight className="w-4 h-4" /> {t('adminEscrow.forceTransition', 'Forcer transition')}
               </DropdownMenuItem>
               {isDisputed && (
                 <DropdownMenuItem onClick={() => { setTargetStatus('FUNDED'); setResolveDisputeOpen(true); }} className="text-green-600">
-                  <ShieldAlert className="w-4 h-4" /> Résoudre litige
+                  <ShieldAlert className="w-4 h-4" /> {t('adminEscrow.resolveDispute', 'Résoudre litige')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -457,41 +460,41 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
       <Dialog open={forceTransitionOpen} onOpenChange={setForceTransitionOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Forcer une transition</DialogTitle>
+            <DialogTitle>{t('adminEscrow.forceTransitionTitle', 'Forcer une transition')}</DialogTitle>
             <DialogDescription>
-              Transition admin pour la transaction {(tx?.id as string)?.slice(0, 8)}...
+              {t('adminEscrow.forceTransitionDesc', 'Transition admin pour la transaction')} {(tx?.id as string)?.slice(0, 8)}...
               <br />
-              État actuel : <strong>{TX_STATUS_LABELS[tx?.status || ''] || tx?.status}</strong>
+              {t('adminEscrow.currentState', 'État actuel :')} <strong>{TX_STATUS_LABELS[tx?.status || ''] || tx?.status}</strong>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Select value={targetStatus} onValueChange={setTargetStatus}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner l'état cible" />
+                <SelectValue placeholder={t('adminEscrow.selectTarget', "Sélectionner l'état cible")} />
               </SelectTrigger>
               <SelectContent>
-                {ADMIN_TRANSITIONS.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                {ADMIN_TRANSITIONS.map((tt) => (
+                  <SelectItem key={tt.value} value={tt.value}>
+                    {tt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Textarea
-              placeholder="Raison (optionnel)"
+              placeholder={t('adminEscrow.reasonPlaceholder', 'Raison (optionnel)')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setForceTransitionOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setForceTransitionOpen(false)}>{t('adminEscrow.cancel', 'Annuler')}</Button>
             <Button
               className="bg-[#003087] hover:bg-[#002a70]"
               onClick={handleForceTransition}
               disabled={!targetStatus || escrowTransition.isPending}
             >
-              {escrowTransition.isPending ? 'Transition...' : 'Forcer'}
+              {escrowTransition.isPending ? t('adminEscrow.transitioning', 'Transition...') : t('adminEscrow.force', 'Forcer')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -501,9 +504,9 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
       <Dialog open={resolveDisputeOpen} onOpenChange={setResolveDisputeOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Résoudre le litige</DialogTitle>
+            <DialogTitle>{t('adminEscrow.resolveDisputeTitle', 'Résoudre le litige')}</DialogTitle>
             <DialogDescription>
-              Décider de l&apos;issue du litige pour cette transaction.
+              {t('adminEscrow.resolveDisputeDesc', "Décider de l'issue du litige pour cette transaction.")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -514,25 +517,25 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
                 onClick={() => setTargetStatus('FUNDED')}
               >
                 <ArrowLeftRight className="w-4 h-4 mr-1.5" />
-                Retour à Financé
+                {t('adminEscrow.backToFunded', 'Retour à Financé')}
               </Button>
               <Button
                 variant={targetStatus === 'REFUNDED' ? 'default' : 'outline'}
                 className={cn(targetStatus === 'REFUNDED' && 'bg-red-600 hover:bg-red-700')}
                 onClick={() => setTargetStatus('REFUNDED')}
               >
-                Rembourser
+                {t('adminEscrow.refund', 'Rembourser')}
               </Button>
             </div>
             <Textarea
-              placeholder="Raison de la résolution..."
+              placeholder={t('adminEscrow.resolutionReasonPlaceholder', 'Raison de la résolution...')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResolveDisputeOpen(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setResolveDisputeOpen(false)}>{t('adminEscrow.cancel', 'Annuler')}</Button>
             <Button
               className={cn(
                 targetStatus === 'REFUNDED' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
@@ -540,7 +543,7 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
               onClick={handleResolveDispute}
               disabled={!targetStatus || escrowTransition.isPending}
             >
-              {escrowTransition.isPending ? 'Résolution...' : 'Confirmer'}
+              {escrowTransition.isPending ? t('adminEscrow.resolving', 'Résolution...') : t('adminEscrow.confirm', 'Confirmer')}
             </Button>
           </DialogFooter>
         </DialogContent>

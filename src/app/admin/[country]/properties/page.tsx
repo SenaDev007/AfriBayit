@@ -12,6 +12,7 @@ import {
   Building2, Search, Eye, MapPin, CheckCircle2, Clock, AlertTriangle,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
@@ -35,6 +36,7 @@ const statusColors: Record<string, string> = { draft: 'bg-gray-50 text-gray-600'
 const typeLabels: Record<string, string> = { villa: 'Villa', appartement: 'Appartement', terrain: 'Terrain', bureau: 'Bureau', commerce: 'Commerce', chambre: 'Chambre', guesthouse: 'Guesthouse' };
 
 export default function CountryPropertiesPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const country = (params.country as string) || 'BJ';
   const [search, setSearch] = useState('');
@@ -60,12 +62,12 @@ export default function CountryPropertiesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Building2 className="w-6 h-6 text-[#003087]" />
-            Propriétés — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryProperties.pageTitle', 'Propriétés')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Gestion des propriétés du {COUNTRY_NAMES[country]}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{t('adminCountryProperties.pageSubtitle', 'Gestion des propriétés du')} {COUNTRY_NAMES[country]}</p>
         </div>
         <Badge variant="outline" className="text-xs bg-[#003087]/5 border-[#003087]/20 text-[#003087]">
-          {total} propriété{total !== 1 ? 's' : ''}
+          {total} {t('adminCountryProperties.statTotal', 'propriétés')}
         </Badge>
       </div>
 
@@ -73,14 +75,14 @@ export default function CountryPropertiesPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input placeholder="Rechercher par titre, ville..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} className="pl-9" />
+          <Input placeholder={t('adminCountryProperties.searchPlaceholder', 'Rechercher par titre, ville...')} value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }} className="pl-9" />
         </div>
         <div className="flex gap-2 flex-wrap">
           {['', 'pending', 'published', 'sold'].map((s) => (
             <Button key={s} variant={statusFilter === s ? 'default' : 'outline'} size="sm"
               className={statusFilter === s ? 'bg-[#003087] text-white' : ''}
               onClick={() => { setStatusFilter(s); setPage(0); }}>
-              {s === '' ? 'Tous' : statusLabels[s] || s}
+              {s === '' ? t('adminCountryProperties.filterAll', 'Tous') : statusLabels[s] || s}
             </Button>
           ))}
         </div>

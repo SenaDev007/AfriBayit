@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +68,7 @@ interface HotelsResponse {
 }
 
 export default function AdminHotelsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ country: '', status: '', connectionLevel: '', search: '', page: 1 });
@@ -101,8 +103,8 @@ export default function AdminHotelsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Hôtels</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Gestion des hôtels et connexions OTA</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminHotels.pageTitle', 'Hôtels')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('adminHotels.pageSubtitle', 'Gérer les hôtels et établissements hôteliers')}</p>
       </div>
 
       {/* Summary */}
@@ -120,16 +122,16 @@ export default function AdminHotelsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input placeholder="Rechercher un hôtel..." className="pl-10" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))} />
+            <Input placeholder={t('adminHotels.searchPlaceholder', 'Rechercher par nom, ville...')} className="pl-10" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))} />
           </div>
           <Select value={filters.status} onValueChange={(v) => setFilters((f) => ({ ...f, status: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminHotels.placeholderStatus', 'Statut')} /></SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((s) => <SelectItem key={s.value || '__all'} value={s.value || '__all'}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filters.country} onValueChange={(v) => setFilters((f) => ({ ...f, country: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pays" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminHotels.placeholderCountry', 'Pays')} /></SelectTrigger>
             <SelectContent>
               {COUNTRIES.map((c) => <SelectItem key={c.value || '__all'} value={c.value || '__all'}>{c.label}</SelectItem>)}
             </SelectContent>
@@ -150,7 +152,7 @@ export default function AdminHotelsPage() {
         ) : !data?.hotels.length ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <Hotel className="w-12 h-12 mb-3" />
-            <p className="text-sm font-medium">Aucun hôtel trouvé</p>
+            <p className="text-sm font-medium">{t('adminHotels.empty', 'Aucun hôtel trouvé')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

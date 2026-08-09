@@ -12,10 +12,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAdminLeaseDetail } from '@/hooks/useAdminApi';
 import { api } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
 export default function AdminLeaseDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
@@ -39,26 +41,26 @@ export default function AdminLeaseDetailPage() {
     return (<div className="flex items-center justify-center py-24"><Loader2 className="w-8 h-8 animate-spin text-[#003087]" /></div>);
   }
   if (!lease) {
-    return (<div className="text-center py-24 text-gray-400"><KeyRound className="w-12 h-12 mx-auto mb-2" /><p>Bail non trouvé</p></div>);
+    return (<div className="text-center py-24 text-gray-400"><KeyRound className="w-12 h-12 mx-auto mb-2" /><p>{t('adminLeaseDetail.notFound', 'Bail non trouvé')}</p></div>);
   }
 
   return (
     <div className="space-y-6">
       <div>
         <button onClick={() => router.push('/admin/leases')} className="text-sm text-gray-500 hover:text-[#003087] mb-3 inline-flex items-center gap-1">
-          <ArrowLeft className="w-4 h-4" />Retour à la liste
+          <ArrowLeft className="w-4 h-4" />{t('adminLeaseDetail.back', 'Retour')}
         </button>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2">
               <KeyRound className="w-6 h-6" />
-              Bail {lease.leaseRef || lease.id.slice(-8).toUpperCase()}
+              {t('adminLeaseDetail.pageTitle', 'Détails du bail')} {lease.leaseRef || lease.id.slice(-8).toUpperCase()}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">Détails du bail et documents associés</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminLeaseDetail.pageSubtitle', 'Informations et gestion du bail')}</p>
           </div>
           <Button onClick={handleDownloadPdf} className="bg-[#D4AF37] hover:bg-[#b8961f] text-white">
             <Download className="w-4 h-4 mr-2" />
-            Télécharger le contrat PDF
+            {t('adminLeaseDetail.btnDownload', 'Télécharger le contrat PDF')}
           </Button>
         </div>
       </div>

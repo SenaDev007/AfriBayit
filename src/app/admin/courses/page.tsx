@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,7 @@ interface CoursesResponse {
 }
 
 export default function AdminCoursesPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ category: '', country: '', level: '', published: '', search: '', page: 1 });
@@ -111,8 +113,8 @@ export default function AdminCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Académie</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Gestion des cours et formations</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('adminCourses.pageTitle', 'Académie')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('adminCourses.pageSubtitle', 'Gérer les cours et formations de l\'académie')}</p>
       </div>
 
       {/* Summary */}
@@ -120,7 +122,7 @@ export default function AdminCoursesPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total cours</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t('adminCourses.statTotal', 'Total cours')}</p>
               <p className="mt-2 text-2xl font-bold text-gray-900">{data?.pagination.total || 0}</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#003087]/10 text-[#003087]">
@@ -131,7 +133,7 @@ export default function AdminCoursesPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Publiés</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t('adminCourses.statPublished', 'Publiés')}</p>
               <p className="mt-2 text-2xl font-bold text-green-600">{s?.published || 0}</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-green-50 text-green-600">
@@ -142,7 +144,7 @@ export default function AdminCoursesPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Non publiés</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t('adminCourses.statUnpublished', 'Non publiés')}</p>
               <p className="mt-2 text-2xl font-bold text-amber-600">{(data?.pagination.total || 0) - (s?.published || 0)}</p>
             </div>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-50 text-amber-600">
@@ -157,28 +159,28 @@ export default function AdminCoursesPage() {
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input placeholder="Rechercher un cours..." className="pl-10" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))} />
+            <Input placeholder={t('adminCourses.searchPlaceholder', 'Rechercher un cours...')} className="pl-10" value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))} />
           </div>
           <Select value={filters.category} onValueChange={(v) => setFilters((f) => ({ ...f, category: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[180px]"><SelectValue placeholder="Catégorie" /></SelectTrigger>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder={t('adminCourses.placeholderCategory', 'Catégorie')} /></SelectTrigger>
             <SelectContent>
               {CATEGORY_OPTIONS.map((c) => <SelectItem key={c.value || '__all'} value={c.value || '__all'}>{c.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filters.level} onValueChange={(v) => setFilters((f) => ({ ...f, level: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Niveau" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminCourses.placeholderLevel', 'Niveau')} /></SelectTrigger>
             <SelectContent>
               {LEVEL_OPTIONS.map((l) => <SelectItem key={l.value || '__all'} value={l.value || '__all'}>{l.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filters.published} onValueChange={(v) => setFilters((f) => ({ ...f, published: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="Publication" /></SelectTrigger>
+            <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('adminCourses.placeholderStatus', 'Publication')} /></SelectTrigger>
             <SelectContent>
               {PUBLISHED_OPTIONS.map((p) => <SelectItem key={p.value || '__all'} value={p.value || '__all'}>{p.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filters.country} onValueChange={(v) => setFilters((f) => ({ ...f, country: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pays" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminCourses.placeholderCountry', 'Pays')} /></SelectTrigger>
             <SelectContent>
               {COUNTRIES.map((c) => <SelectItem key={c.value || '__all'} value={c.value || '__all'}>{c.label}</SelectItem>)}
             </SelectContent>
@@ -193,7 +195,7 @@ export default function AdminCoursesPage() {
         ) : !data?.courses.length ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <GraduationCap className="w-12 h-12 mb-3" />
-            <p className="text-sm font-medium">Aucun cours trouvé</p>
+            <p className="text-sm font-medium">{t('adminCourses.empty', 'Aucun cours trouvé')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -24,6 +24,7 @@ import {
 import { AlertTriangle, Clock, Globe, KeyRound, Plus, Search, ShieldCheck, ShieldX, UserCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const PILOT_COUNTRIES = [
   { code: 'ALL', name: 'Tous les pays (SUPER_ADMIN)', flag: '🌐' },
@@ -67,6 +68,7 @@ const countryNameMap: Record<string, string> = {
 };
 
 export default function GlobalAccreditationsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -154,36 +156,36 @@ export default function GlobalAccreditationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <KeyRound className="w-6 h-6 text-[#D4AF37]" />
-            Accréditations — Global
+            {t('adminAccreditations.pageTitle', 'Accréditations')} — Global
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Gestion centralisée des accès administrateurs pour tous les pays
+            {t('adminAccreditations.pageSubtitle', 'Gérer les accès administrateurs par pays')}
           </p>
         </div>
         <Dialog open={grantDialogOpen} onOpenChange={setGrantDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-xl">
               <Plus className="w-4 h-4 mr-2" />
-              Accorder une accréditation
+              {t('adminAccreditations.btnGrant', 'Accorder une accréditation')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-[#D4AF37]" />
-                Accorder une accréditation
+                {t('adminAccreditations.dialogGrant', 'Accorder une accréditation')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {/* User email */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Email de l&apos;utilisateur
+                  {t('adminAccreditations.labelEmail', "Email de l'utilisateur")}
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
-                    placeholder="recherche@exemple.com"
+                    placeholder={t('adminAccreditations.placeholderEmail', 'recherche@exemple.com')}
                     value={searchUserEmail}
                     onChange={(e) => setSearchUserEmail(e.target.value)}
                     className="pl-9"
@@ -191,28 +193,28 @@ export default function GlobalAccreditationsPage() {
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  Saisissez l&apos;email d&apos;un utilisateur existant
+                  {t('adminAccreditations.emailHint', "Saisissez l'email de l'utilisateur existant sur la plateforme")}
                 </p>
               </div>
 
               {/* Role selection */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">Rôle</label>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('adminAccreditations.labelRole', 'Rôle')}</label>
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner un rôle" />
+                    <SelectValue placeholder={t('adminAccreditations.placeholderRole', 'Sélectionner un rôle')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="SUPER_ADMIN">
                       <span className="flex items-center gap-2">
                         <ShieldCheck className="w-4 h-4 text-red-500" />
-                        Super Admin — Accès à tous les pays
+                        {t('adminAccreditations.roleSuperAdmin', 'Super Admin — Accès à tous les pays')}
                       </span>
                     </SelectItem>
                     <SelectItem value="COUNTRY_ADMIN">
                       <span className="flex items-center gap-2">
                         <KeyRound className="w-4 h-4 text-blue-500" />
-                        Admin Pays — Accès au pays assigné
+                        {t('adminAccreditations.roleCountryAdmin', 'Admin Pays — Accès à ce pays uniquement')}
                       </span>
                     </SelectItem>
                   </SelectContent>
@@ -227,10 +229,10 @@ export default function GlobalAccreditationsPage() {
               {/* Country selection */}
               {selectedRole === 'COUNTRY_ADMIN' && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Pays</label>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('adminAccreditations.country', 'Pays')}</label>
                   <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Sélectionner un pays" />
+                      <SelectValue placeholder={t('adminAccreditations.placeholderRole', 'Sélectionner un pays')} />
                     </SelectTrigger>
                     <SelectContent>
                       {PILOT_COUNTRIES.filter((c) => c.code !== 'ALL').map((c) => (
@@ -248,7 +250,7 @@ export default function GlobalAccreditationsPage() {
               {/* Expiry date */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Date d&apos;expiration (optionnelle)
+                  {t('adminAccreditations.labelExpiry', "Date d'expiration (optionnelle)")}
                 </label>
                 <Input
                   type="date"
@@ -263,7 +265,7 @@ export default function GlobalAccreditationsPage() {
                 className="w-full bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-xl h-11"
                 disabled={!searchUserEmail.trim() || grantMutation.isPending}
               >
-                {grantMutation.isPending ? 'En cours...' : "Accorder l'accréditation"}
+                {grantMutation.isPending ? t('adminAccreditations.btnGranting', 'En cours...') : t('adminAccreditations.btnGrantConfirm', "Accorder l'accréditation")}
               </Button>
             </div>
           </DialogContent>

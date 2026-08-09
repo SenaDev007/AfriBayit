@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { Activity, AlertTriangle, ArrowDownRight, ArrowLeftRight, ArrowUpRight, Building2, CheckCircle2, Clock, DollarSign, Eye, FileCheck, Globe, Home, Hotel, ShieldCheck, TrendingUp, UserPlus, Users, Wallet } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const COUNTRY_NAMES: Record<string, string> = {
   BJ: 'Bénin',
@@ -187,6 +188,7 @@ export default function CountryDashboard() {
   const country = (params.country as string) || 'BJ';
   const countryName = COUNTRY_NAMES[country] || country;
   const countryFlag = COUNTRY_FLAGS[country] || '🌐';
+  const { t } = useTranslation();
 
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ['admin-stats', country],
@@ -230,19 +232,19 @@ export default function CountryDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {countryFlag} Tableau de bord — {countryName}
+            {countryFlag} {t('adminCountryDashboard.pageTitle', 'Tableau de bord —')} {countryName}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Vue d&apos;ensemble des activités pour le {countryName}
+            {t('adminCountryDashboard.pageSubtitle', "Vue d'ensemble des activités pour le")} {countryName}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            En ligne
+            {t('adminCountryDashboard.online', 'En ligne')}
           </span>
           <span className="text-xs text-gray-400">
-            Uptime: {s.platform.uptime}%
+            {t('adminCountryDashboard.uptime', 'Uptime:')} {s.platform.uptime}%
           </span>
         </div>
       </div>
@@ -250,68 +252,68 @@ export default function CountryDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Utilisateurs"
+          title={t('adminCountryDashboard.statUsers', 'Utilisateurs')}
           value={s.users.total.toLocaleString('fr-FR')}
-          subtitle={`+${s.users.recent7d} cette semaine`}
+          subtitle={`+${s.users.recent7d} ${t('adminCountryDashboard.recent7d', 'cette semaine')}`}
           icon={Users}
           trend="up"
-          trendLabel="+12.5% vs semaine dernière"
+          trendLabel={t('adminCountryDashboard.trendUsers', '+12.5% vs semaine dernière')}
           color="blue"
         />
         <StatCard
-          title="Propriétés"
+          title={t('adminCountryDashboard.statProperties', 'Propriétés')}
           value={s.properties.total.toLocaleString('fr-FR')}
-          subtitle={`${s.properties.pending} en attente de validation`}
+          subtitle={`${s.properties.pending} ${t('adminCountryDashboard.propertiesPending', 'en attente de validation')}`}
           icon={Building2}
           trend="up"
           trendLabel="+8.3%"
           color="navy"
         />
         <StatCard
-          title="Transactions"
+          title={t('adminCountryDashboard.statTransactions', 'Transactions')}
           value={s.transactions.total.toLocaleString('fr-FR')}
-          subtitle={formatXOF(s.transactions.totalVolume) + ' volume total'}
+          subtitle={formatXOF(s.transactions.totalVolume) + ' ' + t('adminCountryDashboard.totalVolume', 'volume total')}
           icon={ArrowLeftRight}
           trend="up"
           trendLabel="+15.2%"
           color="green"
         />
         <StatCard
-          title="Commissions"
+          title={t('adminCountryDashboard.statCommissions', 'Commissions')}
           value={formatXOF(s.transactions.totalCommission)}
-          subtitle="Total commissions perçues"
+          subtitle={t('adminCountryDashboard.totalCommissions', 'Total commissions perçues')}
           icon={DollarSign}
           trend="up"
           trendLabel="+22.1%"
           color="gold"
         />
         <StatCard
-          title="Escrow actifs"
+          title={t('adminCountryDashboard.statEscrowActive', 'Escrow actifs')}
           value={s.escrow.active}
-          subtitle={formatXOF(s.escrow.totalHeld) + ' détenus'}
+          subtitle={formatXOF(s.escrow.totalHeld) + ' ' + t('adminCountryDashboard.heldAmount', 'détenus')}
           icon={Wallet}
           color="navy"
         />
         <StatCard
-          title="KYC en attente"
+          title={t('adminCountryDashboard.statKycPending', 'KYC en attente')}
           value={s.kyc.pending}
-          subtitle="Documents à vérifier"
+          subtitle={t('adminCountryDashboard.docsToVerify', 'Documents à vérifier')}
           icon={FileCheck}
           trend={s.kyc.pending > 10 ? 'down' : 'neutral'}
-          trendLabel={s.kyc.pending > 10 ? 'Attention' : 'Normal'}
+          trendLabel={s.kyc.pending > 10 ? t('adminCountryDashboard.attention', 'Attention') : t('adminCountryDashboard.normal', 'Normal')}
           color={s.kyc.pending > 10 ? 'red' : 'green'}
         />
         <StatCard
-          title="Agents certifiés"
+          title={t('adminCountryDashboard.statCertifiedAgents', 'Agents certifiés')}
           value={(s.users.byRole['agent'] || 0).toLocaleString('fr-FR')}
-          subtitle="Agents vérifiés"
+          subtitle={t('adminCountryDashboard.verifiedAgents', 'Agents vérifiés')}
           icon={ShieldCheck}
           color="blue"
         />
         <StatCard
-          title="Utilisateurs 24h"
+          title={t('adminCountryDashboard.statUsers24h', 'Utilisateurs 24h')}
           value={s.platform.activeUsers24h}
-          subtitle="Actifs dernières 24h"
+          subtitle={t('adminCountryDashboard.active24h', 'Actifs dernières 24h')}
           icon={Activity}
           color="green"
         />
@@ -323,11 +325,11 @@ export default function CountryDashboard() {
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-semibold text-gray-900">Revenus mensuels — {countryName}</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Commissions par mois</p>
+              <h2 className="text-base font-semibold text-gray-900">{t('adminCountryDashboard.monthlyRevenueTitle', 'Revenus mensuels —')} {countryName}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t('adminCountryDashboard.monthlyRevenueSubtitle', 'Commissions par mois')}</p>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <span className="px-2 py-1 rounded bg-[#003087]/10 text-[#003087] font-medium">12 mois</span>
+              <span className="px-2 py-1 rounded bg-[#003087]/10 text-[#003087] font-medium">{t('adminCountryDashboard.last12Months', '12 mois')}</span>
             </div>
           </div>
           <MiniChart
@@ -336,7 +338,7 @@ export default function CountryDashboard() {
           />
           <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100">
             <div>
-              <p className="text-xs text-gray-500">Ce mois</p>
+              <p className="text-xs text-gray-500">{t('adminCountryDashboard.thisMonth', 'Ce mois')}</p>
               <p className="text-lg font-bold text-gray-900">
                 {s.revenue.monthly.length > 0
                   ? formatXOF(s.revenue.monthly[s.revenue.monthly.length - 1].amount)
@@ -344,7 +346,7 @@ export default function CountryDashboard() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Mois dernier</p>
+              <p className="text-xs text-gray-500">{t('adminCountryDashboard.lastMonth', 'Mois dernier')}</p>
               <p className="text-lg font-bold text-gray-900">
                 {s.revenue.monthly.length > 1
                   ? formatXOF(s.revenue.monthly[s.revenue.monthly.length - 2].amount)
@@ -352,7 +354,7 @@ export default function CountryDashboard() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Moyenne</p>
+              <p className="text-xs text-gray-500">{t('adminCountryDashboard.average', 'Moyenne')}</p>
               <p className="text-lg font-bold text-gray-900">
                 {formatXOF(
                   s.revenue.monthly.length > 0
@@ -365,7 +367,7 @@ export default function CountryDashboard() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Total 12 mois</p>
+              <p className="text-xs text-gray-500">{t('adminCountryDashboard.total12Months', 'Total 12 mois')}</p>
               <p className="text-lg font-bold text-gray-900">
                 {formatXOF(s.revenue.monthly.reduce((a, b) => a + b.amount, 0))}
               </p>
@@ -375,48 +377,48 @@ export default function CountryDashboard() {
 
         {/* Activity feed */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-base font-semibold text-gray-900 mb-3">Activité récente</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">{t('adminCountryDashboard.recentActivity', 'Activité récente')}</h2>
           <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto custom-scrollbar-thin">
             <ActivityItem
               icon={UserPlus}
               iconColor="bg-blue-50 text-blue-500"
-              title="Nouvel utilisateur"
-              description={`Inscription sur ${countryName}`}
+              title={t('adminCountryDashboard.newUser', 'Nouvel utilisateur')}
+              description={`${t('adminCountryDashboard.signupOn', 'Inscription sur')} ${countryName}`}
               time="Il y a 5 min"
             />
             <ActivityItem
               icon={CheckCircle2}
               iconColor="bg-green-50 text-green-500"
-              title="Transaction complétée"
-              description={`Vente finalisée — ${countryName}`}
+              title={t('adminCountryDashboard.transactionCompleted', 'Transaction complétée')}
+              description={`${t('adminCountryDashboard.saleFinalized', 'Vente finalisée —')} ${countryName}`}
               time="Il y a 15 min"
             />
             <ActivityItem
               icon={FileCheck}
               iconColor="bg-amber-50 text-amber-500"
-              title="KYC validé"
-              description="Document vérifié avec succès"
+              title={t('adminCountryDashboard.kycValidated', 'KYC validé')}
+              description={t('adminCountryDashboard.docVerified', 'Document vérifié avec succès')}
               time="Il y a 30 min"
             />
             <ActivityItem
               icon={AlertTriangle}
               iconColor="bg-red-50 text-red-500"
-              title="Signalement"
-              description="Propriété signalée"
+              title={t('adminCountryDashboard.report', 'Signalement')}
+              description={t('adminCountryDashboard.propertyReported', 'Propriété signalée')}
               time="Il y a 1h"
             />
             <ActivityItem
               icon={ShieldCheck}
               iconColor="bg-purple-50 text-purple-500"
-              title="Agent certifié"
-              description={`Agent vérifié — ${countryName}`}
+              title={t('adminCountryDashboard.agentCertified', 'Agent certifié')}
+              description={`${t('adminCountryDashboard.agentVerified', 'Agent vérifié —')} ${countryName}`}
               time="Il y a 2h"
             />
             <ActivityItem
               icon={Clock}
               iconColor="bg-gray-100 text-gray-500"
-              title="Escrow en attente"
-              description="En attente de financement"
+              title={t('adminCountryDashboard.escrowPending', 'Escrow en attente')}
+              description={t('adminCountryDashboard.pendingFunding', 'En attente de financement')}
               time="Il y a 3h"
             />
           </div>
@@ -427,7 +429,7 @@ export default function CountryDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Users by role */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Utilisateurs par rôle</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4">{t('adminCountryDashboard.usersByRole', 'Utilisateurs par rôle')}</h2>
           <div className="space-y-3">
             {Object.entries(s.users.byRole).map(([role, count]) => {
               const pct = s.users.total > 0 ? Math.round((count / s.users.total) * 100) : 0;
@@ -462,7 +464,7 @@ export default function CountryDashboard() {
 
         {/* Properties by status */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Propriétés par statut</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4">{t('adminCountryDashboard.propertiesByStatus', 'Propriétés par statut')}</h2>
           <div className="space-y-3">
             {Object.entries(s.properties.byStatus).map(([status, count]) => {
               const pct = s.properties.total > 0 ? Math.round((count / s.properties.total) * 100) : 0;
@@ -515,8 +517,8 @@ export default function CountryDashboard() {
             <Users className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Utilisateurs</p>
-            <p className="text-xs text-gray-500">Gérer les comptes</p>
+            <p className="text-sm font-semibold text-gray-900">{t('adminCountryDashboard.quickLinkUsers', 'Utilisateurs')}</p>
+            <p className="text-xs text-gray-500">{t('adminCountryDashboard.quickLinkUsersDesc', 'Gérer les comptes')}</p>
           </div>
         </a>
         <a
@@ -527,8 +529,8 @@ export default function CountryDashboard() {
             <Building2 className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Propriétés</p>
-            <p className="text-xs text-gray-500">Valider & publier</p>
+            <p className="text-sm font-semibold text-gray-900">{t('adminCountryDashboard.quickLinkProperties', 'Propriétés')}</p>
+            <p className="text-xs text-gray-500">{t('adminCountryDashboard.quickLinkPropertiesDesc', 'Valider & publier')}</p>
           </div>
         </a>
         <a
@@ -539,8 +541,8 @@ export default function CountryDashboard() {
             <Hotel className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Hôtellerie</p>
-            <p className="text-xs text-gray-500">Hôtels & séjours</p>
+            <p className="text-sm font-semibold text-gray-900">{t('adminCountryDashboard.quickLinkHospitality', 'Hôtellerie')}</p>
+            <p className="text-xs text-gray-500">{t('adminCountryDashboard.quickLinkHospitalityDesc', 'Hôtels & séjours')}</p>
           </div>
         </a>
         <a
@@ -551,8 +553,8 @@ export default function CountryDashboard() {
             <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">Accréditations</p>
-            <p className="text-xs text-gray-500">Gérer les accès</p>
+            <p className="text-sm font-semibold text-gray-900">{t('adminCountryDashboard.quickLinkAccreditations', 'Accréditations')}</p>
+            <p className="text-xs text-gray-500">{t('adminCountryDashboard.quickLinkAccreditationsDesc', 'Gérer les accès')}</p>
           </div>
         </a>
       </div>

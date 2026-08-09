@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiFetch, apiPatch } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -85,6 +86,7 @@ interface TransactionsResponse {
 }
 
 export default function AdminTransactionsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ status: '', country: '', search: '', page: 1 });
@@ -135,11 +137,11 @@ export default function AdminTransactionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Suivi financier et supervision des transactions</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminTransactions.pageTitle', 'Transactions')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('adminTransactions.pageSubtitle', 'Suivi des transactions et paiements')}</p>
         </div>
         <Button onClick={exportCSV} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" /> Exporter CSV
+          <Download className="w-4 h-4" /> {t('adminTransactions.exportCsv', 'Exporter CSV')}
         </Button>
       </div>
 
@@ -171,14 +173,14 @@ export default function AdminTransactionsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher référence, paiement..."
+              placeholder={t('adminTransactions.searchPlaceholder', 'Rechercher propriété, acheteur...')}
               className="pl-10"
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
             />
           </div>
           <Select value={filters.status} onValueChange={(v) => setFilters((f) => ({ ...f, status: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[180px]"><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder={t('adminTransactions.placeholderStatus', 'Statut')} /></SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((o) => (
                 <SelectItem key={o.value || '__all'} value={o.value || '__all'}>{o.label}</SelectItem>
@@ -186,7 +188,7 @@ export default function AdminTransactionsPage() {
             </SelectContent>
           </Select>
           <Select value={filters.country} onValueChange={(v) => setFilters((f) => ({ ...f, country: v === '__all' ? '' : v, page: 1 }))}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pays" /></SelectTrigger>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder={t('adminTransactions.placeholderCountry', 'Pays')} /></SelectTrigger>
             <SelectContent>
               {COUNTRIES.map((c) => (
                 <SelectItem key={c.value || '__all'} value={c.value || '__all'}>{c.label}</SelectItem>
@@ -207,8 +209,8 @@ export default function AdminTransactionsPage() {
         ) : !data?.transactions.length ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <ArrowLeftRight className="w-12 h-12 mb-3" />
-            <p className="text-sm font-medium">Aucune transaction trouvée</p>
-            <p className="text-xs mt-1">Modifiez les filtres pour voir plus de résultats</p>
+            <p className="text-sm font-medium">{t('adminTransactions.empty', 'Aucune transaction trouvée')}</p>
+            <p className="text-xs mt-1">{t('adminTransactions.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

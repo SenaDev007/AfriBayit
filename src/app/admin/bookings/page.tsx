@@ -53,6 +53,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminBookings } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente',
@@ -101,6 +102,7 @@ interface BookingRow {
 }
 
 export default function AdminBookingsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<BookingTab>('hotels');
   const [filters, setFilters] = useState<{
     status?: string;
@@ -139,17 +141,17 @@ export default function AdminBookingsPage() {
   };
 
   const handleConfirm = (id: string) => {
-    toast.success('Réservation confirmée');
+    toast.success(t('adminBookings.actionConfirm', 'Réservation confirmée'));
   };
 
   const handleCancel = () => {
-    toast.success('Réservation annulée');
+    toast.success(t('adminBookings.actionCancel', 'Réservation annulée'));
     setCancelOpen(null);
     setCancelReason('');
   };
 
   const handleModify = () => {
-    toast.success('Réservation modifiée');
+    toast.success(t('adminBookings.actionModify', 'Réservation modifiée'));
     setModifyOpen(null);
     setModifyData({ checkIn: '', checkOut: '' });
   };
@@ -159,9 +161,9 @@ export default function AdminBookingsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des réservations</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminBookings.pageTitle', 'Gestion des réservations')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Gérer les réservations hôtels, guesthouses et courte durée
+            {t('adminBookings.pageSubtitle', 'Vérifier et gérer les réservations de la plateforme')}
           </p>
         </div>
       </div>
@@ -173,7 +175,7 @@ export default function AdminBookingsPage() {
             <Hotel className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total hôtels</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminHotels.statTotal', 'Total hôtels')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.totalHotels ?? 0}</p>
           </div>
         </div>
@@ -182,7 +184,7 @@ export default function AdminBookingsPage() {
             <Home className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total guesthouses</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminGuesthouses.statTotal', 'Total guesthouses')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.totalGuesthouses ?? 0}</p>
           </div>
         </div>
@@ -191,7 +193,7 @@ export default function AdminBookingsPage() {
             <Key className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total courte durée</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminBookings.statTotal', 'Total')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.totalShortTerm ?? 0}</p>
           </div>
         </div>
@@ -200,7 +202,7 @@ export default function AdminBookingsPage() {
             <CheckCircle2 className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">En attente</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminBookings.statPending', 'En attente')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -231,7 +233,7 @@ export default function AdminBookingsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par établissement, client..."
+              placeholder={t('adminBookings.searchPlaceholder', 'Rechercher par client, propriété...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

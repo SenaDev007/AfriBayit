@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminLeases, useAdminLeaseStats, type Lease } from '@/hooks/useAdminApi';
 import { api } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   ACTIVE: { label: 'Actif', variant: 'default' },
@@ -27,6 +28,7 @@ const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secon
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
 export default function AdminLeasesPage() {
+  const { t: translate } = useTranslation();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -61,13 +63,13 @@ export default function AdminLeasesPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#0a2a5e] flex items-center gap-2">
             <KeyRound className="w-6 h-6" />
-            Baux & Loyers
+            {translate('adminLeases.pageTitle', 'Baux')} & Loyers
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Gestion des baux longue durée, suivi des loyers et documents OHADA</p>
+          <p className="text-sm text-gray-500 mt-1">{translate('adminLeases.pageSubtitle', 'Gérer les baux et contrats de location')}</p>
         </div>
         <Button className="bg-[#003087] hover:bg-[#001f5c]">
           <Plus className="w-4 h-4 mr-2" />
-          Nouveau bail
+          {translate('adminLeases.btnNew', 'Nouveau bail')}
         </Button>
       </div>
 

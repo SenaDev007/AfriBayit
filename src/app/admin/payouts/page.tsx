@@ -54,6 +54,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminPayouts, useProcessPayout } from '@/hooks/useAdmin';
+import { useTranslation } from '@/lib/i18n/use-translate';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente',
@@ -101,6 +102,7 @@ interface PayoutRow {
 }
 
 export default function AdminPayoutsPage() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<{
     status?: string;
     country?: string;
@@ -137,8 +139,8 @@ export default function AdminPayoutsPage() {
     processPayout.mutate(
       { id, action: 'process' },
       {
-        onSuccess: () => toast.success('Paiement en cours de traitement'),
-        onError: () => toast.error('Erreur lors du traitement'),
+        onSuccess: () => toast.success(t('adminPayouts.toastProcessing', 'Paiement en cours de traitement')),
+        onError: () => toast.error(t('adminPayouts.toastProcessError', 'Erreur lors du traitement')),
       }
     );
   };
@@ -148,11 +150,11 @@ export default function AdminPayoutsPage() {
       { id: cancelOpen!, action: 'cancel', reason: cancelReason },
       {
         onSuccess: () => {
-          toast.success('Paiement annulé');
+          toast.success(t('adminPayouts.toastCancelled', 'Paiement annulé'));
           setCancelOpen(null);
           setCancelReason('');
         },
-        onError: () => toast.error('Erreur lors de l\'annulation'),
+        onError: () => toast.error(t('adminPayouts.toastCancelError', "Erreur lors de l'annulation")),
       }
     );
   };
@@ -162,9 +164,9 @@ export default function AdminPayoutsPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestion des paiements</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminPayouts.pageTitle', 'Gestion des paiements')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Traiter et gérer les paiements aux bénéficiaires
+            {t('adminPayouts.pageSubtitle', 'Traiter et gérer les paiements aux bénéficiaires')}
           </p>
         </div>
       </div>
@@ -176,7 +178,7 @@ export default function AdminPayoutsPage() {
             <DollarSign className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Total</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminPayouts.statTotal', 'Total')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.total ?? 0}</p>
           </div>
         </div>
@@ -185,7 +187,7 @@ export default function AdminPayoutsPage() {
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">En attente</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminPayouts.statPending', 'En attente')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.pending ?? 0}</p>
           </div>
         </div>
@@ -194,7 +196,7 @@ export default function AdminPayoutsPage() {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Complétés</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminPayouts.statCompleted', 'Complétés')}</p>
             <p className="text-xl font-bold text-gray-900">{summary?.completed ?? 0}</p>
           </div>
         </div>
@@ -203,7 +205,7 @@ export default function AdminPayoutsPage() {
             <Banknote className="w-5 h-5 text-[#D4AF37]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Montant en attente</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminPayouts.statPendingAmount', 'Montant en attente')}</p>
             <p className="text-sm font-bold text-gray-900">{formatXOF(summary?.pendingAmount ?? 0)}</p>
           </div>
         </div>
@@ -212,7 +214,7 @@ export default function AdminPayoutsPage() {
             <CreditCard className="w-5 h-5 text-[#003087]" />
           </div>
           <div>
-            <p className="text-[11px] text-gray-500 uppercase">Montant total</p>
+            <p className="text-[11px] text-gray-500 uppercase">{t('adminPayouts.statTotalAmount', 'Montant total')}</p>
             <p className="text-sm font-bold text-gray-900">{formatXOF(summary?.totalAmount ?? 0)}</p>
           </div>
         </div>
@@ -224,7 +226,7 @@ export default function AdminPayoutsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Rechercher par bénéficiaire, montant..."
+              placeholder={t('adminPayouts.searchPlaceholder', 'Rechercher par bénéficiaire, montant...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -239,15 +241,15 @@ export default function AdminPayoutsPage() {
               }
             >
               <SelectTrigger className="w-[160px] h-9 text-xs">
-                <SelectValue placeholder="Statut" />
+                <SelectValue placeholder={t('adminPayouts.placeholderStatus', 'Statut')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="processing">En cours</SelectItem>
-                <SelectItem value="completed">Complété</SelectItem>
-                <SelectItem value="failed">Échoué</SelectItem>
-                <SelectItem value="cancelled">Annulé</SelectItem>
+                <SelectItem value="all">{t('adminPayouts.selectAllStatuses', 'Tous les statuts')}</SelectItem>
+                <SelectItem value="pending">{t('adminPayouts.statusPending', 'En attente')}</SelectItem>
+                <SelectItem value="processing">{t('adminPayouts.statusProcessing', 'En cours')}</SelectItem>
+                <SelectItem value="completed">{t('adminPayouts.statusCompleted', 'Complété')}</SelectItem>
+                <SelectItem value="failed">{t('adminPayouts.statusFailed', 'Échoué')}</SelectItem>
+                <SelectItem value="cancelled">{t('adminPayouts.statusCancelled', 'Annulé')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -257,18 +259,18 @@ export default function AdminPayoutsPage() {
               }
             >
               <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Pays" />
+                <SelectValue placeholder={t('adminPayouts.placeholderCountry', 'Pays')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="all">{t('adminPayouts.selectAllCountries', 'Tous les pays')}</SelectItem>
+                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
-              <Filter className="w-3.5 h-3.5 mr-1" /> Filtrer
+              <Filter className="w-3.5 h-3.5 mr-1" /> {t('adminCommon.filter', 'Filtrer')}
             </Button>
           </div>
         </div>
@@ -293,21 +295,21 @@ export default function AdminPayoutsPage() {
             <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-4">
               <DollarSign className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">Aucun paiement trouvé</p>
-            <p className="text-sm text-gray-500 mt-1">Modifiez vos filtres</p>
+            <p className="text-lg font-medium text-gray-900">{t('adminPayouts.empty', 'Aucun paiement trouvé')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('adminPayouts.modifyFilters', 'Modifiez vos filtres')}</p>
           </div>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/80">
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Bénéficiaire</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Montant</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Devise</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Méthode</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Statut</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">Date prévue</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colBeneficiary', 'Bénéficiaire')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colAmount', 'Montant')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colCurrency', 'Devise')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colMethod', 'Méthode')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colStatus', 'Statut')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t('adminPayouts.colScheduledDate', 'Date prévue')}</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">{t('adminPayouts.colActions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -346,19 +348,19 @@ export default function AdminPayoutsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onClick={() => setDetailsOpen(payout.id)}>
-                            <Eye className="w-4 h-4" /> Voir détails
+                            <Eye className="w-4 h-4" /> {t('adminPayouts.actionViewDetails', 'Voir détails')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleProcess(payout.id)}
                             disabled={payout.status !== 'pending'}
                           >
-                            <CheckCircle2 className="w-4 h-4" /> Traiter
+                            <CheckCircle2 className="w-4 h-4" /> {t('adminPayouts.actionProcess', 'Traiter')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setCancelOpen(payout.id)}
                             disabled={payout.status === 'completed' || payout.status === 'cancelled'}
                           >
-                            <XCircle className="w-4 h-4" /> Annuler
+                            <XCircle className="w-4 h-4" /> {t('adminPayouts.actionCancel', 'Annuler')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -399,8 +401,8 @@ export default function AdminPayoutsPage() {
       <Dialog open={!!detailsOpen} onOpenChange={() => setDetailsOpen(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Détails du paiement</DialogTitle>
-            <DialogDescription>Informations détaillées sur le paiement</DialogDescription>
+            <DialogTitle>{t('adminPayouts.dialogDetails', 'Détails du paiement')}</DialogTitle>
+            <DialogDescription>{t('adminPayouts.dialogDetailsDesc', 'Informations détaillées sur le paiement')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             {payouts.find((p) => p.id === detailsOpen) && (() => {
@@ -408,33 +410,33 @@ export default function AdminPayoutsPage() {
               return (
                 <>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Bénéficiaire</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailBeneficiary', 'Bénéficiaire')}</span>
                     <span className="font-medium">{payout.beneficiary?.name || '—'}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Montant</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailAmount', 'Montant')}</span>
                     <span className="font-mono font-medium">{formatXOF(payout.amount)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Devise</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailCurrency', 'Devise')}</span>
                     <span className="font-medium">{payout.currency || 'XOF'}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Méthode</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailMethod', 'Méthode')}</span>
                     <span className="font-medium">{METHOD_LABELS[payout.method] || payout.method}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Statut</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailStatus', 'Statut')}</span>
                     <Badge variant="outline" className={cn('text-[10px]', STATUS_COLORS[payout.status] || '')}>
                       {STATUS_LABELS[payout.status] || payout.status}
                     </Badge>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-500">Date prévue</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailScheduledDate', 'Date prévue')}</span>
                     <span className="font-medium">{formatDate(payout.scheduledDate)}</span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span className="text-gray-500">Pays</span>
+                    <span className="text-gray-500">{t('adminPayouts.detailCountry', 'Pays')}</span>
                     <span>{payout.country ? `${COUNTRY_FLAGS[payout.country] || ''} ${payout.country}` : '—'}</span>
                   </div>
                 </>
@@ -442,7 +444,7 @@ export default function AdminPayoutsPage() {
             })()}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailsOpen(null)}>Fermer</Button>
+            <Button variant="outline" onClick={() => setDetailsOpen(null)}>{t('adminPayouts.btnClose', 'Fermer')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -451,19 +453,19 @@ export default function AdminPayoutsPage() {
       <Dialog open={!!cancelOpen} onOpenChange={() => setCancelOpen(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Annuler le paiement</DialogTitle>
-            <DialogDescription>Indiquez la raison de l&apos;annulation</DialogDescription>
+            <DialogTitle>{t('adminPayouts.dialogCancel', 'Annuler le paiement')}</DialogTitle>
+            <DialogDescription>{t('adminPayouts.dialogCancelDesc', "Indiquez la raison de l'annulation")}</DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Raison de l'annulation..."
+            placeholder={t('adminPayouts.placeholderCancelReason', "Raison de l'annulation...")}
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
             rows={3}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCancelOpen(null)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setCancelOpen(null)}>{t('adminPayouts.btnCancel', 'Annuler')}</Button>
             <Button variant="destructive" onClick={handleCancel} disabled={processPayout.isPending}>
-              {processPayout.isPending ? 'Annulation...' : 'Confirmer l\'annulation'}
+              {processPayout.isPending ? t('adminPayouts.btnCancelling', 'Annulation...') : t('adminPayouts.btnConfirmCancel', "Confirmer l'annulation")}
             </Button>
           </DialogFooter>
         </DialogContent>
