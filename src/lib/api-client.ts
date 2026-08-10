@@ -1,30 +1,8 @@
 // AfriBayit — API Client (CDC §3.1.2 — frontend calls NestJS backend)
 // This module replaces the old apiFetch helper that called Next.js API routes.
 // All requests now go to the separate NestJS backend (afribayit-api on Fly.io).
-//
-// Module 2 enhancements:
-//   - `readCookie(name)` + `getCountryCode()` (multi-tenant X-Country-Code header)
-//   - `tryRefreshAccessToken()` (deduped refresh on 401)
-//   - `parseResponse<T>(response)` helper
-//   - On 401 with auth: refresh + retry once
-//   - `api.downloadBlob(path, filename?)` for PDFs/images
 
-// Normalize the API URL: ensure it has a protocol and no trailing slash.
-// Guards against misconfigured Vercel env vars like "afribayit-api-production.up.railway.app"
-// (missing "https://") which would otherwise be treated as a relative path.
-function normalizeApiUrl(raw: string | undefined): string {
-  const fallback = 'http://localhost:3001';
-  let url = (raw || fallback).trim();
-  if (!url) return fallback;
-  // If missing protocol, prepend https://
-  if (!/^https?:\/\//i.test(url)) {
-    url = `https://${url}`;
-  }
-  // Strip trailing slash
-  return url.replace(/\/+$/, '');
-}
-
-const API_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // ─── Token Management ────────────────────────────────────────────────────
 
@@ -53,109 +31,6 @@ export function getAccessToken(): string | null {
   return null;
 }
 
-// ─── Cookie / Country helpers (Module 2 — Multi-tenant) ──────────────────
-
-/**
- * Read a cookie by name from `document.cookie`. Returns the decoded value
- * or `null` if not found / not in browser.
- */
-export function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  try {
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [rawKey, ...rawValueParts] = cookie.trim().split('=');
-      if (rawKey === name) {
-        const value = rawValueParts.join('=');
-        try {
-          return decodeURIComponent(value);
-        } catch {
-          return value;
-        }
-      }
-    }
-  } catch {
-    // document not available
-  }
-  return null;
-}
-
-/**
- * Resolve the current country code for the `X-Country-Code` header.
- * Priority: `afribayit_selected_country` → `afribayit_country` (legacy)
- *           → cookie → default `'BJ'`.
- */
-export function getCountryCode(): string {
-  if (typeof window !== 'undefined') {
-    try {
-      const fromSelected = localStorage.getItem('afribayit_selected_country');
-      if (fromSelected && /^[A-Z]{2}$/.test(fromSelected)) return fromSelected;
-      const fromLegacy = localStorage.getItem('afribayit_country');
-      if (fromLegacy && /^[A-Z]{2}$/.test(fromLegacy)) return fromLegacy;
-    } catch {
-      // localStorage not available
-    }
-    const fromCookie = readCookie('afribayit_country');
-    if (fromCookie && /^[A-Z]{2}$/.test(fromCookie)) return fromCookie;
-  }
-  return 'BJ';
-}
-
-// ─── Refresh token dedup ─────────────────────────────────────────────────
-//
-// On a 401 with auth, we POST `/auth/refresh` with the refresh token. If
-// multiple parallel requests 401 at the same time, we dedup them through
-// a single shared `refreshPromise` so the backend isn't hammered.
-
-let refreshPromise: Promise<string | null> | null = null;
-
-async function tryRefreshAccessToken(): Promise<string | null> {
-  // Server-side: no refresh possible.
-  if (typeof window === 'undefined') return null;
-
-  // Already in-flight — piggyback on the existing promise.
-  if (refreshPromise) return refreshPromise;
-
-  const refreshToken =
-    localStorage.getItem('afribayit_refresh_token') || null;
-  if (!refreshToken) return null;
-
-  refreshPromise = (async () => {
-    try {
-      const res = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-      if (!res.ok) {
-        // Refresh failed — clear tokens so the user is forced to re-login.
-        localStorage.removeItem('afribayit_access_token');
-        localStorage.removeItem('afribayit_refresh_token');
-        accessToken = null;
-        return null;
-      }
-      const data = (await res.json()) as {
-        accessToken?: string;
-        refreshToken?: string;
-        expiresInSeconds?: number;
-      };
-      if (!data.accessToken) return null;
-      setAccessToken(data.accessToken);
-      if (data.refreshToken) {
-        localStorage.setItem('afribayit_refresh_token', data.refreshToken);
-      }
-      return data.accessToken;
-    } catch {
-      return null;
-    } finally {
-      // Clear the in-flight promise so the next 401 can start a new refresh.
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
-}
-
 // ─── API Client ──────────────────────────────────────────────────────────
 
 export interface ApiOptions extends Omit<RequestInit, 'body'> {
@@ -169,47 +44,22 @@ export interface ApiOptions extends Omit<RequestInit, 'body'> {
   _retried?: boolean;
 }
 
-/**
- * Parse a fetch Response into the requested type. JSON responses are
- * parsed; text responses are returned as-is; non-OK responses throw an
- * `ApiError` carrying the parsed body.
- */
-export async function parseResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    const data = await response.json();
-    if (!response.ok) {
-      throw new ApiError(
-        (data && (data.error || data.message)) ||
-          `HTTP ${response.status}: ${response.statusText}`,
-        response.status,
-        data,
-      );
-    }
-    return data as T;
-  }
-  if (!response.ok) {
-    throw new ApiError(
-      `HTTP ${response.status}: ${response.statusText}`,
-      response.status,
-    );
-  }
-  return (await response.text()) as unknown as T;
-}
-
 export async function apiFetch<T = any>(
   path: string,
   options: ApiOptions = {},
 ): Promise<T> {
-  const { auth = true, formData, _retried, ...fetchOptions } = options;
+  const { auth = true, formData, _retried: _skipRetry, ...fetchOptions } = options;
+  void _skipRetry; // reserved for future retry-loop support
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
-  // Add country header for multitenancy (CDC §3.2 — Module 2)
-  const country = getCountryCode();
-  if (country) headers['X-Country-Code'] = country;
+  // Add country header for multitenancy (CDC §3.2)
+  if (typeof window !== 'undefined') {
+    const country = localStorage.getItem('afribayit_country') || 'BJ';
+    headers['X-Country-Code'] = country;
+  }
 
   // Add auth header
   if (auth) {
@@ -224,7 +74,9 @@ export async function apiFetch<T = any>(
     headers['Content-Type'] = 'application/json';
   }
 
-  // Ensure body is stringified if it's a plain object (NOT Blob/FormData/URLSearchParams/ArrayBuffer)
+  // Ensure body is stringified if it's a plain object (NOT Blob/FormData/
+  // URLSearchParams/ArrayBuffer). The widened ApiOptions.body type accepts
+  // plain objects for ergonomic `apiFetch(path, { body: { foo: 1 } })` calls.
   let body: BodyInit | null | undefined = fetchOptions.body as BodyInit | null | undefined;
   if (
     fetchOptions.body &&
@@ -234,38 +86,50 @@ export async function apiFetch<T = any>(
     !(fetchOptions.body instanceof Blob) &&
     !(fetchOptions.body instanceof URLSearchParams) &&
     !(fetchOptions.body instanceof ArrayBuffer) &&
-    !(ArrayBuffer.isView(fetchOptions.body))
+    !ArrayBuffer.isView(fetchOptions.body)
   ) {
     body = JSON.stringify(fetchOptions.body);
   }
 
-  // Rewrite /api/ prefix to / (backend doesn't use /api/ prefix)
-  const rewrittenPath = rewritePath(path);
-  const response = await fetch(`${API_URL}${rewrittenPath}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     ...fetchOptions,
     body,
     headers,
   });
 
-  // Handle 401 — try to refresh the access token once, then retry.
-  if (response.status === 401 && auth && !_retried) {
-    const newToken = await tryRefreshAccessToken();
-    if (newToken) {
-      // Retry the original request once with the fresh token.
-      return apiFetch<T>(path, { ...options, _retried: true });
-    }
-    // Refresh failed — drop the stale token and surface the 401.
-    setAccessToken(null);
-    throw new ApiError('Authentication required', 401);
-  }
-
-  // Hard 401 after retry (or non-auth 401) — clear token + throw.
+  // Handle 401 — token expired, try refresh or redirect to login
   if (response.status === 401 && auth) {
     setAccessToken(null);
-    throw new ApiError('Authentication required', 401);
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+      window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+    }
+    throw new Error('Session expirée. Veuillez vous reconnecter.');
   }
 
-  return parseResponse<T>(response);
+  // Parse response
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new ApiError(
+        data.error || data.message || 'Une erreur est survenue',
+        response.status,
+        data,
+      );
+    }
+
+    return data as T;
+  }
+
+  if (!response.ok) {
+    throw new ApiError(
+      `HTTP ${response.status}: ${response.statusText}`,
+      response.status,
+    );
+  }
+
+  return response.text() as unknown as T;
 }
 
 // ─── API Error ───────────────────────────────────────────────────────────
@@ -303,23 +167,20 @@ export const api = {
     apiFetch<T>(path, { ...options, method: 'POST', body: formData, formData: true }),
 
   /**
-   * Download a binary file (PDF, image, …) from the backend and trigger
-   * a browser save dialog. Uses the same auth + country headers as `apiFetch`.
-   * Falls back to a window.location navigation if the Blob API is unavailable.
+   * Download a binary file (PDF, image, …) and trigger a browser save
+   * dialog. Uses the same auth + country headers as apiFetch.
    */
   async downloadBlob(path: string, filename?: string): Promise<void> {
-    const rewrittenPath = rewritePath(path);
     const headers: Record<string, string> = {
       Accept: 'application/octet-stream,*/*;q=0.8',
     };
-    const country = getCountryCode();
+    const country = readCountryCode();
     if (country) headers['X-Country-Code'] = country;
     const token = getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_URL}${rewrittenPath}`, { headers });
+    const res = await fetch(`${API_URL}${rewritePath(path)}`, { headers });
     if (!res.ok) {
-      // Try to parse a JSON error body, otherwise surface the status.
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('application/json')) {
         const data = await res.json().catch(() => ({}));
@@ -336,8 +197,6 @@ export const api = {
       );
     }
     const blob = await res.blob();
-    // Try to extract a filename from Content-Disposition, else use the
-    // provided fallback, else derive from the URL.
     const cd = res.headers.get('content-disposition') || '';
     const cdMatch = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)/i);
     const finalName =
@@ -377,15 +236,11 @@ export const authApi = {
   verifyOTP: (identifier: string, code: string) =>
     api.post('/auth/otp/verify', { identifier, code }, { auth: false }),
 
-  /** True reset-password endpoint (Module 1) — accepts OTP + new password. */
+  /** True reset-password endpoint — accepts OTP + new password. */
   resetPassword: (email: string, otpCode: string, newPassword: string) =>
-    api.post(
-      '/auth/reset-password',
-      { email, otpCode, newPassword },
-      { auth: false },
-    ),
+    api.post('/auth/reset-password', { email, otpCode, newPassword }, { auth: false }),
 
-  /** Logout — invalidate the refresh token server-side (Module 1). */
+  /** Logout — invalidate the refresh token server-side. */
   logout: () => api.post('/auth/logout', {}),
 };
 
@@ -478,9 +333,7 @@ export const communityApi = {
   groups: (params?: any) => api.get(`/community/groups?${new URLSearchParams(params).toString()}`),
   createGroup: (data: any) => api.post('/community/groups', data),
   getGroup: (id: string) => api.get(`/community/groups/${id}`),
-  // Round 3 — Gap 23 fix: the backend's join route is `/groups/:id/join`,
-  // not `/groups/:id/members`.
-  joinGroup: (id: string) => api.post(`/community/groups/${id}/join`),
+  joinGroup: (id: string) => api.post(`/community/groups/${id}/members`),
 
   events: (params?: any) => api.get(`/community/events?${new URLSearchParams(params).toString()}`),
   registerEvent: (id: string) => api.post(`/community/events/${id}/register`),
@@ -493,17 +346,11 @@ export const academyApi = {
   createCourse: (data: any) => api.post('/academy/courses', data),
   getCourse: (id: string) => api.get(`/academy/courses/${id}`),
   enroll: (id: string) => api.post(`/academy/courses/${id}/enroll`),
-  // Round 3 — Gap 23 fix:
-  //  - `getQuiz` removed — quiz comes from the course detail response.
-  //  - `submitQuiz` → `/academy/courses/:id/quiz/attempt` (was
-  //     `/academy/quiz/attempt`).
-  //  - `generateCertificate` → `/academy/courses/:id/certificate` (was
-  //     `/academy/certificates/generate`).
-  //  - `enrollments` → `/academy/me/enrollments` (was `/academy/enrollments`).
-  submitQuiz: (courseId: string, data: any) => api.post(`/academy/courses/${courseId}/quiz/attempt`, data),
-  generateCertificate: (courseId: string) => api.post(`/academy/courses/${courseId}/certificate`),
+  getQuiz: (id: string) => api.get(`/academy/courses/${id}/quiz`),
+  submitQuiz: (data: any) => api.post('/academy/quiz/attempt', data),
+  generateCertificate: (data: any) => api.post('/academy/certificates/generate', data),
   verifyCertificate: (certificateId: string) => api.get(`/academy/certificates/verify/${certificateId}`),
-  enrollments: () => api.get('/academy/me/enrollments'),
+  enrollments: () => api.get('/academy/enrollments'),
 };
 
 // ─── Hospitality Helpers ──────────────────────────────────────────────────
@@ -566,9 +413,66 @@ export const adminApi = {
 
 export default api;
 
-// ─── Legacy compatibility exports (for hooks still using old apiFetch pattern) ─
-// These wrap the api object to match the old apiFetch/apiPost/apiPatch/apiDelete signatures
-// Paths starting with /api/ are rewritten to remove the /api/ prefix (backend doesn't use it)
+// ─── Cookie / Country helpers (multi-tenant X-Country-Code header) ─────────
+
+/**
+ * Read a cookie by name from `document.cookie`. Returns the decoded value
+ * or `null` if not found / not in browser.
+ */
+export function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  try {
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [rawKey, ...rawValueParts] = cookie.trim().split('=');
+      if (rawKey === name) {
+        const value = rawValueParts.join('=');
+        try {
+          return decodeURIComponent(value);
+        } catch {
+          return value;
+        }
+      }
+    }
+  } catch {
+    // document not available
+  }
+  return null;
+}
+
+/**
+ * Resolve the current country code for the X-Country-Code header.
+ * Priority: `afribayit_selected_country` → `afribayit_country` (legacy)
+ *           → cookie → default `'BJ'`.
+ */
+function readCountryCode(): string {
+  if (typeof window !== 'undefined') {
+    try {
+      const fromSelected = localStorage.getItem('afribayit_selected_country');
+      if (fromSelected && /^[A-Z]{2}$/.test(fromSelected)) return fromSelected;
+      const fromLegacy = localStorage.getItem('afribayit_country');
+      if (fromLegacy && /^[A-Z]{2}$/.test(fromLegacy)) return fromLegacy;
+    } catch {
+      // localStorage not available
+    }
+    const fromCookie = readCookie('afribayit_country');
+    if (fromCookie && /^[A-Z]{2}$/.test(fromCookie)) return fromCookie;
+  }
+  return 'BJ';
+}
+
+/**
+ * Public alias for readCountryCode (used by other modules to know the
+ * current tenant country without re-implementing the priority chain).
+ */
+export function getCountryCode(): string {
+  return readCountryCode();
+}
+
+// ─── Legacy compatibility exports ─────────────────────────────────────────
+// These wrap the api object to match the old apiFetch/apiPost/apiPatch/apiDelete
+// signatures used by hooks still on the legacy pattern. Paths starting with
+// /api/ are rewritten to remove the /api/ prefix (backend doesn't use it).
 
 function rewritePath(path: string): string {
   // Remove /api/ prefix if present (old Next.js API routes → backend API)
@@ -576,8 +480,41 @@ function rewritePath(path: string): string {
   return path;
 }
 
-export const apiPost = <T = any>(path: string, body?: any) => api.post<T>(rewritePath(path), body);
-export const apiPatch = <T = any>(path: string, body?: any) => api.patch<T>(rewritePath(path), body);
-export const apiDelete = <T = any>(path: string) => api.delete<T>(rewritePath(path));
 export const apiGet = <T = any>(path: string) => api.get<T>(rewritePath(path));
-export const apiPut = <T = any>(path: string, body?: any) => api.put<T>(rewritePath(path), body);
+export const apiPost = <T = any>(path: string, body?: any) =>
+  api.post<T>(rewritePath(path), body);
+export const apiPatch = <T = any>(path: string, body?: any) =>
+  api.patch<T>(rewritePath(path), body);
+export const apiPut = <T = any>(path: string, body?: any) =>
+  api.put<T>(rewritePath(path), body);
+export const apiDelete = <T = any>(path: string) =>
+  api.delete<T>(rewritePath(path));
+
+/**
+ * Parse a fetch Response into the requested type. JSON responses are
+ * parsed; text responses are returned as-is; non-OK responses throw an
+ * `ApiError` carrying the parsed body. Re-exported here for legacy
+ * consumers that imported it from this module.
+ */
+export async function parseResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await response.json();
+    if (!response.ok) {
+      throw new ApiError(
+        (data && (data.error || data.message)) ||
+          `HTTP ${response.status}: ${response.statusText}`,
+        response.status,
+        data,
+      );
+    }
+    return data as T;
+  }
+  if (!response.ok) {
+    throw new ApiError(
+      `HTTP ${response.status}: ${response.statusText}`,
+      response.status,
+    );
+  }
+  return (await response.text()) as unknown as T;
+}
