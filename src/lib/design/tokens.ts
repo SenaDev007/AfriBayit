@@ -136,7 +136,7 @@ export const typography = {
     fontSize: 'clamp(14px, 1.2vw, 16px)',
     lineHeight: 1.6,
     fontWeight: 400,
-    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
+    fontFamily: 'var(--font-inter), system-ui, sans-serif',
     letterSpacing: '0em',
   },
   /** Caption: 11-12px */
@@ -144,7 +144,7 @@ export const typography = {
     fontSize: 'clamp(11px, 1vw, 12px)',
     lineHeight: 1.5,
     fontWeight: 500,
-    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
+    fontFamily: 'var(--font-inter), system-ui, sans-serif',
     letterSpacing: '0.02em',
   },
   /** Mono Data: for prices and numbers */
@@ -152,7 +152,7 @@ export const typography = {
     fontSize: 'clamp(14px, 1.2vw, 18px)',
     lineHeight: 1.3,
     fontWeight: 600,
-    fontFamily: 'var(--font-dm-mono), monospace',
+    fontFamily: 'var(--font-space-grotesk), monospace',
     letterSpacing: '-0.01em',
   },
 } as const;
