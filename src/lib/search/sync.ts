@@ -55,7 +55,7 @@ async function enqueueSyncJob(job: Omit<SyncJob, 'id' | 'createdAt' | 'attempts'
   try {
     const { redis, isRedisConfigured } = await import('@/lib/redis');
     if (isRedisConfigured) {
-      await redis.rpush(SYNC_QUEUE_KEY, JSON.stringify(syncJob));
+      await (redis as any).rpush(SYNC_QUEUE_KEY, JSON.stringify(syncJob));
       console.log(`[Sync] Enqueued job ${syncJob.id} (${job.action}) via Redis`);
     } else {
       memoryQueue.push(syncJob);
@@ -83,7 +83,7 @@ async function processQueue(): Promise<void> {
     if (isRedisConfigured) {
       // Process Redis queue
       while (true) {
-        const raw = await redis.lpop(SYNC_QUEUE_KEY);
+        const raw = await (redis as any).lpop(SYNC_QUEUE_KEY);
         if (!raw) break;
 
         const job: SyncJob = JSON.parse(raw as string);
@@ -555,7 +555,7 @@ export async function getSyncQueueStatus(): Promise<{
   try {
     const { redis, isRedisConfigured } = await import('@/lib/redis');
     if (isRedisConfigured) {
-      queueLength = await redis.llen(SYNC_QUEUE_KEY);
+      queueLength = await (redis as any).llen(SYNC_QUEUE_KEY);
     } else {
       queueLength = memoryQueue.length;
     }

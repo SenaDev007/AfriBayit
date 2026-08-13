@@ -99,7 +99,7 @@ export function createDistributedMap<T>(namespace: string, ttlSeconds?: number) 
       if (useRedis) {
         // Note: KEYS can be slow on large datasets. For production with many keys,
         // consider using SCAN or maintaining a set of keys.
-        const keys = await redis!.keys(`${namespace}:*`);
+        const keys = await (redis as any).keys(`${namespace}:*`);
         if (keys.length > 0) {
           await redis!.del(...keys);
         }
@@ -111,7 +111,7 @@ export function createDistributedMap<T>(namespace: string, ttlSeconds?: number) 
     /** Get count of entries (approximate in Redis mode) */
     async size(): Promise<number> {
       if (useRedis) {
-        const keys = await redis!.keys(`${namespace}:*`);
+        const keys = await (redis as any).keys(`${namespace}:*`);
         return keys.length;
       }
       return memoryMap.size;

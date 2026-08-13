@@ -44,7 +44,7 @@ function mapStripeRefundStatus(status: string): PaymentStatus {
 
 export class StripeProvider extends PaymentProviderBase {
   name = 'stripe' as const;
-  private client: Stripe;
+  private client: any;
   private webhookSecret: string;
 
   constructor() {
@@ -111,12 +111,12 @@ export class StripeProvider extends PaymentProviderBase {
       expand: ['latest_charge'],
     });
 
-    const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+    const charge = paymentIntent.latest_charge as any | null;
     if (!charge) {
       throw new Error('No charge found for this payment intent');
     }
 
-    const refundParams: Stripe.RefundCreateParams = {
+    const refundParams: any = {
       charge: charge.id,
     };
 
@@ -159,7 +159,7 @@ export class StripeProvider extends PaymentProviderBase {
 
     switch (event.type) {
       case 'payment_intent.succeeded': {
-        const pi = event.data.object as Stripe.PaymentIntent;
+        const pi = event.data.object as any;
         reference = pi.id;
         paymentStatus = 'completed';
         amount = pi.amount;
@@ -167,7 +167,7 @@ export class StripeProvider extends PaymentProviderBase {
         break;
       }
       case 'payment_intent.payment_failed': {
-        const pi = event.data.object as Stripe.PaymentIntent;
+        const pi = event.data.object as any;
         reference = pi.id;
         paymentStatus = 'failed';
         amount = pi.amount;
@@ -175,7 +175,7 @@ export class StripeProvider extends PaymentProviderBase {
         break;
       }
       case 'payment_intent.processing': {
-        const pi = event.data.object as Stripe.PaymentIntent;
+        const pi = event.data.object as any;
         reference = pi.id;
         paymentStatus = 'processing';
         amount = pi.amount;
@@ -183,7 +183,7 @@ export class StripeProvider extends PaymentProviderBase {
         break;
       }
       case 'payment_intent.canceled': {
-        const pi = event.data.object as Stripe.PaymentIntent;
+        const pi = event.data.object as any;
         reference = pi.id;
         paymentStatus = 'cancelled';
         amount = pi.amount;
@@ -191,7 +191,7 @@ export class StripeProvider extends PaymentProviderBase {
         break;
       }
       case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
+        const charge = event.data.object as any;
         reference = charge.payment_intent?.toString() || charge.id;
         paymentStatus = 'refunded';
         amount = charge.amount_refunded;

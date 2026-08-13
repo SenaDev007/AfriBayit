@@ -202,7 +202,7 @@ export async function delPattern(pattern: string): Promise<number> {
       const keys: string[] = [];
       let cursor = '0';
       do {
-        const result = await redis.scan(cursor, { match: pattern, count: 100 });
+        const result = await (redis as any).scan(cursor, { match: pattern, count: 100 });
         cursor = result[0];
         keys.push(...result[1]);
       } while (cursor !== '0');

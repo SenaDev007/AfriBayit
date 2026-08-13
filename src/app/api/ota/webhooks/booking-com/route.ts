@@ -1,3 +1,4 @@
+import crypto from "crypto";
 // AfriBayit — API: Booking.com Webhook Handler
 // Receives and processes Booking.com reservation notifications
 // Handles: new_booking, modification, cancellation, availability_change, rate_change
@@ -38,7 +39,7 @@ function verifyWebhookSignature(request: NextRequest, body: string): boolean {
   }
 
   // P2.8 — real HMAC-SHA256 verification
-  const crypto = require('crypto');
+  // crypto is imported at top
   const expectedSignature = crypto
     .createHmac('sha256', secret)
     .update(body)

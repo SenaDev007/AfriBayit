@@ -85,7 +85,7 @@ export const cache = {
     try {
       if (isRedisConfigured) {
         // Upstash Redis: use KEYS to find matching keys, then DEL
-        const keys = await redis.keys(pattern);
+        const keys = await (redis as any).keys(pattern);
         if (keys.length === 0) return 0;
         // Delete in batches to avoid overwhelming Redis
         const batchSize = 100;

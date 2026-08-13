@@ -2,7 +2,6 @@ import { NextAuthOptions } from 'next-auth';
 import type { JWT as NextAuthJWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import FacebookProvider from 'next-auth/providers/facebook';
 import { db } from '@/lib/db';
 import argon2 from 'argon2';

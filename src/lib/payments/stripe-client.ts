@@ -6,9 +6,9 @@ import Stripe from 'stripe';
 
 // ============ Singleton Client ============
 
-let stripeClient: Stripe | null = null;
+let stripeClient: any | null = null;
 
-function getStripeClient(): Stripe {
+function getStripeClient(): any {
   if (!stripeClient) {
     const secretKey = process.env.STRIPE_SECRET_KEY || '';
     stripeClient = new Stripe(secretKey, {
@@ -125,7 +125,7 @@ export async function confirmPayment(
   try {
     const client = getStripeClient();
 
-    const confirmParams: Stripe.PaymentIntentConfirmParams = {};
+    const confirmParams: any = {};
     if (params.returnUrl) {
       confirmParams.return_url = params.returnUrl;
     }
@@ -167,7 +167,7 @@ export async function processRefund(params: RefundParams): Promise<RefundResult>
       { expand: ['latest_charge'] }
     );
 
-    const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+    const charge = paymentIntent.latest_charge as any | null;
     if (!charge) {
       return {
         success: false,
@@ -178,9 +178,9 @@ export async function processRefund(params: RefundParams): Promise<RefundResult>
       };
     }
 
-    const refundParams: Stripe.RefundCreateParams = {
+    const refundParams: any = {
       charge: charge.id,
-      reason: params.reason as Stripe.RefundCreateParams.Reason,
+      reason: params.reason as string,
     };
 
     if (params.amount) {
@@ -238,7 +238,7 @@ export async function getPaymentIntentStatus(
 export function verifyWebhookSignature(
   payload: string | Buffer,
   signature: string
-): Stripe.Event | null {
+): any | null {
   const client = getStripeClient();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 

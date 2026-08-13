@@ -47,7 +47,7 @@ export async function generateSecret(userId: string): Promise<{
  */
 export function verifyTOTP(secretBase32: string, token: string): boolean {
   try {
-    const secret = Secret.fromBase32(secretBase32);
+    const secret = (Secret as any).fromBase32(secretBase32);
 
     const totp = new TOTP({
       issuer: TOTP_ISSUER,
