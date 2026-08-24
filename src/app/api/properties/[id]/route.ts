@@ -42,7 +42,7 @@ export async function GET(
     // Parse JSON string fields
     let images: string[] = [];
     try {
-      images = propertyRaw.images ? JSON.parse(propertyRaw.images) : [];
+      images = (propertyRaw.images as string[]) || [] || [];
     } catch {
       images = [];
     }
@@ -54,7 +54,7 @@ export async function GET(
 
     let features: string[] = [];
     try {
-      features = propertyRaw.features ? JSON.parse(propertyRaw.features) : [];
+      features = (propertyRaw.features as string[]) || [] || [];
     } catch {
       features = [];
     }
@@ -133,7 +133,7 @@ export async function PATCH(
         ...(body.country !== undefined && { country: body.country }),
         ...(body.quartier !== undefined && { quartier: body.quartier }),
         ...(body.address !== undefined && { address: body.address }),
-        ...(body.description !== undefined && { description: body.description }),
+        ...(body.description !== undefined && { description: (body.description as string) || '' }),
         ...(body.features !== undefined && { features: JSON.stringify(body.features) }),
         ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
         ...(body.lat !== undefined && { lat: body.lat }),

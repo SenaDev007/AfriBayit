@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(
   request: Request,
@@ -53,10 +54,10 @@ export async function POST(
         type: body.type,
         name: body.name,
         capacity: body.capacity || 2,
-        amenities: body.amenities ? JSON.stringify(body.amenities) : null,
+        amenities: toJsonInput(body.amenities),
         basePriceXof: body.basePriceXof,
         currency: body.currency || 'XOF',
-        photos: body.photos ? JSON.stringify(body.photos) : null,
+        photos: toJsonInput(body.photos),
         totalRooms: body.totalRooms || 1,
         available: body.available ?? true,
       },

@@ -53,7 +53,7 @@ async function getHotelProviders(hotelId: string): Promise<BaseOTAProvider[]> {
   if (!hotel?.otaRefs) return [];
 
   let refs: Record<string, string> = {};
-  try { refs = JSON.parse(hotel.otaRefs); } catch { refs = {}; }
+  try { refs = hotel.otaRefs as Record<string, string>; } catch { refs = {}; }
 
   const providers: BaseOTAProvider[] = [];
 
@@ -619,7 +619,7 @@ export async function getUnifiedCalendar(
     );
     const rate = dayAvail.length > 0
       ? dayAvail.reduce((sum, a) => sum + (a.priceOverride || 0), 0) / dayAvail.length
-      : rooms.reduce((sum, r) => sum + r.basePriceXof, 0) / Math.max(rooms.length, 1);
+      : rooms.reduce((sum, r) => sum + Number(r.basePriceXof), 0) / Math.max(rooms.length, 1);
 
     calendar.push({
       date: dateStr,

@@ -83,10 +83,10 @@ export default function PaysCouverts() {
             {t('paysCouverts.eyebrow', 'Présence Régionale')}
             <span className="h-px w-8 bg-[#FFCC00]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             {t('paysCouverts.title', 'Pays couverts')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-white/70">
             {t('paysCouverts.subtitlePrefix', 'Déjà opérationnel dans')} {stats?.countries ?? 0} {t('paysCouverts.subtitleSuffix', "pays d'Afrique de l'Ouest, avec des équipes locales et des partenaires certifiés.")}
           </p>
         </motion.div>
@@ -118,7 +118,7 @@ export default function PaysCouverts() {
                 </div>
 
                 {/* Name */}
-                <h3 className="mt-4 font-[family-name:var(--font-inter),Georgia,serif] text-lg font-bold text-gray-900 sm:text-xl">
+                <h3 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-900 sm:text-xl">
                   {meta?.name || country.name}
                 </h3>
 
@@ -127,22 +127,22 @@ export default function PaysCouverts() {
                   <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-[#003366]">
                     {listingCount}
                   </span>
-                  <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs uppercase tracking-wider text-gray-400">
+                  <span className="font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs uppercase tracking-wider text-gray-400">
                     {t('paysCouverts.listings', 'biens')}
                   </span>
                 </div>
 
                 {/* Stats */}
                 <div className="mt-4 w-full space-y-1.5 border-t border-gray-100 pt-4">
-                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                  <div className="flex items-center justify-between font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px]">
                     <span className="uppercase tracking-wider text-gray-400">{t('paysCouverts.agents', 'Agents')}</span>
                     <span className="font-bold text-[#3399FF]">{agentsCount}+</span>
                   </div>
-                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                  <div className="flex items-center justify-between font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px]">
                     <span className="uppercase tracking-wider text-gray-400">{t('paysCouverts.notaries', 'Notaires')}</span>
                     <span className="font-bold text-[#FFCC00]">{notariesCount}+</span>
                   </div>
-                  <div className="flex items-center justify-between font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px]">
+                  <div className="flex items-center justify-between font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px]">
                     <span className="uppercase tracking-wider text-gray-400">{t('paysCouverts.artisans', 'Artisans')}</span>
                     <span className="font-bold text-[#3399FF]">{artisansCount}+</span>
                   </div>
@@ -153,7 +153,7 @@ export default function PaysCouverts() {
                   {country.cities.slice(0, 3).map((city) => (
                     <span
                       key={city}
-                      className="rounded-full bg-gray-100 px-2 py-0.5 font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] text-gray-500"
+                      className="rounded-full bg-gray-100 px-2 py-0.5 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px] text-gray-500"
                     >
                       {city}
                     </span>
@@ -174,7 +174,7 @@ export default function PaysCouverts() {
         >
           <div className="inline-flex items-center gap-3 rounded-lg border border-white/15 bg-white/5 px-6 py-3">
             <span className="h-2 w-2 rounded-lg bg-[#3399FF]" />
-            <p className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-white/70">
+            <p className="font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm text-white/70">
               <span className="font-bold text-[#FFCC00]">{t('paysCouverts.soon', 'Bientôt')}</span> {t('paysCouverts.soonDesc', 'dans 3 pays supplémentaires d\'Afrique de l\'Ouest')}
             </p>
           </div>

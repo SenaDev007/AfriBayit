@@ -63,7 +63,7 @@ export async function getAmbassadorStatus(userId: string): Promise<AmbassadorSta
     referralCode: ambassador.referralCode,
     referralLink: ambassador.referralLink || `https://afribayit.com/ref/${ambassador.referralCode}`,
     totalReferrals: ambassador.totalReferrals,
-    totalEarnings: ambassador.totalEarnings,
+    totalEarnings: Number(ambassador.totalEarnings),
     commissions: ambassador.commissions.map((c) => ({
       id: c.id,
       amount: c.amount,
@@ -134,7 +134,7 @@ export async function recordCommission(
 
   if (!ambassador) return;
 
-  const commissionAmount = amount * ambassador.commissionRate;
+  const commissionAmount = amount * Number(ambassador.commissionRate);
 
   await db.ambassadorCommission.create({
     data: {
@@ -142,7 +142,7 @@ export async function recordCommission(
       referredUserId,
       transactionId,
       amount: commissionAmount,
-      commissionRate: ambassador.commissionRate,
+      commissionRate: Number(ambassador.commissionRate),
     },
   });
 

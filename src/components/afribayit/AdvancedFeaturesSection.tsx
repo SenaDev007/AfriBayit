@@ -158,7 +158,7 @@ export default function AdvancedFeaturesSection({
             <Layers className="w-3.5 h-3.5" />
             {t('advancedFeatures.eyebrow', 'Outils avancés')}
           </span>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+          <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
             {t('advancedFeatures.title', 'Décidez avec les meilleurs outils')}
           </h2>
           <p className="mt-3 text-gray-500">
@@ -246,7 +246,7 @@ export default function AdvancedFeaturesSection({
                   <div className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ background: `${NAVY}10` }}>
                     <GitCompare className="w-8 h-8" style={{ color: NAVY }} />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                  <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                     {t('advancedFeatures.compareUpTo5', 'Comparez jusqu\'à 5 biens')}
                   </h3>
                   <p className="text-sm text-gray-500 max-w-md mx-auto">
@@ -314,7 +314,7 @@ export default function AdvancedFeaturesSection({
                 <div className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ background: `${GOLD}15` }}>
                   <Calculator className="w-8 h-8" style={{ color: GOLD }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                <h3 className="text-xl font-bold text-gray-700 mb-2" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                   {t('advancedFeatures.financingSimulatorTitle', 'Simulateur de financement immobilier')}
                 </h3>
                 <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
@@ -365,7 +365,7 @@ export default function AdvancedFeaturesSection({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                   {t('advancedFeatures.financingModalTitle', 'Simulateur de financement')}
                 </h2>
                 <button

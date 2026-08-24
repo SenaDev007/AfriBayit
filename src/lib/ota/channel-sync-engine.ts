@@ -84,7 +84,7 @@ export async function syncAllChannels(hotelId: string): Promise<ChannelSyncResul
   let otaRefs: Record<string, string> = {};
   if (hotel.otaRefs) {
     try {
-      otaRefs = JSON.parse(hotel.otaRefs);
+      otaRefs = hotel.otaRefs as Record<string, string>;
     } catch {
       // Invalid JSON, continue with empty refs
     }
@@ -337,7 +337,7 @@ async function findHotelByOtaRef(
   for (const hotel of hotels) {
     if (!hotel.otaRefs) continue;
     try {
-      const refs = JSON.parse(hotel.otaRefs) as Record<string, string>;
+      const refs = hotel.otaRefs as Record<string, string>;
       const refKey = otaSource === 'booking_com' ? 'booking_com_id' : 'expedia_id';
       if (refs[refKey] === otaHotelId) {
         return { id: hotel.id };

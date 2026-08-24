@@ -48,7 +48,7 @@ async function enqueueSyncJob(job: Omit<SyncJob, 'id' | 'createdAt' | 'attempts'
 
   // If ES is not configured, skip queuing entirely
   if (!isElasticsearchConfigured()) {
-    console.log(`[Sync] Skipping job — ES not configured. Action: ${job.action}`);
+    console.info(`[Sync] Skipping job — ES not configured. Action: ${job.action}`);
     return;
   }
 
@@ -56,10 +56,10 @@ async function enqueueSyncJob(job: Omit<SyncJob, 'id' | 'createdAt' | 'attempts'
     const { redis, isRedisConfigured } = await import('@/lib/redis');
     if (isRedisConfigured) {
       await (redis as any).rpush(SYNC_QUEUE_KEY, JSON.stringify(syncJob));
-      console.log(`[Sync] Enqueued job ${syncJob.id} (${job.action}) via Redis`);
+      console.info(`[Sync] Enqueued job ${syncJob.id} (${job.action}) via Redis`);
     } else {
       memoryQueue.push(syncJob);
-      console.log(`[Sync] Enqueued job ${syncJob.id} (${job.action}) in memory`);
+      console.info(`[Sync] Enqueued job ${syncJob.id} (${job.action}) in memory`);
       // Process in-memory queue immediately (no background worker available)
       processQueue();
     }
@@ -126,18 +126,18 @@ async function executeSyncJob(job: SyncJob): Promise<void> {
       case 'bulk_index':
         if (job.documents && job.documents.length > 0) {
           const result = await bulkIndexDocuments(job.documents);
-          console.log(`[Sync] Bulk index job ${job.id}: ${result.success} success, ${result.failed} failed`);
+          console.info(`[Sync] Bulk index job ${job.id}: ${result.success} success, ${result.failed} failed`);
         }
         break;
     }
 
-    console.log(`[Sync] Completed job ${job.id} (${job.action})`);
+    console.info(`[Sync] Completed job ${job.id} (${job.action})`);
   } catch (error) {
     console.error(`[Sync] Job ${job.id} failed (attempt ${job.attempts}):`, error);
 
     if (job.attempts < MAX_RETRY_ATTEMPTS) {
       // Re-enqueue for retry
-      console.log(`[Sync] Re-enqueuing job ${job.id} for retry`);
+      console.info(`[Sync] Re-enqueuing job ${job.id} for retry`);
       await enqueueSyncJob({
         action: job.action,
         document: job.document,
@@ -170,13 +170,13 @@ export async function syncPropertyToIndex(propertyId: string): Promise<void> {
     }
 
     let features: string[] = [];
-    try { features = property.features ? JSON.parse(property.features) : []; } catch { features = []; }
+    try { features = (property.features as any) || []; } catch { features = []; }
 
     const doc: SearchDocument = {
       id: property.id,
       type: 'property',
       title: property.title,
-      description: property.description,
+      description: (property.description as string) || '',
       city: property.city,
       quartier: property.quartier,
       country: property.country,
@@ -222,7 +222,7 @@ export async function syncHotelToIndex(hotelId: string): Promise<void> {
       id: hotel.id,
       type: 'hotel',
       title: hotel.name,
-      description: hotel.policies || '',
+      description: (hotel.policies as string) || '' || '',
       city: hotel.city,
       quartier: '',
       country: hotel.country,
@@ -257,7 +257,7 @@ export async function syncArtisanToIndex(artisanId: string): Promise<void> {
     }
 
     let specialties: string[] = [];
-    try { specialties = artisan.specialties ? JSON.parse(artisan.specialties) : []; } catch { specialties = []; }
+    try { specialties = (artisan.specialties as any) || []; } catch { specialties = []; }
 
     const doc: SearchDocument = {
       id: artisan.id,
@@ -308,13 +308,13 @@ export async function syncPropertiesToIndex(country?: string): Promise<number> {
 
       const documents: SearchDocument[] = batch.map((p) => {
         let features: string[] = [];
-        try { features = p.features ? JSON.parse(p.features) : []; } catch { features = []; }
+        try { features = (p.features as any) || []; } catch { features = []; }
 
         return {
           id: p.id,
           type: 'property' as const,
           title: p.title,
-          description: p.description,
+          description: (p.description as string) || '',
           city: p.city,
           quartier: p.quartier,
           country: p.country,
@@ -341,7 +341,7 @@ export async function syncPropertiesToIndex(country?: string): Promise<number> {
       }
     }
 
-    console.log(`[Sync] Indexed ${indexed} properties for ${country || 'all'}`);
+    console.info(`[Sync] Indexed ${indexed} properties for ${country || 'all'}`);
     return indexed;
   } catch (error) {
     console.error('[Sync] Error syncing properties:', error);
@@ -371,7 +371,7 @@ export async function syncHotelsToIndex(country?: string): Promise<number> {
         id: h.id,
         type: 'hotel' as const,
         title: h.name,
-        description: h.policies || '',
+        description: (h.policies as string) || '' || '',
         city: h.city,
         quartier: '',
         country: h.country,
@@ -392,7 +392,7 @@ export async function syncHotelsToIndex(country?: string): Promise<number> {
       }
     }
 
-    console.log(`[Sync] Indexed ${indexed} hotels for ${country || 'all'}`);
+    console.info(`[Sync] Indexed ${indexed} hotels for ${country || 'all'}`);
     return indexed;
   } catch (error) {
     console.error('[Sync] Error syncing hotels:', error);
@@ -422,7 +422,7 @@ export async function syncGuesthousesToIndex(country?: string): Promise<number> 
         id: g.id,
         type: 'guesthouse' as const,
         title: g.name,
-        description: g.description || '',
+        description: (g.description as string) || '' || '',
         city: g.city,
         quartier: g.quartier || '',
         country: g.country,
@@ -443,7 +443,7 @@ export async function syncGuesthousesToIndex(country?: string): Promise<number> 
       }
     }
 
-    console.log(`[Sync] Indexed ${indexed} guesthouses for ${country || 'all'}`);
+    console.info(`[Sync] Indexed ${indexed} guesthouses for ${country || 'all'}`);
     return indexed;
   } catch (error) {
     console.error('[Sync] Error syncing guesthouses:', error);
@@ -474,7 +474,7 @@ export async function syncArtisansToIndex(country?: string): Promise<number> {
 
       const documents: SearchDocument[] = batch.map((a) => {
         let specialties: string[] = [];
-        try { specialties = a.specialties ? JSON.parse(a.specialties) : []; } catch { specialties = []; }
+        try { specialties = (a.specialties as any) || []; } catch { specialties = []; }
 
         return {
           id: a.id,
@@ -502,7 +502,7 @@ export async function syncArtisansToIndex(country?: string): Promise<number> {
       }
     }
 
-    console.log(`[Sync] Indexed ${indexed} artisans for ${country || 'all'}`);
+    console.info(`[Sync] Indexed ${indexed} artisans for ${country || 'all'}`);
     return indexed;
   } catch (error) {
     console.error('[Sync] Error syncing artisans:', error);
@@ -515,7 +515,7 @@ export async function syncArtisansToIndex(country?: string): Promise<number> {
  * Used for admin batch re-index.
  */
 export async function fullSync(country?: string): Promise<Record<string, number>> {
-  console.log(`[Sync] Starting full sync for ${country || 'all'}...`);
+  console.info(`[Sync] Starting full sync for ${country || 'all'}...`);
 
   // Ensure indices exist if ES is available
   if (isElasticsearchConfigured()) {
@@ -531,7 +531,7 @@ export async function fullSync(country?: string): Promise<Record<string, number>
 
   const total = results.reduce((sum, n) => sum + n, 0);
 
-  console.log(`[Sync] Full sync completed: ${total} total documents`);
+  console.info(`[Sync] Full sync completed: ${total} total documents`);
 
   return {
     properties: results[0],

@@ -60,10 +60,10 @@ export default function HowItWorks() {
             {t('howItWorks.eyebrow', 'Processus Simplifié')}
             <span className="h-px w-8 bg-[#FFCC00]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             {t('howItWorks.title', 'Comment ça marche ?')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-white/70">
             {t(
               'howItWorks.subtitle',
               'En 4 étapes simples, de la recherche à la signature. Transparent, sécurisé, sans stress.'
@@ -88,20 +88,20 @@ export default function HowItWorks() {
               >
                 {/* Number badge */}
                 <div className="relative flex h-24 w-24 items-center justify-center rounded-lg border-2 border-[#FFCC00] bg-[#003366]">
-                  <span className="font-[family-name:var(--font-inter),Georgia,serif] text-3xl font-bold text-[#FFCC00]">
+                  <span className="font-[family-name:var(--font-cormorant),Georgia,serif] text-3xl font-bold text-[#FFCC00]">
                     {step.number}
                   </span>
                 </div>
 
                 {/* Step label */}
-                <span className="mt-6 font-[family-name:var(--font-inter),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#3399FF]">
+                <span className="mt-6 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#3399FF]">
                   {t('howItWorks.stepLabel', 'Étape')} {step.number}
                 </span>
 
-                <h3 className="mt-2 font-[family-name:var(--font-inter),Georgia,serif] text-xl font-bold text-white">
+                <h3 className="mt-2 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-white">
                   {t(step.titleKey, step.titleFallback)}
                 </h3>
-                <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
+                <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
                   {t(step.descKey, step.descFallback)}
                 </p>
               </motion.div>

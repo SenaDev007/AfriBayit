@@ -236,7 +236,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
   // Revenue computation
   const computedRevenue = useMemo(() => {
-    return escrowAccounts.reduce((sum, e) => sum + Math.round(e.amount * 0.12), 0);
+    return escrowAccounts.reduce((sum, e) => sum + Math.round(Number(e.amount) * 0.12), 0);
   }, [escrowAccounts]);
 
   // CDC §5.0bis.6 — Notarial 30-day legal timer.
@@ -444,7 +444,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                    <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                       {detailNotary.name}
                     </h1>
                     {detailNotary.certificationLevel && detailNotary.certificationLevel !== 'none' && (

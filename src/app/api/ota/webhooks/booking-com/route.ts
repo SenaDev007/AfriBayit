@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Données webhook invalides' }, { status: 400 });
     }
 
-    console.log(
+    console.info(
       `[Webhook:Booking.com] Received ${event_type} event for hotel ${hotel_id}, ` +
       `reservation ${reservation_id || 'N/A'}`
     );
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     for (const hotel of hotels) {
       if (hotel.otaRefs) {
         try {
-          const refs = JSON.parse(hotel.otaRefs);
+          const refs = hotel.otaRefs as any;
           if (refs.booking_com_id === String(hotel_id)) {
             matchingHotel = hotel;
             break;
@@ -189,7 +189,7 @@ async function handleNewBooking(hotelId: string, data: Record<string, unknown>) 
   });
 
   if (existing) {
-    console.log(`[Webhook:Booking.com] Booking ${reservationId} already exists, skipping`);
+    console.info(`[Webhook:Booking.com] Booking ${reservationId} already exists, skipping`);
     return;
   }
 
@@ -272,7 +272,7 @@ async function handleNewBooking(hotelId: string, data: Record<string, unknown>) 
     },
   });
 
-  console.log(`[Webhook:Booking.com] Created booking ${reservationId} for hotel ${hotelId}`);
+  console.info(`[Webhook:Booking.com] Created booking ${reservationId} for hotel ${hotelId}`);
 
   // Update availability across all channels
   // This is async — don't block the webhook response
@@ -322,7 +322,7 @@ async function handleModification(hotelId: string, data: Record<string, unknown>
     },
   });
 
-  console.log(`[Webhook:Booking.com] Updated booking ${reservationId}`);
+  console.info(`[Webhook:Booking.com] Updated booking ${reservationId}`);
 
   // Update availability across channels
   pushAvailabilityToAllChannels(hotelId, []).catch((error) => {
@@ -345,7 +345,7 @@ async function handleCancellation(hotelId: string, data: Record<string, unknown>
   });
 
   if (result.count > 0) {
-    console.log(`[Webhook:Booking.com] Cancelled booking ${reservationId}`);
+    console.info(`[Webhook:Booking.com] Cancelled booking ${reservationId}`);
 
     // Update availability across all channels (room is now available again)
     pushAvailabilityToAllChannels(hotelId, []).catch((error) => {
@@ -359,7 +359,7 @@ async function handleCancellation(hotelId: string, data: Record<string, unknown>
 async function handleAvailabilityChange(hotelId: string, data: Record<string, unknown>) {
   // Booking.com is notifying us of an availability change
   // We should refresh our local availability data
-  console.log(`[Webhook:Booking.com] Availability change notification for hotel ${hotelId}`);
+  console.info(`[Webhook:Booking.com] Availability change notification for hotel ${hotelId}`);
 
   // Trigger a full sync for this hotel
   const dateRange = {
@@ -378,7 +378,7 @@ async function handleAvailabilityChange(hotelId: string, data: Record<string, un
 async function handleRateChange(hotelId: string, data: Record<string, unknown>) {
   // Booking.com is notifying us of a rate change
   // We should update our local rate data
-  console.log(`[Webhook:Booking.com] Rate change notification for hotel ${hotelId}`);
+  console.info(`[Webhook:Booking.com] Rate change notification for hotel ${hotelId}`);
 
   // Log the rate change for review
   await db.otaSyncLog.create({

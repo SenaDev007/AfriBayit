@@ -254,8 +254,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         country: selectedCountryName,
         quartier: formData.quartier,
         title: formData.title,
-        description: formData.description,
-        features: formData.features,
+        description: (formData.description as string) || '',
+        features: formData.features as any,
         images: formData.photos,
         legalDocs: formData.legalDocs,
         // P2.10 — Rental-specific fields (sent only when transactionType='location')

@@ -66,7 +66,7 @@ export default function PropertyLocation({ property }: PropertyLocationProps) {
     quartier: property.quartier,
     bedrooms: property.bedrooms,
     surface: property.surface,
-    images: property.images,
+    images: property.images as any,
     lat: property.lat,
     lng: property.lng,
     verified: property.verified,

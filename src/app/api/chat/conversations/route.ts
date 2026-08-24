@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       data: {
         type: body.type || 'user_to_user',
         status: 'active',
-        metadata: body.metadata ? JSON.stringify(body.metadata) : null,
+        metadata: toJsonInput(body.metadata),
         participants: {
           create: participantIds.map((userId: string) => ({
             userId,

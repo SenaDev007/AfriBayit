@@ -372,7 +372,7 @@ export async function rotateRefreshToken(
     return null;
   }
 
-  const oldPayload = verification.payload;
+  const oldPayload = verification.payload as any;
 
   // Blacklist the old refresh token (P2.6 — async)
   await blacklistToken(oldPayload.jti, oldPayload.exp, 'rotation');

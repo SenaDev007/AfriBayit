@@ -160,7 +160,7 @@ export function loggingMiddleware(): MiddlewareHandler {
     context._loggingStart = start;
 
     // We can't easily wrap the response here, but we log the request
-    console.log(
+    console.info(
       `[API] ${method} ${url.pathname}${url.search} — requestId: ${context.requestId || 'n/a'}`
     );
 

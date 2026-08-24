@@ -264,8 +264,8 @@ Inscrivez-vous sur afribayit.com`;
     const kycLabels = ['Non verifie', 'Basique', 'Intermediaire', 'Complet'];
 
     return `END Portefeuille AfriBayit
-Solde : ${formatPrice(user.walletBalance)}
-En attente : ${formatPrice(user.pendingPayout)}
+Solde : ${formatPrice(Number(user.walletBalance))}
+En attente : ${formatPrice(Number(user.pendingPayout))}
 KYC : ${kycLabels[user.kycLevel] || 'Inconnu'}
 Retrait : afribayit.com/wallet`;
   } catch {

@@ -47,7 +47,7 @@ export default function AcademyModule() {
       const q = searchQuery.toLowerCase();
       if (!c.title.toLowerCase().includes(q) && !c.category.toLowerCase().includes(q) && !c.instructor.toLowerCase().includes(q)) return false;
     }
-    if (priceFilter === 'free' && c.price > 0) return false;
+    if (priceFilter === 'free' && Number(c.price) > 0) return false;
     if (priceFilter === 'paid' && c.price === 0) return false;
     if (selectedCategory !== 'Tous' && c.category !== selectedCategory) return false;
     return true;

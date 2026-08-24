@@ -86,7 +86,7 @@ export function evaluateGeoTrustConditions(property: PropertyEscrowData): GeoTru
   });
 
   // Rule 2: Transaction > 10M XOF → GEO_SURF mandatory
-  const isHighValue = property.price > 10_000_000;
+  const isHighValue = Number(property.price) > 10_000_000;
   rules.push({
     rule: 'Transaction > 10M XOF — Levé de surface obligatoire',
     condition: `Prix: ${new Intl.NumberFormat('fr-FR').format(property.price)} XOF`,
@@ -196,8 +196,8 @@ export async function processGeometerValidationChange(
   }
 
   // Parse current GeoTrust fields from conditions JSON
-  const conditions = transaction.conditions
-    ? JSON.parse(transaction.conditions)
+  const conditions: any = transaction.conditions
+    ? transaction.conditions
     : {};
 
   const currentGeoTrustFields: EscrowGeoTrustFields = {
@@ -369,8 +369,8 @@ export async function createEscrowGeoTrustMissions(
   });
 
   if (transaction) {
-    const conditions = transaction.conditions
-      ? JSON.parse(transaction.conditions)
+    const conditions: any = transaction.conditions
+      ? transaction.conditions
       : {};
 
     await db.transaction.update({

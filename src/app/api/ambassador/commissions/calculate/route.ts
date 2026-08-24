@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
     }
 
     const tier = ambassador.tier as 'bronze' | 'silver' | 'gold';
-    const commissionRate = ambassador.commissionRate;
+    const commissionRate = Number(ambassador.commissionRate);
     const commissionAmount = Math.round(transactionAmount * commissionRate);
 
     return NextResponse.json({

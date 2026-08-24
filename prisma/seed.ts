@@ -459,12 +459,12 @@ const USERS = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding AfriBayit database...\n');
+  console.info('🌱 Seeding AfriBayit database...\n');
 
   // ═══════════════════════════════════════════════════════════════════════
   // 1. USERS (upsert)
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('→ Creating users...');
+  console.info('→ Creating users...');
   const userIds: Record<string, string> = {};
 
   for (const u of USERS) {
@@ -476,7 +476,7 @@ async function main() {
     // Derive a key from role: admin1, admin2, agent_bj, agent_ci, agent_tg, buyer1, buyer2, artisan1, geometer1, notary1
     const key = u.email.split('@')[0].replace('.', '_');
     userIds[key] = user.id;
-    console.log(`  ✓ ${u.name} (${u.role}) → ${user.id}`);
+    console.info(`  ✓ ${u.name} (${u.role}) → ${user.id}`);
   }
 
   // Shortcuts
@@ -503,7 +503,7 @@ async function main() {
   // ═══════════════════════════════════════════════════════════════════════
   // 2. NOTARIES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating notaries...');
+  console.info('\n→ Creating notaries...');
 
   const notary1 = await prisma.notary.create({
     data: {
@@ -525,7 +525,7 @@ async function main() {
       certifiedAt: daysAgo(180),
     },
   });
-  console.log(`  ✓ Notary: ${notary1.licenseNumber}`);
+  console.info(`  ✓ Notary: ${notary1.licenseNumber}`);
 
   const notary2 = await prisma.notary.create({
     data: {
@@ -544,7 +544,7 @@ async function main() {
       certified: false,
     },
   });
-  console.log(`  ✓ Notary: ${notary2.licenseNumber}`);
+  console.info(`  ✓ Notary: ${notary2.licenseNumber}`);
 
   // ── BF Notary ──
   const notaryBF = await prisma.notary.create({
@@ -567,7 +567,7 @@ async function main() {
       certifiedAt: daysAgo(120),
     },
   });
-  console.log(`  ✓ Notary: ${notaryBF.licenseNumber}`);
+  console.info(`  ✓ Notary: ${notaryBF.licenseNumber}`);
 
   // ── CI Notary ──
   const notaryCI = await prisma.notary.create({
@@ -590,7 +590,7 @@ async function main() {
       certifiedAt: daysAgo(150),
     },
   });
-  console.log(`  ✓ Notary: ${notaryCI.licenseNumber}`);
+  console.info(`  ✓ Notary: ${notaryCI.licenseNumber}`);
 
   // ── TG Notary ──
   const notaryTG = await prisma.notary.create({
@@ -613,12 +613,12 @@ async function main() {
       certifiedAt: daysAgo(90),
     },
   });
-  console.log(`  ✓ Notary: ${notaryTG.licenseNumber}`);
+  console.info(`  ✓ Notary: ${notaryTG.licenseNumber}`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 3. GEOMETERS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating geometers...');
+  console.info('\n→ Creating geometers...');
 
   const geometer1 = await prisma.geometer.create({
     data: {
@@ -640,7 +640,7 @@ async function main() {
       certifiedAt: daysAgo(200),
     },
   });
-  console.log(`  ✓ Geometer: ${geometer1.licenseNumber}`);
+  console.info(`  ✓ Geometer: ${geometer1.licenseNumber}`);
 
   const geometer2 = await prisma.geometer.create({
     data: {
@@ -662,7 +662,7 @@ async function main() {
       certifiedAt: daysAgo(300),
     },
   });
-  console.log(`  ✓ Geometer: ${geometer2.licenseNumber}`);
+  console.info(`  ✓ Geometer: ${geometer2.licenseNumber}`);
 
   const geometer3 = await prisma.geometer.create({
     data: {
@@ -683,7 +683,7 @@ async function main() {
       certified: false,
     },
   });
-  console.log(`  ✓ Geometer: ${geometer3.licenseNumber}`);
+  console.info(`  ✓ Geometer: ${geometer3.licenseNumber}`);
 
   // ── BF Geometer ──
   const geometerBF = await prisma.geometer.create({
@@ -706,12 +706,12 @@ async function main() {
       certifiedAt: daysAgo(120),
     },
   });
-  console.log(`  ✓ Geometer: ${geometerBF.licenseNumber}`);
+  console.info(`  ✓ Geometer: ${geometerBF.licenseNumber}`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 4. ARTISANS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating artisans...');
+  console.info('\n→ Creating artisans...');
 
   const artisanData = [
     {
@@ -936,13 +936,13 @@ async function main() {
       },
     });
     artisanIds.push(artisan.id);
-    console.log(`  ✓ Artisan: ${ad.trade} → ${artisan.id}`);
+    console.info(`  ✓ Artisan: ${ad.trade} → ${artisan.id}`);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   // 5. PROPERTIES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating properties...');
+  console.info('\n→ Creating properties...');
 
   const propertyDefs = [
     // ── Cotonou (BJ) — Agent BJ ──
@@ -1565,12 +1565,12 @@ async function main() {
     const property = await prisma.property.create({ data: pd });
     propertyIds.push(property.id);
   }
-  console.log(`  ✓ Created ${propertyIds.length} properties`);
+  console.info(`  ✓ Created ${propertyIds.length} properties`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 5b. SHORT-TERM RENTALS (Location Courte Durée)
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating short-term rentals...');
+  console.info('\n→ Creating short-term rentals...');
 
   const shortTermRentalDefs = [
     {
@@ -1818,12 +1818,12 @@ async function main() {
     const rental = await prisma.shortTermRental.create({ data: rd as any });
     shortTermRentalIds.push(rental.id);
   }
-  console.log(`  ✓ Created ${shortTermRentalIds.length} short-term rentals`);
+  console.info(`  ✓ Created ${shortTermRentalIds.length} short-term rentals`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 6. TRANSACTIONS + ESCROW + LEDGER
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating transactions with escrow...');
+  console.info('\n→ Creating transactions with escrow...');
 
   const txDefs = [
     {
@@ -2069,13 +2069,13 @@ async function main() {
       });
     }
 
-    console.log(`  ✓ Transaction ${txd.escrowReference} (${txd.status})`);
+    console.info(`  ✓ Transaction ${txd.escrowReference} (${txd.status})`);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   // 7. HOTELS + ROOMS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating hotels...');
+  console.info('\n→ Creating hotels...');
 
   const hotelDefs = [
     {
@@ -2228,13 +2228,13 @@ async function main() {
       });
       hotelRoomIds.push(room.id);
     }
-    console.log(`  ✓ Hotel: ${hd.name} (${rooms.length} rooms)`);
+    console.info(`  ✓ Hotel: ${hd.name} (${rooms.length} rooms)`);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   // 8. GUESTHOUSES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating guesthouses...');
+  console.info('\n→ Creating guesthouses...');
 
   const ghDefs = [
     {
@@ -2404,13 +2404,13 @@ async function main() {
       });
     }
 
-    console.log(`  ✓ Guesthouse: ${ghd.name} (${rooms.length} rooms)`);
+    console.info(`  ✓ Guesthouse: ${ghd.name} (${rooms.length} rooms)`);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   // 9. ARTISAN SERVICES + QUOTES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating artisan services and quotes...');
+  console.info('\n→ Creating artisan services and quotes...');
 
   const artisanServices = [
     { artisanIdx: 0, services: [
@@ -2472,12 +2472,12 @@ async function main() {
       },
     });
   }
-  console.log(`  ✓ Created artisan services and quotes`);
+  console.info(`  ✓ Created artisan services and quotes`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 10. GEOMETER MISSIONS + REPORTS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating geometer missions...');
+  console.info('\n→ Creating geometer missions...');
 
   const mission1 = await prisma.geometerMission.create({
     data: {
@@ -2552,12 +2552,12 @@ async function main() {
     },
   });
 
-  console.log(`  ✓ Created 3 geometer missions with reports`);
+  console.info(`  ✓ Created 3 geometer missions with reports`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 10c. PROFESSIONAL PROFILES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating professional profiles...');
+  console.info('\n→ Creating professional profiles...');
 
   const profileDefs = [
     {
@@ -2614,12 +2614,12 @@ async function main() {
       create: pd as any,
     });
   }
-  console.log(`  ✓ Created ${profileDefs.length} professional profiles`);
+  console.info(`  ✓ Created ${profileDefs.length} professional profiles`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 11. COURSES + ENROLLMENTS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating courses...');
+  console.info('\n→ Creating courses...');
 
   const courseDefs = [
     {
@@ -2782,7 +2782,7 @@ async function main() {
     const course = await prisma.course.create({ data: cd as any });
     courseIds.push(course.id);
   }
-  console.log(`  ✓ Created ${courseIds.length} courses`);
+  console.info(`  ✓ Created ${courseIds.length} courses`);
 
   // Enrollments
   const enrollmentDefs = [
@@ -2797,7 +2797,7 @@ async function main() {
   for (const ed of enrollmentDefs) {
     await prisma.courseEnrollment.create({ data: ed });
   }
-  console.log(`  ✓ Created ${enrollmentDefs.length} enrollments`);
+  console.info(`  ✓ Created ${enrollmentDefs.length} enrollments`);
 
   // Quizzes
   const quizDefs = [
@@ -2844,7 +2844,7 @@ async function main() {
   for (const qd of quizDefs) {
     await prisma.quiz.create({ data: qd as any });
   }
-  console.log(`  ✓ Created ${quizDefs.length} quizzes`);
+  console.info(`  ✓ Created ${quizDefs.length} quizzes`);
 
   // Certificates
   const certificateDefs = [
@@ -2882,12 +2882,12 @@ async function main() {
   for (const cd of certificateDefs) {
     await prisma.certificate.create({ data: cd as any });
   }
-  console.log(`  ✓ Created ${certificateDefs.length} certificates`);
+  console.info(`  ✓ Created ${certificateDefs.length} certificates`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 12. COMMUNITY (Posts, Groups, Events)
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating community data...');
+  console.info('\n→ Creating community data...');
 
   // Groups
   const groupDefs = [
@@ -2959,7 +2959,7 @@ async function main() {
     const group = await prisma.communityGroup.create({ data: gd });
     groupIds.push(group.id);
   }
-  console.log(`  ✓ Created ${groupIds.length} community groups`);
+  console.info(`  ✓ Created ${groupIds.length} community groups`);
 
   // Posts
   const postDefs = [
@@ -2991,7 +2991,7 @@ async function main() {
     const post = await prisma.communityPost.create({ data: pd as any });
     postIds.push(post.id);
   }
-  console.log(`  ✓ Created ${postIds.length} community posts`);
+  console.info(`  ✓ Created ${postIds.length} community posts`);
 
   // Replies to a few posts
   const replyDefs = [
@@ -3005,7 +3005,7 @@ async function main() {
   for (const rd of replyDefs) {
     await prisma.communityReply.create({ data: rd });
   }
-  console.log(`  ✓ Created ${replyDefs.length} community replies`);
+  console.info(`  ✓ Created ${replyDefs.length} community replies`);
 
   // Group memberships
   const membershipDefs = [
@@ -3024,7 +3024,7 @@ async function main() {
   for (const md of membershipDefs) {
     await prisma.groupMembership.create({ data: md });
   }
-  console.log(`  ✓ Created ${membershipDefs.length} group memberships`);
+  console.info(`  ✓ Created ${membershipDefs.length} group memberships`);
 
   // Events
   const eventDefs = [
@@ -3074,7 +3074,7 @@ async function main() {
   for (const ed of eventDefs) {
     await prisma.communityEvent.create({ data: ed });
   }
-  console.log(`  ✓ Created ${eventDefs.length} community events`);
+  console.info(`  ✓ Created ${eventDefs.length} community events`);
 
   // Additional community events
   const additionalEventDefs = [
@@ -3138,12 +3138,12 @@ async function main() {
   for (const ed of additionalEventDefs) {
     await prisma.communityEvent.create({ data: ed });
   }
-  console.log(`  ✓ Created ${additionalEventDefs.length} additional community events`);
+  console.info(`  ✓ Created ${additionalEventDefs.length} additional community events`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 13. NOTIFICATIONS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating notifications...');
+  console.info('\n→ Creating notifications...');
 
   const notifDefs = [
     { userId: buyer1, type: 'transaction', category: 'transactions', country: 'BJ', title: 'Transaction mise à jour', message: 'Votre transaction ESC-2025-001 a été mise à jour : fonds reçus en escrow.', actionUrl: '/transactions/ESC-2025-001', channels: '["push","email"]', sentVia: '["push"]' },
@@ -3163,12 +3163,12 @@ async function main() {
   for (const nd of notifDefs) {
     await prisma.notification.create({ data: nd as any });
   }
-  console.log(`  ✓ Created ${notifDefs.length} notifications`);
+  console.info(`  ✓ Created ${notifDefs.length} notifications`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 14. REVIEWS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating reviews...');
+  console.info('\n→ Creating reviews...');
 
   const reviewDefs = [
     { reviewerId: buyer1, targetId: agentBJ, targetType: 'agent', country: 'BJ', rating: 5, comment: 'Hervé est un agent exceptionnel. Professionnel, réactif et à l\'écoute. Je recommande vivement !', verified: true },
@@ -3187,12 +3187,12 @@ async function main() {
   for (const rd of reviewDefs) {
     await prisma.review.create({ data: rd as any });
   }
-  console.log(`  ✓ Created ${reviewDefs.length} reviews`);
+  console.info(`  ✓ Created ${reviewDefs.length} reviews`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 15. SUBSCRIPTIONS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating subscriptions...');
+  console.info('\n→ Creating subscriptions...');
 
   const subDefs = [
     { userId: agentBJ, planType: 'agent_grow', priceXof: 15000, country: 'BJ', status: 'active', startDate: daysAgo(60), endDate: daysFromNow(305), autoRenew: true, paymentRef: 'PAY-SUB-001' },
@@ -3209,12 +3209,12 @@ async function main() {
   for (const sd of subDefs) {
     await prisma.subscription.create({ data: sd });
   }
-  console.log(`  ✓ Created ${subDefs.length} subscriptions`);
+  console.info(`  ✓ Created ${subDefs.length} subscriptions`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 16. PROFESSIONAL PROFILES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating professional profiles...');
+  console.info('\n→ Creating professional profiles...');
 
   const profDefs = [
     {
@@ -3342,7 +3342,7 @@ async function main() {
     const profile = await prisma.professionalProfile.create({ data: pd as any });
     profileIds.push(profile.id);
   }
-  console.log(`  ✓ Created ${profileIds.length} professional profiles`);
+  console.info(`  ✓ Created ${profileIds.length} professional profiles`);
 
   // Skill endorsements
   const endorsementDefs = [
@@ -3359,12 +3359,12 @@ async function main() {
   for (const ed of endorsementDefs) {
     await prisma.skillEndorsement.create({ data: ed });
   }
-  console.log(`  ✓ Created ${endorsementDefs.length} skill endorsements`);
+  console.info(`  ✓ Created ${endorsementDefs.length} skill endorsements`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 17. WALLET TRANSACTIONS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating wallet transactions...');
+  console.info('\n→ Creating wallet transactions...');
 
   const walletTxDefs = [
     { userId: buyer1, type: 'deposit', amount: 5000000, balanceAfter: 5000000, status: 'completed', reference: 'WAL-DEP-001', providerRef: 'MM-BJ-111000', metadata: '{"source":"Mobile Money","provider":"MTN"}' },
@@ -3384,12 +3384,12 @@ async function main() {
   for (const wd of walletTxDefs) {
     await prisma.walletTransaction.create({ data: wd as any });
   }
-  console.log(`  ✓ Created ${walletTxDefs.length} wallet transactions`);
+  console.info(`  ✓ Created ${walletTxDefs.length} wallet transactions`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 18. KYC DOCUMENTS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating KYC documents...');
+  console.info('\n→ Creating KYC documents...');
 
   const kycDefs = [
     { userId: buyer1, docType: 'id_card', docUrl: 'https://afribayit.com/kyc/buyer1-id-card.jpg', ocrValid: true, aiScore: 92.5, status: 'human_validated', country: 'BJ' },
@@ -3405,12 +3405,12 @@ async function main() {
   for (const kd of kycDefs) {
     await prisma.kycDocument.create({ data: kd });
   }
-  console.log(`  ✓ Created ${kycDefs.length} KYC documents`);
+  console.info(`  ✓ Created ${kycDefs.length} KYC documents`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 19. AGENT LISTINGS
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating agent listings...');
+  console.info('\n→ Creating agent listings...');
 
   const listingDefs = [
     { agentId: agentBJ, propertyId: propertyIds[0], status: 'active', boostLevel: 2.5, views: 1240, contacts: 35 },
@@ -3425,12 +3425,12 @@ async function main() {
   for (const ld of listingDefs) {
     await prisma.agentListing.create({ data: ld as any });
   }
-  console.log(`  ✓ Created ${listingDefs.length} agent listings`);
+  console.info(`  ✓ Created ${listingDefs.length} agent listings`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 20. FAVORITES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating favorites...');
+  console.info('\n→ Creating favorites...');
 
   const favDefs = [
     { userId: buyer1, propertyId: propertyIds[0] },
@@ -3444,12 +3444,12 @@ async function main() {
   for (const fd of favDefs) {
     await prisma.favorite.create({ data: fd });
   }
-  console.log(`  ✓ Created ${favDefs.length} favorites`);
+  console.info(`  ✓ Created ${favDefs.length} favorites`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // 21. CONVERSATIONS + MESSAGES
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n→ Creating conversations and messages...');
+  console.info('\n→ Creating conversations and messages...');
 
   const conv1 = await prisma.conversation.create({
     data: {
@@ -3478,35 +3478,35 @@ async function main() {
   await prisma.chatMessage.create({ data: { conversationId: conv2.id, senderId: buyer2, content: 'Bonjour, je suis intéressée par l\'appartement Standing Cocody. Est-il toujours disponible ?' } });
   await prisma.chatMessage.create({ data: { conversationId: conv2.id, senderId: agentCI, content: 'Bonjour Marie ! Oui, l\'appartement est toujours disponible. Quand souhaitez-vous le visiter ?', isRead: true } });
 
-  console.log(`  ✓ Created 2 conversations with messages`);
+  console.info(`  ✓ Created 2 conversations with messages`);
 
   // ═══════════════════════════════════════════════════════════════════════
   // DONE
   // ═══════════════════════════════════════════════════════════════════════
-  console.log('\n✅ Seed completed successfully!');
-  console.log('\n📊 Summary:');
-  console.log(`  Users:          ${USERS.length}`);
-  console.log(`  Notaries:       5`); // 2 BJ + 1 BF + 1 CI + 1 TG
-  console.log(`  Geometers:      4`); // 3 (BJ, CI, TG) + 1 BF
-  console.log(`  Artisans:       ${artisanIds.length}`);
-  console.log(`  Properties:     ${propertyIds.length}`);
-  console.log(`  Short-term:     ${shortTermRentalIds.length}`);
-  console.log(`  Transactions:   ${txDefs.length}`);
-  console.log(`  Hotels:         ${hotelIds.length}`);
-  console.log(`  Guesthouses:    ${ghIds.length}`);
-  console.log(`  Courses:        ${courseIds.length}`);
-  console.log(`  Posts:          ${postIds.length}`);
-  console.log(`  Groups:         ${groupIds.length}`);
-  console.log(`  Events:         ${eventDefs.length}`);
-  console.log(`  Notifications:  ${notifDefs.length}`);
-  console.log(`  Reviews:        ${reviewDefs.length}`);
-  console.log(`  Subscriptions:  ${subDefs.length}`);
-  console.log(`  Prof. Profiles: ${profileIds.length}`);
-  console.log(`  Wallet Txns:    ${walletTxDefs.length}`);
-  console.log(`  KYC Docs:       ${kycDefs.length}`);
-  console.log(`  Agent Listings: ${listingDefs.length}`);
-  console.log(`  Favorites:      ${favDefs.length}`);
-  console.log(`  Conversations:  2`);
+  console.info('\n✅ Seed completed successfully!');
+  console.info('\n📊 Summary:');
+  console.info(`  Users:          ${USERS.length}`);
+  console.info(`  Notaries:       5`); // 2 BJ + 1 BF + 1 CI + 1 TG
+  console.info(`  Geometers:      4`); // 3 (BJ, CI, TG) + 1 BF
+  console.info(`  Artisans:       ${artisanIds.length}`);
+  console.info(`  Properties:     ${propertyIds.length}`);
+  console.info(`  Short-term:     ${shortTermRentalIds.length}`);
+  console.info(`  Transactions:   ${txDefs.length}`);
+  console.info(`  Hotels:         ${hotelIds.length}`);
+  console.info(`  Guesthouses:    ${ghIds.length}`);
+  console.info(`  Courses:        ${courseIds.length}`);
+  console.info(`  Posts:          ${postIds.length}`);
+  console.info(`  Groups:         ${groupIds.length}`);
+  console.info(`  Events:         ${eventDefs.length}`);
+  console.info(`  Notifications:  ${notifDefs.length}`);
+  console.info(`  Reviews:        ${reviewDefs.length}`);
+  console.info(`  Subscriptions:  ${subDefs.length}`);
+  console.info(`  Prof. Profiles: ${profileIds.length}`);
+  console.info(`  Wallet Txns:    ${walletTxDefs.length}`);
+  console.info(`  KYC Docs:       ${kycDefs.length}`);
+  console.info(`  Agent Listings: ${listingDefs.length}`);
+  console.info(`  Favorites:      ${favDefs.length}`);
+  console.info(`  Conversations:  2`);
 }
 
 main()

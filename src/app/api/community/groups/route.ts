@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       data: {
         name: body.name,
         slug: body.slug,
-        description: body.description,
+        description: (body.description as string) || '',
         type: body.type,
         country: body.country,
         city: body.city,

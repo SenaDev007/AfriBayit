@@ -348,9 +348,9 @@ function generateMatchReasons(scored: ScoredArtisan, request: MatchRequest): str
     reasons.push(`Bonne réputation (${a.rating}/5)`);
   }
 
-  if (s.price >= 0.8) {
+  if (Number(s.price) >= 0.8) {
     reasons.push('Tarif compétitif');
-  } else if (s.price >= 0.5 && a.dailyRate) {
+  } else if (Number(s.price) >= 0.5 && a.dailyRate) {
     reasons.push(`Tarif: ${new Intl.NumberFormat('fr-FR').format(a.dailyRate)} FCFA/jour`);
   }
 

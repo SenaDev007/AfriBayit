@@ -111,7 +111,7 @@ export default function BlogPage() {
           </span>
           <h1
             className="text-4xl sm:text-5xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('blogPage.title', 'Actualités & Conseils immobiliers')}
           </h1>
@@ -161,7 +161,7 @@ export default function BlogPage() {
                   </div>
                   <h3
                     className="font-bold text-gray-900 mb-2 leading-tight"
-                    style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+                    style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
                   >
                     {article.title}
                   </h3>

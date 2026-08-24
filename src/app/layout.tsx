@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
+import ServiceWorkerRegistration from "@/components/providers/ServiceWorkerRegistration";
 import { LocaleProvider } from "@/lib/i18n/context";
 
 // Module 4 — Design System:
@@ -97,6 +98,7 @@ export default function RootLayout({
                 <AppShell>
                   {children}
                 </AppShell>
+                <ServiceWorkerRegistration />
                 <Toaster />
               </LocaleProvider>
             </ReactQueryProvider>

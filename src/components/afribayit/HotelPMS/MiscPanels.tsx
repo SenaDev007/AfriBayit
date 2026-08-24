@@ -136,7 +136,7 @@ export function LastMinutePanel({ rooms }: { rooms: RoomItem[] }) {
         {rooms.filter(r => r.status === 'available' || r.status === 'AVAILABLE').length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {rooms.filter(r => r.status === 'available' || r.status === 'AVAILABLE').map((room) => {
-              const discountPrice = Math.round(room.basePrice * 0.7);
+              const discountPrice = Math.round(Number(room.basePrice) * 0.7);
               return (
                 <div key={room.id} className="bg-white rounded-2xl p-4 border">
                   <div className="flex items-center justify-between mb-2">

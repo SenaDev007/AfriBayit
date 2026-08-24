@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       }
 
       const features = (() => {
-        try { return dbProperty.features ? JSON.parse(dbProperty.features) : []; } catch { return []; }
+        try { return dbProperty.features ? dbProperty.features : []; } catch { return []; }
       })();
 
       avmInput = {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         geoTrust: dbProperty.geoTrust,
         views: dbProperty.views,
         favorites: dbProperty.favorites,
-        features: Array.isArray(features) ? features : [],
+        features: Array.isArray(features) ? (features as string[]) : [],
       };
     } else if (property) {
       // Validate required fields

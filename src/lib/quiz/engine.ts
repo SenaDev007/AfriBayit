@@ -132,7 +132,7 @@ export function getQuizForDisplay(quiz: Quiz): Omit<Quiz, 'questions'> & {
     id: quiz.id,
     courseId: quiz.courseId,
     title: quiz.title,
-    description: quiz.description,
+    description: (quiz.description as string) || '',
     timeLimitMinutes: quiz.timeLimitMinutes,
     passingScorePercent: quiz.passingScorePercent,
     maxAttempts: quiz.maxAttempts,

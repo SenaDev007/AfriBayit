@@ -232,7 +232,7 @@ export async function findEmergencyArtisans(
         userId: artisan.userId,
         trade: artisan.trade,
         specialties: (() => {
-          try { return artisan.specialties ? JSON.parse(artisan.specialties) : [artisan.trade]; } catch { return [artisan.trade]; }
+          try { if (!artisan.specialties) return [artisan.trade]; const sp = artisan.specialties; return Array.isArray(sp) ? (sp as string[]) : [artisan.trade]; } catch { return [artisan.trade]; }
         })(),
         certified: artisan.certified,
         available: artisan.available,
@@ -370,7 +370,7 @@ export async function createEmergencyDispatch(
           artisanId: assignedArtisanId,
           userId: request.userId,
           title: `Urgence ${request.type} — ${dispatch.id}`,
-          description: request.description,
+          description: (request.description as string) || '',
           estimatedBudget: pricing.finalPrice,
           status: 'requested',
           quotedPrice: pricing.finalPrice,
@@ -428,7 +428,7 @@ export async function acceptEmergencyDispatch(
       request: {
         userId: quote.userId,
         type: dispatchId.includes('plumbing') ? 'plumbing' : dispatchId.includes('electrical') ? 'electrical' : 'locksmith',
-        description: quote.description,
+        description: (quote.description as string) || '',
         lat: 0,
         lng: 0,
       },

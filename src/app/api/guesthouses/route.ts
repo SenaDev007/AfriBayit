@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -58,16 +59,16 @@ export async function POST(request: Request) {
         ownerId: auth.userId,
         name: body.name,
         slug: body.slug,
-        description: body.description,
+        description: (body.description as string) || '',
         city: body.city,
         country: body.country,
         quartier: body.quartier,
         address: body.address,
         lat: body.lat,
         lng: body.lng,
-        images: body.images ? JSON.stringify(body.images) : null,
-        amenities: body.amenities ? JSON.stringify(body.amenities) : null,
-        rules: body.rules ? JSON.stringify(body.rules) : null,
+        images: toJsonInput(body.images),
+        amenities: toJsonInput(body.amenities),
+        rules: toJsonInput(body.rules),
         certificationStatus: 'pending',
         breakfastAvailable: body.breakfastAvailable ?? false,
         breakfastPrice: body.breakfastPrice,

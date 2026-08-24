@@ -167,7 +167,7 @@ export async function createQuizInDb(quizData: Omit<Quiz, 'id'>): Promise<string
     data: {
       courseId: quizData.courseId,
       title: quizData.title,
-      description: quizData.description,
+      description: (quizData.description as string) || '',
       timeLimit: quizData.timeLimitMinutes,
       passingScore: quizData.passingScorePercent,
       maxAttempts: quizData.maxAttempts,

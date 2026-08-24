@@ -14,6 +14,7 @@ import { sendEmail } from './channels/email';
 import { sendSms } from './channels/sms';
 import { sendPush, getUserPushSubscriptions, getVapidPublicKey, type PushSubscriptionData } from './channels/push';
 import { sendWhatsApp } from './channels/whatsapp';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // Priority escalation: urgent always bypasses quiet hours
 const PRIORITY_CHANNELS: Record<NotificationPriority, NotificationChannel[]> = {
@@ -55,7 +56,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<{
       actionUrl: payload.actionUrl || null,
       actorId: payload.actorId || null,
       actorName: payload.actorName || null,
-      metadata: payload.data ? JSON.stringify(payload.data) : null,
+      metadata: toJsonInput(payload.data),
       channels: JSON.stringify(channels),
       sentVia: JSON.stringify([]),
     },

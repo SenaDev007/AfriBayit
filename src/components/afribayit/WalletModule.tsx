@@ -457,8 +457,8 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                           <p className="text-sm font-semibold text-[#0a2a5e] truncate">{txn.reference || txn.type}</p>
                           <p className="text-xs text-gray-400">{new Date(txn.createdAt).toLocaleDateString('fr-FR')}</p>
                         </div>
-                        <p className={`font-mono text-sm font-bold shrink-0 ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
-                          {txn.amount > 0 ? '+' : '-'}{formatFCFA(txn.amount)}
+                        <p className={`font-mono text-sm font-bold shrink-0 ${Number(txn.amount) > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
+                          {Number(txn.amount) > 0 ? '+' : '-'}{formatFCFA(txn.amount)}
                         </p>
                       </div>
                     ))}
@@ -500,8 +500,8 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                           <p className="text-[10px] text-gray-400 font-mono">{txn.reference ?? '—'} · {new Date(txn.createdAt).toLocaleDateString('fr-FR')}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className={`font-mono text-sm font-bold ${txn.amount > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
-                            {txn.amount > 0 ? '+' : ''}{formatFCFA(txn.amount)}
+                          <p className={`font-mono text-sm font-bold ${Number(txn.amount) > 0 ? 'text-[#00A651]' : 'text-[#D93025]'}`}>
+                            {Number(txn.amount) > 0 ? '+' : ''}{formatFCFA(txn.amount)}
                           </p>
                           <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ${
                             txn.status === 'completed' ? 'text-[#00A651]' : txn.status === 'pending' ? 'text-[#D4AF37]' : 'text-[#D93025]'

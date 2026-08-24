@@ -113,7 +113,7 @@ export async function POST(
     const cleaningFee = rental.cleaningFee;
     const securityDeposit = rental.securityDeposit;
     const serviceFee = Math.round(pricePerNight * nights * 0.1); // 10% service fee
-    const totalPrice = pricePerNight * nights + cleaningFee + securityDeposit + serviceFee;
+    const totalPrice = Number(pricePerNight) * nights + Number(cleaningFee) + Number(securityDeposit) + serviceFee;
 
     // Determine booking type
     const bookingType = rental.instantBooking ? 'instant' : 'request';

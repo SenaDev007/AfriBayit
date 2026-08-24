@@ -1518,3 +1518,52 @@ Stage Summary:
 - All 4 verification gates green: tsc 0 errors, build ✓ Compiled successfully in 43s, tests 217/217 passed (9 test files), eslint 0 errors / 0 warnings
 - Convention followed: top-level `adminXxx` section per page (consistent with admin-i18n-1's pattern), French fallback strings passed as 2nd arg to every t() call for backward compatibility
 - Constant Record objects (TIER_LABELS, STATUS_LABELS, METHOD_LABELS, ROLE_LABELS, etc.) left as data-mapped constants (consistent with admin-i18n-1's documented approach — these are not directly rendered JSX, they're indexed by runtime data)
+
+---
+Task ID: B-api
+Agent: Explore Sub Agent
+Task: Thorough analysis of AfriBayit BACKEND (236 Next.js API routes + src/lib/ business-logic engines) cross-referenced with /home/z/my-project/cdc.txt
+
+Work Log:
+- Inventoried all 236 src/app/api/**/route.ts files; bucketed into 30 top-level domains (admin:32, auth:17, properties:15, hotels:15, community:13, guesthouses:10, geotrust:8, artisans:8, escrow:7, users:5, rebecca:5, notifications:5, disputes:5, chat:5, academy:5, …)
+- Counted DB-backed (real Prisma) routes: 181 / 236 (76.7%). Remaining 55 are pure-compute, webhook shims, health endpoints, or hardcoded-demo responses
+- Counted auth coverage: 154 / 236 routes call authGuard/getServerSession/requireAuth. 82 routes (35%) have NO auth check at the handler level — including critical ones like /api/afripoints, /api/inmail, /api/ota/sync, /api/community/moderate, /api/cron/payouts (silent bypass when CRON_SECRET unset), /api/admin/accreditations/[id], /api/admin/disputes/[id], /api/admin/transactions/[id]
+- Read src/middleware.ts in full: handles subdomain→country detection + NextAuth withAuth for route gating, but PROTECTED_API_PREFIXES is a small allowlist (wallet, escrow, subscriptions, transactions, chat, messages, favorites, kyc, notifications, profiles, user, auth/2fa, auth/oauth-*). Everything else (api/properties, api/rebecca, api/ota, api/fraud/check, api/payments/webhook/*, api/inmail, api/disputes, api/community/moderate, api/cron/payouts, etc.) is PUBLIC at middleware level and must self-guard — many do not
+- Read all core business-logic engines: escrow-engine.ts (829 LOC), payout-engine.ts, payout-cron.ts, payout-limits.ts, provider-router.ts, webhooks/{stripe,fedapay}.ts, providers/{stripe,fedapay}.ts, security/{rbac,tenant-guard,rate-limiter,fraud-detector,anti-scraping,jwt-security,password,input-validation,cors,helmet}.ts, ai/{kyc-analyzer,document-analyzer,legal-doc-checker}.ts, rebecca/{agent-orchestrator,intent-classifier,memory,guardrails,prompt-injection-guard,handoff,agent-nodes/*}.ts, ota/{channel-manager,channel-sync-engine,overbooking-guard,rate-parity,providers/{booking-com,expedia},adapters/*}.ts, search/{elasticsearch,builder,filters,boost-algorithm,fulltext,search-indexer,saved-searches,sync}.ts, notary/{deed-generator,deed-templates,e-signature}.ts, geotrust/{service-codes,packs,triggers,conflict-detector,escrow-integration}.ts, realtime/{pusher-server,pusher-client,channels,server,client}.ts, i18n/, legal/{country-docs,validation-rules,document-checker,auto-reject,regulatory-update}.ts, tax/{benin,burkina,cote-ivoire,togo,index}.ts, ussd/{africas-talking,ussd-engine,screens}.ts, checkin/{qr-generator,qr-validator}.ts, qr-checkin/, rag/{embedder,retriever,prompts}.ts, avm/{scorer,comparables,valuation,market-data}.ts, certificates/{generator,templates,index}.ts
+- Cross-referenced CDC §7B.3 + §5.0bis.4 against escrow-engine state machine: implemented states are CREATED → FUNDED → NOTARY_ASSIGNED → GEO_VERIFIED → DEED_SIGNED → ANDF_REGISTERED → RELEASED (+ DISPUTED/CANCELLED/REFUNDED). CDC-required states DOCS_VALIDATED, GEOTRUST_VALIDATED (named GEO_VERIFIED), and NOTARY_IN_PROGRESS are MISSING from the actual TransactionState enum (types.ts L17-27). However Rebecca's agent-nodes/escrow-node.ts displays the FULL CDC-spec 9-state list — meaning the AI shows steps the engine can never enter
+- Read tests/unit/* (10 files, 217 tests): escrow.test.ts, cdc-business-rules.test.ts, multitenancy-security.test.ts, middleware.test.ts re-implement constants INSIDE the test file rather than importing from source — they assert on CDC-spec values, not on the actual implementation. This explains why tests pass even though the escrow-engine state machine is non-compliant with CDC §7B.3
+- Read tests/e2e/auth.spec.ts (5 tests): smoke tests for page-load and 401-on-admin routes — no business-logic assertion
+
+Stage Summary:
+- API routes: 236 total, 181 backed by Prisma (real), 55 pure-compute/webhook/mock
+- Auth coverage: 154 routes self-guard, 82 routes have NO per-handler auth check (middleware allows them through)
+- Escrow engine: real but state machine diverges from CDC §7B.3 (3 missing states)
+- Payments: real Stripe + FedaPay integration (Stripe payouts stubbed — needs Stripe Connect), webhooks have status-based partial idempotency but no event-id dedupe table
+- Payout engine: J+1 / J+3 scheduling implemented correctly (CDC §7B.7.1)
+- Provider router: real BJ/CI/BF/TG → FedaPay, others → Stripe
+- Rebecca orchestrator: REAL multi-agent graph with intent classifier + 5 specialist nodes + response generator + handoff, real z-ai-web-dev-sdk LLM calls, real guardrails + prompt-injection guard + memory DB persistence
+- OTA: REAL Booking.com + Expedia API clients (sandbox by default) with HMAC-SHA256 webhook verification (timing-safe), rate-limiter, channel-manager, overbooking-guard, rate-parity
+- Search: dual-mode real ES client (auto-fallback to Prisma contains when ELASTICSEARCH_URL unset)
+- Notary deed-generator: real template engine, real e-signature (DB persistence only — no PKI/qualified signature)
+- GeoTrust conflict-detector: real PostGIS ST_DWithin with Haversine fallback
+- Realtime Pusher: real server + client with auth endpoints
+- i18n: all 9 CDC locales present (fr/en/ar/sw/ha/wo/am/ln/fon)
+- Legal/tax: real per-country rule engines (BJ/CI/BF/TG)
+- USSD: real state machine + Africa's Talking SDK (route handler duplicates engine — code duplication)
+- RAG: real z-ai-web-dev-sdk LLM but embeddings are STUBBED (`generateEmbedding` returns [] — comment admits "we'll rely on keyword-based retrieval"), retriever uses keyword overlap
+- AVM: real comparable-based valuation with weighted-average + adjustment factors
+- Certificates: real pdfkit PDF generation with QR code
+- Tests: 10 unit files / 1 e2e file — mostly spec-validation smoke tests against re-implemented constants, NOT real code-path coverage
+
+Top 10 critical backend issues found:
+1. /api/auth/register accepts `role` from body without validation — anyone can self-register as admin/super_admin/notary (privilege escalation, no zod)
+2. /api/admin/accreditations/[id] PATCH — NO authGuard, anyone can grant COUNTRY_ADMIN/SUPER_ADMIN to any user
+3. /api/admin/transactions/[id] PATCH (flag/refund) and /api/admin/disputes/[id] GET — NO authGuard, exposes PII / mutates transactions
+4. /api/ota/sync POST — NO auth, anyone can push availability/rates to Booking.com/Expedia for ANY hotelId (inventory manipulation)
+5. /api/afripoints POST and /api/inmail POST — accept userId/fromUserId in body, no auth — anyone can spend anyone's points or send InMails on their behalf (IDOR)
+6. /api/cron/payouts — only checks CRON_SECRET if env var is set; if unset, anyone can trigger scheduled payout processing
+7. /api/properties GET — accepts ?agentId=X&status=draft without verifying requester is that agent (allows reading any agent's draft listings)
+8. /api/reports/weekly and /api/analytics/export return HARDCODED Math.random() mock data (acknowledged "in production these would come from real data aggregation" in source)
+9. withRBAC() and withTenantGuard() wrappers in src/lib/security/{rbac,tenant-guard}.ts are NO-OPs — they just call the handler without enforcing anything (deceptive — devs who wrap handlers think they're protected)
+10. Escrow state machine missing 3 CDC §7B.3 states (DOCS_VALIDATED, GEOTRUST_VALIDATED, NOTARY_IN_PROGRESS) — engine supports 7-state lifecycle while Rebecca UI shows 9-state lifecycle, creating UI/engine drift
+

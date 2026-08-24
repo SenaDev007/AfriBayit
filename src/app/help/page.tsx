@@ -67,7 +67,7 @@ export default function HelpPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1
             className="text-4xl sm:text-5xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('helpPage.title', "Centre d'aide")}
           </h1>
@@ -102,7 +102,7 @@ export default function HelpPage() {
               >
                 <h3
                   className="font-bold text-gray-900 mb-3"
-                  style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+                  style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
                 >
                   {t(`helpPage.${cat.titleKey}`, cat.titleKey)}
                 </h3>
@@ -127,7 +127,7 @@ export default function HelpPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2
             className="text-2xl font-bold text-gray-900 mb-8 text-center"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('helpPage.faqTitle', 'Questions fréquentes')}
           </h2>
@@ -173,7 +173,7 @@ export default function HelpPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2
             className="text-2xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('helpPage.contactTitle', "Besoin d'aide supplémentaire ?")}
           </h2>

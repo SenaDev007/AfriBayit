@@ -96,7 +96,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLa
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: easeOut }}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-white"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {title}
           </motion.h1>
@@ -107,7 +107,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLa
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: easeOut }}
             className="mt-4 text-base sm:text-lg text-white/80 max-w-2xl"
-            style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), system-ui, sans-serif' }}
           >
             {subtitle}
           </motion.p>

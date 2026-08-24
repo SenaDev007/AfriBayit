@@ -294,7 +294,7 @@ export async function processScheduledPayouts(): Promise<{
   let failed = 0;
 
   for (const payout of scheduledPayouts) {
-    const metadata = payout.metadata ? JSON.parse(payout.metadata as string) as Record<string, unknown> : {};
+    const metadata = payout.metadata ? payout.metadata as Record<string, unknown> : {};
     const scheduledFor = metadata.scheduledFor as string | undefined;
 
     // Only process payouts that are scheduled for today or earlier
@@ -397,7 +397,7 @@ export async function processScheduledPayouts(): Promise<{
         if (user) {
           await db.user.update({
             where: { id: payout.userId },
-            data: { walletBalance: user.walletBalance + refundAmount },
+            data: { walletBalance: Number(user.walletBalance) + refundAmount },
           });
         }
 
@@ -448,7 +448,7 @@ export async function processHeldPayouts(): Promise<{
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
       if (latestHeld?.metadata) {
-        const metadata = JSON.parse(latestHeld.metadata as string) as Record<string, unknown>;
+        const metadata = latestHeld.metadata as Record<string, unknown>;
 
         // Schedule the combined payout
         await scheduleJ1Payout(
@@ -519,7 +519,7 @@ export async function validatePayoutEligibility(
   }
 
   // Check wallet balance
-  if (user.walletBalance < amount) {
+  if (Number(user.walletBalance) < amount) {
     return {
       eligible: false,
       reason: `Solde insuffisant. Solde: ${user.walletBalance} FCFA, Demandé: ${amount} FCFA`,
@@ -556,7 +556,7 @@ export async function processPayout(request: PayoutRequest): Promise<PayoutRespo
   const user = await db.user.findUnique({ where: { id: request.userId } });
   if (!user) throw new Error('User not found');
 
-  const newBalance = user.walletBalance - request.amount;
+  const newBalance = Number(user.walletBalance) - request.amount;
 
   const walletTx = await db.walletTransaction.create({
     data: {
@@ -580,7 +580,7 @@ export async function processPayout(request: PayoutRequest): Promise<PayoutRespo
     where: { id: request.userId },
     data: {
       walletBalance: newBalance,
-      pendingPayout: user.pendingPayout + request.amount,
+      pendingPayout: Number(user.pendingPayout) + request.amount,
     },
   });
 
@@ -609,7 +609,7 @@ export async function processPayout(request: PayoutRequest): Promise<PayoutRespo
       }
     }
 
-    console.log(`[Payout] Payout ${payoutResult.payoutId} processed via ${providerName}: status=${payoutResult.status}`);
+    console.info(`[Payout] Payout ${payoutResult.payoutId} processed via ${providerName}: status=${payoutResult.status}`);
 
     return payoutResult;
   } catch (error) {
@@ -659,11 +659,11 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
 
   const escrow = transaction.escrowAccount;
   // P1.7 — fallback 0.025 → 0.05 (default to highest tier if missing) per CDC §6.2
-  const commissionRate = transaction.commissionRate || 0.05;
-  const commission = Math.round(transaction.amount * commissionRate);
-  const sellerAmount = transaction.amount - commission;
+  const commissionRate = Number(transaction.commissionRate) || 0.05;
+  const commission = Math.round(Number(transaction.amount) * commissionRate);
+  const sellerAmount = Number(transaction.amount) - commission;
 
-  console.log(`[Payout] Processing seller payout for transaction ${transactionId}: ${sellerAmount} XOF (commission: ${commission})`);
+  console.info(`[Payout] Processing seller payout for transaction ${transactionId}: ${sellerAmount} XOF (commission: ${commission})`);
 
   // Credit seller's wallet
   const seller = await db.user.findUnique({
@@ -674,7 +674,7 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
     throw new Error('Seller not found');
   }
 
-  const newBalance = seller.walletBalance + sellerAmount;
+  const newBalance = Number(seller.walletBalance) + sellerAmount;
 
   await db.$transaction([
     db.user.update({
@@ -735,7 +735,7 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
           seller.phone,
           seller.country,
         );
-        console.log(`[Payout] J+1 auto-payout scheduled for seller ${seller.id}: ${sellerAmount} XOF via ${defaultMethod.name}`);
+        console.info(`[Payout] J+1 auto-payout scheduled for seller ${seller.id}: ${sellerAmount} XOF via ${defaultMethod.name}`);
       }
     } catch (error) {
       console.error(`[Payout] J+1 scheduling failed for seller ${seller.id}:`, error);
@@ -743,7 +743,7 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
     }
   }
 
-  console.log(`[Payout] Seller wallet credited: ${sellerAmount} XOF for transaction ${transactionId}`);
+  console.info(`[Payout] Seller wallet credited: ${sellerAmount} XOF for transaction ${transactionId}`);
 }
 
 /**
@@ -774,7 +774,7 @@ export async function getPayoutStatus(payoutId: string): Promise<{
 
   if (!tx) return null;
 
-  const metadata = tx.metadata ? JSON.parse(tx.metadata as string) as Record<string, unknown> : {};
+  const metadata = tx.metadata ? tx.metadata as Record<string, unknown> : {};
 
   return {
     id: tx.id,

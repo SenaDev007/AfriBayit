@@ -150,7 +150,7 @@ export async function detectPropertyConflicts(propertyId: string): Promise<Confl
   for (const deed of propertyDeeds) {
     if (!deed.ocrResult) continue;
     try {
-      const ocrData = JSON.parse(deed.ocrResult) as Record<string, unknown>;
+      const ocrData = deed.ocrResult as Record<string, unknown>;
       const deedNumber = ocrData.numero_titre || ocrData.numero_acd || ocrData.reference;
       if (typeof deedNumber === 'string' && deedNumber.trim()) {
         // Search for other properties with the same deed number in their OCR results
@@ -158,7 +158,7 @@ export async function detectPropertyConflicts(propertyId: string): Promise<Confl
           where: {
             id: { not: deed.id },
             docType: deed.docType,
-            ocrResult: { contains: deedNumber.trim() },
+            ocrResult: { path: ['$'], string_contains: deedNumber.trim() },
           },
           select: { propertyId: true },
         });
@@ -195,7 +195,7 @@ export async function detectPropertyConflicts(propertyId: string): Promise<Confl
 
   if (sameAreaProperties.length >= 3) {
     const avgPricePerSqm =
-      sameAreaProperties.reduce((sum, p) => sum + p.price / Math.max(p.surface, 1), 0) /
+      sameAreaProperties.reduce((sum, p) => sum + Number(p.price) / Math.max(p.surface, 1), 0) /
       sameAreaProperties.length;
     const propertyPricePerSqm = property.price / Math.max(property.surface, 1);
 
@@ -398,7 +398,7 @@ export function requiresMandatoryInspection(property: {
   const triggers: InspectionTriggerResult['triggers'] = [];
 
   // Terrain > 10M XOF → mandatory
-  if (property.type === 'terrain' && property.price > 10000000) {
+  if (property.type === 'terrain' && Number(property.price) > 10000000) {
     triggers.push({
       condition: `Terrain à ${new Intl.NumberFormat('fr-FR').format(property.price)} XOF — supérieur à 10M XOF`,
       met: true,
@@ -416,7 +416,7 @@ export function requiresMandatoryInspection(property: {
   }
 
   // Property > 50M XOF → recommended
-  if (property.price > 50000000) {
+  if (Number(property.price) > 50000000) {
     triggers.push({
       condition: `Bien à ${new Intl.NumberFormat('fr-FR').format(property.price)} XOF — supérieur à 50M XOF`,
       met: true,

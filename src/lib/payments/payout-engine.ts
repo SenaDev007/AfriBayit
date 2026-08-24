@@ -297,9 +297,9 @@ export async function schedulePayoutAfterRelease(
 
   // Calculate seller amount (minus commission)
   // P1.7 — fallback 0.025 → 0.05 (default to highest tier if missing) per CDC §6.2
-  const commissionRate = transaction.commissionRate || 0.05;
-  const commission = Math.round(transaction.amount * commissionRate);
-  const sellerAmount = transaction.amount - commission;
+  const commissionRate = Number(transaction.commissionRate) || 0.05;
+  const commission = Math.round(Number(transaction.amount) * commissionRate);
+  const sellerAmount = Number(transaction.amount) - commission;
 
   // Determine payout method based on original payment method
   const originalMethod = transaction.paymentProvider === 'stripe' ? 'bank_transfer' : 'mobile_money';

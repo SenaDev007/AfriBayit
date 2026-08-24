@@ -47,9 +47,9 @@ export async function POST(request: Request) {
     // Shape response
     const shaped = properties.map(p => {
       let images: string[] = [];
-      try { images = p.images ? JSON.parse(p.images) : []; } catch { images = []; }
+      try { images = (p.images as string[]) || [] || []; } catch { images = []; }
       let features: string[] = [];
-      try { features = p.features ? JSON.parse(p.features) : []; } catch { features = []; }
+      try { features = (p.features as string[]) || [] || []; } catch { features = []; }
 
       return {
         id: p.id,
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         city: p.city,
         country: p.country,
         quartier: p.quartier,
-        description: p.description,
+        description: (p.description as string) || '',
         images,
         features,
         lat: p.lat,

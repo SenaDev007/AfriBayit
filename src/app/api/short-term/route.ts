@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -85,7 +86,7 @@ export async function GET(request: Request) {
       const amenityList = amenities.split(',').map((a) => a.trim().toLowerCase());
       filtered = rentals.filter((rental) => {
         try {
-          const rentalAmenities = JSON.parse(rental.amenities || '[]') as string[];
+          const rentalAmenities = (Array.isArray(rental.amenities) ? rental.amenities as string[] : []);
           return amenityList.every((a) => rentalAmenities.some((ra) => ra.toLowerCase() === a));
         } catch {
           return false;
@@ -115,7 +116,7 @@ export async function POST(request: Request) {
         hostId: auth.userId,
         title: body.title,
         slug: body.slug,
-        description: body.description,
+        description: (body.description as string) || '',
         propertyType: body.propertyType || 'appartement',
         city: body.city,
         country: body.country,
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
         address: body.address,
         lat: body.lat,
         lng: body.lng,
-        images: body.images ? JSON.stringify(body.images) : null,
+        images: toJsonInput(body.images),
         pricePerNight: body.pricePerNight,
         weeklyPrice: body.weeklyPrice,
         monthlyPrice: body.monthlyPrice,
@@ -132,15 +133,15 @@ export async function POST(request: Request) {
         bedrooms: body.bedrooms || 1,
         bathrooms: body.bathrooms || 1,
         beds: body.beds || 1,
-        amenities: body.amenities ? JSON.stringify(body.amenities) : null,
-        houseRules: body.houseRules ? JSON.stringify(body.houseRules) : null,
+        amenities: toJsonInput(body.amenities),
+        houseRules: toJsonInput(body.houseRules),
         instantBooking: body.instantBooking ?? false,
         minStayNights: body.minStayNights || 1,
         maxStayNights: body.maxStayNights,
         cancellationPolicy: body.cancellationPolicy || 'flexible',
         cleaningFee: body.cleaningFee || 0,
         securityDeposit: body.securityDeposit || 0,
-        otaRefs: body.otaRefs ? JSON.stringify(body.otaRefs) : null,
+        otaRefs: toJsonInput(body.otaRefs),
         hostVerified: body.hostVerified ?? false,
         hostIdentityVerified: body.hostIdentityVerified ?? false,
         status: 'active',

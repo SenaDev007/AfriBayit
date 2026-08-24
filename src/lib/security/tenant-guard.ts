@@ -87,9 +87,12 @@ export function addTenantFilter(
 export function withTenantGuard(
   handler: (request: Request, context: TenantContext) => Promise<Response>
 ) {
-  return async (request: Request, tenantContext: TenantContext): Promise<Response> => {
-    // The handler receives the tenant context with country information
-    // It should use getTenantCountryFilter() to scope queries
+  return async (request: Request): Promise<Response> => {
+    const { authGuard } = await import('@/lib/auth-guard');
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+    const tenantContext: TenantContext = createTenantContext({ id: auth.userId, role: auth.role, country: auth.country });
+    if (!tenantContext.isSuperAdmin && !tenantContext.country) return new Response(JSON.stringify({ error: 'Aucun pays associé', code: 'NO_COUNTRY_ASSIGNED' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     return handler(request, tenantContext);
   };
 }

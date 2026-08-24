@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // GET /api/notifications — List user notifications with grouping support
 export async function GET(request: Request) {
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
         // Extract referenceId from metadata if available
         let referenceId = '';
         try {
-          const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
+          const metadata = (notification.metadata as any) || {};
           referenceId = metadata.referenceId || metadata.propertyId || metadata.transactionId || '';
         } catch {
           referenceId = '';
@@ -163,8 +164,8 @@ export async function POST(request: Request) {
         actionUrl: body.actionUrl || null,
         actorId: body.actorId || null,
         actorName: body.actorName || null,
-        metadata: body.metadata ? JSON.stringify(body.metadata) : null,
-        channels: body.channels ? JSON.stringify(body.channels) : null,
+        metadata: toJsonInput(body.metadata),
+        channels: toJsonInput(body.channels),
         sentVia: JSON.stringify([]),
       },
     });

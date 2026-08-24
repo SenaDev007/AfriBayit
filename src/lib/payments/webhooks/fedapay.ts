@@ -26,7 +26,7 @@ export async function handleFedaPayWebhook(
     return { processed: false, reason: 'No reference' };
   }
 
-  console.log(`[FedaPay Webhook] Processing event: ${event.event}, ref: ${providerRef}, status: ${event.status}`);
+  console.info(`[FedaPay Webhook] Processing event: ${event.event}, ref: ${providerRef}, status: ${event.status}`);
 
   // Find the wallet transaction by provider reference
   const walletTx = await db.walletTransaction.findFirst({
@@ -39,7 +39,7 @@ export async function handleFedaPayWebhook(
   }
 
   const existingMetadata = walletTx.metadata
-    ? JSON.parse(walletTx.metadata as string) as Record<string, unknown>
+    ? walletTx.metadata as Record<string, unknown>
     : {};
   const transactionId = (existingMetadata.transactionId as string) || (existingMetadata.reference as string | undefined);
   const propertyId = existingMetadata.propertyId as string | undefined;
@@ -74,7 +74,7 @@ export async function handleFedaPayWebhook(
       break;
 
     default:
-      console.log(`[FedaPay Webhook] Unhandled event type: ${event.event}, status: ${event.status}`);
+      console.info(`[FedaPay Webhook] Unhandled event type: ${event.event}, status: ${event.status}`);
       // For other statuses (pending, processing), just update the wallet tx
       if (event.status === 'completed' && walletTx.type === 'escrow_fund' && transactionId) {
         // Fallback: if status is completed but event wasn't 'approved', still fund escrow
@@ -96,7 +96,7 @@ async function handleTransactionApproved(
   transactionId: string | undefined,
   propertyId: string | undefined
 ) {
-  console.log(`[FedaPay Webhook] Transaction APPROVED — funding escrow for tx: ${transactionId || 'N/A'}`);
+  console.info(`[FedaPay Webhook] Transaction APPROVED — funding escrow for tx: ${transactionId || 'N/A'}`);
 
   if (walletTx.type === 'escrow_fund' && transactionId) {
     await fundEscrow(transactionId, walletTx.userId);
@@ -145,7 +145,7 @@ async function handleTransactionDeclined(
   _event: { amount: number; status: PaymentStatus },
   transactionId: string | undefined
 ) {
-  console.log(`[FedaPay Webhook] Transaction DECLINED for tx: ${transactionId || 'N/A'}`);
+  console.info(`[FedaPay Webhook] Transaction DECLINED for tx: ${transactionId || 'N/A'}`);
 
   // Reset the transaction status so buyer can retry
   if (transactionId) {
@@ -186,7 +186,7 @@ async function handleTransactionFailed(
   _event: { amount: number; status: PaymentStatus },
   transactionId: string | undefined
 ) {
-  console.log(`[FedaPay Webhook] Transaction FAILED for tx: ${transactionId || 'N/A'}`);
+  console.info(`[FedaPay Webhook] Transaction FAILED for tx: ${transactionId || 'N/A'}`);
 
   // Reset the transaction status so buyer can retry
   if (transactionId) {
@@ -238,7 +238,7 @@ async function fundEscrow(transactionId: string, userId: string) {
     if (transaction.status === 'FUNDED' || transaction.status === 'NOTARY_ASSIGNED'
       || transaction.status === 'GEO_VERIFIED' || transaction.status === 'DEED_SIGNED'
       || transaction.status === 'ANDF_REGISTERED' || transaction.status === 'RELEASED') {
-      console.log(`[FedaPay Webhook] Transaction ${transactionId} already at status ${transaction.status}, skipping escrow funding`);
+      console.info(`[FedaPay Webhook] Transaction ${transactionId} already at status ${transaction.status}, skipping escrow funding`);
       return;
     }
 
@@ -246,7 +246,7 @@ async function fundEscrow(transactionId: string, userId: string) {
     const { transition } = await import('../escrow-engine');
     await transition(transactionId, 'FUNDED', userId, 'Paiement FedaPay confirmé — Fonds déposés en escrow');
 
-    console.log(`[FedaPay Webhook] Escrow FUNDED for transaction ${transactionId}`);
+    console.info(`[FedaPay Webhook] Escrow FUNDED for transaction ${transactionId}`);
   } catch (error) {
     console.error(`[FedaPay Webhook] Escrow funding failed for transaction ${transactionId}:`, error);
   }

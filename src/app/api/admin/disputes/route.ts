@@ -138,7 +138,7 @@ export async function PATCH(request: NextRequest) {
       }
 
       if (splitBuyer !== undefined && splitSeller !== undefined && transaction.escrowAccount) {
-        const totalHeld = transaction.escrowAccount.heldAmount;
+        const totalHeld = Number(transaction.escrowAccount.heldAmount);
         const buyerAmount = totalHeld * (splitBuyer / 100);
         const sellerAmount = totalHeld * (splitSeller / 100);
 

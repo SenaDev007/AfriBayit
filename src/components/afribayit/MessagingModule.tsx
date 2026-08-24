@@ -186,11 +186,11 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
     switch (msg.messageType) {
       case 'property_card':
         try {
-          const property = msg.metadata ? JSON.parse(msg.metadata) : null;
+          const property = msg.metadata ? msg.metadata : null;
           return (
             <div className="bg-[#003087]/5 border border-[#003087]/20 rounded-lg p-3 max-w-[250px]">
-              <p className="text-xs font-semibold text-[#003087]">{property?.title || t('messaging.propertyFallback', 'Propriété')}</p>
-              <p className="text-[10px] text-gray-500">{property?.city}, {property?.price}</p>
+              <p className="text-xs font-semibold text-[#003087]">{(property as any)?.title || t('messaging.propertyFallback', 'Propriété')}</p>
+              <p className="text-[10px] text-gray-500">{(property as any)?.city}, {(property as any)?.price}</p>
             </div>
           );
         } catch {

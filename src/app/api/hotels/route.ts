@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -66,13 +67,13 @@ export async function POST(request: Request) {
         stars: body.stars || 3,
         pricePerNight: body.pricePerNight,
         currency: body.currency || 'XOF',
-        amenities: body.amenities ? JSON.stringify(body.amenities) : null,
-        images: body.images ? JSON.stringify(body.images) : null,
-        policies: body.policies ? JSON.stringify(body.policies) : null,
+        amenities: toJsonInput(body.amenities),
+        images: toJsonInput(body.images),
+        policies: toJsonInput(body.policies),
         available: body.available ?? true,
         connectionLevel: body.connectionLevel || 1,
         ownerId: auth.userId,
-        otaRefs: body.otaRefs ? JSON.stringify(body.otaRefs) : null,
+        otaRefs: toJsonInput(body.otaRefs),
         lat: body.lat,
         lng: body.lng,
         status: 'active',

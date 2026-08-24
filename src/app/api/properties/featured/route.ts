@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       where: {
         status: 'published',
         ...(country ? { country } : {}),
-        images: { not: null },
+        images: { not: { equals: null } },
       },
       orderBy: [
         { premium: 'desc' },
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     const formatted = properties.map((p) => {
       let images: string[] = [];
       try {
-        images = p.images ? JSON.parse(p.images) : [];
+        images = (p.images as string[]) || [] || [];
       } catch {
         images = [];
       }

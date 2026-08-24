@@ -137,10 +137,10 @@ async function searchProperties(args: Record<string, unknown>): Promise<Record<s
 
     const formatted = properties.map((p) => {
       const images = (() => {
-        try { return p.images ? JSON.parse(p.images) : []; } catch { return []; }
+        try { return p.images ? p.images : []; } catch { return []; }
       })();
       const features = (() => {
-        try { return p.features ? JSON.parse(p.features) : []; } catch { return []; }
+        try { return p.features ? p.features : []; } catch { return []; }
       })();
 
       return {
@@ -220,7 +220,7 @@ async function checkEscrow(args: Record<string, unknown>, userId?: string): Prom
       recentEvents: t.timelineEvents.map((e) => ({
         from: e.fromStatus,
         to: e.toStatus,
-        description: e.description,
+        description: (e.description as string) || '',
         date: e.createdAt,
       })),
       createdAt: t.createdAt,
@@ -266,14 +266,14 @@ async function getMarketStats(args: Record<string, unknown>): Promise<Record<str
 
     const validSurfaces = properties.filter((p) => p.surface > 0);
     const avgPricePerM2 = validSurfaces.length > 0
-      ? Math.round(validSurfaces.reduce((s, p) => s + p.price / p.surface, 0) / validSurfaces.length)
+      ? Math.round(validSurfaces.reduce((s, p) => s + Number(p.price) / p.surface, 0) / validSurfaces.length)
       : 0;
 
     // Group by type
     const byType: Record<string, { count: number; avgPrice: number }> = {};
     for (const p of properties) {
       if (!byType[p.type]) byType[p.type] = { count: 0, avgPrice: 0 };
-      byType[p.type].avgPrice += p.price;
+      byType[p.type].avgPrice += Number(p.price);
       byType[p.type].count += 1;
     }
     for (const key of Object.keys(byType)) {
@@ -314,7 +314,7 @@ async function findArtisans(args: Record<string, unknown>): Promise<Record<strin
     const formatted = results.map((r) => ({
       id: r.artisan.id,
       trade: r.artisan.trade,
-      specialties: r.artisan.specialties,
+      specialties: r.artisan.specialties as any,
       certified: r.artisan.certified,
       rating: r.artisan.rating,
       reviews: r.artisan.reviews,
@@ -415,8 +415,8 @@ async function getPropertyDetails(args: Record<string, unknown>): Promise<Record
 
     if (!property) return { error: 'Bien non trouvé' };
 
-    const images = (() => { try { return property.images ? JSON.parse(property.images) : []; } catch { return []; } })();
-    const features = (() => { try { return property.features ? JSON.parse(property.features) : []; } catch { return []; } })();
+    const images = (() => { try { return property.images ? property.images : []; } catch { return []; } })();
+    const features = (() => { try { return property.features ? property.features : []; } catch { return []; } })();
 
     return {
       property: {

@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     for (const tx of monthlyTransactions) {
       const key = `${tx.createdAt.getFullYear()}-${String(tx.createdAt.getMonth() + 1).padStart(2, '0')}`;
       if (key in monthlyRevenue) {
-        monthlyRevenue[key] += tx.commission;
+        monthlyRevenue[key] += Number(tx.commission);
       }
     }
 

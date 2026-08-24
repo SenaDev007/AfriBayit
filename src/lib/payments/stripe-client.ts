@@ -86,7 +86,7 @@ export async function createPaymentIntent(
     const paymentIntent = await client.paymentIntents.create({
       amount: stripeAmount,
       currency,
-      description: params.description,
+      description: (params.description as string) || '',
       receipt_email: params.customerEmail,
       metadata: {
         customerId: params.customerId || '',

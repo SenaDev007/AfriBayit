@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { analyzeKYCDocument, type KycDocumentType, type KycAnalysisResult } from '@/lib/ai/kyc-analyzer';
 import { authGuard } from '@/lib/auth-guard';
 
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
         userId,
         docType: mapDocTypeToKycDocType(documentType),
         docUrl: docUrl || `data:image/jpeg;base64,${imageBase64?.substring(0, 100)}...`,
-        ocrResult,
+        ocrResult: toJsonInput(ocrResult),
         ocrValid,
         aiScore,
         status: docStatus,

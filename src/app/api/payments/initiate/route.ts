@@ -187,7 +187,7 @@ export async function POST(request: Request) {
           },
         });
 
-        console.log(`[Payment] Transaction ${transactionId} created for property ${propertyId} with escrow account`);
+        console.info(`[Payment] Transaction ${transactionId} created for property ${propertyId} with escrow account`);
       }
     }
 
@@ -254,7 +254,7 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`[Payment] Payment initiated: ${result.paymentId}, provider: ${selectedProvider}, method: ${method}`);
+    console.info(`[Payment] Payment initiated: ${result.paymentId}, provider: ${selectedProvider}, method: ${method}`);
 
     return NextResponse.json({
       success: result.success,

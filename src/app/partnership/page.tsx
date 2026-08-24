@@ -52,7 +52,7 @@ export default function PartnershipPage() {
           <Handshake className="w-12 h-12 mx-auto mb-4" style={{ color: GOLD }} />
           <h1
             className="text-4xl sm:text-5xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('partnershipPage.heroTitle', 'Devenir partenaire')}
           </h1>
@@ -89,7 +89,7 @@ export default function PartnershipPage() {
                     <div>
                       <h3
                         className="text-xl font-bold text-gray-900 mb-1"
-                        style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+                        style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
                       >
                         {p.title}
                       </h3>
@@ -131,7 +131,7 @@ export default function PartnershipPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2
             className="text-2xl font-bold text-white mb-4"
-            style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
           >
             {t('partnershipPage.questionTitle', 'Une question sur le partenariat ?')}
           </h2>

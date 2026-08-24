@@ -99,8 +99,8 @@ async function getMarketData(city: string, country: string) {
     // Simple trend analysis: compare older vs newer listings
     const sorted = [...properties].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     const half = Math.floor(sorted.length / 2);
-    const olderAvg = sorted.slice(0, half).reduce((s, p) => s + p.price, 0) / Math.max(half, 1);
-    const newerAvg = sorted.slice(half).reduce((s, p) => s + p.price, 0) / Math.max(sorted.length - half, 1);
+    const olderAvg = sorted.slice(0, half).reduce((s, p) => s + Number(p.price), 0) / Math.max(half, 1);
+    const newerAvg = sorted.slice(half).reduce((s, p) => s + Number(p.price), 0) / Math.max(sorted.length - half, 1);
 
     const priceChange = olderAvg > 0 ? (newerAvg - olderAvg) / olderAvg : 0;
     const priceTrend = priceChange > 0.05 ? 'rising' : priceChange < -0.05 ? 'declining' : 'stable';

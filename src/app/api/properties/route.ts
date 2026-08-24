@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { propertyCreateSchema } from '@/lib/validations/property.schema';
 import { authGuard } from '@/lib/auth-guard';
 import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -20,35 +21,42 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
-    // Build cache key from query parameters
-    const cacheKey = buildCacheKey(
-      'properties',
-      `list:${type || 'all'}:${transaction || 'all'}:${city || 'all'}:${country || 'all'}:${minPrice || ''}:${maxPrice || ''}:${verified || ''}:${geoTrust || ''}:${premium || ''}:${sortBy}:${page}:${limit}`,
-      country || undefined
-    );
-
-    // Try cache first (5 min TTL for property listings)
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-      return NextResponse.json(cached);
-    }
-
-    // Support agentId filter for "my listings" queries
     const agentId = searchParams.get('agentId');
-    // Support status filter for owner queries (default: published for public listings)
     const statusFilter = searchParams.get('status');
-
-    const where: Record<string, unknown> = {};
-    // If agentId is provided, filter by that agent's properties (allows draft/published for owner)
-    if (agentId) {
-      where.agentId = agentId;
-      if (statusFilter) {
-        where.status = statusFilter;
+    const PRIVATE_STATUSES = new Set(['draft', 'pending_review', 'rejected', 'archived']);
+    const ADMIN_ROLES_SET = new Set(['SUPER_ADMIN', 'COUNTRY_ADMIN']);
+    let authUserId: string | null = null;
+    let authRole: string | null = null;
+    if (agentId || (statusFilter && PRIVATE_STATUSES.has(statusFilter))) {
+      const auth = await authGuard(request);
+      if (!auth.success) {
+        if (agentId) return auth.response;
+        if (statusFilter && PRIVATE_STATUSES.has(statusFilter)) return auth.response;
       } else {
-        where.status = { in: ['published', 'draft', 'pending_review'] };
+        authUserId = auth.userId;
+        authRole = auth.role;
+      }
+    }
+    const isCacheable = !agentId && (!statusFilter || statusFilter === 'published');
+    const cacheKey = buildCacheKey('properties', `list:${type || 'all'}:${transaction || 'all'}:${city || 'all'}:${country || 'all'}:${minPrice || ''}:${maxPrice || ''}:${verified || ''}:${geoTrust || ''}:${premium || ''}:${sortBy}:${page}:${limit}`, country || undefined);
+    if (isCacheable) {
+      const cached = await cache.get(cacheKey);
+      if (cached) return NextResponse.json(cached);
+    }
+    const where: Record<string, unknown> = {};
+    if (agentId) {
+      const isOwner = authUserId === agentId;
+      const isAdmin = authRole !== null && ADMIN_ROLES_SET.has(authRole);
+      if (!isOwner && !isAdmin) {
+        where.agentId = agentId;
+        where.status = 'published';
+      } else {
+        where.agentId = agentId;
+        if (statusFilter) where.status = statusFilter;
+        else where.status = { in: ['published', 'draft', 'pending_review'] };
       }
     } else {
-      where.status = 'published';
+      where.status = statusFilter && !PRIVATE_STATUSES.has(statusFilter) ? statusFilter : 'published';
     }
 
     if (type && type !== 'all') where.type = type;
@@ -102,14 +110,14 @@ export async function GET(request: Request) {
       // Parse JSON string fields
       let images: string[] = [];
       try {
-        images = rest.images ? JSON.parse(rest.images) : [];
+        images = (rest.images as string[]) || [] || [];
       } catch {
         images = [];
       }
 
       let features: string[] = [];
       try {
-        features = rest.features ? JSON.parse(rest.features) : [];
+        features = (rest.features as string[]) || [] || [];
       } catch {
         features = [];
       }
@@ -140,8 +148,7 @@ export async function GET(request: Request) {
       },
     };
 
-    // Cache the response for 5 minutes
-    await cache.set(cacheKey, responseData, 300);
+    if (isCacheable) await cache.set(cacheKey, responseData, 300);
 
     return NextResponse.json(responseData);
   } catch (error) {
@@ -194,9 +201,9 @@ export async function POST(request: Request) {
         country: validated.country,
         quartier: validated.quartier,
         address: validated.address,
-        description: validated.description,
-        features: validated.features ? JSON.stringify(validated.features) : null,
-        images: validated.images ? JSON.stringify(validated.images) : null,
+        description: (validated.description as string) || '',
+        features: toJsonInput(validated.features),
+        images: toJsonInput(validated.images),
         lat: validated.lat,
         lng: validated.lng,
         agentId: auth.userId,

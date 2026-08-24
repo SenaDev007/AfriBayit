@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     for (const hotel of hotels) {
       if (hotel.otaRefs) {
         try {
-          const refs = JSON.parse(hotel.otaRefs);
+          const refs = hotel.otaRefs as any;
           if (refs.booking_com_id === String(hotel_id)) {
             matchingHotelId = hotel.id;
             break;

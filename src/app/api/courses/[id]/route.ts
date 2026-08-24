@@ -53,11 +53,11 @@ export async function GET(
     }
 
     // Parse modules JSON
-    let parsedModules = null;
+    let parsedModules: any = null;
     if (course.modules) {
       try {
         parsedModules = typeof course.modules === 'string'
-          ? JSON.parse(course.modules)
+          ? course.modules
           : course.modules;
       } catch {
         parsedModules = null;

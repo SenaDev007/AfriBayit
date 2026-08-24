@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       alerts: alerts.map(a => ({
         type: a.type,
         severity: a.severity,
-        description: a.description,
+        description: (a.description as string) || '',
         autoAction: a.autoAction,
         propertyIds: a.propertyIds,
       })),

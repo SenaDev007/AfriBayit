@@ -43,7 +43,7 @@ if (hasRSAKeys) {
     if (!token) return null;
     const result = await verifyRefreshToken(token);
     if (!result.valid || !result.payload) return null;
-    const payload = result.payload;
+    const payload = result.payload as any;
     // Return as JWT type expected by NextAuth
     return {
       sub: payload.sub,
@@ -300,7 +300,7 @@ export const authOptions: NextAuthOptions = {
             console.warn('[OAuth] Facebook did not return email (scope not approved). User will complete email during profile completion. ProviderAccountId:', account.providerAccountId);
           }
 
-          console.log(`[OAuth] Sign-in attempt via ${account.provider} for email: ${user.email || 'no-email'} | providerAccountId: ${account.providerAccountId}`);
+          console.info(`[OAuth] Sign-in attempt via ${account.provider} for email: ${user.email || 'no-email'} | providerAccountId: ${account.providerAccountId}`);
 
           // Step 1: Look up existing user by email or OAuth account link
           let existingUser: Awaited<ReturnType<typeof db.user.findUnique>> = null;
@@ -337,7 +337,7 @@ export const authOptions: NextAuthOptions = {
             try {
               const existingPlaceholder = await db.user.findUnique({ where: { email: userEmail } });
               if (existingPlaceholder) {
-                console.log('[OAuth] Found existing user with placeholder email:', userEmail);
+                console.info('[OAuth] Found existing user with placeholder email:', userEmail);
                 existingUser = existingPlaceholder;
               }
             } catch (error) {
@@ -370,7 +370,7 @@ export const authOptions: NextAuthOptions = {
                 try {
                   existingUser = await db.user.findUnique({ where: { email: userEmail } });
                   if (existingUser) {
-                    console.log('[OAuth] Found existing user after constraint violation:', existingUser.id);
+                    console.info('[OAuth] Found existing user after constraint violation:', existingUser.id);
                   }
                 } catch (findError) {
                   console.error('[OAuth] Error finding user after constraint violation:', findError);
@@ -404,7 +404,7 @@ export const authOptions: NextAuthOptions = {
               (user as unknown as Record<string, unknown>).needsProfileCompletion = true;
               user.email = userEmail;
 
-              console.log('[OAuth] New user created:', newUser.id, 'via', account.provider, '| needsProfileCompletion: true', '| email:', userEmail);
+              console.info('[OAuth] New user created:', newUser.id, 'via', account.provider, '| needsProfileCompletion: true', '| email:', userEmail);
               return true;
             }
           }
@@ -466,7 +466,7 @@ export const authOptions: NextAuthOptions = {
             const hasPlaceholderEmail = existingUser.email.endsWith('@placeholder.afribayit.com');
             (user as unknown as Record<string, unknown>).needsProfileCompletion = !existingUser.country || hasPlaceholderEmail;
 
-            console.log('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider, '| needsProfileCompletion:', !existingUser.country || hasPlaceholderEmail);
+            console.info('[OAuth] Existing user signed in:', existingUser.id, 'via', account.provider, '| needsProfileCompletion:', !existingUser.country || hasPlaceholderEmail);
           }
         } catch (error) {
           console.error('[OAuth] Unhandled error in signIn callback:', error);

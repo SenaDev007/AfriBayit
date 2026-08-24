@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       lng: dbProperty.lng,
       images: dbProperty.propertyImages.map(img => img.url),
       agentId: dbProperty.agentId,
-      description: dbProperty.description,
+      description: (dbProperty.description as string) || '',
       bedrooms: dbProperty.bedrooms,
       bathrooms: dbProperty.bathrooms,
     };

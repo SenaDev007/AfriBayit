@@ -115,7 +115,7 @@ export default function PropertyGrid({
 
     if (activePrice !== 'all') {
       const [min, max] = activePrice.split('-').map(Number);
-      result = result.filter((p) => p.price >= min && p.price <= max);
+      result = result.filter((p) => Number(p.price) >= min && Number(p.price) <= max);
     }
 
     return result;
@@ -141,7 +141,7 @@ export default function PropertyGrid({
               <span className="h-px w-8" style={{ background: NAVY }} />
               {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''} disponible{filteredProperties.length > 1 ? 's' : ''}
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
               {selectedCountry
                 ? `Biens en ${COUNTRY_NAMES[selectedCountry] || selectedCountry}`
                 : 'Tous les biens'}

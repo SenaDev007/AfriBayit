@@ -552,10 +552,10 @@ export default function ShortTermRentalModule() {
         return false;
       });
       if (activeRule) {
-        return { price: Math.round(rental.pricePerNight * activeRule.multiplier), label: activeRule.period === 'high_season' ? 'Haute saison' : activeRule.period === 'low_season' ? 'Basse saison' : activeRule.name, isDiscounted: activeRule.multiplier < 1 };
+        return { price: Math.round(rental.pricePerNight * activeRule.multiplier), label: activeRule.period === 'high_season' ? 'Haute saison' : activeRule.period === 'low_season' ? 'Basse saison' : activeRule.name, isDiscounted: Number(activeRule.multiplier) < 1 };
       }
     }
-    if (isHighSeason) return { price: Math.round(rental.pricePerNight * 1.2), label: 'Haute saison', isDiscounted: false };
+    if (isHighSeason) return { price: Math.round(Number(rental.pricePerNight) * 1.2), label: 'Haute saison', isDiscounted: false };
     return { price: rental.pricePerNight, label: '', isDiscounted: false };
   }, []);
 

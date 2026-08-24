@@ -96,9 +96,9 @@ export async function executePropertySearchNode(
 
     const formatted = properties.map((p) => {
       let images: string[] = [];
-      try { images = p.images ? JSON.parse(p.images) : []; } catch { images = []; }
+      try { images = (p.images as any) || [] || []; } catch { images = []; }
       let features: string[] = [];
-      try { features = p.features ? JSON.parse(p.features) : []; } catch { features = []; }
+      try { features = (p.features as any) || [] || []; } catch { features = []; }
 
       return {
         id: p.id,

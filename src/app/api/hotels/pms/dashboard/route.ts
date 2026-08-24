@@ -66,13 +66,13 @@ export async function GET(request: Request) {
           b.status !== 'cancelled'
         );
       })
-      .reduce((sum, b) => sum + b.totalPrice, 0);
+      .reduce((sum, b) => sum + Number(b.totalPrice), 0);
 
     // Revenu du mois
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     const monthRevenue = hotel.bookings
       .filter((b) => new Date(b.checkIn) >= monthStart && b.status !== 'cancelled')
-      .reduce((sum, b) => sum + b.totalPrice, 0);
+      .reduce((sum, b) => sum + Number(b.totalPrice), 0);
 
     // Statistiques par canal
     const channelStats: Record<string, { bookings: number; revenue: number }> = {};
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
         channelStats[booking.sourceChannel] = { bookings: 0, revenue: 0 };
       }
       channelStats[booking.sourceChannel].bookings++;
-      channelStats[booking.sourceChannel].revenue += booking.totalPrice;
+      channelStats[booking.sourceChannel].revenue += Number(booking.totalPrice);
     }
 
     // Alertes

@@ -35,7 +35,7 @@ export async function PATCH(
       where: { id: serviceId },
       data: {
         ...(body.serviceName !== undefined && { serviceName: body.serviceName }),
-        ...(body.description !== undefined && { description: body.description }),
+        ...(body.description !== undefined && { description: (body.description as string) || '' }),
         ...(body.basePrice !== undefined && { basePrice: body.basePrice }),
         ...(body.unit !== undefined && { unit: body.unit }),
         ...(body.category !== undefined && { category: body.category }),

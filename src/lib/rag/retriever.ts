@@ -42,10 +42,10 @@ export async function searchProperties(
       const score = keywordSimilarity(queryTokens, docTokens);
 
       const features = (() => {
-        try { return p.features ? JSON.parse(p.features) : []; } catch { return []; }
+        try { return p.features ? p.features : []; } catch { return []; }
       })();
       const images = (() => {
-        try { return p.images ? JSON.parse(p.images) : []; } catch { return []; }
+        try { return p.images ? p.images : []; } catch { return []; }
       })();
 
       return {
@@ -349,7 +349,7 @@ export async function searchArtisans(
 
     const scored = artisans.map((a) => {
       const specialties = (() => {
-        try { return a.specialties ? JSON.parse(a.specialties) : []; } catch { return []; }
+        try { return Array.isArray(a.specialties) ? a.specialties as string[] : []; } catch { return []; }
       })();
       const docText = `${a.trade} ${specialties.join(' ')} ${a.zone || ''} ${a.city || ''} ${a.country || ''}`;
       const docTokens = tokenize(docText);

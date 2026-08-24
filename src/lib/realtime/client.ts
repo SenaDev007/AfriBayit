@@ -95,11 +95,11 @@ function getSocketInstance(): Socket {
 
     globalSocket.on('connect', () => {
       reconnectAttempts = 0;
-      console.log('[Socket.io] Connected:', globalSocket?.id);
+      console.info('[Socket.io] Connected:', globalSocket?.id);
     });
 
     globalSocket.on('disconnect', (reason) => {
-      console.log('[Socket.io] Disconnected:', reason);
+      console.info('[Socket.io] Disconnected:', reason);
     });
 
     globalSocket.on('connect_error', (error) => {
@@ -137,7 +137,7 @@ function connectWithBackoff(
     // Add jitter to prevent thundering herd
     const jitter = delay * (0.5 + Math.random() * 0.5);
 
-    console.log(`[Socket.io] Reconnect attempt ${reconnectAttempts} in ${Math.round(jitter)}ms`);
+    console.info(`[Socket.io] Reconnect attempt ${reconnectAttempts} in ${Math.round(jitter)}ms`);
 
     reconnectTimer = setTimeout(() => {
       if (!socket.connected) {
@@ -281,7 +281,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     };
 
     const onAuthSuccess = (data: { userId: string; role: string }) => {
-      console.log('[Socket.io] Auth success:', data.userId);
+      console.info('[Socket.io] Auth success:', data.userId);
     };
 
     const onAuthError = (data: { message: string }) => {

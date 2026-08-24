@@ -640,7 +640,7 @@ export default function CourseDetailPage() {
             <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-24">
               {/* Price */}
               <div className="mb-4">
-                {course.price > 0 ? (
+                {Number(course.price) > 0 ? (
                   <p className="text-3xl font-bold text-[#D4AF37]">
                     {new Intl.NumberFormat('fr-FR').format(course.price)}{' '}
                     <span className="text-sm font-normal text-gray-400">

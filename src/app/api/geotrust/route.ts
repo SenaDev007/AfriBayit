@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
 import { geoServiceLabel } from '@/lib/geotrust/service-codes';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -51,9 +52,9 @@ export async function GET(request: Request) {
         // Parse specialities and add human-readable labels
         let specialityLabels: string[] = [];
         try {
-          const raw = typeof geo.specialities === 'string' ? JSON.parse(geo.specialities) : geo.specialities;
+          const raw = typeof geo.specialities === 'string' ? geo.specialities : geo.specialities;
           if (Array.isArray(raw)) {
-            specialityLabels = raw.map((s: string) => geoServiceLabel(s));
+            specialityLabels = raw.map((s: any) => geoServiceLabel(s));
           }
         } catch { /* ignore parse errors */ }
 
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       data: {
         userId: body.userId,
         licenseNumber: body.licenseNumber,
-        specialities: body.specialities ? JSON.stringify(body.specialities) : null,
+        specialities: toJsonInput(body.specialities),
         certificationLevel: body.certificationLevel || 'standard',
         zone: body.zone,
         city: body.city,

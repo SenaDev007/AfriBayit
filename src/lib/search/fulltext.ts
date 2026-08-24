@@ -348,8 +348,8 @@ export async function buildSearchQuery(
       country: row.country,
       quartier: row.quartier,
       address: row.address,
-      description: row.description,
-      images: row.images,
+      description: (row.description as string) || '',
+      images: row.images as any,
       verified: row.verified,
       geoTrust: row.geoTrust,
       premium: row.premium,
@@ -681,7 +681,7 @@ async function fallbackSearch(filters: SearchFilters): Promise<SearchResponse> {
   ]);
 
   return {
-    results: results.map(p => ({
+    results: results.map((p): any => ({
       ...p,
       relevanceScore: 0,
     })),

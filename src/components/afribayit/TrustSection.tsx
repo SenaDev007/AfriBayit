@@ -128,15 +128,15 @@ function PillarCard({
         <span className="font-[family-name:var(--font-space-grotesk),monospace] text-2xl font-bold text-[#003366]">
           {stat}
         </span>
-        <span className="font-[family-name:var(--font-inter),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-gray-400">
+        <span className="font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px] uppercase tracking-wider text-gray-400">
           {statLabel}
         </span>
       </div>
 
-      <h3 className="mt-3 font-[family-name:var(--font-inter),Georgia,serif] text-xl font-bold text-gray-900">
+      <h3 className="mt-3 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-gray-900">
         {title}
       </h3>
-      <p className="mt-2 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
+      <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
         {description}
       </p>
 
@@ -241,10 +241,10 @@ export default function TrustSection() {
             Confiance & Sécurité
             <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-inter),Georgia,serif] text-4xl font-bold leading-tight text-[#003366] sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-[#003366] sm:text-5xl lg:text-6xl">
             Pourquoi AfriBayit ?
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-inter),system-ui,sans-serif] text-lg text-[#003366]/70">
+          <p className="mx-auto mt-5 max-w-2xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-[#003366]/70">
             Quatre piliers fondamentaux pour garantir des transactions immobilières
             transparentes et sécurisées en Afrique de l&apos;Ouest.
           </p>
@@ -263,7 +263,7 @@ export default function TrustSection() {
               <div className="font-[family-name:var(--font-space-grotesk),monospace] text-4xl font-bold text-[#003366]">
                 <AnimatedCounter value={stat.value} suffix={stat.suffix} />
               </div>
-              <div className="mt-1 font-[family-name:var(--font-inter),system-ui,sans-serif] text-sm text-[#003366]/60">
+              <div className="mt-1 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm text-[#003366]/60">
                 {stat.label}
               </div>
             </div>

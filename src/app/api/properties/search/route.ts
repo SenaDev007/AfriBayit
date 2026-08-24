@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         return {
           id: p.id,
           title: p.title,
-          description: p.description,
+          description: (p.description as string) || '',
           images,
           hasVR: p.hasVR,
           verified: p.verified,

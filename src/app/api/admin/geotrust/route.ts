@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { licenseNumber: { contains: search, mode: 'insensitive' } },
-        { specialities: { contains: search, mode: 'insensitive' } },
+        { specialities: { path: ['$'], string_contains: search, mode: 'insensitive' } },
         { zone: { contains: search, mode: 'insensitive' } },
         { user: { name: { contains: search, mode: 'insensitive' } } },
       ];

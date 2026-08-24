@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       // Vérifier les politiques de l'hôtel
       if (booking.hotel.policies) {
         try {
-          const policies = JSON.parse(booking.hotel.policies);
+          const policies = booking.hotel.policies as any;
           if (policies.cancellationPolicy && CANCELLATION_POLICIES[policies.cancellationPolicy]) {
             effectivePolicyType = policies.cancellationPolicy;
           }

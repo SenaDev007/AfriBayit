@@ -56,7 +56,7 @@ export async function POST(
         userId,
         propertyId: body.propertyId,
         title: body.title,
-        description: body.description,
+        description: (body.description as string) || '',
         estimatedBudget: body.estimatedBudget,
         status: 'requested',
       },

@@ -219,7 +219,7 @@ export default function AdminCoursesPage() {
                     <TableCell className="text-sm font-medium text-gray-900 max-w-[200px] truncate">{c.title}</TableCell>
                     <TableCell className="text-sm text-gray-700">{c.instructor}</TableCell>
                     <TableCell><Badge variant="outline" className="text-[10px]">{c.category}</Badge></TableCell>
-                    <TableCell className="text-sm font-semibold">{c.price > 0 ? formatXOF(c.price) : 'Gratuit'}</TableCell>
+                    <TableCell className="text-sm font-semibold">{Number(c.price) > 0 ? formatXOF(c.price) : 'Gratuit'}</TableCell>
                     <TableCell className="text-sm">{c._count.enrollments || c.students}</TableCell>
                     <TableCell className="text-sm font-medium">{c.rating.toFixed(1)}</TableCell>
                     <TableCell><Badge variant="outline" className="text-[10px]">{levelLabels[c.level] || c.level}</Badge></TableCell>

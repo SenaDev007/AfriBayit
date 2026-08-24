@@ -12,6 +12,7 @@ import {
   RealtimeEvents,
 } from '@/lib/realtime/channels';
 import type { NotificationCategory, NotificationPriority } from './types';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ export async function deliverNotification(
         actionUrl: notification.actionUrl || null,
         actorId: notification.actorId || null,
         actorName: notification.actorName || null,
-        metadata: notification.data ? JSON.stringify(notification.data) : null,
+        metadata: toJsonInput(notification.data),
         channels: JSON.stringify(['in_app', 'realtime']),
         sentVia: JSON.stringify(['in_app']),
       },

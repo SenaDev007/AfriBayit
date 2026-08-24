@@ -15,16 +15,10 @@ export type PaymentMethod =
 export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'cancelled';
 
 export type TransactionState =
-  | 'CREATED'
-  | 'FUNDED'
-  | 'NOTARY_ASSIGNED'
-  | 'GEO_VERIFIED'
-  | 'DEED_SIGNED'
-  | 'ANDF_REGISTERED'
-  | 'RELEASED'
-  | 'DISPUTED'
-  | 'CANCELLED'
-  | 'REFUNDED';
+  | 'CREATED' | 'FUNDED' | 'DOCS_VALIDATED' | 'GEOTRUST_VALIDATED'
+  | 'NOTARY_ASSIGNED' | 'NOTARY_IN_PROGRESS' | 'DEED_SIGNED'
+  | 'ANDF_REGISTERED' | 'RELEASED' | 'DISPUTED' | 'CANCELLED' | 'REFUNDED'
+  | 'GEO_VERIFIED';
 
 export interface InitPaymentRequest {
   amount: number;

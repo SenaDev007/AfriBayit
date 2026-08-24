@@ -229,7 +229,7 @@ export default function BookingPage() {
     }
 
     // Filter by price range
-    combined = combined.filter((l) => l.price >= priceMin && l.price <= priceMax);
+    combined = combined.filter((l) => Number(l.price) >= priceMin && Number(l.price) <= priceMax);
 
     // Filter by amenities
     if (selectedAmenities.length > 0) {

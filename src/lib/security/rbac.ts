@@ -214,14 +214,20 @@ export function mapDbRole(dbRole: string): Role {
  * Middleware wrapper that checks RBAC permissions
  */
 export function withRBAC(
-  handler: (request: Request, context?: unknown) => Promise<Response>,
+  handler: (request: Request, auth: { userId: string; role: Role; country: string | null; kycLevel: number }) => Promise<Response>,
   requiredPermission: string
 ) {
-  return async (request: Request, context?: unknown): Promise<Response> => {
-    // RBAC check is done within the handler using authGuard
-    // This wrapper provides a declarative way to enforce it
-    // The actual role check happens in the API route via authGuard
-    return handler(request, context);
+  return async (request: Request): Promise<Response> => {
+    const { authGuard } = await import('@/lib/auth-guard');
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+    if (requiredPermission !== '*') {
+      const roleNames: Role[] = ['BUYER','SELLER','INVESTOR','TOURIST','ARTISAN','CERTIFIED_AGENT','PREMIUM_AGENT','ARTISAN_PRO','HOTELIER','TRAINER','NOTARY','GEOMETER','COUNTRY_ADMIN','SUPER_ADMIN'];
+      const isRoleName = roleNames.includes(requiredPermission as Role);
+      const allowed = isRoleName ? auth.role === requiredPermission || auth.role === 'SUPER_ADMIN' : hasPermission(auth.role as Role, requiredPermission);
+      if (!allowed) return new Response(JSON.stringify({ error: 'Accès non autorisé', code: 'FORBIDDEN', requiredPermission }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+    return handler(request, { userId: auth.userId, role: auth.role as Role, country: auth.country, kycLevel: auth.kycLevel });
   };
 }
 

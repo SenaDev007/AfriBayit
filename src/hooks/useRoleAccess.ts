@@ -67,7 +67,7 @@ export function useRoleAccess() {
     const roleDef = getRoleDefinition(userMatchingRole);
     availableDashboards.push({
       path: entry.path, roleKey: userMatchingRole, label: roleDef.label,
-      description: roleDef.description, isPrimary: userMatchingRole === primaryRole,
+      description: (roleDef.description as string) || '', isPrimary: userMatchingRole === primaryRole,
     });
   }
 

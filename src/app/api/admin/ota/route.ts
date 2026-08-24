@@ -167,14 +167,14 @@ export async function GET(request: NextRequest) {
         id: 'booking_com',
         name: 'Booking.com',
         status: 'active',
-        hotelsConnected: await db.hotel.count({ where: { otaRefs: { contains: 'booking_com' } } }),
+        hotelsConnected: await db.hotel.count({ where: { otaRefs: { path: ['$'], string_contains: 'booking_com' } } }),
         lastSync: (await db.otaSyncLog.findFirst({ where: { ota: 'booking_com', status: 'success' }, orderBy: { executedAt: 'desc' }, select: { executedAt: true } }))?.executedAt || null,
       },
       {
         id: 'expedia',
         name: 'Expedia',
         status: 'active',
-        hotelsConnected: await db.hotel.count({ where: { otaRefs: { contains: 'expedia' } } }),
+        hotelsConnected: await db.hotel.count({ where: { otaRefs: { path: ['$'], string_contains: 'expedia' } } }),
         lastSync: (await db.otaSyncLog.findFirst({ where: { ota: 'expedia', status: 'success' }, orderBy: { executedAt: 'desc' }, select: { executedAt: true } }))?.executedAt || null,
       },
     ];

@@ -76,7 +76,7 @@ export async function calculateCredibilityScore(userId: string): Promise<Credibi
 
   // 5. Historique des transactions (20%)
   const completedTransactions = user.transactions.length;
-  const escrowVolume = user.transactions.reduce((sum, t) => sum + t.amount, 0);
+  const escrowVolume = user.transactions.reduce((sum, t) => sum + Number(t.amount), 0);
   const disputeRate = 0; // Simplifié pour le moment
 
   const transactionScore = calculateTransactionScore({

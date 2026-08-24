@@ -240,7 +240,7 @@ class ElasticsearchClient {
 
     const result = await this.request('PUT', `/${indexName}`, mapping);
     if (result.ok) {
-      console.log(`[Elasticsearch] Created index: ${indexName}`);
+      console.info(`[Elasticsearch] Created index: ${indexName}`);
       return true;
     }
 
@@ -374,7 +374,7 @@ export function isElasticsearchConfigured(): boolean {
 export async function indexDocument(doc: SearchDocument): Promise<void> {
   const client = getESClient();
   if (!client.isAvailable) {
-    console.log(`[Elasticsearch] Skipping index — not available. Document: ${doc.type}/${doc.id}`);
+    console.info(`[Elasticsearch] Skipping index — not available. Document: ${doc.type}/${doc.id}`);
     return;
   }
 
@@ -384,7 +384,7 @@ export async function indexDocument(doc: SearchDocument): Promise<void> {
     const success = await client.indexDocument(indexName, doc);
 
     if (success) {
-      console.log(`[Elasticsearch] Indexed document: ${doc.type}/${doc.id}`);
+      console.info(`[Elasticsearch] Indexed document: ${doc.type}/${doc.id}`);
     } else {
       console.warn(`[Elasticsearch] Failed to index document: ${doc.type}/${doc.id}`);
     }
@@ -403,7 +403,7 @@ export async function bulkIndexDocuments(
 ): Promise<{ success: number; failed: number; skipped: boolean }> {
   const client = getESClient();
   if (!client.isAvailable) {
-    console.log(`[Elasticsearch] Skipping bulk index — not available. ${documents.length} documents.`);
+    console.info(`[Elasticsearch] Skipping bulk index — not available. ${documents.length} documents.`);
     return { success: 0, failed: 0, skipped: true };
   }
 
@@ -434,7 +434,7 @@ export async function bulkIndexDocuments(
 export async function deleteDocument(id: string, type?: string): Promise<void> {
   const client = getESClient();
   if (!client.isAvailable) {
-    console.log(`[Elasticsearch] Skipping delete — not available. Document: ${id}`);
+    console.info(`[Elasticsearch] Skipping delete — not available. Document: ${id}`);
     return;
   }
 
@@ -445,7 +445,7 @@ export async function deleteDocument(id: string, type?: string): Promise<void> {
     const success = await client.deleteDocument(indexName, id);
 
     if (success) {
-      console.log(`[Elasticsearch] Deleted document: ${id} from ${indexName}`);
+      console.info(`[Elasticsearch] Deleted document: ${id} from ${indexName}`);
     } else {
       console.warn(`[Elasticsearch] Failed to delete document: ${id}`);
     }
@@ -460,7 +460,7 @@ export async function deleteDocument(id: string, type?: string): Promise<void> {
 export async function createIndex(country: string): Promise<boolean> {
   const client = getESClient();
   if (!client.isAvailable) {
-    console.log(`[Elasticsearch] Skipping index creation — not available. Country: ${country}`);
+    console.info(`[Elasticsearch] Skipping index creation — not available. Country: ${country}`);
     return false;
   }
 
@@ -474,7 +474,7 @@ export async function createIndex(country: string): Promise<boolean> {
     if (!success) allSuccess = false;
   }
 
-  console.log(`[Elasticsearch] Index creation for country ${country}: ${allSuccess ? 'success' : 'partial'}`);
+  console.info(`[Elasticsearch] Index creation for country ${country}: ${allSuccess ? 'success' : 'partial'}`);
   return allSuccess;
 }
 
@@ -551,7 +551,7 @@ async function searchWithElasticsearch(
     filter.push({ range: { price: range } });
   }
   if (filters.features && filters.features.length > 0) {
-    filter.push({ terms: { features: filters.features } });
+    filter.push({ terms: { features: filters.features as any } });
   }
 
   // Sort
@@ -652,13 +652,13 @@ async function searchWithPostgreSQL(
 
   const documents: SearchDocument[] = properties.map((p) => {
     let features: string[] = [];
-    try { features = p.features ? JSON.parse(p.features) : []; } catch { features = []; }
+    try { features = (p.features as any) || [] || []; } catch { features = []; }
 
     return {
       id: p.id,
       type: 'property',
       title: p.title,
-      description: p.description,
+      description: (p.description as string) || '',
       city: p.city,
       quartier: p.quartier,
       country: p.country,

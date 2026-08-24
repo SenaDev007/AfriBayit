@@ -38,10 +38,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 
   /* AfriBayit Custom Colors — alignées sur le logo réel (juillet 2026) */
   --color-navy: #003366;
@@ -58,7 +58,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 8px;
   --background: #FFFFFF;
   --foreground: #0a2a5e;
   --card: #FFFFFF;
@@ -168,10 +168,10 @@
 
   /* Spacing: Radius — Tesla-level design system (aligned with Academia Helm) */
   --afri-radius-radiusSm: 4px;
-  --afri-radius-radiusMd: 6px;
-  --afri-radius-radiusLg: 10px;
-  --afri-radius-radiusXl: 12px;
-  --afri-radius-radius2xl: 16px;
+  --afri-radius-radiusMd: 8px;
+  --afri-radius-radiusLg: 16px;
+  --afri-radius-radiusXl: 24px;
+  --afri-radius-radius2xl: 32px;
   --afri-radius-radiusFull: 9999px;
 
   /* Animation — CDC §2.4 */
@@ -845,3 +845,20 @@
   display: none;
 }
 
+
+
+/* CDC §2.8 — prefers-reduced-motion: reduce */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float, .animate-pulse-slow, .animate-cube-rotate,
+  .animate-cube-rotate-reflect-enhanced, .hero-neon-top-border,
+  .ken-burns, .silhouette-glow { animation: none !important; }
+  button, a, [role='button'] {
+    transition: color 0.01ms, background-color 0.01ms, border-color 0.01ms, opacity 0.01ms !important;
+  }
+}

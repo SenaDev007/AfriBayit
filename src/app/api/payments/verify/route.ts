@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     // Verify with the payment provider
     const result = await verifyPayment(provider, providerRef);
 
-    console.log(`[Payment Verify] providerRef=${providerRef}, status=${result.status}, amount=${result.amount} ${result.currency}`);
+    console.info(`[Payment Verify] providerRef=${providerRef}, status=${result.status}, amount=${result.amount} ${result.currency}`);
 
     // Update the wallet transaction record
     const walletTx = await db.walletTransaction.findFirst({
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
             : result.status === 'failed' ? 'failed'
             : 'pending',
           metadata: JSON.stringify({
-            ...((walletTx.metadata ? JSON.parse(walletTx.metadata as string) : {}) as Record<string, unknown>),
+            ...((walletTx.metadata ? walletTx.metadata : {}) as Record<string, unknown>),
             verificationStatus: result.status,
             verifiedAt: new Date().toISOString(),
             verifiedAmount: result.amount,
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       // If payment completed, trigger escrow funding
       if (result.status === 'completed' && walletTx.type === 'escrow_fund') {
         const metadata = walletTx.metadata
-          ? JSON.parse(walletTx.metadata as string) as Record<string, unknown>
+          ? walletTx.metadata as Record<string, unknown>
           : {};
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
             const { transition } = await import('@/lib/payments/escrow-engine');
             await transition(transactionId, 'FUNDED', auth.userId, 'Paiement vérifié et confirmé — Fonds déposés en escrow');
 
-            console.log(`[Payment Verify] Escrow FUNDED for transaction ${transactionId}`);
+            console.info(`[Payment Verify] Escrow FUNDED for transaction ${transactionId}`);
 
             // Update the Transaction record's payment reference
             await db.transaction.update({
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       // If payment failed, update transaction status
       if (result.status === 'failed') {
         const metadata = walletTx.metadata
-          ? JSON.parse(walletTx.metadata as string) as Record<string, unknown>
+          ? walletTx.metadata as Record<string, unknown>
           : {};
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 

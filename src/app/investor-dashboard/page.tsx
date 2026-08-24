@@ -154,7 +154,7 @@ export default function InvestorDashboardPage() {
                   return (
                     <div key={s.month} className="flex-1 flex flex-col items-center gap-2">
                       <div className="text-[10px] font-mono-data text-gray-500">
-                        {s.amount > 0 ? `${(s.amount / 1000).toFixed(0)}k` : ''}
+                        {Number(s.amount) > 0 ? `${(s.amount / 1000).toFixed(0)}k` : ''}
                       </div>
                       <motion.div
                         initial={{ height: 0 }}
@@ -162,7 +162,7 @@ export default function InvestorDashboardPage() {
                         transition={{ duration: 0.5, delay: i * 0.05 }}
                         className="w-full rounded-t-lg"
                         style={{
-                          background: s.amount > 0
+                          background: Number(s.amount) > 0
                             ? 'linear-gradient(180deg, #D4AF37 0%, #003087 100%)'
                             : '#f3f4f6',
                           minHeight: '4px',

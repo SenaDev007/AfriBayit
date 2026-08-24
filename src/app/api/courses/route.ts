@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -64,14 +65,14 @@ export async function POST(request: Request) {
         country: body.country || 'BJ',
         instructorId: body.instructorId,
         instructor: body.instructor,
-        description: body.description,
+        description: (body.description as string) || '',
         duration: body.duration,
         price: body.price ?? 0,
         currency: body.currency || 'XOF',
         level: body.level || 'debutant',
         certificate: body.certificate ?? false,
         videoUrl: body.videoUrl,
-        modules: body.modules ? JSON.stringify(body.modules) : null,
+        modules: toJsonInput(body.modules),
       },
     });
 

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       userId: a.userId,
       trade: a.trade,
       specialties: (() => {
-        try { return a.specialties ? JSON.parse(a.specialties) : [a.trade]; } catch { return [a.trade]; }
+        try { if (!a.specialties) return [a.trade]; const sp = a.specialties; return Array.isArray(sp) ? (sp as string[]) : [a.trade]; } catch { return [a.trade]; }
       })(),
       certified: a.certified,
       available: a.available,
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       artisans: formatted,
       totalMatches: results.length,
       project: {
-        description: projectNeed.description,
+        description: (projectNeed.description as string) || '',
         skills: projectNeed.requiredSkills,
         city: projectNeed.city,
         country: projectNeed.country,
@@ -117,7 +117,7 @@ function formatRankedArtisan(ranked: RankedArtisan): Record<string, unknown> {
   return {
     id: a.id,
     trade: a.trade,
-    specialties: a.specialties,
+    specialties: a.specialties as any,
     certified: a.certified,
     available: a.available,
     emergency: a.emergency,
@@ -160,8 +160,8 @@ function formatRankedArtisan(ranked: RankedArtisan): Record<string, unknown> {
       price: {
         score: s.price,
         weight: '10%',
-        label: s.price >= 0.8 ? 'Très compétitif' :
-          s.price >= 0.5 ? 'Compétitif' : 'Au-dessus du budget',
+        label: Number(s.price) >= 0.8 ? 'Très compétitif' :
+          Number(s.price) >= 0.5 ? 'Compétitif' : 'Au-dessus du budget',
       },
     },
   };

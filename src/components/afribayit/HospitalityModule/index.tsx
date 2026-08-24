@@ -78,7 +78,7 @@ export default function HospitalityModule() {
   // Client-side price filtering
   const filteredHotels = useMemo(() => {
     return hotels.filter((h) => {
-      if (h.pricePerNight < priceRange[0] || h.pricePerNight > priceRange[1]) return false;
+      if (Number(h.pricePerNight) < priceRange[0] || Number(h.pricePerNight) > priceRange[1]) return false;
       return true;
     });
   }, [hotels, priceRange]);

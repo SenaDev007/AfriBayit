@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       id: t.id,
       deedType: t.deedType,
       nameFr: t.nameFr,
-      description: t.description,
+      description: (t.description as string) || '',
       legalBasis: t.legalBasis,
       sectionsCount: t.sections.length,
       placeholdersCount: t.placeholders.length,

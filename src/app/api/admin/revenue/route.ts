@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
     for (const txn of monthlyTransactions) {
       const monthKey = txn.createdAt.toISOString().slice(0, 7); // YYYY-MM
       const existing = monthlyMap.get(monthKey) || { revenue: 0, commission: 0 };
-      existing.revenue += txn.amount;
-      existing.commission += txn.commission;
+      existing.revenue += Number(txn.amount);
+      existing.commission += Number(txn.commission);
       monthlyMap.set(monthKey, existing);
     }
 
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
       const agentId = propertyAgentMap.get(txn.propertyId);
       if (!agentId) continue;
       const existing = agentRevenueMap.get(agentId) || { revenue: 0, commission: 0 };
-      existing.revenue += txn.amount;
-      existing.commission += txn.commission;
+      existing.revenue += Number(txn.amount);
+      existing.commission += Number(txn.commission);
       agentRevenueMap.set(agentId, existing);
     }
 

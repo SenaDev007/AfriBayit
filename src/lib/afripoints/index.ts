@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { getPointsForAction, getCostForItem, type EarningAction, type SpendingItem } from './rules';
 import { getPointsBalance, getPointsHistory, getPointsLeaderboard } from './ledger';
 import { getLevelForPoints, getNextLevel } from './rules';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export { getPointsBalance, getPointsHistory, getPointsLeaderboard };
 export { getLevelForPoints, getNextLevel };
@@ -37,7 +38,7 @@ export async function earnPoints(
       action,
       points,
       balanceAfter: newBalance,
-      metadata: metadata ? JSON.stringify(metadata) : null,
+      metadata: toJsonInput(metadata),
     },
   });
 

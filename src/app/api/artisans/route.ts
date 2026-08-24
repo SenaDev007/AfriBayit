@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getTenantDb, extractTenantFromRequest } from '@/lib/db-tenant';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -88,14 +89,14 @@ export async function POST(request: Request) {
       data: {
         userId: body.userId,
         trade: body.trade,
-        specialties: body.specialties ? JSON.stringify(body.specialties) : null,
+        specialties: toJsonInput(body.specialties),
         certified: body.certified ?? false,
         kybValid: body.kybValid ?? false,
         available: body.available ?? true,
         emergency: body.emergency ?? false,
         priceRange: body.priceRange,
         dailyRate: body.dailyRate,
-        portfolio: body.portfolio ? JSON.stringify(body.portfolio) : null,
+        portfolio: toJsonInput(body.portfolio),
         zone: body.zone,
         city: body.city,
         country: body.country,

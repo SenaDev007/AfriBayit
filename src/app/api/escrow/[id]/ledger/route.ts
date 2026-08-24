@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(
   request: Request,
@@ -80,36 +81,36 @@ export async function POST(
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
-    let newBalance = account.balance;
-    let newHeld = account.heldAmount;
-    let newReleased = account.releasedAmount;
-    let newRefunded = account.refundedAmount;
+    let newBalance = Number(account.balance);
+    let newHeld = Number(account.heldAmount);
+    let newReleased = Number(account.releasedAmount);
+    let newRefunded = Number(account.refundedAmount);
     let newStatus = account.status;
 
     switch (body.entryType) {
       case 'CREDIT':
-        newBalance += body.amount;
+        newBalance += Number(body.amount);
         newStatus = 'FUNDED';
         break;
       case 'HOLD':
-        newHeld += body.amount;
+        newHeld += Number(body.amount);
         break;
       case 'RELEASE':
-        newBalance -= body.amount;
-        newReleased += body.amount;
+        newBalance -= Number(body.amount);
+        newReleased += Number(body.amount);
         newStatus = newBalance <= 0 ? 'FULL_RELEASE' : 'PARTIAL_RELEASE';
         break;
       case 'REFUND':
-        newBalance -= body.amount;
-        newRefunded += body.amount;
+        newBalance -= Number(body.amount);
+        newRefunded += Number(body.amount);
         newStatus = 'REFUNDED';
         break;
       case 'COMMISSION':
-        newBalance -= body.amount;
-        newReleased += body.amount;
+        newBalance -= Number(body.amount);
+        newReleased += Number(body.amount);
         break;
       case 'DEBIT':
-        newBalance -= body.amount;
+        newBalance -= Number(body.amount);
         break;
     }
 
@@ -119,12 +120,12 @@ export async function POST(
         data: {
           escrowAccountId: id,
           entryType: body.entryType,
-          amount: body.amount,
+          amount: Number(body.amount),
           balanceAfter: newBalance,
           currency: body.currency || account.currency,
           reference: body.reference,
           providerRef: body.providerRef,
-          metadata: body.metadata ? JSON.stringify(body.metadata) : null,
+          metadata: toJsonInput(body.metadata),
         },
       }),
       db.escrowAccount.update({
@@ -136,7 +137,7 @@ export async function POST(
           refundedAmount: newRefunded,
           status: newStatus,
           ...(body.entryType === 'CREDIT' && { fundedAt: new Date() }),
-          ...(body.entryType === 'RELEASE' && newBalance <= 0 && { releasedAt: new Date() }),
+          ...(body.entryType === 'RELEASE' && Number(newBalance) <= 0 && { releasedAt: new Date() }),
           ...(body.entryType === 'REFUND' && { refundedAt: new Date() }),
         },
       }),

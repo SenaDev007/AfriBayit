@@ -103,7 +103,7 @@ export default function VRTourPlayer({
     try {
       const session = await xr.requestSession('immersive-vr');
       // In a real implementation, this would render the scene to the VR headset
-      console.log('VR session started:', session);
+      console.info('VR session started:', session);
     } catch (err) {
       alert('Impossible de démarrer la session VR: ' + (err as Error).message);
     }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
         targetType: body.targetType,
         country: body.country || null,
         rating: body.rating,
-        subRatings: body.subRatings ? JSON.stringify(body.subRatings) : null,
+        subRatings: toJsonInput(body.subRatings),
         comment: body.comment,
       },
     });

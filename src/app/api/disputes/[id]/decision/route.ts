@@ -46,7 +46,7 @@ export async function POST(
     }
 
     const now = new Date();
-    const totalAmount = escrowAccount.heldAmount;
+    const totalAmount = Number(escrowAccount.heldAmount);
     const buyerAmount = Math.round(totalAmount * (buyerPercentage / 100) * 100) / 100;
     const sellerAmount = Math.round(totalAmount * (sellerPercentage / 100) * 100) / 100;
 
@@ -79,7 +79,7 @@ export async function POST(
           escrowAccountId: escrowAccount.id,
           entryType: 'REFUND',
           amount: buyerAmount,
-          balanceAfter: escrowAccount.balance - buyerAmount,
+          balanceAfter: Number(escrowAccount.balance) - buyerAmount,
           currency: escrowAccount.currency,
           reference: `dispute_refund_buyer_${id}`,
           metadata: JSON.stringify({
@@ -96,7 +96,7 @@ export async function POST(
           escrowAccountId: escrowAccount.id,
           entryType: 'RELEASE',
           amount: sellerAmount,
-          balanceAfter: escrowAccount.balance - buyerAmount - sellerAmount,
+          balanceAfter: Number(escrowAccount.balance) - buyerAmount - sellerAmount,
           currency: escrowAccount.currency,
           reference: `dispute_release_seller_${id}`,
           metadata: JSON.stringify({
@@ -111,8 +111,8 @@ export async function POST(
       db.escrowAccount.update({
         where: { id: escrowAccount.id },
         data: {
-          releasedAmount: escrowAccount.releasedAmount + sellerAmount,
-          refundedAmount: escrowAccount.refundedAmount + buyerAmount,
+          releasedAmount: Number(escrowAccount.releasedAmount) + sellerAmount,
+          refundedAmount: Number(escrowAccount.refundedAmount) + buyerAmount,
           heldAmount: 0,
           balance: 0,
           status: buyerPercentage === 100 ? 'REFUNDED' : 'PARTIAL_RELEASE',

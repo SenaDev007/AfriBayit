@@ -58,13 +58,13 @@ export async function indexProperty(propertyId: string): Promise<boolean> {
 
     if (property) {
       let features: string[] = [];
-      try { features = property.features ? JSON.parse(property.features) : []; } catch { features = []; }
+      try { features = (property.features as any) || []; } catch { features = []; }
 
       const doc: SearchDocument = {
         id: property.id,
         type: 'property',
         title: property.title,
-        description: property.description,
+        description: (property.description as string) || '',
         city: property.city,
         quartier: property.quartier,
         country: property.country,
@@ -165,13 +165,13 @@ export async function indexAllHotels(country?: string): Promise<{
     for (const h of hotels) {
       try {
         let amenities: string[] = [];
-        try { amenities = h.amenities ? JSON.parse(h.amenities) : []; } catch { amenities = []; }
+        try { amenities = (h.amenities as any) || []; } catch { amenities = []; }
 
         const doc: SearchDocument = {
           id: h.id,
           type: 'hotel',
           title: h.name,
-          description: h.policies || '',
+          description: (h.policies as string) || '' || '',
           city: h.city,
           quartier: '',
           country: h.country,
@@ -190,7 +190,7 @@ export async function indexAllHotels(country?: string): Promise<{
       }
     }
 
-    console.log(`[Indexeur] ${indexed} hôtels indexés (${errors} erreurs) pour ${country || 'tous'}`);
+    console.info(`[Indexeur] ${indexed} hôtels indexés (${errors} erreurs) pour ${country || 'tous'}`);
   } catch (error) {
     console.error('[Indexeur] Erreur d\'indexation des hôtels:', error);
     errors++;
@@ -232,7 +232,7 @@ export async function indexAllGuesthouses(country?: string): Promise<{
     for (const g of guesthouses) {
       try {
         let amenities: string[] = [];
-        try { amenities = g.amenities ? JSON.parse(g.amenities) : []; } catch { amenities = []; }
+        try { amenities = (g.amenities as any) || []; } catch { amenities = []; }
 
         const minRoomPrice = g.rooms[0]?.basePrice || 0;
 
@@ -240,7 +240,7 @@ export async function indexAllGuesthouses(country?: string): Promise<{
           id: g.id,
           type: 'guesthouse',
           title: g.name,
-          description: g.description || '',
+          description: (g.description as string) || '' || '',
           city: g.city,
           quartier: g.quartier || '',
           country: g.country,
@@ -259,7 +259,7 @@ export async function indexAllGuesthouses(country?: string): Promise<{
       }
     }
 
-    console.log(`[Indexeur] ${indexed} maisons d'hôtes indexées (${errors} erreurs) pour ${country || 'tous'}`);
+    console.info(`[Indexeur] ${indexed} maisons d'hôtes indexées (${errors} erreurs) pour ${country || 'tous'}`);
   } catch (error) {
     console.error('[Indexeur] Erreur d\'indexation des maisons d\'hôtes:', error);
     errors++;
@@ -296,7 +296,7 @@ export async function indexAllArtisans(country?: string): Promise<{
     for (const a of artisans) {
       try {
         let specialties: string[] = [];
-        try { specialties = a.specialties ? JSON.parse(a.specialties) : []; } catch { specialties = []; }
+        try { specialties = (a.specialties as any) || []; } catch { specialties = []; }
 
         const doc: SearchDocument = {
           id: a.id,
@@ -323,7 +323,7 @@ export async function indexAllArtisans(country?: string): Promise<{
       }
     }
 
-    console.log(`[Indexeur] ${indexed} artisans indexés (${errors} erreurs) pour ${country || 'tous'}`);
+    console.info(`[Indexeur] ${indexed} artisans indexés (${errors} erreurs) pour ${country || 'tous'}`);
   } catch (error) {
     console.error('[Indexeur] Erreur d\'indexation des artisans:', error);
     errors++;
@@ -358,11 +358,11 @@ export async function indexAllCourses(country?: string): Promise<{
           id: c.id,
           type: 'course',
           title: c.title,
-          description: c.description || '',
+          description: (c.description as string) || '' || '',
           city: '',
           quartier: '',
           country: c.country,
-          price: c.price,
+          price: Number(c.price),
           features: [],
           createdAt: c.createdAt.toISOString(),
           image: c.image || null,
@@ -379,7 +379,7 @@ export async function indexAllCourses(country?: string): Promise<{
       }
     }
 
-    console.log(`[Indexeur] ${indexed} formations indexées (${errors} erreurs) pour ${country || 'tous'}`);
+    console.info(`[Indexeur] ${indexed} formations indexées (${errors} erreurs) pour ${country || 'tous'}`);
   } catch (error) {
     console.error('[Indexeur] Erreur d\'indexation des formations:', error);
     errors++;
@@ -518,13 +518,13 @@ async function indexAllPropertiesToES(country?: string): Promise<void> {
 
     for (const p of properties) {
       let features: string[] = [];
-      try { features = p.features ? JSON.parse(p.features) : []; } catch { features = []; }
+      try { features = (p.features as any) || []; } catch { features = []; }
 
       const doc: SearchDocument = {
         id: p.id,
         type: 'property',
         title: p.title,
-        description: p.description,
+        description: (p.description as string) || '',
         city: p.city,
         quartier: p.quartier,
         country: p.country,
@@ -562,7 +562,7 @@ export async function syncSearchIndex(country?: string): Promise<{
   duration: number;
 }> {
   const startTime = Date.now();
-  console.log(`[Indexeur] Début de la synchronisation complète ${country ? `pour ${country}` : '(tous les pays)'}`);
+  console.info(`[Indexeur] Début de la synchronisation complète ${country ? `pour ${country}` : '(tous les pays)'}`);
 
   // Run all indexing in parallel
   const [propertyResult, hotelResult, guesthouseResult, artisanResult, courseResult] = await Promise.all([
@@ -577,7 +577,7 @@ export async function syncSearchIndex(country?: string): Promise<{
   const totalErrors = propertyResult.errors + hotelResult.errors + guesthouseResult.errors + artisanResult.errors + courseResult.errors;
   const duration = Date.now() - startTime;
 
-  console.log(`[Indexeur] Synchronisation terminée: ${totalIndexed} documents indexés, ${totalErrors} erreurs en ${duration}ms`);
+  console.info(`[Indexeur] Synchronisation terminée: ${totalIndexed} documents indexés, ${totalErrors} erreurs en ${duration}ms`);
 
   return {
     property: propertyResult,
@@ -641,10 +641,10 @@ export async function reindexDocument(
         const hotel = await db.hotel.findUnique({ where: { id } });
         if (!hotel) return false;
         let amenities: string[] = [];
-        try { amenities = hotel.amenities ? JSON.parse(hotel.amenities) : []; } catch { amenities = []; }
+        try { amenities = (hotel.amenities as any) || []; } catch { amenities = []; }
         await indexDocument({
           id: hotel.id, type: 'hotel', title: hotel.name,
-          description: hotel.policies || '', city: hotel.city,
+          description: (hotel.policies as string) || '' || '', city: hotel.city,
           quartier: '', country: hotel.country, price: hotel.pricePerNight,
           features: Array.isArray(amenities) ? amenities : [],
           createdAt: hotel.createdAt.toISOString(), rating: hotel.rating,
@@ -659,10 +659,10 @@ export async function reindexDocument(
         });
         if (!gh) return false;
         let amenities: string[] = [];
-        try { amenities = gh.amenities ? JSON.parse(gh.amenities) : []; } catch { amenities = []; }
+        try { amenities = (gh.amenities as any) || []; } catch { amenities = []; }
         await indexDocument({
           id: gh.id, type: 'guesthouse', title: gh.name,
-          description: gh.description || '', city: gh.city,
+          description: (gh.description as string) || '' || '', city: gh.city,
           quartier: gh.quartier || '', country: gh.country,
           price: gh.rooms[0]?.basePrice || 0,
           features: Array.isArray(amenities) ? amenities : [],
@@ -675,7 +675,7 @@ export async function reindexDocument(
         const artisan = await db.artisan.findUnique({ where: { id } });
         if (!artisan) return false;
         let specialties: string[] = [];
-        try { specialties = artisan.specialties ? JSON.parse(artisan.specialties) : []; } catch { specialties = []; }
+        try { specialties = (artisan.specialties as any) || []; } catch { specialties = []; }
         await indexDocument({
           id: artisan.id, type: 'artisan', title: artisan.trade,
           description: artisan.trade, city: artisan.city || '',
@@ -693,8 +693,8 @@ export async function reindexDocument(
         if (!course) return false;
         await indexDocument({
           id: course.id, type: 'course', title: course.title,
-          description: course.description || '', city: '',
-          quartier: '', country: course.country, price: course.price,
+          description: (course.description as string) || '' || '', city: '',
+          quartier: '', country: course.country, price: Number(course.price),
           features: [], createdAt: course.createdAt.toISOString(),
           image: course.image || null, rating: course.rating,
           slug: course.slug, category: course.category, level: course.level,

@@ -60,9 +60,9 @@ export async function getMarketStats(
     const priceByType: Record<string, { avg: number; count: number; pricePerM2: number }> = {};
     for (const p of properties) {
       if (!priceByType[p.type]) priceByType[p.type] = { avg: 0, count: 0, pricePerM2: 0 };
-      priceByType[p.type].avg += p.price;
+      priceByType[p.type].avg += Number(p.price);
       priceByType[p.type].count += 1;
-      if (p.surface > 0) priceByType[p.type].pricePerM2 += p.price / p.surface;
+      if (p.surface > 0) priceByType[p.type].pricePerM2 += Number(p.price) / p.surface;
     }
     for (const key of Object.keys(priceByType)) {
       const entry = priceByType[key];
@@ -74,7 +74,7 @@ export async function getMarketStats(
     const priceByQuartier: Record<string, { avg: number; count: number }> = {};
     for (const p of properties) {
       if (!priceByQuartier[p.quartier]) priceByQuartier[p.quartier] = { avg: 0, count: 0 };
-      priceByQuartier[p.quartier].avg += p.price;
+      priceByQuartier[p.quartier].avg += Number(p.price);
       priceByQuartier[p.quartier].count += 1;
     }
     for (const key of Object.keys(priceByQuartier)) {
@@ -87,8 +87,8 @@ export async function getMarketStats(
     const older = properties.slice(halfPoint);
     const newer = properties.slice(0, halfPoint);
 
-    const avgOlder = older.reduce((s, p) => s + p.price, 0) / older.length;
-    const avgNewer = newer.reduce((s, p) => s + p.price, 0) / newer.length;
+    const avgOlder = older.reduce((s, p) => s + Number(p.price), 0) / older.length;
+    const avgNewer = newer.reduce((s, p) => s + Number(p.price), 0) / newer.length;
     const change = ((avgNewer - avgOlder) / avgOlder) * 100;
 
     let trend: 'rising' | 'stable' | 'declining' = 'stable';

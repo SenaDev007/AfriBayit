@@ -165,7 +165,7 @@ export async function POST(request: Request) {
 
         // Refund the user's wallet
         const metadata = walletTx.metadata
-          ? JSON.parse(walletTx.metadata as string) as Record<string, unknown>
+          ? walletTx.metadata as Record<string, unknown>
           : {};
         const userId = walletTx.userId;
         const refundAmount = Math.abs(walletTx.amount);
@@ -179,8 +179,8 @@ export async function POST(request: Request) {
           await tx.user.update({
             where: { id: userId },
             data: {
-              walletBalance: user.walletBalance + refundAmount,
-              pendingPayout: Math.max(0, user.pendingPayout - refundAmount),
+              walletBalance: Number(user.walletBalance) + refundAmount,
+              pendingPayout: Math.max(0, Number(user.pendingPayout) - refundAmount),
             },
           });
         }
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
       data: {
         status: 'completed',
         metadata: JSON.stringify({
-          ...(walletTx.metadata ? JSON.parse(walletTx.metadata as string) as Record<string, unknown> : {}),
+          ...(walletTx.metadata ? walletTx.metadata as Record<string, unknown> : {}),
           approvedBy: auth.userId,
           approvedAt: new Date().toISOString(),
         }),
@@ -261,7 +261,7 @@ export async function GET(request: Request) {
           currency: tx.currency,
           status: tx.status,
           createdAt: tx.createdAt,
-          metadata: tx.metadata ? JSON.parse(tx.metadata as string) : null,
+          metadata: tx.metadata ? tx.metadata : null,
         })),
       });
     }
@@ -283,7 +283,7 @@ export async function GET(request: Request) {
           amount: Math.abs(tx.amount),
           currency: tx.currency,
           createdAt: tx.createdAt,
-          metadata: tx.metadata ? JSON.parse(tx.metadata as string) : null,
+          metadata: tx.metadata ? tx.metadata : null,
         })),
       });
     }
@@ -305,7 +305,7 @@ export async function GET(request: Request) {
         currency: tx.currency,
         status: tx.status,
         createdAt: tx.createdAt,
-        metadata: tx.metadata ? JSON.parse(tx.metadata as string) : null,
+        metadata: tx.metadata ? tx.metadata : null,
       })),
     });
   } catch (error) {

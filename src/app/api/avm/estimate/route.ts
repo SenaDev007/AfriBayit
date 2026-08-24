@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       }
 
       const features = (() => {
-        try { return dbProperty.features ? JSON.parse(dbProperty.features) : []; } catch { return []; }
+        try { return dbProperty.features ? dbProperty.features : []; } catch { return []; }
       })();
 
       propertyData = {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         city: dbProperty.city,
         country: dbProperty.country,
         quartier: dbProperty.quartier,
-        features: Array.isArray(features) ? features : [],
+        features: Array.isArray(features) ? (features as string[]) : [],
         lat: dbProperty.lat,
         lng: dbProperty.lng,
         createdAt: dbProperty.createdAt,

@@ -244,7 +244,7 @@ export function applyUpdate(
     id: `update-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
     countryCode,
     updateType: updateData.updateType,
-    description: updateData.description,
+    description: (updateData.description as string) || '',
     appliedAt: new Date().toISOString(),
     appliedBy: updateData.appliedBy,
     previousValue: updateData.previousValue,

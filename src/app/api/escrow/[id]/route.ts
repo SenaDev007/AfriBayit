@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // ============ Escrow State Machine — CDC §5.0bis.4 ============
 // Normal flow: CREATED → FUNDED → DOCS_VALIDATED → GEOTRUST_VALIDATED → NOTARY_ASSIGNED → NOTARY_IN_PROGRESS → DEED_SIGNED → ANDF_REGISTERED → RELEASED
@@ -306,7 +307,7 @@ export async function PATCH(
           actorType: transitionActorType,
           actorId: auth.userId,
           description,
-          metadata: metadata ? JSON.stringify(metadata) : null,
+          metadata: toJsonInput(metadata),
         },
       }),
     ]);

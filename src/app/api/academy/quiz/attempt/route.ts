@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       id: quizData.id,
       courseId: quizData.courseId,
       title: quizData.title,
-      description: quizData.description || '',
+      description: (quizData.description as string) || '' || '',
       timeLimitMinutes: quizData.timeLimit,
       passingScorePercent: quizData.passingScore,
       questions: quizData.questions as unknown as QuizQuestion[],

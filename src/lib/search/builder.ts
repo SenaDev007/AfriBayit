@@ -99,7 +99,7 @@ export function buildWhereClause(filters: SearchFilters): Prisma.PropertyWhereIn
   if (requiredFeatures.length > 0) {
     // Use arrayContains for each feature - features is stored as JSON string
     where.AND = requiredFeatures.map(feature => ({
-      features: { contains: feature, mode: 'insensitive' as const },
+      features: { path: ['$'], string_contains: feature, mode: 'insensitive' as const },
     }));
   }
 

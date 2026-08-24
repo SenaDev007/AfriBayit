@@ -83,7 +83,7 @@ async function sendOTPToPhone(phone: string, code: string): Promise<void> {
     if (data.SMSMessageData?.Recipients?.length > 0) {
       const recipient = data.SMSMessageData.Recipients[0];
       if (recipient.status === 'Success') {
-        console.log(`[OTP] SMS sent to ${maskPhone(phone)} via Africa's Talking (cost: ${recipient.cost || 'N/A'})`);
+        console.info(`[OTP] SMS sent to ${maskPhone(phone)} via Africa's Talking (cost: ${recipient.cost || 'N/A'})`);
       } else {
         console.error(`[OTP] SMS delivery failed for ${maskPhone(phone)}: ${recipient.status}`);
       }
@@ -107,7 +107,7 @@ function maskPhone(phone: string): string {
  * Uses noreply@academiahelm.com as sender for testing/production
  */
 async function sendOTPToEmail(email: string, code: string): Promise<void> {
-  console.log(`[OTP] Sending verification code to ${email}`);
+  console.info(`[OTP] Sending verification code to ${email}`);
 
   if (!process.env.RESEND_API_KEY) {
     console.warn('[OTP] RESEND_API_KEY not configured — OTP email will NOT be sent. Code for dev:', code);
@@ -142,7 +142,7 @@ async function sendOTPToEmail(email: string, code: string): Promise<void> {
       `,
     });
 
-    console.log(`[OTP] Verification email sent to ${email} via Resend`);
+    console.info(`[OTP] Verification email sent to ${email} via Resend`);
   } catch (error) {
     console.error('[OTP] Failed to send email via Resend:', error);
     // Don't throw — the OTP is stored in the DB, user can still use dev console

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
         userId: auth.userId,
         docType: body.docType,
         docUrl: body.docUrl,
-        ocrResult: body.ocrResult ? JSON.stringify(body.ocrResult) : null,
+        ocrResult: toJsonInput(body.ocrResult),
         ocrValid: body.ocrValid ?? false,
         aiScore: body.aiScore,
         status: 'pending',

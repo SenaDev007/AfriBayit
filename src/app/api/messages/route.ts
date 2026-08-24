@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // GET /api/messages — List conversations for current user
 export async function GET(request: Request) {
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
           data: {
             type: 'user_to_user',
             status: 'active',
-            metadata: metadata ? JSON.stringify(metadata) : null,
+            metadata: toJsonInput(metadata),
             participants: {
               create: [
                 { userId: auth.userId, role: 'participant' },
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
         senderId: auth.userId,
         content: content.trim(),
         messageType: messageType || 'text',
-        metadata: metadata ? JSON.stringify(metadata) : null,
+        metadata: toJsonInput(metadata),
       },
       include: {
         sender: {

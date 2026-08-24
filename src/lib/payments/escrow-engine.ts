@@ -3,12 +3,15 @@
 // CDC §5.0bis.4 — Escrow sécurisé
 // CDC §11 — Commission rates per transaction type
 //
-// State Machine:
-// CREATED → FUNDED → NOTARY_ASSIGNED → GEO_VERIFIED → DEED_SIGNED → ANDF_REGISTERED → RELEASED
-//                     ↘ DISPUTED → (RESOLVED → RELEASED | CANCELLED | REFUNDED)
+// State Machine (CDC §7B.3 + §5.0bis.4):
+// CREATED → FUNDED → DOCS_VALIDATED → GEOTRUST_VALIDATED → NOTARY_ASSIGNED
+//   → NOTARY_IN_PROGRESS → DEED_SIGNED → ANDF_REGISTERED → RELEASED
+// Any active state → DISPUTED → (FUNDED | REFUNDED | CANCELLED)
+// Legacy: GEO_VERIFIED is an alias for GEOTRUST_VALIDATED.
 
 import { db } from '@/lib/db';
 import type { TransactionState, ReleaseConditions, EscrowTransitionEvent, EscrowEntryType } from './types';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 // ============ CDC §11 — Commission Rates per Transaction Type ============
 
@@ -221,43 +224,52 @@ export function calculateTransactionCommission(
 /** Valid forward transitions from each state */
 const VALID_TRANSITIONS: Record<TransactionState, TransactionState[]> = {
   CREATED: ['FUNDED', 'DISPUTED', 'CANCELLED'],
-  FUNDED: ['NOTARY_ASSIGNED', 'DISPUTED', 'REFUNDED', 'CANCELLED'],
-  NOTARY_ASSIGNED: ['GEO_VERIFIED', 'DISPUTED', 'REFUNDED'],
-  GEO_VERIFIED: ['DEED_SIGNED', 'DISPUTED', 'REFUNDED'],
+  FUNDED: ['DOCS_VALIDATED', 'DISPUTED', 'REFUNDED', 'CANCELLED'],
+  DOCS_VALIDATED: ['GEOTRUST_VALIDATED', 'DISPUTED', 'REFUNDED'],
+  GEOTRUST_VALIDATED: ['NOTARY_ASSIGNED', 'DISPUTED', 'REFUNDED'],
+  NOTARY_ASSIGNED: ['NOTARY_IN_PROGRESS', 'DISPUTED', 'REFUNDED'],
+  NOTARY_IN_PROGRESS: ['DEED_SIGNED', 'DISPUTED', 'REFUNDED'],
   DEED_SIGNED: ['ANDF_REGISTERED', 'DISPUTED', 'REFUNDED'],
   ANDF_REGISTERED: ['RELEASED', 'DISPUTED', 'REFUNDED'],
-  RELEASED: [], // Terminal
-  DISPUTED: ['FUNDED', 'NOTARY_IN_PROGRESS' as TransactionState, 'REFUNDED', 'CANCELLED'],
-  CANCELLED: [], // Terminal
-  REFUNDED: [], // Terminal
+  RELEASED: [],
+  DISPUTED: ['FUNDED', 'NOTARY_IN_PROGRESS', 'REFUNDED', 'CANCELLED'],
+  CANCELLED: [],
+  REFUNDED: [],
+  GEO_VERIFIED: ['NOTARY_ASSIGNED', 'DEED_SIGNED', 'DISPUTED', 'REFUNDED'],
 };
 
-/** Active states from which DISPUTED can be reached */
 const ACTIVE_STATES: TransactionState[] = [
-  'CREATED', 'FUNDED', 'NOTARY_ASSIGNED', 'GEO_VERIFIED', 'DEED_SIGNED', 'ANDF_REGISTERED',
+  'CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED',
+  'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'GEO_VERIFIED',
 ];
 
-/** Timestamp field to update for each state */
 const STATE_TIMESTAMP_FIELD: Partial<Record<TransactionState, string>> = {
-  FUNDED: 'escrowFundedAt',
-  NOTARY_ASSIGNED: 'notaryAssignedAt',
-  DEED_SIGNED: 'deedSignedAt',
-  ANDF_REGISTERED: 'andfRegisteredAt',
-  RELEASED: 'escrowReleasedAt',
+  FUNDED: 'escrowFundedAt', DOCS_VALIDATED: 'docsValidatedAt',
+  GEOTRUST_VALIDATED: 'geotrustValidatedAt', NOTARY_ASSIGNED: 'notaryAssignedAt',
+  NOTARY_IN_PROGRESS: 'notaryInProgressAt', DEED_SIGNED: 'deedSignedAt',
+  ANDF_REGISTERED: 'andfRegisteredAt', RELEASED: 'escrowReleasedAt',
+  GEO_VERIFIED: 'geotrustValidatedAt',
 };
 
-/** Human-readable descriptions for state transitions */
+function normalizeState(state: TransactionState): TransactionState {
+  return state === 'GEO_VERIFIED' ? 'GEOTRUST_VALIDATED' : state;
+}
+
 const TRANSITION_LABELS: Record<string, string> = {
   'CREATED→FUNDED': 'Fonds déposés en escrow',
-  'FUNDED→NOTARY_ASSIGNED': 'Notaire assigné à la transaction',
-  'NOTARY_ASSIGNED→GEO_VERIFIED': 'Validation géomatique GeoTrust confirmée',
-  'GEO_VERIFIED→DEED_SIGNED': 'Acte de vente signé par les parties',
+  'FUNDED→DOCS_VALIDATED': 'Documents légaux vérifiés',
+  'DOCS_VALIDATED→GEOTRUST_VALIDATED': 'Validation GeoTrust confirmée',
+  'GEOTRUST_VALIDATED→NOTARY_ASSIGNED': 'Notaire assigné',
+  'NOTARY_ASSIGNED→NOTARY_IN_PROGRESS': 'Notaire rédige l\'acte',
+  'NOTARY_IN_PROGRESS→DEED_SIGNED': 'Acte signé',
   'DEED_SIGNED→ANDF_REGISTERED': 'Acte enregistré à l\'ANDF',
-  'ANDF_REGISTERED→RELEASED': 'Fonds libérés au vendeur — Transaction terminée',
+  'ANDF_REGISTERED→RELEASED': 'Fonds libérés — Transaction terminée',
   'CREATED→DISPUTED': 'Litige signalé',
   'FUNDED→DISPUTED': 'Litige signalé (fonds en escrow)',
+  'DOCS_VALIDATED→DISPUTED': 'Litige signalé (docs validés)',
+  'GEOTRUST_VALIDATED→DISPUTED': 'Litige signalé (GeoTrust validé)',
   'NOTARY_ASSIGNED→DISPUTED': 'Litige signalé (notaire assigné)',
-  'GEO_VERIFIED→DISPUTED': 'Litige signalé (géomatique validée)',
+  'NOTARY_IN_PROGRESS→DISPUTED': 'Litige signalé (acte en cours)',
   'DEED_SIGNED→DISPUTED': 'Litige signalé (acte signé)',
   'ANDF_REGISTERED→DISPUTED': 'Litige signalé (ANDF enregistré)',
   'DISPUTED→FUNDED': 'Litige résolu — retour à Financé',
@@ -309,23 +321,34 @@ async function computeLedgerHash(
  * Validate whether a state transition is allowed.
  */
 export function canTransition(currentState: TransactionState, nextState: TransactionState): boolean {
-  // DISPUTED can be reached from any active state
-  if (nextState === 'DISPUTED' && ACTIVE_STATES.includes(currentState)) {
-    return true;
-  }
-  return VALID_TRANSITIONS[currentState]?.includes(nextState) ?? false;
+  const from = normalizeState(currentState);
+  const to = normalizeState(nextState);
+  if (to === 'DISPUTED' && ACTIVE_STATES.includes(from)) return true;
+  return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
 /**
  * Get the list of valid next states from a given state.
  */
 export function getValidTransitions(currentState: TransactionState): TransactionState[] {
-  const transitions = [...(VALID_TRANSITIONS[currentState] || [])];
-  // Add DISPUTED from any active state
-  if (ACTIVE_STATES.includes(currentState) && !transitions.includes('DISPUTED')) {
-    transitions.push('DISPUTED');
-  }
+  const normalized = normalizeState(currentState);
+  const transitions = [...(VALID_TRANSITIONS[normalized] || [])];
+  if (ACTIVE_STATES.includes(normalized) && !transitions.includes('DISPUTED')) transitions.push('DISPUTED');
   return transitions;
+}
+
+export const ESCROW_STATES: readonly TransactionState[] = [
+  'CREATED','FUNDED','DOCS_VALIDATED','GEOTRUST_VALIDATED','NOTARY_ASSIGNED',
+  'NOTARY_IN_PROGRESS','DEED_SIGNED','ANDF_REGISTERED','RELEASED',
+  'DISPUTED','CANCELLED','REFUNDED',
+] as const;
+
+export const TERMINAL_STATES: readonly TransactionState[] = ['RELEASED','CANCELLED','REFUNDED'] as const;
+
+export function getTransitionMap(): Record<TransactionState, TransactionState[]> {
+  const result = {} as Record<TransactionState, TransactionState[]>;
+  for (const state of ESCROW_STATES) result[state] = VALID_TRANSITIONS[state] ?? [];
+  return result;
 }
 
 /**
@@ -408,7 +431,7 @@ export async function transition(
         actorType: getActorType(newState),
         actorId: userId,
         description,
-        metadata: metadata ? JSON.stringify(metadata) : null,
+        metadata: toJsonInput(metadata),
       },
     });
 
@@ -420,7 +443,7 @@ export async function transition(
 
       if (newState === 'FUNDED') {
         // Credit the escrow account
-        const newBalance = escrowAccount.balance + transaction.amount;
+        const newBalance = Number(escrowAccount.balance) + Number(transaction.amount);
         const ledgerEntry = {
           escrowAccountId: escrowAccount.id,
           entryType: 'CREDIT' as const,
@@ -457,15 +480,15 @@ export async function transition(
           type: (transaction as any).type || undefined,
         });
         const commission = commissionCalc.commission;
-        const sellerPayout = transaction.amount - commission;
+        const sellerPayout = Number(transaction.amount) - commission;
         const currentBalance = escrowAccount.balance;
 
         // Commission entry
         const commissionEntry = {
           escrowAccountId: escrowAccount.id,
           entryType: 'COMMISSION' as const,
-          amount: commission,
-          balanceAfter: currentBalance - commission,
+          amount: Number(commission),
+          balanceAfter: Number(currentBalance) - Number(commission),
           currency: transaction.currency,
           reference: null,
           createdAt: now,
@@ -515,7 +538,7 @@ export async function transition(
         const refundEntry = {
           escrowAccountId: escrowAccount.id,
           entryType: 'REFUND' as const,
-          amount: escrowAccount.heldAmount,
+          amount: Number(escrowAccount.heldAmount),
           balanceAfter: 0,
           currency: transaction.currency,
           reference: null,
@@ -588,25 +611,26 @@ export async function checkReleaseConditions(transactionId: string): Promise<{
   }
 
   // Parse custom conditions or use defaults
-  const customConditions = transaction.conditions
-    ? JSON.parse(transaction.conditions)
+  const customConditions = transaction.conditions as any as any
+    ? transaction.conditions
     : null;
 
-  const requiredConditions = customConditions || DEFAULT_RELEASE_CONDITIONS;
+  const requiredConditions = (customConditions as any) || DEFAULT_RELEASE_CONDITIONS;
 
   // Evaluate each condition based on transaction state
-  const currentState = transaction.status as TransactionState;
+  const currentState = normalizeState(transaction.status as TransactionState);
   const stateOrder: TransactionState[] = [
-    'CREATED', 'FUNDED', 'NOTARY_ASSIGNED', 'GEO_VERIFIED', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED',
+    'CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED',
+    'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED',
   ];
   const currentIndex = stateOrder.indexOf(currentState);
 
   const conditions: ReleaseConditions = {
-    docsValidated: currentIndex >= stateOrder.indexOf('NOTARY_ASSIGNED') || !requiredConditions.docsValidated,
-    geoTrustValidated: currentIndex >= stateOrder.indexOf('GEO_VERIFIED') || !requiredConditions.geoTrustValidated,
-    notaryAssigned: currentIndex >= stateOrder.indexOf('NOTARY_ASSIGNED') || !requiredConditions.notaryAssigned,
-    deedSigned: currentIndex >= stateOrder.indexOf('DEED_SIGNED') || !requiredConditions.deedSigned,
-    andfRegistered: currentIndex >= stateOrder.indexOf('ANDF_REGISTERED') || !requiredConditions.andfRegistered,
+    docsValidated:     currentIndex >= stateOrder.indexOf('DOCS_VALIDATED')     || !requiredConditions.docsValidated,
+    geoTrustValidated: currentIndex >= stateOrder.indexOf('GEOTRUST_VALIDATED') || !requiredConditions.geoTrustValidated,
+    notaryAssigned:    currentIndex >= stateOrder.indexOf('NOTARY_ASSIGNED')    || !requiredConditions.notaryAssigned,
+    deedSigned:        currentIndex >= stateOrder.indexOf('DEED_SIGNED')        || !requiredConditions.deedSigned,
+    andfRegistered:    currentIndex >= stateOrder.indexOf('ANDF_REGISTERED')   || !requiredConditions.andfRegistered,
   };
 
   const missing: string[] = [];
@@ -690,18 +714,14 @@ export async function resolveDispute(
 // ============ Helpers ============
 
 function getActorType(targetState: TransactionState): string {
+  const normalized = normalizeState(targetState);
   const actorMap: Record<string, string> = {
-    FUNDED: 'buyer',
-    NOTARY_ASSIGNED: 'admin',
-    GEO_VERIFIED: 'geometer',
-    DEED_SIGNED: 'notary',
-    ANDF_REGISTERED: 'notary',
-    RELEASED: 'system',
-    DISPUTED: 'buyer',
-    CANCELLED: 'admin',
-    REFUNDED: 'admin',
+    FUNDED: 'buyer', DOCS_VALIDATED: 'ai_admin', GEOTRUST_VALIDATED: 'geometer',
+    NOTARY_ASSIGNED: 'admin', NOTARY_IN_PROGRESS: 'notary', DEED_SIGNED: 'notary',
+    ANDF_REGISTERED: 'notary', RELEASED: 'system', DISPUTED: 'buyer',
+    CANCELLED: 'admin', REFUNDED: 'admin',
   };
-  return actorMap[targetState] || 'system';
+  return actorMap[normalized] || 'system';
 }
 
 /**

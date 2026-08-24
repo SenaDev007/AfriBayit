@@ -45,7 +45,7 @@ export async function findMatchingArtisans(
       userId: a.userId,
       trade: a.trade,
       specialties: (() => {
-        try { return a.specialties ? JSON.parse(a.specialties) : [a.trade]; } catch { return [a.trade]; }
+        try { if (!a.specialties) return [a.trade]; const sp = a.specialties; return Array.isArray(sp) ? (sp as string[]) : [a.trade]; } catch { return [a.trade]; }
       })(),
       certified: a.certified,
       available: a.available,

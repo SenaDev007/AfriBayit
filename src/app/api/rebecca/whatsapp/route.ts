@@ -229,7 +229,7 @@ async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
   if (!phoneNumberId || !accessToken) {
-    console.log('[WhatsApp] Would send to:', to, 'Message:', text.substring(0, 50) + '...');
+    console.info('[WhatsApp] Would send to:', to, 'Message:', text.substring(0, 50) + '...');
     return; // In dev, just log
   }
 

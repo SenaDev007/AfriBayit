@@ -69,7 +69,7 @@ function formatScoredArtisan(scored: ScoredArtisan): Record<string, unknown> {
   return {
     id: a.id,
     trade: a.trade,
-    specialties: a.specialties,
+    specialties: a.specialties as any,
     certified: a.certified,
     available: a.available,
     emergency: a.emergency,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 const REBECCA_SYSTEM_PROMPT = `You are Rebecca, the AI assistant for AfriBayit — Africa's premier real estate platform. You help users find properties, understand the buying process in West Africa, navigate escrow transactions, and connect with certified agents, notaries, and geometers. You are professional, warm, and knowledgeable about African real estate law (OHADA, Code Foncier). You speak French primarily but can switch to English or local languages. Never give binding legal advice — always recommend consulting a certified notary.`;
 
@@ -88,7 +89,7 @@ export async function POST(
         senderId: auth.userId,
         content,
         messageType: messageType || 'text',
-        metadata: body.metadata ? JSON.stringify(body.metadata) : null,
+        metadata: toJsonInput(body.metadata),
       },
       include: {
         sender: {

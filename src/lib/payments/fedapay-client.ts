@@ -129,7 +129,7 @@ export async function createCheckout(params: CheckoutParams): Promise<CheckoutRe
     const transactionData: Record<string, unknown> = {
       amount: Math.round(params.amount),
       currency: params.currency.toLowerCase(),
-      description: params.description,
+      description: (params.description as string) || '',
       callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/webhook/fedapay`,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`,
       metadata: {

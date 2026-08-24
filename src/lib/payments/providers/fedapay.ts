@@ -88,7 +88,7 @@ export class FedaPayProvider extends PaymentProviderBase {
     this.apiBase = this.isSandbox ? SANDBOX_API_BASE : PRODUCTION_API_BASE;
 
     if (this.isSandbox) {
-      console.log('[FedaPay] Running in SANDBOX mode');
+      console.info('[FedaPay] Running in SANDBOX mode');
     }
   }
 
@@ -116,7 +116,7 @@ export class FedaPayProvider extends PaymentProviderBase {
     const url = `${this.apiBase}${path}`;
 
     try {
-      console.log(`[FedaPay] ${method} ${path}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
+      console.info(`[FedaPay] ${method} ${path}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
 
       const response = await fetch(url, {
         method,
@@ -269,7 +269,7 @@ export class FedaPayProvider extends PaymentProviderBase {
     const fedapayMethod = this.resolveMethod(method, countryCode);
     const isMobileMoney = MOBILE_MONEY_METHODS.includes(method as typeof MOBILE_MONEY_METHODS[number]);
 
-    console.log(`[FedaPay] Initiating ${isMobileMoney ? 'Mobile Money' : 'Card'} payment: ${amount} ${currency} via ${fedapayMethod}`);
+    console.info(`[FedaPay] Initiating ${isMobileMoney ? 'Mobile Money' : 'Card'} payment: ${amount} ${currency} via ${fedapayMethod}`);
 
     // Build the FedaPay transaction payload per API v2 spec
     const payload: Record<string, unknown> = {
@@ -311,7 +311,7 @@ export class FedaPayProvider extends PaymentProviderBase {
       );
     }
 
-    console.log(`[FedaPay] Transaction created: ${transactionId}, status: ${transaction.status}`);
+    console.info(`[FedaPay] Transaction created: ${transactionId}, status: ${transaction.status}`);
 
     // Generate payment token/URL for redirect
     let redirectUrl: string | undefined;
@@ -328,7 +328,7 @@ export class FedaPayProvider extends PaymentProviderBase {
           ? 'https://sandbox.fedapay.com'
           : 'https://fedapay.com';
         redirectUrl = `${checkoutBase}/checkout/${token}`;
-        console.log(`[FedaPay] Checkout URL generated for transaction ${transactionId}`);
+        console.info(`[FedaPay] Checkout URL generated for transaction ${transactionId}`);
       }
     } catch (error) {
       // Token generation is optional — some flows use direct charge
@@ -347,7 +347,7 @@ export class FedaPayProvider extends PaymentProviderBase {
           { method: 'POST', body: chargePayload }
         );
 
-        console.log(`[FedaPay] Mobile Money payment prompt sent for transaction ${transactionId}`);
+        console.info(`[FedaPay] Mobile Money payment prompt sent for transaction ${transactionId}`);
       } catch (error) {
         console.warn(`[FedaPay] Mobile Money prompt failed (user can still use checkout URL):`,
           error instanceof Error ? error.message : error);
@@ -364,7 +364,7 @@ export class FedaPayProvider extends PaymentProviderBase {
   }
 
   async verifyPayment(reference: string): Promise<VerifyPaymentResponse> {
-    console.log(`[FedaPay] Verifying transaction: ${reference}`);
+    console.info(`[FedaPay] Verifying transaction: ${reference}`);
 
     const data = await this.apiRequest<Record<string, unknown>>(
       `/transactions/${reference}`,
@@ -378,7 +378,7 @@ export class FedaPayProvider extends PaymentProviderBase {
       ? (currencyData.iso as string || 'XOF')
       : (transaction.currency as string || 'XOF');
 
-    console.log(`[FedaPay] Transaction ${reference} status: ${transaction.status} → ${status}`);
+    console.info(`[FedaPay] Transaction ${reference} status: ${transaction.status} → ${status}`);
 
     return {
       status,
@@ -390,7 +390,7 @@ export class FedaPayProvider extends PaymentProviderBase {
   }
 
   async processRefund(reference: string, amount?: number): Promise<RefundResponse> {
-    console.log(`[FedaPay] Processing refund for transaction: ${reference}${amount ? ` (partial: ${amount})` : ' (full)'}`);
+    console.info(`[FedaPay] Processing refund for transaction: ${reference}${amount ? ` (partial: ${amount})` : ' (full)'}`);
 
     const payload: Record<string, unknown> = {};
     if (amount) {
@@ -404,7 +404,7 @@ export class FedaPayProvider extends PaymentProviderBase {
 
     const refund = (data.refund || data) as Record<string, unknown>;
 
-    console.log(`[FedaPay] Refund processed: ${refund.id}`);
+    console.info(`[FedaPay] Refund processed: ${refund.id}`);
 
     return {
       success: true,
@@ -421,7 +421,7 @@ export class FedaPayProvider extends PaymentProviderBase {
   async processPayout(request: PayoutRequest): Promise<PayoutResponse> {
     const { userId, amount, currency, method, destination, countryCode } = request;
 
-    console.log(`[FedaPay] Processing payout: ${amount} ${currency} to ${destination} (${method})`);
+    console.info(`[FedaPay] Processing payout: ${amount} ${currency} to ${destination} (${method})`);
 
     const isMobileMoney = MOBILE_MONEY_METHODS.includes(method as typeof MOBILE_MONEY_METHODS[number]);
     const fedapayMethod = this.resolveMethod(method, countryCode);
@@ -449,7 +449,7 @@ export class FedaPayProvider extends PaymentProviderBase {
       const payout = (data.payout || data) as Record<string, unknown>;
       const payoutId = payout.id?.toString() || '';
 
-      console.log(`[FedaPay] Payout created: ${payoutId}`);
+      console.info(`[FedaPay] Payout created: ${payoutId}`);
 
       return {
         success: true,
@@ -500,7 +500,7 @@ export class FedaPayProvider extends PaymentProviderBase {
         throw new Error('Invalid FedaPay webhook signature');
       }
 
-      console.log('[FedaPay] Webhook signature verified');
+      console.info('[FedaPay] Webhook signature verified');
     } else if (!signature) {
       console.warn('[FedaPay] Webhook received without signature (development mode)');
     }
@@ -514,7 +514,7 @@ export class FedaPayProvider extends PaymentProviderBase {
 
     const status = mapFedaPayStatus(transaction.status as string || 'pending');
 
-    console.log(`[FedaPay] Webhook event: ${event}, status: ${transaction.status} → ${status}, ref: ${transaction.id}`);
+    console.info(`[FedaPay] Webhook event: ${event}, status: ${transaction.status} → ${status}, ref: ${transaction.id}`);
 
     return {
       provider: 'fedapay',

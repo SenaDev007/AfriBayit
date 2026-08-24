@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const event = await db.communityEvent.create({
       data: {
         title: body.title,
-        description: body.description,
+        description: (body.description as string) || '',
         organizerId: auth.userId,
         groupId: body.groupId,
         eventType: body.eventType,

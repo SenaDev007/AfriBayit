@@ -92,7 +92,7 @@ export async function executeEscrowNode(
           recentEvents: transaction.timelineEvents.map((e) => ({
             from: e.fromStatus,
             to: e.toStatus,
-            description: e.description,
+            description: (e.description as string) || '',
             date: e.createdAt,
           })),
         };

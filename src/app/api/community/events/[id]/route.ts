@@ -49,7 +49,7 @@ export async function PATCH(
       where: { id },
       data: {
         ...(body.title !== undefined && { title: body.title }),
-        ...(body.description !== undefined && { description: body.description }),
+        ...(body.description !== undefined && { description: (body.description as string) || '' }),
         ...(body.eventType !== undefined && { eventType: body.eventType }),
         ...(body.country !== undefined && { country: body.country }),
         ...(body.city !== undefined && { city: body.city }),

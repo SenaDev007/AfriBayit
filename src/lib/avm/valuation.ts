@@ -215,8 +215,8 @@ function determineMarketTrend(comps: Comparable[]): { trend: 'rising' | 'stable'
   const older = sorted.slice(0, halfPoint);
   const newer = sorted.slice(halfPoint);
 
-  const avgOlderPrice = older.reduce((s, c) => s + c.pricePerM2, 0) / older.length;
-  const avgNewerPrice = newer.reduce((s, c) => s + c.pricePerM2, 0) / newer.length;
+  const avgOlderPrice = older.reduce((s, c) => s + Number(c.pricePerM2), 0) / older.length;
+  const avgNewerPrice = newer.reduce((s, c) => s + Number(c.pricePerM2), 0) / newer.length;
 
   const change = ((avgNewerPrice - avgOlderPrice) / avgOlderPrice) * 100;
 

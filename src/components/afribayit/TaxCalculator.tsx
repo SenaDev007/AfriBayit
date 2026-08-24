@@ -51,7 +51,7 @@ function formatXOF(n: number) {
 
 // Simple pie chart using CSS conic-gradient
 function PieChart({ items }: { items: { name: string; amount: number; color: string }[] }) {
-  const total = items.reduce((sum, item) => sum + item.amount || 0, 0);
+  const total = items.reduce((sum, item) => sum + Number(item.amount) || 0, 0);
   if (total === 0) return null;
 
   // Compute accumulated values without mutation
@@ -154,7 +154,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
     { name: 'Droit de timbre', amount: result.stampDuty || 0, color: '#6B7280' },
     { name: 'TVA', amount: result.vat || 0, color: '#EF4444' },
     { name: 'Frais hypothécaires', amount: result.mortgageFees || 0, color: '#8B5CF6' },
-  ].filter(item => item.amount > 0) : [];
+  ].filter(item => Number(item.amount) > 0) : [];
 
   return (
     <Card className="border-0 shadow-2xl">

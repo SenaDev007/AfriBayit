@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
     transactions.forEach((t) => {
       stats.byStatus[t.status] = (stats.byStatus[t.status] || 0) + 1;
-      if (t.status === 'RELEASED') stats.totalVolume += t.amount;
+      if (t.status === 'RELEASED') stats.totalVolume += Number(t.amount);
     });
 
     return NextResponse.json({ transactions, stats, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });

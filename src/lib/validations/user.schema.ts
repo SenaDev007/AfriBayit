@@ -8,6 +8,7 @@ export const userRegisterSchema = z.object({
   lastName: z.string().optional(),
   phone: z.string().optional(),
   country: z.enum(['BJ', 'CI', 'BF', 'TG', 'SN']).optional(),
+  city: z.string().max(100).optional(),
   role: z.enum(['buyer', 'seller', 'investor', 'tourist', 'artisan', 'agent', 'hotelier', 'trainer', 'notary', 'geometer', 'certified_agent', 'premium_agent', 'artisan_pro']).default('buyer'),
 });
 

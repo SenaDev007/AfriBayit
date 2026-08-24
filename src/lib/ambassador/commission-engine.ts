@@ -488,7 +488,7 @@ export async function generateMonthlyReport(
     0
   );
   const totalCommission = ambassador.commissions.reduce(
-    (sum, c) => sum + c.amount,
+    (sum, c) => sum + Number(c.amount),
     0
   );
 
@@ -581,7 +581,7 @@ export async function scheduleCommissionPayouts(
   const payoutDate = new Date(year, month, 5); // 5th of the following month
 
   for (const ambassador of ambassadors) {
-    const totalPending = ambassador.commissions.reduce((sum, c) => sum + c.amount, 0);
+    const totalPending = ambassador.commissions.reduce((sum, c) => sum + Number(c.amount), 0);
 
     if (totalPending <= 0) continue;
 

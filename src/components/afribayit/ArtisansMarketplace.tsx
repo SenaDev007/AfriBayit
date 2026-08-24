@@ -90,13 +90,13 @@ function mapArtisanFromApi(raw: Record<string, unknown>): Artisan {
   const user = raw.user as Record<string, unknown> | null;
   let specialties: string[] = [];
   try {
-    const rawSpec = raw.specialties;
+    const rawSpec = raw.specialties as any;
     if (typeof rawSpec === 'string') specialties = JSON.parse(rawSpec);
     else if (Array.isArray(rawSpec)) specialties = rawSpec as string[];
   } catch { specialties = []; }
   let portfolio: string[] = [];
   try {
-    const rawPort = raw.portfolio;
+    const rawPort = raw.portfolio as any;
     if (typeof rawPort === 'string') portfolio = JSON.parse(rawPort);
     else if (Array.isArray(rawPort)) portfolio = rawPort as string[];
   } catch { portfolio = []; }
@@ -275,7 +275,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
       {
         artisanId: selectedArtisan.id,
         title: devisForm.title,
-        description: devisForm.description,
+        description: (devisForm.description as string) || '',
         estimatedBudget: devisForm.estimatedBudget,
       },
       {
@@ -381,7 +381,7 @@ export default function ArtisansMarketplace({ onNavigate }: ArtisansMarketplaceP
                   {/* Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-inter), Georgia, serif' }}>
+                      <h1 className="text-2xl font-bold text-[#0a2a5e]" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
                         {detailArtisan.name}
                       </h1>
                       {detailArtisan.certified && (

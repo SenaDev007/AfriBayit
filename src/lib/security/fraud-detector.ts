@@ -120,7 +120,7 @@ async function checkPriceAnomaly(listing: FraudCheckInput): Promise<FraudFlag[]>
 
     if (avgResult._count < 3 || !avgResult._avg.price || !avgResult._avg.surface) {
       // Not enough data — light check only
-      if (listing.price <= 0) {
+      if (Number(listing.price) <= 0) {
         flags.push({
           type: 'price_anomaly',
           severity: 'critical',
@@ -197,7 +197,7 @@ async function checkDuplicateListings(listing: FraudCheckInput): Promise<FraudFl
 
   try {
     // Search for similar listings in the same area with similar price/surface
-    const priceTolerance = listing.price * 0.15;
+    const priceTolerance = Number(listing.price) * 0.15;
     const surfaceTolerance = listing.surface * 0.15;
 
     const similarListings = await db.property.findMany({
@@ -206,7 +206,7 @@ async function checkDuplicateListings(listing: FraudCheckInput): Promise<FraudFl
         type: listing.type,
         city: listing.city,
         quartier: listing.quartier,
-        price: { gte: listing.price - priceTolerance, lte: listing.price + priceTolerance },
+        price: { gte: Number(listing.price) - priceTolerance, lte: Number(listing.price) + priceTolerance },
         surface: { gte: listing.surface - surfaceTolerance, lte: listing.surface + surfaceTolerance },
       },
       select: {
@@ -404,7 +404,7 @@ async function checkSellerReputation(listing: FraudCheckInput): Promise<FraudFla
       (Date.now() - new Date(seller.createdAt).getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    if (accountAgeDays < 1 && listing.price > 5000000) {
+    if (accountAgeDays < 1 && Number(listing.price) > 5000000) {
       flags.push({
         type: 'seller_reputation',
         severity: 'critical',
@@ -412,7 +412,7 @@ async function checkSellerReputation(listing: FraudCheckInput): Promise<FraudFla
         detail: `Compte créé il y a ${accountAgeDays} jour(s), bien à ${formatXOF(listing.price)} FCFA`,
         score: 30,
       });
-    } else if (accountAgeDays < 7 && listing.price > 10000000) {
+    } else if (accountAgeDays < 7 && Number(listing.price) > 10000000) {
       flags.push({
         type: 'seller_reputation',
         severity: 'danger',
@@ -527,7 +527,7 @@ async function checkDocumentConsistency(listing: FraudCheckInput): Promise<Fraud
 
     if (legalDocs.length === 0) {
       // No documents at all
-      if (listing.price > 5000000) {
+      if (Number(listing.price) > 5000000) {
         flags.push({
           type: 'document_consistency',
           severity: 'warning',

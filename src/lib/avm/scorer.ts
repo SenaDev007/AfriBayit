@@ -472,8 +472,8 @@ async function fetchComparableData(input: AVMInput): Promise<{
       const half = Math.floor(sorted.length / 2);
       const older = sorted.slice(0, half);
       const newer = sorted.slice(half);
-      const avgOlder = older.reduce((s, c) => s + c.pricePerSqm, 0) / older.length;
-      const avgNewer = newer.reduce((s, c) => s + c.pricePerSqm, 0) / newer.length;
+      const avgOlder = older.reduce((s, c) => s + Number(c.pricePerSqm), 0) / older.length;
+      const avgNewer = newer.reduce((s, c) => s + Number(c.pricePerSqm), 0) / newer.length;
       if (avgOlder > 0) {
         const change = ((avgNewer - avgOlder) / avgOlder) * 100;
         trendPercentage = Math.round(change * 10) / 10;

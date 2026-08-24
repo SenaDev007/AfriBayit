@@ -48,8 +48,8 @@ export async function GET(request: NextRequest) {
       select: { amount: true, commission: true, status: true },
     });
 
-    const totalVolume = allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-    const totalCommission = allTransactions.reduce((sum, t) => sum + (t.commission || 0), 0);
+    const totalVolume = allTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    const totalCommission = allTransactions.reduce((sum, t) => sum + Number(t.commission || 0), 0);
 
     const byStatus: Record<string, number> = {};
     for (const t of allTransactions) {

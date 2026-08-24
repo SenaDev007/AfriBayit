@@ -55,11 +55,11 @@ export function getPusherClient(): Pusher | null {
 
   // Connection state logging
   _pusherClient.connection.bind('connected', () => {
-    console.log('[Pusher Client] Connected');
+    console.info('[Pusher Client] Connected');
   });
 
   _pusherClient.connection.bind('disconnected', () => {
-    console.log('[Pusher Client] Disconnected');
+    console.info('[Pusher Client] Disconnected');
   });
 
   _pusherClient.connection.bind('error', (err: Error) => {

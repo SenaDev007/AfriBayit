@@ -111,7 +111,7 @@ export function initRealtimeServer(httpServer: any) {
         return next(new Error('Authentication failed: invalid token'));
       }
 
-      const payload = result.payload;
+      const payload = result.payload as any;
       socket.data = {
         userId: payload.sub,
         email: payload.email,
@@ -121,7 +121,7 @@ export function initRealtimeServer(httpServer: any) {
         connectedAt: Date.now(),
       } satisfies SocketData;
 
-      console.log(`[Socket.io] Authenticated connection: ${socket.id} (user: ${payload.sub})`);
+      console.info(`[Socket.io] Authenticated connection: ${socket.id} (user: ${payload.sub})`);
       next();
     } catch (error) {
       console.error('[Socket.io] Auth middleware error:', error);
@@ -131,7 +131,7 @@ export function initRealtimeServer(httpServer: any) {
 
   io.on('connection', (socket: Socket) => {
     const data = socket.data as Partial<SocketData>;
-    console.log(`[Socket.io] Client connected: ${socket.id} (user: ${data.userId || 'anonymous'})`);
+    console.info(`[Socket.io] Client connected: ${socket.id} (user: ${data.userId || 'anonymous'})`);
 
     // ── Auto-join rooms if authenticated at connect time ──
     if (data.userId) {
@@ -158,7 +158,7 @@ export function initRealtimeServer(httpServer: any) {
           return;
         }
 
-        const payload = result.payload;
+        const payload = result.payload as any;
         socket.data = {
           userId: payload.sub,
           email: payload.email,
@@ -175,7 +175,7 @@ export function initRealtimeServer(httpServer: any) {
 
         socket.emit('auth:success', { userId: payload.sub, role: payload.role });
         io.emit('user-online', payload.sub);
-        console.log(`[Socket.io] User authenticated via event: ${payload.sub}`);
+        console.info(`[Socket.io] User authenticated via event: ${payload.sub}`);
         return;
       }
 
@@ -190,7 +190,7 @@ export function initRealtimeServer(httpServer: any) {
         socket.join(`user:${authData.userId}`);
         socket.emit('auth:success', { userId: authData.userId });
         io.emit('user-online', authData.userId);
-        console.log(`[Socket.io] User authenticated (legacy): ${authData.userId}`);
+        console.info(`[Socket.io] User authenticated (legacy): ${authData.userId}`);
       }
     });
 
@@ -201,7 +201,7 @@ export function initRealtimeServer(httpServer: any) {
         return;
       }
       socket.join(`conversation:${conversationId}`);
-      console.log(`[Socket.io] User ${data.userId} joined conversation: ${conversationId}`);
+      console.info(`[Socket.io] User ${data.userId} joined conversation: ${conversationId}`);
     });
 
     socket.on('leave-conversation', (conversationId: string) => {
@@ -221,7 +221,7 @@ export function initRealtimeServer(httpServer: any) {
         return;
       }
       socket.join(room);
-      console.log(`[Socket.io] User ${data.userId} joined room: ${room}`);
+      console.info(`[Socket.io] User ${data.userId} joined room: ${room}`);
     });
 
     socket.on('leave-room', (room: string) => {
@@ -280,7 +280,7 @@ export function initRealtimeServer(httpServer: any) {
         io.emit('user-offline', data.userId);
       }
       socketRateLimits.delete(socket.id);
-      console.log(`[Socket.io] Client disconnected: ${socket.id} (${reason})`);
+      console.info(`[Socket.io] Client disconnected: ${socket.id} (${reason})`);
     });
   });
 

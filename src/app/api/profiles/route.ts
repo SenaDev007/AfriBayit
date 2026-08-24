@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -110,17 +111,17 @@ export async function GET(request: Request) {
       const user = profile.user as Record<string, unknown>;
       let skills: { name: string; endorsements: number; endorsedByMe?: boolean }[] = [];
       try {
-        const rawSkills = profile.specialities ? JSON.parse(profile.specialities) : [];
+        const rawSkills = profile.specialities ? profile.specialities : [];
         if (Array.isArray(rawSkills)) {
-          skills = rawSkills.map((s: string) => ({ name: s, endorsements: 0 }));
+          skills = rawSkills.map((s: any) => ({ name: s, endorsements: 0 }));
         }
       } catch { skills = []; }
 
       let experience: { id: string; title: string; company: string; period: string; desc: string }[] = [];
       try {
-        const rawExp = profile.experience ? JSON.parse(profile.experience) : [];
+        const rawExp = profile.experience ? profile.experience : [];
         if (Array.isArray(rawExp)) {
-          experience = rawExp.map((e: Record<string, string>, i: number) => ({
+          experience = rawExp.map((e: any, i: number) => ({
             id: String(i),
             title: e.title || '',
             company: e.company || '',
@@ -132,9 +133,9 @@ export async function GET(request: Request) {
 
       let education: { id: string; degree: string; school: string; year: string }[] = [];
       try {
-        const rawEdu = profile.education ? JSON.parse(profile.education) : [];
+        const rawEdu = profile.education ? profile.education : [];
         if (Array.isArray(rawEdu)) {
-          education = rawEdu.map((e: Record<string, string>, i: number) => ({
+          education = rawEdu.map((e: any, i: number) => ({
             id: String(i),
             degree: e.degree || '',
             school: e.school || '',
@@ -145,9 +146,9 @@ export async function GET(request: Request) {
 
       let certifications: { id: string; name: string; icon: string; color: string; year: string }[] = [];
       try {
-        const rawCerts = profile.certifications ? JSON.parse(profile.certifications) : [];
+        const rawCerts = profile.certifications ? profile.certifications : [];
         if (Array.isArray(rawCerts)) {
-          certifications = rawCerts.map((c: Record<string, string>, i: number) => ({
+          certifications = rawCerts.map((c: any, i: number) => ({
             id: String(i),
             name: c.name || '',
             icon: c.icon || 'default',
@@ -159,9 +160,9 @@ export async function GET(request: Request) {
 
       let portfolio: { id: string; title: string; image: string; type: string }[] = [];
       try {
-        const rawPort = profile.portfolio ? JSON.parse(profile.portfolio) : [];
+        const rawPort = profile.portfolio ? profile.portfolio : [];
         if (Array.isArray(rawPort)) {
-          portfolio = rawPort.map((p: Record<string, string>, i: number) => ({
+          portfolio = rawPort.map((p: any, i: number) => ({
             id: String(i),
             title: p.title || '',
             image: p.image || '',
@@ -197,7 +198,7 @@ export async function GET(request: Request) {
         profileCompleteness: profile.completenessPct || 0,
         userId: profile.userId,
         slug: profile.slug,
-        specialities: profile.specialities,
+        specialities: profile.specialities as any,
       };
 
       return NextResponse.json(transformedProfile);
@@ -262,15 +263,15 @@ export async function POST(request: Request) {
         headline: body.headline,
         coverPhoto: body.coverPhoto,
         bio: body.bio,
-        specialities: body.specialities ? JSON.stringify(body.specialities) : null,
-        languages: body.languages ? JSON.stringify(body.languages) : null,
+        specialities: toJsonInput(body.specialities),
+        languages: toJsonInput(body.languages),
         availability: body.availability || 'available',
         isPublic: body.isPublic ?? true,
         slug: body.slug,
-        experience: body.experience ? JSON.stringify(body.experience) : null,
-        education: body.education ? JSON.stringify(body.education) : null,
-        certifications: body.certifications ? JSON.stringify(body.certifications) : null,
-        portfolio: body.portfolio ? JSON.stringify(body.portfolio) : null,
+        experience: toJsonInput(body.experience),
+        education: toJsonInput(body.education),
+        certifications: toJsonInput(body.certifications),
+        portfolio: toJsonInput(body.portfolio),
         country: body.country || null,
         zone: body.zone,
         agencyName: body.agencyName,
