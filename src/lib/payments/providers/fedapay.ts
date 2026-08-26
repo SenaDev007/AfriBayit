@@ -527,6 +527,40 @@ export class FedaPayProvider extends PaymentProviderBase {
   }
 
   /**
+   * Verify the status of a payout via FedaPay API.
+   * Used for periodic status checks (in case webhooks are missed).
+   */
+  async verifyPayout(payoutId: string): Promise<{
+    status: PaymentStatus;
+    providerRef: string;
+    amount: number;
+    currency: string;
+  }> {
+    console.info(`[FedaPay] Verifying payout: ${payoutId}`);
+
+    const data = await this.apiRequest<Record<string, unknown>>(
+      `/payouts/${payoutId}`,
+      { method: 'GET' }
+    );
+
+    const payout = (data.payout || data) as Record<string, unknown>;
+    const status = mapFedaPayStatus(payout.status as string || 'pending');
+    const currencyData = payout.currency as Record<string, unknown> | undefined;
+    const currencyIso = typeof currencyData === 'object' && currencyData !== null
+      ? (currencyData.iso as string || 'XOF')
+      : (payout.currency as string || 'XOF');
+
+    console.info(`[FedaPay] Payout ${payoutId} status: ${payout.status} → ${status}`);
+
+    return {
+      status,
+      providerRef: payout.id?.toString() || payoutId,
+      amount: Number(payout.amount) || 0,
+      currency: currencyIso.toUpperCase(),
+    };
+  }
+
+  /**
    * Get the API base URL (useful for frontend checkout integration).
    */
   getApiBase(): string {

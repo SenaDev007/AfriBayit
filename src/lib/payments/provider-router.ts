@@ -247,13 +247,37 @@ export async function initiatePayout(
     };
   }
 
-  // Stripe bank transfer (placeholder — requires Stripe Connect)
+  // Stripe bank transfer (for non-UEMOA countries only)
+  // UEMOA countries (BJ/CI/TG/BF) always use FedaPay for payouts
+  if (!FEDAPAY_PRIMARY_COUNTRIES.includes(country.toUpperCase())) {
+    return {
+      success: false,
+      provider: 'stripe',
+      payoutId: '',
+      status: 'pending',
+      error: 'Stripe bank payouts require Stripe Connect configuration',
+    };
+  }
+
+  // If we reach here, it's a UEMOA country with bank_transfer method —
+  // fall back to FedaPay Mobile Money (all UEMOA sellers have Mobile Money)
+  const network = getDefaultNetwork(country);
+  const currency = getCurrencyForCountry(country);
+
+  const result = await fedapayPayout({
+    amount,
+    recipientPhone: recipient,
+    network,
+    currency,
+  });
+
   return {
-    success: false,
-    provider: 'stripe',
-    payoutId: '',
-    status: 'pending',
-    error: 'Stripe bank payouts require Stripe Connect configuration',
+    success: result.success,
+    provider: 'fedapay',
+    payoutId: result.payoutId,
+    reference: result.reference,
+    status: result.status,
+    error: result.error,
   };
 }
 
