@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     // 🔒 P1.3 — Admin authGuard (defense in depth)
     const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
     // Fetch recipient users separately since there's no relation
     const recipientIds = [...new Set(payouts.map((p) => p.recipientId))];
     const recipients = await db.user.findMany({
-      where: { id: { in: recipientIds } },
+      where: { ...(countryFilter ? { country: countryFilter } : {}),  id: { in: recipientIds } },
       select: { id: true, name: true, email: true, country: true },
     });
     const recipientMap = new Map(recipients.map((r) => [r.id, r]));
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     }));
 
     const [totalPending, totalCompleted, totalAmountResult, pendingAmountResult] = await Promise.all([
-      db.scheduledPayout.count({ where: { status: 'scheduled' } }),
+      db.scheduledPayout.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  status: 'scheduled' } }),
       db.scheduledPayout.count({ where: { status: 'completed' } }),
       db.scheduledPayout.aggregate({ _sum: { amount: true } }),
       db.scheduledPayout.aggregate({ _sum: { amount: true }, where: { status: 'scheduled' } }),

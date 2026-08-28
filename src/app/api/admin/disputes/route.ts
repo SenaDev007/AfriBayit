@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     // 🔒 P1.3 — Admin authGuard (defense in depth)
     const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Enrich with seller data from property owner
     const propertyIds = disputes.map((d) => d.propertyId);
     const properties = await db.property.findMany({
-      where: { id: { in: propertyIds } },
+      where: { ...(countryFilter ? { country: countryFilter } : {}),  id: { in: propertyIds } },
       select: { id: true, agentId: true },
     });
     const propertyOwnerMap = new Map(properties.map((p) => [p.id, p.agentId]));
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
     });
 
     const [open, inMediation, resolved] = await Promise.all([
-      db.transaction.count({ where: { disputeReason: { not: null }, status: 'DISPUTED' } }),
+      db.transaction.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  disputeReason: { not: null }, status: 'DISPUTED' } }),
       db.transaction.count({ where: { disputeReason: { not: null }, status: 'NOTARY_IN_PROGRESS' } }),
       db.transaction.count({ where: { disputeReason: { not: null }, status: 'REFUNDED' } }),
     ]);

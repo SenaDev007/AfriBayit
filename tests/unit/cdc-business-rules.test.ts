@@ -1,3 +1,6 @@
+// NOTE: This file tests CDC business rules as documented. For code-path coverage,
+// see escrow.test.ts which imports from the real escrow-engine.
+
 // Unit tests for CDC business rules — payment flow, notary, hospitality.
 // These verify the frontend constants match the CDC spec.
 

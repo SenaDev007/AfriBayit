@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     // 🔒 P1.3 — Admin authGuard (defense in depth)
     const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country') || '';
@@ -43,7 +45,7 @@ export async function GET(request: NextRequest) {
     const pages = Math.ceil(total / limit);
 
     const [certified, pending] = await Promise.all([
-      db.guesthouse.count({ where: { ...where, certificationStatus: 'certified' } }),
+      db.guesthouse.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  ...where, certificationStatus: 'certified' } }),
       db.guesthouse.count({ where: { ...where, status: 'pending' } }),
     ]);
 

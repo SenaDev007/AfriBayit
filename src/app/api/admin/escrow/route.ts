@@ -6,6 +6,8 @@ export async function GET(request: Request) {
   try {
     const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -99,7 +101,7 @@ export async function GET(request: Request) {
         _sum: { heldAmount: true },
       }),
       db.escrowAccount.count({
-        where: { status: 'DISPUTED' },
+        where: { ...(countryFilter ? { country: countryFilter } : {}),  status: 'DISPUTED' },
       }),
       db.escrowAccount.count({
         where: {
@@ -111,7 +113,7 @@ export async function GET(request: Request) {
 
     // Compute average hold time (from fundedAt to releasedAt for FULL_RELEASE accounts)
     const releasedAccounts = await db.escrowAccount.findMany({
-      where: {
+      where: { ...(countryFilter ? { country: countryFilter } : {}), 
         status: 'FULL_RELEASE',
         fundedAt: { not: null },
         releasedAt: { not: null },

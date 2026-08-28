@@ -6,6 +6,8 @@ export async function GET(request: Request) {
   try {
     const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -41,7 +43,7 @@ export async function GET(request: Request) {
       db.course.count({ where }),
     ]);
 
-    const publishedCount = await db.course.count({ where: { published: true } });
+    const publishedCount = await db.course.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  published: true } });
     const byCategory = await db.course.groupBy({ by: ['category'], _count: true });
 
     return NextResponse.json({

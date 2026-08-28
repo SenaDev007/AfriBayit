@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     // 🔒 P1.3 — Admin authGuard (defense in depth)
     const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get('tab') || 'hotels';
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
         db.shortTermRentalBooking.count(),
       ]);
       const pendingTotal =
-        (await db.hotelBooking.count({ where: { status: 'pending' } })) +
+        (await db.hotelBooking.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  status: 'pending' } })) +
         (await db.guesthouseBooking.count({ where: { status: 'pending' } })) +
         (await db.shortTermRentalBooking.count({ where: { status: 'pending' } }));
 

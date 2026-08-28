@@ -1,3 +1,7 @@
+// NOTE: This file tests helper logic re-implemented locally because middleware.ts
+// is an Edge module that can't be imported by Vitest. The helpers should be
+// extracted to a shared lib in a future refactor.
+
 // Unit tests for the CountryContext + multitenancy (CDC §3.2).
 // Tests the country detection priority chain + localStorage/cookie sync.
 

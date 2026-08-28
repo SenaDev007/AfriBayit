@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     // 🔒 P1.3 — Admin authGuard (defense in depth)
     const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
+    // CDC §3.2 — Cross-tenant guard: COUNTRY_ADMIN can only access their own country
+    const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get('tab') || 'listings';
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest) {
       const [totalListings, totalBookings, activeListings, pendingBookings] = await Promise.all([
         db.shortTermRental.count(),
         db.shortTermRentalBooking.count(),
-        db.shortTermRental.count({ where: { status: 'active' } }),
+        db.shortTermRental.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  status: 'active' } }),
         db.shortTermRentalBooking.count({ where: { status: 'pending' } }),
       ]);
 
@@ -99,7 +101,7 @@ export async function GET(request: NextRequest) {
     // Fetch host data separately since there's no relation
     const hostIds = [...new Set(listings.map((l) => l.hostId))];
     const hosts = await db.user.findMany({
-      where: { id: { in: hostIds } },
+      where: { ...(countryFilter ? { country: countryFilter } : {}),  id: { in: hostIds } },
       select: { id: true, name: true, email: true, avatar: true },
     });
     const hostMap = new Map(hosts.map((h) => [h.id, h]));

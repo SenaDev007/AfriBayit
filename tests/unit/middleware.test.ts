@@ -1,3 +1,7 @@
+// NOTE: This file tests helper logic re-implemented locally because middleware.ts
+// is an Edge module that can't be imported by Vitest. The helpers should be
+// extracted to a shared lib in a future refactor.
+
 // Unit tests for middleware helper functions (CDC §10.3 — RBAC + multitenancy).
 //
 // The middleware itself runs in the Edge runtime and can't be tested directly
