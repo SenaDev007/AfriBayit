@@ -391,85 +391,87 @@ export async function buildSearchQuery(
 export async function getSearchSuggestions(query: string): Promise<string[]> {
   if (!query || query.trim().length < 2) return [];
 
-  const sanitizedQuery = query.trim().replace(/'/g, "''");
+  const sanitizedQuery = query.trim();
+  const likePattern = `%${sanitizedQuery}%`;
 
   try {
     // Try using similarity from pg_trgm (if extension is available)
-    // Multi-model suggestions
+    // SECURITY FIX: Use parameterized query instead of string interpolation
     const result = await db.$queryRawUnsafe(`
-      SELECT DISTINCT city AS suggestion, similarity(city, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT city AS suggestion, similarity(city, $1) AS sim
       FROM properties
       WHERE status = 'published'
-        AND similarity(city, '${sanitizedQuery}') > 0.1
+        AND similarity(city, $1) > 0.1
       UNION ALL
-      SELECT DISTINCT quartier AS suggestion, similarity(quartier, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT quartier AS suggestion, similarity(quartier, $1) AS sim
       FROM properties
       WHERE status = 'published'
-        AND similarity(quartier, '${sanitizedQuery}') > 0.1
+        AND similarity(quartier, $1) > 0.1
       UNION ALL
-      SELECT DISTINCT title AS suggestion, similarity(title, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT title AS suggestion, similarity(title, $1) AS sim
       FROM properties
       WHERE status = 'published'
-        AND similarity(title, '${sanitizedQuery}') > 0.2
+        AND similarity(title, $1) > 0.2
       UNION ALL
-      SELECT DISTINCT name AS suggestion, similarity(name, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT name AS suggestion, similarity(name, $1) AS sim
       FROM hotels
       WHERE status = 'active'
-        AND similarity(name, '${sanitizedQuery}') > 0.2
+        AND similarity(name, $1) > 0.2
       UNION ALL
-      SELECT DISTINCT name AS suggestion, similarity(name, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT name AS suggestion, similarity(name, $1) AS sim
       FROM guesthouses
       WHERE status = 'active'
-        AND similarity(name, '${sanitizedQuery}') > 0.2
+        AND similarity(name, $1) > 0.2
       UNION ALL
-      SELECT DISTINCT trade AS suggestion, similarity(trade, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT trade AS suggestion, similarity(trade, $1) AS sim
       FROM artisans
       WHERE available = true
-        AND similarity(trade, '${sanitizedQuery}') > 0.2
+        AND similarity(trade, $1) > 0.2
       UNION ALL
-      SELECT DISTINCT title AS suggestion, similarity(title, '${sanitizedQuery}') AS sim
+      SELECT DISTINCT title AS suggestion, similarity(title, $1) AS sim
       FROM courses
       WHERE published = true
-        AND similarity(title, '${sanitizedQuery}') > 0.2
+        AND similarity(title, $1) > 0.2
       ORDER BY sim DESC
       LIMIT 15
-    `);
+    `, sanitizedQuery);
 
     return (result as any[]).map((row: any) => row.suggestion);
   } catch {
     // pg_trgm not available — use simple ILIKE fallback
     try {
+      // SECURITY FIX: Use parameterized query instead of string interpolation
       const result = await db.$queryRawUnsafe(`
         SELECT DISTINCT city AS suggestion
         FROM properties
-        WHERE status = 'published' AND city ILIKE '%${sanitizedQuery}%'
+        WHERE status = 'published' AND city ILIKE $1
         LIMIT 5
         UNION ALL
         SELECT DISTINCT quartier AS suggestion
         FROM properties
-        WHERE status = 'published' AND quartier ILIKE '%${sanitizedQuery}%'
+        WHERE status = 'published' AND quartier ILIKE $1
         LIMIT 5
         UNION ALL
         SELECT DISTINCT name AS suggestion
         FROM hotels
-        WHERE status = 'active' AND name ILIKE '%${sanitizedQuery}%'
+        WHERE status = 'active' AND name ILIKE $1
         LIMIT 3
         UNION ALL
         SELECT DISTINCT name AS suggestion
         FROM guesthouses
-        WHERE status = 'active' AND name ILIKE '%${sanitizedQuery}%'
+        WHERE status = 'active' AND name ILIKE $1
         LIMIT 3
         UNION ALL
         SELECT DISTINCT trade AS suggestion
         FROM artisans
-        WHERE available = true AND trade ILIKE '%${sanitizedQuery}%'
+        WHERE available = true AND trade ILIKE $1
         LIMIT 3
         UNION ALL
         SELECT DISTINCT title AS suggestion
         FROM courses
-        WHERE published = true AND title ILIKE '%${sanitizedQuery}%'
+        WHERE published = true AND title ILIKE $1
         LIMIT 3
-      `);
+      `, likePattern);
 
       return (result as any[]).map((row: any) => row.suggestion);
     } catch {

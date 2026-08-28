@@ -3,11 +3,15 @@
 
 import { NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { documentText, documentType, country, imageUrl } = body as {
       documentText?: string;

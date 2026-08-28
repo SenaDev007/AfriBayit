@@ -4,9 +4,13 @@
 import { NextResponse } from 'next/server';
 import { calculateRefund, CANCELLATION_POLICIES, getDefaultPolicy } from '@/lib/cancellation';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['HOTELIER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { bookingId, policyType } = body;
 

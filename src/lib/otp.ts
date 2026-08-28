@@ -110,7 +110,7 @@ async function sendOTPToEmail(email: string, code: string): Promise<void> {
   console.info(`[OTP] Sending verification code to ${email}`);
 
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[OTP] RESEND_API_KEY not configured — OTP email will NOT be sent. Code for dev:', code);
+    console.warn('[OTP] RESEND_API_KEY not configured — OTP email will NOT be sent.');
     return;
   }
 
@@ -196,6 +196,22 @@ export async function sendOTP(identifier: string): Promise<{ success: boolean; m
  * Checks expiry and marks as verified on success
  */
 export async function verifyOTP(identifier: string, code: string): Promise<{ success: boolean; message: string }> {
+  // SECURITY FIX: Count recent failed attempts for this identifier (brute-force protection)
+  const recentAttempts = await db.otpVerification.count({
+    where: {
+      identifier,
+      verified: false,
+      createdAt: { gt: new Date(Date.now() - OTP_EXPIRY_MINUTES * 60 * 1000) },
+    },
+  });
+
+  if (recentAttempts >= MAX_OTP_ATTEMPTS) {
+    return {
+      success: false,
+      message: 'Trop de tentatives. Veuillez demander un nouveau code.',
+    };
+  }
+
   // Find the most recent unverified OTP for this identifier
   const otpRecord = await db.otpVerification.findFirst({
     where: {

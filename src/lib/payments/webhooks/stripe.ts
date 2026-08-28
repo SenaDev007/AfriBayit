@@ -34,7 +34,7 @@ export async function handleStripeWebhook(
         data: {
           status: mapPaymentStatusToWalletStatus(event.status),
           metadata: JSON.stringify({
-            ...((walletTx.metadata ? walletTx.metadata : {}) as Record<string, unknown>),
+            ...((walletTx.metadata ? walletTx.metadata : {}) as any),
             webhookEvent: event.event,
             webhookStatus: event.status,
             processedAt: new Date().toISOString(),
@@ -45,7 +45,7 @@ export async function handleStripeWebhook(
       // Trigger escrow funding if payment completed
       if (event.status === 'completed' && walletTx.type === 'escrow_fund') {
         const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
+          ? walletTx.metadata as any
           : {};
         const transactionId = metadata.transactionId as string | undefined;
 

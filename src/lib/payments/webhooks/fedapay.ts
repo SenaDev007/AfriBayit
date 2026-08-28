@@ -114,7 +114,7 @@ async function handleTransactionEvent(
   }
 
   const existingMetadata = walletTx.metadata
-    ? (walletTx.metadata as Record<string, unknown>)
+    ? (walletTx.metadata as any)
     : {};
   const transactionId = (existingMetadata.transactionId as string) || (existingMetadata.reference as string | undefined);
   const propertyId = existingMetadata.propertyId as string | undefined;

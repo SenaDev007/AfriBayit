@@ -16,6 +16,7 @@
 // in api-client.ts and remove the localStorage token storage entirely.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { authGuard } from '@/lib/auth-guard';
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')
   .replace(/\/+$/, '')
@@ -73,6 +74,9 @@ async function proxyRequest(request: NextRequest, method: string) {
   }
 
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const backendResponse = await fetch(backendUrl, {
       method,
       headers,

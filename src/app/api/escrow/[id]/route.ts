@@ -166,17 +166,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard();
+    const auth = await authGuard(request);
     if (!auth.success) return auth.response;
 
     const { id } = await params;
     const body = await request.json();
-    const { targetStatus, actorType, reason, metadata } = body as {
+    const { targetStatus, reason, metadata } = body as {
       targetStatus: string;
-      actorType?: string;
       reason?: string;
       metadata?: Record<string, unknown>;
     };
+    // SECURITY FIX: Derive actorType from auth role — never trust body.actorType (IDOR)
+    const actorType = auth.role === 'admin' || auth.role === 'SUPER_ADMIN' ? 'admin' : 'system';
 
     // Validate targetStatus
     const validStates: EscrowState[] = [
@@ -227,7 +228,7 @@ export async function PATCH(
     }
 
     // Role-based authorization for specific transitions
-    const transitionActorType = actorType || 'system';
+    const transitionActorType = actorType; // Already derived from auth.role above
     const authorizedTransitions: Record<string, string[]> = {
       'FUNDED': ['buyer', 'system'],
       'DOCS_VALIDATED': ['system', 'admin'],

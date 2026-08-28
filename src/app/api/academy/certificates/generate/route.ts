@@ -6,9 +6,13 @@ import { generateCertificate } from '@/lib/certificates';
 import { generateCertificatePDF } from '@/lib/certificates/generator';
 import { buildVerificationUrl } from '@/lib/certificates/generator';
 import type { CertificateType } from '@/lib/certificates/templates';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['TRAINER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { userId, courseId, enrollmentId, type, download } = body as {
       userId: string;

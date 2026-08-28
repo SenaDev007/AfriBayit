@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scheduleAppointment, getAppointmentsForAgent, getAvailableSlots } from '@/lib/scheduling';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { propertyId, agentId, clientId, type, scheduledAt, durationMinutes, notes, location } = body;
 
@@ -43,6 +47,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const agentId = searchParams.get('agentId');
     const available = searchParams.get('available');

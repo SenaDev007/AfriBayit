@@ -366,7 +366,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
       const data = await apiFetch<DeedGenerateResponse>('/notaries/deeds/generate', {
         method: 'POST',
         body: {
-          transactionId: 'demo_property',
+          transactionId: '',
           notaryId: 'me',
         },
       });

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 // Map transaction status to dispute step number
 function statusToStep(status: string): number {
@@ -32,6 +33,9 @@ function statusToDisputeStatus(status: string): string {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const country = searchParams.get('country');

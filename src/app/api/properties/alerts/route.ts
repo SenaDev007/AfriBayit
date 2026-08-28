@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 // POST /api/properties/alerts — Create price alert
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { userId, filters, notifyVia, frequency } = body as {
       userId: string;
@@ -38,6 +42,9 @@ export async function POST(request: Request) {
 // GET /api/properties/alerts?userId=xxx
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     if (!userId) {

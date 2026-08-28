@@ -44,7 +44,7 @@ export async function POST(request: Request) {
             : result.status === 'failed' ? 'failed'
             : 'pending',
           metadata: JSON.stringify({
-            ...((walletTx.metadata ? walletTx.metadata : {}) as Record<string, unknown>),
+            ...((walletTx.metadata ? walletTx.metadata : {}) as any),
             verificationStatus: result.status,
             verifiedAt: new Date().toISOString(),
             verifiedAmount: result.amount,
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       // If payment completed, trigger escrow funding
       if (result.status === 'completed' && walletTx.type === 'escrow_fund') {
         const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
+          ? walletTx.metadata as any
           : {};
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       // If payment failed, update transaction status
       if (result.status === 'failed') {
         const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
+          ? walletTx.metadata as any
           : {};
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 

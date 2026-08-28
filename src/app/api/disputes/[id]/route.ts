@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 // Map transaction status to dispute step number
 function statusToStep(status: string): number {
@@ -42,10 +43,13 @@ function actionToStatus(action: string): string {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
 
     const transaction = await db.transaction.findUnique({
@@ -108,6 +112,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const body = await request.json();
     const { action, resolution, splitBuyer, splitSeller } = body as {

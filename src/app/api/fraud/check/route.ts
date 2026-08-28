@@ -4,11 +4,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { detectFraud, type FraudCheckInput, type FraudResult } from '@/lib/security/fraud-detector';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['CERTIFIED_AGENT', 'PREMIUM_AGENT', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { propertyId, listing } = body as {
       propertyId?: string;

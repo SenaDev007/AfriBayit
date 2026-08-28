@@ -4,11 +4,15 @@
 import { NextResponse } from 'next/server';
 import { analyzeDocument, type DocumentType } from '@/lib/ai/document-analyzer';
 import { checkLegalDocument, type PropertyData } from '@/lib/ai/legal-doc-checker';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['CERTIFIED_AGENT', 'PREMIUM_AGENT', 'NOTARY', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const contentType = request.headers.get('content-type') || '';
 
     let imageBase64: string;

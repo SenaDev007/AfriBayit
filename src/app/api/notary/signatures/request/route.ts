@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requestSignature, type Signer } from '@/lib/notary/e-signature';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['NOTARY', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { documentId, deedId, transactionId, signers, expiresInDays } = body as {
       documentId: string;

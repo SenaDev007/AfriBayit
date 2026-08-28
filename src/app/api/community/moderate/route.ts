@@ -4,11 +4,15 @@
 import { NextResponse } from 'next/server';
 import { moderateContent, getModerationStats, getHumanReviewQueue, sanitizeContent, type ContentClassification } from '@/lib/community/moderation';
 import { rateLimit, getRateLimitKey } from '@/lib/security/rate-limiter';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     // Rate limiting
     const rateLimitKey = getRateLimitKey(request);
     // CRITICAL: rateLimit is async, MUST be awaited!
@@ -103,6 +107,9 @@ export async function POST(request: Request) {
 // GET — Retrieve moderation stats and human review queue (admin)
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const url = new URL(request.url);
     const action = url.searchParams.get('action');
 
@@ -137,6 +144,9 @@ export async function GET(request: Request) {
 // PUT — Sanitize content (for admin actions on human review queue)
 export async function PUT(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { content, classification } = body as {
       content: string;

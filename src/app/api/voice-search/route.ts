@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { authGuard } from '@/lib/auth-guard';
 
 /**
  * POST /api/voice-search
@@ -12,6 +13,9 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { audio } = body as { audio?: string };
 

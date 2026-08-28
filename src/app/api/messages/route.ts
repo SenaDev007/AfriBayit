@@ -132,6 +132,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'conversationId or recipientId required' }, { status: 400 });
     }
 
+    // SECURITY FIX: Verify the sender is a participant in the conversation (IDOR prevention)
+    const participation = await db.conversationParticipant.findFirst({
+      where: { conversationId: targetConversationId, userId: auth.userId },
+    });
+    if (!participation) {
+      return NextResponse.json({ error: 'You are not a participant in this conversation' }, { status: 403 });
+    }
+
     // Create the message
     const message = await db.chatMessage.create({
       data: {

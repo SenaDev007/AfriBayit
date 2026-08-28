@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('hub.verify_token');
   const challenge = request.nextUrl.searchParams.get('hub.challenge');
 
-  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'afribayit-whatsapp-verify';
+  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || '';
 
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
     return new Response(challenge, { status: 200 });
@@ -256,7 +256,7 @@ async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
  * Verify WhatsApp webhook signature
  */
 function verifyWhatsAppSignature(body: unknown, signature: string | null): boolean {
-  if (!signature || !process.env.WHATSAPP_APP_SECRET) return true; // Skip in dev
+  if (!signature || !process.env.WHATSAPP_APP_SECRET) return false; // Skip in dev
 
   try {
     const expected = createHmac('sha256', process.env.WHATSAPP_APP_SECRET)

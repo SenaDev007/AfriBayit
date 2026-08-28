@@ -5,7 +5,7 @@
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 
-const QR_SECRET = process.env.NEXTAUTH_SECRET || 'afribayit-qr-secret-key';
+const QR_SECRET = process.env.NEXTAUTH_SECRET || '';
 
 export interface CheckinQRData {
   type: 'checkin';

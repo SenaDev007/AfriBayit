@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSavedSearch, deleteSavedSearch, checkNewMatches } from '@/lib/search/saved-searches';
+import { authGuard } from '@/lib/auth-guard';
 
 // GET /api/properties/saved-searches/[id]?userId=xxx&action=check
 export async function GET(
@@ -7,6 +8,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
@@ -37,6 +41,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');

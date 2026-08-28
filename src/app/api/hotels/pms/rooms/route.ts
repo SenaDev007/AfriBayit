@@ -3,9 +3,13 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['HOTELIER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const hotelId = searchParams.get('hotelId');
 
@@ -100,6 +104,9 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['HOTELIER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { roomId, status, hotelId, date, priceOverride } = body;
 

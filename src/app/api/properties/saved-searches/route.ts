@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getSavedSearches, saveSearch } from '@/lib/search/saved-searches';
 import type { SearchFilters } from '@/lib/search/filters';
+import { authGuard } from '@/lib/auth-guard';
 
 // GET /api/properties/saved-searches?userId=xxx
 export async function GET(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     if (!userId) {
@@ -21,6 +25,9 @@ export async function GET(request: Request) {
 // POST /api/properties/saved-searches
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { userId, filters, name } = body as {
       userId: string;

@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateDeedDraft, type TransactionData } from '@/lib/notary/deed-generator';
 import { getTemplateById, getTemplatesForCountry } from '@/lib/notary/deed-templates';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['NOTARY', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { transactionId, templateId, data } = body as {
       transactionId: string;

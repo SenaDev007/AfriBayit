@@ -2,9 +2,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAmbassadorStatus, applyAsAmbassador } from '@/lib/ambassador';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get('userId');
 
@@ -32,6 +36,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { userId } = body as { userId: string };
 

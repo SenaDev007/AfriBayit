@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { findMatchingArtisans, type MatchRequest } from '@/lib/promatch';
+import { authGuard } from '@/lib/auth-guard';
 
 // Rebecca function definitions (for reference and documentation)
 export const REBECCA_FUNCTIONS = [
@@ -436,6 +437,9 @@ async function getPropertyDetails(args: Record<string, unknown>): Promise<Record
  */
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { name, args, userId } = body as { name: string; args: Record<string, unknown>; userId?: string };
 

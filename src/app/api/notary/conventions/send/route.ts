@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { authGuard } from '@/lib/auth-guard';
 
 interface ConventionRequest {
   transactionId: string;
@@ -10,6 +11,9 @@ interface ConventionRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request, { requiredRoles: ['NOTARY', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    if (!auth.success) return auth.response;
+
     const body = await request.json() as ConventionRequest;
     const { transactionId, notaryId, conventionType, signers } = body;
 

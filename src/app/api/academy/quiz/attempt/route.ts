@@ -5,9 +5,13 @@ import { db } from '@/lib/db';
 import { evaluateAttempt, canAttempt } from '@/lib/quiz/engine';
 import { earnPoints } from '@/lib/afripoints';
 import type { Quiz, QuizQuestion } from '@/lib/quiz/types';
+import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json();
     const { quizId, userId, answers } = body as {
       quizId: string;

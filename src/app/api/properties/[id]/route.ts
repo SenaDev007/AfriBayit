@@ -42,7 +42,7 @@ export async function GET(
     // Parse JSON string fields
     let images: string[] = [];
     try {
-      images = (propertyRaw.images as string[]) || [] || [];
+      images = (propertyRaw.images as any) || [] || [];
     } catch {
       images = [];
     }
@@ -54,7 +54,7 @@ export async function GET(
 
     let features: string[] = [];
     try {
-      features = (propertyRaw.features as string[]) || [] || [];
+      features = (propertyRaw.features as any) || [] || [];
     } catch {
       features = [];
     }

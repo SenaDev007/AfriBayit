@@ -165,7 +165,7 @@ export async function POST(request: Request) {
 
         // Refund the user's wallet
         const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
+          ? walletTx.metadata as any
           : {};
         const userId = walletTx.userId;
         const refundAmount = Math.abs(walletTx.amount);
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
       data: {
         status: 'completed',
         metadata: JSON.stringify({
-          ...(walletTx.metadata ? walletTx.metadata as Record<string, unknown> : {}),
+          ...(walletTx.metadata ? walletTx.metadata as any : {}),
           approvedBy: auth.userId,
           approvedAt: new Date().toISOString(),
         }),

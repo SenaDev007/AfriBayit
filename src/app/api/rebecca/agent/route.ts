@@ -6,6 +6,7 @@ import { executeAgentGraph } from '@/lib/rebecca/agent-orchestrator';
 import { applyGuardrails } from '@/lib/rebecca/guardrails';
 import { checkPromptInjection, validateOutputSecurity } from '@/lib/rebecca/prompt-injection-guard';
 import { getOrCreateRebeccaSession, storeConversationMemory } from '@/lib/rebecca/memory';
+import { authGuard } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ interface AgentRequest {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
+
     const body = await request.json() as AgentRequest;
     const { message, userId, sessionId, country, city, history } = body;
 

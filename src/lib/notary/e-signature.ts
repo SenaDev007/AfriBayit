@@ -111,7 +111,7 @@ export async function requestSignature(
 export async function getSignatureRequest(requestId: string): Promise<SignatureRequest | null> {
   const entry = await db.transactionTimeline.findFirst({
     where: {
-      metadata: { path: ['$'], string_contains: requestId },
+      metadata: { string_contains: requestId } as any,
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -119,7 +119,7 @@ export async function getSignatureRequest(requestId: string): Promise<SignatureR
   if (!entry) return null;
 
   try {
-    const meta = JSON.parse(JSON.stringify(entry.metadata || '{}')) as any;
+    const meta = (entry.metadata as any) || {};
     if (meta.type !== 'signature_request' || meta.signatureRequestId !== requestId) {
       return null;
     }
@@ -153,7 +153,7 @@ export async function listSignatureRequests(transactionId?: string): Promise<Sig
   const entries = await db.transactionTimeline.findMany({
     where: {
       ...where,
-      metadata: { path: ['$'], string_contains: '"type":"signature_request"' },
+      metadata: { string_contains: '"type":"signature_request"' } as any,
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -161,7 +161,7 @@ export async function listSignatureRequests(transactionId?: string): Promise<Sig
   const results: SignatureRequest[] = [];
   for (const entry of entries) {
     try {
-      const meta = JSON.parse(JSON.stringify(entry.metadata || '{}')) as any;
+      const meta = (entry.metadata as any) || {};
       if (meta.type === 'signature_request') {
         results.push({
           id: meta.signatureRequestId,
@@ -210,7 +210,7 @@ export async function confirmSignature(
   // Find the original signature request
   const existingEntry = await db.transactionTimeline.findFirst({
     where: {
-      metadata: { path: ['$'], string_contains: requestId },
+      metadata: { string_contains: requestId } as any,
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -222,7 +222,7 @@ export async function confirmSignature(
 
   if (existingEntry) {
     try {
-      const meta = JSON.parse(JSON.stringify(existingEntry.metadata || '{}')) as any;
+      const meta = (existingEntry.metadata as any) || {};
       transactionId = existingEntry.transactionId;
       updatedSigners = (meta.signers || []) as Signer[];
 
@@ -275,7 +275,7 @@ export async function confirmSignature(
   // Update the original request entry with the new signer statuses
   if (existingEntry && transactionId) {
     try {
-      const meta = JSON.parse(JSON.stringify(existingEntry.metadata || '{}')) as any;
+      const meta = (existingEntry.metadata as any) || {};
       await db.transactionTimeline.update({
         where: { id: existingEntry.id },
         data: {
