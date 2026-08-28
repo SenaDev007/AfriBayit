@@ -29,12 +29,12 @@ export interface LocaleMeta {
 export const LOCALES: Record<Locale, LocaleMeta> = {
   fr: { label: 'Français', flag: '🇫🇷' },
   en: { label: 'English', flag: '🇬🇧' },
-  ar: { label: 'العربية (alpha)', flag: '🇸🇦', rtl: true },
-  sw: { label: 'Kiswahili (alpha)', flag: '🇰🇪' },
-  ha: { label: 'Hausa (alpha)', flag: '🇳🇬' },
+  ar: { label: 'العربية', flag: '🇸🇦', rtl: true },
+  sw: { label: 'Kiswahili', flag: '🇰🇪' },
+  ha: { label: 'Hausa', flag: '🇳🇬' },
   wo: { label: 'Wolof', flag: '🇸🇳' },
-  am: { label: 'አማርኛ (alpha)', flag: '🇪🇹' },
-  ln: { label: 'Lingala (alpha)', flag: '🇨🇩' },
+  am: { label: 'አማርኛ', flag: '🇪🇹' },
+  ln: { label: 'Lingala', flag: '🇨🇩' },
   fon: { label: 'Fon', flag: '🇧🇯' },
 };
 
