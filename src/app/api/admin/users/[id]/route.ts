@@ -89,19 +89,40 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await authGuard({ requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    const auth = await authGuard(request, { requiredRoles: ['SUPER_ADMIN', 'COUNTRY_ADMIN'] });
     if (!auth.success) return auth.response;
 
     const { id } = await params;
     const body = await request.json();
 
-    // Allowed fields for admin update
+    // SECURITY FIX: Removed 'walletBalance', 'escrowHeld', 'afriPoints' from allowed fields
+    // Wallet balances must only be modified through the escrow/payout engine, never directly by admin
     const allowedFields = [
       'name', 'role', 'country', 'city', 'kycLevel', 'score',
       'reputation', 'verified', 'premiumTier', 'premiumExpiry',
-      'walletBalance', 'escrowHeld', 'afriPoints', 'isOnline',
-      'twoFactorEnabled', 'preferredLanguage', 'currency',
+      'isOnline', 'twoFactorEnabled', 'preferredLanguage', 'currency',
     ];
+
+    // SECURITY FIX: COUNTRY_ADMIN cannot change roles or country (privilege escalation)
+    if (auth.role === 'COUNTRY_ADMIN') {
+      const restrictedFields = ['role', 'country'];
+      for (const field of restrictedFields) {
+        if (body[field] !== undefined) {
+          return NextResponse.json(
+            { error: `COUNTRY_ADMIN cannot modify ${field}` },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    // SECURITY FIX: Only SUPER_ADMIN can grant admin/super_admin roles
+    if (body.role && ['admin', 'super_admin', 'country_admin'].includes(body.role) && auth.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Only SUPER_ADMIN can grant privileged roles' },
+        { status: 403 }
+      );
+    }
 
     const data: Record<string, unknown> = {};
     for (const field of allowedFields) {
@@ -115,6 +136,17 @@ export async function PATCH(
         { error: 'Aucun champ valide à mettre à jour' },
         { status: 400 }
       );
+    }
+
+    // SECURITY FIX: Cross-tenant guard — COUNTRY_ADMIN can only modify users in their country
+    if (auth.role === 'COUNTRY_ADMIN' && auth.country) {
+      const targetUser = await db.user.findUnique({ where: { id }, select: { country: true } });
+      if (targetUser && targetUser.country !== auth.country) {
+        return NextResponse.json(
+          { error: 'Cannot modify users outside your country', code: 'CROSS_TENANT_FORBIDDEN' },
+          { status: 403 }
+        );
+      }
     }
 
     const user = await db.user.update({

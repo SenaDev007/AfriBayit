@@ -6,6 +6,7 @@ import {
   getSignedDownloadUrl,
   generateStorageKey,
 } from '@/lib/storage/r2';
+import { db } from '@/lib/db';
 import { z } from 'zod';
 
 const signedUrlSchema = z.object({
@@ -71,6 +72,35 @@ export async function POST(request: Request) {
           { error: 'key requis pour le téléchargement' },
           { status: 400 }
         );
+      }
+
+      // SECURITY FIX: Verify the user owns the resource they're downloading
+      // Key patterns: users/{userId}/kyc/..., users/{userId}/properties/..., properties/{propertyId}/...
+      const userRole = (session.user as Record<string, unknown>).role as string;
+      const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'country_admin';
+      if (!isAdmin) {
+        // Check if the key contains the user's ID (owns the resource)
+        if (!key.includes(userId)) {
+          // Also allow if the key is a property image and the user is the agent
+          const propertyMatch = key.match(/properties\/([^\/]+)/);
+          if (propertyMatch) {
+            const property = await db.property.findUnique({
+              where: { id: propertyMatch[1] },
+              select: { agentId: true },
+            }).catch(() => null);
+            if (!property || property.agentId !== userId) {
+              return NextResponse.json(
+                { error: 'You do not have permission to download this file', code: 'FORBIDDEN' },
+                { status: 403 }
+              );
+            }
+          } else {
+            return NextResponse.json(
+              { error: 'You do not have permission to download this file', code: 'FORBIDDEN' },
+              { status: 403 }
+            );
+          }
+        }
       }
 
       const url = await getSignedDownloadUrl(key, expiresIn);

@@ -154,11 +154,14 @@ export async function POST(
         });
 
         if (!rebeccaUser) {
+          // SECURITY FIX: Create Rebecca as a system user with 'buyer' role, NOT 'admin'
+          // The 'admin' role grants SUPER_ADMIN privileges — any authenticated user
+          // could trigger this code path and cause an admin account to be created.
           rebeccaUser = await db.user.create({
             data: {
               email: 'rebecca@afribayit.com',
               name: 'Rebecca IA',
-              role: 'admin',
+              role: 'buyer', // System bot — no admin privileges
               verified: true,
             },
           });

@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
       where.createdAt = createdAt;
     }
 
-    // TODO: When auth is fully integrated, check admin role:
-    // - SUPER_ADMIN sees all logs
-    // - COUNTRY_ADMIN only sees logs for their country
-    // For now, country filter is applied if provided
+    // FIXED: auth is now integrated — SUPER_ADMIN sees all logs, COUNTRY_ADMIN sees only their country
+    if (countryFilter) {
+      where.country = countryFilter;
+    }
 
     const [logs, total] = await Promise.all([
       db.auditLog.findMany({

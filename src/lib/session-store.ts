@@ -300,10 +300,9 @@ function generateSessionId(): string {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
     crypto.getRandomValues(bytes);
   } else {
-    // Fallback for environments without crypto
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
+    // SECURITY FIX: Use Node.js crypto module instead of Math.random()
+    const nodeCrypto = require('crypto');
+    nodeCrypto.randomFillSync(bytes);
   }
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, '0'))

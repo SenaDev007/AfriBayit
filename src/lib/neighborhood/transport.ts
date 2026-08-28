@@ -136,6 +136,6 @@ function estimateDistance(lat: number, lng: number, type: string): number {
     airport: 15000,
   };
 
-  const noise = (Math.random() - 0.5) * 0.5;
+  const noise = 0;
   return Math.round((baseDistances[type] || 1000) * (1 + noise));
 }

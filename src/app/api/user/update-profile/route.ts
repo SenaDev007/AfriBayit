@@ -46,7 +46,9 @@ export async function PATCH(request: Request) {
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.phone !== undefined) updateData.phone = data.phone || null;
     if (data.city !== undefined) updateData.city = data.city || null;
-    if (data.country !== undefined) updateData.country = data.country || null;
+    // SECURITY FIX: Users cannot change their own country — this would defeat tenant isolation
+    // Country can only be changed by an admin via /api/admin/users/[id]
+    // if (data.country !== undefined) updateData.country = data.country || null;
     if (data.preferredLanguage !== undefined) updateData.preferredLanguage = data.preferredLanguage;
     if (data.currency !== undefined) updateData.currency = data.currency;
     if (data.firstName !== undefined) updateData.firstName = data.firstName || null;

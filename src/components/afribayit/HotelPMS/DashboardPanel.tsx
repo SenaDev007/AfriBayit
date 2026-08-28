@@ -67,7 +67,7 @@ export default function DashboardPanel({ loading, data }: DashboardPanelProps) {
           </h3>
           <div className="flex items-end gap-2 h-32">
             {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, i) => {
-              const rate = data.occupancy.occupancyRate + (Math.random() * 20 - 10);
+              const rate = data.occupancy.occupancyRate;
               const clamped = Math.min(100, Math.max(20, rate));
               return (
                 <div key={day} className="flex-1 flex flex-col items-center gap-1">

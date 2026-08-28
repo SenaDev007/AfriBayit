@@ -837,7 +837,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     const doc = formData.legalDocs.find(d => d.type === docType);
                     const isVerified = doc?.status === 'ai_verified';
                     // Simulate AI verification progress
-                    const simulatedScore = 70 + Math.floor(Math.random() * 28);
+                    const simulatedScore = 85; // Placeholder — real AI score comes from backend
                     return (
                       <div key={docType} className="p-4 bg-gray-50 rounded-2xl">
                         <div className="flex items-center justify-between mb-2">

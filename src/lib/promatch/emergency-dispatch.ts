@@ -300,7 +300,7 @@ export async function findEmergencyArtisans(
 function estimateDistance(_lat: number, _lng: number, _zone: string): number {
   // Simplified: return a random-ish distance within the search radius
   // In production, would use haversineDistance with artisan's actual coordinates
-  return Math.random() * 15 + 1; // 1-16 km
+  return 0; // Distance not available without geolocation
 }
 
 // ============ Emergency Dispatch Core ============

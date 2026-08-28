@@ -38,7 +38,7 @@ export function analyzeNeighborhood(
   const transport = calculateTransportScore(lat, lng, transportOptions);
 
   // Safety is a stub — would integrate real data in production
-  const safetyScore = Math.round(50 + Math.random() * 30);
+  const safetyScore = 50;
   const safetyLevel = safetyScore >= 70 ? 'Bon' : safetyScore >= 50 ? 'Moyen' : 'À vérifier';
 
   const overallScore = Math.round(
