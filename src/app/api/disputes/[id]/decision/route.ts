@@ -55,7 +55,7 @@ export async function POST(
     const sellerAmount = Math.round(totalAmount * (sellerPercentage / 100) * 100) / 100;
 
     // Determine final status
-    const finalStatus = buyerPercentage === 100 ? 'REFUNDED' : 'DISPUTED_RESOLVED';
+    const finalStatus = buyerPercentage === 100 ? 'REFUNDED' : 'DISPUTED_MEDIATION';
 
     // Use a Prisma transaction for atomicity
     await db.$transaction([

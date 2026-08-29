@@ -41,6 +41,7 @@
     "skills",
     ".next",
     "playwright-report",
-    "coverage"
+    "coverage",
+    "prisma/seed.ts"
   ]
 }

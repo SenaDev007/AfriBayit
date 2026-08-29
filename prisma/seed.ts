@@ -506,7 +506,7 @@ async function main() {
   console.info('\n→ Creating notaries...');
 
   const notary1 = await prisma.notary.create({
-    data: {
+    data: { status: undefined,
       userId: notaryUser,
       licenseNumber: 'NOT-BJ-2024-001',
       chamberName: 'Chambre Nationale des Notaires du Bénin',
@@ -528,7 +528,7 @@ async function main() {
   console.info(`  ✓ Notary: ${notary1.licenseNumber}`);
 
   const notary2 = await prisma.notary.create({
-    data: {
+    data: { status: undefined,
       userId: admin1, // reuse admin as second notary user reference
       licenseNumber: 'NOT-BJ-2024-002',
       chamberName: 'Chambre Nationale des Notaires du Bénin',
@@ -548,7 +548,7 @@ async function main() {
 
   // ── BF Notary ──
   const notaryBF = await prisma.notary.create({
-    data: {
+    data: { status: undefined,
       userId: notaryBFUser,
       licenseNumber: 'NOT-BF-2024-001',
       chamberName: 'Ordre des Notaires du Burkina Faso',
@@ -571,7 +571,7 @@ async function main() {
 
   // ── CI Notary ──
   const notaryCI = await prisma.notary.create({
-    data: {
+    data: { status: undefined,
       userId: notaryCIUser,
       licenseNumber: 'NOT-CI-2024-001',
       chamberName: 'Chambre des Notaires de Côte d\'Ivoire',
@@ -594,7 +594,7 @@ async function main() {
 
   // ── TG Notary ──
   const notaryTG = await prisma.notary.create({
-    data: {
+    data: { status: undefined,
       userId: notaryTGUser,
       licenseNumber: 'NOT-TG-2024-001',
       chamberName: 'Ordre des Notaires du Togo',
@@ -621,7 +621,7 @@ async function main() {
   console.info('\n→ Creating geometers...');
 
   const geometer1 = await prisma.geometer.create({
-    data: {
+    data: { status: undefined,
       id: geometerUser, // Must match userId for GeometerMission FK compatibility
       userId: geometerUser,
       licenseNumber: 'GEO-BJ-2024-001',
@@ -643,7 +643,7 @@ async function main() {
   console.info(`  ✓ Geometer: ${geometer1.licenseNumber}`);
 
   const geometer2 = await prisma.geometer.create({
-    data: {
+    data: { status: undefined,
       id: admin2, // Must match userId for GeometerMission FK compatibility
       userId: admin2,
       licenseNumber: 'GEO-CI-2024-002',
@@ -665,7 +665,7 @@ async function main() {
   console.info(`  ✓ Geometer: ${geometer2.licenseNumber}`);
 
   const geometer3 = await prisma.geometer.create({
-    data: {
+    data: { status: undefined,
       id: agentTG, // Must match userId for GeometerMission FK compatibility
       userId: agentTG,
       licenseNumber: 'GEO-TG-2024-003',
@@ -687,7 +687,7 @@ async function main() {
 
   // ── BF Geometer ──
   const geometerBF = await prisma.geometer.create({
-    data: {
+    data: { status: undefined,
       id: geometerBFUser, // Must match userId for GeometerMission FK compatibility
       userId: geometerBFUser,
       licenseNumber: 'GEO-BF-2024-004',
@@ -914,7 +914,7 @@ async function main() {
   const artisanIds: string[] = [];
   for (const ad of artisanData) {
     const artisan = await prisma.artisan.create({
-      data: {
+      data: { status: undefined,
         userId: ad.userKey,
         trade: ad.trade,
         specialties: ad.specialties,
@@ -1374,7 +1374,7 @@ async function main() {
       verified: false,
       geoTrust: false,
       premium: false,
-      status: 'pending',
+      status: "pending" as const,
       views: 0,
       favorites: 0,
       agentId: agentTG,
@@ -1562,7 +1562,7 @@ async function main() {
 
   const propertyIds: string[] = [];
   for (const pd of propertyDefs) {
-    const property = await prisma.property.create({ data: pd });
+    const property = await prisma.property.create({ data: pd as any });
     propertyIds.push(property.id);
   }
   console.info(`  ✓ Created ${propertyIds.length} properties`);
@@ -1833,7 +1833,7 @@ async function main() {
       sellerId: agentBJ,
       amount: 75000000,
       commission: 2250000,
-      status: 'FUNDED',
+      status: "FUNDED" as const,
       escrowReference: 'ESC-2025-001',
       paymentProvider: 'mobile_money',
       paymentRef: 'MM-BJ-789012',
@@ -1936,7 +1936,7 @@ async function main() {
       sellerId: agentTG,
       amount: 90000000,
       commission: 1800000,
-      status: 'CREATED',
+      status: "CREATED" as const,
       escrowReference: 'ESC-2025-005',
       commissionRate: 2.0,
       escrowStatus: 'EMPTY',
@@ -1952,7 +1952,7 @@ async function main() {
       sellerId: agentBF,
       amount: 25000000,
       commission: 750000,
-      status: 'FUNDED',
+      status: "FUNDED" as const,
       escrowReference: 'ESC-2025-006',
       paymentProvider: 'mobile_money',
       paymentRef: 'MM-BF-556677',
@@ -1976,7 +1976,7 @@ async function main() {
       sellerId: agentBF,
       amount: 15000000,
       commission: 600000,
-      status: 'CREATED',
+      status: "CREATED" as const,
       escrowReference: 'ESC-2025-007',
       commissionRate: 4.0,
       escrowStatus: 'EMPTY',
@@ -1988,7 +1988,7 @@ async function main() {
 
   for (const txd of txDefs) {
     const transaction = await prisma.transaction.create({
-      data: {
+      data: { status: undefined,
         propertyId: txd.propertyId,
         buyerId: txd.buyerId,
         sellerId: txd.sellerId,
@@ -2012,13 +2012,13 @@ async function main() {
 
     // Create escrow account
     const escrow = await prisma.escrowAccount.create({
-      data: {
+      data: { status: undefined,
         transactionId: transaction.id,
         balance: txd.escrowBalance,
         heldAmount: txd.escrowHeld,
         releasedAmount: txd.escrowReleased ?? 0,
         currency: 'XOF',
-        status: txd.escrowStatus,
+        status: txd.escrowStatus as any,
         fundedAt: txd.escrowFundedAtDate,
         releasedAt: txd.escrowReleasedAtDate,
       },
@@ -2027,7 +2027,7 @@ async function main() {
     // Create ledger entries
     for (const le of txd.ledgerEntries) {
       await prisma.escrowLedger.create({
-        data: {
+        data: { status: undefined,
           escrowAccountId: escrow.id,
           entryType: le.entryType,
           amount: le.amount,
@@ -2059,7 +2059,7 @@ async function main() {
 
     for (const te of timelineEvents) {
       await prisma.transactionTimeline.create({
-        data: {
+        data: { status: undefined,
           transactionId: transaction.id,
           fromStatus: te.from,
           toStatus: te.to,
@@ -2224,7 +2224,7 @@ async function main() {
 
     for (const rd of rooms) {
       const room = await prisma.hotelRoom.create({
-        data: { hotelId: hotel.id, ...rd, currency: 'XOF' },
+        data: { status: undefined, hotelId: hotel.id, ...rd, currency: 'XOF' },
       });
       hotelRoomIds.push(room.id);
     }
@@ -2381,26 +2381,26 @@ async function main() {
     const ghRoomIds: string[] = [];
     for (const rd of rooms) {
       const room = await prisma.guesthouseRoom.create({
-        data: { guesthouseId: gh.id, ...rd, currency: 'XOF' },
+        data: { status: undefined, guesthouseId: gh.id, ...rd, currency: 'XOF' },
       });
       ghRoomIds.push(room.id);
     }
 
     for (const md of meals) {
       await prisma.guesthouseMeal.create({
-        data: { guesthouseId: gh.id, ...md, currency: 'XOF' },
+        data: { status: undefined, guesthouseId: gh.id, ...md, currency: 'XOF' },
       });
     }
 
     for (const sd of staff) {
       await prisma.guesthouseStaff.create({
-        data: { guesthouseId: gh.id, ...sd },
+        data: { status: undefined, guesthouseId: gh.id, ...sd },
       });
     }
 
     for (const pr of pricingRules) {
       await prisma.guesthousePricingRule.create({
-        data: { guesthouseId: gh.id, ...pr },
+        data: { status: undefined, guesthouseId: gh.id, ...pr },
       });
     }
 
@@ -2444,7 +2444,7 @@ async function main() {
   for (const as of artisanServices) {
     for (const svc of as.services) {
       await prisma.artisanService.create({
-        data: { artisanId: artisanIds[as.artisanIdx], ...svc },
+        data: { status: undefined, artisanId: artisanIds[as.artisanIdx], ...svc },
       });
     }
   }
@@ -2458,7 +2458,7 @@ async function main() {
 
   for (const aq of artisanQuotes) {
     await prisma.artisanQuote.create({
-      data: {
+      data: { status: undefined,
         artisanId: artisanIds[aq.artisanIdx],
         userId: aq.userId,
         propertyId: aq.propertyId,
@@ -2480,7 +2480,7 @@ async function main() {
   console.info('\n→ Creating geometer missions...');
 
   const mission1 = await prisma.geometerMission.create({
-    data: {
+    data: { status: undefined,
       propertyId: propertyIds[0], // Villa Fidjrossè
       geometerId: geometer1.id,
       serviceCode: 'GEO_SURF',
@@ -2497,7 +2497,7 @@ async function main() {
   });
 
   await prisma.geometerReport.create({
-    data: {
+    data: { status: undefined,
       missionId: mission1.id,
       pdfUrl: 'https://afribayit.com/reports/geo-mission-001.pdf',
       geojsonUrl: 'https://afribayit.com/reports/geo-mission-001.geojson',
@@ -2508,7 +2508,7 @@ async function main() {
   });
 
   const mission2 = await prisma.geometerMission.create({
-    data: {
+    data: { status: undefined,
       propertyId: propertyIds[2], // Terrain Akpakpa
       geometerId: geometer1.id,
       serviceCode: 'GEO_BORN',
@@ -2524,7 +2524,7 @@ async function main() {
   });
 
   await prisma.geometerReport.create({
-    data: {
+    data: { status: undefined,
       missionId: mission2.id,
       pdfUrl: 'https://afribayit.com/reports/geo-mission-002.pdf',
       validationStatus: 'validated',
@@ -2533,7 +2533,7 @@ async function main() {
   });
 
   const mission3 = await prisma.geometerMission.create({
-    data: {
+    data: { status: undefined,
       propertyId: propertyIds[5], // Appartement Cocody
       geometerId: geometer2.id,
       serviceCode: 'GEO_CERT',
@@ -2546,7 +2546,7 @@ async function main() {
   });
 
   await prisma.geometerReport.create({
-    data: {
+    data: { status: undefined,
       missionId: mission3.id,
       validationStatus: 'pending',
     },
@@ -3378,7 +3378,7 @@ async function main() {
     { userId: artisanUser, type: 'deposit', amount: 75000, balanceAfter: 75000, status: 'completed', reference: 'WAL-DEP-005' },
     { userId: artisanUser, type: 'subscription', amount: 10000, balanceAfter: 65000, status: 'completed', reference: 'WAL-SUB-001', metadata: '{"planType":"artisan_pro"}' },
     { userId: geometerUser, type: 'deposit', amount: 320000, balanceAfter: 320000, status: 'completed', reference: 'WAL-DEP-006' },
-    { userId: notaryUser, type: 'commission', amount: 225000, balanceAfter: 375000, status: 'pending', reference: 'WAL-COM-002', metadata: '{"transactionRef":"ESC-2025-001"}' },
+    { userId: notaryUser, type: 'commission', amount: 225000, balanceAfter: 375000, status: "pending" as const, reference: 'WAL-COM-002', metadata: '{"transactionRef":"ESC-2025-001"}' },
   ];
 
   for (const wd of walletTxDefs) {
@@ -3394,7 +3394,7 @@ async function main() {
   const kycDefs = [
     { userId: buyer1, docType: 'id_card', docUrl: 'https://afribayit.com/kyc/buyer1-id-card.jpg', ocrValid: true, aiScore: 92.5, status: 'human_validated', country: 'BJ' },
     { userId: buyer1, docType: 'selfie', docUrl: 'https://afribayit.com/kyc/buyer1-selfie.jpg', ocrValid: true, aiScore: 88.0, status: 'ai_validated', country: 'BJ' },
-    { userId: buyer1, docType: 'proof_address', docUrl: 'https://afribayit.com/kyc/buyer1-address.pdf', ocrValid: false, aiScore: 65.0, status: 'pending', country: 'BJ' },
+    { userId: buyer1, docType: 'proof_address', docUrl: 'https://afribayit.com/kyc/buyer1-address.pdf', ocrValid: false, aiScore: 65.0, status: "pending" as const, country: 'BJ' },
     { userId: buyer2, docType: 'passport', docUrl: 'https://afribayit.com/kyc/buyer2-passport.jpg', ocrValid: true, aiScore: 95.0, status: 'human_validated', country: 'CI' },
     { userId: buyer2, docType: 'selfie', docUrl: 'https://afribayit.com/kyc/buyer2-selfie.jpg', ocrValid: false, aiScore: 42.0, status: 'rejected', rejectionReason: 'Photo floue, veuillez soumettre une nouvelle photo.', country: 'CI' },
     { userId: agentBJ, docType: 'agent_license', docUrl: 'https://afribayit.com/kyc/agent-bj-license.pdf', ocrValid: true, aiScore: 97.0, status: 'human_validated', country: 'BJ' },
@@ -3403,7 +3403,7 @@ async function main() {
   ];
 
   for (const kd of kycDefs) {
-    await prisma.kycDocument.create({ data: kd });
+    await prisma.kycDocument.create({ data: kd as any });
   }
   console.info(`  ✓ Created ${kycDefs.length} KYC documents`);
 
@@ -3452,31 +3452,31 @@ async function main() {
   console.info('\n→ Creating conversations and messages...');
 
   const conv1 = await prisma.conversation.create({
-    data: {
+    data: { status: undefined,
       type: 'rebecca',
       status: 'active',
       metadata: '{"context":"property_search","propertyType":"appartement","city":"Cotonou"}',
     },
   });
 
-  await prisma.conversationParticipant.create({ data: { conversationId: conv1.id, userId: buyer1, role: 'admin' } });
+  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv1.id, userId: buyer1, role: 'admin' } });
 
-  await prisma.chatMessage.create({ data: { conversationId: conv1.id, senderId: buyer1, content: 'Bonjour Rebecca, je cherche un appartement T3 à Cotonou, budget 80M XOF.', messageType: 'text' } });
-  await prisma.chatMessage.create({ data: { conversationId: conv1.id, senderId: admin1, content: 'Bonjour ! J\'ai trouvé 3 appartements correspondant à vos critères à Cotonou. Laissez-moi vous les présenter.', messageType: 'text', isRead: true } });
-  await prisma.chatMessage.create({ data: { conversationId: conv1.id, senderId: admin1, content: 'Appartement T3 Haie Vive — 35M XOF/location', messageType: 'property_card', metadata: `{"propertyId":"${propertyIds[1]}","price":350000,"type":"appartement"}`, isRead: true } });
+  await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: buyer1, content: 'Bonjour Rebecca, je cherche un appartement T3 à Cotonou, budget 80M XOF.', messageType: 'text' } });
+  await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: admin1, content: 'Bonjour ! J\'ai trouvé 3 appartements correspondant à vos critères à Cotonou. Laissez-moi vous les présenter.', messageType: 'text', isRead: true } });
+  await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: admin1, content: 'Appartement T3 Haie Vive — 35M XOF/location', messageType: 'property_card', metadata: `{"propertyId":"${propertyIds[1]}","price":350000,"type":"appartement"}`, isRead: true } });
 
   const conv2 = await prisma.conversation.create({
-    data: {
+    data: { status: undefined,
       type: 'user_to_user',
       status: 'active',
     },
   });
 
-  await prisma.conversationParticipant.create({ data: { conversationId: conv2.id, userId: buyer2, role: 'participant' } });
-  await prisma.conversationParticipant.create({ data: { conversationId: conv2.id, userId: agentCI, role: 'participant' } });
+  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv2.id, userId: buyer2, role: 'participant' } });
+  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv2.id, userId: agentCI, role: 'participant' } });
 
-  await prisma.chatMessage.create({ data: { conversationId: conv2.id, senderId: buyer2, content: 'Bonjour, je suis intéressée par l\'appartement Standing Cocody. Est-il toujours disponible ?' } });
-  await prisma.chatMessage.create({ data: { conversationId: conv2.id, senderId: agentCI, content: 'Bonjour Marie ! Oui, l\'appartement est toujours disponible. Quand souhaitez-vous le visiter ?', isRead: true } });
+  await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv2.id, senderId: buyer2, content: 'Bonjour, je suis intéressée par l\'appartement Standing Cocody. Est-il toujours disponible ?' } });
+  await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv2.id, senderId: agentCI, content: 'Bonjour Marie ! Oui, l\'appartement est toujours disponible. Quand souhaitez-vous le visiter ?', isRead: true } });
 
   console.info(`  ✓ Created 2 conversations with messages`);
 

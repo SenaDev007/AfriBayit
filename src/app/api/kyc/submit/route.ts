@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         ocrResult: toJsonInput(ocrResult),
         ocrValid,
         aiScore,
-        status: docStatus,
+        status: docStatus as any,
         rejectionReason,
         country: country || user.country,
       },

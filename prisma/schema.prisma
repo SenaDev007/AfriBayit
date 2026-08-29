@@ -11,50 +11,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============ ENUMS (P2.4 — typed statuses for critical models) ============
-// Note: each enum is added as a NEW column (*Enum suffix) alongside the existing
-// String column for backward compatibility. The application layer will migrate
-// reads/writes to the enum column in a subsequent session. The old String column
-// remains the source of truth until the cutover is complete.
+// ============ ENUMS — typed statuses (Phase B/C cutover complete) ============
+// The legacy String status columns have been converted to enum types.
+// Values match the actual values used in application code.
+// The *Enum columns have been dropped — the main `status` column IS the enum.
 
 enum PropertyStatus {
-  DRAFT
-  PENDING_REVIEW
-  PUBLISHED
-  REJECTED
-  EXPIRED
-  SOLD
-  RENTED
+  draft
+  pending
+  pending_validation
+  ai_review
+  human_review
+  published
+  sold
+  rented
+  rejected
+  flagged
 }
 
 enum TransactionStatus {
-  PENDING
-  ESCROW_FUNDED
-  IN_REVIEW
-  COMPLETED
-  CANCELLED
-  FAILED
+  CREATED
+  FUNDED
+  DOCS_VALIDATED
+  GEOTRUST_VALIDATED
+  GEO_VERIFIED
+  NOTARY_ASSIGNED
+  NOTARY_IN_PROGRESS
+  DEED_SIGNED
+  ANDF_REGISTERED
+  RELEASED
   DISPUTED
+  DISPUTED_MEDIATION
   REFUNDED
+  CANCELLED
+  PARTIAL_RELEASE
+  PENDING
 }
 
 enum EscrowState {
-  CREATED
+  EMPTY
   FUNDED
   PARTIAL_RELEASE
-  RELEASED
-  DISPUTED
+  FULL_RELEASE
   REFUNDED
-  CANCELLED
-  FAILED
+  DISPUTED
+  NOTARY_IN_PROGRESS
+  DISPUTED_MEDIATION
 }
 
 enum KycStatus {
-  PENDING
-  AI_VALIDATED
-  HUMAN_VALIDATED
-  REJECTED
-  EXPIRED
+  pending
+  approved
+  ai_validated
+  human_validated
+  rejected
+  expired
 }
 
 enum KycLevel {
@@ -176,9 +187,7 @@ model KycDocument {
   ocrResult       Json?
   ocrValid        Boolean   @default(false)
   aiScore         Float? // 0-100 AI validation score
-  status          String    @default("pending") // pending, ai_validated, human_validated, rejected
-  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
-  statusEnum      KycStatus @default(PENDING)
+  status          KycStatus @default(pending)
   rejectionReason String?
   country         String? // BJ, CI, BF, TG
   createdAt       DateTime  @default(now())
@@ -258,7 +267,7 @@ model Property {
   geoTrust        Boolean                               @default(false)
   geoTrustLevel   String? // standard, expert, elite
   premium         Boolean                               @default(false)
-  status          String                                @default("draft") // draft, pending, pending_validation, ai_review, human_review, published, sold, rented, rejected
+  status          PropertyStatus                        @default(draft)
   views           Int                                   @default(0)
   favorites       Int                                   @default(0)
   agentId         String
@@ -267,8 +276,6 @@ model Property {
   hasVR           Boolean                               @default(false)
   hasDroneView    Boolean                               @default(false)
   rejectionReason String?
-  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
-  statusEnum      PropertyStatus                        @default(DRAFT)
   publishedAt     DateTime?
   createdAt       DateTime                              @default(now())
   updatedAt       DateTime                              @updatedAt
@@ -292,7 +299,6 @@ model Property {
   @@index([type, status]) // P2.3 — filter by type (was propertyType)
   @@index([price]) // P2.3 — price range queries
   @@index([city, status]) // P2.3 — city filter
-  @@index([statusEnum, createdAt]) // P2.4 — typed status queries
   @@index([agentId], map: "Property_agentId_idx")
   @@map("properties")
 }
@@ -423,9 +429,7 @@ model Transaction {
   commission       Decimal           @default(0) @db.Decimal(19, 4)
   currency         String            @default("XOF")
   country          String            @default("BJ") // BJ, CI, BF, TG — pays de la transaction
-  status           String            @default("CREATED") // CREATED, FUNDED, DOCS_VALIDATED, GEOTRUST_VALIDATED, NOTARY_ASSIGNED, NOTARY_IN_PROGRESS, DEED_SIGNED, ANDF_REGISTERED, RELEASED, DISPUTED, REFUNDED, EXPIRED
-  /// P2.4 — typed status (new column; legacy `status: String` remains in place)
-  statusEnum       TransactionStatus @default(PENDING)
+  status           TransactionStatus @default(CREATED)
   escrowReference  String?
   paymentProvider  String?
   paymentRef       String?
@@ -456,7 +460,6 @@ model Transaction {
   @@index([buyerId, status]) // P2.3 — buyer dashboard
   @@index([sellerId, status]) // P2.3 — seller dashboard
   @@index([status, createdAt]) // P2.3 — admin queue
-  @@index([statusEnum, createdAt]) // P2.4 — typed status queries
   @@index([propertyId], map: "Transaction_propertyId_idx")
   @@map("transactions")
 }
@@ -469,9 +472,7 @@ model EscrowAccount {
   releasedAmount Decimal     @default(0) @db.Decimal(19, 4)
   refundedAmount Decimal     @default(0) @db.Decimal(19, 4)
   currency       String      @default("XOF")
-  status         String      @default("EMPTY") // EMPTY, FUNDED, PARTIAL_RELEASE, FULL_RELEASE, REFUNDED, DISPUTED
-  /// P2.4 — typed state (new column; legacy `status: String` remains in place)
-  stateEnum      EscrowState @default(CREATED)
+  status         EscrowState @default(EMPTY)
   fundedAt       DateTime?
   releasedAt     DateTime?
   refundedAt     DateTime?
@@ -483,7 +484,6 @@ model EscrowAccount {
 
   deletedAt DateTime?
 
-  @@index([stateEnum]) // P2.4 — typed state queries
   @@index([transactionId], map: "EscrowAccount_transactionId_idx")
   @@map("escrow_accounts")
 }

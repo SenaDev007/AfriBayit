@@ -144,7 +144,7 @@ export async function PATCH(
       db.transaction.update({
         where: { id },
         data: {
-          status: newStatus,
+          status: newStatus as any,
           ...(action === 'resolve' && resolution ? { conditions: JSON.stringify({ resolution, splitBuyer, splitSeller }) } : {}),
         },
       }),
