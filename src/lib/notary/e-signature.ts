@@ -2,9 +2,14 @@
  * AfriBayit — Electronic Signature System
  * Request, track, and confirm electronic signatures for notarial documents
  * Uses Prisma with TransactionTimeline for persistence
+ *
+ * Phase 1 (current): DB-stored signature metadata (CDC §5.0bis.6 fallback)
+ * Phase 2 (when DocuSign configured): Qualified e-signature via DocuSign API
+ *   → automatically used when DOCUSIGN_* env vars are set
  */
 
 import { db } from '@/lib/db';
+import { isDocuSignConfigured, createQualifiedSignature } from './qualified-signature';
 
 export interface Signer {
   id: string;
@@ -79,7 +84,72 @@ export async function requestSignature(
     sentAt: now.toISOString(),
   };
 
-  // Persist as a TransactionTimeline entry
+  // PHASE 2: If DocuSign is configured, use qualified e-signature
+  if (isDocuSignConfigured()) {
+    try {
+      // Get the deed PDF from the deed generator
+      const { generateDeedDraft } = await import('./deed-generator');
+      // Generate deed draft with minimal required data
+      const deedResult = await generateDeedDraft(transactionId, 'default', {
+        transactionId,
+        buyerName: signers.find(s => s.role === 'buyer')?.fullName || 'Acheteur',
+        sellerName: signers.find(s => s.role === 'seller')?.fullName || 'Vendeur',
+        notaryName: signers.find(s => s.role === 'notary')?.fullName || 'Notaire',
+        propertyAddress: '',
+        propertySurface: 0,
+        price: 0,
+        country: 'BJ',
+      } as any);
+      const deedPdf = Buffer.from(JSON.stringify(deedResult), 'utf-8');
+      const pdfBase64 = deedPdf.toString('base64');
+
+      const qualifiedResponse = await createQualifiedSignature({
+        transactionId,
+        deedPdfBase64: pdfBase64,
+        signers: signers.map(s => ({
+          email: s.email,
+          name: s.fullName,
+          role: s.role as 'buyer' | 'seller' | 'notary',
+          recipientId: s.id,
+        })),
+        notaryUserId: signers.find(s => s.role === 'notary')?.id || 'system',
+      });
+
+      // Persist the DocuSign envelope reference
+      await db.transactionTimeline.create({
+        data: {
+          transactionId,
+          fromStatus: 'signature_request',
+          toStatus: 'signature_request',
+          actorType: 'system',
+          description: `Qualified signature request sent via DocuSign (envelope ${qualifiedResponse.envelopeId})`,
+          metadata: {
+            type: 'qualified_signature_request',
+            signatureRequestId: id,
+            documentId,
+            deedId,
+            envelopeId: qualifiedResponse.envelopeId,
+            provider: 'docusign',
+            signers: initializedSigners,
+            status: 'sent',
+            expiresAt: expiresAt.toISOString(),
+            sentAt: now.toISOString(),
+            createdAt: now.toISOString(),
+            signingUrls: qualifiedResponse.signingUrls,
+          } as any,
+        },
+      });
+
+      request.status = 'sent';
+      console.info(`[E-Signature] Phase 2: DocuSign envelope ${qualifiedResponse.envelopeId} sent for transaction ${transactionId}`);
+      return request;
+    } catch (error) {
+      console.error('[E-Signature] DocuSign failed, falling back to Phase 1:', error);
+      // Fall through to Phase 1 below
+    }
+  }
+
+  // PHASE 1 FALLBACK: DB-stored signature metadata (CDC §5.0bis.6 allows this)
   await db.transactionTimeline.create({
     data: {
       transactionId,
@@ -87,7 +157,7 @@ export async function requestSignature(
       toStatus: 'signature_request',
       actorType: 'system',
       description: `Signature request created for document ${documentId}`,
-      metadata: JSON.stringify({
+      metadata: {
         type: 'signature_request',
         signatureRequestId: id,
         documentId,
@@ -97,7 +167,7 @@ export async function requestSignature(
         expiresAt: expiresAt.toISOString(),
         sentAt: now.toISOString(),
         createdAt: now.toISOString(),
-      }),
+      } as any,
     },
   });
 
@@ -256,7 +326,7 @@ export async function confirmSignature(
       actorType: 'buyer', // Will be overridden by the signer's role context
       actorId: signerId,
       description: `Signature confirmed by signer ${signerId}`,
-      metadata: JSON.stringify({
+      metadata: {
         type: 'signature_completed',
         signatureRequestId: requestId,
         signerId,
@@ -268,7 +338,7 @@ export async function confirmSignature(
         requestStatus: newRequestStatus,
         completedAt,
         updatedSigners,
-      }),
+      } as any,
     },
   });
 
@@ -279,12 +349,12 @@ export async function confirmSignature(
       await db.transactionTimeline.update({
         where: { id: existingEntry.id },
         data: {
-          metadata: JSON.stringify({
+          metadata: {
             ...meta,
             signers: updatedSigners,
             status: newRequestStatus,
             completedAt,
-          }),
+          } as any,
         },
       });
     } catch {
