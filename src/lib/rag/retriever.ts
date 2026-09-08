@@ -1,9 +1,9 @@
-// AfriBayit RAG — Document Retriever Module
-// Retrieves relevant context from DB using keyword-based search
-// Since we don't have pgvector, we use Prisma full-text search patterns
+// AfriBayit RAG — Document Retriever Module (audit-10 / C2)
+// CDC §8.1.2: Retrieves relevant context using pgvector ANN search.
+// Falls back to keyword-based search when embeddings are not available.
 
 import { db } from '@/lib/db';
-import { tokenize, keywordSimilarity } from './embedder';
+import { tokenize, keywordSimilarity, generateEmbedding, toPgVector, cosineSimilarity } from './embedder';
 
 export interface RetrievalResult {
   content: string;
@@ -14,7 +14,13 @@ export interface RetrievalResult {
 }
 
 /**
- * Search properties by keyword matching
+ * Search properties using pgvector ANN (cosine similarity) with keyword fallback.
+ *
+ * Strategy:
+ *   1. Generate embedding for the query
+ *   2. Try pgvector ANN search: SELECT ... ORDER BY embedding <=> query_vector LIMIT N
+ *   3. If pgvector fails (extension not installed, no embeddings), fall back to
+ *      keyword-based search (the previous approach)
  */
 export async function searchProperties(
   query: string,
@@ -22,65 +28,133 @@ export async function searchProperties(
   limit = 5
 ): Promise<RetrievalResult[]> {
   try {
-    const queryTokens = tokenize(query);
+    // Try pgvector ANN search first
+    const queryEmbedding = await generateEmbedding(query);
+    const hasNonZero = queryEmbedding.some((v) => v !== 0);
 
-    const where: Record<string, unknown> = { status: 'published' };
-    if (country) where.country = country;
+    if (hasNonZero) {
+      try {
+        const vectorLiteral = toPgVector(queryEmbedding);
+        // Build the raw SQL query with pgvector cosine distance operator (<=>)
+        // Lower distance = higher similarity. We convert to a 0-1 score.
+        const countryFilter = country ? `AND country = $2` : '';
+        const params: unknown[] = [vectorLiteral, ...(country ? [country.toUpperCase()] : []), limit];
 
-    const properties = await db.property.findMany({
-      where,
-      take: 50, // Fetch more for scoring
-      include: {
-        owner: { select: { name: true, verified: true } },
-      },
-    });
+        const results = await db.$queryRawUnsafe<{
+          id: string; title: string; slug: string | null;
+          type: string; transaction: string; price: number; currency: string;
+          surface: number; bedrooms: number; bathrooms: number; rooms: number;
+          city: string; country: string; quartier: string; description: string;
+          features: unknown; images: unknown; verified: boolean; geoTrust: boolean;
+          premium: boolean; investmentScore: number | null;
+          agentName: string | null;
+          distance: number;
+        }[]>(`
+          SELECT
+            p.id, p.title, p.slug, p.type, p.transaction, p.price, p.currency,
+            p.surface, p.bedrooms, p.bathrooms, p.rooms, p.city, p.country,
+            p.quartier, p.description, p.features, p.images,
+            p.verified, p."geoTrust", p.premium, p."investmentScore",
+            u.name as "agentName",
+            (p.embedding <=> $1::vector) as distance
+          FROM properties p
+          LEFT JOIN users u ON p."agentId" = u.id
+          WHERE p.status = 'published'
+            AND p.embedding IS NOT NULL
+            ${countryFilter}
+          ORDER BY p.embedding <=> $1::vector
+          LIMIT $${country ? 3 : 2}
+        `, ...params);
 
-    // Score each property by keyword overlap
-    const scored = properties.map((p) => {
-      const docText = `${p.title} ${p.description} ${p.type} ${p.transaction} ${p.city} ${p.quartier} ${p.country} ${p.features || ''}`;
-      const docTokens = tokenize(docText);
-      const score = keywordSimilarity(queryTokens, docTokens);
+        if (results.length > 0) {
+          // Convert distance (0=identical, 2=opposite) to similarity score (0-1)
+          return results.map((row) => {
+            const features = Array.isArray(row.features) ? row.features as string[] : [];
+            const images = Array.isArray(row.images) ? row.images as string[] : [];
+            const similarity = 1 - (row.distance / 2);
 
-      const features = (() => {
-        try { return p.features ? p.features : []; } catch { return []; }
-      })();
-      const images = (() => {
-        try { return p.images ? p.images : []; } catch { return []; }
-      })();
+            return {
+              content: `**${row.title}** — ${row.type} ${row.transaction} à ${row.city}, ${row.quartier} (${row.country})\n` +
+                `Prix: ${new Intl.NumberFormat('fr-FR').format(row.price)} ${row.currency}\n` +
+                `Surface: ${row.surface}m² | ${row.bedrooms}ch | ${row.bathrooms}sdb\n` +
+                `Description: ${(row.description || '').slice(0, 300)}...\n` +
+                `Caractéristiques: ${features.join(', ')}\n` +
+                `Vérifié: ${row.verified ? '[OUI]' : '[NON]'} | GeoTrust: ${row.geoTrust ? '[OUI]' : '[NON]'}\n` +
+                `Agent: ${row.agentName || 'N/A'}`,
+              source: `property:${row.id}`,
+              sourceType: 'property' as const,
+              score: Math.max(0.1, similarity), // Floor at 0.1 so results always appear
+              metadata: {
+                id: row.id, price: row.price, city: row.city, country: row.country,
+                type: row.type, transaction: row.transaction, surface: row.surface,
+                bedrooms: row.bedrooms, images: images.slice(0, 2),
+                searchMethod: 'pgvector',
+              },
+            };
+          });
+        }
+      } catch (pgvectorError) {
+        // pgvector not available or no embeddings — fall through to keyword search
+        console.info('[RAG] pgvector search failed, falling back to keyword search:', pgvectorError instanceof Error ? pgvectorError.message : 'unknown');
+      }
+    }
 
-      return {
-        content: `**${p.title}** — ${p.type} ${p.transaction} à ${p.city}, ${p.quartier} (${p.country})\n` +
-          `Prix: ${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA\n` +
-          `Surface: ${p.surface}m² | ${p.bedrooms}ch | ${p.bathrooms}sdb\n` +
-          `Description: ${p.description.slice(0, 300)}...\n` +
-          `Caractéristiques: ${Array.isArray(features) ? features.join(', ') : ''}\n` +
-          `Verifie: ${p.verified ? '[OUI]' : '[NON]'} | GeoTrust: ${p.geoTrust ? '[OUI]' : '[NON]'}\n` +
-          `Agent: ${p.owner?.name || 'N/A'}`,
-        source: `property:${p.id}`,
-        sourceType: 'property' as const,
-        score,
-        metadata: {
-          id: p.id,
-          price: p.price,
-          city: p.city,
-          country: p.country,
-          type: p.type,
-          transaction: p.transaction,
-          surface: p.surface,
-          bedrooms: p.bedrooms,
-          images: Array.isArray(images) ? images.slice(0, 2) : [],
-        },
-      };
-    });
-
-    return scored
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    // Fallback: keyword-based search (the previous approach)
+    return searchPropertiesByKeyword(query, country, limit);
   } catch (error) {
     console.error('Property search error in RAG retriever:', error);
     return [];
   }
+}
+
+/**
+ * Keyword-based property search (fallback when pgvector is not available)
+ */
+async function searchPropertiesByKeyword(
+  query: string,
+  country?: string,
+  limit = 5
+): Promise<RetrievalResult[]> {
+  const queryTokens = tokenize(query);
+
+  const where: Record<string, unknown> = { status: 'published' };
+  if (country) where.country = country;
+
+  const properties = await db.property.findMany({
+    where,
+    take: 50,
+    include: { owner: { select: { name: true, verified: true } } },
+  });
+
+  const scored = properties.map((p) => {
+    const features = Array.isArray(p.features) ? p.features : [];
+    const docText = `${p.title} ${p.description} ${p.type} ${p.transaction} ${p.city} ${p.quartier} ${p.country} ${features.join(' ')}`;
+    const docTokens = tokenize(docText);
+    const score = keywordSimilarity(queryTokens, docTokens);
+
+    return {
+      content: `**${p.title}** — ${p.type} ${p.transaction} à ${p.city}, ${p.quartier} (${p.country})\n` +
+        `Prix: ${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA\n` +
+        `Surface: ${p.surface}m² | ${p.bedrooms}ch | ${p.bathrooms}sdb\n` +
+        `Description: ${p.description.slice(0, 300)}...\n` +
+        `Caractéristiques: ${Array.isArray(features) ? features.join(', ') : ''}\n` +
+        `Vérifié: ${p.verified ? '[OUI]' : '[NON]'} | GeoTrust: ${p.geoTrust ? '[OUI]' : '[NON]'}\n` +
+        `Agent: ${p.owner?.name || 'N/A'}`,
+      source: `property:${p.id}`,
+      sourceType: 'property' as const,
+      score,
+      metadata: {
+        id: p.id, price: p.price, city: p.city, country: p.country,
+        type: p.type, transaction: p.transaction, surface: p.surface,
+        bedrooms: p.bedrooms, searchMethod: 'keyword',
+      },
+    };
+  });
+
+  return scored
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }
 
 /**
@@ -93,7 +167,6 @@ export async function searchLegalDocs(
 ): Promise<RetrievalResult[]> {
   const queryTokens = tokenize(query);
 
-  // Legal docs knowledge base (static reference data)
   const legalKnowledgeBase: Record<string, Array<{ topic: string; content: string; keywords: string }>> = {
     BJ: [
       {
@@ -256,7 +329,6 @@ export async function searchMarketData(
     if (country) where.country = country;
     if (area) where.city = area;
 
-    // Aggregate market data from published properties
     const properties = await db.property.findMany({
       where,
       select: { price: true, surface: true, type: true, transaction: true, city: true, country: true, createdAt: true },
@@ -272,7 +344,6 @@ export async function searchMarketData(
       }];
     }
 
-    // Calculate statistics
     const byType: Record<string, { prices: number[]; surfaces: number[] }> = {};
     for (const p of properties) {
       const key = `${p.type}_${p.transaction}`;
@@ -288,16 +359,7 @@ export async function searchMarketData(
       const minPrice = Math.min(...data.prices);
       const maxPrice = Math.max(...data.prices);
       const [type, transaction] = key.split('_');
-      return {
-        type,
-        transaction,
-        count: data.prices.length,
-        avgPrice,
-        minPrice,
-        maxPrice,
-        avgSurface,
-        pricePerM2,
-      };
+      return { type, transaction, count: data.prices.length, avgPrice, minPrice, maxPrice, avgSurface, pricePerM2 };
     });
 
     const areaName = area || country || 'toutes zones';
@@ -324,7 +386,7 @@ export async function searchMarketData(
 }
 
 /**
- * Search artisans by keyword matching
+ * Search artisans using pgvector ANN with keyword fallback
  */
 export async function searchArtisans(
   query: string,
@@ -333,58 +395,118 @@ export async function searchArtisans(
   limit = 5
 ): Promise<RetrievalResult[]> {
   try {
-    const queryTokens = tokenize(query);
+    // Try pgvector ANN search first
+    const queryEmbedding = await generateEmbedding(query);
+    const hasNonZero = queryEmbedding.some((v) => v !== 0);
 
-    const where: Record<string, unknown> = { available: true };
-    if (country) where.country = country;
-    if (city) where.city = city;
+    if (hasNonZero) {
+      try {
+        const vectorLiteral = toPgVector(queryEmbedding);
+        const filters: string[] = ['a.available = true', 'a.embedding IS NOT NULL'];
+        const params: unknown[] = [vectorLiteral];
+        let paramIdx = 2;
+        if (country) { filters.push(`a.country = $${paramIdx++}`); params.push(country); }
+        if (city) { filters.push(`a.city = $${paramIdx++}`); params.push(city); }
+        params.push(limit);
 
-    const artisans = await db.artisan.findMany({
-      where,
-      take: 50,
-      include: {
-        services: true,
-      },
-    });
+        const results = await db.$queryRawUnsafe<{
+          id: string; trade: string; specialties: unknown; zone: string | null;
+          city: string | null; country: string | null; certified: boolean;
+          rating: number; reviews: number; completedMissions: number;
+          dailyRate: number | null; priceRange: string | null; responseTime: number | null;
+          distance: number;
+        }[]>(`
+          SELECT
+            a.id, a.trade, a.specialties, a.zone, a.city, a.country,
+            a.certified, a.rating, a.reviews, a."completedMissions",
+            a."dailyRate", a."priceRange", a."responseTime",
+            (a.embedding <=> $1::vector) as distance
+          FROM artisans a
+          WHERE ${filters.join(' AND ')}
+          ORDER BY a.embedding <=> $1::vector
+          LIMIT $${paramIdx}
+        `, ...params);
 
-    const scored = artisans.map((a) => {
-      const specialties = (() => {
-        try { return Array.isArray(a.specialties) ? a.specialties as string[] : []; } catch { return []; }
-      })();
-      const docText = `${a.trade} ${specialties.join(' ')} ${a.zone || ''} ${a.city || ''} ${a.country || ''}`;
-      const docTokens = tokenize(docText);
-      const score = keywordSimilarity(queryTokens, docTokens);
+        if (results.length > 0) {
+          return results.map((row) => {
+            const specialties = Array.isArray(row.specialties) ? row.specialties as string[] : [];
+            const similarity = 1 - (row.distance / 2);
+            return {
+              content: `[Artisan] **${row.trade}** — ${row.city || ''}, ${row.country || ''}\n` +
+                `Spécialités: ${specialties.join(', ') || row.trade}\n` +
+                `Certifié: ${row.certified ? '[OUI]' : '[NON]'} | Note: ${row.rating}/5 (${row.reviews} avis)\n` +
+                `Missions complétées: ${row.completedMissions}\n` +
+                `Tarif: ${row.dailyRate ? new Intl.NumberFormat('fr-FR').format(row.dailyRate) + ' FCFA/jour' : row.priceRange || 'Sur devis'}\n` +
+                `Temps de réponse: ${row.responseTime ? row.responseTime + ' min' : 'N/A'}`,
+              source: `artisan:${row.id}`,
+              sourceType: 'artisan' as const,
+              score: Math.max(0.1, similarity),
+              metadata: {
+                id: row.id, trade: row.trade, city: row.city, country: row.country,
+                rating: row.rating, certified: row.certified, dailyRate: row.dailyRate,
+                searchMethod: 'pgvector',
+              },
+            };
+          });
+        }
+      } catch (pgvectorError) {
+        console.info('[RAG] pgvector artisan search failed, falling back to keyword:', pgvectorError instanceof Error ? pgvectorError.message : 'unknown');
+      }
+    }
 
-      return {
-        content: `[Artisan] **${a.trade}** — ${a.city || ''}, ${a.country || ''}\n` +
-          `Specialites: ${Array.isArray(specialties) ? specialties.join(', ') : a.trade}\n` +
-          `Certifie: ${a.certified ? '[OUI]' : '[NON]'} | Note: ${a.rating}/5 (${a.reviews} avis)\n` +
-          `Missions complétées: ${a.completedMissions}\n` +
-          `Tarif: ${a.dailyRate ? new Intl.NumberFormat('fr-FR').format(a.dailyRate) + ' FCFA/jour' : a.priceRange || 'Sur devis'}\n` +
-          `Temps de réponse: ${a.responseTime ? a.responseTime + ' min' : 'N/A'}`,
-        source: `artisan:${a.id}`,
-        sourceType: 'artisan' as const,
-        score,
-        metadata: {
-          id: a.id,
-          trade: a.trade,
-          city: a.city,
-          country: a.country,
-          rating: a.rating,
-          certified: a.certified,
-          dailyRate: a.dailyRate,
-        },
-      };
-    });
-
-    return scored
-      .filter((r) => r.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    // Fallback: keyword-based search
+    return searchArtisansByKeyword(query, country, city, limit);
   } catch (error) {
     console.error('Artisan search error in RAG retriever:', error);
     return [];
   }
+}
+
+/**
+ * Keyword-based artisan search (fallback)
+ */
+async function searchArtisansByKeyword(
+  query: string,
+  country?: string,
+  city?: string,
+  limit = 5
+): Promise<RetrievalResult[]> {
+  const queryTokens = tokenize(query);
+  const where: Record<string, unknown> = { available: true };
+  if (country) where.country = country;
+  if (city) where.city = city;
+
+  const artisans = await db.artisan.findMany({
+    where, take: 50, include: { services: true },
+  });
+
+  const scored = artisans.map((a) => {
+    const specialties = Array.isArray(a.specialties) ? a.specialties as string[] : [];
+    const docText = `${a.trade} ${specialties.join(' ')} ${a.zone || ''} ${a.city || ''} ${a.country || ''}`;
+    const docTokens = tokenize(docText);
+    const score = keywordSimilarity(queryTokens, docTokens);
+    return {
+      content: `[Artisan] **${a.trade}** — ${a.city || ''}, ${a.country || ''}\n` +
+        `Spécialités: ${specialties.join(', ') || a.trade}\n` +
+        `Certifié: ${a.certified ? '[OUI]' : '[NON]'} | Note: ${a.rating}/5 (${a.reviews} avis)\n` +
+        `Missions complétées: ${a.completedMissions}\n` +
+        `Tarif: ${a.dailyRate ? new Intl.NumberFormat('fr-FR').format(a.dailyRate) + ' FCFA/jour' : a.priceRange || 'Sur devis'}\n` +
+        `Temps de réponse: ${a.responseTime ? a.responseTime + ' min' : 'N/A'}`,
+      source: `artisan:${a.id}`,
+      sourceType: 'artisan' as const,
+      score,
+      metadata: {
+        id: a.id, trade: a.trade, city: a.city, country: a.country,
+        rating: a.rating, certified: a.certified, dailyRate: a.dailyRate,
+        searchMethod: 'keyword',
+      },
+    };
+  });
+
+  return scored
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }
 
 /**
@@ -402,32 +524,16 @@ export async function retrieve(
   const enabledSources = sources || ['property', 'legal_doc', 'faq', 'market_data', 'artisan'];
 
   const allResults: RetrievalResult[] = [];
-
   const searchPromises: Promise<RetrievalResult[]>[] = [];
 
-  if (enabledSources.includes('property')) {
-    searchPromises.push(searchProperties(query, country));
-  }
-  if (enabledSources.includes('legal_doc')) {
-    searchPromises.push(searchLegalDocs(query, country));
-  }
-  if (enabledSources.includes('faq')) {
-    searchPromises.push(searchFAQ(query));
-  }
-  if (enabledSources.includes('market_data')) {
-    searchPromises.push(searchMarketData(city, country));
-  }
-  if (enabledSources.includes('artisan')) {
-    searchPromises.push(searchArtisans(query, country, city));
-  }
+  if (enabledSources.includes('property')) searchPromises.push(searchProperties(query, country));
+  if (enabledSources.includes('legal_doc')) searchPromises.push(searchLegalDocs(query, country));
+  if (enabledSources.includes('faq')) searchPromises.push(searchFAQ(query));
+  if (enabledSources.includes('market_data')) searchPromises.push(searchMarketData(city, country));
+  if (enabledSources.includes('artisan')) searchPromises.push(searchArtisans(query, country, city));
 
   const results = await Promise.all(searchPromises);
-  for (const resultSet of results) {
-    allResults.push(...resultSet);
-  }
+  for (const resultSet of results) allResults.push(...resultSet);
 
-  // Sort by score and return top results
-  return allResults
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 8);
+  return allResults.sort((a, b) => b.score - a.score).slice(0, 8);
 }

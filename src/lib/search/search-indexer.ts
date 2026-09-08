@@ -10,6 +10,7 @@
 
 import { db } from '@/lib/db';
 import { indexDocument, type SearchDocument, type SearchModelType } from './elasticsearch';
+import { generateEmbedding, toPgVector } from '@/lib/rag/embedder';
 
 // ============ Property Indexing (tsvector + ES) ============
 
@@ -75,6 +76,18 @@ export async function indexProperty(propertyId: string): Promise<boolean> {
         slug: property.slug,
       };
       await indexDocument(doc);
+
+      // Generate and store RAG embedding (audit-10 / C2 — CDC §8.1.2)
+      try {
+        const embeddingText = `${property.title} ${property.description} ${property.type} ${property.transaction} ${property.city} ${property.quartier} ${property.country} ${features.join(' ')}`;
+        const embedding = await generateEmbedding(embeddingText);
+        await db.$executeRawUnsafe(
+          `UPDATE properties SET embedding = $1::vector WHERE id = $2`,
+          toPgVector(embedding), propertyId
+        );
+      } catch (embedError) {
+        console.info(`[Indexer] Embedding skipped for property ${propertyId}:`, embedError instanceof Error ? embedError.message : 'unknown');
+      }
     }
 
     return true;
