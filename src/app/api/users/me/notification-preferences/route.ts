@@ -11,23 +11,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     const { preferences } = await request.json();
 
     // Store as JSON on the user record (or in a dedicated table if it exists)
     try {
       await db.user.update({
         where: { id: userId },
-        data: { notificationPreferences: JSON.stringify(preferences) } as any,
+        data: { notificationPreferences: JSON.stringify(preferences) },
       });
     } catch {
       // Field might not exist — try a dedicated table
       try {
-        for (const [category, channels] of Object.entries(preferences)) {
-          await (db as any).notificationPreference.upsert({
+        for (const [category, channels] of Object.entries(preferences) as [string, Record<string, unknown>][]) {
+          await (db as unknown as { notificationPreference: { upsert: (args: unknown) => Promise<unknown> } }).notificationPreference.upsert({
             where: { userId_category: { userId, category } },
-            create: { userId, category, ...(channels as any) },
-            update: { ...(channels as any) },
+            create: { userId, category, ...channels },
+            update: { ...channels },
           });
         }
       } catch {

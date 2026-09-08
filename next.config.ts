@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
-// AfriBayit — Frontend Next.js Configuration
-// Backend is now separate: github.com/SenaDev007/afribayit-api (NestJS on Railway)
-// This frontend calls the backend via NEXT_PUBLIC_API_URL (see src/lib/api-client.ts)
+// AfriBayit — Next.js Configuration (full-stack monolith)
+// See docs/adr/0001-monolith-architecture.md.
+// The Next.js app is the backend — App Router route handlers call Prisma directly.
 
 const nextConfig: NextConfig = {
   typescript: {

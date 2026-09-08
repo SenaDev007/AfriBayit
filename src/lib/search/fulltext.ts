@@ -331,30 +331,20 @@ export async function buildSearchQuery(
       db.$queryRawUnsafe(searchQuery, ...params),
     ]);
 
-    const total = Number((countResult as any[])?.[0]?.total || 0);
-    const results = (searchResult as any[]).map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      slug: row.slug,
-      type: row.type,
-      transaction: row.transaction,
-      price: Number(row.price),
-      currency: row.currency,
-      surface: Number(row.surface),
-      rooms: Number(row.rooms),
-      bedrooms: Number(row.bedrooms),
-      bathrooms: Number(row.bathrooms),
-      city: row.city,
-      country: row.country,
-      quartier: row.quartier,
-      address: row.address,
+    const total = Number((countResult as Array<{ total: bigint | number }> | undefined)?.[0]?.total || 0);
+    const results = (searchResult as Array<Record<string, unknown>>).map((row) => ({
+      id: row.id as string, title: row.title as string, slug: row.slug as string,
+      type: row.type as string, transaction: row.transaction as string,
+      price: Number(row.price), currency: row.currency as string,
+      surface: Number(row.surface), rooms: Number(row.rooms),
+      bedrooms: Number(row.bedrooms), bathrooms: Number(row.bathrooms),
+      city: row.city as string, country: row.country as string,
+      quartier: row.quartier as string, address: row.address as string,
       description: (row.description as string) || '',
-      images: row.images as any,
-      verified: row.verified,
-      geoTrust: row.geoTrust,
-      premium: row.premium,
-      investmentScore: row.investmentScore,
-      publishedAt: row.publishedAt,
+      images: row.images as string | null, verified: row.verified as boolean,
+      geoTrust: row.geoTrust as boolean, premium: row.premium as boolean,
+      investmentScore: row.investmentScore as number | null,
+      publishedAt: row.publishedAt as Date | null,
       relevanceScore: Number(row.relevanceScore),
     }));
 
@@ -436,7 +426,7 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
       LIMIT 15
     `, sanitizedQuery);
 
-    return (result as any[]).map((row: any) => row.suggestion);
+    return (result as Array<{ suggestion: string }>).map((row) => row.suggestion);
   } catch {
     // pg_trgm not available — use simple ILIKE fallback
     try {
@@ -473,7 +463,7 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
         LIMIT 3
       `, likePattern);
 
-      return (result as any[]).map((row: any) => row.suggestion);
+      return (result as Array<{ suggestion: string }>).map((row) => row.suggestion);
     } catch {
       return [];
     }
@@ -573,17 +563,17 @@ export async function autoComplete(
     ]);
 
     // Merge titles from all models with type label
-    const allTitles: { id: string; title: string; slug: string | null; type?: string }[] = [
-      ...(propertyTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'property' })),
-      ...(hotelTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'hotel' })),
-      ...(guesthouseTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'guesthouse' })),
-      ...(artisanTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'artisan' })),
-      ...(courseTitles as any[]).map((r: any) => ({ id: r.id, title: r.title, slug: r.slug, type: 'course' })),
+    type TitleRow = { id: string; title: string; slug: string | null };
+    const allTitles = [
+      ...(propertyTitles as TitleRow[]).map((r) => ({ id: r.id, title: r.title, slug: r.slug, type: 'property' })),
+      ...(hotelTitles as TitleRow[]).map((r) => ({ id: r.id, title: r.title, slug: r.slug, type: 'hotel' })),
+      ...(guesthouseTitles as TitleRow[]).map((r) => ({ id: r.id, title: r.title, slug: r.slug, type: 'guesthouse' })),
+      ...(artisanTitles as TitleRow[]).map((r) => ({ id: r.id, title: r.title, slug: r.slug, type: 'artisan' })),
+      ...(courseTitles as TitleRow[]).map((r) => ({ id: r.id, title: r.title, slug: r.slug, type: 'course' })),
     ].slice(0, limit);
-
     return {
-      cities: (cities as any[]).map((r: any) => r.city),
-      quartiers: (quartiers as any[]).map((r: any) => r.quartier),
+      cities: (cities as Array<{ city: string }>).map((r) => r.city),
+      quartiers: (quartiers as Array<{ quartier: string }>).map((r) => r.quartier),
       titles: allTitles,
     };
   } catch {
@@ -639,9 +629,7 @@ async function fallbackSearch(filters: SearchFilters): Promise<SearchResponse> {
   if (type) where.type = type;
   if (transaction) where.transaction = transaction;
   if (priceMin !== undefined || priceMax !== undefined) {
-    where.price = {};
-    if (priceMin !== undefined) (where.price as any).gte = priceMin;
-    if (priceMax !== undefined) (where.price as any).lte = priceMax;
+    where.price = { ...(priceMin !== undefined ? { gte: priceMin } : {}), ...(priceMax !== undefined ? { lte: priceMax } : {}) };
   }
   if (city) where.city = { contains: city, mode: 'insensitive' };
   if (quartier) where.quartier = { contains: quartier, mode: 'insensitive' };
@@ -649,9 +637,7 @@ async function fallbackSearch(filters: SearchFilters): Promise<SearchResponse> {
   if (bathrooms !== undefined) where.bathrooms = { gte: bathrooms };
   if (rooms !== undefined) where.rooms = { gte: rooms };
   if (surfaceMin !== undefined || surfaceMax !== undefined) {
-    where.surface = {};
-    if (surfaceMin !== undefined) (where.surface as any).gte = surfaceMin;
-    if (surfaceMax !== undefined) (where.surface as any).lte = surfaceMax;
+    where.surface = { ...(surfaceMin !== undefined ? { gte: surfaceMin } : {}), ...(surfaceMax !== undefined ? { lte: surfaceMax } : {}) };
   }
   if (verified !== undefined) where.verified = verified;
   if (geoTrust !== undefined) where.geoTrust = geoTrust;

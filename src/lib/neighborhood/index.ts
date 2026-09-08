@@ -16,7 +16,7 @@ export interface NeighborhoodAnalysis {
   amenities: import('./amenities').AmenityProximityResult;
   transport: import('./transport').TransportScore;
   safety: {
-    score: number;
+    score: number | null;
     level: string;
     note: string;
   };
@@ -37,23 +37,11 @@ export function analyzeNeighborhood(
   const amenityResult = scoreAmenities(amenities, lat, lng);
   const transport = calculateTransportScore(lat, lng, transportOptions);
 
-  // Safety is a stub — would integrate real data in production
-  const safetyScore = 50;
-  const safetyLevel = safetyScore >= 70 ? 'Bon' : safetyScore >= 50 ? 'Moyen' : 'À vérifier';
-
-  const overallScore = Math.round(
-    (walkScore.score * 0.35 + amenityResult.totalScore * 0.25 + transport.score * 0.25 + safetyScore * 0.15)
-  );
-
-  return {
-    walkScore,
-    amenities: amenityResult,
-    transport,
-    safety: {
-      score: safetyScore,
-      level: safetyLevel,
-      note: 'Données de sécurité basées sur des estimations. Vérifiez auprès des autorités locales.',
-    },
-    overallScore,
-  };
+  const safetyScore: number | null = null;
+  const safetyLevel = 'Données non disponibles';
+  const safetyNote = 'Aucune source de données de sécurité fiable n\'est actuellement intégrée.';
+  const knownWeight = 0.85;
+  const weightedKnown = walkScore.score * 0.35 + amenityResult.totalScore * 0.25 + transport.score * 0.25;
+  const overallScore = Math.round(weightedKnown / knownWeight);
+  return { walkScore, amenities: amenityResult, transport, safety: { score: safetyScore, level: safetyLevel, note: safetyNote }, overallScore };
 }

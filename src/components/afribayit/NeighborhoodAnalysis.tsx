@@ -11,7 +11,7 @@ interface NeighborhoodData {
   walkScore: { score: number; level: string; details: { category: string; distance: number; contribution: number }[] };
   amenities: { totalScore: number; amenityCount: number; varietyScore: number; categories: { category: string; categoryFr: string; icon: React.ReactNode; count: number; nearestDistance: number; score: number }[] };
   transport: { score: number; level: string; options: { type: string; name: string; distance: number; accessible: boolean }[] };
-  safety: { score: number; level: string; note: string };
+  safety: { score: number | null; level: string; note: string };
   overallScore: number;
   environmental: { avgTemp: number; avgRainfall: number; humidity: number; airQuality: { index: number; level: string }; uvIndex: number; climate: string; rainySeason: string; drySeason: string } | null;
 }
@@ -45,7 +45,7 @@ export default function NeighborhoodAnalysis({ lat, lng, city, propertyId, agent
         walkScore: { score: 72, level: 'Bon', details: [{ category: 'school', distance: 350, contribution: 12 }, { category: 'hospital', distance: 800, contribution: 10 }, { category: 'market', distance: 200, contribution: 11 }] },
         amenities: { totalScore: 68, amenityCount: 15, varietyScore: 75, categories: [{ category: 'school', categoryFr: 'Écoles', icon: null, count: 3, nearestDistance: 350, score: 45 }, { category: 'hospital', categoryFr: 'Hôpitaux', icon: null, count: 1, nearestDistance: 800, score: 35 }, { category: 'market', categoryFr: 'Marchés', icon: <Store className="w-4 h-4" />, count: 2, nearestDistance: 200, score: 50 }] },
         transport: { score: 65, level: 'Bon', options: [{ type: 'road', name: 'Route principale', distance: 400, accessible: true }, { type: 'transit', name: 'Transport en commun', distance: 700, accessible: true }, { type: 'taxi', name: 'Station taxi', distance: 500, accessible: true }, { type: 'airport', name: 'Aéroport', distance: 12000, accessible: true }] },
-        safety: { score: 70, level: 'Bon', note: 'Données estimées' },
+        safety: { score: null, level: 'Données non disponibles', note: 'N/A' },
         overallScore: 68,
         environmental: { avgTemp: 27, avgRainfall: 1300, humidity: 78, airQuality: { index: 85, level: 'Modéré' }, uvIndex: 9, climate: 'Tropical humide', rainySeason: 'Avril - Juillet', drySeason: 'Novembre - Mars' },
       });

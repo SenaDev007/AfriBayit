@@ -294,7 +294,7 @@ export async function processScheduledPayouts(): Promise<{
   let failed = 0;
 
   for (const payout of scheduledPayouts) {
-    const metadata = payout.metadata ? payout.metadata as any : {};
+    const metadata = payout.metadata ? payout.metadata as Record<string, unknown> : {};
     const scheduledFor = metadata.scheduledFor as string | undefined;
 
     // Only process payouts that are scheduled for today or earlier
@@ -448,7 +448,7 @@ export async function processHeldPayouts(): Promise<{
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
       if (latestHeld?.metadata) {
-        const metadata = latestHeld.metadata as any;
+        const metadata = latestHeld.metadata as Record<string, unknown>;
 
         // Schedule the combined payout
         await scheduleJ1Payout(
@@ -774,7 +774,7 @@ export async function getPayoutStatus(payoutId: string): Promise<{
 
   if (!tx) return null;
 
-  const metadata = tx.metadata ? tx.metadata as any : {};
+  const metadata = tx.metadata ? tx.metadata as Record<string, unknown> : {};
 
   return {
     id: tx.id,

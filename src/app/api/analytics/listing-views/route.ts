@@ -1,40 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserListingViewStats } from '@/lib/analytics/listing-views';
+import { authGuard } from '@/lib/auth-guard';
+import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await authGuard(request);
+    if (!auth.success) return auth.response;
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const listingIds = searchParams.get('listingIds')?.split(',') || [];
-
-    if (!userId) {
-      return NextResponse.json({ error: 'userId est requis' }, { status: 400 });
-    }
-
-    // In production, would fetch user's listing IDs from database
-    const effectiveListingIds = listingIds.length > 0 ? listingIds : ['demo-listing-1', 'demo-listing-2', 'demo-listing-3'];
-
+    const requestedUserId = searchParams.get('userId');
+    const isSuperAdmin = auth.role === 'SUPER_ADMIN';
+    const userId = isSuperAdmin && requestedUserId ? requestedUserId : auth.userId;
+    const requestedListingIds = searchParams.get('listingIds')?.split(',').filter(Boolean) || [];
+    let effectiveListingIds = requestedListingIds;
+    const ownListings = await db.property.findMany({ where: { agentId: userId }, select: { id: true } }).catch(() => []);
+    const ownListingIds = ownListings.map((p) => p.id);
+    if (effectiveListingIds.length === 0) effectiveListingIds = ownListingIds;
+    else if (!isSuperAdmin) { const s = new Set(ownListingIds); effectiveListingIds = effectiveListingIds.filter((id) => s.has(id)); }
     const stats = getUserListingViewStats(effectiveListingIds);
-
-    return NextResponse.json({
-      userId,
-      ...stats,
-      // Add demo data if empty
-      ...(stats.totalViews === 0 && {
-        totalViews: 342,
-        totalUnique: 218,
-        viewsToday: 12,
-        viewsThisWeek: 87,
-        viewsThisMonth: 342,
-        topListings: [
-          { listingId: 'demo-listing-1', views: 156 },
-          { listingId: 'demo-listing-2', views: 112 },
-          { listingId: 'demo-listing-3', views: 74 },
-        ],
-      }),
-    });
+    return NextResponse.json({ userId, ...stats });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Erreur' }, { status: 500 });
   }
 }

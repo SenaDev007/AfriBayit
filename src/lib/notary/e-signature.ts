@@ -9,6 +9,7 @@
  */
 
 import { db } from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { isDocuSignConfigured, createQualifiedSignature } from './qualified-signature';
 
 export interface Signer {
@@ -89,17 +90,15 @@ export async function requestSignature(
     try {
       // Get the deed PDF from the deed generator
       const { generateDeedDraft } = await import('./deed-generator');
-      // Generate deed draft with minimal required data
       const deedResult = await generateDeedDraft(transactionId, 'default', {
-        transactionId,
-        buyerName: signers.find(s => s.role === 'buyer')?.fullName || 'Acheteur',
-        sellerName: signers.find(s => s.role === 'seller')?.fullName || 'Vendeur',
-        notaryName: signers.find(s => s.role === 'notary')?.fullName || 'Notaire',
-        propertyAddress: '',
-        propertySurface: 0,
-        price: 0,
-        country: 'BJ',
-      } as any);
+        transactionId, propertyId: '', buyerId: '', sellerId: '',
+        amount: 0, currency: 'XOF', country: 'BJ',
+        propertyType: 'terrain', transactionType: 'sale',
+        buyerFullName: signers.find(s => s.role === 'buyer')?.fullName || '[NOM]',
+        sellerFullName: signers.find(s => s.role === 'seller')?.fullName || '[NOM]',
+        notaryName: signers.find(s => s.role === 'notary')?.fullName || '[NOM]',
+        propertyAddress: '', propertySurface: 0,
+      });
       const deedPdf = Buffer.from(JSON.stringify(deedResult), 'utf-8');
       const pdfBase64 = deedPdf.toString('base64');
 
@@ -130,13 +129,13 @@ export async function requestSignature(
             deedId,
             envelopeId: qualifiedResponse.envelopeId,
             provider: 'docusign',
-            signers: initializedSigners,
+            signers: initializedSigners as unknown as Prisma.InputJsonValue,
             status: 'sent',
             expiresAt: expiresAt.toISOString(),
             sentAt: now.toISOString(),
             createdAt: now.toISOString(),
             signingUrls: qualifiedResponse.signingUrls,
-          } as any,
+          },
         },
       });
 
@@ -162,12 +161,12 @@ export async function requestSignature(
         signatureRequestId: id,
         documentId,
         deedId,
-        signers: initializedSigners,
+        signers: initializedSigners as unknown as Prisma.InputJsonValue,
         status: 'sent',
         expiresAt: expiresAt.toISOString(),
         sentAt: now.toISOString(),
         createdAt: now.toISOString(),
-      } as any,
+      },
     },
   });
 
@@ -181,7 +180,7 @@ export async function requestSignature(
 export async function getSignatureRequest(requestId: string): Promise<SignatureRequest | null> {
   const entry = await db.transactionTimeline.findFirst({
     where: {
-      metadata: { string_contains: requestId } as any,
+      metadata: { string_contains: requestId },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -189,21 +188,21 @@ export async function getSignatureRequest(requestId: string): Promise<SignatureR
   if (!entry) return null;
 
   try {
-    const meta = (entry.metadata as any) || {};
+    const meta = (entry.metadata as Record<string, unknown>) || {};
     if (meta.type !== 'signature_request' || meta.signatureRequestId !== requestId) {
       return null;
     }
     return {
-      id: meta.signatureRequestId,
-      documentId: meta.documentId,
-      deedId: meta.deedId,
+      id: meta.signatureRequestId as string,
+      documentId: meta.documentId as string,
+      deedId: meta.deedId as string,
       transactionId: entry.transactionId,
-      signers: meta.signers || [],
-      status: meta.status,
-      createdAt: meta.createdAt,
-      expiresAt: meta.expiresAt,
-      completedAt: meta.completedAt,
-      sentAt: meta.sentAt,
+      signers: (meta.signers as Signer[]) || [],
+      status: meta.status as 'draft' | 'sent' | 'in_progress' | 'completed' | 'cancelled' | 'expired',
+      createdAt: meta.createdAt as string,
+      expiresAt: meta.expiresAt as string,
+      completedAt: meta.completedAt as string | undefined,
+      sentAt: meta.sentAt as string | undefined,
     };
   } catch {
     return null;
@@ -223,7 +222,7 @@ export async function listSignatureRequests(transactionId?: string): Promise<Sig
   const entries = await db.transactionTimeline.findMany({
     where: {
       ...where,
-      metadata: { string_contains: '"type":"signature_request"' } as any,
+      metadata: { string_contains: '"type":"signature_request"' },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -231,19 +230,19 @@ export async function listSignatureRequests(transactionId?: string): Promise<Sig
   const results: SignatureRequest[] = [];
   for (const entry of entries) {
     try {
-      const meta = (entry.metadata as any) || {};
+      const meta = (entry.metadata as Record<string, unknown>) || {};
       if (meta.type === 'signature_request') {
         results.push({
-          id: meta.signatureRequestId,
-          documentId: meta.documentId,
-          deedId: meta.deedId,
+          id: meta.signatureRequestId as string,
+          documentId: meta.documentId as string,
+          deedId: meta.deedId as string,
           transactionId: entry.transactionId,
-          signers: meta.signers || [],
-          status: meta.status,
-          createdAt: meta.createdAt,
-          expiresAt: meta.expiresAt,
-          completedAt: meta.completedAt,
-          sentAt: meta.sentAt,
+          signers: (meta.signers as Signer[]) || [],
+          status: meta.status as 'draft' | 'sent' | 'in_progress' | 'completed' | 'cancelled' | 'expired',
+          createdAt: meta.createdAt as string,
+          expiresAt: meta.expiresAt as string,
+          completedAt: meta.completedAt as string | undefined,
+          sentAt: meta.sentAt as string | undefined,
         });
       }
     } catch {
@@ -280,7 +279,7 @@ export async function confirmSignature(
   // Find the original signature request
   const existingEntry = await db.transactionTimeline.findFirst({
     where: {
-      metadata: { string_contains: requestId } as any,
+      metadata: { string_contains: requestId },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -292,7 +291,7 @@ export async function confirmSignature(
 
   if (existingEntry) {
     try {
-      const meta = (existingEntry.metadata as any) || {};
+      const meta = (existingEntry.metadata as Record<string, unknown>) || {};
       transactionId = existingEntry.transactionId;
       updatedSigners = (meta.signers || []) as Signer[];
 
@@ -337,24 +336,24 @@ export async function confirmSignature(
         isValid: true,
         requestStatus: newRequestStatus,
         completedAt,
-        updatedSigners,
-      } as any,
+        updatedSigners: updatedSigners as unknown as Prisma.InputJsonValue,
+      },
     },
   });
 
   // Update the original request entry with the new signer statuses
   if (existingEntry && transactionId) {
     try {
-      const meta = (existingEntry.metadata as any) || {};
+      const meta = (existingEntry.metadata as Record<string, unknown>) || {};
       await db.transactionTimeline.update({
         where: { id: existingEntry.id },
         data: {
           metadata: {
             ...meta,
-            signers: updatedSigners,
+            signers: updatedSigners as unknown as Prisma.InputJsonValue,
             status: newRequestStatus,
             completedAt,
-          } as any,
+          },
         },
       });
     } catch {

@@ -4,6 +4,7 @@
 // Fallback: Haversine JS calculation when PostGIS is unavailable
 
 import { db } from '@/lib/db';
+import type { PropertyStatus } from '@prisma/client';
 
 // ── Types ───────────────────────────────────────────────────
 
@@ -106,7 +107,7 @@ export async function findNearbyProperties(
   const pointWkt = createPoint(lat, lng);
   const radiusMeters = radiusKm * 1000;
   const limit = filters?.limit ?? 50;
-  const status = (filters?.status ?? "published") as any;
+  const status = (filters?.status ?? "published") as PropertyStatus;
 
   try {
     const results = await db.$queryRawUnsafe<
@@ -190,7 +191,7 @@ export async function findNearbyHotels(
   const pointWkt = createPoint(lat, lng);
   const radiusMeters = radiusKm * 1000;
   const limit = filters?.limit ?? 50;
-  const status = (filters?.status ?? "active") as any;
+  const status = filters?.status ?? "active";
 
   try {
     const results = await db.$queryRawUnsafe<
@@ -265,7 +266,7 @@ export async function findNearbyGuesthouses(
   const pointWkt = createPoint(lat, lng);
   const radiusMeters = radiusKm * 1000;
   const limit = filters?.limit ?? 50;
-  const status = (filters?.status ?? "active") as any;
+  const status = filters?.status ?? "active";
 
   try {
     const results = await db.$queryRawUnsafe<
@@ -437,10 +438,10 @@ export async function findWithinBoundingBox(
     );
 
     return [
-      ...properties.map((r: any) => ({ ...r, distanceKm: 0 })),
-      ...hotels.map((r: any) => ({ ...r, distanceKm: 0 })),
-      ...guesthouses.map((r: any) => ({ ...r, distanceKm: 0 })),
-    ] as any[];
+      ...properties.map((r) => ({ ...r, distanceKm: 0 })),
+      ...hotels.map((r) => ({ ...r, distanceKm: 0 })),
+      ...guesthouses.map((r) => ({ ...r, distanceKm: 0 })),
+    ] as NearbyResult[];
   } catch (error) {
     console.info('[PostGIS] findWithinBoundingBox échoué, repli lat/lng :', error);
     return findWithinBoundingBoxFallback(swLat, swLng, neLat, neLng, country);
@@ -643,7 +644,7 @@ async function findNearbyHaversine(
   if (model === 'Property') {
     const props = await db.property.findMany({
       where: {
-        status: statusFilter as any,
+        status: statusFilter as PropertyStatus,
         lat: { gte: lat - latOffset, lte: lat + latOffset },
         lng: { gte: lng - lngOffset, lte: lng + lngOffset },
       },
@@ -654,7 +655,7 @@ async function findNearbyHaversine(
   } else if (model === 'Hotel') {
     const hotels = await db.hotel.findMany({
       where: {
-        status: statusFilter as any,
+        status: statusFilter,
         lat: { gte: lat - latOffset, lte: lat + latOffset },
         lng: { gte: lng - lngOffset, lte: lng + lngOffset },
       },
@@ -665,7 +666,7 @@ async function findNearbyHaversine(
   } else {
     const guesthouses = await db.guesthouse.findMany({
       where: {
-        status: statusFilter as any,
+        status: statusFilter,
         lat: { gte: lat - latOffset, lte: lat + latOffset },
         lng: { gte: lng - lngOffset, lte: lng + lngOffset },
       },
@@ -696,11 +697,11 @@ async function findNearbyPropertiesHaversine(
 ): Promise<NearbyResult[]> {
   const latOffset = radiusKm / 111.32;
   const lngOffset = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
-  const status = (filters?.status ?? "published") as any;
+  const status = (filters?.status ?? "published") as PropertyStatus;
 
   const props = await db.property.findMany({
     where: {
-      status: status as any,
+      status: status,
       ...(country ? { country } : {}),
       ...(filters?.type ? { type: filters.type } : {}),
       ...(filters?.quartier ? { quartier: filters.quartier } : {}),
@@ -736,11 +737,11 @@ async function findNearbyHotelsHaversine(
 ): Promise<NearbyResult[]> {
   const latOffset = radiusKm / 111.32;
   const lngOffset = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
-  const status = (filters?.status ?? "active") as any;
+  const status = filters?.status ?? "active";
 
   const hotels = await db.hotel.findMany({
     where: {
-      status: status as any,
+      status: status,
       ...(country ? { country } : {}),
       lat: { gte: lat - latOffset, lte: lat + latOffset },
       lng: { gte: lng - lngOffset, lte: lng + lngOffset },
@@ -772,11 +773,11 @@ async function findNearbyGuesthousesHaversine(
 ): Promise<NearbyResult[]> {
   const latOffset = radiusKm / 111.32;
   const lngOffset = radiusKm / (111.32 * Math.cos((lat * Math.PI) / 180));
-  const status = (filters?.status ?? "active") as any;
+  const status = filters?.status ?? "active";
 
   const guesthouses = await db.guesthouse.findMany({
     where: {
-      status: status as any,
+      status: status,
       ...(country ? { country } : {}),
       ...(filters?.quartier ? { quartier: filters.quartier } : {}),
       lat: { gte: lat - latOffset, lte: lat + latOffset },
@@ -810,7 +811,7 @@ async function findWithinBoundingBoxFallback(
   const [properties, hotels, guesthouses] = await Promise.all([
     db.property.findMany({
       where: {
-        status: 'published' as any,
+        status: 'published' as PropertyStatus,
         ...countryFilter,
         lat: { gte: swLat, lte: neLat },
         lng: { gte: swLng, lte: neLng },
@@ -820,7 +821,7 @@ async function findWithinBoundingBoxFallback(
     }),
     db.hotel.findMany({
       where: {
-        status: 'active' as any,
+        status: 'active',
         ...countryFilter,
         lat: { gte: swLat, lte: neLat },
         lng: { gte: swLng, lte: neLng },
@@ -830,7 +831,7 @@ async function findWithinBoundingBoxFallback(
     }),
     db.guesthouse.findMany({
       where: {
-        status: 'active' as any,
+        status: 'active',
         ...countryFilter,
         lat: { gte: swLat, lte: neLat },
         lng: { gte: swLng, lte: neLng },

@@ -551,7 +551,7 @@ async function searchWithElasticsearch(
     filter.push({ range: { price: range } });
   }
   if (filters.features && filters.features.length > 0) {
-    filter.push({ terms: { features: filters.features as any } });
+    filter.push({ terms: { features: filters.features as string[] } });
   }
 
   // Sort
@@ -652,7 +652,7 @@ async function searchWithPostgreSQL(
 
   const documents: SearchDocument[] = properties.map((p) => {
     let features: string[] = [];
-    try { features = (p.features as any) || [] || []; } catch { features = []; }
+    try { features = (p.features as string[]) || []; } catch { features = []; }
 
     return {
       id: p.id,

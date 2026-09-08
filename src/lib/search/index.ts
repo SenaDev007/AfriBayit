@@ -113,9 +113,9 @@ export async function searchProperties(filters: SearchFilters): Promise<SearchRe
 function shapeProperty(p: Record<string, unknown>): SearchResultProperty {
   const owner = p.owner as Record<string, unknown> | null;
   let images: string[] = [];
-  try { images = (p.images as any) || [] || []; } catch { images = []; }
+  try { images = (p.images as string[]) || []; } catch { images = []; }
   let features: string[] = [];
-  try { features = (p.features as any) || [] || []; } catch { features = []; }
+  try { features = (p.features as string[]) || []; } catch { features = []; }
 
   return {
     id: p.id as string,

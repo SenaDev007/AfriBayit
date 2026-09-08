@@ -97,13 +97,13 @@ export async function createCheckout(params: CheckoutParams): Promise<CheckoutRe
 
   try {
     // Create or find customer
-    let customer: InstanceType<typeof Customer> | null = null;
+    let customer: Customer | null = null;
     if (params.customerEmail) {
       try {
         const customers = await Customer.all({
           email: params.customerEmail,
         });
-        const customerList = (customers as any)?.items || (customers as any) || [];
+        const customerList = customers?.items || customers || [];
         if (Array.isArray(customerList) && customerList.length > 0) {
           customer = customerList[0];
         }
@@ -139,20 +139,20 @@ export async function createCheckout(params: CheckoutParams): Promise<CheckoutRe
     };
 
     if (customer) {
-      transactionData.customer_id = (customer as any).id;
+      transactionData.customer_id = customer.id;
     }
 
     const transaction = await Transaction.create(transactionData);
-    const transactionId = (transaction as any).id?.toString() || '';
-    const transactionRef = (transaction as any).reference || transactionId;
+    const transactionId = transaction.id?.toString() || '';
+    const transactionRef = transaction.reference || transactionId;
 
     // Generate a payment token for the checkout
     let checkoutUrl: string | undefined;
     let token: string | undefined;
 
     try {
-      const tokenResult = await (transaction as any).generateToken();
-      const tokenValue = (tokenResult as any)?.token || (tokenResult as any)?.url;
+      const tokenResult = await transaction.generateToken();
+      const tokenValue = tokenResult?.token || tokenResult?.url;
       if (tokenValue) {
         token = tokenValue;
         const env = FedaPay.getEnvironment();
@@ -192,7 +192,7 @@ export async function verifyTransaction(transactionId: string): Promise<Verifica
 
   try {
     const transaction = await Transaction.retrieve(transactionId);
-    const tx = transaction as any;
+    const tx = transaction;
 
     return {
       status: mapFedaPayStatus(tx.status),
@@ -231,15 +231,14 @@ export async function processPayout(params: PayoutParams): Promise<PayoutResult>
     });
 
     // Send the payout immediately
-    const result = await (payout as any).sendNow();
-    const payoutRef = (result as any)?.id?.toString() ||
-                      (payout as any)?.id?.toString() || '';
+    const result = await payout.sendNow();
+    const payoutRef = result?.id?.toString() || payout?.id?.toString() || '';
 
     return {
       success: true,
       payoutId: payoutRef,
-      reference: (result as any)?.reference || payoutRef,
-      status: (result as any)?.status || (payout as any)?.status || 'sent',
+      reference: result?.reference || payoutRef,
+      status: result?.status || payout?.status || 'sent',
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Payout failed';
@@ -261,7 +260,7 @@ export async function getTransactionStatus(transactionId: string): Promise<Trans
 
   try {
     const transaction = await Transaction.retrieve(transactionId);
-    const tx = transaction as any;
+    const tx = transaction;
 
     return {
       id: tx.id?.toString() || transactionId,
@@ -310,14 +309,14 @@ export async function chargeMobileMoney(
   try {
     const mode = mapNetworkToMode(network);
     const transaction = await Transaction.retrieve(transactionId);
-    const tokenResult = await (transaction as any).generateToken();
+    const tokenResult = await transaction.generateToken();
     const token = (tokenResult as any)?.token;
 
     if (!token) {
       return { success: false, error: 'Failed to generate payment token' };
     }
 
-    await (transaction as any).sendNowWithToken(mode, token, {
+    await transaction.sendNowWithToken(mode, token, {
       phone_number: phoneNumber,
     });
 

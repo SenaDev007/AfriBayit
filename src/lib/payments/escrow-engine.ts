@@ -477,7 +477,7 @@ export async function transition(
         // Release funds: debit escrow, account for commission using CDC §11 rates
         const commissionCalc = calculateTransactionCommission({
           amount: transaction.amount,
-          type: (transaction as any).type || undefined,
+          type: (transaction as { type?: string }).type || undefined,
         });
         const commission = commissionCalc.commission;
         const sellerPayout = Number(transaction.amount) - commission;
@@ -611,11 +611,10 @@ export async function checkReleaseConditions(transactionId: string): Promise<{
   }
 
   // Parse custom conditions or use defaults
-  const customConditions = transaction.conditions as any as any
-    ? transaction.conditions
-    : null;
-
-  const requiredConditions = (customConditions as any) || DEFAULT_RELEASE_CONDITIONS;
+  const rawConditions = transaction.conditions as unknown;
+  const isReleaseConditions = (v: unknown): v is ReleaseConditions => typeof v === 'object' && v !== null && 'docsValidated' in v;
+  const customConditions: ReleaseConditions | null = isReleaseConditions(rawConditions) ? rawConditions : null;
+  const requiredConditions = customConditions || DEFAULT_RELEASE_CONDITIONS;
 
   // Evaluate each condition based on transaction state
   const currentState = normalizeState(transaction.status as TransactionState);

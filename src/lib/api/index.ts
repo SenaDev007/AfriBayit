@@ -15,5 +15,5 @@ export {
 
 export { cache, cacheWrap, buildCacheKey, invalidatePropertyCache, invalidateAvmCache, invalidateStatsCache } from '@/lib/cache';
 
-// Re-export client-side API helpers
-export { apiFetch, apiPost, apiPut, apiPatch, apiDelete } from '@/lib/api';
+// Re-export client-side API helpers from the real api-client module
+export { apiFetch, apiPost, apiPut, apiPatch, apiDelete } from '@/lib/api-client';

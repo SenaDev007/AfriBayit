@@ -6,14 +6,14 @@ import Stripe from 'stripe';
 
 // ============ Singleton Client ============
 
-let stripeClient: any | null = null;
+let stripeClient: Stripe | null = null;
 
-function getStripeClient(): any {
+function getStripeClient(): Stripe {
   if (!stripeClient) {
     const secretKey = process.env.STRIPE_SECRET_KEY || '';
     stripeClient = new Stripe(secretKey, {
       typescript: true,
-      apiVersion: '2026-05-27.dahlia' as any,
+      apiVersion: Stripe.API_VERSION,
     });
   }
   return stripeClient;
@@ -167,7 +167,7 @@ export async function processRefund(params: RefundParams): Promise<RefundResult>
       { expand: ['latest_charge'] }
     );
 
-    const charge = paymentIntent.latest_charge as any | null;
+    const charge = paymentIntent.latest_charge as Stripe.Charge | null;
     if (!charge) {
       return {
         success: false,
@@ -178,9 +178,11 @@ export async function processRefund(params: RefundParams): Promise<RefundResult>
       };
     }
 
-    const refundParams: any = {
+    const refundParams: Stripe.RefundCreateParams = {
       charge: charge.id,
-      reason: params.reason as string,
+      ...(params.reason === 'duplicate' || params.reason === 'fraudulent' || params.reason === 'requested_by_customer'
+        ? { reason: params.reason }
+        : {}),
     };
 
     if (params.amount) {

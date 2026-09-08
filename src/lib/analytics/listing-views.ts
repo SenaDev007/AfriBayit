@@ -1,6 +1,6 @@
 /**
  * AfriBayit — Listing Views Analytics
- * Track profile/listing views with visitor metadata
+ * ⚠️ TEMPORARY IN-MEMORY STUB — views are NOT persisted.
  */
 
 export interface ListingViewEvent {
@@ -28,7 +28,7 @@ export interface ListingViewStats {
   dailyViews: { date: string; views: number }[];
 }
 
-// In-memory store
+// In-memory store (NOT persisted — see file header).
 const viewEvents: ListingViewEvent[] = [];
 
 /**
