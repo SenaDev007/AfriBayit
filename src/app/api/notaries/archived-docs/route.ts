@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     let docs: any[] = [];
 
     try {
-      docs = await (db as any).notarialDocument.findMany({
+      docs = await (db as unknown as { notarialDocument: { findMany: (a: unknown) => Promise<unknown[]> } }).notarialDocument.findMany({
         where: { notaryId: userId }, orderBy: { createdAt: 'desc' }, take: 50,
       }) ?? [];
     } catch {}

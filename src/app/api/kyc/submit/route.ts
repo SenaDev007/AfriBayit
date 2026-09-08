@@ -7,6 +7,7 @@
 // - Ajout de authGuard() pour exiger une session authentifiée
 
 import { NextResponse } from 'next/server';
+import type { KycStatus } from '@prisma/client';
 import { db } from '@/lib/db';
 import { toJsonInput } from '@/lib/db-helpers';
 import { analyzeKYCDocument, type KycDocumentType, type KycAnalysisResult } from '@/lib/ai/kyc-analyzer';
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
         ocrResult: toJsonInput(ocrResult),
         ocrValid,
         aiScore,
-        status: docStatus as any,
+        status: docStatus as KycStatus,
         rejectionReason,
         country: country || user.country,
       },

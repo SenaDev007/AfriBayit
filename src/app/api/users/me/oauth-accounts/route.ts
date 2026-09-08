@@ -11,13 +11,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     const user = await db.user.findUnique({ where: { id: userId } });
 
     // Check if Account model exists (NextAuth stores OAuth accounts there)
     let accounts: any[] = [];
     try {
-      accounts = await (db as any).account.findMany({ where: { userId } });
+      accounts = await (db as unknown as { account: { findMany: (a: unknown) => Promise<unknown[]> } }).account.findMany({ where: { userId } });
     } catch {
       // Account model might not exist
     }

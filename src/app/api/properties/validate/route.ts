@@ -105,7 +105,7 @@ export async function POST(request: Request) {
                 propertyIdB: conflict.conflictingPropertyId || '',
                 areaSqmOverlap: conflict.overlapArea || 0,
                 status: 'detected',
-              } as any,
+              } as never,
             }).catch(() => {}); // Ignore if already exists
           }
         }

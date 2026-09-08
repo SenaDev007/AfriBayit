@@ -2,6 +2,7 @@
 // Get dispute details and advance step
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { TransactionStatus } from '@prisma/client';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
 
@@ -144,7 +145,7 @@ export async function PATCH(
       db.transaction.update({
         where: { id },
         data: {
-          status: newStatus as any,
+          status: newStatus as TransactionStatus,
           ...(action === 'resolve' && resolution ? { conditions: JSON.stringify({ resolution, splitBuyer, splitSeller }) } : {}),
         },
       }),

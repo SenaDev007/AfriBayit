@@ -372,25 +372,25 @@ export async function rotateRefreshToken(
     return null;
   }
 
-  const oldPayload = verification.payload as any;
+  const oldPayload = verification.payload as unknown as { sub?: string; exp?: number; iat?: number; jti?: string; role?: string; country?: string | null; userId?: string; email?: string; kycLevel?: number; deviceFingerprint?: string };
 
   // Blacklist the old refresh token (P2.6 — async)
-  await blacklistToken(oldPayload.jti, oldPayload.exp, 'rotation');
+  await blacklistToken((oldPayload.jti || ''), oldPayload.exp || 0, 'rotation');
 
   // Mark old refresh record as rotated (P2.6 — async)
-  const oldRecord = await refreshTokens.get(oldPayload.jti);
+  const oldRecord = await refreshTokens.get(oldPayload.jti || '');
   if (oldRecord) {
     oldRecord.rotated = true;
-    await refreshTokens.set(oldPayload.jti, oldRecord);
+    await refreshTokens.set(oldPayload.jti || '', oldRecord);
   }
 
   // Generate new token pair
   const newPair = await generateTokenPair(
-    oldPayload.sub,
-    oldPayload.email,
-    oldPayload.role,
+    oldPayload.sub || '',
+    oldPayload.email || '',
+    oldPayload.role || '',
     {
-      country: options?.country ?? oldPayload.country,
+      country: options?.country ?? oldPayload.country ?? undefined,
       kycLevel: oldPayload.kycLevel,
       deviceFingerprint: options?.deviceFingerprint ?? oldPayload.deviceFingerprint,
     }
@@ -400,7 +400,7 @@ export async function rotateRefreshToken(
   const newRefreshJti = JSON.parse(base64UrlDecode(newPair.refreshToken.split('.')[1])).jti;
   const newRecord = await refreshTokens.get(newRefreshJti);
   if (newRecord) {
-    newRecord.rotatedFrom = oldPayload.jti;
+    newRecord.rotatedFrom = oldPayload.jti || '';
     await refreshTokens.set(newRefreshJti, newRecord);
   }
 

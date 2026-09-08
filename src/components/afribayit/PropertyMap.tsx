@@ -79,7 +79,7 @@ let googleMapsLoading: Promise<boolean> | null = null;
 
 function loadGoogleMapsApi(apiKey: string): Promise<boolean> {
   if (typeof window === 'undefined') return Promise.resolve(false);
-  if (googleMapsLoaded && (window as any).google?.maps) return Promise.resolve(true);
+  if (googleMapsLoaded && (window as unknown as { google?: typeof google }).google?.maps) return Promise.resolve(true);
   if (googleMapsLoading) return googleMapsLoading;
 
   googleMapsLoading = new Promise((resolve) => {
@@ -315,7 +315,8 @@ export default function PropertyMap({
 
     loadGoogleMapsApi(googleApiKey).then((loaded) => {
       if (cancelled || !loaded || !mapContainerRef.current) { setGoogleFailed(true); return; }
-      const g = (window as any).google;
+      const g = (window as unknown as { google?: typeof google }).google;
+    if (!g?.maps) return;
       const map = new g.maps.Map(mapContainerRef.current, {
         center: { lat: initialView.lat, lng: initialView.lng },
         zoom: initialView.zoom,

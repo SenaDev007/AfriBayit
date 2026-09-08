@@ -47,9 +47,9 @@ export async function POST(request: Request) {
     // Shape response
     const shaped = properties.map(p => {
       let images: string[] = [];
-      try { images = (p.images as any) || [] || []; } catch { images = []; }
+      try { images = (p.images as string[]) || [] || []; } catch { images = []; }
       let features: string[] = [];
-      try { features = (p.features as any) || [] || []; } catch { features = []; }
+      try { features = (p.features as string[]) || [] || []; } catch { features = []; }
 
       return {
         id: p.id,

@@ -169,14 +169,14 @@ export async function GET(request: NextRequest) {
         id: 'booking_com',
         name: 'Booking.com',
         status: 'active',
-        hotelsConnected: await db.hotel.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  otaRefs: { not: null } as any } }),
+        hotelsConnected: await db.hotel.count({ where: { ...(countryFilter ? { country: countryFilter } : {}),  otaRefs: { not: { equals: null } } } }),
         lastSync: (await db.otaSyncLog.findFirst({ where: { ota: 'booking_com', status: 'success' }, orderBy: { executedAt: 'desc' }, select: { executedAt: true } }))?.executedAt || null,
       },
       {
         id: 'expedia',
         name: 'Expedia',
         status: 'active',
-        hotelsConnected: await db.hotel.count({ where: { otaRefs: { not: null } as any } }),
+        hotelsConnected: await db.hotel.count({ where: { otaRefs: { not: { equals: null } } } }),
         lastSync: (await db.otaSyncLog.findFirst({ where: { ota: 'expedia', status: 'success' }, orderBy: { executedAt: 'desc' }, select: { executedAt: true } }))?.executedAt || null,
       },
     ];

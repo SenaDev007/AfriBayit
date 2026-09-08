@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     let transactions: any[] = [];
 
     try {
-      transactions = await (db as any).transaction.findMany({
+      transactions = await (db as unknown as { transaction: { findMany: (a: unknown) => Promise<unknown[]> } }).transaction.findMany({
         where: { notaryId: userId, status: { in: ['NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED'] } },
         include: { property: { select: { title: true, city: true, country: true } }, buyer: { select: { name: true } }, seller: { select: { name: true } } },
         orderBy: { createdAt: 'desc' },

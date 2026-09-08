@@ -109,7 +109,7 @@ async function syncProcessingPayouts(): Promise<void> {
         if (!payout.providerRef) continue;
 
         // Use the verifyPayout method if available
-        const fedapayProvider = provider as any;
+        const fedapayProvider = provider as unknown as Record<string, unknown>;
         if (typeof fedapayProvider.verifyPayout !== 'function') continue;
 
         const statusResult = await fedapayProvider.verifyPayout(payout.providerRef);

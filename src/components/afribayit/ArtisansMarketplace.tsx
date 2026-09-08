@@ -90,13 +90,13 @@ function mapArtisanFromApi(raw: Record<string, unknown>): Artisan {
   const user = raw.user as Record<string, unknown> | null;
   let specialties: string[] = [];
   try {
-    const rawSpec = raw.specialties as any;
+    const rawSpec = raw.specialties as string[];
     if (typeof rawSpec === 'string') specialties = JSON.parse(rawSpec);
     else if (Array.isArray(rawSpec)) specialties = rawSpec as string[];
   } catch { specialties = []; }
   let portfolio: string[] = [];
   try {
-    const rawPort = raw.portfolio as any;
+    const rawPort = raw.portfolio as Record<string, unknown>;
     if (typeof rawPort === 'string') portfolio = JSON.parse(rawPort);
     else if (Array.isArray(rawPort)) portfolio = rawPort as string[];
   } catch { portfolio = []; }

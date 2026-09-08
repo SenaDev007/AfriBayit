@@ -88,7 +88,7 @@ export async function POST(
       let existingOcr: OCRResult | null = null;
       if (existingDoc.ocrResult) {
         try {
-          existingOcr = existingDoc.ocrResult as any as OCRResult | null;
+          existingOcr = existingDoc.ocrResult as unknown as OCRResult | null;
         } catch {
           // Ignore parse errors
         }

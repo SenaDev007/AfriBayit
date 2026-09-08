@@ -41,9 +41,10 @@ export async function POST(request: Request) {
       // Vérifier les politiques de l'hôtel
       if (booking.hotel.policies) {
         try {
-          const policies = booking.hotel.policies as any;
-          if (policies.cancellationPolicy && CANCELLATION_POLICIES[policies.cancellationPolicy]) {
-            effectivePolicyType = policies.cancellationPolicy;
+          const policyMap = (booking.hotel.policies || {}) as Record<string, unknown>;
+          const policyType = policyMap.cancellationPolicy as string;
+          if (policyType && CANCELLATION_POLICIES[policyType]) {
+            effectivePolicyType = policyType;
           }
         } catch {
           // Policies invalides, utiliser la politique par défaut

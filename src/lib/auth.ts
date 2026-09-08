@@ -43,7 +43,7 @@ if (hasRSAKeys) {
     if (!token) return null;
     const result = await verifyRefreshToken(token);
     if (!result.valid || !result.payload) return null;
-    const payload = result.payload as any;
+    const payload = result.payload as unknown as Record<string, unknown>;
     // Return as JWT type expected by NextAuth
     return {
       sub: payload.sub,

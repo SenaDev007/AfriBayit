@@ -113,6 +113,7 @@
     "@playwright/test": "^1.48.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/google.maps": "^3.66.2",
     "@types/mapbox-gl": "^3.5.0",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^22",

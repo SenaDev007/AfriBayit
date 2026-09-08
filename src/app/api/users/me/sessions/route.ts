@@ -11,11 +11,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     // Check if Session model exists in Prisma schema
     let sessions: any[] = [];
     try {
-      sessions = await (db as any).session.findMany({
+      sessions = await (db as unknown as { session: { findMany: (a: unknown) => Promise<unknown[]> } }).session.findMany({
         where: { userId, expires: { gt: new Date() } },
         orderBy: { expires: 'desc' },
         take: 20,

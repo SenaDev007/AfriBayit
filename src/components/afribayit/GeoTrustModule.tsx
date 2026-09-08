@@ -151,7 +151,7 @@ export default function GeoTrustModule() {
     const user = g.user as Record<string, unknown> | null;
     let certifications: string[] = [];
     try {
-      const rawSpec = g.specialities as any;
+      const rawSpec = g.specialities as string[];
       if (typeof rawSpec === 'string') certifications = JSON.parse(rawSpec);
       else if (Array.isArray(rawSpec)) certifications = rawSpec as string[];
     } catch { certifications = []; }

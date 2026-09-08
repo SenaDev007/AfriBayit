@@ -198,7 +198,7 @@ export async function GET(request: Request) {
         profileCompleteness: profile.completenessPct || 0,
         userId: profile.userId,
         slug: profile.slug,
-        specialities: profile.specialities as any,
+        specialities: profile.specialities as unknown[],
       };
 
       return NextResponse.json(transformedProfile);
