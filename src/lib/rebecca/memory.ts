@@ -28,7 +28,7 @@ export async function getConversationMemory(sessionId: string): Promise<Conversa
     return messages.reverse().map((m) => {
       let metadata: Record<string, unknown> | undefined;
       try {
-        metadata = m.metadata ? (m.metadata as any) : undefined;
+        metadata = m.metadata ? (m.metadata as Record<string, unknown>) : undefined;
       } catch {
         metadata = undefined;
       }

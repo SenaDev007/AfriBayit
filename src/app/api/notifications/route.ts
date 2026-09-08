@@ -58,8 +58,8 @@ export async function GET(request: Request) {
         // Extract referenceId from metadata if available
         let referenceId = '';
         try {
-          const metadata = (notification.metadata as any) || {};
-          referenceId = metadata.referenceId || metadata.propertyId || metadata.transactionId || '';
+          const metadata = (notification.metadata as Record<string, unknown> | null) || {};
+          referenceId = (metadata.referenceId as string) || (metadata.propertyId as string) || (metadata.transactionId as string) || '';
         } catch {
           referenceId = '';
         }

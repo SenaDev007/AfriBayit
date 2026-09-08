@@ -36,7 +36,7 @@ export async function getPointsHistory(
     action: t.action,
     points: t.points,
     balanceAfter: t.balanceAfter,
-    metadata: t.metadata as any,
+    metadata: t.metadata as Record<string, unknown>,
     createdAt: t.createdAt,
   }));
 }

@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     const recentSyncs = await db.otaSyncLog.findMany({ where: { hotelId }, orderBy: { executedAt: 'desc' }, take: 20 });
     const hotel = await db.hotel.findUnique({ where: { id: hotelId }, select: { otaRefs: true, name: true } });
     let configuredChannels: string[] = [];
-    if (hotel?.otaRefs) { try { const refs = hotel.otaRefs as any; configuredChannels = Object.keys(refs).filter((k) => refs[k]); } catch { configuredChannels = []; } }
+    if (hotel?.otaRefs) { try { const refs = hotel.otaRefs as Record<string, string>; configuredChannels = Object.keys(refs).filter((k) => refs[k]); } catch { configuredChannels = []; } }
     return apiResponse({ hotelId, hotelName: hotel?.name, configuredChannels, recentSyncs, lastSyncAt: recentSyncs[0]?.executedAt?.toISOString() || null });
   } catch (error) { console.error('OTA Sync status error:', error); return apiError('Erreur', 500, 'SYNC_STATUS_ERROR'); }
 }

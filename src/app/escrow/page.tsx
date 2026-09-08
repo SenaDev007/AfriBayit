@@ -39,7 +39,7 @@ export default function EscrowPage() {
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(urlTransactionId);
 
   const { data: escrowData, isLoading } = useEscrowList(1, 20);
-  const escrowAccounts: any[] = (escrowData?.escrowAccounts as any[]) || [];
+  const escrowAccounts: any[] = (escrowData?.escrowAccounts as unknown[]) || [];
 
   // If URL has transactionId, show the dashboard for that transaction
   const activeTransactionId = selectedTransactionId || urlTransactionId || (escrowAccounts.length > 0 ? escrowAccounts[0]?.transaction?.id || escrowAccounts[0]?.id : null);

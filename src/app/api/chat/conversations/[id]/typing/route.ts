@@ -12,7 +12,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const pusher = getPusherServer();
     if (pusher) {
       await pusher.trigger(`private-conversation-${params.id}`, 'typing', {
-        userId: (session.user as any).id,
+        userId: (session.user as { id?: string }).id || '',
         name: session.user.name,
       });
     }

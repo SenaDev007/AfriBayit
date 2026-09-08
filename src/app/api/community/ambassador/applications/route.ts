@@ -9,14 +9,14 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     const { motivation, city, socialLinks } = await request.json();
 
     if (!motivation || !city) return NextResponse.json({ error: 'Motivation et ville requises' }, { status: 400 });
 
     // Try to create in DB, fall back to success if table doesn't exist
     try {
-      const app = await (db as any).ambassadorApplication.create({
+      const app = await (db as unknown as { ambassadorApplication: { create: (a: unknown) => Promise<Record<string, unknown>> } }).ambassadorApplication.create({
         data: { userId, motivation, city, socialLinks: socialLinks || null, status: 'pending' },
       });
       return NextResponse.json({ success: true, applicationId: app.id });

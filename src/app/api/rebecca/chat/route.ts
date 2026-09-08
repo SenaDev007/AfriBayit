@@ -174,7 +174,7 @@ export async function POST(request: Request) {
       // First LLM call — check if function calling is needed
       const completion = await zai.chat.completions.create({
         model: 'glm-4-flash',
-        messages: conversationMessages as any,
+        messages: conversationMessages as { role: 'system' | 'user' | 'assistant'; content: string }[],
         temperature: 0.7,
         max_tokens: 800,
       });

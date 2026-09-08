@@ -155,7 +155,7 @@ async function handleMultiModelSearch(
       city: typeof body.city === 'string' ? body.city : undefined,
       minPrice: typeof body.priceMin === 'number' ? body.priceMin : undefined,
       maxPrice: typeof body.priceMax === 'number' ? body.priceMax : undefined,
-      sortBy: typeof body.sortBy === 'string' ? body.sortBy as any : 'relevance',
+      sortBy: (typeof body.sortBy === 'string' ? body.sortBy : 'relevance') as 'relevance' | 'newest' | 'price_asc' | 'price_desc' | 'popular' | 'rating',
       page: typeof body.page === 'number' ? Math.max(1, body.page) : 1,
       limit: typeof body.limit === 'number' ? Math.min(100, Math.max(1, body.limit)) : 24,
       certified: typeof body.certified === 'boolean' ? body.certified : undefined,

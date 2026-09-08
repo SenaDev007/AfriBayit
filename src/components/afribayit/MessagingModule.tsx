@@ -189,8 +189,8 @@ export default function MessagingModule({ isOpen, onClose, initialRecipientId }:
           const property = msg.metadata ? msg.metadata : null;
           return (
             <div className="bg-[#003087]/5 border border-[#003087]/20 rounded-lg p-3 max-w-[250px]">
-              <p className="text-xs font-semibold text-[#003087]">{(property as any)?.title || t('messaging.propertyFallback', 'Propriété')}</p>
-              <p className="text-[10px] text-gray-500">{(property as any)?.city}, {(property as any)?.price}</p>
+              <p className="text-xs font-semibold text-[#003087]">{(property as { title?: string })?.title || t('messaging.propertyFallback', 'Propriété')}</p>
+              <p className="text-[10px] text-gray-500">{(property as { city?: string })?.city}, {(property as { price?: number })?.price}</p>
             </div>
           );
         } catch {

@@ -315,7 +315,7 @@ async function findArtisans(args: Record<string, unknown>): Promise<Record<strin
     const formatted = results.map((r) => ({
       id: r.artisan.id,
       trade: r.artisan.trade,
-      specialties: r.artisan.specialties as any,
+      specialties: r.artisan.specialties as string[],
       certified: r.artisan.certified,
       rating: r.artisan.rating,
       reviews: r.artisan.reviews,

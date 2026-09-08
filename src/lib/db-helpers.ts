@@ -20,6 +20,6 @@ export function fromJson<T>(value: unknown, fallback: T): T {
 export function toNumber(value: unknown): number {
   if (value === null || value === undefined) return 0;
   if (typeof value === 'number') return value;
-  if (typeof value === 'object' && value !== null && 'toNumber' in value && typeof (value as any).toNumber === 'function') return (value as any).toNumber();
+  if (typeof value === 'object' && value !== null && 'toNumber' in value && typeof (value as { toNumber?: () => number }).toNumber === 'function') return (value as { toNumber: () => number }).toNumber();
   return Number(String(value));
 }

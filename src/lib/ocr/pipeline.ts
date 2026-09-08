@@ -150,7 +150,7 @@ export async function analyzeDocument(
               type: 'image_url',
               image_url: { url: `data:image/jpeg;base64,${imageBase64}` },
             },
-          ] as any,
+          ] as unknown as string,
         },
       ],
       temperature: 0.3,

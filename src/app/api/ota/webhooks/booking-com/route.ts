@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     for (const hotel of hotels) {
       if (hotel.otaRefs) {
         try {
-          const refs = hotel.otaRefs as any;
+          const refs = hotel.otaRefs as Record<string, string>;
           if (refs.booking_com_id === String(hotel_id)) {
             matchingHotel = hotel;
             break;

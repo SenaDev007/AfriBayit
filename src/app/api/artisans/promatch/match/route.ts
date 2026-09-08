@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     let artisans: any[] = [];
     try {
-      artisans = await (db as any).artisan.findMany({
+      artisans = await (db as unknown as { artisan: { findMany: (a: unknown) => Promise<unknown[]> } }).artisan.findMany({
         where, include: { user: { select: { name: true, avatar: true } } }, take: 50,
       }) ?? [];
     } catch {}

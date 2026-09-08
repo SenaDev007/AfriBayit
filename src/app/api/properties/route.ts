@@ -110,14 +110,14 @@ export async function GET(request: Request) {
       // Parse JSON string fields
       let images: string[] = [];
       try {
-        images = (rest.images as any) || [] || [];
+        images = (rest.images as string[]) || [] || [];
       } catch {
         images = [];
       }
 
       let features: string[] = [];
       try {
-        features = (rest.features as any) || [] || [];
+        features = (rest.features as string[]) || [] || [];
       } catch {
         features = [];
       }

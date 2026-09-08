@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { currentPassword, newPassword } = await request.json();
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
 
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });

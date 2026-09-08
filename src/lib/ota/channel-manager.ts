@@ -53,7 +53,7 @@ async function getHotelProviders(hotelId: string): Promise<BaseOTAProvider[]> {
   if (!hotel?.otaRefs) return [];
 
   let refs: Record<string, string> = {};
-  try { refs = (hotel.otaRefs as any) || {}; } catch { refs = {}; }
+  try { refs = (hotel.otaRefs as Record<string, string>) || {}; } catch { refs = {}; }
 
   const providers: BaseOTAProvider[] = [];
 

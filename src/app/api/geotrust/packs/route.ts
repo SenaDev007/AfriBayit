@@ -9,7 +9,7 @@ export async function GET() {
       nameFr: p.nameFr,
       price: p.price,
       currency: p.currency,
-      features: p.features as any,
+      features: p.features as string[],
       icon: p.icon,
       color: p.color,
       popular: p.popular,

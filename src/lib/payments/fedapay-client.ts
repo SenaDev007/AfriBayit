@@ -310,7 +310,7 @@ export async function chargeMobileMoney(
     const mode = mapNetworkToMode(network);
     const transaction = await Transaction.retrieve(transactionId);
     const tokenResult = await transaction.generateToken();
-    const token = (tokenResult as any)?.token;
+    const token = tokenResult?.token;
 
     if (!token) {
       return { success: false, error: 'Failed to generate payment token' };
