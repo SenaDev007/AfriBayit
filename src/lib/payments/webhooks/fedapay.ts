@@ -114,7 +114,7 @@ async function handleTransactionEvent(
   }
 
   const existingMetadata = walletTx.metadata
-    ? (walletTx.metadata as any)
+    ? (walletTx.metadata as Record<string, unknown>)
     : {};
   const transactionId = (existingMetadata.transactionId as string) || (existingMetadata.reference as string | undefined);
   const propertyId = existingMetadata.propertyId as string | undefined;
@@ -130,7 +130,7 @@ async function handleTransactionEvent(
         webhookEvent: event.event,
         webhookStatus: event.status,
         processedAt: new Date().toISOString(),
-      } as any,
+      },
     },
   });
 
@@ -228,7 +228,7 @@ async function handlePayoutApproved(
         payoutId: payout.id,
         event: event.event,
         confirmedViaWebhook: true,
-      } as any,
+      },
     },
   });
 
@@ -293,7 +293,7 @@ async function handlePayoutFailed(
               originalPayoutId: payout.id,
               reason: 'Payout failed — amount refunded to wallet',
               retryCount: newRetryCount,
-            } as any,
+            },
           },
         }),
       ]);
@@ -509,7 +509,7 @@ async function sendPaymentNotification(
         title,
         message,
         actionUrl,
-        channels: ['push', 'email'] as any,
+        channels: ['push', 'email'] as ('push' | 'email')[],
       },
     });
   } catch (error) {

@@ -243,7 +243,7 @@ export async function createQualifiedSignature(
         provider: 'docusign',
         signers: request.signers.map(s => ({ email: s.email, role: s.role, recipientId: s.recipientId })),
         createdAt: new Date().toISOString(),
-      } as any,
+      },
     },
   });
 
@@ -413,7 +413,7 @@ export async function downloadAndStoreSignedDocument(
         certificateOfCompletion: certificateBase64 ? 'stored' : 'not-available',
         signedAt: new Date().toISOString(),
         legalBasis: 'Loi béninoise n°2017-20 + OHADA + DocuSign qualified e-signature',
-      } as any,
+      },
     },
   });
 

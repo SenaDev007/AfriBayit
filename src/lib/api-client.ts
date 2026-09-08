@@ -1,6 +1,5 @@
-// AfriBayit — API Client (CDC §3.1.2 — frontend calls NestJS backend)
-// This module replaces the old apiFetch helper that called Next.js API routes.
-// All requests now go to the separate NestJS backend (afribayit-api on Fly.io).
+// AfriBayit — API Client (frontend → backend)
+// See docs/adr/0001-monolith-architecture.md. The Next.js app is the backend;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

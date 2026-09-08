@@ -88,7 +88,7 @@ export async function findComparables(
     const scored = comps
       .filter((c) => c.id !== target.id && c.surface > 0)
       .map((c) => {
-        const features: any[] = (() => { try { return Array.isArray(c.features) ? c.features as any[] : []; } catch { return []; } })();
+        const features: string[] = (() => { try { return Array.isArray(c.features) ? c.features as string[] : []; } catch { return []; } })();
 
         const pricePerM2 = c.price / c.surface;
 
@@ -116,9 +116,9 @@ export async function findComparables(
 
         // Feature overlap
         if (Array.isArray(features) && Array.isArray(target.features)) {
-          const targetFeatures = new Set((target.features as any[]).map((f) => String(f).toLowerCase()));
+          const targetFeatures = new Set((target.features as string[]).map((f) => String(f).toLowerCase()));
           const matchCount = features.filter((f: string) => targetFeatures.has(String(f).toLowerCase())).length;
-          const totalFeatures = Math.max((target.features as any[]).length, 1);
+          const totalFeatures = Math.max((target.features as string[]).length, 1);
           similarity += 0.1 * (matchCount / totalFeatures);
         }
 
@@ -166,7 +166,7 @@ export async function findComparables(
         };
       });
 
-    return (scored as any)
+    return scored
       .sort((a, b) => b.similarityScore - a.similarityScore)
       .slice(0, maxResults);
   } catch (error) {

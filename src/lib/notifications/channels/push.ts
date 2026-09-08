@@ -5,6 +5,7 @@
 
 import { db } from '@/lib/db';
 import type { NotificationDeliveryResult, NotificationChannel } from '../types';
+import type { WebPushError } from 'web-push';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -251,7 +252,7 @@ export async function sendPush(
     const error = err instanceof Error ? err.message : 'Unknown push error';
 
     // If subscription is no longer valid (410 Gone), remove it
-    if (err instanceof Error && (err as any).statusCode === 410) {
+    if (err instanceof Error && (err as WebPushError).statusCode === 410) {
       console.warn('[Notifications] Push subscription expired (410 Gone)');
       // Remove the expired subscription from DB
       await removeExpiredSubscription(subscription.endpoint);

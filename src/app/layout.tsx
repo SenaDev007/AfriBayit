@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
@@ -8,6 +9,7 @@ import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
 import ServiceWorkerRegistration from "@/components/providers/ServiceWorkerRegistration";
 import { LocaleProvider } from "@/lib/i18n/context";
+import { LOCALES, type Locale } from "@/lib/i18n";
 
 // Module 4 — Design System:
 //   - Cormorant Garamond → `--font-cormorant` (display/headings) — fixed bug
@@ -75,13 +77,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get('afribayit_locale')?.value;
+  const locale: Locale = (cookieValue && cookieValue in LOCALES) ? (cookieValue as Locale) : 'fr';
+  const isRtl = LOCALES[locale]?.rtl === true;
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang={locale} dir={isRtl ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <head />
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${dmMono.variable} font-sans antialiased bg-background text-foreground`}

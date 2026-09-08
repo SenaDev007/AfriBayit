@@ -69,3 +69,9 @@ server.log
 Caddyfile.env
 .env
 tool-results/
+
+# SQLite dev databases
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal

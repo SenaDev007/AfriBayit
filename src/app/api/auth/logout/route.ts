@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the JWT ID from the session token
-    const jti = (session as any)?.jti;
-    const exp = (session as any)?.exp;
-    const userId = (session.user as any)?.id;
+    const jti = (session as unknown as { jti?: string })?.jti;
+    const exp = (session as unknown as { exp?: number })?.exp;
+    const userId = (session.user as { id?: string })?.id;
 
     // Blacklist the access token
     if (jti && exp) {

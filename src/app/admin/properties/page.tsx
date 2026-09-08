@@ -342,7 +342,7 @@ export default function AdminPropertiesPage() {
               </TableHeader>
               <TableBody>
                 {properties.map((prop) => (
-                  <PropertyRow
+                  <PropertyRowItem
                     key={prop.id}
                     property={prop}
                     selected={selected.has(prop.id)}
@@ -418,7 +418,7 @@ export default function AdminPropertiesPage() {
   );
 }
 
-function PropertyRow({
+function PropertyRowItem({
   property,
   selected,
   onToggle,

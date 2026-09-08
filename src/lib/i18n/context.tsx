@@ -22,8 +22,8 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 const LOCALE_STORAGE_KEY = 'afribayit_locale';
-// Module 3: all 9 locales are now valid — fr, en, ar (RTL), sw, ha, wo, am,
-// ln, fon.
+const LOCALE_COOKIE_KEY = LOCALE_STORAGE_KEY;
+const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const VALID_LOCALES: Locale[] = ['fr', 'en', 'ar', 'sw', 'ha', 'wo', 'am', 'ln', 'fon'];
 
 // ============ Provider ============
@@ -34,11 +34,8 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
-    try {
-      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-    } catch {
-      // localStorage not available
-    }
+    try { localStorage.setItem(LOCALE_STORAGE_KEY, newLocale); } catch {}
+    try { document.cookie = `${LOCALE_COOKIE_KEY}=${newLocale};path=/;max-age=${LOCALE_COOKIE_MAX_AGE};samesite=lax`; } catch {}
   }, []);
 
   // Read from localStorage on mount using a callback-based approach

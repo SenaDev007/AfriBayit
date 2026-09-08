@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
 
     const [annonces, photos, conversations] = await Promise.all([
-      db.property.count({ where: { owner: { id: userId }, status: 'PUBLISHED' as any } }).catch(() => 0),
-      (db as any).propertyImage?.count?.({ where: { property: { ownerId: userId } } })?.catch?.(() => 0) ?? 0,
-      (db as any).conversation?.count?.({ where: { participants: { some: { userId } } } })?.catch?.(() => 0) ?? 0,
+      db.property.count({ where: { owner: { id: userId }, status: 'published' as const } }).catch(() => 0),
+      (db as unknown as { propertyImage?: { count: (args: unknown) => Promise<number> } }).propertyImage?.count?.({ where: { property: { ownerId: userId } } })?.catch?.(() => 0) ?? 0,
+      (db as unknown as { conversation?: { count: (args: unknown) => Promise<number> } }).conversation?.count?.({ where: { participants: { some: { userId } } } })?.catch?.(() => 0) ?? 0,
     ]);
 
     return NextResponse.json({ annonces, photos, inmail: conversations });

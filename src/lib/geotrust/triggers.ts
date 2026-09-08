@@ -150,7 +150,8 @@ export async function detectPropertyConflicts(propertyId: string): Promise<Confl
   for (const deed of propertyDeeds) {
     if (!deed.ocrResult) continue;
     try {
-      const ocrData = deed.ocrResult as any;
+      const ocrData = deed.ocrResult as Record<string, unknown> | null;
+      if (!ocrData) continue;
       const deedNumber = ocrData.numero_titre || ocrData.numero_acd || ocrData.reference;
       if (typeof deedNumber === 'string' && deedNumber.trim()) {
         // Search for other properties with the same deed number in their OCR results
@@ -158,7 +159,7 @@ export async function detectPropertyConflicts(propertyId: string): Promise<Confl
           where: {
             id: { not: deed.id },
             docType: deed.docType,
-            ocrResult: { string_contains: deedNumber.trim() } as any,
+            ocrResult: { string_contains: deedNumber.trim() },
           },
           select: { propertyId: true },
         });

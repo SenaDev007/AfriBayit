@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Find the transaction from the timeline
     const timelineEntry = await db.transactionTimeline.findFirst({
       where: {
-        metadata: { string_contains: envelopeId } as any,
+        metadata: { string_contains: envelopeId },
       },
       select: { transactionId: true },
     });
@@ -105,7 +105,7 @@ async function handleEnvelopeCompleted(envelopeId: string, transactionId: string
   });
 
   if (transaction) {
-    const propertyTitle = (transaction.property as any)?.title || 'votre propriété';
+    const propertyTitle = (transaction.property as { title?: string } | null)?.title || 'votre propriété';
     const message = `L'acte de vente pour "${propertyTitle}" a été signé électroniquement par toutes les parties. La signature est juridiquement opposable conformément à la loi béninoise n°2017-20.`;
 
     for (const userId of [transaction.buyerId, transaction.sellerId]) {
@@ -117,7 +117,7 @@ async function handleEnvelopeCompleted(envelopeId: string, transactionId: string
           title: 'Acte signé — Signature électronique qualifiée',
           message,
           actionUrl: '/escrow',
-          channels: ['push', 'email'] as any,
+          channels: ['push', 'email'] as ('push' | 'email')[],
         },
       }).catch(() => {});
     }
@@ -143,7 +143,7 @@ async function handleEnvelopeDeclined(envelopeId: string, transactionId: string 
         envelopeId,
         provider: 'docusign',
         declinedAt: new Date().toISOString(),
-      } as any,
+      },
     },
   });
 
@@ -163,7 +163,7 @@ async function handleEnvelopeDeclined(envelopeId: string, transactionId: string 
           title: 'Signature refusée',
           message: 'Un des signataires a refusé de signer l\'acte de vente électronique. Veuillez contacter le notaire pour plus d\'informations.',
           actionUrl: '/escrow',
-          channels: ['push', 'email'] as any,
+          channels: ['push', 'email'] as ('push' | 'email')[],
         },
       }).catch(() => {});
     }
@@ -189,7 +189,7 @@ async function handleEnvelopeVoided(envelopeId: string, transactionId: string | 
         envelopeId,
         provider: 'docusign',
         voidedAt: new Date().toISOString(),
-      } as any,
+      },
     },
   });
 }

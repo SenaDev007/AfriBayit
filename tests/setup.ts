@@ -1,10 +1,7 @@
-// AfriBayit — Vitest Setup (P4.1 + Module 19 — frontend-only test setup)
+// AfriBayit — Vitest Setup (P4.1 + Module 19)
 //
-// Replaces the dead Prisma/Resend/z-ai-sdk mocks (this is a frontend-only
-// repo — there's no Prisma client, no email sender, no LLM SDK on this
-// side of the wire). The new mocks cover Next.js server helpers,
-// NextAuth (server + React), and the api-client so unit tests can drive
-// the auth flow without a live backend.
+// This is a full-stack Next.js monolith (see docs/adr/0001-monolith-architecture.md).
+// Unit tests here only exercise pure-utility code paths.
 
 import { vi } from 'vitest';
 

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = (session.user as any).id;
+    const userId = (session.user as { id?: string }).id || '';
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '30j';
     const days = period === '7j' ? 7 : period === '90j' ? 90 : period === '12m' ? 365 : 30;
@@ -25,28 +25,28 @@ export async function GET(request: NextRequest) {
     let comments = 0;
 
     try {
-      const views = await (db as any).analyticsEvent?.groupBy?.({
+      const views = await (db as unknown as { analyticsEvent?: { groupBy: (args: unknown) => Promise<Array<{ source: string; _count: number }>> } }).analyticsEvent?.groupBy?.({
         by: ['source'],
         where: { userId, eventType: 'profile_view', createdAt: { gte: since } },
         _count: true,
       }) ?? [];
-      profileViews.total = views.reduce((s: number, p: any) => s + p._count, 0);
-      profileViews.direct = views.find((p: any) => p.source === 'direct')?._count || 0;
-      profileViews.search = views.find((p: any) => p.source === 'search')?._count || 0;
-      profileViews.referral = views.find((p: any) => p.source === 'referral')?._count || 0;
+      profileViews.total = views.reduce((s: number, p: { source: string; _count: number }) => s + p._count, 0);
+      profileViews.direct = views.find((p) => p.source === 'direct')?._count || 0;
+      profileViews.search = views.find((p) => p.source === 'search')?._count || 0;
+      profileViews.referral = views.find((p) => p.source === 'referral')?._count || 0;
     } catch {}
 
     try {
-      connections = await (db as any).connection?.count?.({
+      connections = await (db as unknown as { connection?: { count: (args: unknown) => Promise<number> } }).connection?.count?.({
         where: { OR: [{ userId }, { connectedToId: userId }], createdAt: { gte: since } },
       }) ?? 0;
     } catch {}
 
     try {
-      likes = await (db as any).like?.count?.({
+      likes = await (db as unknown as { like?: { count: (args: unknown) => Promise<number> } }).like?.count?.({
         where: { post: { authorId: userId }, createdAt: { gte: since } },
       }) ?? 0;
-      comments = await (db as any).comment?.count?.({
+      comments = await (db as unknown as { comment?: { count: (args: unknown) => Promise<number> } }).comment?.count?.({
         where: { post: { authorId: userId }, createdAt: { gte: since } },
       }) ?? 0;
     } catch {}

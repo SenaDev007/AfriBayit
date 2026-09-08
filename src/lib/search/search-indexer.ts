@@ -58,7 +58,7 @@ export async function indexProperty(propertyId: string): Promise<boolean> {
 
     if (property) {
       let features: string[] = [];
-      try { features = (property.features as any) || []; } catch { features = []; }
+      try { features = (property.features as string[]) || []; } catch { features = []; }
 
       const doc: SearchDocument = {
         id: property.id,
@@ -165,7 +165,7 @@ export async function indexAllHotels(country?: string): Promise<{
     for (const h of hotels) {
       try {
         let amenities: string[] = [];
-        try { amenities = (h.amenities as any) || []; } catch { amenities = []; }
+        try { amenities = (h.amenities as string[]) || []; } catch { amenities = []; }
 
         const doc: SearchDocument = {
           id: h.id,
@@ -232,7 +232,7 @@ export async function indexAllGuesthouses(country?: string): Promise<{
     for (const g of guesthouses) {
       try {
         let amenities: string[] = [];
-        try { amenities = (g.amenities as any) || []; } catch { amenities = []; }
+        try { amenities = (g.amenities as string[]) || []; } catch { amenities = []; }
 
         const minRoomPrice = g.rooms[0]?.basePrice || 0;
 
@@ -296,7 +296,7 @@ export async function indexAllArtisans(country?: string): Promise<{
     for (const a of artisans) {
       try {
         let specialties: string[] = [];
-        try { specialties = (a.specialties as any) || []; } catch { specialties = []; }
+        try { specialties = (a.specialties as string[]) || []; } catch { specialties = []; }
 
         const doc: SearchDocument = {
           id: a.id,
@@ -413,7 +413,7 @@ export async function indexAllProperties(country?: string, batchSize = 100): Pro
     const countResult = country
       ? await db.$queryRawUnsafe(`SELECT COUNT(*) as total FROM properties WHERE country = $1`, country)
       : await db.$queryRawUnsafe(`SELECT COUNT(*) as total FROM properties`);
-    total = Number((countResult as any[])?.[0]?.total || 0);
+    total = Number((countResult as Array<{ total: bigint | number }> | undefined)?.[0]?.total || 0);
 
     // Try the fast bulk approach first
     try {
@@ -518,7 +518,7 @@ async function indexAllPropertiesToES(country?: string): Promise<void> {
 
     for (const p of properties) {
       let features: string[] = [];
-      try { features = (p.features as any) || []; } catch { features = []; }
+      try { features = (p.features as string[]) || []; } catch { features = []; }
 
       const doc: SearchDocument = {
         id: p.id,
@@ -601,7 +601,7 @@ export async function indexMissingProperties(): Promise<number> {
       SELECT id FROM properties WHERE "searchVector" IS NULL LIMIT 500
     `);
 
-    const ids = (unindexed as any[]).map((r: any) => r.id);
+    const ids = (unindexed as Array<{ id: string }>).map((r) => r.id);
     if (ids.length === 0) return 0;
 
     // Bulk update
@@ -641,7 +641,7 @@ export async function reindexDocument(
         const hotel = await db.hotel.findUnique({ where: { id } });
         if (!hotel) return false;
         let amenities: string[] = [];
-        try { amenities = (hotel.amenities as any) || []; } catch { amenities = []; }
+        try { amenities = (hotel.amenities as string[]) || []; } catch { amenities = []; }
         await indexDocument({
           id: hotel.id, type: 'hotel', title: hotel.name,
           description: (hotel.policies as string) || '' || '', city: hotel.city,
@@ -659,7 +659,7 @@ export async function reindexDocument(
         });
         if (!gh) return false;
         let amenities: string[] = [];
-        try { amenities = (gh.amenities as any) || []; } catch { amenities = []; }
+        try { amenities = (gh.amenities as string[]) || []; } catch { amenities = []; }
         await indexDocument({
           id: gh.id, type: 'guesthouse', title: gh.name,
           description: (gh.description as string) || '' || '', city: gh.city,
@@ -675,7 +675,7 @@ export async function reindexDocument(
         const artisan = await db.artisan.findUnique({ where: { id } });
         if (!artisan) return false;
         let specialties: string[] = [];
-        try { specialties = (artisan.specialties as any) || []; } catch { specialties = []; }
+        try { specialties = (artisan.specialties as string[]) || []; } catch { specialties = []; }
         await indexDocument({
           id: artisan.id, type: 'artisan', title: artisan.trade,
           description: artisan.trade, city: artisan.city || '',
