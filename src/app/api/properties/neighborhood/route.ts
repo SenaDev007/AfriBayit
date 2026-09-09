@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const lng = parseFloat(searchParams.get('lng') || '2.39');
     const city = searchParams.get('city') || 'Cotonou';
 
-    const analysis = analyzeNeighborhood(lat, lng, city);
+    const analysis = await analyzeNeighborhood(lat, lng, city);
     const environmental = getEnvironmentalData(city);
 
     return NextResponse.json({
