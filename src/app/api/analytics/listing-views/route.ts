@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const ownListingIds = ownListings.map((p) => p.id);
     if (effectiveListingIds.length === 0) effectiveListingIds = ownListingIds;
     else if (!isSuperAdmin) { const s = new Set(ownListingIds); effectiveListingIds = effectiveListingIds.filter((id) => s.has(id)); }
-    const stats = getUserListingViewStats(effectiveListingIds);
+    const stats = await getUserListingViewStats(effectiveListingIds);
     return NextResponse.json({ userId, ...stats });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Erreur' }, { status: 500 });
