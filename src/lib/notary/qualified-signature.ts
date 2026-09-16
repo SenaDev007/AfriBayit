@@ -23,6 +23,7 @@
 
 import { db } from '@/lib/db';
 import { getSignedUploadUrl } from '@/lib/storage/r2';
+import { getAppBaseUrl } from '@/lib/app-url';
 
 // ============ Configuration ============
 
@@ -181,7 +182,7 @@ export async function createQualifiedSignature(
     subject: `AfriBayit — Signature de l'acte de vente`,
     emailBlurb: `Veuillez signer l'acte de vente pour la transaction ${request.transactionId}. Cette signature a la même valeur juridique qu'une signature manuscrite conformément à la loi OHADA et la loi béninoise n°2017-20.`,
     eventNotification: {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/api/notary/webhooks/docusign`,
+      url: `${await getAppBaseUrl()}/api/notary/webhooks/docusign`,
       loggingEnabled: true,
       envelopeEvents: [
         { envelopeEventStatusCode: 'sent', includeDocuments: false },
@@ -280,7 +281,7 @@ async function getRecipientViewUrls(
           email: signer.email,
           recipientId: signer.recipientId,
           authenticationMethod: 'none',
-          returnUrl: `${process.env.NEXT_PUBLIC_APP_URL}/notary-dashboard?envelope=${envelopeId}&recipient=${signer.recipientId}`,
+          returnUrl: `${await getAppBaseUrl()}/notary-dashboard?envelope=${envelopeId}&recipient=${signer.recipientId}`,
         }),
       });
 

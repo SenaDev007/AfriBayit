@@ -16,6 +16,7 @@ import type {
 } from '../types';
 import { FEDAPAY_COUNTRY_SUFFIX, FEDAPAY_COUNTRIES, MOBILE_MONEY_METHODS } from '../types';
 import { PaymentProviderBase } from './base-provider';
+import { getAppBaseUrl } from '@/lib/app-url';
 
 // ============ Configuration ============
 
@@ -272,12 +273,16 @@ export class FedaPayProvider extends PaymentProviderBase {
     console.info(`[FedaPay] Initiating ${isMobileMoney ? 'Mobile Money' : 'Card'} payment: ${amount} ${currency} via ${fedapayMethod}`);
 
     // Build the FedaPay transaction payload per API v2 spec
+    const appBaseUrl = await getAppBaseUrl();
     const payload: Record<string, unknown> = {
       description: description || `AfriBayit - Transaction ${reference}`,
       amount: Math.round(amount), // FedaPay expects integer amounts
       currency: { iso: currency.toUpperCase() }, // FedaPay expects { iso: "XOF" }
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://afri-bayit.vercel.app'}/api/payments/webhook/fedapay`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://afri-bayit.vercel.app'}/payment/callback?ref=${reference}`,
+      // Runtime request origin — a stale NEXT_PUBLIC_APP_URL pointing at a
+      // deleted deployment would send webhooks (and payer redirects) to a
+      // dead host, silently breaking escrow funding in production.
+      callback_url: `${appBaseUrl}/api/payments/webhook/fedapay`,
+      return_url: `${appBaseUrl}/payment/callback?ref=${reference}`,
       metadata: {
         reference,
         country: countryCode,

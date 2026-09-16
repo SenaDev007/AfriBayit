@@ -3,6 +3,7 @@
 // Supports: checkout sessions, transaction verification, Mobile Money payouts
 
 import { FedaPay, Transaction, Payout, Customer, Webhook } from 'fedapay';
+import { getAppBaseUrl } from '@/lib/app-url';
 
 // ============ Initialization ============
 
@@ -126,12 +127,16 @@ export async function createCheckout(params: CheckoutParams): Promise<CheckoutRe
     }
 
     // Create the transaction
+    // Runtime request origin — NEXT_PUBLIC_APP_URL may be unset or stale
+    // (dead deployment); a dead callback_url silently breaks webhook
+    // delivery and escrow funding.
+    const appBaseUrl = await getAppBaseUrl();
     const transactionData: Record<string, unknown> = {
       amount: Math.round(params.amount),
       currency: params.currency.toLowerCase(),
       description: (params.description as string) || '',
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payments/webhook/fedapay`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`,
+      callback_url: `${appBaseUrl}/api/payments/webhook/fedapay`,
+      return_url: `${appBaseUrl}/payment/callback`,
       metadata: {
         ...params.metadata,
         customerId: params.customerId,

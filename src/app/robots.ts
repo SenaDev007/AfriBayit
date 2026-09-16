@@ -3,10 +3,13 @@
 // Reference: https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots
 
 import { MetadataRoute } from 'next';
+import { getAppBaseUrl } from '@/lib/app-url';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://afribayit.com';
-
-export default function robots(): MetadataRoute.Robots {
+// Runtime request origin with NEXT_PUBLIC_APP_URL fallback — a stale
+// dashboard value pointing at a deleted deployment must not advertise a
+// dead sitemap host to crawlers.
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const BASE_URL = await getAppBaseUrl();
   return {
     rules: [
       {

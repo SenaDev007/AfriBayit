@@ -2,9 +2,7 @@
 // Generates /sitemap.xml — fetches dynamic URLs from backend API
 
 import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://afribayit.com';
+import { getAppBaseUrl } from '@/lib/app-url';
 
 // Normalize API URL — ensure protocol, no trailing slash. Empty when the
 // legacy NEXT_PUBLIC_API_URL split-backend variable is unset (monolith).
@@ -24,8 +22,7 @@ const API_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL);
  * 1. Legacy split backend (NEXT_PUBLIC_API_URL) — serves routes WITHOUT the
  *    /api prefix (old Railway convention). A stale value pointing at a
  *    removed host simply fails and we move on.
- * 2. Same-origin monolith — routes under /api/* (request host via headers()).
- * 3. VERCEL_URL deployment origin (fallback when headers are unavailable).
+ * 2. Same-origin monolith — routes under /api/* (base via getAppBaseUrl()).
  * Returns null when every candidate fails — sitemap degrades to static
  * entries only, exactly like the previous try/catch behavior.
  */
@@ -34,21 +31,7 @@ async function fetchApiJson(path: string, revalidate = 3600): Promise<unknown> {
   if (API_URL) {
     candidates.push(`${API_URL}${path}`);
   }
-  try {
-    const h = await headers();
-    const host = h.get('x-forwarded-host') || h.get('host');
-    if (host) {
-      const proto =
-        h.get('x-forwarded-proto') ||
-        (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
-      candidates.push(`${proto}://${host}/api${path}`);
-    }
-  } catch {
-    // headers() unavailable outside a request scope — skip this candidate.
-  }
-  if (process.env.VERCEL_URL) {
-    candidates.push(`https://${process.env.VERCEL_URL}/api${path}`);
-  }
+  candidates.push(`${await getAppBaseUrl()}/api${path}`);
 
   for (const url of candidates) {
     try {
@@ -67,6 +50,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [];
+  const BASE_URL = await getAppBaseUrl();
 
   // 1. Static pages
   const staticPages = [
