@@ -33,6 +33,9 @@ function detectCountryFromSubdomain(hostname: string): string | null {
 
 function isPublicRoute(pathname: string, publicRoutes: string[]): boolean {
   return publicRoutes.some((route) => {
+    // SECURITY FIX (mirrors middleware.ts): '/' must match ONLY the homepage.
+    // As a prefix it matched EVERY path and disabled all middleware auth.
+    if (route === '/') return pathname === '/';
     if (route.endsWith('/')) return pathname.startsWith(route);
     return pathname === route || pathname.startsWith(route + '/');
   });
@@ -127,12 +130,20 @@ describe('Route classification', () => {
     expect(isPublicRoute('/property/123', PUBLIC_ROUTES)).toBe(true);
   });
 
-  it('marks /dashboard as public (matches / prefix — handled as guest-accessible in middleware)', () => {
-    // Note: /dashboard is in GUEST_ACCESSIBLE_ROUTES in the actual middleware,
-    // which means it's allowed through without auth redirect but the page
-    // handles guest mode internally. The isPublicRoute function returns true
-    // because /dashboard starts with /.
-    expect(isPublicRoute('/dashboard', PUBLIC_ROUTES)).toBe(true);
+  it('SECURITY: does NOT treat every path as public via the / entry', () => {
+    // Regression test — the '/' entry used to be treated as a prefix so
+    // isPublicRoute() returned true for ANY path, letting the middleware
+    // serve /admin, /wallet and all protected pages without auth checks.
+    expect(isPublicRoute('/admin', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/admin/users', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/api/admin/stats', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/wallet', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/dashboard', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/kyc/upload', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/publish', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/settings', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/random-page', PUBLIC_ROUTES)).toBe(false);
+    expect(isPublicRoute('/xyz', PUBLIC_ROUTES)).toBe(false);
   });
 
   it('marks /agent-dashboard as protected', () => {

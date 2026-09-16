@@ -3,7 +3,10 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
+// Use 127.0.0.1 instead of localhost: on CI, Firefox resolves localhost to
+// IPv6 (::1) first while `next dev` listens on IPv4 — every navigation then
+// fails with a connection error. The explicit IPv4 address works everywhere.
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000';
 
 export default defineConfig({
   // Test directory

@@ -75,3 +75,6 @@ tool-results/
 *.db-journal
 prisma/*.db
 prisma/*.db-journal
+
+# Playwright test artifacts (e2e runs)
+test-results/

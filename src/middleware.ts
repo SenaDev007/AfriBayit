@@ -214,6 +214,11 @@ function setCountryContext(response: NextResponse, country: string): void {
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => {
+    // SECURITY FIX: the '/' entry must match ONLY the homepage. Treated as a
+    // prefix ('/' ends with '/'), it made startsWith('/') true for EVERY
+    // path — isPublicRoute() always returned true and the middleware let
+    // /admin, /wallet and all protected pages through WITHOUT auth checks.
+    if (route === '/') return pathname === '/';
     if (route.endsWith('/')) return pathname.startsWith(route);
     return pathname === route || pathname.startsWith(route + '/');
   });
@@ -355,14 +360,19 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
           return tokenRoles.some((r) => roleGate.roles.includes(r));
         }
 
+        // Guest-accessible routes: allow through even without token.
+        // ORDER FIX: this check must run BEFORE the protected-prefix check —
+        // /wallet, /escrow, /dashboard appear in BOTH lists and the design
+        // intent (GUEST_ACCESSIBLE_ROUTES: "no auth redirect", pages handle
+        // guest mode internally) requires guest access to win, mirroring
+        // fallbackMiddleware's ordering below.
+        if (GUEST_ACCESSIBLE_ROUTES.some((prefix) => path.startsWith(prefix))) {
+          return true;
+        }
+
         // Protected routes require authentication
         if (isProtectedRoute(path)) {
           return !!token;
-        }
-
-        // Guest-accessible routes: allow through even without token
-        if (GUEST_ACCESSIBLE_ROUTES.some((prefix) => path.startsWith(prefix))) {
-          return true;
         }
 
         // All other routes: allow by default (public access per CDC)
@@ -428,6 +438,20 @@ export async function middleware(request: NextRequest) {
   } else {
     try {
       response = await authMiddleware(request);
+      // withAuth redirects to the sign-in page even for /api/* paths when the
+      // authorized callback returns false. API clients (and the P1.3 e2e
+      // contract) expect a 401 JSON response, not a 307 HTML redirect —
+      // convert redirects on API paths, mirroring fallbackMiddleware.
+      if (
+        response?.status === 307 &&
+        pathname.startsWith('/api/') &&
+        (isAdminRoute(pathname) || isProtectedRoute(pathname))
+      ) {
+        response = NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
     } catch (error) {
       console.warn(
         '[AfriBayit] Auth middleware failed, using fallback. Error:',

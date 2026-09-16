@@ -99,7 +99,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "^2.15.4",
     "resend": "^6.19.0",
-    "sharp": "^0.34.3",
+    "sharp": "^0.35.4",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.6",
     "stripe": "^22.5.0",
@@ -142,5 +142,8 @@
     "@swc/core",
     "es5-ext",
     "unrs-resolver"
-  ]
+  ],
+  "overrides": {
+    "axios": "^1.20.0"
+  }
 }
