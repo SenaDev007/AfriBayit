@@ -754,7 +754,7 @@ async function emitTransitionNotification(
           title: `Escrow: ${toState}`,
           message: description,
           actionUrl: `/escrow`,
-          channels: JSON.stringify(['push', 'email']),
+          channels: ['push', 'email'],
         },
       })
     );
@@ -770,7 +770,7 @@ async function emitTransitionNotification(
             title: `Escrow: ${toState}`,
             message: description,
             actionUrl: `/escrow`,
-            channels: JSON.stringify(['push', 'email']),
+            channels: ['push', 'email'],
           },
         })
       );
@@ -794,7 +794,7 @@ async function emitTransitionNotification(
               title: 'Litige Escrow signalé',
               message: `Un litige a été signalé pour la transaction ${transactionId}`,
               actionUrl: `/admin/escrow`,
-              channels: JSON.stringify(['push', 'email', 'sms']),
+              channels: ['push', 'email', 'sms'],
             },
           })
         );

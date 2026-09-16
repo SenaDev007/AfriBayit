@@ -4,6 +4,7 @@
 import { processWebhook } from '../index';
 import { db } from '@/lib/db';
 import type { PaymentProvider } from '../types';
+import { parseJsonRecord } from '@/lib/db-helpers';
 
 /**
  * Process a Stripe webhook event.
@@ -33,20 +34,18 @@ export async function handleStripeWebhook(
         where: { id: walletTx.id },
         data: {
           status: mapPaymentStatusToWalletStatus(event.status),
-          metadata: JSON.stringify({
-            ...((walletTx.metadata ? walletTx.metadata : {}) as Record<string, unknown>),
+          metadata: {
+            ...parseJsonRecord(walletTx.metadata),
             webhookEvent: event.event,
             webhookStatus: event.status,
             processedAt: new Date().toISOString(),
-          }),
+          },
         },
       });
 
       // Trigger escrow funding if payment completed
       if (event.status === 'completed' && walletTx.type === 'escrow_fund') {
-        const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
-          : {};
+        const metadata = parseJsonRecord(walletTx.metadata);
         const transactionId = metadata.transactionId as string | undefined;
 
         if (transactionId) {

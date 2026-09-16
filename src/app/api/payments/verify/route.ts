@@ -7,6 +7,7 @@ import { authGuard } from '@/lib/auth-guard';
 import { verifyPayment } from '@/lib/payments';
 import { db } from '@/lib/db';
 import type { PaymentProvider } from '@/lib/payments/types';
+import { parseJsonRecord } from '@/lib/db-helpers';
 
 export async function POST(request: Request) {
   try {
@@ -43,21 +44,19 @@ export async function POST(request: Request) {
           status: result.status === 'completed' ? 'completed'
             : result.status === 'failed' ? 'failed'
             : 'pending',
-          metadata: JSON.stringify({
-            ...((walletTx.metadata ? walletTx.metadata : {}) as Record<string, unknown>),
+          metadata: {
+            ...parseJsonRecord(walletTx.metadata),
             verificationStatus: result.status,
             verifiedAt: new Date().toISOString(),
             verifiedAmount: result.amount,
             verifiedCurrency: result.currency,
-          }),
+          },
         },
       });
 
       // If payment completed, trigger escrow funding
       if (result.status === 'completed' && walletTx.type === 'escrow_fund') {
-        const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
-          : {};
+        const metadata = parseJsonRecord(walletTx.metadata);
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 
         if (transactionId) {
@@ -88,9 +87,7 @@ export async function POST(request: Request) {
 
       // If payment failed, update transaction status
       if (result.status === 'failed') {
-        const metadata = walletTx.metadata
-          ? walletTx.metadata as Record<string, unknown>
-          : {};
+        const metadata = parseJsonRecord(walletTx.metadata);
         const transactionId = (metadata.transactionId as string) || (metadata.reference as string | undefined);
 
         if (transactionId) {

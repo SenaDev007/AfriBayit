@@ -77,9 +77,9 @@ const propDef = {
   price: 75000000,
   nested: { amenities: '["wifi","ac"]', note: 'texte simple' },
 };
-const parsed = deepParseJsonStrings(propDef) as typeof propDef & { nested: { amenities: string[] } };
+const parsed = deepParseJsonStrings(propDef) as unknown as typeof propDef & { nested: { amenities: string[] }, images: string[], features: string[] };
 expect('images devient un vrai tableau', Array.isArray(parsed.images), true);
-expect('images[0] est une URL complète', (parsed.images as string[])[0], 'https://images.unsplash.com/photo-1');
+expect('images[0] est une URL complète', parsed.images[0], 'https://images.unsplash.com/photo-1');
 expect('features devient un tableau', Array.isArray(parsed.features), true);
 expect('title (texte) inchangé', parsed.title, 'Villa Moderne Fidjrossè');
 expect('description (texte) inchangé', parsed.description, 'Magnifique villa moderne avec vue sur la lagune.');

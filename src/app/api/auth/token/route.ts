@@ -26,9 +26,12 @@ export async function GET() {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 
-  const accessToken = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
-  const refreshToken = (session as unknown as Record<string, unknown>)?.refreshToken as string | undefined;
-  const expiresAt = (session as unknown as Record<string, unknown>)?.accessTokenExpiresAt as number | undefined;
+  // A1: the session() callback exposes these fields on session.user, not on
+  // the session root — reading them at the root always returned undefined.
+  const sessionUser = (session.user ?? {}) as Record<string, unknown>;
+  const accessToken = sessionUser.accessToken as string | undefined;
+  const refreshToken = sessionUser.refreshToken as string | undefined;
+  const expiresAt = sessionUser.accessTokenExpiresAt as number | undefined;
 
   if (!accessToken) {
     return NextResponse.json({ authenticated: false, error: 'No access token' }, { status: 401 });

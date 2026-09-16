@@ -146,11 +146,11 @@ export async function schedulePayout(
       country,
       status: 'scheduled',
       scheduledAt,
-      metadata: JSON.stringify({
+      metadata: {
         scheduledBy: 'system',
         originalAmount: amount,
         method,
-      }),
+      },
     },
   });
 

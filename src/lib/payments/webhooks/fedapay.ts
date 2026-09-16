@@ -7,6 +7,7 @@
 import { processWebhook } from '../index';
 import { db } from '@/lib/db';
 import type { PaymentProvider, PaymentStatus } from '../types';
+import { parseJsonRecord } from '@/lib/db-helpers';
 
 /**
  * Process a FedaPay webhook event.
@@ -113,9 +114,7 @@ async function handleTransactionEvent(
     return;
   }
 
-  const existingMetadata = walletTx.metadata
-    ? (walletTx.metadata as Record<string, unknown>)
-    : {};
+  const existingMetadata = parseJsonRecord(walletTx.metadata);
   const transactionId = (existingMetadata.transactionId as string) || (existingMetadata.reference as string | undefined);
   const propertyId = existingMetadata.propertyId as string | undefined;
 

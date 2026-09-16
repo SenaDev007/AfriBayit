@@ -11,6 +11,7 @@ import { getProvider, selectBestProvider } from './index';
 import { calculateCommissionByType } from './escrow-engine';
 import type { PaymentMethod, PayoutRequest, PayoutResponse } from './types';
 import { MOBILE_MONEY_METHODS } from './types';
+import { parseJsonRecord } from '@/lib/db-helpers';
 
 /**
  * Commission rates by transaction amount range — aligned with escrow-engine.ts (P1.7)
@@ -184,7 +185,7 @@ export async function scheduleJ1Payout(
         currency,
         status: 'pending',
         reference: transactionId,
-        metadata: JSON.stringify({
+        metadata: {
           reason: 'below_minimum',
           minAmount: MIN_PAYOUT_AMOUNT,
           scheduledAmount: amount,
@@ -192,7 +193,7 @@ export async function scheduleJ1Payout(
           destination,
           countryCode,
           scheduledFor: scheduledFor.toISOString(),
-        }),
+        },
       },
     });
 
@@ -228,7 +229,7 @@ export async function scheduleJ1Payout(
         currency,
         status: 'pending',
         reference: `${transactionId}_j1${splitIndex > 0 ? `_${splitIndex}` : ''}`,
-        metadata: JSON.stringify({
+        metadata: {
           transactionId,
           payoutType: 'j1_auto',
           method,
@@ -241,7 +242,7 @@ export async function scheduleJ1Payout(
           chunkAmount,
           retryCount: 0,
           maxRetries: MAX_RETRY_ATTEMPTS,
-        }),
+        },
       },
     });
 
@@ -294,7 +295,7 @@ export async function processScheduledPayouts(): Promise<{
   let failed = 0;
 
   for (const payout of scheduledPayouts) {
-    const metadata = payout.metadata ? payout.metadata as Record<string, unknown> : {};
+    const metadata = parseJsonRecord(payout.metadata);
     const scheduledFor = metadata.scheduledFor as string | undefined;
 
     // Only process payouts that are scheduled for today or earlier
@@ -314,7 +315,7 @@ export async function processScheduledPayouts(): Promise<{
         where: { id: payout.id },
         data: {
           status: 'completed', // Use as lock — will revert to pending on failure
-          metadata: JSON.stringify({ ...metadata, processingAt: now.toISOString() }),
+          metadata: { ...metadata, processingAt: now.toISOString() },
         },
       });
 
@@ -338,12 +339,12 @@ export async function processScheduledPayouts(): Promise<{
           data: {
             status: 'completed',
             providerRef: payoutResult.providerRef,
-            metadata: JSON.stringify({
+            metadata: {
               ...metadata,
               completedAt: now.toISOString(),
               providerRef: payoutResult.providerRef,
               payoutId: payoutResult.payoutId,
-            }),
+            },
           },
         });
         succeeded++;
@@ -361,13 +362,13 @@ export async function processScheduledPayouts(): Promise<{
           where: { id: payout.id },
           data: {
             status: 'pending', // Reset to pending for next batch
-            metadata: JSON.stringify({
+            metadata: {
               ...metadata,
               retryCount: retryCount + 1,
               lastError: errorMessage,
               lastRetryAt: now.toISOString(),
               nextRetryScheduled: getNextBusinessDay(now).toISOString(),
-            }),
+            },
           },
         });
         results.push({ payoutId: payout.id, status: 'retrying', error: errorMessage });
@@ -377,13 +378,13 @@ export async function processScheduledPayouts(): Promise<{
           where: { id: payout.id },
           data: {
             status: 'failed',
-            metadata: JSON.stringify({
+            metadata: {
               ...metadata,
               retryCount,
               lastError: errorMessage,
               failedAt: now.toISOString(),
               maxRetriesReached: true,
-            }),
+            },
           },
         });
 
@@ -448,7 +449,7 @@ export async function processHeldPayouts(): Promise<{
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
       if (latestHeld?.metadata) {
-        const metadata = latestHeld.metadata as Record<string, unknown>;
+        const metadata = parseJsonRecord(latestHeld.metadata);
 
         // Schedule the combined payout
         await scheduleJ1Payout(
@@ -566,12 +567,12 @@ export async function processPayout(request: PayoutRequest): Promise<PayoutRespo
       balanceAfter: newBalance,
       currency: request.currency,
       status: 'pending',
-      metadata: JSON.stringify({
+      metadata: {
         method: request.method,
         destination: request.destination,
         countryCode: request.countryCode,
         provider: providerName,
-      }),
+      },
     },
   });
 
@@ -690,14 +691,14 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
         currency: transaction.currency,
         status: 'completed',
         reference: transactionId,
-        metadata: JSON.stringify({
+        metadata: {
           transactionId,
           escrowAmount: escrow.heldAmount,
           commission,
           commissionRate,
           sellerAmount,
           propertyTitle: transaction.property?.title,
-        }),
+        },
       },
     }),
     // Credit commission to platform wallet (admin)
@@ -710,11 +711,11 @@ export async function processSellerPayout(transactionId: string): Promise<void> 
         currency: transaction.currency,
         status: 'completed',
         reference: transactionId,
-        metadata: JSON.stringify({
+        metadata: {
           transactionId,
           commissionRate,
           commission,
-        }),
+        },
       },
     }),
   ]);
@@ -774,7 +775,7 @@ export async function getPayoutStatus(payoutId: string): Promise<{
 
   if (!tx) return null;
 
-  const metadata = tx.metadata ? tx.metadata as Record<string, unknown> : {};
+  const metadata = parseJsonRecord(tx.metadata);
 
   return {
     id: tx.id,

@@ -241,7 +241,7 @@ export async function POST(request: Request) {
         currency,
         status: 'pending',
         providerRef: result.providerRef,
-        metadata: JSON.stringify({
+        metadata: {
           paymentId: result.paymentId,
           provider: selectedProvider,
           method,
@@ -250,7 +250,7 @@ export async function POST(request: Request) {
           transactionId: transactionId || undefined,
           redirectUrl: result.redirectUrl,
           countryCode,
-        }),
+        },
       },
     });
 
