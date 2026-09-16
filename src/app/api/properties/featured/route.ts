@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { cache, buildCacheKey } from '@/lib/cache';
+import { parseJsonArray } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -52,13 +53,9 @@ export async function GET(request: Request) {
     });
 
     // Parse images and format for hero display
+    // Defensive: legacy rows may store images as a JSON-encoded string.
     const formatted = properties.map((p) => {
-      let images: string[] = [];
-      try {
-        images = (p.images as string[]) || [] || [];
-      } catch {
-        images = [];
-      }
+      const images = parseJsonArray<string>(p.images);
 
       return {
         id: p.id,

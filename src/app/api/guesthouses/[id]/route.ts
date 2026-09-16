@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -63,9 +64,9 @@ export async function PATCH(
         ...(body.address && { address: body.address }),
         ...(body.lat !== undefined && { lat: body.lat }),
         ...(body.lng !== undefined && { lng: body.lng }),
-        ...(body.images && { images: JSON.stringify(body.images) }),
-        ...(body.amenities && { amenities: JSON.stringify(body.amenities) }),
-        ...(body.rules && { rules: JSON.stringify(body.rules) }),
+        ...(body.images && { images: toJsonInput(body.images) }),
+        ...(body.amenities && { amenities: toJsonInput(body.amenities) }),
+        ...(body.rules && { rules: toJsonInput(body.rules) }),
         ...(body.certificationStatus && { certificationStatus: body.certificationStatus }),
         ...(body.breakfastAvailable !== undefined && { breakfastAvailable: body.breakfastAvailable }),
         ...(body.breakfastPrice !== undefined && { breakfastPrice: body.breakfastPrice }),

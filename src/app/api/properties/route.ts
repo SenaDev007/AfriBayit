@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { propertyCreateSchema } from '@/lib/validations/property.schema';
 import { authGuard } from '@/lib/auth-guard';
 import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
-import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
+import { toJsonInput, fromJson, toNumber, parseJsonArray } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
   try {
@@ -107,20 +107,10 @@ export async function GET(request: Request) {
     // Parse JSON fields and shape response
     const properties = propertiesRaw.map((p) => {
       const { owner, ...rest } = p;
-      // Parse JSON string fields
-      let images: string[] = [];
-      try {
-        images = (rest.images as string[]) || [] || [];
-      } catch {
-        images = [];
-      }
-
-      let features: string[] = [];
-      try {
-        features = (rest.features as string[]) || [] || [];
-      } catch {
-        features = [];
-      }
+      // Defensive parsing: legacy rows may store these Json columns as
+      // JSON-encoded strings (e.g. images: '["https://…"]').
+      const images = parseJsonArray<string>(rest.images);
+      const features = parseJsonArray<string>(rest.features);
 
       return {
         ...rest,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -68,7 +69,7 @@ export async function PATCH(
         ...(body.content !== undefined && { content: body.content }),
         ...(body.category !== undefined && { category: body.category }),
         ...(body.country !== undefined && { country: body.country }),
-        ...(body.tags !== undefined && { tags: JSON.stringify(body.tags) }),
+        ...(body.tags !== undefined && { tags: toJsonInput(body.tags) }),
         ...(body.pinned !== undefined && { pinned: body.pinned }),
       },
       include: {

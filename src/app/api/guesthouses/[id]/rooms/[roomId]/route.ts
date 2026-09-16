@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function PATCH(
@@ -36,10 +37,10 @@ export async function PATCH(
       data: {
         ...(body.name !== undefined && { name: body.name }),
         ...(body.capacity !== undefined && { capacity: body.capacity }),
-        ...(body.amenities !== undefined && { amenities: JSON.stringify(body.amenities) }),
+        ...(body.amenities !== undefined && { amenities: toJsonInput(body.amenities) }),
         ...(body.basePrice !== undefined && { basePrice: body.basePrice }),
         ...(body.currency !== undefined && { currency: body.currency }),
-        ...(body.photos !== undefined && { photos: JSON.stringify(body.photos) }),
+        ...(body.photos !== undefined && { photos: toJsonInput(body.photos) }),
         ...(body.available !== undefined && { available: body.available }),
         ...(body.instantBooking !== undefined && { instantBooking: body.instantBooking }),
       },

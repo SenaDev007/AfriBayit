@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function PATCH(
@@ -49,7 +50,7 @@ export async function PATCH(
       }
     }
     if (body.completedModules !== undefined) {
-      updateData.completedModules = JSON.stringify(body.completedModules);
+      updateData.completedModules = toJsonInput(body.completedModules);
     }
 
     const updated = await db.courseEnrollment.update({

@@ -3,7 +3,69 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// ─── FIX: Json columns must receive parsed values, not JSON strings ──────────
+// Many seed defs encode Json-typed fields (images, features, specialties,
+// amenities, metadata…) as STRINGS, e.g. images: '["https://…"]'. Stored raw,
+// reading the row back yields the string, so images[0] === '[' and every
+// image URL in the UI breaks. `deepParseJsonStrings()` walks the payload and
+// parses any string that is valid JSON (starts with '[' or '{'); regular
+// text values (titles, descriptions…) never match that shape, so they pass
+// through untouched.
+function deepParseJsonStrings<T>(value: T): T {
+  if (typeof value === 'string') {
+    const t = value.trim();
+    if (
+      (t.startsWith('[') || t.startsWith('{')) &&
+      (t.endsWith(']') || t.endsWith('}'))
+    ) {
+      try {
+        return JSON.parse(t) as unknown as T;
+      } catch {
+        return value; // not valid JSON → keep the original string
+      }
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => deepParseJsonStrings(v)) as unknown as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = deepParseJsonStrings(v);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
+// Extended client: automatically normalizes every create / createMany /
+// upsert payload so Json columns always receive real arrays/objects.
+const basePrisma = new PrismaClient();
+const prisma = basePrisma.$extends({
+  query: {
+    $allModels: {
+      async $allOperations({ operation, args, query }) {
+        const a = args as Record<string, unknown>;
+        if (operation === 'create' || operation === 'upsert') {
+          if (a.data && typeof a.data === 'object') {
+            a.data = deepParseJsonStrings(a.data);
+          }
+          if (operation === 'upsert' && a.update && typeof a.update === 'object') {
+            a.update = deepParseJsonStrings(a.update);
+          }
+        } else if (operation === 'createMany') {
+          if (Array.isArray(a.data)) {
+            a.data = a.data.map((d) => deepParseJsonStrings(d));
+          } else if (a.data && typeof a.data === 'object') {
+            a.data = deepParseJsonStrings(a.data);
+          }
+        }
+        return query(args);
+      },
+    },
+  },
+});
 
 // ─── Helper ────────────────────────────────────────────────────────────────
 const now = new Date();
@@ -2012,7 +2074,7 @@ async function main() {
 
     // Create escrow account
     const escrow = await prisma.escrowAccount.create({
-      data: { status: undefined,
+      data: {
         transactionId: transaction.id,
         balance: txd.escrowBalance,
         heldAmount: txd.escrowHeld,
@@ -3452,28 +3514,28 @@ async function main() {
   console.info('\n→ Creating conversations and messages...');
 
   const conv1 = await prisma.conversation.create({
-    data: { status: undefined,
+    data: {
       type: 'rebecca',
       status: 'active',
-      metadata: '{"context":"property_search","propertyType":"appartement","city":"Cotonou"}',
+      metadata: { context: 'property_search', propertyType: 'appartement', city: 'Cotonou' },
     },
   });
 
-  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv1.id, userId: buyer1, role: 'admin' } });
+  await prisma.conversationParticipant.create({ data: { conversationId: conv1.id, userId: buyer1, role: 'admin' } });
 
   await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: buyer1, content: 'Bonjour Rebecca, je cherche un appartement T3 à Cotonou, budget 80M XOF.', messageType: 'text' } });
   await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: admin1, content: 'Bonjour ! J\'ai trouvé 3 appartements correspondant à vos critères à Cotonou. Laissez-moi vous les présenter.', messageType: 'text', isRead: true } });
   await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv1.id, senderId: admin1, content: 'Appartement T3 Haie Vive — 35M XOF/location', messageType: 'property_card', metadata: `{"propertyId":"${propertyIds[1]}","price":350000,"type":"appartement"}`, isRead: true } });
 
   const conv2 = await prisma.conversation.create({
-    data: { status: undefined,
+    data: {
       type: 'user_to_user',
       status: 'active',
     },
   });
 
-  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv2.id, userId: buyer2, role: 'participant' } });
-  await prisma.conversationParticipant.create({ data: { status: undefined, conversationId: conv2.id, userId: agentCI, role: 'participant' } });
+  await prisma.conversationParticipant.create({ data: { conversationId: conv2.id, userId: buyer2, role: 'participant' } });
+  await prisma.conversationParticipant.create({ data: { conversationId: conv2.id, userId: agentCI, role: 'participant' } });
 
   await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv2.id, senderId: buyer2, content: 'Bonjour, je suis intéressée par l\'appartement Standing Cocody. Est-il toujours disponible ?' } });
   await prisma.chatMessage.create({ data: { status: undefined, conversationId: conv2.id, senderId: agentCI, content: 'Bonjour Marie ! Oui, l\'appartement est toujours disponible. Quand souhaitez-vous le visiter ?', isRead: true } });

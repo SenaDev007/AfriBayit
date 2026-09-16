@@ -36,9 +36,17 @@ schema, server-side business logic, and all integrations.
 npm ci   # runs `prisma generate` as postinstall
 cp .env.example .env   # edit with your DATABASE_URL, NEXTAUTH_SECRET, FEDAPAY keys, etc.
 npx prisma migrate deploy
-npx prisma db seed   # optional — inserts demo data
+npm run db:seed        # optional — inserts demo data (uses tsx via prisma.seed)
 npm run dev           # → http://localhost:3000
 ```
+
+> **Seed idempotence** : les propriétés sont créées avec des slugs uniques. Si
+> vous relancez le seed après une exécution partielle, faites d'abord
+> `npx prisma migrate reset` (réinitialise la base) puis `npm run db:seed`.
+
+> **NEXT_PUBLIC_API_URL** : laissez-la **vide** en local comme en production —
+> l'application est un monolithe, le client API appelle la même origine
+> (`/api/*`). Ne la définissez que si vous exposez l'API sur un autre hôte.
 
 ## Available Scripts
 
@@ -52,6 +60,7 @@ npm run dev           # → http://localhost:3000
 | `npm test` | Unit tests (Vitest + jsdom) — 236 tests |
 | `npm run test:e2e` | End-to-end tests (Playwright) |
 | `npm run db:migrate` | Deploy migrations (`prisma migrate deploy`) |
+| `npm run db:seed` | Insert demo data (`prisma db seed` → `tsx prisma/seed.ts`) |
 | `npm run db:studio` | Prisma Studio GUI |
 
 ## Architecture

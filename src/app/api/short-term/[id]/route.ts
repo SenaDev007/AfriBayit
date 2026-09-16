@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -77,7 +78,7 @@ export async function PATCH(
         ...(body.address !== undefined && { address: body.address }),
         ...(body.lat !== undefined && { lat: body.lat }),
         ...(body.lng !== undefined && { lng: body.lng }),
-        ...(body.images && { images: JSON.stringify(body.images) }),
+        ...(body.images && { images: toJsonInput(body.images) }),
         ...(body.pricePerNight !== undefined && { pricePerNight: body.pricePerNight }),
         ...(body.weeklyPrice !== undefined && { weeklyPrice: body.weeklyPrice }),
         ...(body.monthlyPrice !== undefined && { monthlyPrice: body.monthlyPrice }),
@@ -86,16 +87,16 @@ export async function PATCH(
         ...(body.bedrooms !== undefined && { bedrooms: body.bedrooms }),
         ...(body.bathrooms !== undefined && { bathrooms: body.bathrooms }),
         ...(body.beds !== undefined && { beds: body.beds }),
-        ...(body.amenities && { amenities: JSON.stringify(body.amenities) }),
-        ...(body.houseRules && { houseRules: JSON.stringify(body.houseRules) }),
+        ...(body.amenities && { amenities: toJsonInput(body.amenities) }),
+        ...(body.houseRules && { houseRules: toJsonInput(body.houseRules) }),
         ...(body.instantBooking !== undefined && { instantBooking: body.instantBooking }),
         ...(body.minStayNights !== undefined && { minStayNights: body.minStayNights }),
         ...(body.maxStayNights !== undefined && { maxStayNights: body.maxStayNights }),
         ...(body.cancellationPolicy && { cancellationPolicy: body.cancellationPolicy }),
         ...(body.cleaningFee !== undefined && { cleaningFee: body.cleaningFee }),
         ...(body.securityDeposit !== undefined && { securityDeposit: body.securityDeposit }),
-        ...(body.otaRefs && { otaRefs: JSON.stringify(body.otaRefs) }),
-        ...(body.otaSyncStatus && { otaSyncStatus: JSON.stringify(body.otaSyncStatus) }),
+        ...(body.otaRefs && { otaRefs: toJsonInput(body.otaRefs) }),
+        ...(body.otaSyncStatus && { otaSyncStatus: toJsonInput(body.otaSyncStatus) }),
         ...(body.hostVerified !== undefined && { hostVerified: body.hostVerified }),
         ...(body.hostIdentityVerified !== undefined && { hostIdentityVerified: body.hostIdentityVerified }),
         ...(body.status && { status: body.status }),

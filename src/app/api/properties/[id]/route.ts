@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
 import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
+import { parseJsonArray, toJsonInput } from '@/lib/db-helpers';
 
 export async function GET(
   _request: Request,
@@ -39,25 +40,16 @@ export async function GET(
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
-    // Parse JSON string fields
-    let images: string[] = [];
-    try {
-      images = (propertyRaw.images as string[]) || [] || [];
-    } catch {
-      images = [];
-    }
+    // Parse JSON fields — defensive: legacy rows may store them as
+    // JSON-encoded strings (e.g. images: '["https://…"]').
+    let images: string[] = parseJsonArray<string>(propertyRaw.images);
 
     // If propertyImages exist, use them as the authoritative image list
     if (propertyRaw.propertyImages && propertyRaw.propertyImages.length > 0) {
       images = propertyRaw.propertyImages.map((img) => img.url);
     }
 
-    let features: string[] = [];
-    try {
-      features = (propertyRaw.features as string[]) || [] || [];
-    } catch {
-      features = [];
-    }
+    const features: string[] = parseJsonArray<string>(propertyRaw.features);
 
     const { owner, propertyImages: _pi, ...rest } = propertyRaw;
 
@@ -134,8 +126,10 @@ export async function PATCH(
         ...(body.quartier !== undefined && { quartier: body.quartier }),
         ...(body.address !== undefined && { address: body.address }),
         ...(body.description !== undefined && { description: (body.description as string) || '' }),
-        ...(body.features !== undefined && { features: JSON.stringify(body.features) }),
-        ...(body.images !== undefined && { images: JSON.stringify(body.images) }),
+        // FIX: write real arrays/objects into Json columns — JSON.stringify()
+        // here stored a string, which broke every image URL on read.
+        ...(body.features !== undefined && { features: toJsonInput(body.features) }),
+        ...(body.images !== undefined && { images: toJsonInput(body.images) }),
         ...(body.lat !== undefined && { lat: body.lat }),
         ...(body.lng !== undefined && { lng: body.lng }),
         ...(body.verified !== undefined && { verified: body.verified }),

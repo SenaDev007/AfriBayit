@@ -1,7 +1,36 @@
 // AfriBayit — API Client (frontend → backend)
 // See docs/adr/0001-monolith-architecture.md. The Next.js app is the backend;
+// all API routes live under `/api/*` on the same origin (monolith).
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Base URL of the API. In the monolith architecture the app IS the backend, so
+// the correct default is same-origin (empty string → relative URLs).
+// NEXT_PUBLIC_API_URL stays supported for split-backend deployments; when set
+// it must point at the server root WITHOUT a trailing slash.
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_URL = RAW_API_URL.replace(/\/+$/, '');
+
+/**
+ * Normalize an API path for the monolith backend.
+ *
+ * The codebase mixes two legacy conventions: some call sites pass `/properties`
+ * (old split-backend style, no prefix) and others pass `/api/properties`.
+ * In the monolith every route handler lives under `src/app/api/**`, so every
+ * request path MUST start with `/api/`.
+ *
+ * @example
+ * toApiPath('/properties?limit=12')   // → '/api/properties?limit=12'
+ * toApiPath('/api/properties')        // → '/api/properties' (unchanged)
+ * toApiPath('properties')             // → '/api/properties'
+ */
+export function toApiPath(path: string): string {
+  let p = path.trim();
+  if (!p.startsWith('/')) p = `/${p}`;
+  // Only add the prefix when missing — never double it.
+  if (!p.startsWith('/api/') && p !== '/api') {
+    p = `/api${p}`;
+  }
+  return p;
+}
 
 // ─── Token Management ────────────────────────────────────────────────────
 
@@ -90,7 +119,9 @@ export async function apiFetch<T = any>(
     body = JSON.stringify(fetchOptions.body);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  // Base URL + normalized path (monolith: routes live under /api/*)
+  const url = `${API_URL}${toApiPath(path)}`;
+  const response = await fetch(url, {
     ...fetchOptions,
     body,
     headers,
@@ -178,7 +209,7 @@ export const api = {
     const token = getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_URL}${rewritePath(path)}`, { headers });
+    const res = await fetch(`${API_URL}${toApiPath(path)}`, { headers });
     if (!res.ok) {
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('application/json')) {
@@ -470,13 +501,16 @@ export function getCountryCode(): string {
 
 // ─── Legacy compatibility exports ─────────────────────────────────────────
 // These wrap the api object to match the old apiFetch/apiPost/apiPatch/apiDelete
-// signatures used by hooks still on the legacy pattern. Paths starting with
-// /api/ are rewritten to remove the /api/ prefix (backend doesn't use it).
+// signatures used by hooks still on the legacy pattern.
+//
+// FIX (monolith): the old `rewritePath` used to STRIP the `/api/` prefix,
+// assuming a separate backend that served routes without it. In the monolith
+// the Next.js app IS the backend and routes live under `/api/*`, so we now
+// normalize every path with `toApiPath` (adds the prefix when missing).
 
 function rewritePath(path: string): string {
-  // Remove /api/ prefix if present (old Next.js API routes → backend API)
-  if (path.startsWith('/api/')) return path.replace('/api/', '/');
-  return path;
+  // Normalize to the monolith convention: ensure the `/api` prefix.
+  return toApiPath(path);
 }
 
 export const apiGet = <T = any>(path: string) => api.get<T>(rewritePath(path));

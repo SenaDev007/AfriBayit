@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -115,7 +116,7 @@ export async function PATCH(
     if (body.modules !== undefined) {
       updateData.modules = typeof body.modules === 'string'
         ? body.modules
-        : JSON.stringify(body.modules);
+        : toJsonInput(body.modules);
     }
 
     const updated = await db.course.update({

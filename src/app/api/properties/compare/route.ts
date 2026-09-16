@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { parseJsonArray } from '@/lib/db-helpers';
 
 // POST /api/properties/compare
 // Accept array of property IDs (max 5), return properties side by side
@@ -47,9 +48,9 @@ export async function POST(request: Request) {
     // Shape response
     const shaped = properties.map(p => {
       let images: string[] = [];
-      try { images = (p.images as string[]) || [] || []; } catch { images = []; }
+      images = parseJsonArray<string>(p.images);
       let features: string[] = [];
-      try { features = (p.features as string[]) || [] || []; } catch { features = []; }
+      features = parseJsonArray<string>(p.features);
 
       return {
         id: p.id,

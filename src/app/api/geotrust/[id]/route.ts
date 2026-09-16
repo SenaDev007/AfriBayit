@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -64,7 +65,7 @@ export async function PATCH(
     const updated = await db.geometer.update({
       where: { id },
       data: {
-        ...(body.specialities !== undefined && { specialities: JSON.stringify(body.specialities) }),
+        ...(body.specialities !== undefined && { specialities: toJsonInput(body.specialities) }),
         ...(body.certificationLevel !== undefined && { certificationLevel: body.certificationLevel }),
         ...(body.zone !== undefined && { zone: body.zone }),
         ...(body.city !== undefined && { city: body.city }),

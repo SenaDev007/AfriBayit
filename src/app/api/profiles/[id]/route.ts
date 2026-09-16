@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -75,15 +76,15 @@ export async function PATCH(
         ...(body.headline !== undefined && { headline: body.headline }),
         ...(body.coverPhoto !== undefined && { coverPhoto: body.coverPhoto }),
         ...(body.bio !== undefined && { bio: body.bio }),
-        ...(body.specialities !== undefined && { specialities: JSON.stringify(body.specialities) }),
-        ...(body.languages !== undefined && { languages: JSON.stringify(body.languages) }),
+        ...(body.specialities !== undefined && { specialities: toJsonInput(body.specialities) }),
+        ...(body.languages !== undefined && { languages: toJsonInput(body.languages) }),
         ...(body.availability !== undefined && { availability: body.availability }),
         ...(body.isPublic !== undefined && { isPublic: body.isPublic }),
         ...(body.slug !== undefined && { slug: body.slug }),
-        ...(body.experience !== undefined && { experience: JSON.stringify(body.experience) }),
-        ...(body.education !== undefined && { education: JSON.stringify(body.education) }),
-        ...(body.certifications !== undefined && { certifications: JSON.stringify(body.certifications) }),
-        ...(body.portfolio !== undefined && { portfolio: JSON.stringify(body.portfolio) }),
+        ...(body.experience !== undefined && { experience: toJsonInput(body.experience) }),
+        ...(body.education !== undefined && { education: toJsonInput(body.education) }),
+        ...(body.certifications !== undefined && { certifications: toJsonInput(body.certifications) }),
+        ...(body.portfolio !== undefined && { portfolio: toJsonInput(body.portfolio) }),
         ...(body.zone !== undefined && { zone: body.zone }),
         ...(body.agencyName !== undefined && { agencyName: body.agencyName }),
       },

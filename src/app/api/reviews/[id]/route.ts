@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { toJsonInput } from '@/lib/db-helpers';
 import { authGuard } from '@/lib/auth-guard';
 
 export async function GET(
@@ -69,7 +70,7 @@ export async function PATCH(
       where: { id },
       data: {
         ...(body.rating !== undefined && { rating: body.rating }),
-        ...(body.subRatings !== undefined && { subRatings: JSON.stringify(body.subRatings) }),
+        ...(body.subRatings !== undefined && { subRatings: toJsonInput(body.subRatings) }),
         ...(body.comment !== undefined && { comment: body.comment }),
         ...(body.verified !== undefined && { verified: body.verified }),
         ...(body.response !== undefined && { response: body.response }),
