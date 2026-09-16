@@ -89,7 +89,7 @@ jobs:
           node-version: 22
           cache: 'npm'
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium firefox
       - name: Run Playwright tests
         run: npm run test:e2e
         env:
@@ -132,6 +132,12 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerabilities
     runs-on: ubuntu-latest
+    # Non-blocking: the remaining highs (prisma/@prisma/config→deepmerge-ts,
+    # @mdxeditor→js-yaml, react-syntax-highlighter) have no safe upgrade path
+    # today — npm's proposed "fix" downgrades Prisma. The report is still
+    # generated and uploaded on every run. Remove continue-on-error once the
+    # upstream fixes land to make failures blocking again.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
