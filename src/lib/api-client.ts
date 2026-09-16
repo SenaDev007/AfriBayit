@@ -9,6 +9,117 @@
 const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const API_URL = RAW_API_URL.replace(/\/+$/, '');
 
+// ─── Same-origin failover (dead split-backend guard) ─────────────────────
+// ADR 0001 (monolith): the Next.js app IS the backend — same-origin is the
+// supported production topology, and NEXT_PUBLIC_API_URL is a legacy escape
+// hatch for split-backend deployments. A stale value pointing at a removed
+// host (e.g. the deleted Railway backend) makes EVERY client-side API call
+// 404 while the same-origin API works perfectly, leaving the site with no
+// data. Self-healing: the first request that fails against a cross-origin
+// API base (HTTP 404/502/503/504, or a network error for idempotent
+// methods) is retried once against same-origin; if the monolith answers we
+// pin same-origin for the rest of the session and warn once in the console
+// so the stale configuration gets noticed and removed.
+
+/** Pinned API base ('' = same-origin) once failover has been confirmed. */
+let pinnedApiBase: string | null = null;
+let failoverWarned = false;
+
+function apiBase(): string {
+  return pinnedApiBase !== null ? pinnedApiBase : API_URL;
+}
+
+/**
+ * True when running in a browser, an external API base is configured, and it
+ * points at a different origin than the current page (SSR and same-origin
+ * setups never fail over).
+ */
+function canFailoverNow(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!RAW_API_URL) return false;
+  if (pinnedApiBase !== null) return false;
+  try {
+    return new URL(RAW_API_URL).origin !== window.location.origin;
+  } catch {
+    // Malformed NEXT_PUBLIC_API_URL — leave requests as configured.
+    return false;
+  }
+}
+
+/**
+ * 404 = no route handler executed anywhere → safe to retry ANY method.
+ * 502/503/504 = gateway-level failure; a write may have been processed, so
+ * only idempotent methods (GET/HEAD) are retried.
+ */
+function shouldFailoverStatus(status: number, method: string): boolean {
+  if (!canFailoverNow()) return false;
+  if (status === 404) return true;
+  if (status === 502 || status === 503 || status === 504) {
+    return method === 'GET' || method === 'HEAD';
+  }
+  return false;
+}
+
+/** Only null/undefined/string bodies can be safely re-sent on a retry. */
+function isRetryableBody(
+  body: BodyInit | null | undefined,
+): body is BodyInit | null | undefined {
+  return body == null || typeof body === 'string';
+}
+
+function pinSameOrigin(): void {
+  pinnedApiBase = '';
+  if (!failoverWarned && typeof console !== 'undefined') {
+    failoverWarned = true;
+    console.warn(
+      `[AfriBayit] NEXT_PUBLIC_API_URL ("${RAW_API_URL}") is unreachable — ` +
+        `automatically falling back to the same-origin monolith API for this session. ` +
+        `Permanent fix: remove the NEXT_PUBLIC_API_URL environment variable ` +
+        `(Vercel → Settings → Environment Variables) and redeploy.`,
+    );
+  }
+}
+
+/**
+ * Fetch with automatic same-origin failover. Retries a failed cross-origin
+ * request once against same-origin; pins same-origin for the session when
+ * the monolith answers.
+ */
+async function fetchWithFailover(
+  apiPath: string,
+  init: RequestInit,
+): Promise<Response> {
+  const method = (init.method || 'GET').toUpperCase();
+  try {
+    const response = await fetch(`${apiBase()}${apiPath}`, init);
+    if (
+      shouldFailoverStatus(response.status, method) &&
+      isRetryableBody(init.body)
+    ) {
+      const retry = await fetch(apiPath, init); // relative → same-origin
+      if (retry.ok) {
+        pinSameOrigin();
+        return retry;
+      }
+    }
+    return response;
+  } catch (networkError) {
+    // Network/DNS-level failure (dead host): retry idempotent requests
+    // against same-origin before surfacing the error. Any HTTP response
+    // from same-origin proves the external host is unreachable → pin.
+    if (
+      (method === 'GET' || method === 'HEAD') &&
+      isRetryableBody(init.body) &&
+      canFailoverNow()
+    ) {
+      const retry = await fetch(apiPath, init);
+      pinSameOrigin();
+      return retry;
+    }
+    throw networkError;
+  }
+}
+
 /**
  * Normalize an API path for the monolith backend.
  *
@@ -119,9 +230,9 @@ export async function apiFetch<T = any>(
     body = JSON.stringify(fetchOptions.body);
   }
 
-  // Base URL + normalized path (monolith: routes live under /api/*)
-  const url = `${API_URL}${toApiPath(path)}`;
-  const response = await fetch(url, {
+  // Base URL + normalized path (monolith: routes live under /api/*), with
+  // automatic same-origin failover when a stale external API base is dead.
+  const response = await fetchWithFailover(toApiPath(path), {
     ...fetchOptions,
     body,
     headers,
@@ -209,7 +320,10 @@ export const api = {
     const token = getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_URL}${toApiPath(path)}`, { headers });
+    const res = await fetchWithFailover(toApiPath(path), {
+      method: 'GET',
+      headers,
+    });
     if (!res.ok) {
       const ct = res.headers.get('content-type') || '';
       if (ct.includes('application/json')) {
@@ -442,6 +556,12 @@ export const adminApi = {
 // ─── Export ───────────────────────────────────────────────────────────────
 
 export default api;
+
+/** @internal Test-only hook: reset failover pinning between unit tests. */
+export function __resetApiFailoverForTests(): void {
+  pinnedApiBase = null;
+  failoverWarned = false;
+}
 
 // ─── Cookie / Country helpers (multi-tenant X-Country-Code header) ─────────
 

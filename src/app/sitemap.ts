@@ -2,20 +2,66 @@
 // Generates /sitemap.xml — fetches dynamic URLs from backend API
 
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://afribayit.com';
 
-// Normalize API URL — ensure protocol, no trailing slash
+// Normalize API URL — ensure protocol, no trailing slash. Empty when the
+// legacy NEXT_PUBLIC_API_URL split-backend variable is unset (monolith).
 function normalizeApiUrl(raw: string | undefined): string {
-  const fallback = 'http://localhost:3001';
-  let url = (raw || fallback).trim();
-  if (!url) return fallback;
+  const url = (raw || '').trim();
+  if (!url) return '';
   if (!/^https?:\/\//i.test(url)) {
-    url = `https://${url}`;
+    return `https://${url}`.replace(/\/+$/, '');
   }
   return url.replace(/\/+$/, '');
 }
 const API_URL = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL);
+
+/**
+ * Fetch JSON from the backend with same-origin fallback (ADR 0001 monolith).
+ * Candidates, in order:
+ * 1. Legacy split backend (NEXT_PUBLIC_API_URL) — serves routes WITHOUT the
+ *    /api prefix (old Railway convention). A stale value pointing at a
+ *    removed host simply fails and we move on.
+ * 2. Same-origin monolith — routes under /api/* (request host via headers()).
+ * 3. VERCEL_URL deployment origin (fallback when headers are unavailable).
+ * Returns null when every candidate fails — sitemap degrades to static
+ * entries only, exactly like the previous try/catch behavior.
+ */
+async function fetchApiJson(path: string, revalidate = 3600): Promise<unknown> {
+  const candidates: string[] = [];
+  if (API_URL) {
+    candidates.push(`${API_URL}${path}`);
+  }
+  try {
+    const h = await headers();
+    const host = h.get('x-forwarded-host') || h.get('host');
+    if (host) {
+      const proto =
+        h.get('x-forwarded-proto') ||
+        (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
+      candidates.push(`${proto}://${host}/api${path}`);
+    }
+  } catch {
+    // headers() unavailable outside a request scope — skip this candidate.
+  }
+  if (process.env.VERCEL_URL) {
+    candidates.push(`https://${process.env.VERCEL_URL}/api${path}`);
+  }
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { next: { revalidate } });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Candidate failed — try the next one.
+    }
+  }
+  return null;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -57,45 +103,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // 2. Dynamic property pages — fetch from backend API
-  try {
-    const res = await fetch(`${API_URL}/properties?limit=5000`, { next: { revalidate: 3600 } });
-    if (res.ok) {
-      const data = await res.json();
-      const properties = data.properties || data || [];
-      for (const p of properties) {
-        if (p.id) {
-          entries.push({
-            url: `${BASE_URL}/property/${p.id}`,
-            lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-          });
-        }
+  // 2. Dynamic property pages — fetch from backend API (with same-origin
+  //    fallback so a stale NEXT_PUBLIC_API_URL cannot silently empty the
+  //    sitemap in production).
+  const propertiesData = (await fetchApiJson('/properties?limit=5000')) as
+    | { properties?: Array<{ id: string; updatedAt?: string }> }
+    | Array<{ id: string; updatedAt?: string }>
+    | null;
+  if (propertiesData) {
+    const properties = Array.isArray(propertiesData)
+      ? propertiesData
+      : (propertiesData.properties || []);
+    for (const p of properties) {
+      if (p.id) {
+        entries.push({
+          url: `${BASE_URL}/property/${p.id}`,
+          lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        });
       }
     }
-  } catch {
-    // API not available — skip dynamic entries
   }
 
-  // 3. Academy courses — fetch from backend API
-  try {
-    const res = await fetch(`${API_URL}/academy/courses?limit=500`, { next: { revalidate: 3600 } });
-    if (res.ok) {
-      const courses = await res.json();
-      for (const c of courses) {
-        if (c.id) {
-          entries.push({
-            url: `${BASE_URL}/academy/${c.id}`,
-            lastModified: c.updatedAt ? new Date(c.updatedAt) : new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.6,
-          });
-        }
+  // 3. Academy courses — fetch from backend API (same-origin fallback)
+  const coursesData = (await fetchApiJson('/academy/courses?limit=500')) as
+    | Array<{ id: string; updatedAt?: string }>
+    | null;
+  if (coursesData) {
+    for (const c of coursesData) {
+      if (c.id) {
+        entries.push({
+          url: `${BASE_URL}/academy/${c.id}`,
+          lastModified: c.updatedAt ? new Date(c.updatedAt) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.6,
+        });
       }
     }
-  } catch {
-    // API not available
   }
 
   return entries;
