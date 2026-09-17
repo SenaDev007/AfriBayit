@@ -120,6 +120,55 @@ async function fetchWithFailover(
   }
 }
 
+// ─── Transient retry (serverless cold starts & gateway blips) ─────────────
+// Vercel serverless functions combined with Neon (which auto-suspends its
+// compute after inactivity) occasionally return a 502/503/504 or drop the
+// connection while the database wakes up. A single short retry on
+// idempotent requests absorbs these transients instead of surfacing
+// « Erreur de chargement » to the visitor. Authoritative application errors
+// (4xx, 500) are never retried — a 500 means the handler ran and failed.
+
+/** Gateway-level statuses that indicate a transient infrastructure failure. */
+const TRANSIENT_STATUSES = new Set([502, 503, 504]);
+
+/** Backoff before the transient retry (ms). Overridable in tests. */
+let retryBackoffMs = 750;
+
+function isIdempotent(method: string): boolean {
+  return method === 'GET' || method === 'HEAD';
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Fetch with ONE automatic retry for transient failures (network error or
+ * 502/503/504) on idempotent requests. Non-idempotent requests and
+ * application-level errors (4xx/500) pass through untouched.
+ */
+async function fetchWithTransientRetry(
+  apiPath: string,
+  init: RequestInit,
+): Promise<Response> {
+  const method = (init.method || 'GET').toUpperCase();
+  const canRetry = isIdempotent(method) && isRetryableBody(init.body);
+  try {
+    const response = await fetchWithFailover(apiPath, init);
+    if (canRetry && TRANSIENT_STATUSES.has(response.status)) {
+      await sleep(retryBackoffMs);
+      return fetchWithFailover(apiPath, init);
+    }
+    return response;
+  } catch (networkError) {
+    if (!canRetry) throw networkError;
+    await sleep(retryBackoffMs);
+    try {
+      return await fetchWithFailover(apiPath, init);
+    } catch {
+      throw networkError;
+    }
+  }
+}
+
 /**
  * Normalize an API path for the monolith backend.
  *
@@ -231,8 +280,10 @@ export async function apiFetch<T = any>(
   }
 
   // Base URL + normalized path (monolith: routes live under /api/*), with
-  // automatic same-origin failover when a stale external API base is dead.
-  const response = await fetchWithFailover(toApiPath(path), {
+  // automatic same-origin failover when a stale external API base is dead,
+  // and one transient retry (502/503/504, network error) for idempotent
+  // requests to absorb serverless/Neon cold starts.
+  const response = await fetchWithTransientRetry(toApiPath(path), {
     ...fetchOptions,
     body,
     headers,
@@ -320,7 +371,7 @@ export const api = {
     const token = getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetchWithFailover(toApiPath(path), {
+    const res = await fetchWithTransientRetry(toApiPath(path), {
       method: 'GET',
       headers,
     });
@@ -561,6 +612,11 @@ export default api;
 export function __resetApiFailoverForTests(): void {
   pinnedApiBase = null;
   failoverWarned = false;
+}
+
+/** @internal Test-only hook: speed up (or disable with 0) the transient retry backoff. */
+export function __setApiRetryBackoffForTests(ms: number): void {
+  retryBackoffMs = ms;
 }
 
 // ─── Cookie / Country helpers (multi-tenant X-Country-Code header) ─────────

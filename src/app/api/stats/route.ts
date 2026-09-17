@@ -3,6 +3,13 @@ import { db } from '@/lib/db';
 import { cache, buildCacheKey } from '@/lib/cache';
 
 export async function GET(request: Request) {
+  // Aggregate stats are public and identical for every visitor — cache them
+  // at the CDN edge (Vercel) to absorb Neon auto-suspend cold starts and make
+  // the hero stats render instantly. Staleness is bounded to 5 minutes,
+  // matching the in-app Redis cache TTL (600s) closely enough.
+  const CDN_CACHE_HEADERS = {
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+  };
   try {
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
@@ -17,7 +24,7 @@ export async function GET(request: Request) {
     // Try cache first
     const cached = await cache.get(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: CDN_CACHE_HEADERS });
     }
 
     const countryFilter = country ? { country } : {};
@@ -78,7 +85,7 @@ export async function GET(request: Request) {
     // Cache platform stats for 10 minutes
     await cache.set(cacheKey, responseData, 600);
 
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, { headers: CDN_CACHE_HEADERS });
   } catch (error) {
     console.error('Stats API error:', error);
     // Return fallback values on error

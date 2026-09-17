@@ -6,6 +6,16 @@ import { cache, buildCacheKey, invalidatePropertyCache } from '@/lib/cache';
 import { toJsonInput, fromJson, toNumber, parseJsonArray } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
+  // Public listing responses are cacheable at the CDN edge (Vercel) — this
+  // absorbs Neon auto-suspend cold starts and makes repeat visits instant.
+  // Bound staleness to 2 minutes so newly published listings appear quickly;
+  // stale-while-revalidate keeps serving the cached list while refreshing.
+  const CDN_CACHE_HEADERS = {
+    'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+  };
+  const PRIVATE_CACHE_HEADERS = {
+    'Cache-Control': 'private, no-store',
+  };
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
@@ -41,7 +51,7 @@ export async function GET(request: Request) {
     const cacheKey = buildCacheKey('properties', `list:${type || 'all'}:${transaction || 'all'}:${city || 'all'}:${country || 'all'}:${minPrice || ''}:${maxPrice || ''}:${verified || ''}:${geoTrust || ''}:${premium || ''}:${sortBy}:${page}:${limit}`, country || undefined);
     if (isCacheable) {
       const cached = await cache.get(cacheKey);
-      if (cached) return NextResponse.json(cached);
+      if (cached) return NextResponse.json(cached, { headers: CDN_CACHE_HEADERS });
     }
     const where: Record<string, unknown> = {};
     if (agentId) {
@@ -140,7 +150,9 @@ export async function GET(request: Request) {
 
     if (isCacheable) await cache.set(cacheKey, responseData, 300);
 
-    return NextResponse.json(responseData);
+    return NextResponse.json(responseData, {
+      headers: isCacheable ? CDN_CACHE_HEADERS : PRIVATE_CACHE_HEADERS,
+    });
   } catch (error) {
     console.error('Properties API error:', error);
     return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
