@@ -4,6 +4,13 @@ import { cache, buildCacheKey } from '@/lib/cache';
 import { parseJsonArray } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
+  // Public hero data — cache at the CDN edge like the other listing routes
+  // so a homepage visit after an idle period does NOT pay the Neon cold
+  // start. Fresh 5 min, stale-while-revalidate 24h (same contract as
+  // /api/properties).
+  const CDN_CACHE_HEADERS = {
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
+  };
   try {
     const { searchParams } = new URL(request.url);
     const country = searchParams.get('country');
@@ -17,7 +24,7 @@ export async function GET(request: Request) {
 
     const cached = await cache.get(cacheKey);
     if (cached) {
-      return NextResponse.json(cached);
+      return NextResponse.json(cached, { headers: CDN_CACHE_HEADERS });
     }
 
     // Fetch featured properties: premium + verified, with images, diverse types
@@ -221,13 +228,21 @@ export async function GET(request: Request) {
       ];
 
       await cache.set(cacheKey, fallback, 300);
-      return NextResponse.json(fallback);
+      return NextResponse.json(fallback, { headers: CDN_CACHE_HEADERS });
     }
 
     await cache.set(cacheKey, withImages, 300);
-    return NextResponse.json(withImages);
+    return NextResponse.json(withImages, { headers: CDN_CACHE_HEADERS });
   } catch (error) {
     console.error('Featured properties API error:', error);
-    return NextResponse.json([], { status: 200 });
+    // 503 (not 200 + []) so the failure is RETRYABLE and never mistaken for
+    // "no featured properties": the browser retry layer and react-query both
+    // treat 503 as transient and re-attempt after the Neon wake-up. The old
+    // `[]` + 200 response was cached client-side as a valid empty result for
+    // the whole staleTime window (hero stayed empty for minutes).
+    return NextResponse.json(
+      { error: 'Failed to fetch featured properties' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

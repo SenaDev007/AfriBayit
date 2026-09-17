@@ -4,6 +4,13 @@ import { authGuard } from '@/lib/auth-guard';
 import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 
 export async function GET(request: Request) {
+  // Public review listings (testimonials, property reviews) — cacheable at
+  // the CDN edge like the other public listing routes. Fresh 5 min, then
+  // stale-while-revalidate for an hour: the homepage testimonials section
+  // must not pay a Neon cold start on every visit.
+  const CDN_CACHE_HEADERS = {
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
+  };
   try {
     const { searchParams } = new URL(request.url);
     const targetId = searchParams.get('targetId');
@@ -38,7 +45,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       reviews,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-    });
+    }, { headers: CDN_CACHE_HEADERS });
   } catch (error) {
     console.error('Reviews API error:', error);
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });

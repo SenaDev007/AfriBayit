@@ -8,6 +8,14 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Public property detail — short CDN cache so a card click → back → click
+  // again (or a repeat visit within a minute) is instant, while keeping the
+  // data fresh enough for edits to show quickly. Short window on purpose:
+  // GET increments `views`, and longer caching would visibly dampen that
+  // counter. Never cached for non-200 responses.
+  const CDN_CACHE_HEADERS = {
+    'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=600',
+  };
   try {
     const { id } = await params;
 
@@ -75,7 +83,7 @@ export async function GET(
     // Increment view count asynchronously (fire and forget)
     db.property.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
 
-    return NextResponse.json({ data: property });
+    return NextResponse.json({ data: property }, { headers: CDN_CACHE_HEADERS });
   } catch (error) {
     console.error('Property detail API error:', error);
     return NextResponse.json({ error: 'Failed to fetch property' }, { status: 500 });

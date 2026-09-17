@@ -218,6 +218,8 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
     queryFn: () => apiFetch<StatsData>('/stats'),
     staleTime: 5 * 60 * 1000, // 5 min — matches backend cache
     retry: 2,
+    // Space retries past the ~10s Neon wake-up (see PropertyGrid).
+    retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
   });
 
   // Fetch featured properties from database
@@ -225,6 +227,9 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
     queryKey: ['featured-properties'],
     queryFn: () => apiFetch<FeaturedProperty[]>('/api/properties/featured?limit=8'),
     staleTime: 5 * 60 * 1000,
+    retry: 2,
+    // Same cold-start budget as the stats query above.
+    retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
   });
 
   const statsItems = [

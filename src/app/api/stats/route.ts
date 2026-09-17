@@ -89,18 +89,16 @@ export async function GET(request: Request) {
     return NextResponse.json(responseData, { headers: CDN_CACHE_HEADERS });
   } catch (error) {
     console.error('Stats API error:', error);
-    // Return fallback values on error
-    return NextResponse.json({
-      properties: 0,
-      transactions: 0,
-      countries: 4,
-      agents: 0,
-      satisfaction: 98,
-      artisans: 0,
-      courses: 0,
-      hotels: 0,
-      guesthouses: 0,
-      bookings: 0,
-    });
+    // 503 (not 200 + fake zeros): the old fallback answered "properties: 0"
+    // with a 200 status, so react-query cached it as a VALID result for the
+    // whole staleTime (5 min) — visitors literally saw "0 biens" for minutes
+    // before a refetch revealed the real numbers. A 503 is treated as
+    // transient by both the browser retry layer and react-query, so the
+    // request is re-attempted (typically succeeding right after the Neon
+    // wake-up) and is never cached at the CDN.
+    return NextResponse.json(
+      { error: 'Stats temporarily unavailable' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

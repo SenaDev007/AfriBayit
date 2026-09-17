@@ -90,7 +90,11 @@ export default function ImageWithFallback({
         priority={priority}
         className={`object-cover transition-opacity duration-300 ${onClick ? 'cursor-pointer' : ''}`}
         onError={handleError}
-        unoptimized // Allow remote images without explicit domains config
+      // NOT unoptimized: next.config.ts declares remotePatterns (Unsplash, R2,
+      // Google/Facebook avatars), so the Vercel image optimizer resizes cards
+      // to the actual display width and serves WebP/AVIF (~50-90% smaller than
+      // the raw 1200x800 downloads). Unknown hosts fail the optimizer, which
+      // triggers onError → Unsplash fallback → SVG fallback, same as before.
       />
     </div>
   );

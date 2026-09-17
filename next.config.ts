@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['lightningcss', '@tailwindcss/node', '@tailwindcss/postcss'],
   images: {
+    // Serve AVIF first (smallest), WebP fallback. Only a handful of unique
+    // source images exist (seed + uploads), so optimizer quota is a non-issue.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "*.r2.dev" },
