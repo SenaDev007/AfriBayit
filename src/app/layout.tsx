@@ -8,6 +8,7 @@ import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import AppShell from "@/components/providers/AppShell";
 import ServiceWorkerRegistration from "@/components/providers/ServiceWorkerRegistration";
+import KeepWarmBeacon from "@/components/providers/KeepWarmBeacon";
 import { LocaleProvider } from "@/lib/i18n/context";
 import { LOCALES, type Locale } from "@/lib/i18n";
 
@@ -105,6 +106,7 @@ export default async function RootLayout({
                   {children}
                 </AppShell>
                 <ServiceWorkerRegistration />
+                <KeepWarmBeacon />
                 <Toaster />
               </LocaleProvider>
             </ReactQueryProvider>

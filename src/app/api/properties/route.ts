@@ -8,10 +8,15 @@ import { toJsonInput, fromJson, toNumber, parseJsonArray } from '@/lib/db-helper
 export async function GET(request: Request) {
   // Public listing responses are cacheable at the CDN edge (Vercel) — this
   // absorbs Neon auto-suspend cold starts and makes repeat visits instant.
-  // Bound staleness to 2 minutes so newly published listings appear quickly;
-  // stale-while-revalidate keeps serving the cached list while refreshing.
+  // Fresh window: 5 min (newly published listings appear quickly on active
+  // traffic). Stale-while-revalidate: 24h — with sparse traffic the CDN entry
+  // expires between visits, and WITHOUT a long SWR window every "first visitor
+  // of the day" pays the full ~10s Neon wake-up cost. Serving a stale list
+  // instantly (and refreshing it in the background) is the right trade for a
+  // marketplace listing page: the cold DB hit then only affects the invisible
+  // background revalidation, never the user.
   const CDN_CACHE_HEADERS = {
-    'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400',
   };
   const PRIVATE_CACHE_HEADERS = {
     'Cache-Control': 'private, no-store',

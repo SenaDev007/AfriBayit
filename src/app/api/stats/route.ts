@@ -5,10 +5,11 @@ import { cache, buildCacheKey } from '@/lib/cache';
 export async function GET(request: Request) {
   // Aggregate stats are public and identical for every visitor — cache them
   // at the CDN edge (Vercel) to absorb Neon auto-suspend cold starts and make
-  // the hero stats render instantly. Staleness is bounded to 5 minutes,
-  // matching the in-app Redis cache TTL (600s) closely enough.
+  // the hero stats render instantly. Fresh window: 5 min; stale-while-revalidate
+  // extended to 1h so the first visitor after an idle period gets instant
+  // (slightly stale) stats while the edge refreshes in the background.
   const CDN_CACHE_HEADERS = {
-    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+    'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
   };
   try {
     const { searchParams } = new URL(request.url);

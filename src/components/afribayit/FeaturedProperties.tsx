@@ -59,7 +59,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   const { selectedCountry } = useCountry();
 
   // Fetch properties directly from backend API
-  const { data, isLoading, isError } = useQuery<FeaturedPropertiesResponse>({
+  const { data, isLoading, isError, refetch } = useQuery<FeaturedPropertiesResponse>({
     queryKey: ['featured-properties', selectedCountry],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -73,6 +73,10 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
     },
     retry: 2,
     staleTime: 5 * 60 * 1000,
+    // Neon (free tier) auto-suspends after ~5 min idle and takes ~10s to
+    // wake — space the retries (4s/8s) so the wake-up completes before the
+    // last attempt instead of failing all of them back-to-back.
+    retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
   });
 
   const allProperties: PropertyListItem[] = Array.isArray(data)
@@ -170,7 +174,9 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           </div>
         )}
 
-        {/* Error */}
+        {/* Error — distinct from the empty state: the previous wording
+            ("Aucun bien disponible") masked loading failures as a healthy
+            empty catalogue, which looked like data loss to users. */}
         {isError && (
           <div className="py-16 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
@@ -178,10 +184,19 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien disponible</h3>
+            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Erreur de chargement</h3>
             <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm text-gray-400">
-              Les biens apparaîtront ici dès qu'ils seront publiés.
+              Impossible de charger les biens pour le moment.
             </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#003366] px-6 py-2.5 text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              Réessayer
+            </button>
           </div>
         )}
 
