@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { api, apiFetch } from '@/lib/api-client';
 import { Skeleton } from '@/components/ui/skeleton';
 import PropertyCard from './PropertyCard';
@@ -57,14 +57,23 @@ function PropertyCardSkeleton() {
 export default function FeaturedProperties({ onSelectProperty, onNavigate }: FeaturedPropertiesProps) {
   const [activeFilter, setActiveFilter] = useState('all');
   const { selectedCountry } = useCountry();
+  const isSejourTab = activeFilter === 'sejour';
 
-  // Fetch properties directly from backend API
-  const { data, isLoading, isError, refetch } = useQuery<FeaturedPropertiesResponse>({
-    queryKey: ['featured-properties', selectedCountry],
+  // Fetch properties directly from backend API.
+  // The "Séjours" tab filters server-side on short-term rentals
+  // (transaction=location_courte_duree) — it used to return a hardcoded []
+  // which always showed "Aucun bien disponible".
+  // `isPending` (not `isLoading`) so skeletons stay up during retry
+  // back-off windows while Neon wakes up (see PropertyGrid).
+  const { data, isPending, isError, refetch } = useQuery<FeaturedPropertiesResponse>({
+    queryKey: ['featured-properties', selectedCountry, isSejourTab ? 'sejour' : 'standard'],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set('limit', '12');
       params.set('page', '1');
+      if (isSejourTab) {
+        params.set('transaction', 'location_courte_duree');
+      }
       if (selectedCountry) {
         params.set('country', selectedCountry);
       }
@@ -77,6 +86,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
     // wake — space the retries (4s/8s) so the wake-up completes before the
     // last attempt instead of failing all of them back-to-back.
     retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
+    placeholderData: keepPreviousData,
   });
 
   const allProperties: PropertyListItem[] = Array.isArray(data)
@@ -93,7 +103,8 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
 
   const displayProperties = useMemo(() => {
     if (activeFilter === 'all') return baseProperties.slice(0, 6);
-    if (activeFilter === 'sejour') return [];
+    // Séjours tab: already filtered server-side (transaction=location_courte_duree)
+    if (activeFilter === 'sejour') return baseProperties.slice(0, 6);
     return baseProperties.filter((p) => p.type === activeFilter).slice(0, 6);
   }, [baseProperties, activeFilter]);
 
@@ -165,8 +176,8 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           </motion.div>
         </div>
 
-        {/* Loading */}
-        {isLoading && (
+        {/* Loading — `isPending` stays true across retry back-off windows */}
+        {isPending && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <PropertyCardSkeleton key={i} />
@@ -201,7 +212,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         )}
 
         {/* Empty */}
-        {!isLoading && !isError && displayProperties.length === 0 && (
+        {!isPending && !isError && displayProperties.length === 0 && (
           <div className="py-16 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -216,7 +227,7 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         )}
 
         {/* Grid */}
-        {!isLoading && !isError && displayProperties.length > 0 && (
+        {!isPending && !isError && displayProperties.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {displayProperties.map((property: PropertyListItem, i: number) => (
               <PropertyCard

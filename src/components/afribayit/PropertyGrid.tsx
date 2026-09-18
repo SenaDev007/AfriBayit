@@ -9,7 +9,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import PropertyCard from './PropertyCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -89,7 +89,13 @@ export default function PropertyGrid({
     params.set('country', selectedCountry);
   }
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  // NOTE: we deliberately use `isPending` (true until data OR final error)
+  // instead of `isLoading` (= isPending && isFetching). During retry
+  // back-off windows (4s/8s between attempts while Neon wakes up) no request
+  // is in flight, so `isLoading` flips to false while `data` is still
+  // undefined — which used to render the "Aucun bien disponible" empty state
+  // even though the catalogue was simply still loading.
+  const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['transaction-properties', transaction, selectedCountry],
     queryFn: () => apiFetch<PropertyListResponse>(`/properties?${params.toString()}`),
     staleTime: 5 * 60 * 1000,
@@ -99,6 +105,9 @@ export default function PropertyGrid({
     // still asleep, so every attempt fails and the user sees the error
     // screen. Spacing retries at 4s/8s lets the wake-up complete first.
     retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
+    // Keep the previous country's listings visible while the new country
+    // loads instead of flashing skeletons on every country switch.
+    placeholderData: keepPreviousData,
   });
 
   const allProperties = data?.properties || [];
@@ -144,7 +153,17 @@ export default function PropertyGrid({
           <div>
             <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
               <span className="h-px w-8" style={{ background: NAVY }} />
-              {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''} disponible{filteredProperties.length > 1 ? 's' : ''}
+              {isPending ? (
+                // Loading shimmer instead of a misleading "0 biens disponibles"
+                <span
+                  className="inline-block h-3 w-12 animate-pulse rounded bg-gray-200"
+                  aria-label="Chargement du nombre de biens"
+                />
+              ) : (
+                <>
+                  {filteredProperties.length} bien{filteredProperties.length > 1 ? 's' : ''} disponible{filteredProperties.length > 1 ? 's' : ''}
+                </>
+              )}
             </span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
               {selectedCountry
@@ -198,8 +217,9 @@ export default function PropertyGrid({
           </select>
         </div>
 
-        {/* Loading state */}
-        {isLoading && (
+        {/* Loading state — `isPending` covers the whole first load,
+            including the retry back-off windows while Neon wakes up */}
+        {isPending && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="overflow-hidden rounded-xl border border-gray-100 bg-white">
@@ -237,8 +257,8 @@ export default function PropertyGrid({
           </div>
         )}
 
-        {/* Empty state */}
-        {!isLoading && !isError && filteredProperties.length === 0 && (
+        {/* Empty state — only once data has actually arrived */}
+        {!isPending && !isError && filteredProperties.length === 0 && (
           <div className="py-16 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
               <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -255,7 +275,7 @@ export default function PropertyGrid({
         )}
 
         {/* Property grid — centered */}
-        {!isLoading && !isError && filteredProperties.length > 0 && (
+        {!isPending && !isError && filteredProperties.length > 0 && (
           <div className="flex flex-wrap justify-center gap-6">
             {filteredProperties.map((property: PropertyListItem, i: number) => (
               <div key={property.id} className="relative w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]">

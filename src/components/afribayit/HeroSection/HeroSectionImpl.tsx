@@ -63,7 +63,23 @@ interface FeaturedProperty {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Animated counter component
-function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number; suffix?: string; duration?: number }) {
+// `pending` — stats still loading (or retrying while Neon wakes up):
+// render a pulsing placeholder instead of a misleading "—"/"0".
+// `target === 0` once loaded — honest "0" (e.g. 0 réservations), not a dash
+// that looks like the data failed to arrive.
+function AnimatedCounter({
+  target,
+  suffix = '',
+  duration = 2,
+  pending = false,
+  unavailable = false,
+}: {
+  target: number;
+  suffix?: string;
+  duration?: number;
+  pending?: boolean;
+  unavailable?: boolean;
+}) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
@@ -86,6 +102,20 @@ function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number
     return () => clearInterval(timer);
   }, [isInView, target, duration]);
 
+  if (pending) {
+    return (
+      <span ref={ref} aria-label="Chargement des statistiques">
+        <span className="inline-block h-4 w-10 animate-pulse rounded bg-white/25" />
+      </span>
+    );
+  }
+
+  if (unavailable) {
+    // Stats could not be loaded (e.g. transient DB error) — neutral dash,
+    // never a fake "0".
+    return <span ref={ref}>—</span>;
+  }
+
   return (
     <span ref={ref}>
       {target > 0 ? (
@@ -94,7 +124,7 @@ function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number
           {suffix}
         </>
       ) : (
-        '—'
+        '0'
       )}
     </span>
   );
@@ -212,8 +242,10 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
     }
   }, []);
 
-  // Fetch real stats from backend /stats endpoint (aggregated live from DB)
-  const { data: stats } = useQuery<StatsData>({
+  // Fetch real stats from backend /stats endpoint (aggregated live from DB).
+  // `isPending` (not `isLoading`) so the pulsing placeholders stay up during
+  // retry back-off windows while Neon wakes up (see PropertyGrid).
+  const { data: stats, isPending: statsPending, isError: statsError } = useQuery<StatsData>({
     queryKey: ['platform-stats'],
     queryFn: () => apiFetch<StatsData>('/stats'),
     staleTime: 5 * 60 * 1000, // 5 min — matches backend cache
@@ -931,7 +963,12 @@ export default function HeroSection({ onNavigate, onOpenRebecca }: HeroSectionPr
                 className="text-center"
               >
                 <div className="font-mono-data text-lg sm:text-xl md:text-2xl font-bold text-white">
-                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                  <AnimatedCounter
+                    target={stat.value}
+                    suffix={stat.suffix}
+                    pending={statsPending}
+                    unavailable={statsError && !stats}
+                  />
                 </div>
                 <div className="text-white/50 text-[10px] sm:text-xs md:text-sm font-body">{stat.label}</div>
               </motion.div>

@@ -57,7 +57,7 @@ interface HeroProps {
   ctaHref: string;
 }
 
-function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLabel, ctaHref }: HeroProps) {
+function TransactionHero({ badge, title, subtitle, backgroundImage, stats, statsPending, ctaLabel, ctaHref }: HeroProps & { statsPending?: boolean }) {
   return (
     <section className="relative flex items-center overflow-hidden pt-16" style={{ minHeight: '38vh' }}>
       {/* Background image — covers entire section */}
@@ -122,7 +122,10 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, ctaLa
           >
             {stats.map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-xl sm:text-2xl font-bold" style={{ color: GOLD, fontFamily: 'var(--font-space-grotesk), monospace' }}>
+                <div
+                  className={`text-xl sm:text-2xl font-bold ${statsPending ? 'animate-pulse' : ''}`}
+                  style={{ color: GOLD, fontFamily: 'var(--font-space-grotesk), monospace' }}
+                >
                   {stat.value}{stat.suffix || ''}
                 </div>
                 <div className="mt-0.5 text-[10px] uppercase tracking-wider text-white/60">
@@ -146,12 +149,16 @@ interface TransactionPageShellProps {
 }
 
 export default function TransactionPageShell({ activeTab, hero, children }: TransactionPageShellProps) {
-  // Fetch real stats for the hero stats bar
-  const { data: stats } = useQuery<PlatformStats>({
+  // Fetch real stats for the hero stats bar.
+  // `isPending` (not `isLoading`) stays true across retry back-off windows
+  // while Neon wakes up — placeholders instead of misleading "0+".
+  const { data: stats, isPending: statsPending, isError: statsError } = useQuery<PlatformStats>({
     queryKey: ['platform-stats'],
     queryFn: () => apiFetch<PlatformStats>('/stats'),
     staleTime: 5 * 60 * 1000,
     retry: 2,
+    // Space retries past the ~10s Neon wake-up (see PropertyGrid).
+    retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
   });
 
   // Override the hero stats with real data if available.
@@ -181,11 +188,13 @@ export default function TransactionPageShell({ activeTab, hero, children }: Tran
         if (label.includes('réservation') || label.includes('reservation')) return { ...s, value: stats.bookings ?? s.value };
         return s;
       })
-    : hero.stats;
+    : // No data yet: loading → pulsing "…" placeholder; final error → "—".
+      // Never render the hardcoded "0+" defaults — users read them as real.
+      hero.stats.map((s) => ({ ...s, value: statsPending ? '…' : statsError ? '—' : s.value, suffix: undefined }));
 
   return (
     <div className="min-h-screen bg-white">
-      <TransactionHero {...hero} stats={realStats} />
+      <TransactionHero {...hero} stats={realStats} statsPending={statsPending && !stats} />
       <main>{children}</main>
     </div>
   );

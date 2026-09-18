@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { apiPost, apiFetch } from '@/lib/api-client';
 import { formatPrice, getPropertyTypeLabel } from '@/lib/afribayit-utils';
 import type { SortOption } from '@/lib/constants';
@@ -136,10 +136,18 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
   const [financingPrice, setFinancingPrice] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Search query
-  const { data, isLoading, isError } = useQuery<SearchResponse>({
+  // Search query.
+  // `isPending` (not `isLoading`) + spaced retries: while Neon (free tier)
+  // wakes up (~10s), retries are spaced 4s/8s and skeletons stay visible
+  // through the back-off windows instead of flashing an empty state.
+  // `keepPreviousData` keeps the current page of results visible while
+  // paginating / changing filters.
+  const { data, isPending, isError } = useQuery<SearchResponse>({
     queryKey: ['advancedSearch', filters],
     queryFn: () => apiPost<SearchResponse>('/api/properties/search', filters),
+    placeholderData: keepPreviousData,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(4000 * 2 ** attemptIndex, 12000),
   });
 
   const properties = data?.properties || [];
@@ -217,7 +225,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 {t('search.title', 'Rechercher un bien')}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                {isLoading ? t('search.loadingResults', 'Chargement...') : `${totalResults} ${t('search.resultsFound', 'bien(s) trouvé(s)')}`}
+                {isPending ? t('search.loadingResults', 'Chargement...') : `${totalResults} ${t('search.resultsFound', 'bien(s) trouvé(s)')}`}
               </p>
             </div>
             <div className="flex gap-2">
@@ -356,8 +364,8 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
               </div>
             )}
 
-            {/* Loading State */}
-            {isLoading && (
+            {/* Loading State — `isPending` stays true across retry back-off windows */}
+            {isPending && (
               <div className={viewMode === 'list'
                 ? 'space-y-4'
                 : 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5'
@@ -382,7 +390,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
             )}
 
             {/* Grid/List */}
-            {!isLoading && !isError && (
+            {!isPending && !isError && (
               <AnimatePresence mode="wait">
                 {properties.length === 0 ? (
                   <motion.div
