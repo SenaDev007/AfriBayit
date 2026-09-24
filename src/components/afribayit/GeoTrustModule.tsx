@@ -52,13 +52,22 @@ const geometerServices = [
 // CDC §7C.9 — GeoTrust bundled packs (3 tiers: Standard / Certification / Premium Drone)
 // Prices in XOF (FCFA). Each pack bundles multiple GEO_* services with extras
 // (badge, escrow, VR, rapport) at a discount vs. à la carte.
+//
+// Audit Manus (P0) — pricing coherence: packs previously showed discounts of
+// 40% (Standard), 72% (Certification) and 27% (Premium) while the subtitle
+// promised "up to 20%". Pack prices are now aligned on a uniform ~20%
+// discount vs. the à-la-carte sum, and the exact percentage is displayed on
+// each card so the economy is explicit and verifiable:
+//   Standard:    125 000 → 99 000   (−26 000, ≈21%)
+//   Certificat.: 530 000 → 425 000  (−105 000, ≈20%)
+//   Premium:     480 000 → 385 000  (−95 000, ≈20%)
 const geotrustPacks = [
   {
     id: 'pack-standard',
     name: 'Pack Standard',
     nameKey: 'geotrust.packStandardName',
-    price: 75000,
-    priceLabel: '75 000 FCFA',
+    price: 99000,
+    priceLabel: '99 000 FCFA',
     services: ['GEO_GPS', 'GEO_SURF'] as const,
     includes: [
       geoServiceLabel('GEO_GPS'),
@@ -75,8 +84,8 @@ const geotrustPacks = [
     id: 'pack-certification',
     name: 'Pack Certification',
     nameKey: 'geotrust.packCertificationName',
-    price: 150000,
-    priceLabel: '150 000 FCFA',
+    price: 425000,
+    priceLabel: '425 000 FCFA',
     services: ['GEO_TOPO', 'GEO_BORN', 'GEO_CERT'] as const,
     includes: [
       geoServiceLabel('GEO_TOPO'),
@@ -95,8 +104,8 @@ const geotrustPacks = [
     id: 'pack-premium-drone',
     name: 'Pack Premium Drone',
     nameKey: 'geotrust.packPremiumName',
-    price: 350000,
-    priceLabel: '350 000 FCFA',
+    price: 385000,
+    priceLabel: '385 000 FCFA',
     services: ['GEO_DRON', 'GEO_3D', 'GEO_CERT'] as const,
     includes: [
       geoServiceLabel('GEO_DRON'),
@@ -498,12 +507,17 @@ export default function GeoTrustModule() {
                     </div>
                     {savings > 0 && (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold">
-                        −{savings.toLocaleString('fr-FR')} FCFA
+                        −{savings.toLocaleString('fr-FR')} FCFA · −{Math.round((savings / totalPrice) * 100)}%
                       </span>
                     )}
                   </div>
                   <h3 className="font-semibold text-primary-deep mb-1">{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}</h3>
                   <p className="text-xs text-gray-text mb-3 flex-1">{pack.descKey ? t(pack.descKey, pack.description) : pack.description}</p>
+                  {totalPrice > pack.price && (
+                    <p className="text-xs text-gray-text/60 line-through mb-0.5">
+                      {totalPrice.toLocaleString('fr-FR')} FCFA {t('geotrust.aLaCarte', 'à la carte')}
+                    </p>
+                  )}
                   <p className="font-mono-data text-lg font-bold text-accent-dark mb-3">{pack.priceLabel}</p>
                   <ul className="space-y-1.5">
                     {pack.includes.map((item, idx) => {

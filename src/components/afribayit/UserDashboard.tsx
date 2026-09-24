@@ -47,7 +47,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const kycLevels = [
-  { level: 0, nameKey: 'userDashboard.kyc.anonymous', nameFallback: 'Anonyme', color: '#6b7280', maxActionsKey: 'userDashboard.kyc.anonymousActions', maxActionsFallback: 'Consultation uniquement', Icon: User },
+  { level: 0, nameKey: 'userDashboard.kyc.anonymous', nameFallback: 'Non vérifié', color: '#6b7280', maxActionsKey: 'userDashboard.kyc.anonymousActions', maxActionsFallback: 'Consultation uniquement', Icon: User },
   { level: 1, nameKey: 'userDashboard.kyc.standard', nameFallback: 'Standard', color: '#009CDE', maxActionsKey: 'userDashboard.kyc.standardActions', maxActionsFallback: 'Contacts limités, pas de transaction', Icon: Badge },
   { level: 2, nameKey: 'userDashboard.kyc.advanced', nameFallback: 'Avancé', color: '#00A651', maxActionsKey: 'userDashboard.kyc.advancedActions', maxActionsFallback: 'Transactions, escrow, publications', Icon: CheckCircle },
   { level: 3, nameKey: 'userDashboard.kyc.pro', nameFallback: 'Pro', color: '#D4AF37', maxActionsKey: 'userDashboard.kyc.proActions', maxActionsFallback: 'Accès complet, API, outils pro', Icon: Crown },

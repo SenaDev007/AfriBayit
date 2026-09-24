@@ -506,7 +506,7 @@ export const fon = {
       EXPIRED: 'Hun ɖɛ',
     },
     kyc: {
-      anonymous: 'Anonyme',
+      anonymous: 'Non vérifié',
       standard: 'Standard',
       advanced: 'Ðò gbangbɔ',
       pro: 'Pro',

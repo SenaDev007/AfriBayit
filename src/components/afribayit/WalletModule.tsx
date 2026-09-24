@@ -357,7 +357,7 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                   <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
                   <div className="relative z-10">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm text-white/60">{t('walletModule.balanceAvailableLabel', 'Solde disponible (balance_available)')}</p>
+                    <p className="text-sm text-white/60">{t('walletModule.balanceAvailableLabel', 'Solde disponible')}</p>
                     <button onClick={() => setShowBalance(!showBalance)} className="p-1.5 rounded-full hover:bg-white/10">
                       {showBalance ? <Eye className="w-4 h-4 text-white/60" /> : <EyeOff className="w-4 h-4 text-white/60" />}
                     </button>
@@ -397,9 +397,10 @@ export default function WalletModule({ onNavigate }: ModuleProps) {
                 ].map((item) => (
                   <motion.button key={item.key} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale text-left hover:border-primary-green/40 transition-all">
-                    <div className="flex items-center gap-2 mb-1"><span style={{ color: item.color }}>{item.icon}</span><span className="text-[10px] text-gray-text/70 font-mono">{item.key}</span></div>
+                    {/* Audit Manus (P0): item.key is an INTERNAL identifier — it must
+                        never be rendered. The human label is the single visible title. */}
+                    <div className="flex items-center gap-2 mb-1"><span style={{ color: item.color }}>{item.icon}</span><span className="text-[10px] text-gray-text/70 font-semibold uppercase tracking-wide">{item.label}</span></div>
                     <p className="font-serif font-black text-lg" style={{ color: item.color }}>{formatFCFA(item.value)}</p>
-                    <p className="text-[10px] text-gray-text/60">{item.label}</p>
                   </motion.button>
                 ))}
               </div>

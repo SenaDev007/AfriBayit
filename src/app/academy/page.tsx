@@ -18,9 +18,21 @@ export default function AcademyPage() {
   // Fetch real academy stats for the hero
   const { data: stats } = useQuery({
     queryKey: ['academy-stats'],
-    queryFn: () => apiFetch<{ courseCount: number; enrollmentCount: number; certificateCount: number; satisfactionRate: number }>(`/api/academy/stats`),
+    queryFn: () => apiFetch<{ courseCount: number; enrollmentCount: number; certificateCount: number; satisfactionRate: number | null }>(`/api/academy/stats`),
     staleTime: 5 * 60 * 1000,
   });
+
+  // Audit Manus (P0): counters must be real or hidden — no invented fallback.
+  // satisfactionRate is null until at least one enrollment completes, so the
+  // "Satisfaction" stat is simply omitted until it is computable.
+  const heroStats = [
+    { value: stats?.courseCount ?? 0, suffix: '+', label: 'Cours' },
+    { value: 4, suffix: '', label: 'Pays' },
+    { value: stats?.enrollmentCount ?? 0, suffix: '+', label: 'Apprenants' },
+    ...(stats?.satisfactionRate != null
+      ? [{ value: stats.satisfactionRate, suffix: '%', label: 'Satisfaction' }]
+      : []),
+  ];
 
   return (
     <TransactionPageShell
@@ -28,14 +40,9 @@ export default function AcademyPage() {
       hero={{
         badge: 'Académie AfriBayit',
         title: 'Formation immobilière certifiante en Afrique',
-        subtitle: 'Cours en ligne sur l\'immobilier, le droit foncier OHADA, l\'investissement et la construction. Certificats professionnels reconnus, paiement sécurisé via escrow.',
+        subtitle: 'Cours en ligne sur l\'immobilier, le droit foncier OHADA, l\'investissement et la construction. Certificats de complétion vérifiables publiquement, paiement sécurisé via escrow.',
         backgroundImage: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&h=900&fit=crop',
-        stats: [
-          { value: stats?.courseCount ?? 0, suffix: '+', label: 'Cours' },
-          { value: 4, suffix: '', label: 'Pays' },
-          { value: stats?.enrollmentCount ?? 0, suffix: '+', label: 'Apprenants' },
-          { value: stats?.satisfactionRate ?? 95, suffix: '%', label: 'Satisfaction' },
-        ],
+        stats: heroStats,
         ctaLabel: 'Voir les formations',
         ctaHref: '#academy',
       }}

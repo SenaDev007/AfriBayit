@@ -67,9 +67,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: 'academy', priority: 0.7, changeFrequency: 'daily' as const },
     { path: 'artisans', priority: 0.7, changeFrequency: 'daily' as const },
     { path: 'community', priority: 0.6, changeFrequency: 'hourly' as const },
-    { path: 'hospitality', priority: 0.6, changeFrequency: 'weekly' as const },
-    { path: 'guesthouse', priority: 0.6, changeFrequency: 'weekly' as const },
-    { path: 'short-term', priority: 0.6, changeFrequency: 'daily' as const },
+    // Audit Manus (P0): /hospitality, /guesthouse and /short-term are
+    // server-side redirects to the canonical /sejours page — redirecting
+    // URLs are excluded from the sitemap (no duplicate content, every
+    // sitemap entry now resolves to a real page).
+    { path: 'sejours', priority: 0.7, changeFrequency: 'daily' as const },
     { path: 'financing', priority: 0.5, changeFrequency: 'monthly' as const },
     { path: 'ambassador', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: 'subscriptions', priority: 0.4, changeFrequency: 'monthly' as const },

@@ -504,7 +504,7 @@ export const en = {
       EXPIRED: 'Expired',
     },
     kyc: {
-      anonymous: 'Anonymous',
+      anonymous: 'Unverified',
       standard: 'Standard',
       advanced: 'Advanced',
       pro: 'Pro',

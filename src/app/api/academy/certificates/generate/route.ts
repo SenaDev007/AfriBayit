@@ -10,7 +10,12 @@ import { authGuard } from '@/lib/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await authGuard(request, { requiredRoles: ['TRAINER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'] });
+    // Audit Manus (P0): a learner must be able to generate THEIR OWN
+    // certificate once a course is completed — restricting to
+    // TRAINER/ADMIN blocked the whole "Certifications" journey. Staff
+    // roles keep the right to generate for anyone; a standard user may
+    // only generate for themselves (self-service, no IDOR).
+    const auth = await authGuard(request);
     if (!auth.success) return auth.response;
 
     const body = await request.json();
@@ -26,6 +31,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'userId et courseId sont requis.' },
         { status: 400 }
+      );
+    }
+
+    const staffRoles = ['TRAINER', 'SUPER_ADMIN', 'COUNTRY_ADMIN'];
+    const isStaff = auth.role && staffRoles.includes(auth.role);
+    if (!isStaff && auth.userId !== userId) {
+      return NextResponse.json(
+        { error: 'Vous ne pouvez générer que vos propres certificats.' },
+        { status: 403 }
       );
     }
 

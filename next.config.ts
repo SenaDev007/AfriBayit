@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
     cpus: 1,
   },
   serverExternalPackages: ['lightningcss', '@tailwindcss/node', '@tailwindcss/postcss'],
+  // Audit Manus (P0): /hospitality and /guesthouse were listed in the
+  // sitemap but returned 404 — the unified /sejours page replaced them.
+  // Permanent server-side redirects (SEO-safe, old links keep working);
+  // they are also removed from the sitemap in favor of the canonical route.
+  async redirects() {
+    return [
+      { source: "/hospitality", destination: "/sejours", permanent: true },
+      { source: "/guesthouse", destination: "/sejours", permanent: true },
+    ];
+  },
   images: {
     // Serve AVIF first (smallest), WebP fallback. Only a handful of unique
     // source images exist (seed + uploads), so optimizer quota is a non-issue.

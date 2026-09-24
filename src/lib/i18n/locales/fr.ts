@@ -405,7 +405,7 @@ export const fr = {
     kycGateBody2: 'pour accéder à cette fonctionnalité.',
     kycGateCurrent: 'Votre niveau actuel est',
     kycGateLevels: 'Niveau 1: Email · Niveau 2: Pièce d\'identité · Niveau 3: Justificatif de domicile',
-    balanceAvailableLabel: 'Solde disponible (balance_available)',
+    balanceAvailableLabel: 'Solde disponible',
     balanceEscrowHeld: 'Escrow bloqué',
     balancePendingPayout: 'Paiement en attente',
     balanceTotalTransacted: 'Total transacted',
@@ -504,7 +504,7 @@ export const fr = {
       EXPIRED: 'Expiré',
     },
     kyc: {
-      anonymous: 'Anonyme',
+      anonymous: 'Non vérifié',
       standard: 'Standard',
       advanced: 'Avancé',
       pro: 'Pro',
