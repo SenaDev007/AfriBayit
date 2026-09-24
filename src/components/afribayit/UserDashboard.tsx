@@ -9,8 +9,10 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useWallet } from '@/hooks/useWallet';
 import { useMyProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge, BarChart3, Building2, CheckCircle, ClipboardList, Coins, CreditCard, Crown, Home, LogOut, RefreshCw, Settings, ShieldCheck, User, Wallet } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { useRoleAccess } from '@/hooks/useRoleAccess';
+import { getRoleDefinition } from '@/lib/role-catalog';
+import { Badge, BarChart3, Building2, CheckCircle, ClipboardList, Coins, CreditCard, Crown, GraduationCap, Home, Hotel, LogOut, Map, Plane, PlusCircle, RefreshCw, Scale, Search, Settings, ShieldCheck, TrendingUp, User, Wallet, Wrench } from 'lucide-react';
 
 interface UserDashboardProps {
   onNavigate: (section: string) => void;
@@ -27,9 +29,99 @@ const sideNavItems = [
   { key: 'transactions', labelKey: 'userDashboard.sideNav.transactions', fallback: 'Transactions', icon: ClipboardList, href: '/escrow' },
   { key: 'subscriptions', labelKey: 'userDashboard.sideNav.subscriptions', fallback: 'Mes abonnements', icon: CreditCard, href: '/subscriptions' },
   { key: 'analytics', labelKey: 'userDashboard.sideNav.analytics', fallback: 'Analytics', icon: BarChart3, href: '/analytics' },
-  { key: 'agent-dashboard', labelKey: 'userDashboard.sideNav.agentDashboard', fallback: 'Mes annonces', icon: Building2, href: '/agent-dashboard' },
-  { key: 'settings', labelKey: 'userDashboard.sideNav.settings', fallback: 'Paramètres', icon: Settings, href: '/settings' },
 ];
+
+// ── P1 audit : navigation dédiée par rôle ─────────────────────────────
+// Les dashboards métier (agent, notaire, investisseur…) ne s'affichent que
+// pour les rôles concernés — les 11 comptes de test ne voient plus tous le
+// même menu générique. Compléments pour les rôles sans dashboard dédié.
+const DASHBOARD_NAV_META: Record<string, { icon: typeof Home; fallback: string }> = {
+  '/agent-dashboard': { icon: Building2, fallback: 'Espace agent' },
+  '/owner-dashboard': { icon: Building2, fallback: 'Mes annonces' },
+  '/investor-dashboard': { icon: TrendingUp, fallback: 'Portefeuille invest.' },
+  '/hotel-dashboard': { icon: Hotel, fallback: 'Gestion hôtelière' },
+  '/notary-dashboard': { icon: Scale, fallback: 'Espace notarial' },
+  '/geotrust': { icon: Map, fallback: 'Missions GeoTrust' },
+  '/admin': { icon: ShieldCheck, fallback: 'Backoffice' },
+};
+
+const ROLE_EXTRA_NAV: { roles: string[]; key: string; labelKey: string; fallback: string; icon: typeof Home; href: string }[] = [
+  { roles: ['artisan', 'artisan_pro'], key: 'artisans-market', labelKey: 'userDashboard.sideNav.artisansMarket', fallback: 'Marché artisans', icon: Wrench, href: '/artisans' },
+  { roles: ['trainer'], key: 'academy', labelKey: 'userDashboard.sideNav.academy', fallback: 'Mes formations', icon: GraduationCap, href: '/academy' },
+  { roles: ['tourist'], key: 'sejours', labelKey: 'userDashboard.sideNav.sejours', fallback: 'Mes séjours', icon: Plane, href: '/sejours' },
+  { roles: ['buyer'], key: 'search', labelKey: 'userDashboard.sideNav.search', fallback: 'Rechercher un bien', icon: Search, href: '/search' },
+];
+
+// ── P1 audit : boîte à outils métier (actions rapides par rôle) ───────
+interface RoleTool {
+  titleKey: string;
+  titleFallback: string;
+  descKey: string;
+  descFallback: string;
+  href: string;
+  icon: typeof Home;
+}
+
+const ROLE_TOOLBOX: Record<string, RoleTool[]> = {
+  buyer: [
+    { titleKey: 'userDashboard.tools.buyerSearch', titleFallback: 'Rechercher un bien', descKey: 'userDashboard.tools.buyerSearchDesc', descFallback: 'Filtres avancés, quartiers et alertes prix', href: '/search', icon: Search },
+    { titleKey: 'userDashboard.tools.financing', titleFallback: 'Simulateur de financement', descKey: 'userDashboard.tools.financingDesc', descFallback: 'Estimez votre mensualité et votre capacité d\'achat', href: '/financing', icon: CreditCard },
+    { titleKey: 'userDashboard.tools.sejours', titleFallback: 'Réserver un séjour', descKey: 'userDashboard.tools.sejoursDesc', descFallback: 'Hôtels et guesthouses vérifiés en Afrique de l\'Ouest', href: '/sejours', icon: Plane },
+  ],
+  seller: [
+    { titleKey: 'userDashboard.tools.publish', titleFallback: 'Publier une annonce', descKey: 'userDashboard.tools.publishDesc', descFallback: 'Mettez en vente ou en location votre bien', href: '/publish', icon: PlusCircle },
+    { titleKey: 'userDashboard.tools.ownerDashboard', titleFallback: 'Gérer mes annonces', descKey: 'userDashboard.tools.ownerDashboardDesc', descFallback: 'Suivi des vues, contacts et transactions', href: '/owner-dashboard', icon: Building2 },
+    { titleKey: 'userDashboard.tools.investir', titleFallback: 'Valoriser mon bien', descKey: 'userDashboard.tools.investirDesc', descFallback: 'Analyse de quartier et prédiction de prix', href: '/investir', icon: TrendingUp },
+  ],
+  investor: [
+    { titleKey: 'userDashboard.tools.opportunities', titleFallback: 'Opportunités d\'investissement', descKey: 'userDashboard.tools.opportunitiesDesc', descFallback: 'Biens sélectionnés par score IA', href: '/investir', icon: TrendingUp },
+    { titleKey: 'userDashboard.tools.portfolio', titleFallback: 'Mon portefeuille', descKey: 'userDashboard.tools.portfolioDesc', descFallback: 'ROI, rendements locatifs et alertes', href: '/investor-dashboard', icon: BarChart3 },
+    { titleKey: 'userDashboard.tools.financing2', titleFallback: 'Simulateur de financement', descKey: 'userDashboard.tools.financingDesc', descFallback: 'Planifiez vos acquisitions', href: '/financing', icon: CreditCard },
+  ],
+  hotelier: [
+    { titleKey: 'userDashboard.tools.hotelDashboard', titleFallback: 'Gérer mon établissement', descKey: 'userDashboard.tools.hotelDashboardDesc', descFallback: 'Chambres, tarifs et réservations', href: '/hotel-dashboard', icon: Hotel },
+    { titleKey: 'userDashboard.tools.sejours2', titleFallback: 'Voir ma vitrine', descKey: 'userDashboard.tools.sejoursDesc', descFallback: 'Page publique et avis clients', href: '/sejours', icon: Plane },
+    { titleKey: 'userDashboard.tools.analytics2', titleFallback: 'Analytics', descKey: 'userDashboard.tools.analyticsDesc', descFallback: 'Taux d\'occupation et revenus', href: '/analytics', icon: BarChart3 },
+  ],
+  notary: [
+    { titleKey: 'userDashboard.tools.notaryDashboard', titleFallback: 'Espace notarial', descKey: 'userDashboard.tools.notaryDashboardDesc', descFallback: 'Actes, signatures électroniques et escrow', href: '/notary-dashboard', icon: Scale },
+    { titleKey: 'userDashboard.tools.notaryDirectory', titleFallback: 'Répertoire des notaires', descKey: 'userDashboard.tools.notaryDirectoryDesc', descFallback: 'Études certifiées dans 4 pays', href: '/notary', icon: ShieldCheck },
+    { titleKey: 'userDashboard.tools.escrow2', titleFallback: 'Transactions sécurisées', descKey: 'userDashboard.tools.escrowDesc', descFallback: 'Suivi des dossiers en escrow', href: '/escrow', icon: ClipboardList },
+  ],
+  geometer: [
+    { titleKey: 'userDashboard.tools.geotrust', titleFallback: 'Missions GeoTrust', descKey: 'userDashboard.tools.geotrustDesc', descFallback: 'Bornage, rapports terrain et certification', href: '/geotrust', icon: Map },
+    { titleKey: 'userDashboard.tools.escrow3', titleFallback: 'Transactions sécurisées', descKey: 'userDashboard.tools.escrowDesc', descFallback: 'Vérifications demandées par les parties', href: '/escrow', icon: ClipboardList },
+    { titleKey: 'userDashboard.tools.profile3', titleFallback: 'Mon profil géomètre', descKey: 'userDashboard.tools.profileDesc', descFallback: 'Zone d\'intervention et accréditations', href: '/profile', icon: User },
+  ],
+  artisan: [
+    { titleKey: 'userDashboard.tools.artisanMarket', titleFallback: 'Trouver des missions', descKey: 'userDashboard.tools.artisanMarketDesc', descFallback: 'Devis ProMatch et demandes clients', href: '/artisans', icon: Wrench },
+    { titleKey: 'userDashboard.tools.artisanProfile', titleFallback: 'Mon profil artisan', descKey: 'userDashboard.tools.artisanProfileDesc', descFallback: 'Portfolio, certifications et zone', href: '/profile', icon: User },
+    { titleKey: 'userDashboard.tools.artisanWallet', titleFallback: 'Mes revenus', descKey: 'userDashboard.tools.artisanWalletDesc', descFallback: 'Paiements escrow et versements', href: '/wallet', icon: Wallet },
+  ],
+  trainer: [
+    { titleKey: 'userDashboard.tools.academy', titleFallback: 'Mes formations', descKey: 'userDashboard.tools.academyDesc', descFallback: 'Cours, quiz et apprenants inscrits', href: '/academy', icon: GraduationCap },
+    { titleKey: 'userDashboard.tools.profile4', titleFallback: 'Mon profil formateur', descKey: 'userDashboard.tools.profileDesc', descFallback: 'Biographie et expertise', href: '/profile', icon: User },
+    { titleKey: 'userDashboard.tools.analytics3', titleFallback: 'Analytics', descKey: 'userDashboard.tools.analyticsDesc', descFallback: 'Suivi des inscriptions', href: '/analytics', icon: BarChart3 },
+  ],
+  tourist: [
+    { titleKey: 'userDashboard.tools.sejours3', titleFallback: 'Réserver un séjour', descKey: 'userDashboard.tools.sejoursDesc', descFallback: 'Hôtels et guesthouses vérifiés', href: '/sejours', icon: Plane },
+    { titleKey: 'userDashboard.tools.bookings', titleFallback: 'Mes réservations', descKey: 'userDashboard.tools.bookingsDesc', descFallback: 'Arrivées, départs et reçus', href: '/booking', icon: ClipboardList },
+    { titleKey: 'userDashboard.tools.wallet2', titleFallback: 'Mon portefeuille', descKey: 'userDashboard.tools.walletDesc', descFallback: 'Remboursements et paiements', href: '/wallet', icon: Wallet },
+  ],
+  admin: [
+    { titleKey: 'userDashboard.tools.admin', titleFallback: 'Backoffice', descKey: 'userDashboard.tools.adminDesc', descFallback: 'Utilisateurs, KYC et modération', href: '/admin', icon: ShieldCheck },
+    { titleKey: 'userDashboard.tools.analytics4', titleFallback: 'Statistiques plateforme', descKey: 'userDashboard.tools.analyticsDesc', descFallback: 'Activité globale et revenus', href: '/analytics', icon: BarChart3 },
+    { titleKey: 'userDashboard.tools.geotrust2', titleFallback: 'GeoTrust', descKey: 'userDashboard.tools.geotrustDesc', descFallback: 'Certifications foncières', href: '/geotrust', icon: Map },
+  ],
+};
+
+// Alias de rôles partageant la même boîte à outils
+const TOOLBOX_ALIASES: Record<string, string> = {
+  certified_agent: 'seller',
+  premium_agent: 'seller',
+  agent: 'seller',
+  artisan_pro: 'artisan',
+};
 
 const statusColors: Record<string, string> = {
   CREATED: '#6b7280', FUNDED: '#009CDE', IN_PROGRESS: '#D4AF37',
@@ -62,11 +154,43 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
   const router = useRouter();
   const pathname = usePathname();
 
+  // P1 audit — rôles & dashboards dédiés accessibles à cet utilisateur
+  const { roles, primaryRole, availableDashboards } = useRoleAccess();
+
+  // Navigation = socle commun + dashboards métier du rôle + compléments métier
+  const navItems = useMemo(() => {
+    const items: { key: string; labelKey: string; fallback: string; icon: typeof Home; href: string }[] = [...sideNavItems];
+
+    // Dashboards dédiés (agent, investisseur, hôtelier, notaire, géomètre, admin…)
+    for (const dash of availableDashboards) {
+      if (dash.path === '/dashboard') continue;
+      const meta = DASHBOARD_NAV_META[dash.path];
+      if (!meta) continue;
+      items.push({ key: dash.path.replace(/^\//, '').replace(/-/g, '_'), labelKey: `userDashboard.sideNav.${dash.path.replace(/^\//, '')}`, fallback: meta.fallback, icon: meta.icon, href: dash.path });
+    }
+
+    // Compléments pour rôles sans dashboard dédié (artisan, formateur, touriste…)
+    for (const extra of ROLE_EXTRA_NAV) {
+      if (extra.roles.some((r) => roles.includes(r))) {
+        if (!items.some((i) => i.href === extra.href)) {
+          items.push(extra);
+        }
+      }
+    }
+
+    items.push({ key: 'settings', labelKey: 'userDashboard.sideNav.settings', fallback: 'Paramètres', icon: Settings, href: '/settings' });
+    return items;
+  }, [availableDashboards, roles]);
+
   // Derive activeTab from the current URL pathname
   const activeTab = useMemo(() => {
-    const matchingItem = sideNavItems.find(item => item.href === pathname);
+    const matchingItem = navItems.find(item => item.href === pathname);
     return matchingItem ? matchingItem.key : 'overview';
-  }, [pathname]);
+  }, [navItems, pathname]);
+
+  // Boîte à outils métier (actions rapides du rôle principal)
+  const roleToolbox = ROLE_TOOLBOX[TOOLBOX_ALIASES[primaryRole] ?? primaryRole] ?? ROLE_TOOLBOX.buyer;
+  const roleDef = getRoleDefinition(primaryRole);
 
   // Use NextAuth session as the primary source of truth for auth state
   // AppShell syncs session → authStore, so both are available after OAuth
@@ -164,9 +288,20 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 )}
                 <div>
                   <h3 className="text-sm font-semibold text-primary-deep">{userName}</h3>
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
-                    <userKyc.Icon className="w-3 h-3 inline" /> {t(userKyc.nameKey, userKyc.nameFallback)}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
+                      <userKyc.Icon className="w-3 h-3 inline" /> {t(userKyc.nameKey, userKyc.nameFallback)}
+                    </span>
+                    {primaryRole && primaryRole !== 'buyer' && (
+                      <span
+                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: '#00308715', color: '#003087' }}
+                        title={roleDef.description}
+                      >
+                        <roleDef.icon className="w-3 h-3 inline" /> {roleDef.label}
+                      </span>
+                    )}
+                  </div>
                   {user?.email?.endsWith('@placeholder.afribayit.com') && (
                     <a href="/profile" className="text-[10px] text-amber-600 hover:underline block mt-1">
                       {t('userDashboard.completeProfile', 'Complétez votre profil →')}
@@ -175,7 +310,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 </div>
               </div>
               <nav className="space-y-1">
-                {sideNavItems.map((item) => {
+                {navItems.map((item) => {
                   const IconComp = item.icon;
                   return (
                     <button
@@ -290,6 +425,43 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 ))
               )}
             </div>
+
+            {/* ── P1 audit : boîte à outils métier (actions rapides par rôle) ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35, ease: easeOut }}
+              className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale mb-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-serif text-lg font-bold text-primary-deep">
+                  {t('userDashboard.roleToolsTitle', 'Vos outils')} — <span className="text-primary-green">{roleDef.label}</span>
+                </h3>
+                <roleDef.icon className="w-5 h-5 text-primary-deep/40" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {roleToolbox.map((tool) => {
+                  const ToolIcon = tool.icon;
+                  return (
+                    <a
+                      key={tool.titleFallback}
+                      href={tool.href}
+                      className="group p-4 rounded-2xl border border-primary-pale bg-primary-pale/20 hover:bg-primary-pale/40 hover:border-primary-green/30 transition-all"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                        <ToolIcon className="w-4.5 h-4.5 text-primary-deep" />
+                      </div>
+                      <p className="text-sm font-bold text-primary-deep leading-tight">
+                        {t(tool.titleKey, tool.titleFallback)}
+                      </p>
+                      <p className="text-[11px] text-gray-text mt-1 leading-snug">
+                        {t(tool.descKey, tool.descFallback)}
+                      </p>
+                    </a>
+                  );
+                })}
+              </div>
+            </motion.div>
 
             {/* Wallet Card */}
             {walletLoading ? (

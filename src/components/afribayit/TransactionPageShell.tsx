@@ -148,13 +148,20 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, stats
 
 // ─── Main Shell ───────────────────────────────────────────────────────────
 
+export interface ShellStat { value: number | string; suffix?: string; label: string }
+
 interface TransactionPageShellProps {
   activeTab: 'acheter' | 'louer' | 'investir' | 'sejour';
   hero: HeroProps;
   children: React.ReactNode;
+  /** Stats réelles calculées par la page elle-même (annuaires artisans /
+   *  notaires…). Lorsque fourni, elles priment sur le mapping /stats générique. */
+  customStats?: ShellStat[] | null;
+  /** true tant que les customStats chargent — affiche un placeholder pulsant. */
+  customStatsPending?: boolean;
 }
 
-export default function TransactionPageShell({ activeTab, hero, children }: TransactionPageShellProps) {
+export default function TransactionPageShell({ activeTab, hero, children, customStats, customStatsPending }: TransactionPageShellProps) {
   // Fetch real stats for the hero stats bar.
   // `isPending` (not `isLoading`) stays true across retry back-off windows
   // while Neon wakes up — placeholders instead of misleading "0+".
@@ -198,9 +205,15 @@ export default function TransactionPageShell({ activeTab, hero, children }: Tran
       // Never render the hardcoded "0+" defaults — users read them as real.
       hero.stats.map((s) => ({ ...s, value: statsPending ? '…' : statsError ? '—' : s.value, suffix: undefined }));
 
+  // Les stats fournies par la page (annuaires) priment sur le mapping
+  // générique /stats : chargement → placeholder "…" pulsant, jamais un "0".
+  const finalStats: ShellStat[] = customStats
+    ? customStats.map((s) => (customStatsPending ? { ...s, value: '…', suffix: undefined } : s))
+    : realStats;
+
   return (
     <div className="min-h-screen bg-cream">
-      <TransactionHero {...hero} stats={realStats} statsPending={statsPending && !stats} />
+      <TransactionHero {...hero} stats={finalStats} statsPending={(customStats && customStatsPending) || (statsPending && !stats)} />
       <main>{children}</main>
     </div>
   );

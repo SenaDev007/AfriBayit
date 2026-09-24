@@ -3,6 +3,13 @@
 
 import { PrismaClient } from '@prisma/client';
 
+import {
+  DIRECTORY_ARTISANS,
+  DIRECTORY_ARTISAN_USERS,
+  DIRECTORY_NOTARIES,
+  DIRECTORY_NOTARY_USERS,
+} from '../src/lib/migrations/directory-data';
+
 // ─── FIX: Json columns must receive parsed values, not JSON strings ──────────
 // Many seed defs encode Json-typed fields (images, features, specialties,
 // amenities, metadata…) as STRINGS, e.g. images: '["https://…"]'. Stored raw,
@@ -3543,14 +3550,154 @@ async function main() {
   console.info(`  ✓ Created 2 conversations with messages`);
 
   // ═══════════════════════════════════════════════════════════════════════
+  // ENRICHED DIRECTORY — annuaires Artisans & Notaires (P1 audit Manus)
+  // Comptes dédiés (@artisan/@notaire.afribayit.com) + profils complets,
+  // partagés avec /api/admin/migrate (patch production). Upserts
+  // idempotents : une base déjà seedée peut relancer le script sans doublon.
+  // ═══════════════════════════════════════════════════════════════════════
+  console.info('\n→ Populating enriched directories (artisans & notaries)...');
+
+  const directoryEmailToId = new Map<string, string>();
+  for (const u of [...DIRECTORY_ARTISAN_USERS, ...DIRECTORY_NOTARY_USERS]) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {
+        phone: u.phone,
+        name: u.name,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        role: u.role,
+        country: u.country,
+        city: u.city,
+        kycLevel: u.kycLevel,
+        score: u.score,
+        reputation: u.reputation,
+        bio: u.bio,
+        verified: u.verified,
+        preferredLanguage: u.preferredLanguage,
+        currency: u.currency,
+      },
+      create: {
+        email: u.email,
+        phone: u.phone,
+        name: u.name,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        role: u.role,
+        country: u.country,
+        city: u.city,
+        kycLevel: u.kycLevel,
+        score: u.score,
+        reputation: u.reputation,
+        bio: u.bio,
+        verified: u.verified,
+        preferredLanguage: u.preferredLanguage,
+        currency: u.currency,
+      },
+    });
+    directoryEmailToId.set(u.email, user.id);
+  }
+  console.info(`  ✓ Directory users: ${directoryEmailToId.size}`);
+
+  for (const a of DIRECTORY_ARTISANS) {
+    const userId = directoryEmailToId.get(a.userEmail);
+    if (!userId) continue;
+    await prisma.artisan.upsert({
+      where: { userId },
+      update: {
+        trade: a.trade,
+        specialties: a.specialties,
+        certified: a.certified,
+        kybValid: a.kybValid,
+        available: a.available,
+        emergency: a.emergency,
+        priceRange: a.priceRange,
+        dailyRate: a.dailyRate,
+        portfolio: a.portfolio,
+        rating: a.rating,
+        reviews: a.reviews,
+        zone: a.zone,
+        city: a.city,
+        country: a.country,
+        subscriptionTier: a.subscriptionTier,
+        responseTime: a.responseTime,
+        completedMissions: a.completedMissions,
+      },
+      create: {
+        userId,
+        trade: a.trade,
+        specialties: a.specialties,
+        certified: a.certified,
+        kybValid: a.kybValid,
+        available: a.available,
+        emergency: a.emergency,
+        priceRange: a.priceRange,
+        dailyRate: a.dailyRate,
+        portfolio: a.portfolio,
+        rating: a.rating,
+        reviews: a.reviews,
+        zone: a.zone,
+        city: a.city,
+        country: a.country,
+        subscriptionTier: a.subscriptionTier,
+        responseTime: a.responseTime,
+        completedMissions: a.completedMissions,
+      },
+    });
+  }
+  console.info(`  ✓ Directory artisans: ${DIRECTORY_ARTISANS.length}`);
+
+  for (const n of DIRECTORY_NOTARIES) {
+    const userId = directoryEmailToId.get(n.userEmail);
+    if (!userId) continue;
+    await prisma.notary.upsert({
+      where: { licenseNumber: n.licenseNumber },
+      update: {
+        userId,
+        chamberName: n.chamberName,
+        specialty: n.specialty,
+        certificationLevel: n.certificationLevel,
+        country: n.country,
+        zone: n.zone,
+        available: n.available,
+        rating: n.rating,
+        missions: n.missions,
+        subscriptionTier: n.subscriptionTier,
+        conventionSigned: n.conventionSigned,
+        conventionUrl: n.conventionUrl ?? null,
+        certified: n.certified,
+        certifiedAt: daysAgo(n.certifiedDaysAgo),
+      },
+      create: {
+        userId,
+        licenseNumber: n.licenseNumber,
+        chamberName: n.chamberName,
+        specialty: n.specialty,
+        certificationLevel: n.certificationLevel,
+        country: n.country,
+        zone: n.zone,
+        available: n.available,
+        rating: n.rating,
+        missions: n.missions,
+        subscriptionTier: n.subscriptionTier,
+        conventionSigned: n.conventionSigned,
+        conventionUrl: n.conventionUrl ?? null,
+        certified: n.certified,
+        certifiedAt: daysAgo(n.certifiedDaysAgo),
+      },
+    });
+  }
+  console.info(`  ✓ Directory notaries: ${DIRECTORY_NOTARIES.length}`);
+
+  // ═══════════════════════════════════════════════════════════════════════
   // DONE
   // ═══════════════════════════════════════════════════════════════════════
   console.info('\n✅ Seed completed successfully!');
   console.info('\n📊 Summary:');
-  console.info(`  Users:          ${USERS.length}`);
-  console.info(`  Notaries:       5`); // 2 BJ + 1 BF + 1 CI + 1 TG
+  console.info(`  Users:          ${USERS.length} + ${directoryEmailToId.size} directory`);
+  console.info(`  Notaries:       5 + ${DIRECTORY_NOTARIES.length} directory`); // 2 BJ + 1 BF + 1 CI + 1 TG + 12 annuaire
   console.info(`  Geometers:      4`); // 3 (BJ, CI, TG) + 1 BF
-  console.info(`  Artisans:       ${artisanIds.length}`);
+  console.info(`  Artisans:       ${artisanIds.length} + ${DIRECTORY_ARTISANS.length} directory`);
   console.info(`  Properties:     ${propertyIds.length}`);
   console.info(`  Short-term:     ${shortTermRentalIds.length}`);
   console.info(`  Transactions:   ${txDefs.length}`);

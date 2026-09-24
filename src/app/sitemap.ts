@@ -3,6 +3,7 @@
 
 import { MetadataRoute } from 'next';
 import { getAppBaseUrl } from '@/lib/app-url';
+import { BLOG_ARTICLES } from '@/data/blog-articles';
 
 // Normalize API URL — ensure protocol, no trailing slash. Empty when the
 // legacy NEXT_PUBLIC_API_URL split-backend variable is unset (monolith).
@@ -76,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: 'ambassador', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: 'subscriptions', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: 'our-work', priority: 0.4, changeFrequency: 'monthly' as const },
+    { path: 'blog', priority: 0.5, changeFrequency: 'weekly' as const },
     { path: 'terms', priority: 0.3, changeFrequency: 'yearly' as const },
     { path: 'privacy', priority: 0.3, changeFrequency: 'yearly' as const },
   ];
@@ -112,7 +114,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // 3. Academy courses — fetch from backend API (same-origin fallback)
+  // 3b. Blog articles (P1 audit — contenus juridiques indexables avec leur
+  //     date réelle de dernière mise à jour)
+  for (const article of BLOG_ARTICLES) {
+    entries.push({
+      url: `${BASE_URL}/blog/${article.id}`,
+      lastModified: new Date(article.updatedAt),
+      changeFrequency: 'monthly',
+      priority: article.isLegal ? 0.6 : 0.4,
+    });
+  }
+
+  // 4. Academy courses — fetch from backend API (same-origin fallback)
   const coursesData = (await fetchApiJson('/academy/courses?limit=500')) as
     | Array<{ id: string; updatedAt?: string }>
     | null;
