@@ -1020,7 +1020,7 @@
     content: '';
     position: absolute;
     inset: 2.5px;
-    background: #0A1226;
+    background: #FFFFFF;
     border-radius: 50%;
     z-index: 2;
   }
@@ -1160,7 +1160,8 @@
   background-color: #0D1F3C;
 }
 .admin-dark .hover\:bg-gray-50:hover,
-.admin-dark .hover\:bg-gray-100:hover {
+.admin-dark .hover\:bg-gray-100:hover,
+.admin-dark .hover\:bg-gray-200:hover {
   background-color: #13294D;
 }
 .admin-dark .text-gray-900,
@@ -1172,6 +1173,9 @@
 }
 .admin-dark .text-gray-600 {
   color: #B6C2D4;
+}
+.admin-dark .text-gray-500 {
+  color: #8FA3BF;
 }
 .admin-dark .border-gray-200,
 .admin-dark .border-gray-100,
@@ -1191,6 +1195,153 @@
 .admin-dark .bg-green-50 {
   background-color: rgba(0, 166, 81, 0.12);
 }
-.admin-dark .bg-yellow-50 {
+.admin-dark .bg-yellow-50,
+.admin-dark .bg-amber-50 {
   background-color: rgba(212, 175, 55, 0.12);
+}
+.admin-dark .bg-purple-50 {
+  background-color: rgba(139, 92, 246, 0.14);
+}
+.admin-dark .bg-orange-50 {
+  background-color: rgba(234, 88, 12, 0.14);
+}
+.admin-dark .bg-sky-50 {
+  background-color: rgba(14, 165, 233, 0.12);
+}
+.admin-dark .bg-emerald-50 {
+  background-color: rgba(0, 166, 81, 0.12);
+}
+.admin-dark .bg-green-100 {
+  background-color: rgba(0, 166, 81, 0.20);
+}
+.admin-dark .bg-amber-100 {
+  background-color: rgba(212, 175, 55, 0.20);
+}
+.admin-dark .bg-red-100 {
+  background-color: rgba(217, 48, 37, 0.20);
+}
+.admin-dark .bg-red-50\/30 {
+  background-color: rgba(217, 48, 37, 0.08);
+}
+
+/* ── Textes de badges/états : les variantes -600/-700 sont illisibles sur
+   fond sombre → équivalents éclaircis (pattern badges Win-Agro) ── */
+.admin-dark .text-green-700,
+.admin-dark .text-green-600 {
+  color: #4ADE80;
+}
+.admin-dark .text-green-800 {
+  color: #86EFAC;
+}
+.admin-dark .text-red-700,
+.admin-dark .text-red-600 {
+  color: #F87171;
+}
+.admin-dark .text-amber-700,
+.admin-dark .text-amber-600 {
+  color: #FCD34D;
+}
+.admin-dark .text-amber-800,
+.admin-dark .text-yellow-800 {
+  color: #FDE047;
+}
+.admin-dark .text-blue-700,
+.admin-dark .text-blue-600 {
+  color: #60A5FA;
+}
+.admin-dark .text-purple-700,
+.admin-dark .text-purple-600 {
+  color: #C4B5FD;
+}
+.admin-dark .text-orange-700,
+.admin-dark .text-orange-600 {
+  color: #FDBA74;
+}
+.admin-dark .text-sky-700 {
+  color: #7DD3FC;
+}
+.admin-dark .text-emerald-700 {
+  color: #6EE7A0;
+}
+
+/* ── Navy/or codés en dur → équivalents sombres Win-Agro ── */
+.admin-dark .text-\[\#0a2a5e\],
+.admin-dark .text-\[\#0A2A5E\] {
+  color: #F0F4F8;
+}
+.admin-dark .text-\[\#003087\] {
+  color: #7CC6EE;
+}
+/* Exception : texte navy posé sur pastille or (contraste voulu) */
+.admin-dark .bg-\[\#D4AF37\] .text-\[\#003087\],
+.admin-dark .bg-\[\#D4AF37\].text-\[\#003087\],
+.admin-dark .hover\:bg-\[\#D4AF37\]:hover .text-\[\#003087\],
+.admin-dark .hover\:bg-\[\#D4AF37\]:hover.text-\[\#003087\] {
+  color: #003087;
+}
+.admin-dark .text-\[\#D4AF37\] {
+  color: #E6C247;
+}
+.admin-dark .text-\[\#B8962E\] {
+  color: #E6C247;
+}
+.admin-dark .text-\[\#00A651\] {
+  color: #34D399;
+}
+/* Boutons navy → bleu innovation Win-Agro (lisible sur fond nuit) */
+.admin-dark .bg-\[\#003087\] {
+  background-color: #009CDE;
+}
+.admin-dark .hover\:bg-\[\#003087\]:hover {
+  background-color: #009CDE;
+}
+.admin-dark .hover\:bg-\[\#0047b3\]:hover,
+.admin-dark .hover\:bg-\[\#002a70\]:hover,
+.admin-dark .hover\:bg-\[\#002A70\]:hover,
+.admin-dark .hover\:bg-\[\#001f5c\]:hover {
+  background-color: #33AFEA;
+}
+.admin-dark .bg-\[\#003087\]\/5 {
+  background-color: rgba(0, 156, 222, 0.15);
+}
+.admin-dark .bg-\[\#003087\]\/10 {
+  background-color: rgba(0, 156, 222, 0.20);
+}
+.admin-dark .border-\[\#003087\] {
+  border-color: rgba(0, 156, 222, 0.30);
+}
+.admin-dark .hover\:border-\[\#003087\]:hover {
+  border-color: rgba(0, 156, 222, 0.50);
+}
+.admin-dark .hover\:bg-\[\#b8961f\]:hover {
+  background-color: #E6C247;
+}
+.admin-dark .bg-\[\#00A651\] {
+  background-color: #05C168;
+}
+
+/* ── Typographie Win-Agro : titres serif Playfair partout dans l'admin ── */
+.admin-dark h1,
+.admin-dark h2 {
+  font-family: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+  letter-spacing: -0.01em;
+}
+
+/* ── Arrondis plus généreux (cartes Win-Agro rounded-2xl/3xl) ── */
+.admin-dark .rounded-xl {
+  border-radius: 1rem;
+}
+.admin-dark .rounded-lg {
+  border-radius: 0.75rem;
+}
+
+/* ── Scrollbar sombre dans le backoffice ── */
+.admin-dark ::-webkit-scrollbar-track {
+  background: #060D1A;
+}
+.admin-dark ::-webkit-scrollbar-thumb {
+  background: #0A1A33;
+}
+.admin-dark ::-webkit-scrollbar-thumb:hover {
+  background: #13294D;
 }

@@ -269,14 +269,16 @@ export default function AdminSidebar({
     <aside
       className={cn(
         'fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 ease-in-out',
-        'bg-[#061224] text-white',
+        'bg-admin-bg text-white',
         collapsed ? 'w-[72px]' : 'w-[280px]'
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-[#003087]/20 shrink-0">
+      {/* Logo — boîte blanche Win-Agro (le logo reste sur fond blanc) */}
+      <div className="flex items-center h-16 px-4 border-b border-primary-green/10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <Image src="/logo.png" alt="AfriBayit" width={160} height={48} className="h-12 w-auto object-contain shrink-0" priority />
+          <div className="w-10 h-10 bg-white rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
+            <Image src="/logo.png" alt="AfriBayit" width={160} height={48} className="w-full h-full object-contain" priority />
+          </div>
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="text-base font-bold tracking-tight truncate">AfriBayit</h1>

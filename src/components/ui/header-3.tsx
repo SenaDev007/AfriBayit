@@ -192,10 +192,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo — cercle light-beam + wordmark serif (design Win-Agro) */}
+          {/* Logo — pastille blanche (le logo doit rester sur fond blanc) + wordmark serif Win-Agro */}
           <Link href="/" className="flex items-center gap-3 focus:outline-none group shrink-0" aria-label="AfriBayit — Retour à l'accueil">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-primary-green/30 bg-noir-vert logo-light-beam shadow-md flex items-center justify-center p-0.5 transition-transform duration-300 group-hover:scale-105">
-              <img src="/logo.png" alt="AfriBayit" className="h-11 w-11 object-contain rounded-full" />
+            <div className="relative w-12 h-12 rounded-full bg-white border border-primary-pale shadow-md flex items-center justify-center p-1">
+              <img src="/logo.png" alt="AfriBayit" className="h-10 w-10 object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-serif text-lg font-bold leading-tight text-primary-deep tracking-wide">
@@ -323,18 +323,14 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               Admin
             </Link>
 
-            {/* CTA Publier — design Win-Agro (shimmer + pulsation) */}
-            <motion.a
+            {/* CTA Publier — design Win-Agro, statique (pas d'animation) */}
+            <a
               href="/publish"
-              whileHover={{ scale: 1.05, boxShadow: '0px 10px 25px rgba(0, 156, 222, 0.4)' }}
-              whileTap={{ scale: 0.98 }}
-              animate={{ scale: [1, 1.03, 1] }}
-              transition={{ scale: { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } }}
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-sm shadow-md hover:shadow-lg transition-colors duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2 btn-shimmer"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2"
             >
               <Plus className="w-4 h-4" />
               Publier
-            </motion.a>
+            </a>
 
             {/* Connexion / Profil */}
             {status === 'loading' ? (
@@ -485,18 +481,14 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                   <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
                 </div>
               </div>
-              <motion.a
+              <a
                 href="/publish"
                 onClick={() => setOpen(false)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ scale: { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } }}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-base shadow-md transition-colors cursor-pointer btn-shimmer"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-base shadow-md transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Publier une annonce
-              </motion.a>
+              </a>
               <button
                 onClick={() => signOutAndClear({ callbackUrl: '/' })}
                 className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-transparent border border-red-200 text-red-500 hover:bg-red-50 font-sans font-bold text-sm transition-colors cursor-pointer"
@@ -514,18 +506,14 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               >
                 Connexion
               </a>
-              <motion.a
+              <a
                 href="/publish"
                 onClick={() => setOpen(false)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ scale: { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } }}
-                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-base shadow-md transition-colors cursor-pointer btn-shimmer"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-base shadow-md transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Publier une annonce
-              </motion.a>
+              </a>
             </>
           )}
         </div>

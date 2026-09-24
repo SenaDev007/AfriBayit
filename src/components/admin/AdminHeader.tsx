@@ -81,7 +81,7 @@ export default function AdminHeader({
   const selectedCountryData = COUNTRIES.find((c) => c.code === selectedCountry) || COUNTRIES[0];
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-[#0F1F3C] border-b border-[#003087]/20 flex items-center px-4 lg:px-6 gap-3 shrink-0">
+    <header className="sticky top-0 z-30 h-16 bg-admin-panel/40 backdrop-blur-md border-b border-primary-green/10 flex items-center px-4 lg:px-6 gap-3 shrink-0">
       {/* Mobile menu toggle */}
       <button
         onClick={onMobileMenuToggle}

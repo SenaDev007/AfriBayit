@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -10,6 +10,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('ALL');
+
+  // Thème sombre Win-Agro : la classe .admin-dark est posée sur la coque ET
+  // sur <body> — les portails (Dialog, Select, DropdownMenu, Toaster) sont
+  // attachés à document.body et héritent ainsi des variables sombres.
+  useEffect(() => {
+    document.body.classList.add('admin-dark');
+    return () => {
+      document.body.classList.remove('admin-dark');
+    };
+  }, []);
 
   const handleToggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
@@ -25,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-[#061224]">
+      <div className="admin-dark min-h-screen bg-admin-bg">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar

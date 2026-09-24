@@ -120,29 +120,32 @@ export default function CompleteProfilePage() {
   // Show loading while checking session
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      <div className="min-h-screen bg-admin-bg flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-green" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#003087] via-[#001f5c] to-[#003087] flex items-center justify-center p-4">
+    <div className="admin-dark min-h-screen bg-admin-bg flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Halo radial central — design login Win-Agro */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary-green/10 blur-[120px] pointer-events-none" />
+      <div className="absolute -top-24 -right-24 w-[320px] h-[320px] rounded-full bg-accent-yellow/5 blur-[100px] pointer-events-none" />
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: easeOut }}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6"
+        className="relative z-10 bg-admin-panel/60 border border-primary-green/20 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md p-8"
       >
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-            <MapPin className="w-8 h-8 text-[#003087]" />
+          <div className="w-16 h-16 rounded-2xl bg-primary-green/10 border border-primary-green/20 flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-primary-green" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">
+          <h1 className="font-serif text-2xl font-bold text-white mb-2 tracking-wide">
             Bienvenue sur AfriBayit !
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-gray-400">
             Pour personnaliser votre expérience, veuillez indiquer votre pays de résidence.
             Cela nous permet de vous proposer les biens et services disponibles dans votre zone.
           </p>

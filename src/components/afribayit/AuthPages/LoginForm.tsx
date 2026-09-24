@@ -1,9 +1,10 @@
 // P3.7-2 — Login form + 2FA verification form.
 // Receives all state and handlers from the AuthPages orchestrator.
+// Design : login backoffice Win-Agro (carte sombre, inputs glass avec
+// icônes, labels uppercase bleus, bouton pill) — palette AfriBayit.
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, ShieldCheck, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
 import OAuthButtons from './OAuthButtons';
 import type { OauthLoadingState, ProviderAvailability, TwoFAState } from './types';
@@ -37,6 +38,7 @@ interface LoginFormProps {
 
 export default function LoginForm(props: LoginFormProps) {
   const { t } = useTranslation();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     loginEmail,
     setLoginEmail,
@@ -63,29 +65,25 @@ export default function LoginForm(props: LoginFormProps) {
   if (twoFA.show2FA) {
     return (
       <>
-        <div className="w-16 h-16 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4">
-          <ShieldCheck className="w-8 h-8 text-[#003087]" />
+        <div className="w-16 h-16 rounded-2xl bg-primary-green/10 border border-primary-green/20 flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="w-8 h-8 text-primary-green" />
         </div>
-        <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-1 text-center">
+        <h2 className="font-serif text-2xl font-bold text-white mb-1 text-center tracking-wide">
           Vérification 2FA
         </h2>
-        <p className="text-sm text-gray-500 mb-6 text-center">
+        <p className="text-xs text-gray-400 mb-6 text-center">
           Entrez le code de votre application d&apos;authentification
         </p>
 
         <form onSubmit={on2FAVerify} className="space-y-4">
           {twoFA.twoFAError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
-            >
+            <div className="p-3 rounded-xl bg-red-950/40 border border-red-900/30 text-xs text-red-400 text-center">
               {twoFA.twoFAError}
-            </motion.div>
+            </div>
           )}
 
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1.5 block text-center">
+            <label className="text-xs font-bold text-primary-green uppercase tracking-wider mb-1.5 block text-center">
               Code à 6 chiffres
             </label>
             <input
@@ -99,25 +97,23 @@ export default function LoginForm(props: LoginFormProps) {
               }}
               placeholder="000000"
               autoFocus
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-center tracking-[0.5em] font-mono outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-primary-green/20 bg-black/40 text-white text-sm text-center tracking-[0.5em] font-mono outline-none focus:outline-none focus:ring-2 focus:ring-primary-green/50 transition-all placeholder:text-gray-600"
             />
           </div>
 
-          <motion.button
-            whileHover={{ scale: twoFA.twoFALoading ? 1 : 1.01 }}
-            whileTap={{ scale: twoFA.twoFALoading ? 1 : 0.99 }}
+          <button
             type="submit"
             disabled={twoFA.twoFALoading}
-            className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-full bg-primary-green hover:bg-[#33afea] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {twoFA.twoFALoading && <Loader2 className="w-4 h-4 animate-spin" />}
             {twoFA.twoFALoading ? 'Vérification...' : 'Vérifier'}
-          </motion.button>
+          </button>
 
           <button
             type="button"
             onClick={reset2FA}
-            className="w-full py-3 text-sm text-gray-500 hover:text-gray-700"
+            className="w-full py-3 text-xs text-gray-400 hover:text-white transition-colors"
           >
             Retour
           </button>
@@ -128,10 +124,10 @@ export default function LoginForm(props: LoginFormProps) {
 
   return (
     <>
-      <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-1">
+      <h2 className="font-serif text-2xl font-bold text-white mb-1 tracking-wide">
         {t('auth.loginForm.title', 'Bon retour !')}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-xs text-gray-400 mb-6">
         {t('auth.loginForm.subtitle', 'Connectez-vous à votre compte AfriBayit')}
       </p>
 
@@ -150,70 +146,78 @@ export default function LoginForm(props: LoginFormProps) {
         </div>
 
         {loginError && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-3 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-600"
-          >
+          <div className="p-3 rounded-xl bg-red-950/40 border border-red-900/30 text-xs text-red-400 text-center">
             {loginError}
-          </motion.div>
+          </div>
         )}
 
         <div>
-          <label htmlFor="login-email" className="text-xs font-medium text-gray-500 mb-1.5 block">
-            {t('auth.email', 'Email')}
+          <label htmlFor="login-email" className="text-xs font-bold text-primary-green uppercase tracking-wider mb-1.5 block">
+            {t('auth.email', 'Adresse e-mail')}
           </label>
-          <input
-            id="login-email"
-            type="email"
-            value={loginEmail}
-            onChange={(e) => {
-              setLoginEmail(e.target.value);
-              setLoginError('');
-            }}
-            placeholder="votre@email.com"
-            autoComplete="email"
-            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
-          />
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-gray-500 pointer-events-none" />
+            <input
+              id="login-email"
+              type="email"
+              value={loginEmail}
+              onChange={(e) => {
+                setLoginEmail(e.target.value);
+                setLoginError('');
+              }}
+              placeholder="votre@email.com"
+              autoComplete="email"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-primary-green/20 bg-black/40 text-white text-sm outline-none focus:outline-none focus:ring-2 focus:ring-primary-green/50 transition-all font-sans placeholder:text-gray-600"
+            />
+          </div>
         </div>
         <div>
-          <label htmlFor="login-password" className="text-xs font-medium text-gray-500 mb-1.5 block">
+          <label htmlFor="login-password" className="text-xs font-bold text-primary-green uppercase tracking-wider mb-1.5 block">
             {t('auth.password', 'Mot de passe')}
           </label>
-          <input
-            id="login-password"
-            type="password"
-            value={loginPassword}
-            onChange={(e) => {
-              setLoginPassword(e.target.value);
-              setLoginError('');
-            }}
-            placeholder="••••••••"
-            autoComplete="current-password"
-            className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 transition-all"
-          />
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-gray-500 pointer-events-none" />
+            <input
+              id="login-password"
+              type={showPassword ? 'text' : 'password'}
+              value={loginPassword}
+              onChange={(e) => {
+                setLoginPassword(e.target.value);
+                setLoginError('');
+              }}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              className="w-full pl-11 pr-11 py-3 rounded-xl border border-primary-green/20 bg-black/40 text-white text-sm outline-none focus:outline-none focus:ring-2 focus:ring-primary-green/50 transition-all font-sans placeholder:text-gray-600"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-3 text-gray-500 hover:text-gray-300 transition-colors"
+              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={onForgotPassword}
-          className="text-xs text-[#003087] font-medium hover:underline"
+          className="text-xs text-primary-green font-bold hover:text-white transition-colors"
         >
           {t('auth.forgotPassword', 'Mot de passe oublié ?')}
         </button>
 
-        <motion.button
-          whileHover={{ scale: loginLoading ? 1 : 1.01 }}
-          whileTap={{ scale: loginLoading ? 1 : 0.99 }}
+        <button
           type="submit"
           disabled={loginLoading}
-          className="w-full py-3.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-full bg-primary-green hover:bg-[#33afea] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loginLoading
             ? t('auth.loginForm.submitting', 'Connexion...')
             : t('auth.loginForm.submit', 'Se connecter')}
-        </motion.button>
+        </button>
       </form>
 
       {/* Social Login — shown below login form */}
@@ -225,11 +229,11 @@ export default function LoginForm(props: LoginFormProps) {
         onApple={onApple}
       />
 
-      <p className="text-center text-sm text-gray-500 mt-6 pb-6">
+      <p className="text-center text-xs text-gray-400 mt-6 pb-6">
         Pas encore de compte ?{' '}
         <button
           onClick={() => onSwitch('register')}
-          className="text-[#003087] font-semibold hover:underline"
+          className="text-primary-green font-bold hover:text-white transition-colors"
         >
           Créer un compte
         </button>

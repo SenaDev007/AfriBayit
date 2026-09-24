@@ -107,8 +107,8 @@ export default function Footer() {
           {/* Colonne 1 : profil de l'entreprise */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="relative w-16 h-16 rounded-full overflow-hidden border border-primary-green/30 bg-noir-vert logo-light-beam shadow-md flex items-center justify-center p-0.5">
-                <img src="/logo.png" alt="AfriBayit" className="h-14 w-14 object-contain rounded-full" />
+              <div className="relative w-16 h-16 rounded-full bg-white border border-primary-green/30 shadow-md flex items-center justify-center p-1.5 shrink-0">
+                <img src="/logo.png" alt="AfriBayit" className="h-12 w-12 object-contain" />
               </div>
               <div className="flex flex-col">
                 <span className="font-serif text-xl font-bold leading-tight text-white tracking-wide">AfriBayit</span>

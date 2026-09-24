@@ -59,7 +59,7 @@ interface HeroProps {
 
 function TransactionHero({ badge, title, subtitle, backgroundImage, stats, statsPending, ctaLabel, ctaHref }: HeroProps & { statsPending?: boolean }) {
   return (
-    <section className="relative flex items-center overflow-hidden pt-16" style={{ minHeight: '38vh' }}>
+    <section className="relative flex items-center overflow-hidden pt-16 bg-grain" style={{ minHeight: '38vh' }}>
       {/* Background image — covers entire section */}
       <div className="absolute inset-0">
         <ImageWithFallback
@@ -100,6 +100,12 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, stats
           >
             {title}
           </motion.h1>
+
+          {/* Filet or signature Win-Agro */}
+          <div
+            className="h-1 w-16 rounded-full mt-5"
+            style={{ background: `linear-gradient(90deg, ${GOLD} 0%, #E6C247 50%, ${GOLD} 100%)` }}
+          />
 
           {/* Subtitle */}
           <motion.p
@@ -193,7 +199,7 @@ export default function TransactionPageShell({ activeTab, hero, children }: Tran
       hero.stats.map((s) => ({ ...s, value: statsPending ? '…' : statsError ? '—' : s.value, suffix: undefined }));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-cream">
       <TransactionHero {...hero} stats={realStats} statsPending={statsPending && !stats} />
       <main>{children}</main>
     </div>

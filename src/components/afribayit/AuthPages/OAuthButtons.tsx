@@ -82,10 +82,10 @@ export default function OAuthButtons({
     <motion.div layout>
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t" />
+          <div className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400">
+          <span className="bg-transparent px-3 text-gray-500">
             {t('auth.orContinueWith', 'ou continuer avec')}
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function OAuthButtons({
             type="button"
             onClick={onGoogle}
             disabled={!!oauthLoading}
-            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {oauthLoading === 'google' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -112,7 +112,7 @@ export default function OAuthButtons({
             type="button"
             onClick={onFacebook}
             disabled={!!oauthLoading}
-            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {oauthLoading === 'facebook' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -127,7 +127,7 @@ export default function OAuthButtons({
             type="button"
             onClick={onApple}
             disabled={!!oauthLoading}
-            className="py-3 rounded-2xl border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-gray-300 hover:bg-white/10 hover:text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {oauthLoading === 'apple' ? (
               <Loader2 className="w-4 h-4 animate-spin" />

@@ -481,7 +481,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 30 }}
           transition={{ duration: 0.4, ease: easeOut }}
-          className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
+          className="bg-admin-panel/60 border border-primary-green/20 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
           {showForgotPassword ? (
@@ -501,24 +501,26 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
             />
           ) : (
             <div className="p-6 pb-0">
-              {/* Header */}
+              {/* Header — logo sur tuile blanche + wordmark serif Win-Agro */}
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/logo.png"
-                    alt="AfriBayit"
-                    width={160}
-                    height={36}
-                    className="h-9 w-auto"
-                    priority
-                  />
-                  <span className="font-display text-lg font-bold text-[#003087]">
-                    Afri<span className="text-[#D4AF37]">Bayit</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 bg-white rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
+                    <Image
+                      src="/logo.png"
+                      alt="AfriBayit"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-contain"
+                      priority
+                    />
+                  </div>
+                  <span className="font-serif text-lg font-bold text-white">
+                    Afri<span className="text-accent-yellow">Bayit</span>
                   </span>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                 >
                   <svg
                     className="w-5 h-5 text-gray-400"
