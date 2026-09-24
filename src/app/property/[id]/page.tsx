@@ -11,7 +11,7 @@ export default function PropertyDetailPage() {
   const id = params.id as string;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-cream">
       <PropertyDetail
         propertyId={id}
         onBack={onBack}

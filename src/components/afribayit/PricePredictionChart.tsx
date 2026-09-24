@@ -123,31 +123,31 @@ export default function PricePredictionChart({
   // "available soon" message instead.
   if (!predictionData || history.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+      <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Brain className="w-5 h-5" style={{ color: GOLD }} />
-              <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+              <Brain className="w-5 h-5 text-accent-dark" />
+              <h3 className="font-serif text-lg font-bold text-primary-deep">
                 Prédiction de prix IA
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}15`, color: GOLD }}>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30">
                 ML
               </span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-text/60">
               Historique 5 ans + prédiction 2 ans · {city}, {country}
             </p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-          <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-4" style={{ background: `${GOLD}10` }}>
-            <Brain className="w-8 h-8" style={{ color: GOLD }} />
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-accent-yellow/10">
+            <Brain className="w-8 h-8 text-accent-dark" />
           </div>
-          <p className="text-sm font-semibold text-gray-700 mb-1">
+          <p className="text-sm font-semibold text-primary-deep mb-1">
             Prédictions de prix disponibles prochainement
           </p>
-          <p className="text-xs text-gray-400 max-w-md">
+          <p className="text-xs text-gray-text/70 max-w-md">
             Notre moteur de prédiction basé sur l&apos;historique des transactions AfriBayit est en cours
             d&apos;entraînement sur ce marché. Revenez bientôt pour consulter les tendances et prévisions.
           </p>
@@ -189,28 +189,28 @@ export default function PricePredictionChart({
     .join(' ');
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Brain className="w-5 h-5" style={{ color: GOLD }} />
-            <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            <Brain className="w-5 h-5 text-accent-dark" />
+            <h3 className="font-serif text-lg font-bold text-primary-deep">
               Prédiction de prix IA
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: `${GOLD}15`, color: GOLD }}>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30">
               ML
             </span>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-text/60">
             Historique 5 ans + prédiction 2 ans · {city}, {country}
           </p>
         </div>
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-1.5 rounded-full hover:bg-primary-pale transition-colors"
         >
-          <Info className="w-4 h-4 text-gray-400" />
+          <Info className="w-4 h-4 text-gray-text/60" />
         </button>
       </div>
 
@@ -219,7 +219,7 @@ export default function PricePredictionChart({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="mb-4 p-3 rounded-xl bg-blue-50 text-xs text-gray-600"
+          className="mb-4 p-3 rounded-2xl bg-primary-pale/60 text-xs text-gray-text"
         >
           Modèle de régression linéaire basé sur l&apos;historique des transactions AfriBayit et les tendances
           du marché immobilier ouest-africain. Croissance annuelle estimée: {stats.annualGrowth}%.
@@ -230,24 +230,24 @@ export default function PricePredictionChart({
       {/* Stats row */}
       {stats && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="text-center p-3 rounded-xl bg-gray-50">
-            <p className="text-xs text-gray-400 mb-1">Il y a 5 ans</p>
-            <p className="text-sm font-bold text-gray-700">{formatPrice(stats.price5yAgo)} FCFA</p>
+          <div className="text-center p-3 rounded-2xl bg-primary-pale/40">
+            <p className="text-xs text-gray-text/60 mb-1">Il y a 5 ans</p>
+            <p className="text-sm font-bold text-primary-deep">{formatPrice(stats.price5yAgo)} FCFA</p>
             <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
               <TrendingUp className="w-3 h-3" />
               +{stats.totalGrowth5y}%
             </p>
           </div>
-          <div className="text-center p-3 rounded-xl" style={{ background: `${NAVY}08` }}>
-            <p className="text-xs text-gray-400 mb-1">Aujourd&apos;hui</p>
-            <p className="text-sm font-bold" style={{ color: NAVY }}>
+          <div className="text-center p-3 rounded-2xl bg-primary-pale/60">
+            <p className="text-xs text-gray-text/60 mb-1">Aujourd&apos;hui</p>
+            <p className="text-sm font-bold text-primary-deep">
               {formatPrice(stats.currentPrice)} FCFA
             </p>
-            <p className="text-[10px] mt-1 text-gray-400">Valeur actuelle</p>
+            <p className="text-[10px] mt-1 text-gray-text/60">Valeur actuelle</p>
           </div>
-          <div className="text-center p-3 rounded-xl" style={{ background: `${GOLD}08` }}>
-            <p className="text-xs text-gray-400 mb-1">Dans 2 ans</p>
-            <p className="text-sm font-bold" style={{ color: GOLD }}>
+          <div className="text-center p-3 rounded-2xl bg-accent-yellow/10">
+            <p className="text-xs text-gray-text/60 mb-1">Dans 2 ans</p>
+            <p className="text-sm font-bold text-accent-dark">
               {formatPrice(stats.price2yFuture)} FCFA
             </p>
             <p className="text-[10px] mt-1 flex items-center justify-center gap-0.5" style={{ color: GREEN }}>
@@ -269,7 +269,7 @@ export default function PricePredictionChart({
               y1={padding.top + chartH * t}
               x2={width - padding.right}
               y2={padding.top + chartH * t}
-              stroke="#f0f0f0"
+              stroke="#E6EEF9"
               strokeWidth={1}
             />
           ))}
@@ -387,12 +387,12 @@ export default function PricePredictionChart({
         <div className="flex items-center justify-center gap-6 mt-3">
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-0.5 rounded-lg" style={{ background: NAVY }} />
-            <span className="text-xs text-gray-500">Historique réel</span>
+            <span className="text-xs text-gray-text">Historique réel</span>
           </div>
           {prediction.length > 0 && (
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-0.5 rounded-lg" style={{ background: GOLD, opacity: 0.7 }} />
-              <span className="text-xs text-gray-500">Prédiction ML</span>
+              <span className="text-xs text-gray-text">Prédiction ML</span>
             </div>
           )}
         </div>

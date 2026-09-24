@@ -253,12 +253,12 @@ export default function LeaseDetailPage() {
 
   if (isLoading) {
     return (
-      <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
+      <section className="min-h-screen pt-24 pb-16 bg-cream">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-4 w-40 mb-6" />
-          <Skeleton className="h-8 w-3/4 mb-6" />
-          <Skeleton className="h-64 rounded-xl mb-6" />
-          <Skeleton className="h-48 rounded-xl" />
+          <Skeleton className="h-4 w-40 mb-6 bg-primary-pale/60" />
+          <Skeleton className="h-8 w-3/4 mb-6 bg-primary-pale/60" />
+          <Skeleton className="h-64 rounded-3xl mb-6 bg-primary-pale/60" />
+          <Skeleton className="h-48 rounded-3xl bg-primary-pale/60" />
         </div>
       </section>
     );
@@ -266,11 +266,12 @@ export default function LeaseDetailPage() {
 
   if (!lease) {
     return (
-      <section className="min-h-screen pt-24 flex items-center justify-center">
+      <section className="min-h-screen pt-24 flex items-center justify-center bg-cream">
         <div className="text-center">
-          <h2 className="font-display text-2xl font-bold text-gray-400">Bail non trouvé</h2>
-          <p className="text-sm text-gray-400 mt-2">Ce bail n&apos;existe pas ou vous n&apos;y avez pas accès.</p>
-          <Link href="/leases" className="mt-4 inline-block text-[#003087] font-semibold text-sm hover:underline">
+          <h2 className="font-serif text-2xl font-extrabold text-primary-deep">Bail non trouvé</h2>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full my-4" />
+          <p className="text-sm text-gray-text mt-2">Ce bail n&apos;existe pas ou vous n&apos;y avez pas accès.</p>
+          <Link href="/leases" className="mt-4 inline-block text-primary-deep font-bold text-sm hover:underline">
             ← Retour aux baux
           </Link>
         </div>
@@ -291,26 +292,27 @@ export default function LeaseDetailPage() {
   const fmtMoney = (n: number) => `${new Intl.NumberFormat('fr-FR').format(Math.round(n))} ${lease.currency}`;
 
   return (
-    <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen pt-24 pb-16 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link href="/dashboard" className="hover:text-[#003087]">Dashboard</Link>
+        <div className="flex items-center gap-2 text-sm text-gray-text mb-4">
+          <Link href="/dashboard" className="hover:text-primary-deep">Dashboard</Link>
           <ChevronRight className="w-3 h-3" />
-          <Link href="/leases" className="hover:text-[#003087]">Mes baux</Link>
+          <Link href="/leases" className="hover:text-primary-deep">Mes baux</Link>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-[#003087] font-semibold truncate">{lease.leaseRef}</span>
+          <span className="text-primary-deep font-bold truncate">{lease.leaseRef}</span>
         </div>
 
         {/* Lease header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border overflow-hidden mb-6"
+          className="bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden mb-6"
         >
           <div className="grid md:grid-cols-3 gap-0">
             {/* Property image */}
-            <div className="relative aspect-[4/3] md:aspect-auto md:h-48 bg-gray-100">
+            <div className="relative aspect-[4/3] md:aspect-auto md:h-48 bg-primary-pale">
               <ImageWithFallback
                 src={firstImage}
                 alt={property?.title || 'Bien'}
@@ -322,32 +324,32 @@ export default function LeaseDetailPage() {
             <div className="md:col-span-2 p-5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
-                  <h1 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">{property?.title}</h1>
-                  <p className="text-xs text-gray-400 mb-1">Réf. {lease.leaseRef}</p>
+                  <h1 className="font-serif text-xl font-bold text-primary-deep mb-1">{property?.title}</h1>
+                  <p className="text-xs text-gray-text mb-1">Réf. {lease.leaseRef}</p>
                 </div>
                 <span
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap"
+                  className="px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
                   style={{ backgroundColor: `${status.color}15`, color: status.color }}
                 >
                   {status.label}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
+              <p className="text-xs text-gray-text flex items-center gap-1 mb-3">
                 <MapPin className="w-3.5 h-3.5" />
                 {property?.city}, {lease.country}
               </p>
               <div className="grid grid-cols-3 gap-3 text-xs">
                 <div>
-                  <p className="text-gray-400 mb-0.5">Loyer mensuel</p>
-                  <p className="font-bold text-[#003087]">{fmtMoney(lease.monthlyRent)}</p>
+                  <p className="text-gray-text mb-0.5">Loyer mensuel</p>
+                  <p className="font-bold text-primary-deep">{fmtMoney(lease.monthlyRent)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 mb-0.5">Dépôt garantie</p>
-                  <p className="font-bold text-[#D4AF37]">{fmtMoney(lease.securityDeposit)}</p>
+                  <p className="text-gray-text mb-0.5">Dépôt garantie</p>
+                  <p className="font-bold text-accent-dark">{fmtMoney(lease.securityDeposit)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 mb-0.5">Durée</p>
-                  <p className="font-bold text-[#0a2a5e]">{lease.leaseTermMonths} mois</p>
+                  <p className="text-gray-text mb-0.5">Durée</p>
+                  <p className="font-bold text-primary-deep">{lease.leaseTermMonths} mois</p>
                 </div>
               </div>
             </div>
@@ -365,17 +367,17 @@ export default function LeaseDetailPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl border p-6 mb-6"
+          className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6 mb-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
-              <FileText className="w-5 h-5" />
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary-green" />
               Contrat de bail OHADA
             </h2>
             {contractDoc && (
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-3 py-2 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-primary-pale text-primary-deep rounded-full text-xs font-bold hover:bg-primary-green/20 transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 Télécharger PDF
@@ -385,13 +387,13 @@ export default function LeaseDetailPage() {
 
           {!contractDoc ? (
             <div className="text-center py-6">
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-text mb-4">
                 Aucun contrat généré. Générez le bail OHADA conforme au droit applicable en {lease.country}.
               </p>
               <button
                 onClick={handleGenerate}
                 disabled={generateContract.isPending}
-                className="px-5 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 bg-primary-green hover:bg-primary-deep text-white rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {generateContract.isPending ? 'Génération...' : 'Générer le contrat'}
               </button>
@@ -406,7 +408,7 @@ export default function LeaseDetailPage() {
                 <button
                   onClick={() => handleSignClick({ type: 'contract' })}
                   disabled={signLease.isPending}
-                  className="w-full py-3 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <PenLine className="w-4 h-4" />
                   {signLease.isPending ? 'Signature...' : 'Signer le bail électroniquement'}
@@ -428,10 +430,10 @@ export default function LeaseDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl border p-6 mb-6"
+            className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6 mb-6"
           >
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
-              <ClipboardList className="w-5 h-5" />
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2 mb-4">
+              <ClipboardList className="w-5 h-5 text-primary-green" />
               États des lieux
             </h2>
 
@@ -461,10 +463,10 @@ export default function LeaseDetailPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="bg-white rounded-xl border p-6 mb-6"
+            className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6 mb-6"
           >
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
-              <Coins className="w-5 h-5" />
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2 mb-4">
+              <Coins className="w-5 h-5 text-primary-green" />
               Loyers mensuels
             </h2>
             <RentPaymentsList
@@ -486,9 +488,9 @@ export default function LeaseDetailPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl border p-6"
+          className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6"
         >
-          <h2 className="font-display text-lg font-bold text-[#003087] mb-4">Conditions du bail</h2>
+          <h2 className="font-serif text-lg font-bold text-primary-deep mb-4">Conditions du bail</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <InfoRow label="Date d'effet" value={new Date(lease.startDate).toLocaleDateString('fr-FR')} />
             <InfoRow label="Date d'échéance" value={new Date(lease.endDate).toLocaleDateString('fr-FR')} />
@@ -540,10 +542,10 @@ export default function LeaseDetailPage() {
 
 function PartyCard({ label, name, email, phone, avatar, isMe }: { label: string; name?: string; email?: string; phone?: string; avatar?: string; isMe?: boolean }) {
   return (
-    <div className="bg-white rounded-2xl border p-4">
-      <p className="text-xs text-gray-400 mb-2">{label}{isMe && ' (vous)'}</p>
+    <div className="bg-white rounded-3xl border border-primary-pale shadow-sm p-4">
+      <p className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-2">{label}{isMe && ' (vous)'}</p>
       <div className="flex items-center gap-3">
-        <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-[#D4AF37]/30 relative bg-gray-100">
+        <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 border-accent-yellow/40 relative bg-primary-pale">
           <ImageWithFallback
             src={avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'}
             alt={name || label}
@@ -553,9 +555,9 @@ function PartyCard({ label, name, email, phone, avatar, isMe }: { label: string;
           />
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm text-[#0a2a5e] truncate">{name || 'N/A'}</p>
-          {email && <p className="text-xs text-gray-400 truncate">{email}</p>}
-          {phone && <p className="text-xs text-gray-400 flex items-center gap-1"><Phone className="w-3 h-3" />{phone}</p>}
+          <p className="font-bold text-sm text-primary-deep truncate">{name || 'N/A'}</p>
+          {email && <p className="text-xs text-gray-text truncate">{email}</p>}
+          {phone && <p className="text-xs text-gray-text flex items-center gap-1"><Phone className="w-3 h-3" />{phone}</p>}
         </div>
       </div>
     </div>
@@ -564,18 +566,18 @@ function PartyCard({ label, name, email, phone, avatar, isMe }: { label: string;
 
 function SignatureStatus({ label, signed, signedAt, isMe }: { label: string; signed?: boolean; signedAt: Date | null; isMe?: boolean }) {
   return (
-    <div className={`p-3 rounded-2xl border ${signed ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-gray-100'}`}>
+    <div className={`p-3 rounded-2xl border ${signed ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-primary-pale bg-primary-pale/30'}`}>
       <div className="flex items-center gap-2 mb-1">
         {signed ? (
           <CheckCircle2 className="w-4 h-4 text-[#00A651]" />
         ) : (
-          <Clock className="w-4 h-4 text-[#D4AF37]" />
+          <Clock className="w-4 h-4 text-accent-dark" />
         )}
-        <p className={`text-xs font-semibold ${signed ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
+        <p className={`text-xs font-bold ${signed ? 'text-[#00A651]' : 'text-accent-dark'}`}>
           {label}{isMe ? ' (vous)' : ''}
         </p>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-text">
         {signed ? `Signé le ${signedAt?.toLocaleDateString('fr-FR')}` : 'En attente de signature'}
       </p>
     </div>
@@ -594,13 +596,13 @@ function InventoryRow({
 }) {
   if (!inventory) {
     return (
-      <div className="flex items-center justify-between p-3 border border-dashed border-gray-200 rounded-2xl">
+      <div className="flex items-center justify-between p-3 border border-dashed border-primary-pale bg-primary-pale/20 rounded-2xl">
         <div>
-          <p className="text-sm font-semibold text-gray-700">{label}</p>
-          <p className="text-xs text-gray-400">Non créé</p>
+          <p className="text-sm font-bold text-primary-deep">{label}</p>
+          <p className="text-xs text-gray-text">Non créé</p>
         </div>
         {canCreate && (
-          <button onClick={onCreate} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors">
+          <button onClick={onCreate} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-pale text-primary-deep rounded-full text-xs font-bold hover:bg-primary-green/20 transition-colors">
             <Plus className="w-3.5 h-3.5" />
             Créer
           </button>
@@ -611,16 +613,16 @@ function InventoryRow({
 
   const bothSigned = inventory.tenantSigned && inventory.ownerSigned;
   return (
-    <div className="p-3 bg-gray-50/50 rounded-2xl">
+    <div className="p-3 bg-primary-pale/30 rounded-2xl">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-sm font-semibold text-gray-700">{label}</p>
-          <p className="text-xs text-gray-400">
+          <p className="text-sm font-bold text-primary-deep">{label}</p>
+          <p className="text-xs text-gray-text">
             Conduit le {new Date(inventory.conductedAt).toLocaleDateString('fr-FR')}
           </p>
         </div>
         <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${bothSigned ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${bothSigned ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-accent-yellow/15 text-accent-dark'}`}
         >
           {bothSigned ? 'Signé' : 'En attente'}
         </span>
@@ -629,7 +631,7 @@ function InventoryRow({
         {!bothSigned && (
           <button
             onClick={() => onSign(inventory.id)}
-            className="flex-1 py-2 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center justify-center gap-1.5"
           >
             <PenLine className="w-3.5 h-3.5" />
             Signer
@@ -638,7 +640,7 @@ function InventoryRow({
         {onRecordDamages && !bothSigned && (
           <button
             onClick={() => onRecordDamages(inventory.id)}
-            className="flex-1 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-semibold hover:bg-[#D4AF37]/20 transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 py-2 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 rounded-full text-xs font-bold hover:bg-accent-yellow/25 transition-colors flex items-center justify-center gap-1.5"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             Dégradations
@@ -652,8 +654,8 @@ function InventoryRow({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="font-semibold text-[#0a2a5e]">{value}</p>
+      <p className="text-xs text-gray-text mb-0.5">{label}</p>
+      <p className="font-bold text-primary-deep">{value}</p>
     </div>
   );
 }
@@ -668,12 +670,12 @@ function SignatureModal({ title, signaturePad, setSignaturePad, onConfirm, onClo
 }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-3xl border border-primary-pale shadow-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#003087]">{title}</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
+          <h3 className="font-serif text-lg font-bold text-primary-deep">{title}</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-primary-pale rounded-full"><X className="w-4 h-4" /></button>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-gray-text mb-4">
           Saisissez votre nom complet comme signature électronique. Cette signature a valeur légale
           conformément à la réglementation OHADA et à la loi nationale applicable.
         </p>
@@ -682,17 +684,17 @@ function SignatureModal({ title, signaturePad, setSignaturePad, onConfirm, onClo
           value={signaturePad || ''}
           onChange={(e) => setSignaturePad(e.target.value)}
           placeholder="Votre nom complet"
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#003087] mb-4"
+          className="w-full px-4 py-3 border border-primary-pale rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all mb-4"
           autoFocus
         />
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-primary-pale/60 text-gray-text rounded-full text-sm font-bold hover:bg-primary-pale transition-colors">
             Annuler
           </button>
           <button
             onClick={onConfirm}
             disabled={!signaturePad || isPending}
-            className="flex-1 py-2.5 bg-[#00A651] text-white rounded-lg text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-[#00A651] text-white rounded-full text-sm font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50"
           >
             {isPending ? 'Signature...' : 'Confirmer'}
           </button>
@@ -720,30 +722,30 @@ function InventoryFormModal({ type, items, setItems, onCreate, onClose, isPendin
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-3xl border border-primary-pale shadow-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#003087]">
+          <h3 className="font-serif text-lg font-bold text-primary-deep">
             État des lieux d{type === 'in' ? '\'entrée' : 'e sortie'}
           </h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 hover:bg-primary-pale rounded-full"><X className="w-4 h-4" /></button>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-gray-text mb-4">
           Renseignez l&apos;état de chaque pièce du logement. Les deux parties devront signer cet état des lieux.
         </p>
         <div className="space-y-3 mb-4">
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 p-3 bg-gray-50 rounded-xl">
+            <div key={i} className="grid grid-cols-12 gap-2 p-3 bg-primary-pale/40 rounded-2xl">
               <input
                 type="text"
                 value={item.room}
                 onChange={(e) => updateRoom(i, 'room', e.target.value)}
                 placeholder="Pièce (Salon, Chambre...)"
-                className="col-span-4 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]"
+                className="col-span-4 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green"
               />
               <select
                 value={item.condition}
                 onChange={(e) => updateRoom(i, 'condition', e.target.value)}
-                className="col-span-3 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]"
+                className="col-span-3 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green"
               >
                 {Object.entries(ROOM_CONDITIONS).map(([k, v]) => (
                   <option key={k} value={k}>{v.label}</option>
@@ -754,7 +756,7 @@ function InventoryFormModal({ type, items, setItems, onCreate, onClose, isPendin
                 value={item.observations || ''}
                 onChange={(e) => updateRoom(i, 'observations', e.target.value)}
                 placeholder="Observations..."
-                className="col-span-4 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]"
+                className="col-span-4 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green"
               />
               <button
                 onClick={() => removeRoom(i)}
@@ -765,18 +767,18 @@ function InventoryFormModal({ type, items, setItems, onCreate, onClose, isPendin
             </div>
           ))}
         </div>
-        <button onClick={addRoom} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-lg mb-4">
+        <button onClick={addRoom} className="flex items-center gap-1.5 px-3 py-1.5 text-primary-deep text-xs font-bold hover:bg-primary-pale rounded-full mb-4">
           <Plus className="w-3.5 h-3.5" />
           Ajouter une pièce
         </button>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-primary-pale/60 text-gray-text rounded-full text-sm font-bold hover:bg-primary-pale transition-colors">
             Annuler
           </button>
           <button
             onClick={onCreate}
             disabled={isPending || items.length === 0}
-            className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-primary-green hover:bg-primary-deep text-white rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
           >
             {isPending ? 'Création...' : 'Créer l\'état des lieux'}
           </button>
@@ -805,38 +807,38 @@ function DamagesFormModal({ damages, setDamages, onSave, onClose, isPending }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-3xl border border-primary-pale shadow-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg font-bold text-[#003087]">Dégradations constatées</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
+          <h3 className="font-serif text-lg font-bold text-primary-deep">Dégradations constatées</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-primary-pale rounded-full"><X className="w-4 h-4" /></button>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-gray-text mb-4">
           Enregistrez les dégradations constatées lors de l&apos;état des lieux de sortie. Le coût total sera déduit du dépôt de garantie restitué au locataire.
         </p>
         <div className="space-y-3 mb-4">
           {damages.map((d, i) => (
-            <div key={i} className="grid grid-cols-12 gap-2 p-3 bg-gray-50 rounded-xl">
-              <input type="text" value={d.room} onChange={(e) => updateDamage(i, 'room', e.target.value)} placeholder="Pièce" className="col-span-3 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]" />
-              <input type="text" value={d.description} onChange={(e) => updateDamage(i, 'description', e.target.value)} placeholder="Description de la dégradation" className="col-span-6 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]" />
-              <input type="number" value={d.estimatedCost} onChange={(e) => updateDamage(i, 'estimatedCost', Number(e.target.value))} placeholder="Coût (FCFA)" className="col-span-2 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#003087]" />
+            <div key={i} className="grid grid-cols-12 gap-2 p-3 bg-primary-pale/40 rounded-2xl">
+              <input type="text" value={d.room} onChange={(e) => updateDamage(i, 'room', e.target.value)} placeholder="Pièce" className="col-span-3 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green" />
+              <input type="text" value={d.description} onChange={(e) => updateDamage(i, 'description', e.target.value)} placeholder="Description de la dégradation" className="col-span-6 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green" />
+              <input type="number" value={d.estimatedCost} onChange={(e) => updateDamage(i, 'estimatedCost', Number(e.target.value))} placeholder="Coût (FCFA)" className="col-span-2 px-2 py-1.5 border border-primary-pale rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green" />
               <button onClick={() => removeDamage(i)} className="col-span-1 flex items-center justify-center text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5" /></button>
             </div>
           ))}
         </div>
-        <button onClick={addDamage} className="flex items-center gap-1.5 px-3 py-1.5 text-[#003087] text-xs font-semibold hover:bg-[#003087]/5 rounded-lg mb-4">
+        <button onClick={addDamage} className="flex items-center gap-1.5 px-3 py-1.5 text-primary-deep text-xs font-bold hover:bg-primary-pale rounded-full mb-4">
           <Plus className="w-3.5 h-3.5" />
           Ajouter une dégradation
         </button>
-        <div className="flex items-center justify-between p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
-          <span className="text-sm font-semibold text-[#D4AF37]">Total déduit du dépôt</span>
-          <span className="font-mono-data font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(total)} FCFA</span>
+        <div className="flex items-center justify-between p-3 bg-accent-yellow/10 border border-accent-yellow/20 rounded-xl mb-4">
+          <span className="text-sm font-bold text-accent-dark">Total déduit du dépôt</span>
+          <span className="font-mono-data font-bold text-accent-dark">{new Intl.NumberFormat('fr-FR').format(total)} FCFA</span>
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold">Annuler</button>
+          <button onClick={onClose} className="flex-1 py-2.5 bg-primary-pale/60 text-gray-text rounded-full text-sm font-bold hover:bg-primary-pale transition-colors">Annuler</button>
           <button
             onClick={onSave}
             disabled={isPending || damages.length === 0}
-            className="flex-1 py-2.5 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-accent-yellow hover:bg-accent-dark text-primary-deep rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
           >
             {isPending ? 'Enregistrement...' : 'Enregistrer'}
           </button>
@@ -880,7 +882,7 @@ function RentPaymentsList({
 }) {
   if (payments.length === 0) {
     return (
-      <div className="text-center py-6 text-sm text-gray-500">
+      <div className="text-center py-6 text-sm text-gray-text">
         Aucun loyer généré pour le moment. Les loyers mensuels apparaîtront ici automatiquement.
       </div>
     );
@@ -899,16 +901,16 @@ function RentPaymentsList({
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="p-3 bg-[#00A651]/5 rounded-2xl">
-          <p className="text-xs text-gray-400 mb-0.5">Total versé</p>
+          <p className="text-xs text-gray-text mb-0.5">Total versé</p>
           <p className="font-mono-data font-bold text-[#00A651] text-sm">{new Intl.NumberFormat('fr-FR').format(totalPaid)} {currency}</p>
         </div>
-        <div className="p-3 bg-[#D4AF37]/5 rounded-2xl">
-          <p className="text-xs text-gray-400 mb-0.5">À payer</p>
-          <p className="font-mono-data font-bold text-[#D4AF37] text-sm">{pendingCount} mois</p>
+        <div className="p-3 bg-accent-yellow/10 rounded-2xl">
+          <p className="text-xs text-gray-text mb-0.5">À payer</p>
+          <p className="font-mono-data font-bold text-accent-dark text-sm">{pendingCount} mois</p>
         </div>
-        <div className={`p-3 rounded-2xl ${overdueCount > 0 ? 'bg-red-50' : 'bg-gray-50'}`}>
-          <p className="text-xs text-gray-400 mb-0.5">En retard</p>
-          <p className={`font-mono-data font-bold text-sm ${overdueCount > 0 ? 'text-red-500' : 'text-gray-400'}`}>{overdueCount} mois</p>
+        <div className={`p-3 rounded-2xl ${overdueCount > 0 ? 'bg-red-50' : 'bg-primary-pale/40'}`}>
+          <p className="text-xs text-gray-text mb-0.5">En retard</p>
+          <p className={`font-mono-data font-bold text-sm ${overdueCount > 0 ? 'text-red-500' : 'text-gray-text'}`}>{overdueCount} mois</p>
         </div>
       </div>
 
@@ -920,15 +922,15 @@ function RentPaymentsList({
           const isPayable = isTenant && (payment.status === 'PENDING' || payment.status === 'OVERDUE');
           const isInitialBadge = payment.isInitial;
           return (
-            <div key={payment.id} className={`p-3 rounded-2xl border ${payment.status === 'OVERDUE' ? 'border-red-200 bg-red-50/30' : 'border-gray-100'}`}>
+            <div key={payment.id} className={`p-3 rounded-2xl border ${payment.status === 'OVERDUE' ? 'border-red-200 bg-red-50/30' : 'border-primary-pale/80 bg-primary-pale/20'}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-[#0a2a5e]">
+                    <p className="text-sm font-bold text-primary-deep">
                       {dueDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                     </p>
                     {isInitialBadge && (
-                      <span className="px-1.5 py-0.5 bg-[#003087]/10 text-[#003087] text-[9px] font-bold rounded-full">1ER MOIS + DÉPÔT</span>
+                      <span className="px-1.5 py-0.5 bg-primary-pale text-primary-deep border border-primary-green/20 text-[9px] font-bold rounded-full">1ER MOIS + DÉPÔT</span>
                     )}
                     <span
                       className="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
@@ -937,20 +939,20 @@ function RentPaymentsList({
                       {status.label}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-text">
                     Échéance: {dueDate.toLocaleDateString('fr-FR')}
                     {payment.paidAt && ` · Payé le ${new Date(payment.paidAt).toLocaleDateString('fr-FR')}`}
                     {payment.releasedAt && ` · Versé le ${new Date(payment.releasedAt).toLocaleDateString('fr-FR')}`}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-mono-data font-bold text-sm text-[#0a2a5e]">
+                  <p className="font-mono-data font-bold text-sm text-primary-deep">
                     {new Intl.NumberFormat('fr-FR').format(payment.amountDue)} {currency}
                   </p>
                   {isPayable && (
                     <button
                       onClick={() => setPayingRentId(payment.id)}
-                      className="mt-1 px-3 py-1 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1.5"
+                      className="mt-1 px-3 py-1 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors flex items-center gap-1.5"
                     >
                       <CreditCard className="w-3 h-3" />
                       Payer
@@ -961,8 +963,8 @@ function RentPaymentsList({
 
               {/* Payment method selector + confirm (inline) */}
               {payingRentId === payment.id && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
+                <div className="mt-3 pt-3 border-t border-primary-pale/60">
+                  <p className="text-xs text-gray-text mb-2 flex items-center gap-1.5">
                     <Smartphone className="w-3.5 h-3.5" />
                     Choisissez votre méthode de paiement:
                   </p>
@@ -971,10 +973,10 @@ function RentPaymentsList({
                       <button
                         key={m.id}
                         onClick={() => setSelectedPaymentMethod(m.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                           selectedPaymentMethod === m.id
-                            ? 'border-[#003087] bg-[#003087] text-white'
-                            : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                            ? 'border-primary-green bg-primary-green text-white shadow-md'
+                            : 'border-primary-pale text-gray-text hover:border-primary-green/40 hover:text-primary-deep'
                         }`}
                       >
                         {m.label}
@@ -984,14 +986,14 @@ function RentPaymentsList({
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPayingRentId(null)}
-                      className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold"
+                      className="flex-1 py-2 bg-primary-pale/60 text-gray-text rounded-full text-xs font-bold hover:bg-primary-pale transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       onClick={() => onPay(payment.id)}
                       disabled={isPaying}
-                      className="flex-1 py-2 bg-[#00A651] text-white rounded-lg text-xs font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-[#00A651] text-white rounded-full text-xs font-semibold hover:bg-[#008f47] transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       {isPaying ? 'Redirection...' : `Payer ${new Intl.NumberFormat('fr-FR').format(payment.amountDue)} ${currency}`}
                     </button>

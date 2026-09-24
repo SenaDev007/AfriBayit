@@ -14,7 +14,7 @@ import { Shield, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 const EscrowDashboard = dynamic(() => import('@/components/afribayit/EscrowDashboard'), {
   loading: () => (
     <div className="py-24 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
+      <div className="animate-spin w-8 h-8 border-4 border-primary-green border-t-transparent rounded-full" />
     </div>
   ),
 });
@@ -22,14 +22,12 @@ const EscrowDashboard = dynamic(() => import('@/components/afribayit/EscrowDashb
 const EscrowFlow = dynamic(() => import('@/components/afribayit/EscrowFlow'), {
   loading: () => (
     <div className="py-24 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
+      <div className="animate-spin w-8 h-8 border-4 border-primary-green border-t-transparent rounded-full" />
     </div>
   ),
 });
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
-const NAVY = '#003087';
-const GOLD = '#D4AF37';
 
 export default function EscrowPage() {
   const { onNavigate } = useAfriBayitNav();
@@ -68,7 +66,7 @@ export default function EscrowPage() {
           {/* Transaction picker */}
           {escrowAccounts.length > 1 && (
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-              <h3 className="text-sm font-bold text-gray-900 mb-3">Mes transactions</h3>
+              <h3 className="text-sm font-bold text-primary-deep mb-3">Mes transactions</h3>
               <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
                 {escrowAccounts.map((escrow) => {
                   const txn = escrow.transaction || {};
@@ -77,23 +75,23 @@ export default function EscrowPage() {
                     <button
                       key={escrow.id}
                       onClick={() => setSelectedTransactionId(txn.id || escrow.id)}
-                      className={`shrink-0 px-4 py-3 rounded-2xl border-2 transition-all text-left ${
-                        isActive ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 bg-white hover:border-gray-300'
+                      className={`shrink-0 px-4 py-3 rounded-3xl border-2 transition-all text-left ${
+                        isActive ? 'border-primary-deep bg-primary-pale/60 shadow-md' : 'border-primary-pale/60 bg-white hover:border-primary-green/40'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`w-2 h-2 rounded-full ${
-                          escrow.status === 'FUNDED' ? 'bg-[#00A651]' :
-                          escrow.status === 'RELEASED' ? 'bg-[#009CDE]' :
-                          escrow.status === 'DISPUTED' ? 'bg-[#D93025]' :
+                          escrow.status === 'FUNDED' ? 'bg-green-500' :
+                          escrow.status === 'RELEASED' ? 'bg-primary-green' :
+                          escrow.status === 'DISPUTED' ? 'bg-red-500' :
                           'bg-gray-300'
                         }`} />
-                        <span className="text-xs font-bold text-gray-900">{txn.property?.title || 'Transaction'}</span>
+                        <span className="text-xs font-bold text-primary-deep">{txn.property?.title || 'Transaction'}</span>
                       </div>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-text">
                         {new Intl.NumberFormat('fr-FR').format(txn.amount || 0)} {txn.currency || 'XOF'}
                       </p>
-                      <p className="text-[10px] text-gray-400">{escrow.status}</p>
+                      <p className="text-[10px] text-gray-text/60">{escrow.status}</p>
                     </button>
                   );
                 })}
@@ -149,19 +147,18 @@ export default function EscrowPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: easeOut }}
             >
-              <div className="w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-6" style={{ background: `${NAVY}10` }}>
-                <Shield className="w-10 h-10" style={{ color: NAVY }} />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary-pale">
+                <Shield className="w-10 h-10 text-primary-deep" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+              <h2 className="font-serif text-2xl font-bold text-primary-deep mb-3">
                 Aucune transaction en cours
               </h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              <p className="text-gray-text mb-8 max-w-md mx-auto">
                 Vous n'avez pas encore de transaction escrow. Trouvez un bien immobilier et cliquez sur "Acheter ce bien" pour démarrer une transaction sécurisée.
               </p>
               <a
                 href="/acheter"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-lg text-base font-bold text-white transition-all hover:scale-105"
-                style={{ background: NAVY }}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-base font-bold text-white transition-all hover:scale-[1.03] bg-primary-green hover:bg-primary-deep shadow-lg"
               >
                 Parcourir les biens
                 <ArrowRight className="w-5 h-5" />
@@ -180,13 +177,13 @@ export default function EscrowPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
-                  className="p-6 rounded-2xl bg-gray-50/50 border border-gray-100 text-left"
+                  className="p-6 rounded-3xl bg-primary-pale/30 border border-primary-pale text-left"
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: `${NAVY}10` }}>
-                    <step.icon className="w-5 h-5" style={{ color: NAVY }} />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-primary-pale">
+                    <step.icon className="w-5 h-5 text-primary-deep" />
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-1 text-sm">{step.title}</h3>
-                  <p className="text-xs text-gray-500">{step.desc}</p>
+                  <h3 className="font-bold text-primary-deep mb-1 text-sm">{step.title}</h3>
+                  <p className="text-xs text-gray-text">{step.desc}</p>
                 </motion.div>
               ))}
             </div>

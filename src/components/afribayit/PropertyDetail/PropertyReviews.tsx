@@ -41,14 +41,14 @@ export default function PropertyReviews({
       className="mb-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-xl font-bold text-[#0a2a5e] flex items-center gap-2">
-          <MessageCircle className="w-5 h-5 text-[#003087]" />
+        <h2 className="font-serif text-xl font-bold text-primary-deep flex items-center gap-2">
+          <MessageCircle className="w-5 h-5 text-primary-green" />
           {t('propertyDetail.reviews.heading', 'Avis')} ({reviews.length})
         </h2>
         {isAuthenticated && (
           <button
             onClick={() => setShowReviewForm(!showReviewForm)}
-            className="text-sm font-semibold text-[#003087] hover:underline flex items-center gap-1"
+            className="text-sm font-bold text-primary-deep hover:underline flex items-center gap-1"
           >
             <Star className="w-4 h-4" />
             {showReviewForm
@@ -60,8 +60,8 @@ export default function PropertyReviews({
 
       {/* Rating Summary */}
       {avgRating && (
-        <div className="flex items-center gap-3 p-4 bg-[#D4AF37]/5 rounded-2xl mb-4">
-          <div className="text-3xl font-bold text-[#D4AF37]">{avgRating}</div>
+        <div className="flex items-center gap-3 p-4 bg-accent-yellow/10 border border-accent-yellow/30 rounded-3xl mb-4">
+          <div className="font-serif text-3xl font-black text-accent-dark">{avgRating}</div>
           <div>
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -69,13 +69,13 @@ export default function PropertyReviews({
                   key={star}
                   className={`w-4 h-4 ${
                     star <= Math.round(Number(avgRating))
-                      ? 'text-[#D4AF37] fill-current'
+                      ? 'text-accent-yellow fill-current'
                       : 'text-gray-300'
                   }`}
                 />
               ))}
             </div>
-            <p className="text-xs text-gray-500">{reviews.length} {t('propertyDetail.reviews.verifiedReviews', 'avis vérifiés')}</p>
+            <p className="text-xs text-gray-text">{reviews.length} {t('propertyDetail.reviews.verifiedReviews', 'avis vérifiés')}</p>
           </div>
         </div>
       )}
@@ -89,9 +89,9 @@ export default function PropertyReviews({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden mb-4"
           >
-            <div className="p-4 bg-gray-50 rounded-2xl border">
+            <div className="p-4 bg-primary-pale/30 rounded-3xl border border-primary-pale">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-medium text-gray-700">{t('propertyDetail.reviews.yourRating', 'Votre note :')}</span>
+                <span className="text-sm font-bold text-gray-text">{t('propertyDetail.reviews.yourRating', 'Votre note :')}</span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -102,8 +102,8 @@ export default function PropertyReviews({
                       <Star
                         className={`w-6 h-6 transition-colors ${
                           star <= reviewRating
-                            ? 'text-[#D4AF37] fill-current'
-                            : 'text-gray-300 hover:text-[#D4AF37]/50'
+                            ? 'text-accent-yellow fill-current'
+                            : 'text-gray-300 hover:text-accent-yellow/50'
                         }`}
                       />
                     </button>
@@ -114,14 +114,14 @@ export default function PropertyReviews({
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
                 placeholder={t('propertyDetail.reviews.commentPlaceholder', 'Partagez votre expérience avec ce bien...')}
-                className="w-full p-3 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] outline-none"
+                className="w-full p-3 border border-primary-pale bg-white rounded-xl text-sm resize-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green outline-none transition-all"
                 rows={3}
               />
               <div className="flex justify-end mt-3">
                 <button
                   onClick={onSubmitReview}
                   disabled={reviewSubmitting || !reviewComment.trim()}
-                  className="px-5 py-2 bg-[#003087] text-white text-sm font-semibold rounded-lg hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-5 py-2 bg-primary-green text-white text-sm font-bold rounded-full hover:bg-primary-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {reviewSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -140,15 +140,15 @@ export default function PropertyReviews({
       {reviews.length > 0 ? (
         <div className="space-y-3">
           {reviews.map((review) => (
-            <div key={review.id} className="p-4 bg-white rounded-2xl border">
+            <div key={review.id} className="p-4 bg-white rounded-3xl border border-primary-pale shadow-md">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-[#003087]/10 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[#003087]">
+                <div className="w-9 h-9 rounded-full bg-primary-pale flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-deep">
                     {review.reviewer.name?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#0a2a5e]">{review.reviewer.name}</p>
+                  <p className="text-sm font-bold text-primary-deep">{review.reviewer.name}</p>
                   <div className="flex items-center gap-2">
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -156,32 +156,32 @@ export default function PropertyReviews({
                           key={star}
                           className={`w-3 h-3 ${
                             star <= review.rating
-                              ? 'text-[#D4AF37] fill-current'
+                              ? 'text-accent-yellow fill-current'
                               : 'text-gray-300'
                           }`}
                         />
                       ))}
                     </div>
                     {review.verified && (
-                      <span className="text-[9px] text-[#00A651] font-medium">{t('propertyDetail.reviews.verified', 'Vérifié')}</span>
+                      <span className="text-[9px] text-green-600 font-bold">{t('propertyDetail.reviews.verified', 'Vérifié')}</span>
                     )}
                   </div>
                 </div>
               </div>
               {review.comment && (
-                <p className="text-sm text-gray-600 ml-12">{review.comment}</p>
+                <p className="text-sm text-gray-text ml-12">{review.comment}</p>
               )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center p-8 bg-gray-50 rounded-2xl">
-          <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">{t('propertyDetail.reviews.emptyTitle', 'Aucun avis pour le moment')}</p>
+        <div className="text-center p-8 bg-primary-pale/30 rounded-3xl">
+          <MessageCircle className="w-10 h-10 text-primary-green/50 mx-auto mb-2" />
+          <p className="text-sm text-gray-text">{t('propertyDetail.reviews.emptyTitle', 'Aucun avis pour le moment')}</p>
           {isAuthenticated && (
             <button
               onClick={() => setShowReviewForm(true)}
-              className="mt-2 text-sm font-semibold text-[#003087] hover:underline"
+              className="mt-2 text-sm font-bold text-primary-deep hover:underline"
             >
               {t('propertyDetail.reviews.beFirstCTA', 'Soyez le premier à donner votre avis')}
             </button>

@@ -276,7 +276,7 @@ export default function AdminSidebar({
       {/* Logo — boîte blanche Win-Agro (le logo reste sur fond blanc) */}
       <div className="flex items-center h-16 px-4 border-b border-primary-green/10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 bg-white rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
+          <div className="logo-tile w-10 h-10 rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
             <Image src="/logo.png" alt="AfriBayit" width={160} height={48} className="w-full h-full object-contain" priority />
           </div>
           {!collapsed && (

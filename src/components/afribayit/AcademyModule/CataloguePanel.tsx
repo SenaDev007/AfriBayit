@@ -41,30 +41,30 @@ export default function CataloguePanel({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={t('academy.catalogue.searchPlaceholder', 'Rechercher une formation...')}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-primary-pale bg-white text-sm outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-              <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              <X className="w-4 h-4 text-gray-400 hover:text-primary-deep" />
             </button>
           )}
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setPriceFilter('all')}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'all' ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'all' ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'}`}
           >
             {t('academy.catalogue.filterAll', 'Toutes')}
           </button>
           <button
             onClick={() => setPriceFilter('free')}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'free' ? 'bg-[#00A651] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'free' ? 'bg-[#00A651] text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'}`}
           >
             {t('academy.catalogue.filterFree', 'Gratuites')}
           </button>
           <button
             onClick={() => setPriceFilter('paid')}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${priceFilter === 'paid' ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border'}`}
+            className={`px-3 py-2 rounded-full text-xs font-medium transition-all ${priceFilter === 'paid' ? 'bg-accent-yellow text-primary-deep shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'}`}
           >
             {t('academy.catalogue.filterPaid', 'Payantes')}
           </button>
@@ -77,8 +77,8 @@ export default function CataloguePanel({
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-              selectedCategory === cat ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              selectedCategory === cat ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'
             }`}
           >
             {cat}
@@ -104,7 +104,7 @@ export default function CataloguePanel({
       {error && (
         <div className="text-center py-12">
           <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">{t('academy.catalogue.loadError', 'Impossible de charger les formations')}</p>
+          <p className="text-gray-text font-semibold mb-1">{t('academy.catalogue.loadError', 'Impossible de charger les formations')}</p>
           <p className="text-sm text-gray-400">{error.message}</p>
         </div>
       )}
@@ -113,7 +113,7 @@ export default function CataloguePanel({
       {!isLoading && !error && filtered.length === 0 && (
         <div className="text-center py-12">
           <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">{t('academy.catalogue.emptyTitle', 'Aucune formation trouvée')}</p>
+          <p className="text-gray-text font-semibold mb-1">{t('academy.catalogue.emptyTitle', 'Aucune formation trouvée')}</p>
           <p className="text-sm text-gray-400">{t('academy.catalogue.emptyDesc', 'Essayez une autre catégorie ou recherche')}</p>
         </div>
       )}

@@ -167,28 +167,32 @@ export default function InvestmentGuide() {
   const guide = GUIDES.find(g => g.code === selectedCountry) || GUIDES[0];
 
   return (
-    <div className="bg-white rounded-xl border overflow-hidden">
+    <div className="bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="p-5 border-b bg-gradient-to-r from-[#2C2E2F] to-[#1a1c1d]">
-        <div className="flex items-center gap-2 mb-1">
-          <Globe className="w-5 h-5 text-[#D4AF37]" />
-          <h3 className="font-display text-sm font-bold text-white">{t('investment.guide.headerTitle', 'Guide d\'investissement par pays')}</h3>
+      <div className="p-5 border-b border-primary-pale bg-primary-deep relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <Globe className="w-5 h-5 text-accent-yellow" />
+            <h3 className="font-serif text-base font-bold text-white">{t('investment.guide.headerTitle', 'Guide d\'investissement par pays')}</h3>
+          </div>
+          <p className="text-[10px] text-white/70">
+            {t('investment.guide.headerSubtitle', 'Cadre légal OHADA, documents acceptés, fiscalité immobilière et conseils pour investir en Afrique de l\'Ouest.')}
+          </p>
         </div>
-        <p className="text-[10px] text-white/70">
-          {t('investment.guide.headerSubtitle', 'Cadre légal OHADA, documents acceptés, fiscalité immobilière et conseils pour investir en Afrique de l\'Ouest.')}
-        </p>
       </div>
 
       {/* Country selector */}
-      <div className="flex gap-1 p-3 bg-gray-50/50 border-b overflow-x-auto">
+      <div className="flex gap-1 p-3 bg-primary-pale/40 border-b border-primary-pale overflow-x-auto">
         {GUIDES.map(g => (
           <button
             key={g.code}
             onClick={() => setSelectedCountry(g.code)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
               selectedCountry === g.code
-                ? 'bg-[#003087] text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                ? 'bg-primary-deep text-white shadow-md'
+                : 'bg-white text-gray-text hover:bg-primary-pale/60 border border-primary-pale'
             }`}
           >
             <span className="text-base">{g.flag}</span>
@@ -210,10 +214,10 @@ export default function InvestmentGuide() {
           {/* Legal base */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Scale className="w-4 h-4 text-[#003087]" />
-              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.legalBase', 'Cadre légal')}</h4>
+              <Scale className="w-4 h-4 text-primary-deep" />
+              <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider">{t('investment.guide.legalBase', 'Cadre légal')}</h4>
             </div>
-            <p className="text-xs text-gray-600 bg-[#003087]/5 rounded-xl p-3">
+            <p className="text-xs text-gray-text bg-primary-pale/50 rounded-2xl p-3 border border-primary-pale">
               {guide.legalBase}
             </p>
           </div>
@@ -221,21 +225,21 @@ export default function InvestmentGuide() {
           {/* Accepted documents */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
-              <FileText className="w-4 h-4 text-[#003087]" />
-              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.acceptedDocs', 'Documents légaux acceptés')}</h4>
+              <FileText className="w-4 h-4 text-primary-deep" />
+              <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider">{t('investment.guide.acceptedDocs', 'Documents légaux acceptés')}</h4>
             </div>
             <div className="space-y-1.5">
               {guide.acceptedDocs.map((doc, i) => {
                 const cfg = STATUS_CONFIG[doc.status];
                 return (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/50">
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-xl bg-primary-pale/40">
                     <span
                       className="shrink-0 w-2 h-2 rounded-full"
                       style={{ backgroundColor: cfg.color }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#0a2a5e] truncate">{doc.doc}</p>
-                      <p className="text-[10px] text-gray-400">{doc.type}</p>
+                      <p className="text-xs font-semibold text-primary-deep truncate">{doc.doc}</p>
+                      <p className="text-[10px] text-gray-text/60">{doc.type}</p>
                     </div>
                     <span
                       className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold"
@@ -252,13 +256,13 @@ export default function InvestmentGuide() {
           {/* Innovations */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
-              <TrendingUp className="w-4 h-4 text-[#00A651]" />
-              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.innovations', 'Innovations réglementaires 2025')}</h4>
+              <TrendingUp className="w-4 h-4 text-primary-green" />
+              <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider">{t('investment.guide.innovations', 'Innovations réglementaires 2025')}</h4>
             </div>
             <ul className="space-y-1.5">
               {guide.innovations.map((innov, i) => (
-                <li key={i} className="text-xs text-gray-600 flex items-start gap-2">
-                  <span className="text-[#00A651] mt-0.5">✦</span>
+                <li key={i} className="text-xs text-gray-text flex items-start gap-2">
+                  <span className="text-primary-green mt-0.5">✦</span>
                   <span>{innov}</span>
                 </li>
               ))}
@@ -268,8 +272,8 @@ export default function InvestmentGuide() {
           {/* Taxation */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
-              <FileText className="w-4 h-4 text-[#D4AF37]" />
-              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.taxation', 'Fiscalité immobilière')}</h4>
+              <FileText className="w-4 h-4 text-accent-dark" />
+              <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider">{t('investment.guide.taxation', 'Fiscalité immobilière')}</h4>
             </div>
             <div className="grid grid-cols-1 gap-2">
               <TaxRow label={t('investment.guide.mutationDuty', 'Droits de mutation')} value={guide.taxation.mutationDuty} />
@@ -281,13 +285,13 @@ export default function InvestmentGuide() {
           {/* Tips */}
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Lightbulb className="w-4 h-4 text-[#D4AF37]" />
-              <h4 className="text-xs font-bold text-[#003087]">{t('investment.guide.tips', 'Conseils pour investisseurs')}</h4>
+              <Lightbulb className="w-4 h-4 text-accent-dark" />
+              <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider">{t('investment.guide.tips', 'Conseils pour investisseurs')}</h4>
             </div>
             <ul className="space-y-1.5">
               {guide.tips.map((tip, i) => (
-                <li key={i} className="text-xs text-gray-600 flex items-start gap-2">
-                  <span className="text-[#D4AF37] mt-0.5">💡</span>
+                <li key={i} className="text-xs text-gray-text flex items-start gap-2">
+                  <span className="text-accent-yellow mt-0.5">💡</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -301,9 +305,9 @@ export default function InvestmentGuide() {
 
 function TaxRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-[#D4AF37]/5">
-      <span className="text-[10px] text-gray-500 shrink-0 pt-0.5">{label}</span>
-      <span className="text-xs font-semibold text-[#0a2a5e] text-right">{value}</span>
+    <div className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-accent-pale/60 border border-accent-yellow/20">
+      <span className="text-[10px] text-gray-text shrink-0 pt-0.5">{label}</span>
+      <span className="text-xs font-semibold text-primary-deep text-right">{value}</span>
     </div>
   );
 }

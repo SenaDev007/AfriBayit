@@ -139,22 +139,24 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
   };
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">Dashboard Agent</h1>
-            <p className="text-sm text-gray-500 mt-1">Bienvenue, {user?.name || 'Agent'} • Agent certifié</p>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-primary-deep">Dashboard Agent</h1>
+            <div className="h-1 w-16 bg-accent-yellow rounded-full mt-2 mb-2" />
+            <p className="text-sm text-gray-text mt-1">Bienvenue, {user?.name || 'Agent'} • Agent certifié</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/publish')}
-              className="px-4 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold shadow-lg"
+              className="px-4 py-2 bg-accent-yellow text-primary-deep rounded-full text-sm font-bold shadow-lg hover:bg-accent-yellow/90 transition-colors"
             >
               + Nouvelle annonce
             </button>
-            <button onClick={onLogout} className="px-4 py-2 bg-white border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">
+            <button onClick={onLogout} className="px-4 py-2 bg-white border border-primary-pale rounded-full text-sm font-medium text-gray-text hover:bg-primary-pale/60 transition-colors">
               Déconnexion
             </button>
           </div>
@@ -171,8 +173,8 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale/60'
               }`}
             >
               {tab.label}
@@ -186,7 +188,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {propertiesLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
+                  <div key={i} className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
                     <div className="flex items-center justify-between mb-2">
                       <Skeleton className="w-6 h-6 rounded" />
                       <Skeleton className="h-4 w-10 rounded-lg" />
@@ -196,7 +198,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                   </div>
                 ))
               ) : propertiesError ? (
-                <div className="col-span-3 bg-red-50 rounded-2xl p-4 text-center">
+                <div className="col-span-3 bg-red-50 rounded-3xl p-4 text-center">
                   <p className="text-sm text-[#D93025]">Erreur lors du chargement des données</p>
                 </div>
               ) : (
@@ -206,7 +208,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border"
+                    className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xl">{kpi.icon}</span>
@@ -214,8 +216,8 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                         {kpi.change}
                       </span>
                     </div>
-                    <p className="font-mono-data text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
-                    <p className="text-xs text-gray-500">{kpi.label}</p>
+                    <p className="font-serif font-black text-xl text-primary-deep">{kpi.value}</p>
+                    <p className="text-xs text-gray-text">{kpi.label}</p>
                   </motion.div>
                 ))
               )}
@@ -226,12 +228,13 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4, ease: easeOut }}
-              className="bg-navy-gradient rounded-xl p-6 mb-6 relative overflow-hidden"
+              className="bg-primary-deep rounded-3xl p-6 mb-6 relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#009CDE] to-[#D4AF37] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-green to-accent-yellow flex items-center justify-center">
                     <span className="text-white text-sm font-bold">R</span>
                   </div>
                   <div>
@@ -248,7 +251,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                     <div key={i} className="bg-white/10 rounded-2xl p-4 backdrop-blur">
                       <h4 className="text-white text-sm font-semibold mb-1">{insight.title}</h4>
                       <p className="text-white/60 text-xs mb-3">{insight.desc}</p>
-                      <button className="text-[#D4AF37] text-xs font-semibold hover:underline">{insight.action} →</button>
+                      <button className="text-accent-yellow text-xs font-bold hover:underline">{insight.action} →</button>
                     </div>
                   ))}
                 </div>
@@ -258,12 +261,12 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
         )}
 
         {activeTab === 'listings' && (
-          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <div className="p-5 border-b flex items-center justify-between">
-              <h3 className="font-semibold text-[#0a2a5e]">Mes annonces ({properties.length})</h3>
+          <div className="bg-white rounded-3xl shadow-lg border border-primary-pale overflow-hidden">
+            <div className="p-5 border-b border-primary-pale flex items-center justify-between">
+              <h3 className="font-serif font-bold text-primary-deep">Mes annonces ({properties.length})</h3>
               <button
                 onClick={() => router.push('/publish')}
-                className="text-sm text-[#003087] font-medium hover:underline"
+                className="text-sm text-primary-deep font-bold hover:underline"
               >
                 + Ajouter
               </button>
@@ -287,7 +290,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
               </div>
             ) : properties.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-gray-500">Aucune annonce publiée</p>
+                <p className="text-sm text-gray-text">Aucune annonce publiée</p>
               </div>
             ) : (
               <div className="divide-y">
@@ -300,27 +303,27 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                     ? formatPrice(price) + '/mois'
                     : formatPrice(price);
                   return (
-                    <div key={String(listing.id)} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <div key={String(listing.id)} className="flex items-center gap-4 p-4 hover:bg-primary-pale/30 transition-colors">
+                      <div className="w-12 h-12 rounded-xl bg-primary-pale/40 flex items-center justify-center shrink-0">
+                        <svg className="w-6 h-6 text-primary-deep/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V5.25a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5z" />
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#0a2a5e] truncate">{String(listing.title ?? 'Sans titre')}</p>
+                        <p className="text-sm font-medium text-primary-deep truncate">{String(listing.title ?? 'Sans titre')}</p>
                         <div className="flex items-center gap-3 mt-1">
                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                            isActive ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
+                            isActive ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-accent-yellow/15 text-accent-dark'
                           }`}>
                             {isActive ? 'Active' : status}
                           </span>
-                          <span className="text-xs text-gray-400">{Number(listing.views ?? 0)} vues</span>
+                          <span className="text-xs text-gray-text/60">{Number(listing.views ?? 0)} vues</span>
                         </div>
                       </div>
-                      <p className="font-mono-data text-sm font-bold text-[#D4AF37] shrink-0">{priceLabel}</p>
+                      <p className="font-mono-data text-sm font-bold text-accent-dark shrink-0">{priceLabel}</p>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                          <button className="p-2 hover:bg-primary-pale/60 rounded-full transition-colors">
                             <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                             </svg>
@@ -360,21 +363,21 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                 <div key={col.key} className="w-64 shrink-0">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: col.color }} />
-                    <h4 className="text-sm font-semibold text-[#0a2a5e]">{col.label}</h4>
-                    <span className="text-xs text-gray-400 ml-auto">{col.items.length}</span>
+                    <h4 className="text-sm font-semibold text-primary-deep">{col.label}</h4>
+                    <span className="text-xs text-gray-text/60 ml-auto">{col.items.length}</span>
                   </div>
                   <div className="space-y-2">
                     {col.items.map((item) => (
                       <motion.div
                         key={item}
                         whileHover={{ y: -2 }}
-                        className="bg-white rounded-2xl p-4 shadow-sm border cursor-pointer hover:shadow-md transition-shadow"
+                        className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale cursor-pointer hover:shadow-md transition-shadow"
                       >
-                        <p className="text-sm font-medium text-[#0a2a5e]">{item}</p>
-                        <p className="text-[10px] text-gray-400 mt-1">Pipeline en cours</p>
+                        <p className="text-sm font-medium text-primary-deep">{item}</p>
+                        <p className="text-[10px] text-gray-text/60 mt-1">Pipeline en cours</p>
                       </motion.div>
                     ))}
-                    <button className="w-full py-2 border-2 border-dashed border-gray-200 rounded-2xl text-xs text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors">
+                    <button className="w-full py-2 border-2 border-dashed border-primary-pale rounded-2xl text-xs text-gray-text/60 hover:border-primary-green hover:text-primary-deep transition-colors">
                       + Ajouter
                     </button>
                   </div>
@@ -389,7 +392,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
             {subsLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl p-6 shadow-sm border">
+                  <div key={i} className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
                     <Skeleton className="h-6 w-20 mb-2" />
                     <Skeleton className="h-8 w-32 mb-4" />
                     {Array.from({ length: 4 }).map((_, j) => (
@@ -400,7 +403,7 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                 ))}
               </div>
             ) : subsError ? (
-              <div className="bg-red-50 rounded-2xl p-4 text-center">
+              <div className="bg-red-50 rounded-3xl p-4 text-center">
                 <p className="text-sm text-[#D93025]">Erreur lors du chargement des abonnements</p>
               </div>
             ) : (
@@ -414,20 +417,20 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       whileHover={{ y: -4 }}
-                      className={`relative bg-white rounded-xl p-6 shadow-sm border-2 transition-all ${
-                        tier.highlighted ? 'border-[#D4AF37] gold-glow' : 'border-gray-100'
+                      className={`relative bg-white rounded-3xl p-6 shadow-lg border-2 transition-all ${
+                        tier.highlighted ? 'border-accent-yellow gold-glow' : 'border-primary-pale'
                       }`}
                     >
                       {tier.highlighted && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent-yellow text-primary-deep text-[10px] font-bold rounded-full shadow-md">
                           Populaire
                         </span>
                       )}
-                      <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-1">{tier.name}</h3>
-                      <p className="font-mono-data text-2xl font-bold text-[#D4AF37] mb-4">{tier.priceLabel}</p>
+                      <h3 className="font-serif text-xl font-bold text-primary-deep mb-1">{tier.name}</h3>
+                      <p className="font-serif font-black text-2xl text-accent-dark mb-4">{tier.priceLabel}</p>
                       <ul className="space-y-2 mb-6">
                         {tier.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-xs text-gray-600">
+                          <li key={f} className="flex items-start gap-2 text-xs text-gray-text">
                             <svg className="w-4 h-4 text-[#00A651] shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
@@ -438,16 +441,16 @@ export default function AgentDashboard({ onLogout }: AgentDashboardProps) {
                       <button
                         onClick={() => !isFreeOrCurrent && handleSubscribe(tier)}
                         disabled={isFreeOrCurrent || createSubscription.isPending}
-                        className={`w-full py-3 rounded-lg text-sm font-semibold transition-colors ${
+                        className={`w-full py-3 rounded-full text-sm font-bold transition-all ${
                           isCurrentPlan
                             ? 'bg-[#00A651] text-white'
                             : tier.price === 0
-                              ? 'bg-gray-200 text-gray-500 cursor-default'
+                              ? 'bg-primary-pale/60 text-gray-text cursor-default'
                               : createSubscription.isPending
-                                ? 'bg-[#D4AF37]/60 text-white cursor-wait'
+                                ? 'bg-accent-yellow/60 text-primary-deep cursor-wait'
                                 : tier.highlighted
-                                  ? 'bg-[#D4AF37] text-white hover:bg-[#b8961f]'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                  ? 'bg-accent-yellow text-primary-deep hover:bg-accent-yellow/90 shadow-md'
+                                  : 'bg-primary-green text-white hover:bg-primary-deep shadow-md'
                         }`}
                       >
                         {isCurrentPlan ? 'Plan actuel' : tier.price === 0 ? 'Plan actuel' : createSubscription.isPending ? 'En cours...' : 'Choisir'}

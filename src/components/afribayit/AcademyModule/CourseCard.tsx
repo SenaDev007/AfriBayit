@@ -30,7 +30,7 @@ export default function CourseCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08, ease: easeOut }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-xl overflow-hidden shadow-sm border group cursor-pointer w-full"
+      className="bg-white rounded-3xl overflow-hidden shadow-lg border border-primary-pale card-shimmer group cursor-pointer w-full"
       onClick={() => onSelect(course.id)}
     >
       {/* Image — same pattern as PropertyCard: aspect-[4/3], fill, absolute */}
@@ -44,16 +44,16 @@ export default function CourseCard({
         />
         {/* Left badges: level, certificate, free */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-          <span className="px-3 py-1 bg-[#003087] text-white text-[11px] font-bold rounded-full shadow-sm">
+          <span className="px-3 py-1 bg-primary-deep text-white text-[11px] font-bold rounded-full shadow-md">
             {course.level}
           </span>
           {course.certificate && (
-            <span className="px-3 py-1 bg-[#D4AF37] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-sm">
+            <span className="px-3 py-1 bg-accent-yellow text-primary-deep text-[11px] font-bold rounded-full flex items-center gap-1 shadow-md">
               <Award className="w-3 h-3" /> Certifiant
             </span>
           )}
           {course.price === 0 && (
-            <span className="px-3 py-1 bg-[#00A651] text-white text-[11px] font-bold rounded-full shadow-sm">
+            <span className="px-3 py-1 bg-[#00A651] text-white text-[11px] font-bold rounded-full shadow-md">
               Gratuit
             </span>
           )}
@@ -64,24 +64,24 @@ export default function CourseCard({
       <div className="p-5">
         {/* Category + views */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-medium text-[#003087] bg-[#003087]/5 px-2 py-0.5 rounded-full">
+          <span className="text-[11px] font-medium text-primary-deep bg-primary-pale px-2 py-0.5 rounded-full">
             {course.category}
           </span>
           <span className="text-[11px] text-gray-400">•</span>
           <span className="text-[11px] text-gray-400 flex items-center gap-1">
-            <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
+            <Star className="w-3 h-3 text-accent-yellow fill-accent-yellow" />
             {course.rating}
           </span>
         </div>
 
         {/* Title */}
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors">
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-1 group-hover:text-primary-green transition-colors">
           {course.title}
         </h3>
-        <p className="text-xs text-gray-500 mb-3">Par {course.instructor}</p>
+        <p className="text-xs text-gray-text mb-3">Par {course.instructor}</p>
 
         {/* Details row */}
-        <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+        <div className="flex items-center gap-4 text-xs text-gray-text mb-4">
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> {course.duration}
           </span>
@@ -100,14 +100,14 @@ export default function CourseCard({
         </div>
 
         {/* Price + Enroll */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <p className="font-mono text-lg font-bold text-[#D4AF37]">
+        <div className="flex items-center justify-between pt-3 border-t border-primary-pale/60">
+          <p className="font-mono text-lg font-bold text-accent-dark">
             {course.price === 0 ? 'Gratuit' : `${new Intl.NumberFormat('fr-FR').format(course.price)} FCFA`}
           </p>
           <button
             onClick={(e) => { e.stopPropagation(); onEnroll(course.id); }}
             disabled={enrollingCourseId === course.id && isEnrolling}
-            className="px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60"
+            className="px-4 py-2 rounded-full bg-primary-green text-white text-xs font-bold hover:bg-primary-deep transition-all disabled:opacity-60 shadow-md"
           >
             {enrollingCourseId === course.id && isEnrolling ? 'Inscription...' : "S'inscrire"}
           </button>

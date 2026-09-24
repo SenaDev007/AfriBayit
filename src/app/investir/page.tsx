@@ -80,34 +80,36 @@ export default function InvestirPage() {
       }}
     >
       {/* Conversational AI search */}
-      <section className="py-12 bg-white border-b border-gray-50">
+      <section className="py-12 bg-white border-b border-primary-pale">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ConversationalSearchBar transaction="investissement" />
         </div>
       </section>
 
       {/* Top opportunities — sorted by investment score */}
-      <section id="opportunities" className="py-20 bg-gray-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="opportunities" className="py-20 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mb-8 text-center"
           >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#D4AF37]/10 rounded-lg text-xs font-semibold text-[#D4AF37] mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
               {t('transactionPages.investir.aiSelection', 'Sélection IA')}
             </div>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#003087] mb-2">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep mb-2">
               {t('transactionPages.investir.topOpportunitiesTitle', "Top opportunités d'investissement")}
             </h2>
-            <p className="text-sm text-gray-500 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-text max-w-2xl mx-auto">
               {t(
                 'transactionPages.investir.topOpportunitiesDesc',
                 "Chaque bien reçoit un score d'investissement 0-100 calculé par notre algorithme IA, basé sur le prix au m², le potentiel de rendement locatif, la croissance du marché et les signaux de confiance (GeoTrust, vérification, visite VR)."
               )}
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
           </motion.div>
 
           <InvestmentOpportunities limit={6} />
@@ -123,25 +125,29 @@ export default function InvestirPage() {
             viewport={{ once: true }}
             className="mb-8 text-center"
           >
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#003087] mb-2">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep mb-2">
               {t('transactionPages.investir.investorToolsTitle', 'Outils pour investisseurs')}
             </h2>
-            <p className="text-sm text-gray-500 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-text max-w-2xl mx-auto">
               {t(
                 'transactionPages.investir.investorToolsDesc',
                 'Calculez la rentabilité de votre investissement et les taxes applicables dans chaque pays de la zone UEMOA.'
               )}
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-6">
             {/* ROI Calculator trigger */}
-            <div className="bg-gradient-to-br from-[#003087] to-[#0047b3] rounded-xl p-8 text-white">
+            <div className="bg-primary-deep rounded-3xl p-8 text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
+              <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
+                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-accent-yellow" />
                 </div>
-                <h3 className="font-display text-xl font-bold">
+                <h3 className="font-serif text-xl font-bold">
                   {t('transactionPages.investir.roiCalculatorTitle', 'Calculateur ROI locatif')}
                 </h3>
               </div>
@@ -153,33 +159,37 @@ export default function InvestirPage() {
               </p>
               <ul className="space-y-2 text-xs text-white/80 mb-6">
                 <li className="flex items-center gap-2">
-                  <Coins className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <Coins className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.roiFeature1', 'Rendement brut & net')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <TrendingUp className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.roiFeature2', 'Projection plus-value 5 ans')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <Calculator className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <Calculator className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.roiFeature3', 'Cashflow mensuel & annuel')}
                 </li>
               </ul>
               <button
                 onClick={() => setShowRoiCalc(true)}
-                className="w-full py-3 bg-[#D4AF37] text-[#003087] rounded-lg text-sm font-bold hover:bg-[#b8961f] transition-colors"
+                className="w-full py-3 bg-accent-yellow text-primary-deep rounded-full text-sm font-bold shadow-md hover:bg-[#c4a030] hover:shadow-lg transition-all"
               >
                 {t('transactionPages.investir.openRoiCalculator', 'Ouvrir le calculateur ROI')}
               </button>
+              </div>
             </div>
 
             {/* Tax Calculator trigger */}
-            <div className="bg-gradient-to-br from-[#2C2E2F] to-[#1a1c1d] rounded-xl p-8 text-white">
+            <div className="bg-noir-vert rounded-3xl p-8 text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-accent-yellow/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-[#D4AF37]" />
+                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-accent-yellow" />
                 </div>
-                <h3 className="font-display text-xl font-bold">
+                <h3 className="font-serif text-xl font-bold">
                   {t('transactionPages.investir.taxCalculatorTitle', 'Calculateur fiscal')}
                 </h3>
               </div>
@@ -191,50 +201,53 @@ export default function InvestirPage() {
               </p>
               <ul className="space-y-2 text-xs text-white/80 mb-6">
                 <li className="flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <FileText className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.taxFeature1', 'Droits de mutation')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <Calculator className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <Calculator className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.taxFeature2', 'Taxe foncière annuelle')}
                 </li>
                 <li className="flex items-center gap-2">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" />{' '}
+                  <TrendingUp className="w-3.5 h-3.5 text-accent-yellow" />{' '}
                   {t('transactionPages.investir.taxFeature3', 'Plus-value à la revente')}
                 </li>
               </ul>
               <button
                 onClick={() => setShowTaxCalc(true)}
-                className="w-full py-3 bg-white text-[#0a2a5e] rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors"
+                className="w-full py-3 bg-white text-primary-deep rounded-full text-sm font-bold shadow-md hover:bg-primary-pale hover:shadow-lg transition-all"
               >
                 {t('transactionPages.investir.openTaxCalculator', 'Ouvrir le calculateur fiscal')}
               </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Price alerts + Investment guide */}
-      <section className="py-20 bg-gray-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mb-8 text-center"
           >
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#003087] mb-2">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep mb-2">
               {t(
                 'transactionPages.investir.alertsTitle',
                 'Restez informé & investissez en toute connaissance de cause'
               )}
             </h2>
-            <p className="text-sm text-gray-500 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-text max-w-2xl mx-auto">
               {t(
                 'transactionPages.investir.alertsDesc',
                 "Créez des alertes personnalisées pour ne manquer aucune opportunité, et consultez le cadre légal d'investissement dans chaque pays de la zone UEMOA."
               )}
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-6">
@@ -245,23 +258,25 @@ export default function InvestirPage() {
       </section>
 
       {/* Properties grid */}
-      <section id="properties" className="py-20 bg-gray-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="properties" className="py-20 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mb-8"
           >
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#003087] mb-2">
+            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep mb-2">
               {t('transactionPages.investir.allOpportunitiesTitle', 'Toutes les opportunités')}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-text">
               {t(
                 'transactionPages.investir.allOpportunitiesDesc',
                 "Parcourez tous les biens d'investissement disponibles. Utilisez les filtres pour affiner par score, ROI, prix ou localisation."
               )}
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mt-6 rounded-full" />
           </motion.div>
 
           <PropertyGrid
@@ -297,7 +312,7 @@ export default function InvestirPage() {
             <div className="flex justify-end mb-2">
               <button
                 onClick={() => setShowRoiCalc(false)}
-                className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center hover:bg-white"
+                className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white shadow-md transition-colors"
               >
                 <X className="w-4 h-4 text-gray-600" />
               </button>
@@ -317,7 +332,7 @@ export default function InvestirPage() {
             <div className="flex justify-end mb-2">
               <button
                 onClick={() => setShowTaxCalc(false)}
-                className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center hover:bg-white"
+                className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:bg-white shadow-md transition-colors"
               >
                 <X className="w-4 h-4 text-gray-600" />
               </button>

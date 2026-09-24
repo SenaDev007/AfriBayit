@@ -267,9 +267,9 @@ export default function BookingPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       {/* Hero search bar — with background image */}
-      <div className="relative pt-24 pb-10 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div className="relative pt-24 pb-10 px-4 sm:px-6 lg:px-8 overflow-hidden bg-grain">
         {/* Background image */}
         <div className="absolute inset-0">
           <img
@@ -285,19 +285,20 @@ export default function BookingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: easeOut }}
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Séjours <span className="text-[#D4AF37]">Hôtels, Guesthouses & Locations</span>
+            <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-white mb-2">
+              Séjours <span className="text-accent-yellow">Hôtels, Guesthouses & Locations</span>
             </h1>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto lg:mx-0 rounded-full mt-4 mb-4" />
             <p className="text-white/70 mb-6 text-sm">
               La plateforme hôtelière de référence en Afrique de l'Ouest — Hôtels structurés, guesthouses cosy et locations courte durée (modèle Airbnb) avec paiement Mobile Money.
             </p>
 
             {/* Search bar */}
-            <div className="bg-white rounded-2xl p-3 shadow-2xl">
+            <div className="bg-white rounded-3xl p-3 shadow-2xl border border-primary-pale">
               <div className="flex flex-col lg:flex-row gap-2">
                 {/* Destination */}
                 <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl">
-                  <Search className="w-5 h-5 text-[#003087] shrink-0" />
+                  <Search className="w-5 h-5 text-primary-deep shrink-0" />
                   <Input
                     placeholder="Destination, ville ou hôtel..."
                     value={searchQuery}
@@ -374,7 +375,7 @@ export default function BookingPage() {
                 </div>
 
                 {/* Search button */}
-                <Button className="bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-xl px-6 font-semibold shrink-0">
+                <Button className="bg-accent-yellow hover:bg-accent-dark text-primary-deep rounded-full px-6 font-bold shrink-0 shadow-md hover:shadow-lg transition-all">
                   <Search className="w-4 h-4 mr-2" />
                   Rechercher
                 </Button>
@@ -394,18 +395,18 @@ export default function BookingPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-72 shrink-0`}
           >
-            <Card className="rounded-xl card-shadow sticky top-20">
+            <Card className="rounded-3xl border border-primary-pale shadow-lg sticky top-20">
               <CardContent className="p-6 space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-[#0a2a5e] flex items-center gap-2">
+                  <h3 className="font-serif font-bold text-primary-deep flex items-center gap-2">
                     <SlidersHorizontal className="w-4 h-4" />
                     Filtres
                   </h3>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearFilters}
-                      className="text-xs text-[#D4AF37] hover:underline font-medium"
+                      className="text-xs text-accent-dark hover:underline font-bold"
                     >
                       Réinitialiser ({activeFilterCount})
                     </button>
@@ -414,7 +415,7 @@ export default function BookingPage() {
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Prix par nuit (FCFA)</h4>
+                  <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-3">Prix par nuit (FCFA)</h4>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -436,18 +437,18 @@ export default function BookingPage() {
 
                 {/* Stars */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Étoiles</h4>
+                  <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-3">Étoiles</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button
                         key={s}
                         onClick={() => setMinStars(minStars === s ? 0 : s)}
-                        className={`flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`flex items-center gap-0.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                           minStars === s
-                            ? 'bg-[#003087] text-white'
+                            ? 'bg-primary-green text-white shadow-md'
                             : minStars > 0 && s <= minStars
-                              ? 'bg-[#003087]/10 text-[#003087]'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                              ? 'bg-primary-pale text-primary-deep'
+                              : 'bg-primary-pale/50 text-gray-text hover:bg-primary-pale'
                         }`}
                       >
                         {s} <Star className="w-3 h-3 fill-current" />
@@ -458,16 +459,16 @@ export default function BookingPage() {
 
                 {/* Minimum Rating */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Note minimum</h4>
+                  <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-3">Note minimum</h4>
                   <div className="flex gap-2 flex-wrap">
                     {[0, 3, 3.5, 4, 4.5].map((r) => (
                       <button
                         key={r}
                         onClick={() => setMinRating(r)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                           minRating === r
-                            ? 'bg-[#D4AF37] text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            ? 'bg-accent-yellow text-primary-deep shadow-md'
+                            : 'bg-primary-pale/50 text-gray-text hover:bg-primary-pale'
                         }`}
                       >
                         {r === 0 ? 'Toutes' : `${r}+`}
@@ -478,7 +479,7 @@ export default function BookingPage() {
 
                 {/* Amenities */}
                 <div>
-                  <h4 className="text-sm font-medium text-[#0a2a5e] mb-3">Équipements</h4>
+                  <h4 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-3">Équipements</h4>
                   <div className="space-y-2.5">
                     {COMMON_AMENITIES.map((amenity) => (
                       <label
@@ -488,9 +489,9 @@ export default function BookingPage() {
                         <Checkbox
                           checked={selectedAmenities.includes(amenity.key)}
                           onCheckedChange={() => toggleAmenity(amenity.key)}
-                          className="data-[state=checked]:bg-[#003087] data-[state=checked]:border-[#003087]"
+                          className="data-[state=checked]:bg-primary-green data-[state=checked]:border-primary-green"
                         />
-                        <span className="text-sm text-gray-600 group-hover:text-[#0a2a5e] transition-colors">
+                        <span className="text-sm text-gray-text group-hover:text-primary-deep transition-colors">
                           {amenity.label}
                         </span>
                       </label>
@@ -502,7 +503,7 @@ export default function BookingPage() {
                 <div className="lg:hidden">
                   <Button
                     onClick={() => setShowFilters(false)}
-                    className="w-full bg-[#003087] text-white"
+                    className="w-full bg-primary-green hover:bg-primary-deep text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all"
                   >
                     Voir les résultats ({allListings.length})
                   </Button>
@@ -525,12 +526,12 @@ export default function BookingPage() {
                   <Filter className="w-4 h-4 mr-1" />
                   Filtres
                   {activeFilterCount > 0 && (
-                    <Badge className="ml-1 bg-[#D4AF37] text-white text-[10px] px-1.5 py-0">
+                    <Badge className="ml-1 bg-accent-yellow text-primary-deep text-[10px] font-bold px-1.5 py-0 rounded-full">
                       {activeFilterCount}
                     </Badge>
                   )}
                 </Button>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-text">
                   {allListings.length} établissement{allListings.length !== 1 ? 's' : ''} trouvé{allListings.length !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -541,7 +542,7 @@ export default function BookingPage() {
                   variant={propertyType === 'all' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setPropertyType('all')}
-                  className={propertyType === 'all' ? 'bg-[#003087]' : ''}
+                  className={propertyType === 'all' ? 'bg-primary-green hover:bg-primary-deep rounded-full font-bold' : 'rounded-full border-primary-deep/20 text-primary-deep hover:bg-primary-pale font-bold'}
                 >
                   Tout
                 </Button>
@@ -549,7 +550,7 @@ export default function BookingPage() {
                   variant={propertyType === 'hotel' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setPropertyType('hotel')}
-                  className={propertyType === 'hotel' ? 'bg-[#003087]' : ''}
+                  className={propertyType === 'hotel' ? 'bg-primary-green hover:bg-primary-deep rounded-full font-bold' : 'rounded-full border-primary-deep/20 text-primary-deep hover:bg-primary-pale font-bold'}
                 >
                   <Hotel className="w-4 h-4 mr-1" /> Hôtels
                 </Button>
@@ -557,7 +558,7 @@ export default function BookingPage() {
                   variant={propertyType === 'guesthouse' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setPropertyType('guesthouse')}
-                  className={propertyType === 'guesthouse' ? 'bg-[#003087]' : ''}
+                  className={propertyType === 'guesthouse' ? 'bg-primary-green hover:bg-primary-deep rounded-full font-bold' : 'rounded-full border-primary-deep/20 text-primary-deep hover:bg-primary-pale font-bold'}
                 >
                   <Home className="w-4 h-4 mr-1" /> Guesthouses
                 </Button>
@@ -565,7 +566,7 @@ export default function BookingPage() {
                   variant={propertyType === 'short-term' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setPropertyType('short-term')}
-                  className={propertyType === 'short-term' ? 'bg-[#003087]' : ''}
+                  className={propertyType === 'short-term' ? 'bg-primary-green hover:bg-primary-deep rounded-full font-bold' : 'rounded-full border-primary-deep/20 text-primary-deep hover:bg-primary-pale font-bold'}
                 >
                   <Key className="w-4 h-4 mr-1" /> Locations
                 </Button>
@@ -576,25 +577,25 @@ export default function BookingPage() {
             {(hotelsLoading || ghLoading || stLoading) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse rounded-xl">
-                    <div className="aspect-[4/3] bg-gray-200 rounded-t-3xl" />
+                  <Card key={i} className="animate-pulse rounded-3xl border border-primary-pale">
+                    <div className="aspect-[4/3] bg-primary-pale/60 rounded-t-3xl" />
                     <CardContent className="p-4 space-y-2">
-                      <div className="h-5 bg-gray-200 rounded w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                      <div className="h-4 bg-gray-200 rounded w-1/3" />
+                      <div className="h-5 bg-primary-pale/60 rounded w-3/4" />
+                      <div className="h-3 bg-primary-pale/60 rounded w-1/2" />
+                      <div className="h-4 bg-primary-pale/60 rounded w-1/3" />
                     </CardContent>
                   </Card>
                 ))}
               </div>
             ) : allListings.length === 0 ? (
-              <Card className="p-8 text-center text-gray-400 rounded-xl">
-                <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium text-lg mb-1">Aucun établissement trouvé</p>
+              <Card className="p-8 text-center text-gray-text rounded-3xl border border-primary-pale shadow-lg">
+                <Search className="w-12 h-12 mx-auto mb-3 text-primary-green/50" />
+                <p className="font-serif font-bold text-lg text-primary-deep mb-1">Aucun établissement trouvé</p>
                 <p className="text-sm mb-4">Essayez de modifier vos critères de recherche</p>
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="border-[#003087] text-[#003087]"
+                  className="rounded-full border-primary-deep/20 text-primary-deep hover:bg-primary-pale font-bold"
                 >
                   Réinitialiser les filtres
                 </Button>

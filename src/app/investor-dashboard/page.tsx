@@ -27,7 +27,8 @@ export default function InvestorDashboardPage() {
 
   if (isLoading) {
     return (
-      <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
+      <section className="min-h-screen pt-24 pb-16 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Skeleton className="h-8 w-64 mb-6" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -48,23 +49,24 @@ export default function InvestorDashboardPage() {
   // Empty state — no investments yet
   if (kpis && kpis.propertyCount === 0) {
     return (
-      <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
+      <section className="min-h-screen pt-24 pb-16 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl p-12 border text-center">
-            <div className="w-16 h-16 rounded-lg bg-[#D4AF37]/5 flex items-center justify-center mx-auto mb-4">
-              <TrendingUp className="w-8 h-8 text-[#D4AF37]" />
+          <div className="bg-white rounded-3xl p-12 border border-primary-pale shadow-lg text-center">
+            <div className="w-16 h-16 rounded-3xl bg-accent-pale/70 flex items-center justify-center mx-auto mb-4">
+              <TrendingUp className="w-8 h-8 text-accent-dark" />
             </div>
-            <h2 className="font-display text-2xl font-bold text-gray-700 mb-2">
+            <h2 className="font-serif text-2xl font-bold text-primary-deep mb-2">
               Aucun investissement pour le moment
             </h2>
-            <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+            <p className="text-sm text-gray-text mb-6 max-w-md mx-auto">
               Vous n&apos;avez pas encore acquis de bien immobilier via AfriBayit.
               Découvrez les meilleures opportunités d&apos;investissement, notées 0-100
               par notre algorithme IA.
             </p>
             <Link
               href="/investir"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all"
             >
               <TrendingUp className="w-4 h-4" />
               Voir les opportunités
@@ -79,20 +81,22 @@ export default function InvestorDashboardPage() {
   const maxIncome = Math.max(...incomeSeries.map(s => s.amount), 1);
 
   return (
-    <section className="min-h-screen pt-24 pb-16 bg-gray-50/30">
+    <section className="min-h-screen pt-24 pb-16 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <RoleContextBanner />
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <Link href="/dashboard" className="hover:text-[#003087]">Dashboard</Link>
+          <div className="flex items-center gap-2 text-sm text-gray-text mb-2">
+            <Link href="/dashboard" className="hover:text-primary-deep">Dashboard</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-[#003087] font-semibold">Portfolio investisseur</span>
+            <span className="text-primary-deep font-bold">Portfolio investisseur</span>
           </div>
-          <h1 className="font-display text-3xl font-bold text-[#003087] mb-1">
+          <h1 className="font-serif text-3xl font-bold text-primary-deep mb-1">
             Mon portfolio immobilier
           </h1>
-          <p className="text-sm text-gray-500">
+          <div className="h-1 w-16 bg-accent-yellow rounded-full mt-2 mb-3" />
+          <p className="text-sm text-gray-text">
             Suivez la valeur de votre portefeuille, votre plus-value latente et vos revenus locatifs.
           </p>
         </div>
@@ -136,14 +140,14 @@ export default function InvestorDashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-white rounded-xl p-6 border"
+            className="lg:col-span-2 bg-white rounded-3xl p-6 border border-primary-pale shadow-lg"
           >
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2 mb-4">
               <Coins className="w-5 h-5" />
               Revenus locatifs (6 derniers mois)
             </h2>
             {incomeSeries.length === 0 || incomeSeries.every(s => s.amount === 0) ? (
-              <div className="text-center py-12 text-sm text-gray-400">
+              <div className="text-center py-12 text-sm text-gray-text/60">
                 Aucun revenu locatif encaissé pour le moment.
                 {kpis?.activeLeaseCount === 0 && ' Vos baux actifs apparaîtront ici dès que vos locataires paieront leur premier loyer.'}
               </div>
@@ -153,14 +157,14 @@ export default function InvestorDashboardPage() {
                   const heightPct = (s.amount / maxIncome) * 100;
                   return (
                     <div key={s.month} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="text-[10px] font-mono-data text-gray-500">
+                      <div className="text-[10px] font-mono-data text-gray-text">
                         {Number(s.amount) > 0 ? `${(s.amount / 1000).toFixed(0)}k` : ''}
                       </div>
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${heightPct}%` }}
                         transition={{ duration: 0.5, delay: i * 0.05 }}
-                        className="w-full rounded-t-lg"
+                        className="w-full rounded-t-xl"
                         style={{
                           background: Number(s.amount) > 0
                             ? 'linear-gradient(180deg, #D4AF37 0%, #003087 100%)'
@@ -168,15 +172,15 @@ export default function InvestorDashboardPage() {
                           minHeight: '4px',
                         }}
                       />
-                      <div className="text-[10px] text-gray-400">{s.label}</div>
+                      <div className="text-[10px] text-gray-text/60">{s.label}</div>
                     </div>
                   );
                 })}
               </div>
             )}
-            <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm">
-              <span className="text-gray-500">Total encaissé (6 mois)</span>
-              <span className="font-mono-data font-bold text-[#D4AF37]">
+            <div className="mt-4 pt-4 border-t border-primary-pale flex items-center justify-between text-sm">
+              <span className="text-gray-text">Total encaissé (6 mois)</span>
+              <span className="font-mono-data font-bold text-accent-dark">
                 {fmt(incomeSeries.reduce((s, r) => s + r.amount, 0))} FCFA
               </span>
             </div>
@@ -187,9 +191,9 @@ export default function InvestorDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl p-6 border flex flex-col"
+            className="bg-white rounded-3xl p-6 border border-primary-pale shadow-lg flex flex-col"
           >
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2 mb-4">
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2 mb-4">
               <Wallet className="w-5 h-5" />
               Synthèse
             </h2>
@@ -203,7 +207,7 @@ export default function InvestorDashboardPage() {
             </div>
             <Link
               href="/investir"
-              className="mt-4 w-full py-2.5 bg-[#003087]/5 text-[#003087] rounded-lg text-xs font-semibold hover:bg-[#003087]/10 transition-colors text-center flex items-center justify-center gap-1.5"
+              className="mt-4 w-full py-2.5 bg-primary-pale/50 text-primary-deep rounded-full text-xs font-bold hover:bg-primary-pale transition-colors text-center flex items-center justify-center gap-1.5"
             >
               <TrendingUp className="w-3.5 h-3.5" />
               Voir les opportunités
@@ -216,16 +220,16 @@ export default function InvestorDashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-white rounded-xl p-6 border mb-6"
+          className="bg-white rounded-3xl p-6 border border-primary-pale shadow-lg mb-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
+            <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2">
               <Building2 className="w-5 h-5" />
               Mon portefeuille ({portfolio.length})
             </h2>
           </div>
           {portfolio.length === 0 ? (
-            <div className="text-center py-8 text-sm text-gray-400">
+            <div className="text-center py-8 text-sm text-gray-text/60">
               Aucun bien dans votre portefeuille.
             </div>
           ) : (
@@ -234,10 +238,10 @@ export default function InvestorDashboardPage() {
                 <Link
                   key={item.transactionId}
                   href={`/property/${item.propertyId}`}
-                  className="flex items-center gap-4 p-3 bg-gray-50/50 rounded-2xl hover:bg-gray-100/80 transition-colors"
+                  className="flex items-center gap-4 p-3 bg-primary-pale/30 rounded-2xl hover:bg-primary-pale/50 transition-colors"
                 >
                   {/* Image */}
-                  <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden relative bg-gray-100">
+                  <div className="shrink-0 w-20 h-20 rounded-2xl overflow-hidden relative bg-gray-100">
                     <ImageWithFallback
                       src={item.images?.[0] || 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=200&h=200&fit=crop'}
                       alt={item.title}
@@ -248,24 +252,24 @@ export default function InvestorDashboardPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-display font-bold text-sm text-[#0a2a5e] truncate">{item.title}</h3>
-                      <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-bold rounded-full shrink-0">
+                      <h3 className="font-serif font-bold text-sm text-primary-deep truncate">{item.title}</h3>
+                      <span className="px-1.5 py-0.5 bg-accent-yellow/15 text-accent-dark text-[9px] font-bold rounded-full shrink-0">
                         Score {item.investmentScore}/100
                       </span>
                     </div>
-                    <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-1">
+                    <p className="text-[10px] text-gray-text/60 flex items-center gap-1 mb-1">
                       <MapPin className="w-3 h-3" />
                       {item.city}, {item.country} · {item.surface} m² · {item.bedrooms} ch.
                     </p>
-                    <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                    <p className="text-[10px] text-gray-text/60 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Acheté le {new Date(item.purchaseDate).toLocaleDateString('fr-FR')} · {item.yearsHeld} an{item.yearsHeld > 1 ? 's' : ''}
                     </p>
                   </div>
                   {/* Values */}
                   <div className="text-right shrink-0">
-                    <p className="font-mono-data font-bold text-sm text-[#003087]">{fmt(item.currentValue)} FCFA</p>
-                    <p className="text-[10px] text-gray-400 line-through">{fmt(item.purchasePrice)}</p>
+                    <p className="font-mono-data font-bold text-sm text-primary-deep">{fmt(item.currentValue)} FCFA</p>
+                    <p className="text-[10px] text-gray-text/60 line-through">{fmt(item.purchasePrice)}</p>
                     <p className="text-xs font-bold text-[#00A651] flex items-center justify-end gap-0.5">
                       <ArrowUpRight className="w-3 h-3" />
                       +{item.plusValuePct}%
@@ -283,14 +287,14 @@ export default function InvestorDashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl p-6 border"
+            className="bg-white rounded-3xl p-6 border border-primary-pale shadow-lg"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-bold text-[#003087] flex items-center gap-2">
+              <h2 className="font-serif text-lg font-bold text-primary-deep flex items-center gap-2">
                 <KeyRound className="w-5 h-5" />
                 Baux locatifs actifs ({rentalIncome.length})
               </h2>
-              <Link href="/leases?role=owner" className="text-xs font-semibold text-[#003087] hover:underline">
+              <Link href="/leases?role=owner" className="text-xs font-bold text-primary-deep hover:underline">
                 Voir tous mes baux →
               </Link>
             </div>
@@ -299,7 +303,7 @@ export default function InvestorDashboardPage() {
                 <Link
                   key={lease.leaseId}
                   href={`/leases/${lease.leaseId}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50/50 rounded-2xl hover:bg-gray-100/80 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-primary-pale/30 rounded-2xl hover:bg-primary-pale/50 transition-colors"
                 >
                   <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden relative bg-gray-100 border">
                     <ImageWithFallback
@@ -311,14 +315,14 @@ export default function InvestorDashboardPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#0a2a5e] truncate">{lease.property?.title}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm font-semibold text-primary-deep truncate">{lease.property?.title}</p>
+                    <p className="text-xs text-gray-text/60">
                       {lease.tenant?.name} · depuis {new Date(lease.startDate).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-mono-data font-bold text-sm text-[#D4AF37]">{fmt(lease.monthlyRent)} {lease.currency}/mois</p>
-                    <p className="text-[10px] text-gray-400">Encaissé: {fmt(lease.collectedTotal)} {lease.currency}</p>
+                    <p className="font-mono-data font-bold text-sm text-accent-dark">{fmt(lease.monthlyRent)} {lease.currency}/mois</p>
+                    <p className="text-[10px] text-gray-text/60">Encaissé: {fmt(lease.collectedTotal)} {lease.currency}</p>
                   </div>
                 </Link>
               ))}
@@ -344,7 +348,7 @@ function KpiCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl border p-4"
+      className="bg-white rounded-3xl border border-primary-pale shadow-lg p-4"
     >
       <div className="flex items-center justify-between mb-2">
         <div
@@ -359,9 +363,9 @@ function KpiCard({
           </span>
         )}
       </div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="font-mono-data font-bold text-lg text-[#0a2a5e]">{value}</p>
-      {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+      <p className="text-xs text-gray-text mb-0.5">{label}</p>
+      <p className="font-serif font-black text-lg text-primary-deep">{value}</p>
+      {sub && <p className="text-[10px] text-gray-text/60 mt-0.5">{sub}</p>}
     </motion.div>
   );
 }
@@ -369,7 +373,7 @@ function KpiCard({
 function SummaryRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-xs text-gray-text">{label}</span>
       <span className="font-mono-data font-bold text-sm" style={{ color: color || '#2C2E2F' }}>{value}</span>
     </div>
   );

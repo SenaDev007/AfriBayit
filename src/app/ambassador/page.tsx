@@ -144,13 +144,13 @@ function FAQItem({ item, isOpen, onToggle }: { item: typeof faqItems[0]; isOpen:
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, ease: easeOut }}
-      className="border border-gray-100 rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#003087]/10"
+      className="border border-primary-pale rounded-3xl overflow-hidden transition-all duration-300 hover:border-primary-green/30 bg-white shadow-sm"
     >
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-5 sm:p-6 text-left bg-white hover:bg-gray-50/50 transition-colors"
+        className="w-full flex items-center justify-between p-5 sm:p-6 text-left bg-white hover:bg-primary-pale/30 transition-colors"
       >
-        <span className="font-display text-base sm:text-lg font-semibold text-[#0a2a5e] pr-4">
+        <span className="font-display text-base sm:text-lg font-bold text-primary-deep pr-4">
           {item.question}
         </span>
         <motion.div
@@ -158,7 +158,7 @@ function FAQItem({ item, isOpen, onToggle }: { item: typeof faqItems[0]; isOpen:
           transition={{ duration: 0.3, ease: easeOut }}
           className="flex-shrink-0"
         >
-          <ChevronDown className="w-5 h-5 text-[#003087]" />
+          <ChevronDown className="w-5 h-5 text-primary-green" />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -170,7 +170,7 @@ function FAQItem({ item, isOpen, onToggle }: { item: typeof faqItems[0]; isOpen:
             transition={{ duration: 0.3, ease: easeOut }}
           >
             <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0">
-              <p className="text-sm sm:text-base text-gray-500 leading-relaxed font-body">
+              <p className="text-sm sm:text-base text-gray-text leading-relaxed font-body">
                 {item.answer}
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function AmbassadorPage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-cream">
       {/* ═══════════════════════════════════════════════════════════════════
           1. HERO SECTION
           ═══════════════════════════════════════════════════════════════════ */}
@@ -241,7 +241,7 @@ export default function AmbassadorPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: easeOut }}
             >
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-accent-yellow text-xs font-bold uppercase tracking-wider font-body mb-6">
                 <Award className="w-4 h-4" />
                 Programme Ambassadeurs
               </span>
@@ -255,8 +255,11 @@ export default function AmbassadorPage() {
               className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
             >
               Programme Ambassadeurs{' '}
-              <span className="text-[#D4AF37]">AfriBayit</span>
+              <span className="text-accent-yellow">AfriBayit</span>
             </motion.h1>
+
+            {/* Filet or signature */}
+            <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full mb-8" />
 
             {/* Subtitle */}
             <motion.p
@@ -279,7 +282,7 @@ export default function AmbassadorPage() {
                 href="/auth/register"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-accent-yellow hover:bg-accent-dark text-primary-deep rounded-full font-bold text-sm shadow-lg gold-glow transition-colors font-body"
               >
                 Devenir ambassadeur
                 <ArrowRight className="w-4 h-4" />
@@ -288,7 +291,7 @@ export default function AmbassadorPage() {
                 href="#how-it-works"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-sm border border-white/20 transition-colors font-body"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-sm border border-white/20 transition-colors font-body"
               >
                 En savoir plus
               </motion.a>
@@ -334,22 +337,23 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12 md:mb-16"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
-              <TrendingUp className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-pale border border-primary-green/20 text-primary-deep text-xs font-bold uppercase tracking-wider font-body mb-4">
+              <TrendingUp className="w-3.5 h-3.5 text-primary-green" />
               Comment ça marche
             </span>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              3 étapes pour <span className="text-[#003087]">gagner</span>
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-deep mb-4">
+              3 étapes pour <span className="text-primary-green">gagner</span>
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-base font-body">
+            <p className="text-gray-text max-w-2xl mx-auto text-base font-body">
               Un programme simple et transparent. Partagez, parrainez, et gagnez des commissions sur chaque transaction.
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full mt-6" />
           </motion.div>
 
           {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 relative">
             {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-24 left-[20%] right-[20%] border-t-2 border-dashed border-gray-200 z-0" />
+            <div className="hidden md:block absolute top-24 left-[20%] right-[20%] border-t-2 border-dashed border-primary-pale z-0" />
 
             {steps.map((step, i) => {
               const Icon = step.icon;
@@ -361,7 +365,7 @@ export default function AmbassadorPage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.15, ease: easeOut }}
                   whileHover={{ y: -6, transition: { duration: 0.3 } }}
-                  className="relative z-10 p-6 sm:p-8 rounded-2xl bg-white border border-gray-100 hover:shadow-xl hover:border-[#003087]/10 transition-all duration-300 cursor-pointer group"
+                  className="relative z-10 p-6 sm:p-8 rounded-3xl bg-white border border-primary-pale hover:shadow-xl hover:border-primary-green/30 transition-all duration-300 cursor-pointer group"
                 >
                   {/* Step number */}
                   <div
@@ -379,10 +383,10 @@ export default function AmbassadorPage() {
                     <Icon className="w-7 h-7" />
                   </div>
 
-                  <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">
+                  <h3 className="font-display text-xl font-bold text-primary-deep mb-2">
                     {step.title}
                   </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed font-body">
+                  <p className="text-sm text-gray-text leading-relaxed font-body">
                     {step.description}
                   </p>
 
@@ -403,8 +407,9 @@ export default function AmbassadorPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           3. TIER CARDS SECTION
           ═══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white via-gray-50/50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-24 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -413,16 +418,17 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12 md:mb-16"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#D4AF37]/5 border border-[#D4AF37]/10 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider font-body mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-yellow/15 border border-accent-yellow/30 text-accent-dark text-xs font-bold uppercase tracking-wider font-body mb-4">
               <Star className="w-3.5 h-3.5" />
               Paliers
             </span>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Montez en <span className="text-[#003087]">grade</span>
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-deep mb-4">
+              Montez en <span className="text-primary-green">grade</span>
             </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-base font-body">
+            <p className="text-gray-text max-w-2xl mx-auto text-base font-body">
               Plus vous parrainez, plus vos avantages augmentent. Atteignez les paliers supérieurs et débloquez des bénéfices exclusifs.
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full mt-6" />
           </motion.div>
 
           {/* Tier cards */}
@@ -438,19 +444,19 @@ export default function AmbassadorPage() {
                   transition={{ duration: 0.5, delay: i * 0.15, ease: easeOut }}
                   whileHover={{ y: -6, transition: { duration: 0.3 } }}
                   className={cn(
-                    'relative rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer group',
+                    'relative rounded-3xl overflow-hidden transition-all duration-300 cursor-pointer group',
                     tier.highlighted
                       ? 'border-2 shadow-xl'
-                      : 'border border-gray-100 hover:shadow-xl'
+                      : 'border border-primary-pale hover:shadow-xl'
                   )}
                   style={{
                     borderColor: tier.highlighted ? tier.colorBorder : undefined,
                   }}
                 >
-                  {/* Gold glow for highlighted tier */}
+                    {/* Gold glow for highlighted tier */}
                   {tier.highlighted && (
                     <div
-                      className="absolute -inset-px rounded-2xl opacity-30 blur-xl pointer-events-none"
+                      className="absolute -inset-px rounded-3xl opacity-30 blur-xl pointer-events-none"
                       style={{ backgroundColor: tier.color }}
                     />
                   )}
@@ -486,15 +492,15 @@ export default function AmbassadorPage() {
 
                     {/* Commission */}
                     <div className="mb-5">
-                      <span className="font-display text-4xl font-bold text-[#0a2a5e]">
+                      <span className="font-display text-4xl font-bold text-primary-deep">
                         {tier.commission}
                       </span>
-                      <span className="text-gray-500 text-sm font-body ml-1">commission</span>
+                      <span className="text-gray-text text-sm font-body ml-1">commission</span>
                     </div>
 
                     {/* Requirements badge */}
                     <div
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold mb-5 w-fit font-body"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold mb-5 w-fit font-body"
                       style={{ backgroundColor: tier.colorLight, color: tier.color }}
                     >
                       <Check className="w-3.5 h-3.5" />
@@ -509,7 +515,7 @@ export default function AmbassadorPage() {
                             className="w-4 h-4 mt-0.5 flex-shrink-0"
                             style={{ color: tier.color }}
                           />
-                          <span className="text-sm text-gray-600 leading-relaxed font-body">
+                          <span className="text-sm text-gray-text leading-relaxed font-body">
                             {feature}
                           </span>
                         </li>
@@ -522,7 +528,7 @@ export default function AmbassadorPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={cn(
-                        'w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-semibold text-sm transition-colors font-body',
+                        'w-full flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm transition-colors font-body',
                         tier.highlighted
                           ? 'text-white shadow-lg'
                           : 'text-white'
@@ -555,7 +561,7 @@ export default function AmbassadorPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: easeOut }}
-            className="relative rounded-2xl overflow-hidden bg-navy-gradient noise-overlay"
+            className="relative rounded-3xl overflow-hidden bg-navy-gradient noise-overlay"
           >
             {/* Decorative overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/10 via-transparent to-[#D4AF37]/10 pointer-events-none" />
@@ -571,16 +577,17 @@ export default function AmbassadorPage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, ease: easeOut }}
                 >
-                  <Globe className="w-8 h-8 text-[#D4AF37] mx-auto mb-3" />
+                  <Globe className="w-8 h-8 text-accent-yellow mx-auto mb-3" />
                   <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
                     Rejoignez{' '}
-                    <span className="text-[#D4AF37]">
+                    <span className="text-accent-yellow">
                       <AnimatedCounter target={500} suffix="+" />
                     </span>{' '}
                     ambassadeurs
                   </h2>
+                  <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full mt-2 mb-4" />
                   <p className="text-white/70 max-w-xl mx-auto font-body text-base sm:text-lg">
-                    dans <span className="text-[#D4AF37] font-semibold">4 pays</span> d&apos;Afrique de l&apos;Ouest
+                    dans <span className="text-accent-yellow font-bold">4 pays</span> d&apos;Afrique de l&apos;Ouest
                   </p>
                 </motion.div>
               </div>
@@ -603,7 +610,7 @@ export default function AmbassadorPage() {
                       transition={{ duration: 0.4, delay: 0.2 + i * 0.1, ease: easeOut }}
                       className="glass rounded-2xl p-5 sm:p-6 text-center"
                     >
-                      <StatIcon className="w-5 h-5 text-[#D4AF37] mx-auto mb-3" />
+                      <StatIcon className="w-5 h-5 text-accent-yellow mx-auto mb-3" />
                       <div className="font-display text-2xl sm:text-3xl font-bold text-white mb-1">
                         <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                       </div>
@@ -626,7 +633,7 @@ export default function AmbassadorPage() {
                 {['Bénin', 'Côte d\'Ivoire', 'Burkina Faso', 'Togo'].map((country) => (
                   <span
                     key={country}
-                    className="px-4 py-2 rounded-lg bg-white/10 border border-white/10 text-white/80 text-sm font-body"
+                    className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/80 text-sm font-body"
                   >
                     {country}
                   </span>
@@ -640,8 +647,9 @@ export default function AmbassadorPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           5. FAQ SECTION
           ═══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white via-gray-50/30 to-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 md:py-24 bg-cream relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -650,15 +658,16 @@ export default function AmbassadorPage() {
             transition={{ duration: 0.6, ease: easeOut }}
             className="text-center mb-12"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#003087]/5 border border-[#003087]/10 text-[#003087] text-xs font-semibold uppercase tracking-wider font-body mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-pale border border-primary-green/20 text-primary-deep text-xs font-bold uppercase tracking-wider font-body mb-4">
               FAQ
             </span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Questions <span className="text-[#003087]">fréquentes</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-deep mb-4">
+              Questions <span className="text-primary-green">fréquentes</span>
             </h2>
-            <p className="text-gray-500 max-w-lg mx-auto text-base font-body">
+            <p className="text-gray-text max-w-lg mx-auto text-base font-body">
               Tout ce que vous devez savoir sur le Programme Ambassadeurs AfriBayit.
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mx-auto rounded-full mt-6" />
           </motion.div>
 
           {/* FAQ items */}
@@ -685,9 +694,9 @@ export default function AmbassadorPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: easeOut }}
-            className="relative rounded-2xl overflow-hidden"
+            className="relative rounded-3xl overflow-hidden"
           >
-            <div className="bg-navy-gradient noise-overlay relative p-8 sm:p-12 lg:p-16">
+            <div className="bg-navy-gradient noise-overlay relative p-8 sm:p-12 lg:p-16 rounded-3xl">
               {/* Decorative overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#009CDE]/20 via-transparent to-[#D4AF37]/10 pointer-events-none" />
               <div className="absolute top-0 right-0 w-96 h-96 bg-[#009CDE]/5 rounded-lg blur-3xl pointer-events-none" />
@@ -711,8 +720,9 @@ export default function AmbassadorPage() {
                     className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4"
                   >
                     Prêt à faire grandir{' '}
-                    <span className="text-[#D4AF37]">AfriBayit</span> ?
+                    <span className="text-accent-yellow">AfriBayit</span> ?
                   </motion.h3>
+                  <div className="h-1 w-16 bg-accent-yellow mx-auto lg:mx-0 rounded-full mb-4" />
                   <motion.p
                     initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -737,7 +747,7 @@ export default function AmbassadorPage() {
                     href="/auth/register"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#D4AF37] hover:bg-[#b8961f] text-white rounded-lg font-semibold text-sm shadow-lg gold-glow transition-colors font-body"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-accent-yellow hover:bg-accent-dark text-primary-deep rounded-full font-bold text-sm shadow-lg gold-glow transition-colors font-body"
                   >
                     Devenir ambassadeur
                     <ArrowRight className="w-4 h-4" />
@@ -746,7 +756,7 @@ export default function AmbassadorPage() {
                     href="#how-it-works"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-sm border border-white/20 transition-colors font-body"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-sm border border-white/20 transition-colors font-body"
                   >
                     En savoir plus
                   </motion.a>

@@ -15,35 +15,35 @@ export default function ProfileViewsPanel({ profileViews }: ProfileViewsPanelPro
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <Eye className="w-4 h-4 text-[#003087] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#003087] mt-1">{profileViews.total}</p>
-          <p className="text-xs text-gray-500">{t('analytics.profileViews.total', 'Vues totales')}</p>
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
+          <Eye className="w-4 h-4 text-primary-deep mb-1" />
+          <p className="font-serif font-black text-xl text-primary-deep mt-1">{profileViews.total}</p>
+          <p className="text-xs text-gray-text">{t('analytics.profileViews.total', 'Vues totales')}</p>
           <span className="text-[10px] font-semibold text-[#00A651]">+{profileViews.evolution}%</span>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
           <MousePointerClick className="w-4 h-4 text-[#00A651] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#00A651] mt-1">{profileViews.direct}</p>
-          <p className="text-xs text-gray-500">{t('analytics.profileViews.direct', 'Accès direct')}</p>
+          <p className="font-serif font-black text-xl text-[#00A651] mt-1">{profileViews.direct}</p>
+          <p className="text-xs text-gray-text">{t('analytics.profileViews.direct', 'Accès direct')}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <Search className="w-4 h-4 text-[#009CDE] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#009CDE] mt-1">{profileViews.search}</p>
-          <p className="text-xs text-gray-500">{t('analytics.profileViews.search', 'Via recherche')}</p>
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
+          <Search className="w-4 h-4 text-primary-green mb-1" />
+          <p className="font-serif font-black text-xl text-primary-green mt-1">{profileViews.search}</p>
+          <p className="text-xs text-gray-text">{t('analytics.profileViews.search', 'Via recherche')}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <Users className="w-4 h-4 text-[#D4AF37] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#D4AF37] mt-1">{profileViews.referral}</p>
-          <p className="text-xs text-gray-500">{t('analytics.profileViews.referral', 'Via referral')}</p>
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
+          <Users className="w-4 h-4 text-accent-yellow mb-1" />
+          <p className="font-serif font-black text-xl text-accent-dark mt-1">{profileViews.referral}</p>
+          <p className="text-xs text-gray-text">{t('analytics.profileViews.referral', 'Via referral')}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
           <TrendingUp className="w-4 h-4 text-[#00A651] mb-1" />
-          <p className="font-mono text-xl font-bold text-[#00A651] mt-1">+{profileViews.evolution}%</p>
-          <p className="text-xs text-gray-500">{t('analytics.profileViews.evolution', 'Évolution')}</p>
+          <p className="font-serif font-black text-xl text-[#00A651] mt-1">+{profileViews.evolution}%</p>
+          <p className="text-xs text-gray-text">{t('analytics.profileViews.evolution', 'Évolution')}</p>
         </div>
       </div>
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.profileViews.originTitle', 'Origine des vues')}</h3>
+      <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-4">{t('analytics.profileViews.originTitle', 'Origine des vues')}</h3>
         <div className="space-y-4">
           {[
             { label: t('analytics.profileViews.originSearch', 'Recherche'), value: profileViews.search, total: profileViews.total, color: '#009CDE' },
@@ -52,11 +52,11 @@ export default function ProfileViewsPanel({ profileViews }: ProfileViewsPanelPro
           ].map((item, i) => (
             <div key={item.label}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-gray-600">{item.label}</span>
+                <span className="text-sm text-gray-text">{item.label}</span>
                 <span className="font-mono text-sm font-bold" style={{ color: item.color }}>{item.value} ({Math.round((item.value / item.total) * 100)}%)</span>
               </div>
-              <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / item.total) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-lg" style={{ backgroundColor: item.color }} />
+              <div className="h-3 bg-primary-pale rounded-full overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${(item.value / item.total) * 100}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-full rounded-full" style={{ backgroundColor: item.color }} />
               </div>
             </div>
           ))}

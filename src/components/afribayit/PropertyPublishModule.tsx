@@ -276,25 +276,25 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
   if (submitted) {
     return (
-      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
         <div className="max-w-lg mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-8 shadow-sm border text-center mt-12"
+            className="bg-white rounded-3xl p-8 shadow-lg border border-primary-pale text-center mt-12"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-              className="w-20 h-20 rounded-lg bg-[#00A651] flex items-center justify-center mx-auto mb-4"
+              className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4"
             >
               <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </motion.div>
-            <h3 className="font-display text-2xl font-bold text-[#0a2a5e] mb-2">{t('propertyPublish.successTitle', 'Annonce soumise !')}</h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <h3 className="font-serif text-2xl font-bold text-primary-deep mb-2">{t('propertyPublish.successTitle', 'Annonce soumise !')}</h3>
+            <p className="text-sm text-gray-text mb-6">
               {t('propertyPublish.successDesc', 'Votre bien est en cours de vérification IA. Vous serez notifié une fois publié.')}
             </p>
 
@@ -307,15 +307,15 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 { step: t('propertyPublish.timelinePublication', 'Publication'), status: 'pending', icon: <PartyPopper className="w-4 h-4" /> },
               ].map((vs, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${
-                    vs.status === 'completed' ? 'bg-[#00A651] text-white' :
-                    vs.status === 'in_progress' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' :
-                    'bg-gray-100 text-gray-400'
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
+                    vs.status === 'completed' ? 'bg-green-500 text-white' :
+                    vs.status === 'in_progress' ? 'bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30' :
+                    'bg-primary-pale/60 text-gray-text/40'
                   }`}>
                     {vs.status === 'completed' ? <Check className="w-3 h-3" /> : vs.status === 'in_progress' ? <Hourglass className="w-3 h-3" /> : (i + 1)}
                   </div>
                   <div>
-                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-400' : 'text-[#0a2a5e]'}`}>
+                    <p className={`text-sm font-medium ${vs.status === 'pending' ? 'text-gray-text/50' : 'text-primary-deep'}`}>
                       {vs.icon} {vs.step}
                     </p>
                   </div>
@@ -325,7 +325,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
             <button
               onClick={() => { setSubmitted(false); setCurrentStep(1); setFormData(initialFormData); }}
-              className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="px-6 py-2.5 bg-primary-green text-white rounded-full text-sm font-bold hover:bg-primary-deep shadow-md hover:shadow-lg transition-all"
             >
               {t('propertyPublish.publishAnother', 'Publier un autre bien')}
             </button>
@@ -336,7 +336,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
   }
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <motion.div
@@ -344,12 +344,13 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-xs font-bold uppercase tracking-wider mb-4">
             <PenTool className="w-4 h-4" /> {t('propertyPublish.eyebrow', 'Publier un bien')}
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
-            {t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[0]} <span className="text-[#003087]">{t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[1]}</span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-primary-deep mb-2">
+            {t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[0]} <span className="text-primary-green">{t('propertyPublish.title', 'Nouvelle Annonce').split(' ')[1]}</span>
           </h1>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-4 rounded-full" />
         </motion.div>
 
         {/* Stepper — Updated with 7 steps per CDC §5.0.2 */}
@@ -358,21 +359,21 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             <div key={s.step} className="flex items-center flex-1 min-w-0">
               <div className="flex flex-col items-center flex-1">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                  currentStep > s.step ? 'bg-[#00A651] text-white' :
-                  currentStep === s.step ? 'bg-[#003087] text-white' :
-                  'bg-gray-100 text-gray-400'
+                  currentStep > s.step ? 'bg-green-500 text-white' :
+                  currentStep === s.step ? 'bg-primary-deep text-white' :
+                  'bg-primary-pale/60 text-gray-text/40'
                 }`}>
                   {currentStep > s.step ? <Check className="w-3 h-3" /> : s.step}
                 </div>
                 <p className={`text-[8px] sm:text-[9px] font-medium mt-1 text-center leading-tight ${
-                  currentStep >= s.step ? 'text-[#003087]' : 'text-gray-400'
+                  currentStep >= s.step ? 'text-primary-deep' : 'text-gray-text/50'
                 }`}>
                   {t(s.titleKey, s.titleFallback)}
                 </p>
               </div>
               {i < publishSteps.length - 1 && (
-                <div className={`h-0.5 flex-1 mx-0.5 rounded ${
-                  currentStep > s.step ? 'bg-[#00A651]' : 'bg-gray-200'
+                <div className={`h-0.5 flex-1 mx-0.5 rounded-full ${
+                  currentStep > s.step ? 'bg-green-500' : 'bg-primary-pale'
                 }`} />
               )}
             </div>
@@ -380,26 +381,26 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
         </div>
 
         {/* Form Content */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
           <AnimatePresence mode="wait">
             {/* Step 1: Property Info */}
             {currentStep === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step1Title', 'Informations du bien')}</h2>
-                  <p className="text-xs text-gray-500">{t('propertyPublish.step1Desc', 'Type de bien, transaction, prix et localisation')}</p>
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step1Title', 'Informations du bien')}</h2>
+                  <p className="text-xs text-gray-text">{t('propertyPublish.step1Desc', 'Type de bien, transaction, prix et localisation')}</p>
                 </div>
 
                 {/* Property Type */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldPropertyType', 'Type de bien *')}</label>
+                  <label className="text-xs font-bold text-primary-deep mb-2 block">{t('propertyPublish.fieldPropertyType', 'Type de bien *')}</label>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {propertyTypes.map(pt => (
                       <button
                         key={pt.value}
                         onClick={() => updateField('propertyType', pt.value)}
                         className={`p-3 rounded-2xl border-2 text-center transition-all ${
-                          formData.propertyType === pt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
+                          formData.propertyType === pt.value ? 'border-primary-deep bg-primary-pale/60' : 'border-primary-pale/60 hover:border-primary-green/40'
                         }`}
                       >
                         <span className="flex items-center justify-center mb-1">{pt.icon}</span>
@@ -411,14 +412,14 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
 
                 {/* Transaction Type */}
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldTransactionType', 'Type de transaction *')}</label>
+                  <label className="text-xs font-bold text-primary-deep mb-2 block">{t('propertyPublish.fieldTransactionType', 'Type de transaction *')}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {transactionTypes.map(tt => (
                       <button
                         key={tt.value}
                         onClick={() => updateField('transactionType', tt.value)}
                         className={`p-3 rounded-2xl border-2 text-center transition-all ${
-                          formData.transactionType === tt.value ? 'border-[#003087] bg-[#003087]/5' : 'border-gray-100 hover:border-gray-200'
+                          formData.transactionType === tt.value ? 'border-primary-deep bg-primary-pale/60' : 'border-primary-pale/60 hover:border-primary-green/40'
                         }`}
                       >
                         <span className="flex items-center justify-center mb-1">{tt.icon}</span>
@@ -431,23 +432,23 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Price & Surface */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldPrice', 'Prix (FCFA) *')}</label>
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldPrice', 'Prix (FCFA) *')}</label>
                     <input
                       type="number"
                       value={formData.price}
                       onChange={e => updateField('price', e.target.value)}
                       placeholder="0"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-mono font-bold focus:outline-none focus:border-[#003087]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-primary-pale bg-white text-sm font-mono font-bold focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldSurface', 'Surface (m²) *')}</label>
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldSurface', 'Surface (m²) *')}</label>
                     <input
                       type="number"
                       value={formData.surface}
                       onChange={e => updateField('surface', e.target.value)}
                       placeholder="0"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-mono font-bold focus:outline-none focus:border-[#003087]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-primary-pale bg-white text-sm font-mono font-bold focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                     />
                   </div>
                 </div>
@@ -455,33 +456,33 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* Rooms */}
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldRooms', 'Pièces')}</label>
-                    <input type="number" value={formData.rooms} onChange={e => updateField('rooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldRooms', 'Pièces')}</label>
+                    <input type="number" value={formData.rooms} onChange={e => updateField('rooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldBedrooms', 'Chambres')}</label>
-                    <input type="number" value={formData.bedrooms} onChange={e => updateField('bedrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldBedrooms', 'Chambres')}</label>
+                    <input type="number" value={formData.bedrooms} onChange={e => updateField('bedrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldBathrooms', 'SDB')}</label>
-                    <input type="number" value={formData.bathrooms} onChange={e => updateField('bathrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldBathrooms', 'SDB')}</label>
+                    <input type="number" value={formData.bathrooms} onChange={e => updateField('bathrooms', e.target.value)} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all" />
                   </div>
                 </div>
 
                 {/* P2.10 — Rental-specific fields (only shown when transactionType='location') */}
                 {formData.transactionType === 'location' && (
-                  <div className="p-4 bg-[#003087]/5 rounded-2xl space-y-3 border border-[#003087]/10">
-                    <p className="text-xs font-bold text-[#003087] flex items-center gap-1.5">
+                  <div className="p-4 bg-primary-pale/40 rounded-3xl space-y-3 border border-primary-pale">
+                    <p className="text-xs font-bold text-primary-deep flex items-center gap-1.5">
                       <Key className="w-3.5 h-3.5" />
                       {t('propertyPublish.rentalConditionsTitle', 'Conditions de location (OHADA)')}
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldLeaseTerm', 'Durée du bail')}</label>
+                        <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldLeaseTerm', 'Durée du bail')}</label>
                         <select
                           value={formData.leaseTermMonths}
                           onChange={e => updateField('leaseTermMonths', e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                          className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                         >
                           <option value="6">{t('propertyPublish.leaseTerm6', '6 mois (bail court)')}</option>
                           <option value="12">{t('propertyPublish.leaseTerm12', '12 mois (bail standard)')}</option>
@@ -490,11 +491,11 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldSecurityDeposit', 'Dépôt de garantie')}</label>
+                        <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldSecurityDeposit', 'Dépôt de garantie')}</label>
                         <select
                           value={formData.securityDepositMonths}
                           onChange={e => updateField('securityDepositMonths', e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white"
+                          className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                         >
                           <option value="1">{t('propertyPublish.deposit1', '1 mois de loyer')}</option>
                           <option value="2">{t('propertyPublish.deposit2', '2 mois de loyer')}</option>
@@ -504,38 +505,38 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldPropertyState', 'État du bien')}</label>
+                        <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldPropertyState', 'État du bien')}</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => updateField('furnished', true)}
-                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                            className={`flex-1 px-3 py-2.5 rounded-full text-xs font-bold border transition-colors ${formData.furnished ? 'border-primary-deep bg-primary-deep text-white' : 'border-primary-pale text-gray-text hover:border-primary-green/40'}`}
                           >
                             {t('propertyPublish.furnished', 'Meublé')}
                           </button>
                           <button
                             type="button"
                             onClick={() => updateField('furnished', false)}
-                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.furnished ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                            className={`flex-1 px-3 py-2.5 rounded-full text-xs font-bold border transition-colors ${!formData.furnished ? 'border-primary-deep bg-primary-deep text-white' : 'border-primary-pale text-gray-text hover:border-primary-green/40'}`}
                           >
                             {t('propertyPublish.empty', 'Vide')}
                           </button>
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldCharges', 'Charges')}</label>
+                        <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldCharges', 'Charges')}</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => updateField('chargesIncluded', true)}
-                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                            className={`flex-1 px-3 py-2.5 rounded-full text-xs font-bold border transition-colors ${formData.chargesIncluded ? 'border-primary-deep bg-primary-deep text-white' : 'border-primary-pale text-gray-text hover:border-primary-green/40'}`}
                           >
                             {t('propertyPublish.cc', 'CC')}
                           </button>
                           <button
                             type="button"
                             onClick={() => updateField('chargesIncluded', false)}
-                            className={`flex-1 px-3 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${!formData.chargesIncluded ? 'border-[#003087] bg-[#003087] text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                            className={`flex-1 px-3 py-2.5 rounded-full text-xs font-bold border transition-colors ${!formData.chargesIncluded ? 'border-primary-deep bg-primary-deep text-white' : 'border-primary-pale text-gray-text hover:border-primary-green/40'}`}
                           >
                             {t('propertyPublish.hc', 'HC')}
                           </button>
@@ -543,32 +544,32 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldMoveInDate', 'Date d\'emménagement')}</label>
+                      <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldMoveInDate', 'Date d\'emménagement')}</label>
                       <input
                         type="date"
                         value={formData.availableFrom}
                         onChange={e => updateField('availableFrom', e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                        className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                       />
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.petsAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-full border text-[10px] font-bold cursor-pointer ${formData.petsAllowed ? 'border-green-500 bg-green-50 text-green-700' : 'border-primary-pale text-gray-text/60'}`}>
                         <input type="checkbox" checked={formData.petsAllowed} onChange={e => updateField('petsAllowed', e.target.checked)} className="w-3 h-3" />
                         {t('propertyPublish.pets', 'Animaux')}
                       </label>
-                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.smokingAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-full border text-[10px] font-bold cursor-pointer ${formData.smokingAllowed ? 'border-green-500 bg-green-50 text-green-700' : 'border-primary-pale text-gray-text/60'}`}>
                         <input type="checkbox" checked={formData.smokingAllowed} onChange={e => updateField('smokingAllowed', e.target.checked)} className="w-3 h-3" />
                         {t('propertyPublish.smoking', 'Fumeur')}
                       </label>
-                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-[10px] font-semibold cursor-pointer ${formData.subletAllowed ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-400'}`}>
+                      <label className={`flex items-center gap-1.5 px-2 py-2 rounded-full border text-[10px] font-bold cursor-pointer ${formData.subletAllowed ? 'border-green-500 bg-green-50 text-green-700' : 'border-primary-pale text-gray-text/60'}`}>
                         <input type="checkbox" checked={formData.subletAllowed} onChange={e => updateField('subletAllowed', e.target.checked)} className="w-3 h-3" />
                         {t('propertyPublish.sublet', 'Sous-location')}
                       </label>
                     </div>
                     {/* Honoraires info (Décret 2024-1115) */}
-                    <div className="p-2 bg-[#D4AF37]/5 rounded-xl">
-                      <p className="text-[10px] text-gray-500">
-                        <span className="font-semibold text-[#D4AF37]">{t('propertyPublish.honorairesInfo', 'Honoraires d\'agence (Décret 2024-1115) : répartis 50/50 entre bailleur et locataire (max 0,5 mois chacun), calculés automatiquement à la signature du bail.')}</span>
+                    <div className="p-2 bg-accent-yellow/10 border border-accent-yellow/30 rounded-2xl">
+                      <p className="text-[10px] text-gray-text">
+                        <span className="font-bold text-accent-dark">{t('propertyPublish.honorairesInfo', 'Honoraires d\'agence (Décret 2024-1115) : répartis 50/50 entre bailleur et locataire (max 0,5 mois chacun), calculés automatiquement à la signature du bail.')}</span>
                       </p>
                     </div>
                   </div>
@@ -577,27 +578,27 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 {/* City & Quartier */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldCity', 'Ville *')}</label>
-                    <select value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] bg-white">
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldCity', 'Ville *')}</label>
+                    <select value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all">
                       <option value="">{t('propertyPublish.fieldSelectPlaceholder', 'Sélectionner')}</option>
                       {cities.map(c => <option key={c.value} value={c.value}>{c.label} ({c.country})</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldQuartier', 'Quartier')}</label>
-                    <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder={t('propertyPublish.fieldQuartierPlaceholder', 'Ex: Ganhi')} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]" />
+                    <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldQuartier', 'Quartier')}</label>
+                    <input type="text" value={formData.quartier} onChange={e => updateField('quartier', e.target.value)} placeholder={t('propertyPublish.fieldQuartierPlaceholder', 'Ex: Ganhi')} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all" />
                   </div>
                 </div>
 
                 {/* Legal doc preview */}
                 {selectedCountryCode && formData.propertyType && (
-                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl">
-                    <p className="text-xs font-semibold text-[#D4AF37] mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {t('propertyPublish.requiredDocsDetected', 'Documents requis détectés')}</p>
-                    <p className="text-[10px] text-gray-500">
+                  <div className="p-3 bg-accent-yellow/10 border border-accent-yellow/30 rounded-2xl">
+                    <p className="text-xs font-bold text-accent-dark mb-1 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {t('propertyPublish.requiredDocsDetected', 'Documents requis détectés')}</p>
+                    <p className="text-[10px] text-gray-text">
                       Pour {COUNTRY_NAMES[selectedCountryCode] || selectedCountryCode} — {propertyTypes.find(p => p.value === formData.propertyType)?.label} :
                       {' '}{requiredDocs.map(d => getDocLabel(d)).join(', ')}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-1">{t('propertyPublish.requiredDocsHint', 'Vous pourrez les télécharger à l\'étape 4')}</p>
+                    <p className="text-[10px] text-gray-text/60 mt-1">{t('propertyPublish.requiredDocsHint', 'Vous pourrez les télécharger à l\'étape 4')}</p>
                   </div>
                 )}
               </motion.div>
@@ -607,43 +608,43 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step2Title', 'Description & Caractéristiques')}</h2>
-                  <p className="text-xs text-gray-500">{t('propertyPublish.step2Desc', 'Décrivez votre bien et sélectionnez ses atouts')}</p>
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step2Title', 'Description & Caractéristiques')}</h2>
+                  <p className="text-xs text-gray-text">{t('propertyPublish.step2Desc', 'Décrivez votre bien et sélectionnez ses atouts')}</p>
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldTitle', 'Titre de l\'annonce *')}</label>
+                  <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldTitle', 'Titre de l\'annonce *')}</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={e => updateField('title', e.target.value)}
                     placeholder={t('propertyPublish.fieldTitlePlaceholder', 'Ex: Villa Prestige Les Cocotiers')}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087]"
+                    className="w-full px-4 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">{t('propertyPublish.fieldDetailedDesc', 'Description détaillée *')}</label>
+                  <label className="text-xs font-bold text-primary-deep mb-1 block">{t('propertyPublish.fieldDetailedDesc', 'Description détaillée *')}</label>
                   <textarea
                     value={formData.description}
                     onChange={e => updateField('description', e.target.value)}
                     placeholder={t('propertyPublish.fieldDescPlaceholder', 'Décrivez votre bien en détail...')}
                     rows={5}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#003087] resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 mb-2 block">{t('propertyPublish.fieldFeatures', 'Caractéristiques')}</label>
+                  <label className="text-xs font-bold text-primary-deep mb-2 block">{t('propertyPublish.fieldFeatures', 'Caractéristiques')}</label>
                   <div className="flex flex-wrap gap-2">
                     {featuresList.map(feature => (
                       <button
                         key={feature}
                         onClick={() => toggleFeature(feature)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                           formData.features.includes(feature)
-                            ? 'bg-[#003087] text-white'
-                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                            ? 'bg-primary-deep text-white shadow-sm'
+                            : 'bg-primary-pale/50 text-gray-text hover:bg-primary-pale'
                         }`}
                       >
                         {feature}
@@ -658,21 +659,21 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step3Title', 'Photos du bien')}</h2>
-                  <p className="text-xs text-gray-500">{t('propertyPublish.step3Desc', 'Ajoutez jusqu\'à 20 photos. La première sera la photo principale.')}</p>
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step3Title', 'Photos du bien')}</h2>
+                  <p className="text-xs text-gray-text">{t('propertyPublish.step3Desc', 'Ajoutez jusqu\'à 20 photos. La première sera la photo principale.')}</p>
                 </div>
 
                 {/* Drop Zone */}
                 <button
                   onClick={addPhoto}
                   disabled={formData.photos.length >= 20}
-                  className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#003087]/30 hover:bg-[#003087]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full border-2 border-dashed border-primary-pale rounded-3xl p-8 text-center hover:border-primary-green/40 hover:bg-primary-pale/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg className="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-10 h-10 mx-auto text-primary-green/50 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m-4 4h8m-9 6h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-sm font-semibold text-gray-600">{t('propertyPublish.dropZone', 'Glissez-déposez vos photos ici')}</p>
-                  <p className="text-xs text-gray-400 mt-1">{t('propertyPublish.dropZoneHint', 'ou cliquez pour sélectionner')} · {formData.photos.length}/20</p>
+                  <p className="text-sm font-bold text-gray-text">{t('propertyPublish.dropZone', 'Glissez-déposez vos photos ici')}</p>
+                  <p className="text-xs text-gray-text/60 mt-1">{t('propertyPublish.dropZoneHint', 'ou cliquez pour sélectionner')} · {formData.photos.length}/20</p>
                 </button>
 
                 {/* Photo Grid */}
@@ -681,10 +682,10 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     {formData.photos.map((photo, i) => (
                       <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
                         <ImageWithFallback src={photo} alt={`Photo ${i + 1}`} className="w-full h-full" fallbackType="property" />
-                        {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-[#D4AF37] text-white text-[8px] font-bold rounded-full">{t('propertyPublish.mainPhotoBadge', 'Principale')}</span>}
+                        {i === 0 && <span className="absolute top-1 left-1 px-2 py-0.5 bg-accent-yellow text-primary-deep text-[8px] font-bold rounded-full">{t('propertyPublish.mainPhotoBadge', 'Principale')}</span>}
                         <button
                           onClick={() => setFormData(prev => ({ ...prev, photos: prev.photos.filter((_, idx) => idx !== i) }))}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-lg bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           ×
                         </button>
@@ -699,8 +700,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step4Title', 'Documents légaux requis')}</h2>
-                  <p className="text-xs text-gray-500">
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step4Title', 'Documents légaux requis')}</h2>
+                  <p className="text-xs text-gray-text">
                     {selectedCountryCode && formData.propertyType
                       ? `Documents requis pour ${COUNTRY_NAMES[selectedCountryCode] || selectedCountryName} — ${propertyTypes.find(p => p.value === formData.propertyType)?.label}`
                       : "Sélectionnez d'abord une ville et un type de bien"}
@@ -721,47 +722,47 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.05 }}
-                            className={`p-4 rounded-2xl border-2 transition-all ${
-                              isUploaded ? 'border-[#00A651]/30 bg-[#00A651]/5' : 'border-gray-100'
+                            className={`p-4 rounded-3xl border-2 transition-all ${
+                              isUploaded ? 'border-green-500/30 bg-green-50' : 'border-primary-pale/60'
                             }`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                                isUploaded ? 'bg-[#00A651]/10' : 'bg-gray-100'
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                                isUploaded ? 'bg-green-100' : 'bg-primary-pale/60'
                               }`}>
                                 {isUploaded ? (
-                                  <svg className="w-5 h-5 text-[#00A651]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                   </svg>
                                 ) : (
-                                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                  <svg className="w-5 h-5 text-gray-text/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                   </svg>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-sm font-semibold text-[#0a2a5e]">{docLabel}</p>
-                                  <span className="px-1.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[8px] font-bold rounded-full">{t('propertyPublish.required', 'REQUIS')}</span>
+                                  <p className="text-sm font-bold text-primary-deep">{docLabel}</p>
+                                  <span className="px-1.5 py-0.5 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[8px] font-bold rounded-full">{t('propertyPublish.required', 'REQUIS')}</span>
                                 </div>
-                                {docDesc && <p className="text-[10px] text-gray-400 mt-0.5">{docDesc}</p>}
-                                <p className="text-[10px] text-gray-400 mt-0.5">{t('propertyPublish.pdfJpgHint', 'PDF, JPG, PNG — max 10 Mo')}</p>
+                                {docDesc && <p className="text-[10px] text-gray-text/60 mt-0.5">{docDesc}</p>}
+                                <p className="text-[10px] text-gray-text/60 mt-0.5">{t('propertyPublish.pdfJpgHint', 'PDF, JPG, PNG — max 10 Mo')}</p>
                                 {/* Upload zone */}
                                 {!isUploaded ? (
                                   <button
                                     onClick={() => addLegalDoc(docType)}
-                                    className="mt-2 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold hover:bg-[#0047b3] transition-colors"
+                                    className="mt-2 px-4 py-2 bg-primary-green text-white rounded-full text-xs font-bold hover:bg-primary-deep transition-colors"
                                   >
                                     <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {t('propertyPublish.uploadDoc', 'Télécharger le document')}</span>
                                   </button>
                                 ) : (
                                   <div className="mt-2 flex items-center gap-2">
-                                    <span className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-semibold rounded-full">
+                                    <span className="px-2 py-1 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[10px] font-bold rounded-full">
                                       <span className="flex items-center gap-1"><Hourglass className="w-3 h-3" /> {t('propertyPublish.docsWaitingVerification', 'Documents en attente de vérification')}</span>
                                     </span>
                                     <button
                                       onClick={() => removeLegalDoc(docType)}
-                                      className="text-[10px] text-[#D93025] hover:underline"
+                                      className="text-[10px] text-red-600 hover:underline"
                                     >
                                       {t('propertyPublish.delete', 'Supprimer')}
                                     </button>
@@ -775,46 +776,46 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     </div>
 
                     {/* Upload progress summary */}
-                    <div className={`p-4 rounded-2xl ${
-                      allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'
+                    <div className={`p-4 rounded-3xl ${
+                      allRequiredDocsUploaded ? 'bg-green-50' : 'bg-accent-yellow/10'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <p className={`text-sm font-semibold ${
-                          allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'
+                        <p className={`text-sm font-bold ${
+                          allRequiredDocsUploaded ? 'text-green-700' : 'text-accent-dark'
                         }`}>
                           {allRequiredDocsUploaded ? <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsUploaded', 'Tous les documents requis sont téléchargés')}</span> : <span className="flex items-center gap-1"><Hourglass className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsMissing', 'Documents en attente de vérification')}</span>}
                         </p>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-lg h-2">
+                      <div className="w-full bg-primary-pale rounded-full h-2">
                         <div
-                          className={`h-2 rounded-lg transition-all ${
-                            allRequiredDocsUploaded ? 'bg-[#00A651]' : 'bg-[#D4AF37]'
+                          className={`h-2 rounded-full transition-all ${
+                            allRequiredDocsUploaded ? 'bg-green-500' : 'bg-accent-yellow'
                           }`}
                           style={{ width: `${(formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length / Math.max(requiredDocs.length, 1)) * 100}%` }}
                         />
                       </div>
-                      <p className="text-[10px] text-gray-500 mt-1">
+                      <p className="text-[10px] text-gray-text mt-1">
                         {formData.legalDocs.filter(d => requiredDocs.includes(d.type)).length} / {requiredDocs.length} {t('propertyPublish.requiredDocsCount', 'documents requis')}
                       </p>
                     </div>
 
                     {/* AI Verification Notice */}
-                    <div className="p-4 bg-[#009CDE]/5 rounded-2xl">
+                    <div className="p-4 bg-primary-pale/40 rounded-3xl border border-primary-pale">
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot className="w-5 h-5 text-[#009CDE]" />
-                        <p className="text-sm font-semibold text-[#009CDE]">{t('propertyPublish.aiVerificationTitle', 'Vérification IA automatique')}</p>
+                        <Bot className="w-5 h-5 text-primary-green" />
+                        <p className="text-sm font-bold text-primary-deep">{t('propertyPublish.aiVerificationTitle', 'Vérification IA automatique')}</p>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-text">
                         {t('propertyPublish.aiVerificationDesc', 'Après soumission, nos algorithmes vérifieront automatiquement l\'authenticité et la conformité de vos documents selon les exigences légales de')} {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}.
                       </p>
                     </div>
                   </>
                 ) : (
-                  <div className="text-center p-8 bg-gray-50 rounded-2xl">
-                    <p className="text-sm text-gray-400">{t('propertyPublish.step4Placeholder', 'Veuillez d\'abord sélectionner une ville et un type de bien aux étapes précédentes')}</p>
+                  <div className="text-center p-8 bg-primary-pale/30 rounded-3xl">
+                    <p className="text-sm text-gray-text/70">{t('propertyPublish.step4Placeholder', 'Veuillez d\'abord sélectionner une ville et un type de bien aux étapes précédentes')}</p>
                     <button
                       onClick={() => setCurrentStep(1)}
-                      className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-lg text-xs font-semibold"
+                      className="mt-3 px-4 py-2 bg-primary-green text-white rounded-full text-xs font-bold hover:bg-primary-deep transition-colors"
                     >
                       {t('propertyPublish.backToStep1', 'Retour à l\'étape 1')}
                     </button>
@@ -827,8 +828,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 5 && (
               <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step5Title', 'Vérification IA des documents')}</h2>
-                  <p className="text-xs text-gray-500">{t('propertyPublish.step5Desc', 'Nos algorithmes analysent vos documents en temps réel')}</p>
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step5Title', 'Vérification IA des documents')}</h2>
+                  <p className="text-xs text-gray-text">{t('propertyPublish.step5Desc', 'Nos algorithmes analysent vos documents en temps réel')}</p>
                 </div>
 
                 {/* Simulated AI verification */}
@@ -839,26 +840,26 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     // Simulate AI verification progress
                     const simulatedScore = 85; // Placeholder — real AI score comes from backend
                     return (
-                      <div key={docType} className="p-4 bg-gray-50 rounded-2xl">
+                      <div key={docType} className="p-4 bg-primary-pale/30 rounded-3xl">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-semibold text-[#0a2a5e]">{getDocLabel(docType)}</p>
+                          <p className="text-sm font-bold text-primary-deep">{getDocLabel(docType)}</p>
                           {doc ? (
-                            <span className="px-2 py-0.5 bg-[#009CDE]/10 text-[#009CDE] text-[10px] font-semibold rounded-full">
+                            <span className="px-2 py-0.5 bg-primary-pale text-primary-deep border border-primary-green/20 text-[10px] font-bold rounded-full">
                               {isVerified ? <span className="flex items-center gap-0.5"><Check className="w-3 h-3" /> {t('propertyPublish.verified', 'Vérifié')}</span> : <span className="flex items-center gap-0.5"><Hourglass className="w-3 h-3" /> {t('propertyPublish.docsWaitingVerification', 'En attente')}</span>}
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] rounded-full">{t('propertyPublish.missing', 'Manquant')}</span>
+                            <span className="px-2 py-0.5 bg-primary-pale/60 text-gray-text/50 text-[10px] rounded-full">{t('propertyPublish.missing', 'Manquant')}</span>
                           )}
                         </div>
                         {doc && (
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-200 rounded-lg h-1.5">
+                            <div className="flex-1 bg-primary-pale rounded-full h-1.5">
                               <div
-                                className="h-1.5 rounded-lg bg-[#009CDE] transition-all"
+                                className="h-1.5 rounded-full bg-primary-green transition-all"
                                 style={{ width: `${simulatedScore}%` }}
                               />
                             </div>
-                            <span className="text-[10px] text-gray-500 font-mono">{simulatedScore}%</span>
+                            <span className="text-[10px] text-gray-text/70 font-mono">{simulatedScore}%</span>
                           </div>
                         )}
                       </div>
@@ -866,7 +867,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   })}
                 </div>
 
-                <div className="p-3 bg-[#009CDE]/5 rounded-xl text-xs text-[#009CDE]">
+                <div className="p-3 bg-primary-pale/50 rounded-2xl text-xs text-primary-deep border border-primary-pale">
                   <span className="flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" /> {t('propertyPublish.aiVerificationHint', 'La vérification IA analyse l\'authenticité des documents, la cohérence des données, et la conformité avec les exigences légales locales. Une validation humaine suivra.')}</span>
                 </div>
               </motion.div>
@@ -876,76 +877,76 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
             {currentStep === 6 && (
               <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <h2 className="font-display text-lg font-bold text-[#0a2a5e] mb-1">{t('propertyPublish.step6Title', 'Révision & Validation')}</h2>
-                  <p className="text-xs text-gray-500">{t('propertyPublish.step6Desc', 'Vérifiez les informations avant de publier')}</p>
+                  <h2 className="font-serif text-lg font-bold text-primary-deep mb-1">{t('propertyPublish.step6Title', 'Révision & Validation')}</h2>
+                  <p className="text-xs text-gray-text">{t('propertyPublish.step6Desc', 'Vérifiez les informations avant de publier')}</p>
                 </div>
 
                 {/* Error */}
                 {submitError && (
-                  <div className="p-3 bg-[#D93025]/5 rounded-2xl flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-[#D93025]" />
-                    <p className="text-xs text-[#D93025]">{submitError}</p>
+                  <div className="p-3 bg-red-50 rounded-2xl flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-600" />
+                    <p className="text-xs text-red-600">{submitError}</p>
                   </div>
                 )}
 
                 {/* Summary */}
                 <div className="space-y-3">
-                  <div className="p-4 bg-gray-50 rounded-2xl">
-                    <p className="text-[10px] text-gray-400 mb-1">{t('propertyPublish.propertyLabel', 'Bien')}</p>
-                    <p className="text-sm font-bold text-[#0a2a5e]">{formData.title || t('propertyPublish.untitled', 'Sans titre')}</p>
-                    <p className="text-xs text-gray-500">
+                  <div className="p-4 bg-primary-pale/30 rounded-3xl">
+                    <p className="text-[10px] text-gray-text/60 mb-1">{t('propertyPublish.propertyLabel', 'Bien')}</p>
+                    <p className="text-sm font-bold text-primary-deep">{formData.title || t('propertyPublish.untitled', 'Sans titre')}</p>
+                    <p className="text-xs text-gray-text">
                       {propertyTypes.find(p => p.value === formData.propertyType)?.label} ·
                       {' '}{transactionTypes.find(t => t.value === formData.transactionType)?.label}
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">{t('propertyPublish.priceLabel', 'Prix')}</p>
-                      <p className="font-mono text-sm font-bold text-[#D4AF37]">{formData.price ? new Intl.NumberFormat('fr-FR').format(Number(formData.price)) : '—'} FCFA</p>
+                    <div className="p-3 bg-primary-pale/30 rounded-2xl text-center">
+                      <p className="text-[10px] text-gray-text/60">{t('propertyPublish.priceLabel', 'Prix')}</p>
+                      <p className="font-mono text-sm font-bold text-primary-deep">{formData.price ? new Intl.NumberFormat('fr-FR').format(Number(formData.price)) : '—'} FCFA</p>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">{t('propertyPublish.surfaceLabel', 'Surface')}</p>
-                      <p className="font-mono text-sm font-bold text-[#0a2a5e]">{formData.surface || '—'} m²</p>
+                    <div className="p-3 bg-primary-pale/30 rounded-2xl text-center">
+                      <p className="text-[10px] text-gray-text/60">{t('propertyPublish.surfaceLabel', 'Surface')}</p>
+                      <p className="font-mono text-sm font-bold text-primary-deep">{formData.surface || '—'} m²</p>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-xl text-center">
-                      <p className="text-[10px] text-gray-400">{t('propertyPublish.locationLabel', 'Localisation')}</p>
-                      <p className="text-sm font-bold text-[#0a2a5e]">{selectedCity?.label || '—'}</p>
+                    <div className="p-3 bg-primary-pale/30 rounded-2xl text-center">
+                      <p className="text-[10px] text-gray-text/60">{t('propertyPublish.locationLabel', 'Localisation')}</p>
+                      <p className="text-sm font-bold text-primary-deep">{selectedCity?.label || '—'}</p>
                     </div>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-xl">
-                    <p className="text-[10px] text-gray-400 mb-1">{t('propertyPublish.descriptionLabel', 'Description')}</p>
-                    <p className="text-xs text-gray-600 line-clamp-3">{formData.description || t('propertyPublish.noDescription', 'Aucune description')}</p>
+                  <div className="p-3 bg-primary-pale/30 rounded-2xl">
+                    <p className="text-[10px] text-gray-text/60 mb-1">{t('propertyPublish.descriptionLabel', 'Description')}</p>
+                    <p className="text-xs text-gray-text line-clamp-3">{formData.description || t('propertyPublish.noDescription', 'Aucune description')}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {formData.features.map(f => (
-                      <span key={f} className="px-2 py-0.5 bg-[#009CDE]/5 text-[#009CDE] rounded-full text-[10px] font-medium">{f}</span>
+                      <span key={f} className="px-2 py-0.5 bg-primary-pale text-primary-deep border border-primary-green/20 rounded-full text-[10px] font-bold">{f}</span>
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-xl">
-                      <p className="text-[10px] text-gray-400">{t('propertyPublish.photosLabel', 'Photos')}</p>
-                      <p className="text-sm font-bold text-[#0a2a5e]">{formData.photos.length}/20</p>
+                    <div className="p-3 bg-primary-pale/30 rounded-2xl">
+                      <p className="text-[10px] text-gray-text/60">{t('propertyPublish.photosLabel', 'Photos')}</p>
+                      <p className="text-sm font-bold text-primary-deep">{formData.photos.length}/20</p>
                     </div>
-                    <div className={`p-3 rounded-xl ${allRequiredDocsUploaded ? 'bg-[#00A651]/5' : 'bg-[#D4AF37]/5'}`}>
-                      <p className="text-[10px] text-gray-400">{t('propertyPublish.legalDocsLabel', 'Documents légaux')}</p>
-                      <p className={`text-sm font-bold ${allRequiredDocsUploaded ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
+                    <div className={`p-3 rounded-2xl ${allRequiredDocsUploaded ? 'bg-green-50' : 'bg-accent-yellow/10'}`}>
+                      <p className="text-[10px] text-gray-text/60">{t('propertyPublish.legalDocsLabel', 'Documents légaux')}</p>
+                      <p className={`text-sm font-bold ${allRequiredDocsUploaded ? 'text-green-700' : 'text-accent-dark'}`}>
                         {formData.legalDocs.length} / {requiredDocs.length} {t('propertyPublish.requiredLabel', 'requis')}
                       </p>
                     </div>
                   </div>
                   {/* Legal docs detail */}
                   {selectedCountryCode && (
-                    <div className="p-3 bg-gray-50 rounded-xl">
-                      <p className="text-[10px] text-gray-400 mb-2">{t('propertyPublish.legalDocsLabel', 'Documents légaux')} — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
+                    <div className="p-3 bg-primary-pale/30 rounded-2xl">
+                      <p className="text-[10px] text-gray-text/60 mb-2">{t('propertyPublish.legalDocsLabel', 'Documents légaux')} — {COUNTRY_NAMES[selectedCountryCode] || selectedCountryName}</p>
                       <div className="space-y-1.5">
                         {requiredDocs.map(docType => {
                           const isUploaded = formData.legalDocs.some(d => d.type === docType);
                           return (
                             <div key={docType} className="flex items-center gap-2 text-xs">
-                              <span className={isUploaded ? 'text-[#00A651]' : 'text-[#D93025]'}>
+                              <span className={isUploaded ? 'text-green-600' : 'text-red-600'}>
                                 {isUploaded ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                               </span>
-                              <span className={isUploaded ? 'text-[#0a2a5e]' : 'text-gray-400'}>{getDocLabel(docType)}</span>
+                              <span className={isUploaded ? 'text-primary-deep' : 'text-gray-text/50'}>{getDocLabel(docType)}</span>
                             </div>
                           );
                         })}
@@ -955,8 +956,8 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 </div>
 
                 {/* Publication Timeline */}
-                <div className="p-4 bg-[#003087]/5 rounded-2xl">
-                  <p className="text-xs font-semibold text-[#003087] mb-2">{t('propertyPublish.processAfterSubmit', 'Processus après soumission')}</p>
+                <div className="p-4 bg-primary-pale/40 rounded-3xl border border-primary-pale">
+                  <p className="text-xs font-bold text-primary-deep mb-2">{t('propertyPublish.processAfterSubmit', 'Processus après soumission')}</p>
                   <div className="space-y-2">
                     {[
                       { icon: <Send className="w-4 h-4" />, text: t('propertyPublish.processSubmission', 'Soumission de l\'annonce') },
@@ -966,7 +967,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <span className="text-xs">{item.icon}</span>
-                        <span className="text-xs text-gray-600">{item.text}</span>
+                        <span className="text-xs text-gray-text">{item.text}</span>
                       </div>
                     ))}
                   </div>
@@ -981,24 +982,24 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-                  className="w-20 h-20 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-4"
+                  className="w-20 h-20 rounded-full bg-primary-pale flex items-center justify-center mx-auto mb-4"
                 >
-                  <svg className="w-10 h-10 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-10 h-10 text-primary-deep" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
                   </svg>
                 </motion.div>
-                <h3 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">{t('propertyPublish.step7Title', 'Prêt à publier ?')}</h3>
-                <p className="text-sm text-gray-500 mb-6">
+                <h3 className="font-serif text-xl font-bold text-primary-deep mb-2">{t('propertyPublish.step7Title', 'Prêt à publier ?')}</h3>
+                <p className="text-sm text-gray-text mb-6">
                   {t('propertyPublish.step7Desc', 'Votre annonce sera soumise pour vérification IA puis validation humaine avant publication.')}
                 </p>
                 {allRequiredDocsUploaded ? (
-                  <div className="p-3 bg-[#00A651]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#00A651] font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsProvided', 'Tous les documents légaux requis sont fournis')}</p>
+                  <div className="p-3 bg-green-50 rounded-2xl mb-4">
+                    <p className="text-xs text-green-700 font-bold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> {t('propertyPublish.allDocsProvided', 'Tous les documents légaux requis sont fournis')}</p>
                   </div>
                 ) : (
-                  <div className="p-3 bg-[#D4AF37]/5 rounded-xl mb-4">
-                    <p className="text-xs text-[#D4AF37] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {t('propertyPublish.someDocsMissing', 'Certains documents requis sont manquants')}</p>
-                    <p className="text-[10px] text-gray-500 mt-1">{t('propertyPublish.someDocsMissingHint', 'Vous pouvez quand même soumettre, mais la publication sera retardée')}</p>
+                  <div className="p-3 bg-accent-yellow/10 border border-accent-yellow/30 rounded-2xl mb-4">
+                    <p className="text-xs text-accent-dark font-bold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {t('propertyPublish.someDocsMissing', 'Certains documents requis sont manquants')}</p>
+                    <p className="text-[10px] text-gray-text mt-1">{t('propertyPublish.someDocsMissingHint', 'Vous pouvez quand même soumettre, mais la publication sera retardée')}</p>
                   </div>
                 )}
               </motion.div>
@@ -1006,11 +1007,11 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
           </AnimatePresence>
 
           {/* Navigation Buttons */}
-          <div className="flex gap-3 mt-6 pt-4 border-t">
+          <div className="flex gap-3 mt-6 pt-4 border-t border-primary-pale">
             {currentStep > 1 && (
               <button
                 onClick={() => setCurrentStep(currentStep - 1)}
-                className="px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 border border-primary-deep/20 rounded-full text-sm font-bold text-primary-deep hover:bg-primary-pale transition-colors"
               >
                 {t('propertyPublish.btnBack', 'Retour')}
               </button>
@@ -1023,7 +1024,7 @@ export default function PropertyPublishModule({ onNavigate }: ModuleProps) {
                 else handleSubmit();
               }}
               disabled={!canProceed() || createPropertyMutation.isPending}
-              className="flex-1 py-2.5 bg-[#003087] text-white rounded-lg font-semibold text-sm hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 bg-primary-green text-white rounded-full font-bold text-sm hover:bg-primary-deep shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createPropertyMutation.isPending
                 ? t('propertyPublish.btnProcessing', 'Soumission en cours...')

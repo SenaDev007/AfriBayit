@@ -103,13 +103,17 @@ export default function ROICalculator({
   const yieldColor = (y: number) => y >= 8 ? '#00A651' : y >= 5 ? '#D4AF37' : '#ef4444';
 
   return (
-    <div className={`bg-white rounded-xl border overflow-hidden ${compact ? '' : 'shadow-sm'}`}>
+    <div className={`bg-white rounded-3xl border border-primary-pale overflow-hidden ${compact ? '' : 'shadow-lg'}`}>
       {/* Header */}
-      <div className="flex items-center gap-2 p-4 border-b bg-gradient-to-r from-[#003087] to-[#0047b3]">
-        <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
-        <div>
-          <h3 className="font-display text-sm font-bold text-white">Calculateur ROI locatif</h3>
-          <p className="text-[10px] text-white/70">Rendement brut/net, cashflow, plus-value à 5 ans</p>
+      <div className="flex items-center gap-2 p-4 border-b border-primary-pale bg-primary-deep relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary-green/20 rounded-full blur-[80px] pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-accent-yellow" />
+          <div>
+            <h3 className="font-serif text-sm font-bold text-white">Calculateur ROI locatif</h3>
+            <p className="text-[10px] text-white/70">Rendement brut/net, cashflow, plus-value à 5 ans</p>
+          </div>
         </div>
       </div>
 
@@ -117,47 +121,47 @@ export default function ROICalculator({
         {/* Inputs */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Prix d'achat (FCFA)</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Prix d'achat (FCFA)</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value) || 0)}
               step={500_000}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono font-bold focus:outline-none focus:border-[#003087]"
+              className="w-full px-3 py-2 rounded-xl border border-primary-pale bg-white text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Loyer mensuel (FCFA)</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Loyer mensuel (FCFA)</label>
             <input
               type="number"
               value={rent}
               onChange={(e) => setRent(Number(e.target.value) || 0)}
               step={10_000}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono font-bold focus:outline-none focus:border-[#003087]"
+              className="w-full px-3 py-2 rounded-xl border border-primary-pale bg-white text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Charges/mois (FCFA)</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Charges/mois (FCFA)</label>
             <input
               type="number"
               value={charges}
               onChange={(e) => setCharges(Number(e.target.value) || 0)}
               step={5_000}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#003087]"
+              className="w-full px-3 py-2 rounded-xl border border-primary-pale bg-white text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Taxe foncière/an (FCFA)</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Taxe foncière/an (FCFA)</label>
             <input
               type="number"
               value={propertyTax}
               onChange={(e) => setPropertyTax(Number(e.target.value) || 0)}
               step={10_000}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#003087]"
+              className="w-full px-3 py-2 rounded-xl border border-primary-pale bg-white text-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Taux de vacance: {vacancyPct}%</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Taux de vacance: {vacancyPct}%</label>
             <input
               type="range"
               min={0}
@@ -165,15 +169,15 @@ export default function ROICalculator({
               step={1}
               value={vacancyPct}
               onChange={(e) => setVacancyPct(Number(e.target.value))}
-              className="w-full accent-[#003087]"
+              className="w-full accent-primary-deep"
             />
           </div>
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Pays (croissance)</label>
+            <label className="text-[10px] font-bold text-primary-deep mb-1 block">Pays (croissance)</label>
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-[#003087]"
+              className="w-full px-3 py-2 rounded-xl border border-primary-pale text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             >
               {Object.entries(COUNTRY_LABELS).map(([code, label]) => (
                 <option key={code} value={code}>
@@ -186,10 +190,10 @@ export default function ROICalculator({
 
         {/* KPI grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-2xl bg-[#003087]/5">
+          <div className="p-3 rounded-2xl bg-primary-pale/50">
             <div className="flex items-center gap-1.5 mb-1">
-              <Percent className="w-3.5 h-3.5 text-[#003087]" />
-              <p className="text-[10px] text-gray-500">Rendement brut</p>
+              <Percent className="w-3.5 h-3.5 text-primary-deep" />
+              <p className="text-[10px] text-gray-text">Rendement brut</p>
             </div>
             <p className="font-mono-data font-bold text-lg" style={{ color: yieldColor(calc.grossYield) }}>
               {fmtPct(calc.grossYield)}
@@ -198,27 +202,27 @@ export default function ROICalculator({
           <div className="p-3 rounded-2xl bg-[#00A651]/5">
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp className="w-3.5 h-3.5 text-[#00A651]" />
-              <p className="text-[10px] text-gray-500">Rendement net</p>
+              <p className="text-[10px] text-gray-text">Rendement net</p>
             </div>
             <p className="font-mono-data font-bold text-lg" style={{ color: yieldColor(calc.netYield) }}>
               {fmtPct(calc.netYield)}
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-[#D4AF37]/5">
+          <div className="p-3 rounded-2xl bg-accent-yellow/10">
             <div className="flex items-center gap-1.5 mb-1">
-              <Wallet className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <p className="text-[10px] text-gray-500">Cashflow mensuel</p>
+              <Wallet className="w-3.5 h-3.5 text-accent-dark" />
+              <p className="text-[10px] text-gray-text">Cashflow mensuel</p>
             </div>
             <p className={`font-mono-data font-bold text-lg ${calc.monthlyCashflow >= 0 ? 'text-[#00A651]' : 'text-red-500'}`}>
               {calc.monthlyCashflow >= 0 ? '+' : ''}{fmt(calc.monthlyCashflow)}
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-gray-50">
+          <div className="p-3 rounded-2xl bg-cream border border-primary-pale">
             <div className="flex items-center gap-1.5 mb-1">
-              <Calendar className="w-3.5 h-3.5 text-gray-500" />
-              <p className="text-[10px] text-gray-500">Rentabilité (années)</p>
+              <Calendar className="w-3.5 h-3.5 text-gray-text" />
+              <p className="text-[10px] text-gray-text">Rentabilité (années)</p>
             </div>
-            <p className="font-mono-data font-bold text-lg text-[#0a2a5e]">
+            <p className="font-mono-data font-bold text-lg text-primary-deep">
               {calc.paybackYears ? `${Math.round(calc.paybackYears)} ans` : '—'}
             </p>
           </div>
@@ -228,10 +232,13 @@ export default function ROICalculator({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="p-4 rounded-2xl bg-gradient-to-br from-[#003087] to-[#0047b3] text-white"
+          className="p-4 rounded-2xl bg-primary-deep text-white relative overflow-hidden"
         >
+          <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary-green/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="relative z-10">
           <div className="flex items-center gap-1.5 mb-2">
-            <Coins className="w-4 h-4 text-[#D4AF37]" />
+            <Coins className="w-4 h-4 text-accent-yellow" />
             <p className="text-xs font-semibold">Projection à 5 ans</p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
@@ -241,8 +248,8 @@ export default function ROICalculator({
             </div>
             <div>
               <p className="text-[10px] text-white/60 mb-0.5">Plus-value</p>
-              <p className="font-mono-data font-bold text-sm text-[#D4AF37]">+{fmt(calc.projectedGain5y)}</p>
-              <p className="text-[10px] text-[#D4AF37]">+{fmtPct(calc.projectedGainPct)}</p>
+              <p className="font-mono-data font-bold text-sm text-accent-yellow">+{fmt(calc.projectedGain5y)}</p>
+              <p className="text-[10px] text-accent-yellow">+{fmtPct(calc.projectedGainPct)}</p>
             </div>
             <div>
               <p className="text-[10px] text-white/60 mb-0.5">Retour total</p>
@@ -252,6 +259,7 @@ export default function ROICalculator({
           </div>
           <div className="mt-2 pt-2 border-t border-white/10 text-[10px] text-white/50 text-center">
             Croissance {COUNTRY_LABELS[selectedCountry]}: {Math.round(calc.growthRate * 100)}%/an · Cashflow 5 ans + plus-value
+          </div>
           </div>
         </motion.div>
 
@@ -274,7 +282,7 @@ export default function ROICalculator({
               <span>− Taxe foncière</span>
               <span className="font-mono">−{fmt(propertyTax)}</span>
             </div>
-            <div className="flex justify-between font-semibold text-[#0a2a5e] pt-1 border-t">
+            <div className="flex justify-between font-semibold text-primary-deep pt-1 border-t">
               <span className="flex items-center gap-1">Cashflow annuel <ArrowRight className="w-3 h-3" /></span>
               <span className={`font-mono ${calc.annualCashflow >= 0 ? 'text-[#00A651]' : 'text-red-500'}`}>
                 {calc.annualCashflow >= 0 ? '+' : ''}{fmt(calc.annualCashflow)}

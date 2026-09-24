@@ -46,7 +46,7 @@ export default function WebinarsPanel() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#003087]" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary-deep" />
       </div>
     );
   }
@@ -55,7 +55,7 @@ export default function WebinarsPanel() {
     return (
       <div className="text-center py-16">
         <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-sm text-gray-500">{t('academy.webinars.loadError', 'Impossible de charger les webinaires.')}</p>
+        <p className="text-sm text-gray-text">{t('academy.webinars.loadError', 'Impossible de charger les webinaires.')}</p>
       </div>
     );
   }
@@ -63,11 +63,11 @@ export default function WebinarsPanel() {
   if (webinars.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="w-20 h-20 rounded-lg bg-[#009CDE]/10 flex items-center justify-center mx-auto mb-4">
-          <Video className="w-10 h-10 text-[#009CDE]" />
+        <div className="w-20 h-20 rounded-2xl bg-primary-pale flex items-center justify-center mx-auto mb-4">
+          <Video className="w-10 h-10 text-primary-green" />
         </div>
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-2">{t('academy.webinars.emptyTitle', 'Aucun webinaire programmé')}</h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-2">{t('academy.webinars.emptyTitle', 'Aucun webinaire programmé')}</h3>
+        <p className="text-sm text-gray-text mb-4">
           {t('academy.webinars.emptyDesc', 'Les webinaires live avec experts locaux seront bientôt disponibles. Revenez bientôt !')}
         </p>
       </div>
@@ -82,26 +82,26 @@ export default function WebinarsPanel() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1, ease: easeOut }}
-          className="bg-white rounded-xl overflow-hidden shadow-sm border"
+          className="bg-white rounded-3xl overflow-hidden shadow-lg border border-primary-pale card-shimmer"
         >
-          <div className="h-2 bg-gradient-to-r from-[#009CDE] to-[#003087]" />
+          <div className="h-2 bg-gradient-to-r from-primary-green to-primary-deep" />
           <div className="p-5">
             <div className="flex items-start gap-4 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-[#009CDE]/10 flex items-center justify-center shrink-0">
-                <Video className="w-6 h-6 text-[#009CDE]" />
+              <div className="w-12 h-12 rounded-xl bg-primary-pale flex items-center justify-center shrink-0">
+                <Video className="w-6 h-6 text-primary-green" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{webinar.title}</h3>
-                <p className="text-xs text-gray-500">{webinar.expertName}</p>
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-1">{webinar.title}</h3>
+                <p className="text-xs text-gray-text">{webinar.expertName}</p>
               </div>
               {webinar.isLive && (
-                <span className="px-2 py-1 bg-[#D93025] text-white text-xs font-bold rounded-full animate-pulse">
+                <span className="px-2 py-1 bg-[#D93025] text-white text-xs font-bold rounded-full">
                   LIVE
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{webinar.description}</p>
-            <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+            <p className="text-sm text-gray-text mb-3 line-clamp-2">{webinar.description}</p>
+            <div className="flex items-center gap-4 text-xs text-gray-text mb-4">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
                 {new Date(webinar.scheduledAt).toLocaleDateString('fr-FR')}
@@ -116,12 +116,12 @@ export default function WebinarsPanel() {
               </span>
             </div>
             <button
-              className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              className={`w-full py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${
                 webinar.isLive
                   ? 'bg-[#D93025] text-white hover:bg-[#c2261c]'
                   : webinar.isRecorded && webinar.recordingUrl
-                    ? 'bg-[#003087] text-white hover:bg-[#0047b3]'
-                    : 'bg-[#009CDE] text-white hover:bg-[#0077e6]'
+                    ? 'bg-primary-green text-white hover:bg-primary-deep'
+                    : 'bg-primary-deep text-white hover:bg-primary-green'
               }`}
             >
               {webinar.isLive ? t('academy.webinars.joinLive', 'Rejoindre le live') : webinar.isRecorded ? t('academy.webinars.watchReplay', 'Voir le replay') : t('academy.webinars.register', 'S\'inscrire')}

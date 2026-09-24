@@ -69,14 +69,14 @@ function getCertIcon(iconStr: string): React.ReactNode {
 function ProfileSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="h-40 sm:h-52 bg-gray-200 rounded-b-3xl" />
+      <div className="h-40 sm:h-52 bg-primary-pale/60 rounded-b-3xl" />
       <div className="relative -mt-16 mb-6 px-4">
         <div className="flex items-end gap-4">
-          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl bg-gray-200 border-4 border-white" />
-          <div className="flex-1 pb-2"><div className="h-6 bg-gray-200 rounded w-40 mb-2" /><div className="h-4 bg-gray-100 rounded w-64 mb-1" /><div className="h-3 bg-gray-100 rounded w-32" /></div>
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-primary-pale/60 border-4 border-white" />
+          <div className="flex-1 pb-2"><div className="h-6 bg-primary-pale/60 rounded-full w-40 mb-2" /><div className="h-4 bg-primary-pale/40 rounded-full w-64 mb-1" /><div className="h-3 bg-primary-pale/40 rounded-full w-32" /></div>
         </div>
       </div>
-      <div className="space-y-4 px-4"><div className="h-32 bg-gray-100 rounded-xl" /><div className="h-48 bg-gray-100 rounded-xl" /></div>
+      <div className="space-y-4 px-4"><div className="h-32 bg-primary-pale/40 rounded-3xl" /><div className="h-48 bg-primary-pale/40 rounded-3xl" /></div>
     </div>
   );
 }
@@ -98,7 +98,7 @@ function CredibilityRing({ score, size = 80 }: { score: number; size?: number })
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E5E7EB" strokeWidth={4} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E6EEF9" strokeWidth={4} />
         <motion.circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={getColor(score)} strokeWidth={4}
           strokeLinecap="round" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: circumference - progress }} transition={{ duration: 1.5, ease: easeOut }} />
@@ -220,7 +220,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
 
   if (isLoading) {
     return (
-      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6"><ProfileSkeleton /></div>
       </section>
     );
@@ -228,12 +228,12 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
 
   if (error || !profileData) {
     return (
-      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
           <div className="text-center py-20">
             <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600 font-semibold mb-1">Impossible de charger le profil</p>
-            <p className="text-sm text-gray-400">{error?.message || 'Profil non trouve'}</p>
+            <p className="text-gray-text font-semibold mb-1">Impossible de charger le profil</p>
+            <p className="text-sm text-gray-text/60">{error?.message || 'Profil non trouve'}</p>
           </div>
         </div>
       </section>
@@ -243,7 +243,8 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
   const publicProfileUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/pro/${profileData.slug || profileData.userId || ''}`;
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6">
         {/* Cover Photo */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative -mx-4 sm:-mx-6 -mt-4">
@@ -252,7 +253,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             {/* Edit cover button for own profile */}
             {isOwnProfile && (
-              <button className="absolute top-3 right-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-medium text-[#003087] hover:bg-white transition-colors flex items-center gap-1.5 shadow-sm">
+              <button className="absolute top-3 right-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold text-primary-deep hover:bg-white transition-colors flex items-center gap-1.5 shadow-md">
                 <Camera className="w-3.5 h-3.5" /> Modifier
               </button>
             )}
@@ -263,24 +264,24 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, ease: easeOut }} className="relative -mt-16 mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
             <div className="relative">
-              <ImageWithFallback src={profileData.avatar} alt={profileData.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl border-4 border-white shadow-lg" fallbackType="avatar" />
-              <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-lg border-2 border-white ${
+              <ImageWithFallback src={profileData.avatar} alt={profileData.name} className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl border-4 border-white shadow-lg" fallbackType="avatar" />
+              <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-2 border-white ${
                 profileData.availability === 'available' ? 'bg-[#00A651]' : profileData.availability === 'busy' ? 'bg-[#D4AF37]' : 'bg-gray-400'
               }`} />
             </div>
             <div className="flex-1 pb-2">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="font-display text-xl sm:text-2xl font-bold text-[#0a2a5e]">{profileData.name}</h1>
+                <h1 className="font-serif text-xl sm:text-2xl font-bold text-primary-deep">{profileData.name}</h1>
                 {isProfileCreated && (
-                  <span className="px-2 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full flex items-center gap-1"><Award className="w-3 h-3" /> Certifie</span>
+                  <span className="px-2 py-0.5 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[10px] font-bold rounded-full flex items-center gap-1"><Award className="w-3 h-3" /> Certifie</span>
                 )}
               </div>
               {profileData.headline ? (
-                <p className="text-sm text-gray-600 mb-1">{profileData.headline}</p>
+                <p className="text-sm text-gray-text mb-1">{profileData.headline}</p>
               ) : isOwnProfile ? (
-                <p className="text-sm text-gray-400 mb-1 italic">Ajoutez un titre professionnel</p>
+                <p className="text-sm text-gray-text/60 mb-1 italic">Ajoutez un titre professionnel</p>
               ) : null}
-              <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-gray-text/60">
                 {profileData.location && <><MapPin className="w-3 h-3" /> {profileData.location}</>}
                 <span className={`flex items-center gap-1 ${profileData.availability === 'available' ? 'text-[#00A651]' : 'text-[#D4AF37]'}`}>
                   <Circle className="w-3 h-3 fill-current" /> {profileData.availability === 'available' ? 'Disponible' : profileData.availability === 'busy' ? 'Occupe' : 'Hors ligne'}
@@ -290,9 +291,9 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
               {/* Public Profile URL - only show if profile is created */}
               {isProfileCreated && profileData.slug && (
                 <div className="flex items-center gap-2 mt-2">
-                  <Link2 className="w-3.5 h-3.5 text-[#003087]" />
-                  <span className="text-xs text-[#003087] font-medium truncate max-w-[200px]">{publicProfileUrl}</span>
-                  <button onClick={handleCopyProfileUrl} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                  <Link2 className="w-3.5 h-3.5 text-primary-deep" />
+                  <span className="text-xs text-primary-deep font-medium truncate max-w-[200px]">{publicProfileUrl}</span>
+                  <button onClick={handleCopyProfileUrl} className="p-1 rounded-lg hover:bg-primary-pale/60 transition-colors">
                     {showCopied ? <Check className="w-3.5 h-3.5 text-[#00A651]" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
                   </button>
                 </div>
@@ -302,12 +303,12 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             {!isOwnProfile && (
               <div className="flex gap-2">
                 <button onClick={handleContact} disabled={isContacting || createConversation.isPending}
-                  className="px-5 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="px-5 py-2 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                   {isContacting || createConversation.isPending ? '...' : 'Contacter'}
                 </button>
                 <button onClick={handleFollow} disabled={isFollowing || followProfile.isPending}
-                  className={`px-4 py-2 border rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed flex items-center gap-1.5 ${
-                    isFollowing ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50'
+                  className={`px-4 py-2 border rounded-full text-sm font-bold transition-colors disabled:cursor-not-allowed flex items-center gap-1.5 ${
+                    isFollowing ? 'border-[#00A651] bg-[#00A651]/5 text-[#00A651]' : 'border-primary-deep/20 text-primary-deep hover:bg-primary-pale disabled:opacity-50'
                   }`}>
                   {isFollowing ? <><Check className="w-4 h-4" /> Suivi</> : <><PlusCircle className="w-4 h-4" /> Suivre</>}
                 </button>
@@ -319,14 +320,14 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                 {!isProfileCreated ? (
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="px-5 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-2"
+                    className="px-5 py-2 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all flex items-center gap-2"
                   >
                     <Pencil className="w-4 h-4" /> Creer mon profil pro
                   </button>
                 ) : (
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                    className="px-4 py-2 border border-primary-deep/20 text-primary-deep rounded-full text-sm font-bold hover:bg-primary-pale transition-colors flex items-center gap-1.5"
                   >
                     <Pencil className="w-4 h-4" /> Modifier
                   </button>
@@ -337,21 +338,21 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
 
           {/* Profile Completeness + Credibility Score */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3 bg-white rounded-2xl border shadow-sm">
+            <div className="p-3 bg-white rounded-3xl border border-primary-pale shadow-lg">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Completude du profil</span>
-                <span className="font-mono text-xs font-bold text-[#003087]">{profileData.profileCompleteness}%</span>
+                <span className="text-xs text-gray-text">Completude du profil</span>
+                <span className="font-mono text-xs font-bold text-primary-deep">{profileData.profileCompleteness}%</span>
               </div>
-              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-primary-pale rounded-full overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${profileData.profileCompleteness}%` }} transition={{ duration: 1, ease: easeOut }}
-                  className="h-full rounded-lg bg-gradient-to-r from-[#003087] to-[#009CDE]" />
+                  className="h-full rounded-full bg-primary-green" />
               </div>
             </div>
-            <div className="p-3 bg-white rounded-2xl border shadow-sm flex items-center gap-3">
+            <div className="p-3 bg-white rounded-3xl border border-primary-pale shadow-lg flex items-center gap-3">
               <CredibilityRing score={profileData.stats.credibilityScore} size={48} />
               <div>
-                <p className="text-xs text-gray-500">Score de credibilite</p>
-                <p className="font-mono text-lg font-bold text-[#0a2a5e]">{profileData.stats.credibilityScore}/100</p>
+                <p className="text-xs text-gray-text">Score de credibilite</p>
+                <p className="font-serif font-black text-lg text-primary-deep">{profileData.stats.credibilityScore}/100</p>
               </div>
             </div>
           </div>
@@ -360,7 +361,7 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           {profileData.certifications.length > 0 && (
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
               {profileData.certifications.map(cert => (
-                <span key={cert.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0"
+                <span key={cert.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0"
                   style={{ backgroundColor: `${cert.color}10`, color: cert.color }}>
                   {getCertIcon(cert.icon)} {cert.name}
                 </span>
@@ -373,20 +374,20 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-5 bg-gradient-to-r from-[#003087]/5 to-[#D4AF37]/5 rounded-2xl border border-[#003087]/10"
+              className="mt-4 p-5 bg-accent-pale/60 rounded-3xl border border-accent-yellow/30"
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
-                  <Award className="w-5 h-5 text-[#003087]" />
+                <div className="w-10 h-10 rounded-2xl bg-primary-pale flex items-center justify-center shrink-0">
+                  <Award className="w-5 h-5 text-primary-deep" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-bold text-[#0a2a5e] mb-1">Completez votre profil professionnel</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <h3 className="text-sm font-bold text-primary-deep mb-1">Completez votre profil professionnel</h3>
+                  <p className="text-xs text-gray-text leading-relaxed">
                     Un profil professionnel complet augmente votre visibilite, votre credibilite et vos chances de conclure des transactions. Ajoutez vos competences, experiences et certifications.
                   </p>
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="mt-3 px-4 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+                    className="mt-3 px-4 py-2 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all"
                   >
                     Creer mon profil professionnel
                   </button>
@@ -404,68 +405,68 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-xl p-6 shadow-sm border mb-6"
+              className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale mb-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e]">
+                <h3 className="font-serif text-lg font-bold text-primary-deep">
                   {isProfileCreated ? 'Modifier le profil professionnel' : 'Creer votre profil professionnel'}
                 </h3>
-                <button onClick={() => setShowCreateForm(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <button onClick={() => setShowCreateForm(false)} className="p-2 hover:bg-primary-pale/60 rounded-full transition-colors">
                   <AlertTriangle className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Titre professionnel</label>
+                  <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">Titre professionnel</label>
                   <input
                     type="text"
                     value={formHeadline}
                     onChange={e => setFormHeadline(e.target.value)}
                     placeholder="Ex: Agent immobilier, Promoteur, Investisseur..."
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                    className="w-full px-4 py-3 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Bio professionnelle</label>
+                  <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">Bio professionnelle</label>
                   <textarea
                     value={formBio}
                     onChange={e => setFormBio(e.target.value)}
                     placeholder="Decrivez votre activite, vos expertises et vos realisations..."
                     rows={3}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all resize-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Competences (separees par des virgules)</label>
+                  <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">Competences (separees par des virgules)</label>
                   <input
                     type="text"
                     value={formSpecialities}
                     onChange={e => setFormSpecialities(e.target.value)}
                     placeholder="Ex: Immobilier residentiel, Analyse de marche, Negociation"
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                    className="w-full px-4 py-3 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Zone d'activite</label>
+                  <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">Zone d'activite</label>
                   <input
                     type="text"
                     value={formCity}
                     onChange={e => setFormCity(e.target.value)}
                     placeholder="Ex: Cotonou, Abidjan..."
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087]"
+                    className="w-full px-4 py-3 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
                   />
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
                   <button
                     onClick={() => setShowCreateForm(false)}
-                    className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                    className="px-4 py-2 text-sm text-gray-text hover:bg-primary-pale/60 rounded-full transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleCreateProfile}
                     disabled={creating || !formHeadline}
-                    className="px-6 py-2 bg-[#003087] text-white rounded-full text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     {isProfileCreated ? 'Enregistrer' : 'Creer le profil'}
@@ -480,8 +481,8 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {tabs.map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}>
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale/60'}`}>
               {tab.icon} {tab.label}
             </button>
           ))}
@@ -492,30 +493,30 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           {activeTab === 'about' && (
             <motion.div key="about" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }} className="space-y-5">
               {/* Bio */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3">A propos</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{profileData.bio}</p>
+              <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-3">A propos</h3>
+                <p className="text-sm text-gray-text leading-relaxed">{profileData.bio}</p>
               </div>
 
               {/* Skills & Endorsements */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><ThumbsUp className="w-5 h-5 text-[#D4AF37]" /> Competences & Endossements</h3>
+              <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-3 flex items-center gap-2"><ThumbsUp className="w-5 h-5 text-accent-yellow" /> Competences & Endossements</h3>
                 <div className="space-y-3">
                   {profileData.skills.map(skill => (
                     <div key={skill.name} className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm text-gray-700 font-medium">{skill.name}</span>
-                          <span className="font-mono text-xs text-gray-400">{skill.endorsements} endossement{skill.endorsements !== 1 ? 's' : ''}</span>
+                          <span className="text-sm text-gray-text font-medium">{skill.name}</span>
+                          <span className="font-mono text-xs text-gray-text/60">{skill.endorsements} endossement{skill.endorsements !== 1 ? 's' : ''}</span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-primary-pale rounded-full overflow-hidden">
                           <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((skill.endorsements / 50) * 100, 100)}%` }} transition={{ duration: 0.8, ease: easeOut }}
-                            className="h-full bg-[#D4AF37] rounded-full" />
+                            className="h-full bg-accent-yellow rounded-full" />
                         </div>
                       </div>
                       <button onClick={() => handleEndorse(skill.name)} disabled={endorsingSkill === skill.name || skill.endorsedByMe}
-                        className={`ml-3 p-2 rounded-xl transition-all flex items-center gap-1 ${
-                          skill.endorsedByMe ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-gray-50 text-gray-500 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
+                        className={`ml-3 p-2 rounded-full transition-all flex items-center gap-1 ${
+                          skill.endorsedByMe ? 'bg-accent-yellow/15 text-accent-dark' : 'bg-primary-pale/50 text-gray-text hover:bg-accent-yellow/15 hover:text-accent-dark'
                         }`}>
                         <ThumbsUp className="w-4 h-4" />
                         <span className="text-[10px] font-semibold">{skill.endorsedByMe ? 'Endosse' : '+'}</span>
@@ -526,17 +527,17 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
               </div>
 
               {/* Education */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-[#003087]" /> Formation</h3>
+              <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-3 flex items-center gap-2"><GraduationCap className="w-5 h-5 text-primary-green" /> Formation</h3>
                 <div className="space-y-3">
                   {profileData.education.map(edu => (
-                    <div key={edu.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl">
-                      <div className="w-10 h-10 rounded-lg bg-[#003087]/10 flex items-center justify-center shrink-0">
-                        <GraduationCap className="w-4 h-4 text-[#003087]" />
+                    <div key={edu.id} className="flex items-start gap-3 p-3 bg-primary-pale/30 rounded-2xl">
+                      <div className="w-10 h-10 rounded-xl bg-primary-pale flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-4 h-4 text-primary-deep" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[#0a2a5e]">{edu.degree}</p>
-                        <p className="text-xs text-gray-500">{edu.school} · {edu.year}</p>
+                        <p className="text-sm font-semibold text-primary-deep">{edu.degree}</p>
+                        <p className="text-xs text-gray-text">{edu.school} · {edu.year}</p>
                       </div>
                     </div>
                   ))}
@@ -545,20 +546,20 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
-                  <Eye className="w-5 h-5 text-[#003087] mx-auto mb-1" />
-                  <p className="font-mono text-lg font-bold text-[#003087]">{new Intl.NumberFormat('fr-FR').format(profileData.stats.profileViews)}</p>
-                  <p className="text-[10px] text-gray-500">Vues</p>
+                <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale text-center">
+                  <Eye className="w-5 h-5 text-primary-deep mx-auto mb-1" />
+                  <p className="font-serif font-black text-lg text-primary-deep">{new Intl.NumberFormat('fr-FR').format(profileData.stats.profileViews)}</p>
+                  <p className="text-[10px] text-gray-text">Vues</p>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
+                <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale text-center">
                   <Users className="w-5 h-5 text-[#00A651] mx-auto mb-1" />
-                  <p className="font-mono text-lg font-bold text-[#00A651]">{profileData.stats.connections}</p>
-                  <p className="text-[10px] text-gray-500">Connexions</p>
+                  <p className="font-serif font-black text-lg text-[#00A651]">{profileData.stats.connections}</p>
+                  <p className="text-[10px] text-gray-text">Connexions</p>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border text-center">
-                  <Shield className="w-5 h-5 text-[#D4AF37] mx-auto mb-1" />
-                  <p className="font-mono text-lg font-bold text-[#D4AF37]">{profileData.stats.credibilityScore}</p>
-                  <p className="text-[10px] text-gray-500">Credibilite</p>
+                <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale text-center">
+                  <Shield className="w-5 h-5 text-accent-yellow mx-auto mb-1" />
+                  <p className="font-serif font-black text-lg text-accent-dark">{profileData.stats.credibilityScore}</p>
+                  <p className="text-[10px] text-gray-text">Credibilite</p>
                 </div>
               </div>
             </motion.div>
@@ -567,20 +568,20 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
           {/* ===== EXPERIENCE ===== */}
           {activeTab === 'experience' && (
             <motion.div key="experience" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
-              <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Briefcase className="w-5 h-5 text-[#003087]" /> Experience professionnelle</h3>
+              <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-4 flex items-center gap-2"><Briefcase className="w-5 h-5 text-primary-green" /> Experience professionnelle</h3>
                 {profileData.experience.length === 0 ? (
-                  <div className="text-center py-8"><p className="text-sm text-gray-400">Aucune experience renseignee</p></div>
+                  <div className="text-center py-8"><p className="text-sm text-gray-text/60">Aucune experience renseignee</p></div>
                 ) : (
-                  <div className="relative pl-6 border-l-2 border-[#003087]/10 space-y-6">
+                  <div className="relative pl-6 border-l-2 border-primary-pale space-y-6">
                     {profileData.experience.map((exp, i) => (
                       <motion.div key={exp.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.15, ease: easeOut }} className="relative">
-                        <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-lg bg-[#003087] border-2 border-white" />
-                        <div className="p-4 bg-gray-50 rounded-2xl">
-                          <h4 className="text-sm font-bold text-[#0a2a5e]">{exp.title}</h4>
-                          <p className="text-xs text-[#003087] font-semibold">{exp.company}</p>
-                          <p className="text-xs text-gray-400 mb-2">{exp.period}</p>
-                          <p className="text-xs text-gray-600">{exp.desc}</p>
+                        <div className="absolute -left-[29px] top-1 w-4 h-4 rounded-full bg-primary-green border-2 border-white" />
+                        <div className="p-4 bg-primary-pale/30 rounded-2xl">
+                          <h4 className="text-sm font-bold text-primary-deep">{exp.title}</h4>
+                          <p className="text-xs text-primary-green font-semibold">{exp.company}</p>
+                          <p className="text-xs text-gray-text/60 mb-2">{exp.period}</p>
+                          <p className="text-xs text-gray-text">{exp.desc}</p>
                         </div>
                       </motion.div>
                     ))}
@@ -603,13 +604,13 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {profileData.portfolio.map((item, i) => (
                     <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, ease: easeOut }}
-                      whileHover={{ y: -4 }} className="bg-white rounded-xl overflow-hidden shadow-sm border group cursor-pointer">
+                      whileHover={{ y: -4 }} className="bg-white rounded-3xl overflow-hidden shadow-lg border border-primary-pale card-shimmer group cursor-pointer">
                       <div className="aspect-[4/3] overflow-hidden">
                         <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full group-hover:scale-105 transition-transform duration-500" fallbackType="property" />
                       </div>
                       <div className="p-3">
-                        <h4 className="text-sm font-semibold text-[#0a2a5e] truncate">{item.title}</h4>
-                        <span className={`text-[10px] font-medium ${item.type === 'Vente' ? 'text-[#D4AF37]' : 'text-[#009CDE]'}`}>{item.type}</span>
+                        <h4 className="text-sm font-semibold text-primary-deep truncate">{item.title}</h4>
+                        <span className={`text-[10px] font-medium ${item.type === 'Vente' ? 'text-accent-dark' : 'text-primary-green'}`}>{item.type}</span>
                       </div>
                     </motion.div>
                   ))}
@@ -630,19 +631,19 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
               ) : (
                 profileData.recommendations.map((rec, i) => (
                   <motion.div key={rec.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.15, ease: easeOut }}
-                    className="bg-white rounded-xl p-5 shadow-sm border">
+                    className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
                     <div className="flex items-center gap-3 mb-3">
                       <ImageWithFallback src={rec.avatar} alt={rec.author} className="w-10 h-10 rounded-full" fallbackType="avatar" />
                       <div>
-                        <p className="text-sm font-semibold text-[#0a2a5e]">{rec.author}</p>
+                        <p className="text-sm font-semibold text-primary-deep">{rec.author}</p>
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map(s => (
-                            <Star key={s} className={`w-3 h-3 ${s <= 5 ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-gray-200'}`} />
+                            <Star key={s} className={`w-3 h-3 ${s <= 5 ? 'text-accent-yellow fill-accent-yellow' : 'text-gray-200'}`} />
                           ))}
                         </div>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed italic">&ldquo;{rec.text}&rdquo;</p>
+                    <p className="text-sm text-gray-text leading-relaxed italic">&ldquo;{rec.text}&rdquo;</p>
                   </motion.div>
                 ))
               )}
@@ -660,19 +661,19 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                   { label: 'Score credibilite', value: profileData.stats.credibilityScore, icon: <Shield className="w-5 h-5" />, color: '#D4AF37', suffix: '/100' },
                 ].map((stat, i) => (
                   <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1, ease: easeOut }}
-                    className="bg-white rounded-2xl p-5 shadow-sm border text-center">
+                    className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale text-center">
                     <span className="block mb-2" style={{ color: stat.color }}>{stat.icon}</span>
-                    <p className="font-mono text-2xl font-bold" style={{ color: stat.color }}>
+                    <p className="font-serif font-black text-2xl" style={{ color: stat.color }}>
                       {new Intl.NumberFormat('fr-FR').format(stat.value)}{stat.suffix || ''}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                    <p className="text-xs text-gray-text mt-1">{stat.label}</p>
                   </motion.div>
                 ))}
               </div>
 
               {/* Credibility breakdown */}
-              <div className="bg-white rounded-xl p-5 shadow-sm border mt-5">
-                <h3 className="font-display text-base font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-[#D4AF37]" /> Detail du score de credibilite</h3>
+              <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale mt-5">
+                <h3 className="font-serif text-base font-bold text-primary-deep mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-accent-yellow" /> Detail du score de credibilite</h3>
                 <div className="flex items-center justify-center mb-6">
                   <CredibilityRing score={profileData.stats.credibilityScore} size={120} />
                 </div>
@@ -687,10 +688,10 @@ export default function ProfessionalProfileModule({ onNavigate, userId }: Module
                   ].map(item => (
                     <div key={item.label}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-600 flex items-center gap-1.5">{item.icon} {item.label}</span>
+                        <span className="text-xs text-gray-text flex items-center gap-1.5">{item.icon} {item.label}</span>
                         <span className="font-mono text-xs font-bold" style={{ color: item.color }}>{item.value}%</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-primary-pale rounded-full overflow-hidden">
                         <motion.div initial={{ width: 0 }} animate={{ width: `${item.value}%` }} transition={{ duration: 0.8, ease: easeOut }}
                           className="h-full rounded-full" style={{ backgroundColor: item.color }} />
                       </div>

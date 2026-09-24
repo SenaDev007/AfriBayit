@@ -11,11 +11,11 @@ import SafeModule from '@/components/safe/SafeModule';
 
 const PropertyPublishModule = dynamic(() => import('@/components/afribayit/PropertyPublishModule'), {
   loading: () => (
-    <div className="min-h-screen bg-gray-50/30 pt-20 pb-24 lg:pb-8">
+    <div className="min-h-screen bg-cream pt-20 pb-24 lg:pb-8">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-10 w-48 bg-gray-200 rounded" />
-          <div className="h-96 bg-gray-100 rounded-xl" />
+          <div className="h-10 w-48 bg-primary-pale rounded-full" />
+          <div className="h-96 bg-primary-pale/60 rounded-3xl" />
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@ export default function PublishPage() {
   }, [user]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-cream">
       <AnimatePresence>
         {showNotice && (
           <motion.div
@@ -56,22 +56,22 @@ export default function PublishPage() {
             exit={{ opacity: 0, y: -20 }}
             className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 mb-4"
           >
-            <div className={`border rounded-2xl p-4 flex items-start gap-3 ${
+            <div className={`border rounded-3xl p-4 flex items-start gap-3 ${
               noticeMessage.variant === 'error'
                 ? 'bg-red-50 border-red-300'
-                : 'bg-[#D4AF37]/10 border-[#D4AF37]/30'
+                : 'bg-accent-yellow/10 border-accent-yellow/30'
             }`}>
               <span className="text-2xl shrink-0">{noticeMessage.variant === 'error' ? <Ban className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}</span>
               <div className="flex-1">
-                <h3 className={`font-display text-base font-bold mb-1 ${
-                  noticeMessage.variant === 'error' ? 'text-red-700' : 'text-[#0a2a5e]'
+                <h3 className={`font-serif text-base font-bold mb-1 ${
+                  noticeMessage.variant === 'error' ? 'text-red-700' : 'text-primary-deep'
                 }`}>
                   {noticeMessage.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-gray-text mb-2">
                   {noticeMessage.description}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-text/70">
                   Veuillez compléter la certification AfriBayit en soumettant vos documents professionnels (licence agent, pièce d&apos;identité, justificatif d&apos;agence) depuis votre tableau de bord.
                 </p>
               </div>

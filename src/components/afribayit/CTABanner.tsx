@@ -21,10 +21,12 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: easeOut }}
-          className="relative overflow-hidden rounded-[2rem] bg-[#003366] p-10 sm:p-14 lg:p-20"
+          className="relative overflow-hidden rounded-[2rem] bg-primary-deep p-10 sm:p-14 lg:p-20"
         >
           {/* Gold accent line top */}
-          <div className="absolute inset-x-0 top-0 h-1 bg-[#FFCC00]" />
+          <div className="absolute inset-x-0 top-0 h-1 bg-accent-yellow" />
+          <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+          <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
             {/* Text */}
@@ -34,9 +36,9 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
-                className="inline-flex items-center gap-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs font-semibold uppercase tracking-[0.2em] text-[#FFCC00]"
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-accent-yellow"
               >
-                <span className="h-px w-8 bg-[#FFCC00]" />
+                <span className="h-px w-8 bg-accent-yellow" />
                 {t('cta.badge', "Lancez-vous dès aujourd'hui")}
               </motion.span>
 
@@ -45,10 +47,10 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
-                className="mt-5 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl"
+                className="mt-5 font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl"
               >
                 {t('cta.title', 'Prêt à trouver votre')}{' '}
-                <span className="text-[#FFCC00]">{t('cta.titleAccent', 'bien idéal')}</span>{' '}
+                <span className="text-accent-yellow">{t('cta.titleAccent', 'bien idéal')}</span>{' '}
                 {t('cta.titleEnd', '?')}
               </motion.h3>
 
@@ -57,7 +59,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-white/70 lg:mx-0"
+                className="mx-auto mt-5 max-w-xl text-lg text-white/70 lg:mx-0"
               >
                 {t('cta.subtitle', "Rejoignez des milliers de propriétaires et acheteurs qui font confiance à AfriBayit pour leurs transactions immobilières en Afrique de l'Ouest.")}
               </motion.p>
@@ -75,7 +77,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigate('search')}
-                className="rounded-lg bg-[#FFCC00] px-8 py-4 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-base font-bold text-[#003366] transition-colors hover:bg-[#FFE680]"
+                className="rounded-full bg-accent-yellow px-8 py-4 text-base font-bold text-primary-deep shadow-md transition-all hover:bg-[#c4a030] hover:shadow-lg"
               >
                 {t('cta.explore', 'Explorer les biens')}
               </motion.button>
@@ -83,7 +85,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigate('publish')}
-                className="rounded-lg border-2 border-white/30 px-8 py-4 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-base font-bold text-white transition-colors hover:border-white hover:bg-white/10"
+                className="rounded-full border-2 border-white/30 px-8 py-4 text-base font-bold text-white transition-colors hover:border-white hover:bg-white/10"
               >
                 {t('cta.publish', 'Publier une annonce')}
               </motion.button>

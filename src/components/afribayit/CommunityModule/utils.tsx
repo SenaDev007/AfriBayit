@@ -3,15 +3,15 @@ import type { CommunityEvent, Group, Post } from './types';
 
 export function PostSkeleton() {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border animate-pulse">
+    <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale animate-pulse">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gray-200 shrink-0" />
+        <div className="w-10 h-10 rounded-full bg-primary-pale shrink-0" />
         <div className="flex-1">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+          <div className="h-4 bg-primary-pale rounded w-3/4 mb-2" />
           <div className="flex gap-3">
-            <div className="h-3 bg-gray-100 rounded w-16" />
-            <div className="h-3 bg-gray-100 rounded w-12" />
-            <div className="h-3 bg-gray-100 rounded w-14" />
+            <div className="h-3 bg-primary-pale/60 rounded-full w-16" />
+            <div className="h-3 bg-primary-pale/60 rounded-full w-12" />
+            <div className="h-3 bg-primary-pale/60 rounded-full w-14" />
           </div>
         </div>
       </div>
@@ -21,13 +21,13 @@ export function PostSkeleton() {
 
 export function EventSkeleton() {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border flex items-center gap-4 animate-pulse">
-      <div className="w-14 h-14 rounded-2xl bg-gray-200 shrink-0" />
+    <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale flex items-center gap-4 animate-pulse">
+      <div className="w-14 h-14 rounded-2xl bg-primary-pale shrink-0" />
       <div className="flex-1">
-        <div className="h-4 bg-gray-200 rounded w-48 mb-2" />
+        <div className="h-4 bg-primary-pale rounded w-48 mb-2" />
         <div className="flex gap-3">
-          <div className="h-3 bg-gray-100 rounded w-16" />
-          <div className="h-3 bg-gray-100 rounded w-20" />
+          <div className="h-3 bg-primary-pale/60 rounded-full w-16" />
+          <div className="h-3 bg-primary-pale/60 rounded-full w-20" />
         </div>
       </div>
     </div>
@@ -36,11 +36,11 @@ export function EventSkeleton() {
 
 export function eventTypeIcon(type: string | null | undefined) {
   const t = (type || '').toLowerCase();
-  if (t.includes('summit')) return <Trophy className="w-5 h-5 text-[#D4AF37]" />;
-  if (t.includes('networking')) return <Users className="w-5 h-5 text-[#009CDE]" />;
-  if (t.includes('portes ouvertes') || t.includes('virtuel')) return <Globe className="w-5 h-5 text-[#00A651]" />;
-  if (t.includes('formation')) return <BookOpen className="w-5 h-5 text-[#003087]" />;
-  return <Calendar className="w-5 h-5 text-[#D4AF37]" />;
+  if (t.includes('summit')) return <Trophy className="w-5 h-5 text-accent-yellow" />;
+  if (t.includes('networking')) return <Users className="w-5 h-5 text-primary-green" />;
+  if (t.includes('portes ouvertes') || t.includes('virtuel')) return <Globe className="w-5 h-5 text-green-600" />;
+  if (t.includes('formation')) return <BookOpen className="w-5 h-5 text-primary-deep" />;
+  return <Calendar className="w-5 h-5 text-accent-yellow" />;
 }
 
 // ─── API response mappers ───

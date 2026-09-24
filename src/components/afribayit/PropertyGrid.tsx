@@ -37,10 +37,6 @@ interface PropertyListResponse {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-const NAVY = '#003087';
-const GOLD = '#D4AF37';
-const BLUE = '#009CDE';
-
 const PROPERTY_TYPES = [
   { value: 'all', label: 'Tous' },
   { value: 'villa', label: 'Villas' },
@@ -140,8 +136,9 @@ export default function PropertyGrid({
   };
 
   return (
-    <section className="py-20 bg-gray-50/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,12 +148,11 @@ export default function PropertyGrid({
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
         >
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
-              <span className="h-px w-8" style={{ background: NAVY }} />
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider">
               {isPending ? (
                 // Loading shimmer instead of a misleading "0 biens disponibles"
                 <span
-                  className="inline-block h-3 w-12 animate-pulse rounded bg-gray-200"
+                  className="inline-block h-3 w-12 animate-pulse rounded bg-primary-pale"
                   aria-label="Chargement du nombre de biens"
                 />
               ) : (
@@ -165,18 +161,19 @@ export default function PropertyGrid({
                 </>
               )}
             </span>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+            <h2 className="mt-3 font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep leading-tight">
               {selectedCountry
                 ? `Biens en ${COUNTRY_NAMES[selectedCountry] || selectedCountry}`
                 : 'Tous les biens'}
             </h2>
+            <div className="h-1 w-16 bg-accent-yellow mt-4 rounded-full" />
           </div>
 
           {/* Country indicator */}
           {selectedCountry && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg" style={{ background: `${NAVY}10`, border: `1px solid ${NAVY}30` }}>
-              <span className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
-              <span className="text-sm font-semibold" style={{ color: NAVY }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-pale border border-primary-green/20">
+              <span className="w-2 h-2 rounded-full bg-accent-yellow" />
+              <span className="text-sm font-semibold text-primary-deep">
                 {COUNTRY_NAMES[selectedCountry] || selectedCountry}
               </span>
             </div>
@@ -191,12 +188,11 @@ export default function PropertyGrid({
               <button
                 key={type.value}
                 onClick={() => setActiveType(type.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   activeType === type.value
-                    ? 'text-white'
-                    : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                    ? 'bg-primary-deep text-white shadow-md'
+                    : 'bg-white border border-primary-pale text-gray-text hover:border-primary-green/40 hover:bg-primary-pale/50'
                 }`}
-                style={activeType === type.value ? { background: NAVY } : {}}
               >
                 {type.label}
               </button>
@@ -207,7 +203,7 @@ export default function PropertyGrid({
           <select
             value={activePrice}
             onChange={(e) => setActivePrice(e.target.value)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-gray-200 text-gray-600 cursor-pointer hover:border-gray-300 transition-all"
+            className="px-4 py-2 rounded-full text-sm font-semibold bg-white border border-primary-pale text-gray-text cursor-pointer hover:border-primary-green/40 focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
           >
             {PRICE_RANGES.map((range) => (
               <option key={range.value} value={range.value}>
@@ -222,10 +218,10 @@ export default function PropertyGrid({
         {isPending && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+              <div key={i} className="overflow-hidden rounded-3xl border border-primary-pale bg-white shadow-lg">
                 <Skeleton className="aspect-[4/3] w-full rounded-none" />
                 <div className="space-y-3 p-5">
-                  <Skeleton className="h-4 w-20 rounded-lg" />
+                  <Skeleton className="h-4 w-20 rounded-full" />
                   <Skeleton className="h-5 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
                   <Skeleton className="h-6 w-1/2" />
@@ -238,16 +234,16 @@ export default function PropertyGrid({
         {/* Error state */}
         {isError && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-              <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-pale">
+              <svg className="h-7 w-7 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-400">Erreur de chargement</h3>
-            <p className="mt-2 text-sm text-gray-400">Impossible de charger les biens. Veuillez réessayer.</p>
+            <h3 className="font-serif text-lg font-bold text-primary-deep">Erreur de chargement</h3>
+            <p className="mt-2 text-sm text-gray-text">Impossible de charger les biens. Veuillez réessayer.</p>
             <button
               onClick={() => refetch()}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#003366] px-6 py-2.5 text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary-deep/20 px-6 py-2.5 text-sm font-bold text-primary-deep transition-all hover:bg-primary-pale"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -260,15 +256,15 @@ export default function PropertyGrid({
         {/* Empty state — only once data has actually arrived */}
         {!isPending && !isError && filteredProperties.length === 0 && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-              <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-pale">
+              <svg className="h-7 w-7 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-400">
+            <h3 className="font-serif text-lg font-bold text-primary-deep">
               {emptyMessage || 'Aucun bien disponible'}
             </h3>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-gray-text">
               Les biens apparaîtront ici dès qu'ils seront publiés.
             </p>
           </div>

@@ -45,8 +45,11 @@ export default function HowItWorks() {
   const { t } = useTranslation();
 
   return (
-    <section className="bg-[#003366] py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-primary-deep py-24 sm:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-accent-yellow/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,15 +58,15 @@ export default function HowItWorks() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#FFCC00]">
-            <span className="h-px w-8 bg-[#FFCC00]" />
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-accent-yellow">
+            <span className="h-px w-8 bg-accent-yellow" />
             {t('howItWorks.eyebrow', 'Processus Simplifié')}
-            <span className="h-px w-8 bg-[#FFCC00]" />
+            <span className="h-px w-8 bg-accent-yellow" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
             {t('howItWorks.title', 'Comment ça marche ?')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-white/70">
+          <p className="mx-auto mt-5 max-w-xl text-lg text-white/70">
             {t(
               'howItWorks.subtitle',
               'En 4 étapes simples, de la recherche à la signature. Transparent, sécurisé, sans stress.'
@@ -87,21 +90,21 @@ export default function HowItWorks() {
                 className="flex flex-col items-center text-center lg:items-start lg:text-left"
               >
                 {/* Number badge */}
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-lg border-2 border-[#FFCC00] bg-[#003366]">
-                  <span className="font-[family-name:var(--font-cormorant),Georgia,serif] text-3xl font-bold text-[#FFCC00]">
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl border-2 border-accent-yellow bg-primary-deep">
+                  <span className="font-serif text-3xl font-bold text-accent-yellow">
                     {step.number}
                   </span>
                 </div>
 
                 {/* Step label */}
-                <span className="mt-6 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs font-semibold uppercase tracking-wider text-[#3399FF]">
+                <span className="mt-6 text-xs font-semibold uppercase tracking-wider text-primary-green">
                   {t('howItWorks.stepLabel', 'Étape')} {step.number}
                 </span>
 
-                <h3 className="mt-2 font-[family-name:var(--font-cormorant),Georgia,serif] text-xl font-bold text-white">
+                <h3 className="mt-2 font-serif text-xl font-bold text-white">
                   {t(step.titleKey, step.titleFallback)}
                 </h3>
-                <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm leading-relaxed text-white/60">
+                <p className="mt-2 text-sm leading-relaxed text-white/60">
                   {t(step.descKey, step.descFallback)}
                 </p>
               </motion.div>

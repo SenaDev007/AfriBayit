@@ -219,15 +219,15 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           <Skeleton className="h-4 w-40 mb-6" />
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1 lg:max-w-[65%]">
-              <Skeleton className="aspect-[16/10] rounded-xl mb-6" />
+              <Skeleton className="aspect-[16/10] rounded-3xl mb-6" />
               <Skeleton className="h-8 w-3/4 mb-3" />
               <Skeleton className="h-5 w-1/2 mb-6" />
-              <Skeleton className="h-24 rounded-2xl mb-6" />
-              <Skeleton className="h-40 rounded-2xl mb-6" />
+              <Skeleton className="h-24 rounded-3xl mb-6" />
+              <Skeleton className="h-40 rounded-3xl mb-6" />
             </div>
             <div className="lg:w-[35%]">
-              <Skeleton className="h-72 rounded-xl mb-4" />
-              <Skeleton className="h-48 rounded-xl" />
+              <Skeleton className="h-72 rounded-3xl mb-4" />
+              <Skeleton className="h-48 rounded-3xl" />
             </div>
           </div>
         </div>
@@ -240,14 +240,14 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h2 className="font-display text-2xl font-bold text-gray-400">{t('propertyDetail.errorLoading', 'Erreur de chargement')}</h2>
-          <p className="text-sm text-gray-400 mt-2">{t('propertyDetail.errorLoadingDesc', 'Impossible de charger les détails du bien.')}</p>
-          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm">{t('propertyDetail.back', 'Retour')}</button>
+          <h2 className="font-serif text-2xl font-bold text-primary-deep">{t('propertyDetail.errorLoading', 'Erreur de chargement')}</h2>
+          <p className="text-sm text-gray-text mt-2">{t('propertyDetail.errorLoadingDesc', 'Impossible de charger les détails du bien.')}</p>
+          <button onClick={onBack} className="mt-4 text-primary-deep font-bold text-sm hover:underline">{t('propertyDetail.back', 'Retour')}</button>
         </div>
       </div>
     );
@@ -258,12 +258,12 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <MapPin className="w-8 h-8 text-gray-300" />
+          <div className="w-20 h-20 rounded-full bg-primary-pale flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-primary-green" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-gray-400">{t('propertyDetail.notFound', 'Bien non trouvé')}</h2>
-          <p className="text-sm text-gray-400 mt-2">{t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')}</p>
-          <button onClick={onBack} className="mt-4 text-[#003087] font-semibold text-sm hover:underline">{t('propertyDetail.back', 'Retour')}</button>
+          <h2 className="font-serif text-2xl font-bold text-primary-deep">{t('propertyDetail.notFound', 'Bien non trouvé')}</h2>
+          <p className="text-sm text-gray-text mt-2">{t('propertyDetail.notFoundDesc', 'Ce bien n\'existe pas ou a été retiré.')}</p>
+          <button onClick={onBack} className="mt-4 text-primary-deep font-bold text-sm hover:underline">{t('propertyDetail.back', 'Retour')}</button>
         </div>
       </div>
     );
@@ -290,7 +290,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] mb-6 transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-text hover:text-primary-deep mb-6 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />

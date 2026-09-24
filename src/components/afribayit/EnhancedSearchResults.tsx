@@ -74,10 +74,10 @@ interface EnhancedSearchFiltersState {
 function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <div className="flex gap-4 p-4 rounded-xl bg-white border">
-        <div className="w-40 h-28 rounded-xl shrink-0 bg-gray-200 animate-pulse" />
+      <div className="flex gap-4 p-4 rounded-3xl bg-white border border-primary-pale shadow-md">
+        <div className="w-40 h-28 rounded-2xl shrink-0 bg-gray-200 animate-pulse" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-20 rounded-lg bg-gray-200 animate-pulse" />
+          <div className="h-4 w-20 rounded-full bg-gray-200 animate-pulse" />
           <div className="h-5 w-3/4 bg-gray-200 animate-pulse rounded" />
           <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded" />
           <div className="h-6 w-1/3 bg-gray-200 animate-pulse rounded" />
@@ -86,12 +86,12 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
     );
   }
   return (
-    <div className="rounded-xl bg-white border overflow-hidden">
+    <div className="rounded-3xl bg-white border border-primary-pale shadow-md overflow-hidden">
       <div className="aspect-[4/3] w-full bg-gray-200 animate-pulse" />
       <div className="p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <div className="h-4 w-20 rounded-lg bg-gray-200 animate-pulse" />
-          <div className="h-4 w-8 rounded-lg bg-gray-200 animate-pulse" />
+          <div className="h-4 w-20 rounded-full bg-gray-200 animate-pulse" />
+          <div className="h-4 w-8 rounded-full bg-gray-200 animate-pulse" />
         </div>
         <div className="h-5 w-3/4 bg-gray-200 animate-pulse rounded" />
         <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded" />
@@ -100,7 +100,7 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
           <div className="h-3 w-12 bg-gray-200 animate-pulse rounded" />
           <div className="h-3 w-12 bg-gray-200 animate-pulse rounded" />
         </div>
-        <div className="pt-3 border-t border-gray-100">
+        <div className="pt-3 border-t border-primary-pale">
           <div className="h-6 w-1/2 bg-gray-200 animate-pulse rounded" />
         </div>
       </div>
@@ -215,30 +215,31 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
   };
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Search Header */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">
+              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-primary-deep">
                 {t('search.title', 'Rechercher un bien')}
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <div className="h-1 w-12 bg-accent-yellow mt-2 rounded-full" />
+              <p className="text-sm text-gray-text mt-2">
                 {isPending ? t('search.loadingResults', 'Chargement...') : `${totalResults} ${t('search.resultsFound', 'bien(s) trouvé(s)')}`}
               </p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setFiltersOpen(!filtersOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium border shadow-sm hover:shadow-md transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-bold border border-primary-pale text-primary-deep shadow-md hover:shadow-lg transition-all"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
                 {t('search.filters', 'Filtres')}
                 {activeFilterCount > 0 && (
-                  <span className="px-1.5 py-0.5 bg-[#003087] text-white text-[10px] font-bold rounded-full">
+                  <span className="px-1.5 py-0.5 bg-primary-deep text-white text-[10px] font-bold rounded-full">
                     {activeFilterCount}
                   </span>
                 )}
@@ -247,9 +248,9 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-2 p-2 bg-white rounded-2xl shadow-sm border">
+          <div className="flex gap-2 p-2 bg-white rounded-full shadow-lg border border-primary-pale">
             <div className="flex-1 flex items-center gap-3 px-4 py-2">
-              <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-primary-green shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -259,12 +260,12 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 aria-label={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
                 placeholder={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
-                className="flex-1 text-sm outline-none bg-transparent"
+                className="flex-1 text-sm outline-none bg-transparent text-primary-deep placeholder:text-gray-text/50"
               />
             </div>
             <button
               onClick={handleSearch}
-              className="px-5 py-2 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+              className="px-5 py-2 bg-primary-green text-white rounded-full text-sm font-bold hover:bg-primary-deep shadow-md hover:shadow-lg transition-all"
             >
               {t('hero.cta', 'Rechercher')}
             </button>
@@ -277,7 +278,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <button
                   key={chip.key}
                   onClick={() => removeFilterChip(chip.key)}
-                  className="flex items-center gap-1 px-3 py-1 bg-[#003087]/5 text-[#003087] text-[11px] font-medium rounded-full hover:bg-[#003087]/10 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 bg-primary-pale text-primary-deep border border-primary-green/20 text-[11px] font-bold rounded-full hover:bg-primary-pale/70 transition-colors"
                 >
                   {chip.label}
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -313,17 +314,17 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <select
                   value={filters.sortBy || 'newest'}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  className="text-xs px-3 py-2 rounded-lg border bg-white outline-none"
+                  className="text-xs px-3 py-2 rounded-full border border-primary-pale bg-white text-gray-text outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 cursor-pointer"
                 >
                   {SORT_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-primary-pale/60 rounded-full p-0.5">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
+                  className={`p-1.5 rounded-full transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary-deep' : 'text-gray-text/60'}`}
                   title="Grille"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -332,7 +333,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm' : ''}`}
+                  className={`p-1.5 rounded-full transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-deep' : 'text-gray-text/60'}`}
                   title="Liste"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -341,7 +342,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 </button>
                 <button
                   onClick={() => setViewMode('map')}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === 'map' ? 'bg-white shadow-sm' : ''}`}
+                  className={`p-1.5 rounded-full transition-colors ${viewMode === 'map' ? 'bg-white shadow-sm text-primary-deep' : 'text-gray-text/60'}`}
                   title="Carte"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -379,13 +380,13 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
             {/* Error State */}
             {isError && (
               <div className="text-center py-20">
-                <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                   </svg>
                 </div>
-                <h3 className="font-display text-xl font-bold text-gray-400 mb-2">{t('search.errorLoading', 'Erreur de chargement')}</h3>
-                <p className="text-sm text-gray-400">{t('search.errorLoadingHint', 'Impossible de charger les résultats. Veuillez réessayer.')}</p>
+                <h3 className="font-serif text-xl font-bold text-primary-deep mb-2">{t('search.errorLoading', 'Erreur de chargement')}</h3>
+                <p className="text-sm text-gray-text">{t('search.errorLoadingHint', 'Impossible de charger les résultats. Veuillez réessayer.')}</p>
               </div>
             )}
 
@@ -400,13 +401,13 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                     exit={{ opacity: 0 }}
                     className="text-center py-20"
                   >
-                    <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <div className="w-20 h-20 rounded-full bg-primary-pale flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
-                    <h3 className="font-display text-xl font-bold text-gray-400 mb-2">{t('search.noResults', 'Aucun bien trouvé')}</h3>
-                    <p className="text-sm text-gray-400">{t('search.noResultsHint', 'Essayez de modifier vos critères de recherche')}</p>
+                    <h3 className="font-serif text-xl font-bold text-primary-deep mb-2">{t('search.noResults', 'Aucun bien trouvé')}</h3>
+                    <p className="text-sm text-gray-text">{t('search.noResultsHint', 'Essayez de modifier vos critères de recherche')}</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -432,8 +433,8 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                           onClick={(e) => { e.stopPropagation(); toggleCompare(property.id); }}
                           className={`absolute top-4 right-4 z-10 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                             compareIds.includes(property.id)
-                              ? 'bg-[#D4AF37] text-white'
-                              : 'bg-white/90 text-gray-400 hover:text-[#D4AF37] border'
+                              ? 'bg-accent-yellow text-primary-deep shadow-md'
+                              : 'bg-white/90 text-gray-text/60 hover:text-accent-dark border border-primary-pale/60'
                           }`}
                           title="Ajouter à la comparaison"
                         >
@@ -442,7 +443,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                         {/* Financing button */}
                         <button
                           onClick={(e) => { e.stopPropagation(); openFinancing(property.price); }}
-                          className="absolute bottom-4 right-4 z-10 px-2 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-medium text-[#003087] hover:bg-white transition-colors shadow-sm border"
+                          className="absolute bottom-4 right-4 z-10 px-2 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-primary-deep hover:bg-white transition-colors shadow-md border border-primary-pale/60"
                           aria-label={t('search.financing', 'Simuler')}
                         >
                           <Coins className="w-4 h-4" /> {t('search.financing', 'Simuler')}
@@ -460,7 +461,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
-                  className={`px-3 py-2 rounded-xl text-xs font-medium bg-white border hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors`}
+                  className={`px-3 py-2 rounded-full text-xs font-bold bg-white border border-primary-pale text-primary-deep hover:bg-primary-pale/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors`}
                 >
                   {t('search.previous', 'Précédent')}
                 </button>
@@ -471,10 +472,10 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`w-8 h-8 rounded-xl text-xs font-medium transition-colors ${
+                      className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${
                         pageNum === pagination.page
-                          ? 'bg-[#003087] text-white'
-                          : 'bg-white border hover:bg-gray-50'
+                          ? 'bg-primary-deep text-white shadow-md'
+                          : 'bg-white border border-primary-pale text-primary-deep hover:bg-primary-pale/50'
                       }`}
                     >
                       {pageNum}
@@ -484,7 +485,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
                 <button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.pages}
-                  className="px-3 py-2 rounded-xl text-xs font-medium bg-white border hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-2 rounded-full text-xs font-bold bg-white border border-primary-pale text-primary-deep hover:bg-primary-pale/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   {t('search.next', 'Suivant')}
                 </button>
@@ -505,14 +506,14 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
           >
             <div className="max-w-[1400px] mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-[#0a2a5e]">
+                <span className="text-xs font-bold text-primary-deep">
                   {compareIds.length} bien{compareIds.length !== 1 ? 's' : ''} sélectionné{compareIds.length !== 1 ? 's' : ''}
                 </span>
                 <div className="flex gap-1">
                   {compareIds.slice(0, 5).map(id => {
                     const prop = properties.find(p => p.id === id);
                     return (
-                      <span key={id} className="px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-medium rounded-full">
+                      <span key={id} className="px-2 py-1 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[10px] font-bold rounded-full">
                         {prop?.title?.slice(0, 15) || '...'}...
                       </span>
                     );
@@ -522,14 +523,14 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
               <div className="flex gap-2">
                 <button
                   onClick={() => setCompareIds([])}
-                  className="px-3 py-1.5 text-xs text-gray-500 hover:text-red-500 transition-colors"
+                  className="px-3 py-1.5 text-xs text-gray-text hover:text-red-500 transition-colors"
                 >
                   {t('search.cancel', 'Annuler')}
                 </button>
                 <button
                   onClick={() => setShowComparator(true)}
                   disabled={compareIds.length < 2}
-                  className="px-4 py-1.5 bg-[#D4AF37] text-white text-xs font-semibold rounded-xl hover:bg-[#c9a02e] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-1.5 bg-accent-yellow text-primary-deep text-xs font-bold rounded-full hover:bg-accent-yellow/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
                 >
                   {t('search.compare', 'Comparer')} ({compareIds.length})
                 </button>

@@ -18,8 +18,6 @@ import { apiPost } from '@/lib/api-client';
 import VoiceSearchButton from './VoiceSearchButton';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
-const NAVY = '#003087';
-const GOLD = '#D4AF37';
 
 const SUGGESTIONS = [
   'Villa 4 chambres à Cotonou, budget 50M FCFA',
@@ -137,11 +135,11 @@ export default function ConversationalSearchBar({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: easeOut }}
-          className="flex items-center gap-2 p-2 rounded-2xl bg-white border-2 border-gray-100 shadow-lg focus-within:border-[#003087] transition-colors"
+          className="flex items-center gap-2 p-2 rounded-full bg-white border border-primary-pale shadow-lg focus-within:border-primary-green focus-within:ring-2 focus-within:ring-primary-green/30 transition-all"
         >
           {/* AI icon */}
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" style={{ background: `${NAVY}10` }}>
-            <Sparkles className="w-5 h-5" style={{ color: NAVY }} />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full shrink-0 bg-primary-pale">
+            <Sparkles className="w-5 h-5 text-primary-deep" />
           </div>
 
           {/* Input */}
@@ -159,7 +157,7 @@ export default function ConversationalSearchBar({
               }
             }}
             placeholder="Décrivez votre bien idéal... ex: Villa 4 chambres à Cotonou, budget 50M FCFA"
-            className="flex-1 bg-transparent outline-none text-sm sm:text-base text-gray-900 placeholder:text-gray-400"
+            className="flex-1 bg-transparent outline-none text-sm sm:text-base text-primary-deep placeholder:text-gray-text/50"
             disabled={loading}
           />
 
@@ -175,8 +173,7 @@ export default function ConversationalSearchBar({
               setShowSuggestions(false);
             }}
             disabled={loading || !query.trim()}
-            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            style={{ background: NAVY }}
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-full text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 bg-primary-green hover:bg-primary-deep shadow-md hover:shadow-lg"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -192,12 +189,12 @@ export default function ConversationalSearchBar({
         {/* AI badge */}
         {!compact && (
           <div className="flex items-center justify-center gap-1.5 mt-3">
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold" style={{ background: `${GOLD}15`, color: GOLD }}>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30">
               <Sparkles className="w-3 h-3" />
               Propulsé par Rebecca IA
             </span>
-            <span className="text-xs text-gray-400">·</span>
-            <span className="text-xs text-gray-400">Recherche en langage naturel</span>
+            <span className="text-xs text-gray-text/50">·</span>
+            <span className="text-xs text-gray-text/70">Recherche en langage naturel</span>
           </div>
         )}
 
@@ -209,20 +206,20 @@ export default function ConversationalSearchBar({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-20"
+              className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-xl border border-primary-pale overflow-hidden z-20"
             >
               <div className="p-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 px-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-text/60 mb-2 px-2">
                   Essayez ces exemples
                 </p>
                 {SUGGESTIONS.map((suggestion, i) => (
                   <button
                     key={i}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-3 group"
+                    className="w-full text-left px-3 py-2.5 rounded-2xl hover:bg-primary-pale/50 transition-colors flex items-center gap-3 group"
                   >
-                    <Sparkles className="w-4 h-4 text-gray-300 group-hover:text-[#D4AF37] transition-colors shrink-0" />
-                    <span className="text-sm text-gray-700">{suggestion}</span>
+                    <Sparkles className="w-4 h-4 text-primary-green/40 group-hover:text-accent-yellow transition-colors shrink-0" />
+                    <span className="text-sm text-gray-text">{suggestion}</span>
                   </button>
                 ))}
               </div>

@@ -32,12 +32,12 @@ const filterTabs = [
 
 function PropertyCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
+    <div className="overflow-hidden rounded-3xl border border-primary-pale bg-white shadow-lg">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="space-y-3 p-5">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-20 rounded-lg" />
-          <Skeleton className="h-4 w-8 rounded-lg" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-4 w-8 rounded-full" />
         </div>
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
@@ -46,7 +46,7 @@ function PropertyCardSkeleton() {
           <Skeleton className="h-3 w-12" />
           <Skeleton className="h-3 w-12" />
         </div>
-        <div className="border-t border-gray-100 pt-3">
+        <div className="border-t border-primary-pale pt-3">
           <Skeleton className="h-6 w-1/2" />
         </div>
       </div>
@@ -109,8 +109,9 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
   }, [baseProperties, activeFilter]);
 
   return (
-    <section className="bg-white py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-cream py-24 sm:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -120,21 +121,21 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
           className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
         >
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
-              <span className="h-px w-8 bg-[#003366]" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider">
               Sélection Premium
             </span>
-            <h2 className="mt-4 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+            <h2 className="mt-4 font-serif text-4xl font-extrabold leading-tight text-primary-deep sm:text-5xl lg:text-6xl">
               Biens en vedette
             </h2>
-            <p className="mt-3 max-w-lg font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-gray-500">
+            <p className="mt-3 max-w-lg text-gray-text">
               Une sélection rigoureuse de biens vérifiés et certifiés AfriBayit.
             </p>
+            <div className="h-1 w-16 bg-accent-yellow mt-6 rounded-full" />
           </div>
           <motion.button
             whileHover={{ x: 4 }}
             onClick={() => onNavigate('search')}
-            className="group inline-flex items-center gap-2 rounded-lg border border-[#003366] px-6 py-3 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+            className="group inline-flex items-center gap-2 rounded-full border border-primary-deep/20 px-6 py-3 text-sm font-bold text-primary-deep transition-all hover:bg-primary-pale"
           >
             Voir tous les biens
             <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -146,9 +147,9 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Country filter + filter pills */}
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs font-medium uppercase tracking-wider text-gray-400">Pays:</span>
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#003366]/20 bg-[#003366]/5 px-3 py-1.5 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-xs font-semibold text-[#003366]">
-              <span className="h-1.5 w-1.5 rounded-lg bg-[#FFCC00]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-text/60">Pays:</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-green/20 bg-primary-pale px-3 py-1.5 text-xs font-semibold text-primary-deep">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-yellow" />
               {COUNTRY_NAMES[selectedCountry] || selectedCountry}
             </span>
           </div>
@@ -164,10 +165,10 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
               <button
                 key={tab.key}
                 onClick={() => setActiveFilter(tab.key)}
-                className={`rounded-lg px-4 py-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm font-semibold transition-colors ${
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
                   activeFilter === tab.key
-                    ? 'bg-[#003366] text-white'
-                    : 'border border-gray-200 bg-white text-gray-600 hover:border-[#003366]/40 hover:text-[#003366]'
+                    ? 'bg-primary-deep text-white shadow-md'
+                    : 'border border-primary-pale bg-white text-gray-text hover:border-primary-green/40 hover:text-primary-deep hover:bg-primary-pale/50'
                 }`}
               >
                 {tab.label}
@@ -190,18 +191,18 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
             empty catalogue, which looked like data loss to users. */}
         {isError && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-              <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-pale">
+              <svg className="h-7 w-7 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Erreur de chargement</h3>
-            <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm text-gray-400">
+            <h3 className="font-serif text-lg font-bold text-primary-deep">Erreur de chargement</h3>
+            <p className="mt-2 text-sm text-gray-text">
               Impossible de charger les biens pour le moment.
             </p>
             <button
               onClick={() => refetch()}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#003366] px-6 py-2.5 text-sm font-semibold text-[#003366] transition-colors hover:bg-[#003366] hover:text-white"
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary-deep/20 px-6 py-2.5 text-sm font-bold text-primary-deep transition-all hover:bg-primary-pale"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -214,13 +215,13 @@ export default function FeaturedProperties({ onSelectProperty, onNavigate }: Fea
         {/* Empty */}
         {!isPending && !isError && displayProperties.length === 0 && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-              <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-pale">
+              <svg className="h-7 w-7 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
-            <h3 className="font-[family-name:var(--font-cormorant),Georgia,serif] text-lg font-bold text-gray-400">Aucun bien en vedette</h3>
-            <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm text-gray-400">
+            <h3 className="font-serif text-lg font-bold text-primary-deep">Aucun bien en vedette</h3>
+            <p className="mt-2 text-sm text-gray-text">
               Les biens premium apparaîtront ici prochainement.
             </p>
           </div>

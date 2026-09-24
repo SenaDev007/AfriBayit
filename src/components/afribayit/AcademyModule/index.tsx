@@ -96,34 +96,35 @@ export default function AcademyModule() {
   };
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <GraduationCap className="w-4 h-4" /> AfriBayit Academy
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
+            <GraduationCap className="w-3.5 h-3.5" /> AfriBayit Academy
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Formations <span className="text-[#003087]">Immobilières</span>
+          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-deep mb-3">
+            Formations <span className="text-accent-dark">Immobilières</span>
           </h1>
-          <p className="text-gray-500 max-w-lg mx-auto">
+          <p className="text-gray-text max-w-lg mx-auto">
             Montez en compétences avec nos formations certifiantes. Investissement, droit foncier, négociation, et plus encore.
           </p>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
           {/* CDC §5.6 — Model + Certificate info */}
           <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-gray-400">
             <span className="flex items-center gap-1">
-              <Award className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <Award className="w-3.5 h-3.5 text-accent-yellow" />
               Certificats PDF avec QR code vérifiable
             </span>
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#00A651]" />
+              <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
               Paiement sécurisé via escrow (70% expert / 30% AfriBayit)
             </span>
             <span className="flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5 text-[#003087]" />
+              <GraduationCap className="w-3.5 h-3.5 text-primary-deep" />
               5 parcours: Débutant, Investisseur, Pro, Légal, Artisan
             </span>
           </div>
@@ -131,8 +132,8 @@ export default function AcademyModule() {
 
         {/* Country Filter Badge */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-500 font-medium">Pays:</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+          <span className="text-xs text-gray-text font-medium">Pays:</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-xs font-semibold">
             {COUNTRY_NAMES[selectedCountry] || selectedCountry}
           </span>
         </div>
@@ -143,8 +144,8 @@ export default function AcademyModule() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'
               }`}
             >
               {tab.icon} {tab.label}

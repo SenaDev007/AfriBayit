@@ -9,7 +9,7 @@ import { apiFetch } from '@/lib/api-client';
 const AcademyModule = dynamic(() => import('@/components/afribayit/AcademyModule'), {
   loading: () => (
     <div className="py-24 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
+      <div className="animate-spin w-8 h-8 border-4 border-primary-deep border-t-transparent rounded-full" />
     </div>
   ),
 });

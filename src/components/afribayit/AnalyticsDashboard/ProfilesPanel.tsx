@@ -30,8 +30,8 @@ export default function ProfilesPanel({ activeProfile, setActiveProfile }: Profi
           <button
             key={pt.key}
             onClick={() => setActiveProfile(pt.key)}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-              activeProfile === pt.key ? 'text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              activeProfile === pt.key ? 'text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale/60'
             }`}
             style={activeProfile === pt.key ? { backgroundColor: pt.color } : {}}
           >

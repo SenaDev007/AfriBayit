@@ -73,7 +73,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: easeOut }}
       whileHover={{ y: -4, transition: { duration: 0.25 } }}
-      className="group cursor-pointer rounded-xl bg-white border border-gray-100 overflow-hidden card-shadow hover:shadow-xl transition-all"
+      className="group cursor-pointer rounded-3xl bg-white border border-primary-pale overflow-hidden shadow-lg hover:shadow-xl transition-all card-shimmer"
       onClick={() => onSelect(property.id)}
     >
       {/* Image */}
@@ -88,35 +88,29 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         {/* Left Badges: Sponsorisé, Premium, Transaction type */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           {(property.boostLevel && Number(property.boostLevel) > 0) && (
-            <span className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] to-[#FFD700] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <span className="px-3 py-1 bg-primary-deep/95 text-white text-[11px] font-bold rounded-full shadow-lg backdrop-blur-sm flex items-center gap-1">
+              <svg className="w-3 h-3 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
               </svg>
               {t('property.sponsored', 'Sponsorisé')}
             </span>
           )}
           {property.premium && (
-            <span className="px-3 py-1 bg-[#D4AF37] text-white text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <span className="px-3 py-1 bg-white/95 text-accent-dark text-[11px] font-bold rounded-full shadow-lg backdrop-blur-sm border border-accent-yellow/50 flex items-center gap-1">
+              <svg className="w-3 h-3 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 1l2.928 5.856L19 7.82l-4.39 4.317L15.856 19 10 16.072 4.144 19l1.246-6.863L1 7.82l6.072-.964L10 1z" clipRule="evenodd" />
               </svg>
               Premium
             </span>
           )}
-          <span className={`px-3 py-1 text-[11px] font-bold rounded-full shadow-sm ${
-            property.transaction === 'achat'
-              ? 'bg-[#003087] text-white'
-              : property.transaction === 'location'
-                ? 'bg-[#00A651] text-white'
-                : 'bg-[#D4AF37] text-white'
-          }`}>
+          <span className="px-3 py-1 bg-accent-yellow text-primary-deep text-[11px] font-bold rounded-full shadow-lg flex items-center gap-1">
             {getTransactionLabel(property.transaction)}
           </span>
         </div>
         {/* Right Badges: Documents Vérifiés, GeoTrust */}
         <div className="absolute top-3 right-3 flex flex-col gap-1.5">
           {property.verified && (
-            <span className="px-2.5 py-1 bg-[#00A651] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
+            <span className="px-2.5 py-1 bg-white/95 text-green-700 text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg backdrop-blur-sm border border-green-200">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -124,7 +118,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
             </span>
           )}
           {property.geoTrust && (
-            <span className="px-2.5 py-1 bg-[#009CDE] text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
+            <span className="px-2.5 py-1 bg-primary-green text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-lg">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
               </svg>
@@ -143,10 +137,9 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
               }}
               className={`pointer-events-auto px-2.5 py-1 rounded-full text-[10px] font-bold transition-all backdrop-blur ${
                 isCompared
-                  ? 'text-white shadow-lg'
-                  : 'bg-white/90 text-gray-600 hover:bg-white border border-gray-200'
+                  ? 'bg-primary-deep text-white shadow-lg'
+                  : 'bg-white/90 text-gray-text hover:bg-white border border-primary-pale'
               }`}
-              style={isCompared ? { background: '#003087' } : {}}
             >
               {isCompared ? '✓ Comparé' : '+ Comparer'}
             </button>
@@ -154,7 +147,7 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
 
           {/* Favorite button — right */}
           <button
-            className="pointer-events-auto w-8 h-8 rounded-lg bg-white/90 backdrop-blur flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            className="pointer-events-auto w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md hover:bg-white hover:shadow-lg transition-all border border-primary-pale/60"
             onClick={(e) => {
               e.stopPropagation();
               toggleFavorite();
@@ -178,11 +171,11 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
       {/* Content */}
       <div className={compact ? 'p-4' : 'p-5'}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-medium text-[#003087] bg-[#003087]/5 px-2 py-0.5 rounded-full">
+          <span className="text-[11px] font-bold text-primary-deep bg-primary-pale px-2.5 py-0.5 rounded-full border border-primary-green/20">
             {getPropertyTypeLabel(property.type)}
           </span>
-          <span className="text-[11px] text-gray-400">•</span>
-          <span className="text-[11px] text-gray-400 flex items-center gap-1">
+          <span className="text-[11px] text-gray-text/50">•</span>
+          <span className="text-[11px] text-gray-text/70 flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -191,17 +184,17 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
           </span>
           {property.createdAt && (
             <>
-              <span className="text-[11px] text-gray-400">•</span>
-              <span className="text-[11px] text-gray-400">{t('property.publishedAgo', 'Publié')} {timeAgo(property.createdAt)}</span>
+              <span className="text-[11px] text-gray-text/50">•</span>
+              <span className="text-[11px] text-gray-text/70">{t('property.publishedAgo', 'Publié')} {timeAgo(property.createdAt)}</span>
             </>
           )}
         </div>
 
-        <h3 className={`font-display font-bold text-[#0a2a5e] mb-1 group-hover:text-[#003087] transition-colors ${compact ? 'text-base' : 'text-lg'}`}>
+        <h3 className={`font-serif font-bold text-primary-deep mb-1 group-hover:text-primary-green transition-colors ${compact ? 'text-base' : 'text-lg'}`}>
           {property.title}
         </h3>
 
-        <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
+        <p className="text-xs text-gray-text flex items-center gap-1 mb-3">
           <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -210,10 +203,10 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         </p>
 
         {/* Features */}
-        <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+        <div className="flex items-center gap-3 mb-3 text-xs text-gray-text">
           {property.bedrooms > 0 && (
             <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="w-3.5 h-3.5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
               {property.bedrooms} {t('property.bedroomsShort', 'ch.')}
@@ -221,14 +214,14 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
           )}
           {property.bathrooms > 0 && (
             <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="w-3.5 h-3.5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {property.bathrooms} {t('property.bathroomsShort', 'sdb')}
             </span>
           )}
           <span className="flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-3.5 h-3.5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
             </svg>
             {property.surface} {t('property.surfaceUnit', 'm²')}
@@ -236,8 +229,8 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
         </div>
 
         {/* Price */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <p className="font-mono-data text-lg font-bold text-[#D4AF37]">
+        <div className="flex items-center justify-between pt-3 border-t border-primary-pale">
+          <p className="font-serif text-lg font-black text-primary-deep">
             {priceLabel}
           </p>
         </div>

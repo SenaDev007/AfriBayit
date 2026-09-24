@@ -338,10 +338,10 @@ export default function SettingsPage() {
   // Loading state
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-[#003087]" />
-          <p className="text-sm text-muted-foreground">Chargement des paramètres...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary-green" />
+          <p className="text-sm text-gray-text">Chargement des paramètres...</p>
         </div>
       </div>
     );
@@ -350,11 +350,11 @@ export default function SettingsPage() {
   // Not authenticated
   if (status === 'unauthenticated' || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Card className="max-w-md w-full mx-4">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <Card className="max-w-md w-full mx-4 rounded-3xl border-primary-pale shadow-lg">
           <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground mb-4">Connectez-vous pour accéder aux paramètres</p>
-            <Button className="bg-[#003087] hover:bg-[#002266] text-white" onClick={() => router.push('/auth/login?callbackUrl=/settings')}>
+            <p className="text-gray-text mb-4">Connectez-vous pour accéder aux paramètres</p>
+            <Button className="bg-primary-green hover:bg-primary-deep text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all" onClick={() => router.push('/auth/login?callbackUrl=/settings')}>
               Se connecter
             </Button>
           </CardContent>
@@ -364,24 +364,24 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-cream">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white border-b border-primary-pale/60 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="text-[#003087] hover:bg-[#003087]/5"
+              className="text-primary-deep hover:bg-primary-pale rounded-full"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Retour
             </Button>
             <Separator orientation="vertical" className="h-5" />
             <div>
-              <h1 className="text-xl font-bold text-[#003087]">Paramètres du compte</h1>
-              <p className="text-xs text-muted-foreground">{profile?.email}</p>
+              <h1 className="font-serif text-xl font-bold text-primary-deep">Paramètres du compte</h1>
+              <p className="text-xs text-gray-text">{profile?.email}</p>
             </div>
           </div>
         </div>
@@ -407,10 +407,10 @@ export default function SettingsPage() {
                     key={tab.id}
                     onClick={handleTabClick}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+                      w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all
                       ${isActive
-                        ? 'bg-[#003087] text-white shadow-md'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-[#003087]'
+                        ? 'bg-primary-green text-white shadow-md'
+                        : 'text-gray-text hover:bg-primary-pale/60 hover:text-primary-deep'
                       }
                       ${tab.id === 'delete' && !isActive ? 'text-red-500 hover:bg-red-50 hover:text-red-600' : ''}
                       ${tab.id === 'delete' && isActive ? 'bg-red-600 text-white shadow-md' : ''}
@@ -442,10 +442,10 @@ export default function SettingsPage() {
                     key={tab.id}
                     onClick={handleTabClick}
                     className={`
-                      flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap
+                      flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap
                       ${isActive
-                        ? 'bg-[#003087] text-white shadow-sm'
-                        : 'bg-white text-gray-600 border hover:bg-gray-50'
+                        ? 'bg-primary-green text-white shadow-md'
+                        : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale/50 hover:text-primary-deep'
                       }
                       ${tab.id === 'delete' && !isActive ? 'text-red-500 border-red-200' : ''}
                       ${tab.id === 'delete' && isActive ? 'bg-red-600 text-white' : ''}
@@ -473,28 +473,29 @@ export default function SettingsPage() {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-lg font-semibold text-[#003087]">Informations du profil</h2>
+                    <h2 className="font-serif text-lg font-bold text-primary-deep">Informations du profil</h2>
                     <p className="text-sm text-muted-foreground mt-1">Mettez à jour vos informations personnelles</p>
                   </div>
 
-                  <Card className="border-[#003087]/10">
+                  <Card className="rounded-3xl border-primary-pale shadow-sm">
                     <CardContent className="p-6 space-y-5">
                       {/* Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="name" className="flex items-center gap-2">
-                          <User className="h-3.5 w-3.5" /> Nom complet
+                        <Label htmlFor="name" className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <User className="h-3.5 w-3.5 text-primary-green" /> Nom complet
                         </Label>
                         <Input
                           id="name"
                           value={formName}
                           onChange={(e) => setFormName(e.target.value)}
                           placeholder="Votre nom"
+                          className="rounded-xl border-primary-pale focus-visible:ring-primary-green/30"
                         />
                       </div>
 
                       {/* Bio */}
                       <div className="space-y-2">
-                        <Label htmlFor="bio" className="flex items-center gap-2">
+                        <Label htmlFor="bio" className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
                           <span className="text-sm">📝</span> Bio
                         </Label>
                         <Textarea
@@ -512,34 +513,36 @@ export default function SettingsPage() {
 
                       {/* Phone */}
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="flex items-center gap-2">
-                          <Phone className="h-3.5 w-3.5" /> Téléphone
+                        <Label htmlFor="phone" className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <Phone className="h-3.5 w-3.5 text-primary-green" /> Téléphone
                         </Label>
                         <Input
                           id="phone"
                           value={formPhone}
                           onChange={(e) => setFormPhone(e.target.value)}
                           placeholder="+229 90 00 00 00"
+                          className="rounded-xl border-primary-pale focus-visible:ring-primary-green/30"
                         />
                       </div>
 
                       {/* City */}
                       <div className="space-y-2">
-                        <Label htmlFor="city" className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5" /> Ville
+                        <Label htmlFor="city" className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <MapPin className="h-3.5 w-3.5 text-primary-green" /> Ville
                         </Label>
                         <Input
                           id="city"
                           value={formCity}
                           onChange={(e) => setFormCity(e.target.value)}
                           placeholder="Cotonou"
+                          className="rounded-xl border-primary-pale focus-visible:ring-primary-green/30"
                         />
                       </div>
 
                       {/* Country */}
                       <div className="space-y-2">
-                        <Label htmlFor="country" className="flex items-center gap-2">
-                          <Globe className="h-3.5 w-3.5" /> Pays
+                        <Label htmlFor="country" className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <Globe className="h-3.5 w-3.5 text-primary-green" /> Pays
                         </Label>
                         <Select value={formCountry} onValueChange={setFormCountry}>
                           <SelectTrigger id="country">
@@ -562,7 +565,7 @@ export default function SettingsPage() {
                         <Button
                           onClick={handleSaveProfile}
                           disabled={saving}
-                          className="bg-[#003087] hover:bg-[#002266] text-white min-w-[140px]"
+                          className="bg-primary-green hover:bg-primary-deep text-white min-w-[140px] rounded-full font-bold shadow-md hover:shadow-lg transition-all"
                         >
                           {saving ? (
                             <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sauvegarde...</>
@@ -586,7 +589,7 @@ export default function SettingsPage() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-[#003087]">Sécurité</h2>
+                    <h2 className="font-serif text-lg font-bold text-primary-deep">Sécurité</h2>
                     <p className="text-sm text-muted-foreground mt-1">Gérez votre mot de passe et l&apos;authentification à deux facteurs</p>
                   </div>
                   <SecuritySettings
@@ -607,26 +610,26 @@ export default function SettingsPage() {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-lg font-semibold text-[#003087]">Vérification</h2>
+                    <h2 className="font-serif text-lg font-bold text-primary-deep">Vérification</h2>
                     <p className="text-sm text-muted-foreground mt-1">Vérifiez votre email et votre numéro de téléphone</p>
                   </div>
 
                   {/* Email Verification */}
-                  <Card className="border-[#003087]/10">
+                  <Card className="rounded-3xl border-primary-pale shadow-sm">
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
-                        <div className="p-3 rounded-lg bg-[#003087]/10 shrink-0">
-                          <Mail className="h-5 w-5 text-[#003087]" />
+                        <div className="p-3 rounded-xl bg-primary-pale shrink-0">
+                          <Mail className="h-5 w-5 text-primary-green" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium">Adresse email</h3>
+                            <h3 className="font-bold text-primary-deep">Adresse email</h3>
                             {profile?.emailVerified ? (
                               <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
                                 <CheckCircle2 className="h-3 w-3 mr-1" /> Vérifié
                               </Badge>
                             ) : (
-                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700 border-amber-200">
+                              <Badge variant="secondary" className="text-xs bg-accent-yellow/15 text-accent-dark border-accent-yellow/30">
                                 <XCircle className="h-3 w-3 mr-1" /> Non vérifié
                               </Badge>
                             )}
@@ -641,7 +644,7 @@ export default function SettingsPage() {
                                   disabled={sendingEmailOtp}
                                   variant="outline"
                                   size="sm"
-                                  className="border-[#003087] text-[#003087] hover:bg-[#003087]/5"
+                                  className="border-primary-deep/20 text-primary-deep hover:bg-primary-pale rounded-full font-bold"
                                 >
                                   {sendingEmailOtp ? (
                                     <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>
@@ -665,7 +668,7 @@ export default function SettingsPage() {
                                     onClick={handleVerifyEmail}
                                     disabled={verifyingEmail || emailOtpCode.length !== 6}
                                     size="sm"
-                                    className="bg-[#00A651] hover:bg-[#008f47] text-white"
+                                    className="bg-[#00A651] hover:bg-[#008f47] text-white rounded-full font-bold"
                                   >
                                     {verifyingEmail ? (
                                       <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /></>
@@ -683,21 +686,21 @@ export default function SettingsPage() {
                   </Card>
 
                   {/* Phone Verification */}
-                  <Card className="border-[#003087]/10">
+                  <Card className="rounded-3xl border-primary-pale shadow-sm">
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
-                        <div className="p-3 rounded-lg bg-[#003087]/10 shrink-0">
-                          <Phone className="h-5 w-5 text-[#003087]" />
+                        <div className="p-3 rounded-xl bg-primary-pale shrink-0">
+                          <Phone className="h-5 w-5 text-primary-green" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium">Numéro de téléphone</h3>
+                            <h3 className="font-bold text-primary-deep">Numéro de téléphone</h3>
                             {profile?.phoneVerified ? (
                               <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20 text-xs">
                                 <CheckCircle2 className="h-3 w-3 mr-1" /> Vérifié
                               </Badge>
                             ) : (
-                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700 border-amber-200">
+                              <Badge variant="secondary" className="text-xs bg-accent-yellow/15 text-accent-dark border-accent-yellow/30">
                                 <XCircle className="h-3 w-3 mr-1" /> Non vérifié
                               </Badge>
                             )}
@@ -709,7 +712,7 @@ export default function SettingsPage() {
                           {!profile?.phoneVerified && (
                             <div className="mt-4 space-y-3">
                               {!profile?.phone && (
-                                <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                                <p className="text-xs text-accent-dark bg-accent-yellow/10 border border-accent-yellow/20 p-2 rounded-lg">
                                   Ajoutez un numéro de téléphone dans l&apos;onglet Profil avant de le vérifier.
                                 </p>
                               )}
@@ -719,7 +722,7 @@ export default function SettingsPage() {
                                   disabled={sendingPhoneOtp || !profile?.phone}
                                   variant="outline"
                                   size="sm"
-                                  className="border-[#003087] text-[#003087] hover:bg-[#003087]/5"
+                                  className="border-primary-deep/20 text-primary-deep hover:bg-primary-pale rounded-full font-bold"
                                 >
                                   {sendingPhoneOtp ? (
                                     <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Envoi...</>
@@ -743,7 +746,7 @@ export default function SettingsPage() {
                                     onClick={handleVerifyPhone}
                                     disabled={verifyingPhone || phoneOtpCode.length !== 6}
                                     size="sm"
-                                    className="bg-[#00A651] hover:bg-[#008f47] text-white"
+                                    className="bg-[#00A651] hover:bg-[#008f47] text-white rounded-full font-bold"
                                   >
                                     {verifyingPhone ? (
                                       <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /></>
@@ -761,28 +764,28 @@ export default function SettingsPage() {
                   </Card>
 
                   {/* KYC Level */}
-                  <Card className="border-[#003087]/10">
+                  <Card className="rounded-3xl border-primary-pale shadow-sm">
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
-                        <div className="p-3 rounded-lg bg-[#D4AF37]/10 shrink-0">
-                          <BadgeCheck className="h-5 w-5 text-[#D4AF37]" />
+                        <div className="p-3 rounded-xl bg-accent-yellow/15 border border-accent-yellow/30 shrink-0">
+                          <BadgeCheck className="h-5 w-5 text-accent-dark" />
                         </div>
                         <div>
-                          <h3 className="font-medium">Niveau KYC</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Niveau actuel : <span className="font-medium text-[#003087]">{profile?.kycLevel || 0}</span> / 3
+                          <h3 className="font-bold text-primary-deep">Niveau KYC</h3>
+                          <p className="text-sm text-gray-text mt-1">
+                            Niveau actuel : <span className="font-bold text-primary-deep">{profile?.kycLevel || 0}</span> / 3
                           </p>
                           <div className="flex gap-1 mt-2">
                             {[0, 1, 2, 3].map((level) => (
                               <div
                                 key={level}
-                                className={`h-2 w-12 rounded-lg ${
-                                  (profile?.kycLevel || 0) >= level ? 'bg-[#00A651]' : 'bg-gray-200'
+                                className={`h-2 w-12 rounded-full ${
+                                  (profile?.kycLevel || 0) >= level ? 'bg-[#00A651]' : 'bg-primary-pale'
                                 }`}
                               />
                             ))}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-xs text-gray-text mt-2">
                             Augmentez votre niveau KYC pour débloquer plus de fonctionnalités
                           </p>
                         </div>
@@ -802,7 +805,7 @@ export default function SettingsPage() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-[#003087]">Comptes connectés</h2>
+                    <h2 className="font-serif text-lg font-bold text-primary-deep">Comptes connectés</h2>
                     <p className="text-sm text-muted-foreground mt-1">Gérez vos comptes Google et Facebook liés</p>
                   </div>
                   <ConnectedAccounts userEmail={profile?.email || ''} />
@@ -820,16 +823,16 @@ export default function SettingsPage() {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-lg font-semibold text-[#003087]">Préférences</h2>
+                    <h2 className="font-serif text-lg font-bold text-primary-deep">Préférences</h2>
                     <p className="text-sm text-muted-foreground mt-1">Personnalisez votre expérience</p>
                   </div>
 
-                  <Card className="border-[#003087]/10">
+                  <Card className="rounded-3xl border-primary-pale shadow-sm">
                     <CardContent className="p-6 space-y-6">
                       {/* Language */}
                       <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <Globe className="h-3.5 w-3.5" /> Langue
+                        <Label className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <Globe className="h-3.5 w-3.5 text-primary-green" /> Langue
                         </Label>
                         <Select value={formLanguage} onValueChange={setFormLanguage}>
                           <SelectTrigger>
@@ -849,8 +852,8 @@ export default function SettingsPage() {
 
                       {/* Currency */}
                       <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <Coins className="h-3.5 w-3.5" /> Devise
+                        <Label className="flex items-center gap-2 text-xs font-bold text-primary-deep uppercase tracking-wider">
+                          <Coins className="h-3.5 w-3.5 text-primary-green" /> Devise
                         </Label>
                         <Select value={formCurrency} onValueChange={setFormCurrency}>
                           <SelectTrigger>
@@ -871,7 +874,7 @@ export default function SettingsPage() {
                         <Button
                           onClick={handleSavePreferences}
                           disabled={saving}
-                          className="bg-[#003087] hover:bg-[#002266] text-white min-w-[140px]"
+                          className="bg-primary-green hover:bg-primary-deep text-white min-w-[140px] rounded-full font-bold shadow-md hover:shadow-lg transition-all"
                         >
                           {saving ? (
                             <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sauvegarde...</>
@@ -900,9 +903,9 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground mt-1">Cette action est irréversible</p>
                   </div>
 
-                  <Card className="border-red-200 bg-red-50/30">
+                  <Card className="rounded-3xl border-red-200 bg-red-50/30 shadow-sm">
                     <CardContent className="p-6 space-y-5">
-                      <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                      <div className="flex items-start gap-4 p-4 bg-red-50 rounded-2xl border border-red-200">
                         <AlertTriangle className="h-6 w-6 text-red-500 shrink-0 mt-0.5" />
                         <div>
                           <h3 className="font-semibold text-red-700">Attention</h3>

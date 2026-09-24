@@ -19,59 +19,59 @@ export default function AgentProfile() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
-          <Timer className="w-8 h-8 mx-auto mb-2 text-[#003087]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.avgSaleTime', 'Temps de vente moyen')}</h4>
-          <p className="font-mono text-2xl font-bold text-[#00A651]">{AGENT_ANALYTICS.timeToSale.avg} {t('analytics.agentProfile.days', 'jours')}</p>
-          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.median', 'Médiane')} : {AGENT_ANALYTICS.timeToSale.median}j · {t('analytics.agentProfile.record', 'Record')} : {AGENT_ANALYTICS.timeToSale.best}j</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale text-center">
+          <Timer className="w-8 h-8 mx-auto mb-2 text-primary-deep" />
+          <h4 className="font-serif text-base font-bold text-primary-deep mb-1">{t('analytics.agentProfile.avgSaleTime', 'Temps de vente moyen')}</h4>
+          <p className="font-serif font-black text-2xl text-[#00A651]">{AGENT_ANALYTICS.timeToSale.avg} {t('analytics.agentProfile.days', 'jours')}</p>
+          <p className="text-xs text-gray-text mt-1">{t('analytics.agentProfile.median', 'Médiane')} : {AGENT_ANALYTICS.timeToSale.median}j · {t('analytics.agentProfile.record', 'Record')} : {AGENT_ANALYTICS.timeToSale.best}j</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
-          <Trophy className="w-8 h-8 mx-auto mb-2 text-[#D4AF37]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.localRanking', 'Classement local')}</h4>
-          <p className="font-mono text-2xl font-bold text-[#D4AF37]">#{AGENT_ANALYTICS.localRanking.position}</p>
-          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.outOf', 'sur')} {AGENT_ANALYTICS.localRanking.totalAgents} {t('analytics.agentProfile.agents', 'agents')} · {AGENT_ANALYTICS.localRanking.city}</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale text-center">
+          <Trophy className="w-8 h-8 mx-auto mb-2 text-accent-yellow" />
+          <h4 className="font-serif text-base font-bold text-primary-deep mb-1">{t('analytics.agentProfile.localRanking', 'Classement local')}</h4>
+          <p className="font-serif font-black text-2xl text-accent-yellow">#{AGENT_ANALYTICS.localRanking.position}</p>
+          <p className="text-xs text-gray-text mt-1">{t('analytics.agentProfile.outOf', 'sur')} {AGENT_ANALYTICS.localRanking.totalAgents} {t('analytics.agentProfile.agents', 'agents')} · {AGENT_ANALYTICS.localRanking.city}</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-5 shadow-sm border text-center">
-          <Target className="w-8 h-8 mx-auto mb-2 text-[#009CDE]" />
-          <h4 className="font-display text-base font-bold text-[#0a2a5e] mb-1">{t('analytics.agentProfile.agentScore', 'Score agent')}</h4>
-          <p className="font-mono text-2xl font-bold text-[#003087]">{AGENT_ANALYTICS.localRanking.score}/100</p>
-          <p className="text-xs text-gray-500 mt-1">{t('analytics.agentProfile.scoreDesc', 'Basé sur performance + avis + activité')}</p>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale text-center">
+          <Target className="w-8 h-8 mx-auto mb-2 text-primary-green" />
+          <h4 className="font-serif text-base font-bold text-primary-deep mb-1">{t('analytics.agentProfile.agentScore', 'Score agent')}</h4>
+          <p className="font-serif font-black text-2xl text-primary-deep">{AGENT_ANALYTICS.localRanking.score}/100</p>
+          <p className="text-xs text-gray-text mt-1">{t('analytics.agentProfile.scoreDesc', 'Basé sur performance + avis + activité')}</p>
         </motion.div>
       </div>
 
       {/* Performance Annonces + Volume Transactions + ROI Premium */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-[#003087]" /> {t('analytics.agentProfile.listingPerformance', 'Performance annonces')}</h4>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+          <h4 className="font-serif text-sm font-bold text-primary-deep mb-3 flex items-center gap-2"><LayoutGrid className="w-4 h-4 text-primary-deep" /> {t('analytics.agentProfile.listingPerformance', 'Performance annonces')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.activeListings', 'Annonces actives')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.active}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.totalViews', 'Vues totales')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.vues.toLocaleString('fr-FR')}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.contactsReceived', 'Contacts reçus')}</span><span className="font-mono font-bold text-[#003087]">{AGENT_ANALYTICS.performanceAnnonces.contacts}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.conversionRate', 'Taux conversion')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.performanceAnnonces.tauxConversion}%</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.activeListings', 'Annonces actives')}</span><span className="font-mono font-bold text-primary-deep">{AGENT_ANALYTICS.performanceAnnonces.active}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.totalViews', 'Vues totales')}</span><span className="font-mono font-bold text-primary-deep">{AGENT_ANALYTICS.performanceAnnonces.vues.toLocaleString('fr-FR')}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.contactsReceived', 'Contacts reçus')}</span><span className="font-mono font-bold text-primary-deep">{AGENT_ANALYTICS.performanceAnnonces.contacts}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.conversionRate', 'Taux conversion')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.performanceAnnonces.tauxConversion}%</span></div>
           </div>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#00A651]" /> {t('analytics.agentProfile.transactionVolume', 'Volume transactions')}</h4>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+          <h4 className="font-serif text-sm font-bold text-primary-deep mb-3 flex items-center gap-2"><Receipt className="w-4 h-4 text-[#00A651]" /> {t('analytics.agentProfile.transactionVolume', 'Volume transactions')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.closedSales', 'Ventes conclues')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.volumeTransactions.total}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.totalValue', 'Valeur totale')}</span><span className="font-mono font-bold text-[#003087]">{formatPrice(AGENT_ANALYTICS.volumeTransactions.valeur)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.inProgress', 'En cours')}</span><span className="font-mono font-bold text-[#D4AF37]">{AGENT_ANALYTICS.volumeTransactions.enCours}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.closedSales', 'Ventes conclues')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.volumeTransactions.total}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.totalValue', 'Valeur totale')}</span><span className="font-mono font-bold text-primary-deep">{formatPrice(AGENT_ANALYTICS.volumeTransactions.valeur)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.inProgress', 'En cours')}</span><span className="font-mono font-bold text-accent-yellow">{AGENT_ANALYTICS.volumeTransactions.enCours}</span></div>
           </div>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white rounded-2xl p-5 shadow-sm border">
-          <h4 className="font-display text-sm font-bold text-[#0a2a5e] mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-[#D4AF37]" /> {t('analytics.agentProfile.roiPremium', 'ROI Premium')}</h4>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
+          <h4 className="font-serif text-sm font-bold text-primary-deep mb-3 flex items-center gap-2"><Crown className="w-4 h-4 text-accent-yellow" /> {t('analytics.agentProfile.roiPremium', 'ROI Premium')}</h4>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.investment', 'Investissement')}</span><span className="font-mono font-bold text-gray-600">{formatPrice(AGENT_ANALYTICS.roiPremium.investissement)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.revenueGenerated', 'Revenu généré')}</span><span className="font-mono font-bold text-[#00A651]">{formatPrice(AGENT_ANALYTICS.roiPremium.revenuGenere)}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.roi', 'ROI')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.roiPremium.roi}%</span></div>
-            <div className="flex justify-between text-xs"><span className="text-gray-500">{t('analytics.agentProfile.extraContacts', 'Contacts supp.')}</span><span className="font-mono font-bold text-[#009CDE]">+{AGENT_ANALYTICS.roiPremium.contactsSupp}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.investment', 'Investissement')}</span><span className="font-mono font-bold text-gray-600">{formatPrice(AGENT_ANALYTICS.roiPremium.investissement)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.revenueGenerated', 'Revenu généré')}</span><span className="font-mono font-bold text-[#00A651]">{formatPrice(AGENT_ANALYTICS.roiPremium.revenuGenere)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.roi', 'ROI')}</span><span className="font-mono font-bold text-[#00A651]">{AGENT_ANALYTICS.roiPremium.roi}%</span></div>
+            <div className="flex justify-between text-xs"><span className="text-gray-text">{t('analytics.agentProfile.extraContacts', 'Contacts supp.')}</span><span className="font-mono font-bold text-primary-green">+{AGENT_ANALYTICS.roiPremium.contactsSupp}</span></div>
           </div>
         </motion.div>
       </div>
 
       {/* Carte de chaleur mini */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> {t('analytics.agentProfile.heatmapTitle', 'Carte de chaleur — Vos zones')}</h3>
+      <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-4 flex items-center gap-2"><Flame className="w-5 h-5 text-[#D93025]" /> {t('analytics.agentProfile.heatmapTitle', 'Carte de chaleur — Vos zones')}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {ZONE_PERFORMANCE.slice(0, 4).map(zone => {
             const heatColor = zone.performance >= 80 ? 'bg-[#00A651]' : zone.performance >= 60 ? 'bg-[#D4AF37]' : 'bg-[#F59E0B]';
@@ -85,17 +85,17 @@ export default function AgentProfile() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('analytics.agentProfile.conversionFunnel', 'Entonnoir de conversion')}</h3>
+      <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-4">{t('analytics.agentProfile.conversionFunnel', 'Entonnoir de conversion')}</h3>
         <div className="space-y-3">
           {AGENT_ANALYTICS.conversionFunnel.map((stage, i) => (
             <div key={stage.stage} className="flex items-center gap-4">
-              <div className="w-36 shrink-0 text-sm text-gray-600">{stage.stage}</div>
+              <div className="w-36 shrink-0 text-sm text-gray-text">{stage.stage}</div>
               <div className="flex-1 flex items-center gap-2">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${stage.pct}%` }} transition={{ duration: 0.8, delay: i * 0.1, ease: easeOut }} className="h-8 rounded-xl flex items-center justify-end pr-2" style={{ backgroundColor: i === 0 ? '#003087' : i === AGENT_ANALYTICS.conversionFunnel.length - 1 ? '#00A651' : '#009CDE', minWidth: stage.pct > 0 ? '40px' : '0' }}>
                   <span className="text-white text-xs font-mono font-bold">{stage.count}</span>
                 </motion.div>
-                <span className="text-xs text-gray-500 w-12">{stage.pct}%</span>
+                <span className="text-xs text-gray-text w-12">{stage.pct}%</span>
               </div>
             </div>
           ))}

@@ -123,8 +123,9 @@ export default function PackagesSection() {
   const { t } = useTranslation();
 
   return (
-    <section className="py-20 bg-gray-50/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -133,19 +134,19 @@ export default function PackagesSection() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="text-center max-w-3xl mx-auto mb-12"
         >
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: NAVY }}>
-            <span className="h-px w-8" style={{ background: NAVY }} />
+          <span className="inline-block px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
             {t('packages.eyebrow', 'Packages combinés')}
           </span>
-          <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-primary-deep leading-tight">
             {t('packages.title', 'Hôtellerie + Immobilier = l\'avantage AfriBayit')}
           </h2>
-          <p className="mt-4 text-gray-500">
+          <p className="mt-4 text-gray-text">
             {t(
               'packages.subtitle',
               'La seule plateforme qui combine réservation hôtelière et immobilier en Afrique de l\'Ouest. Des packages uniques impossibles à trouver ailleurs.'
             )}
           </p>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
         </motion.div>
 
         {/* Package cards */}
@@ -157,14 +158,14 @@ export default function PackagesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1, ease: easeOut }}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-xl bg-white border border-gray-100 overflow-hidden hover:shadow-xl transition-all"
+              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] rounded-3xl bg-white border border-primary-pale shadow-lg overflow-hidden hover:shadow-xl transition-all card-shimmer"
             >
               {/* Header */}
               <div className="p-6" style={{ background: pkg.bgColor }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${pkg.color}15` }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: `${pkg.color}15` }}>
                   <pkg.icon className="w-6 h-6" style={{ color: pkg.color }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
+                <h3 className="font-serif text-xl font-bold text-primary-deep mb-1">
                   {t(pkg.titleKey, pkg.titleFallback)}
                 </h3>
                 <p className="text-sm font-semibold" style={{ color: pkg.color }}>
@@ -174,14 +175,14 @@ export default function PackagesSection() {
 
               {/* Content */}
               <div className="p-6">
-                <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                <p className="text-sm text-gray-text leading-relaxed mb-4">
                   {t(pkg.descKey, pkg.descFallback)}
                 </p>
 
                 {/* Features */}
                 <ul className="space-y-2 mb-6">
                   {pkg.features.map((feature, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm text-gray-600">
+                    <li key={j} className="flex items-start gap-2 text-sm text-gray-text">
                       <svg className="w-4 h-4 mt-0.5 shrink-0" style={{ color: pkg.color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -191,11 +192,11 @@ export default function PackagesSection() {
                 </ul>
 
                 {/* Price + CTA */}
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="text-sm font-bold text-gray-900 mb-3">{t(pkg.priceKey, pkg.priceFallback)}</p>
+                <div className="pt-4 border-t border-primary-pale">
+                  <p className="text-sm font-bold text-primary-deep mb-3">{t(pkg.priceKey, pkg.priceFallback)}</p>
                   <Link
                     href={pkg.href}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:scale-105"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-md transition-all hover:shadow-lg"
                     style={{ background: pkg.color }}
                   >
                     {t('packages.discover', 'Découvrir')}

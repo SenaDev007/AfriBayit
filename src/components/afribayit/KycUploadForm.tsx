@@ -220,15 +220,16 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
   const selectedDocInfo = DOC_TYPE_OPTIONS.find((o) => o.value === selectedDocType);
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-1">Soumettre un document</h3>
-      <p className="text-sm text-gray-500 mb-5">
+    <div className="rounded-3xl border border-primary-pale bg-white shadow-lg p-5 sm:p-6">
+      <h3 className="font-serif text-lg font-bold text-primary-deep mb-1">Soumettre un document</h3>
+      <div className="h-1 w-12 bg-accent-yellow rounded-full mb-4" />
+      <p className="text-sm text-gray-text mb-5">
         Téléversez vos documents pour la vérification KYC. Notre IA analysera automatiquement chaque document.
       </p>
 
       {/* Sélecteur de type de document */}
       <div className="mb-5">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-xs font-bold text-primary-deep uppercase tracking-wider mb-2">
           Type de document <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -243,11 +244,11 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
               }}
               className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border-2 text-left text-sm transition-all ${
                 selectedDocType === opt.value
-                  ? 'border-[#003087] bg-[#003087]/5 text-[#003087] font-semibold'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                  ? 'border-primary-green bg-primary-pale text-primary-deep font-bold shadow-md'
+                  : 'border-primary-pale bg-white text-gray-text hover:border-primary-green/40 hover:bg-primary-pale/40'
               }`}
             >
-              <span className={selectedDocType === opt.value ? 'text-[#003087]' : 'text-gray-400'}>
+              <span className={selectedDocType === opt.value ? 'text-primary-green' : 'text-primary-green/60'}>
                 {opt.icon}
               </span>
               {opt.label}
@@ -258,7 +259,7 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
           <motion.p
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-xs text-amber-600 flex items-start gap-1.5"
+            className="mt-2 text-xs text-accent-dark flex items-start gap-1.5"
           >
             <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             {selectedDocInfo.hint}
@@ -270,12 +271,12 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-200"
+            className="mt-3 p-3 rounded-2xl bg-primary-pale/60 border border-primary-green/20"
           >
-            <p className="text-xs font-semibold text-blue-800 mb-1.5">
+            <p className="text-xs font-bold text-primary-deep mb-1.5">
               Instructions pour le selfie de vérification
             </p>
-            <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
+            <ul className="text-xs text-gray-text space-y-1 list-disc pl-4">
               <li>Regardez directement la caméra, visage dégagé</li>
               <li>Éclairage suffisant, pas de lunettes de soleil</li>
               <li>Notre IA comparera ce selfie avec votre pièce d&apos;identité</li>
@@ -287,7 +288,7 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
 
       {/* Zone de drop */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-xs font-bold text-primary-deep uppercase tracking-wider mb-2">
           Fichier <span className="text-red-500">*</span>
         </label>
 
@@ -298,9 +299,9 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50"
+              className="relative rounded-2xl border border-primary-pale overflow-hidden bg-cream"
             >
-              <div className="relative aspect-video max-h-64 flex items-center justify-center bg-gray-100">
+              <div className="relative aspect-video max-h-64 flex items-center justify-center bg-primary-pale/40">
                 <img
                   src={preview}
                   alt="Aperçu du document"
@@ -309,19 +310,19 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
               </div>
               <div className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <ImageIcon className="w-4 h-4 text-gray-400 shrink-0" />
-                  <span className="text-sm text-gray-700 truncate">{file.name}</span>
-                  <span className="text-xs text-gray-400">
+                  <ImageIcon className="w-4 h-4 text-primary-green/60 shrink-0" />
+                  <span className="text-sm text-gray-text truncate">{file.name}</span>
+                  <span className="text-xs text-gray-text">
                     ({(file.size / 1024 / 1024).toFixed(1)} Mo)
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={clearFile}
-                  className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="p-1.5 rounded-full hover:bg-primary-pale transition-colors"
                   aria-label="Supprimer le fichier"
                 >
-                  <X className="w-4 h-4 text-gray-500" />
+                  <X className="w-4 h-4 text-gray-text" />
                 </button>
               </div>
             </motion.div>
@@ -335,23 +336,23 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${
+              className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
                 isDragging
-                  ? 'border-[#003087] bg-[#003087]/5'
-                  : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+                  ? 'border-primary-green bg-primary-pale'
+                  : 'border-primary-pale bg-cream hover:border-primary-green/50 hover:bg-primary-pale/40'
               }`}
             >
               <Upload
                 className={`w-10 h-10 mx-auto mb-3 ${
-                  isDragging ? 'text-[#003087]' : 'text-gray-400'
+                  isDragging ? 'text-primary-green' : 'text-primary-green/50'
                 }`}
               />
-              <p className="text-sm font-semibold text-gray-700 mb-1">
+              <p className="text-sm font-bold text-primary-deep mb-1">
                 {isDragging
                   ? 'Déposez le fichier ici'
                   : 'Glissez-déposez un fichier ou cliquez pour parcourir'}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-text">
                 JPEG, PNG, WebP, HEIC ou PDF — Max {MAX_FILE_SIZE_MB} Mo
               </p>
             </motion.div>
@@ -405,10 +406,10 @@ export default function KycUploadForm({ allowedDocTypes, onSubmitted, accessToke
         type="button"
         onClick={handleSubmit}
         disabled={!selectedDocType || !file || isUploading}
-        className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+        className={`w-full py-3 px-6 rounded-full font-bold text-sm transition-all flex items-center justify-center gap-2 ${
           !selectedDocType || !file || isUploading
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-[#003087] text-white hover:bg-[#002060] active:scale-[0.98] shadow-md hover:shadow-lg'
+            ? 'bg-primary-pale/60 text-gray-text cursor-not-allowed'
+            : 'bg-primary-green text-white hover:bg-primary-deep active:scale-[0.98] shadow-md hover:shadow-lg'
         }`}
       >
         {isUploading ? (

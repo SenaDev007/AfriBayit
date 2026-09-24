@@ -23,15 +23,15 @@ export function DashboardSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
+          <div key={i} className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
             <Skeleton className="h-4 w-20 mb-2" />
             <Skeleton className="h-8 w-16" />
           </div>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-64 rounded-2xl" />
-        <Skeleton className="h-64 rounded-2xl" />
+        <Skeleton className="h-64 rounded-3xl" />
+        <Skeleton className="h-64 rounded-3xl" />
       </div>
     </div>
   );
@@ -70,41 +70,41 @@ export function RoomFormModal({ open, onClose, onSubmit, initial, loading }: Roo
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-xl p-6 shadow-2xl max-w-md w-full mx-4"
+        className="bg-white rounded-3xl p-6 shadow-2xl max-w-md w-full mx-4 border border-primary-pale"
       >
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4 flex items-center gap-2">
-          {initial ? <Pencil className="w-5 h-5 text-[#003087]" /> : <Plus className="w-5 h-5 text-[#00A651]" />}
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-4 flex items-center gap-2">
+          {initial ? <Pencil className="w-5 h-5 text-primary-deep" /> : <Plus className="w-5 h-5 text-[#00A651]" />}
           {initial ? 'Modifier la chambre' : 'Ajouter une chambre'}
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Type de chambre</label>
-            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border text-sm">
+            <label className="text-xs font-bold text-primary-deep mb-1 block">Type de chambre</label>
+            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all">
               {ROOM_TYPES.map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Nom (optionnel)</label>
-            <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border text-sm" placeholder="Ex: Suite Panorama" />
+            <label className="text-xs font-bold text-primary-deep mb-1 block">Nom (optionnel)</label>
+            <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all" placeholder="Ex: Suite Panorama" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Capacite (pers.)</label>
-              <input type="number" min={1} max={20} value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border text-sm" />
+              <label className="text-xs font-bold text-primary-deep mb-1 block">Capacite (pers.)</label>
+              <input type="number" min={1} max={20} value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all" />
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Nombre de chambres</label>
-              <input type="number" min={1} max={200} value={form.totalRooms} onChange={(e) => setForm((f) => ({ ...f, totalRooms: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border text-sm" />
+              <label className="text-xs font-bold text-primary-deep mb-1 block">Nombre de chambres</label>
+              <input type="number" min={1} max={200} value={form.totalRooms} onChange={(e) => setForm((f) => ({ ...f, totalRooms: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Prix de base (FCFA/nuit)</label>
-            <input type="number" min={0} value={form.basePrice} onChange={(e) => setForm((f) => ({ ...f, basePrice: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border text-sm font-mono" />
+            <label className="text-xs font-bold text-primary-deep mb-1 block">Prix de base (FCFA/nuit)</label>
+            <input type="number" min={0} value={form.basePrice} onChange={(e) => setForm((f) => ({ ...f, basePrice: Number(e.target.value) }))} className="w-full px-3 py-2.5 rounded-xl border border-primary-pale bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all" />
           </div>
         </div>
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium hover:bg-gray-50 transition-colors">Annuler</button>
-          <button onClick={() => onSubmit(form)} disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl bg-[#003087] text-white text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50">
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-full border border-primary-pale text-sm font-medium hover:bg-primary-pale transition-colors">Annuler</button>
+          <button onClick={() => onSubmit(form)} disabled={loading} className="flex-1 px-4 py-2.5 rounded-full bg-primary-green text-white text-sm font-semibold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all disabled:opacity-50">
             {loading ? '...' : initial ? 'Enregistrer' : 'Ajouter'}
           </button>
         </div>

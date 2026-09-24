@@ -49,19 +49,19 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="bg-white rounded-xl w-full max-w-2xl shadow-2xl my-8 mx-4"
+        className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl my-8 mx-4 border border-primary-pale"
         onClick={e => e.stopPropagation()}
       >
         {isLoading ? (
           <div className="p-8 animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-100 rounded w-1/2" />
-            <div className="h-32 bg-gray-100 rounded" />
+            <div className="h-6 bg-primary-pale rounded w-3/4" />
+            <div className="h-4 bg-primary-pale/60 rounded-full w-1/2" />
+            <div className="h-32 bg-primary-pale/60 rounded-2xl" />
           </div>
         ) : (
           <>
             {/* Header */}
-            <div className="p-5 border-b">
+            <div className="p-5 border-b border-primary-pale/60">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <ImageWithFallback
@@ -71,32 +71,32 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
                     fallbackType="avatar"
                   />
                   <div>
-                    <p className="text-sm font-semibold text-[#003087] cursor-pointer hover:underline">
+                    <p className="text-sm font-semibold text-primary-deep cursor-pointer hover:underline">
                       {postAuthor?.name ? String(postAuthor.name) : 'Auteur'}
                     </p>
-                    <p className="text-xs text-gray-500">{postData?.createdAt ? timeAgo(String(postData.createdAt)) : ''}</p>
+                    <p className="text-xs text-gray-text">{postData?.createdAt ? timeAgo(String(postData.createdAt)) : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {Boolean(postData?.category) && (
-                    <span className="px-2.5 py-0.5 bg-gray-100 rounded-full text-[10px] font-medium text-gray-600">
+                    <span className="px-2.5 py-0.5 bg-primary-pale text-primary-deep border border-primary-green/20 rounded-full text-[10px] font-medium">
                       {String(postData?.category)}
                     </span>
                   )}
-                  <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                  <button onClick={onClose} className="p-1.5 rounded-full hover:bg-primary-pale transition-colors">
                     <X className="w-4 h-4 text-gray-400" />
                   </button>
                 </div>
               </div>
-              <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-2">
+              <h2 className="font-serif text-xl font-bold text-primary-deep mb-2">
                 {postData?.title ? String(postData.title) : 'Discussion'}
               </h2>
               {Boolean(postData?.content) && (
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                <p className="text-sm text-gray-text leading-relaxed whitespace-pre-wrap">
                   {String(postData?.content)}
                 </p>
               )}
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <div className="flex items-center gap-4 mt-3 text-xs text-gray-text">
                 <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {Number(postData?.views ?? 0)} vues</span>
                 <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {replies.length} réponses</span>
                 <button
@@ -110,13 +110,13 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
 
             {/* Replies */}
             <div className="p-5 max-h-[40vh] overflow-y-auto">
-              <h4 className="text-sm font-semibold text-[#0a2a5e] mb-3">Réponses ({replies.length})</h4>
+              <h4 className="text-sm font-semibold text-primary-deep mb-3">Réponses ({replies.length})</h4>
               {repliesLoading && (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="animate-pulse flex gap-3 p-3">
-                      <div className="w-8 h-8 rounded-lg bg-gray-200 shrink-0" />
-                      <div className="flex-1"><div className="h-3 bg-gray-200 rounded w-3/4 mb-2" /><div className="h-2 bg-gray-100 rounded w-full" /></div>
+                      <div className="w-8 h-8 rounded-full bg-primary-pale shrink-0" />
+                      <div className="flex-1"><div className="h-3 bg-primary-pale rounded w-3/4 mb-2" /><div className="h-2 bg-primary-pale/60 rounded-full w-full" /></div>
                     </div>
                   ))}
                 </div>
@@ -124,7 +124,7 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
               {!repliesLoading && replies.length === 0 && (
                 <div className="text-center py-6">
                   <MessageCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Aucune réponse pour le moment</p>
+                  <p className="text-sm text-gray-text">Aucune réponse pour le moment</p>
                   <p className="text-xs text-gray-400">Soyez le premier à répondre !</p>
                 </div>
               )}
@@ -138,22 +138,22 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className="flex gap-3 p-3 bg-gray-50 rounded-2xl"
+                        className="flex gap-3 p-3 bg-primary-pale/40 rounded-2xl"
                       >
                         <ImageWithFallback
                           src={replyAuthor?.avatar ? String(replyAuthor.avatar) : ''}
                           alt=""
-                          className="w-8 h-8 rounded-lg shrink-0"
+                          className="w-8 h-8 rounded-full shrink-0"
                           fallbackType="avatar"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold text-[#003087]">
+                            <span className="text-xs font-semibold text-primary-deep">
                               {replyAuthor?.name ? String(replyAuthor.name) : 'Membre'}
                             </span>
                             <span className="text-[10px] text-gray-400">{reply.createdAt ? timeAgo(String(reply.createdAt)) : ''}</span>
                           </div>
-                          <p className="text-sm text-gray-600">{String(reply.content ?? '')}</p>
+                          <p className="text-sm text-gray-text">{String(reply.content ?? '')}</p>
                         </div>
                       </motion.div>
                     );
@@ -163,7 +163,7 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
             </div>
 
             {/* Reply input */}
-            <div className="p-5 border-t bg-gray-50/50 rounded-b-3xl">
+            <div className="p-5 border-t border-primary-pale/60 bg-primary-pale/30 rounded-b-3xl">
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -171,13 +171,13 @@ export default function PostDetailDialog({ postId, onClose, user, onReport }: Po
                   onChange={e => setReplyContent(e.target.value)}
                   placeholder={user ? 'Écrire une réponse... Utilisez @ pour mentionner' : 'Connectez-vous pour répondre'}
                   disabled={!user}
-                  className="flex-1 px-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 rounded-xl border border-primary-pale bg-white text-sm outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all disabled:opacity-50"
                   onKeyDown={e => { if (e.key === 'Enter') handleReply(); }}
                 />
                 <button
                   onClick={handleReply}
                   disabled={!user || !replyContent.trim() || createReply.isPending}
-                  className="px-4 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-4 py-3 rounded-full bg-primary-green text-white text-sm font-bold hover:bg-primary-deep transition-all disabled:opacity-50 shadow-md flex items-center gap-1.5"
                 >
                   {createReply.isPending ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

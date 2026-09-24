@@ -195,31 +195,31 @@ function getStatusBadge(status: string) {
   switch (status) {
     case 'human_validated':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
           <CheckCircle2 className="w-3 h-3" /> Validé
         </span>
       );
     case 'ai_validated':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary-pale text-primary-deep border border-primary-green/20">
           <CheckCircle2 className="w-3 h-3" /> Validé IA
         </span>
       );
     case 'pending':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30">
           <Clock className="w-3 h-3" /> En attente
         </span>
       );
     case 'rejected':
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-600">
           <XCircle className="w-3 h-3" /> Rejeté
         </span>
       );
     default:
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary-pale/60 text-gray-text">
           {status}
         </span>
       );
@@ -310,8 +310,8 @@ export default function KycPage() {
 
   if (sessionStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50/30">
-        <Loader2 className="w-8 h-8 animate-spin text-[#003087]" />
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-green" />
       </div>
     );
   }
@@ -326,10 +326,12 @@ export default function KycPage() {
   const allowedDocTypes = getDocTypeForNextLevel(kycLevel);
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-12">
+    <div className="min-h-screen bg-cream pb-12">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#003087] via-[#001f5c] to-[#003087] text-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
+      <div className="bg-gradient-to-r from-[#003087] via-[#001f5c] to-[#003087] text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
           {/* Navigation retour */}
           <button
             onClick={() => router.push('/dashboard')}
@@ -340,20 +342,21 @@ export default function KycPage() {
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
-              <span className="text-white">{getLevelIcon(kycLevel)}</span>
+            <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center">
+              <span className="text-accent-yellow">{getLevelIcon(kycLevel)}</span>
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-1">
+              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold mb-1">
                 Vérification d&apos;identité (KYC)
               </h1>
+              <div className="h-1 w-16 bg-accent-yellow rounded-full mt-3 mb-3" />
               <p className="text-white/70 text-sm">
                 Complétez votre vérification pour débloquer des limites de transaction plus élevées
               </p>
             </div>
             {/* Badge du niveau actuel */}
             <div
-              className="px-4 py-2 rounded-xl font-bold text-sm shrink-0"
+              className="px-4 py-2 rounded-full font-bold text-sm shrink-0"
               style={{
                 backgroundColor: `${LEVEL_DEFS[kycLevel].accentColor}20`,
                 color: LEVEL_DEFS[kycLevel].accentColor,
@@ -370,7 +373,7 @@ export default function KycPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 p-4 rounded-xl bg-white/10 border border-white/20 flex flex-col sm:flex-row sm:items-center gap-3"
+              className="mt-6 p-4 rounded-2xl bg-white/10 border border-white/20 flex flex-col sm:flex-row sm:items-center gap-3 backdrop-blur-sm"
             >
               <div className="flex items-center gap-3 flex-1">
                 <div
@@ -390,7 +393,7 @@ export default function KycPage() {
               </div>
               <button
                 onClick={() => setActiveTab('upload')}
-                className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-white text-[#003087] hover:bg-gray-100 transition-colors shrink-0"
+                className="px-5 py-2.5 rounded-full font-bold text-sm bg-accent-yellow text-primary-deep hover:bg-accent-dark transition-all shrink-0 shadow-md hover:shadow-lg"
               >
                 Soumettre des documents
               </button>
@@ -402,7 +405,7 @@ export default function KycPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 p-4 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center gap-3"
+              className="mt-6 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center gap-3 backdrop-blur-sm"
             >
               <CheckCircle2 className="w-6 h-6 text-emerald-300" />
               <div>
@@ -417,8 +420,8 @@ export default function KycPage() {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1.5 flex gap-1">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-10">
+        <div className="bg-white rounded-full shadow-lg border border-primary-pale p-1.5 flex gap-1">
           {[
             { key: 'levels' as const, label: 'Niveaux KYC', icon: <Shield className="w-4 h-4" /> },
             { key: 'documents' as const, label: 'Mes documents', icon: <FileText className="w-4 h-4" /> },
@@ -427,10 +430,10 @@ export default function KycPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all ${
                 activeTab === tab.key
-                  ? 'bg-[#003087] text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-primary-green text-white shadow-md'
+                  : 'text-gray-text hover:bg-primary-pale/60 hover:text-primary-deep'
               }`}
             >
               {tab.icon}
@@ -454,11 +457,11 @@ export default function KycPage() {
               className="space-y-5"
             >
               {/* Info banner */}
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-primary-pale/60 border border-primary-green/20 flex items-start gap-3">
+                <Info className="w-5 h-5 text-primary-green shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-blue-800">Comment fonctionne la vérification KYC ?</p>
-                  <p className="text-xs text-blue-700 mt-1 leading-relaxed">
+                  <p className="text-sm font-bold text-primary-deep">Comment fonctionne la vérification KYC ?</p>
+                  <p className="text-xs text-gray-text mt-1 leading-relaxed">
                     La vérification KYC (Know Your Customer) est un processus obligatoire pour lutter contre le blanchiment d&apos;argent et assurer la sécurité de nos utilisateurs. Chaque niveau débloque des limites de transaction plus élevées. Votre niveau est mis à jour automatiquement après validation de vos documents par notre IA ou notre équipe.
                   </p>
                 </div>
@@ -489,13 +492,13 @@ export default function KycPage() {
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-900">Documents soumis</h3>
+              <div className="bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden">
+                <div className="px-5 py-4 border-b border-primary-pale/60 flex items-center justify-between">
+                  <h3 className="font-serif text-lg font-bold text-primary-deep">Documents soumis</h3>
                   <button
                     onClick={fetchDocuments}
                     disabled={isLoadingDocs}
-                    className="flex items-center gap-1.5 text-sm text-[#003087] hover:text-[#002060] font-medium transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-primary-deep hover:text-primary-green font-bold transition-colors"
                   >
                     <RefreshCw className={`w-4 h-4 ${isLoadingDocs ? 'animate-spin' : ''}`} />
                     Actualiser
@@ -504,17 +507,17 @@ export default function KycPage() {
 
                 {isLoadingDocs && (
                   <div className="p-12 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-[#003087]" />
+                    <Loader2 className="w-6 h-6 animate-spin text-primary-green" />
                   </div>
                 )}
 
                 {fetchError && (
                   <div className="p-6 text-center">
-                    <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-                    <p className="text-sm text-gray-600">{fetchError}</p>
+                    <AlertTriangle className="w-8 h-8 text-accent-dark mx-auto mb-3" />
+                    <p className="text-sm text-gray-text">{fetchError}</p>
                     <button
                       onClick={fetchDocuments}
-                      className="mt-3 px-4 py-2 text-sm font-medium text-[#003087] hover:bg-[#003087]/5 rounded-lg transition-colors"
+                      className="mt-3 px-4 py-2 text-sm font-bold text-primary-deep hover:bg-primary-pale rounded-full transition-colors"
                     >
                       Réessayer
                     </button>
@@ -523,14 +526,14 @@ export default function KycPage() {
 
                 {!isLoadingDocs && !fetchError && documents.length === 0 && (
                   <div className="p-12 text-center">
-                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 mb-1">Aucun document soumis</p>
-                    <p className="text-xs text-gray-400">
+                    <FileText className="w-12 h-12 text-primary-green/40 mx-auto mb-3" />
+                    <p className="text-sm text-gray-text mb-1">Aucun document soumis</p>
+                    <p className="text-xs text-gray-text">
                       Commencez par soumettre vos documents pour la vérification
                     </p>
                     <button
                       onClick={() => setActiveTab('upload')}
-                      className="mt-4 px-5 py-2.5 rounded-xl font-semibold text-sm bg-[#003087] text-white hover:bg-[#002060] transition-colors"
+                      className="mt-4 px-5 py-2.5 rounded-full font-bold text-sm bg-primary-green text-white hover:bg-primary-deep shadow-md hover:shadow-lg transition-all"
                     >
                       Soumettre un document
                     </button>
@@ -538,14 +541,14 @@ export default function KycPage() {
                 )}
 
                 {!isLoadingDocs && !fetchError && documents.length > 0 && (
-                  <div className="divide-y divide-gray-100 max-h-[32rem] overflow-y-auto">
+                  <div className="divide-y divide-primary-pale/60 max-h-[32rem] overflow-y-auto">
                     {documents.map((doc, i) => (
                       <motion.div
                         key={doc.id}
                         initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className="px-5 py-4 hover:bg-gray-50 transition-colors"
+                        className="px-5 py-4 hover:bg-primary-pale/30 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <div
@@ -569,14 +572,14 @@ export default function KycPage() {
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-bold text-primary-deep">
                               {DOC_TYPE_LABELS[doc.docType] || doc.docType}
                             </p>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-gray-text mt-0.5">
                               Soumis le {formatDate(doc.createdAt)}
                               {doc.aiScore !== null && doc.aiScore !== undefined && (
                                 <span className="ml-2">
-                                  — Score IA : <span className="font-medium">{Math.round(doc.aiScore)}%</span>
+                                  — Score IA : <span className="font-bold">{Math.round(doc.aiScore)}%</span>
                                 </span>
                               )}
                             </p>
@@ -609,22 +612,22 @@ export default function KycPage() {
               className="space-y-6"
             >
               {kycLevel >= 3 ? (
-                <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+                <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-8 text-center">
                   <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-                  <p className="text-lg font-bold text-gray-900 mb-1">
+                  <p className="font-serif text-lg font-bold text-primary-deep mb-1">
                     Vérification complète !
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-text">
                     Vous avez atteint le niveau KYC maximum. Aucun document supplémentaire n&apos;est requis.
                   </p>
                 </div>
               ) : (
                 <>
                   {/* Info : que soumettre ? */}
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
-                    <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-2xl bg-accent-yellow/10 border border-accent-yellow/30 flex items-start gap-3">
+                    <Info className="w-5 h-5 text-accent-dark shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-amber-800">
+                      <p className="text-sm font-bold text-accent-dark">
                         Documents requis pour le niveau {nextLevel?.level} — {nextLevel?.name}
                       </p>
                       <ul className="mt-1.5 space-y-0.5">
@@ -634,8 +637,8 @@ export default function KycPage() {
                             return status !== 'ai_validated' && status !== 'human_validated';
                           })
                           .map((req) => (
-                            <li key={req.docType} className="text-xs text-amber-700 flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            <li key={req.docType} className="text-xs text-accent-dark flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent-yellow" />
                               {req.label}
                             </li>
                           ))}

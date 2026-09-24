@@ -192,7 +192,7 @@ export default function CommunityModule() {
   const eventsErrObj = eventsError as { message?: string } | null;
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gradient-to-b from-[#00A651]/5 via-white to-white">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* LinkedIn-style header banner */}
         <motion.div
@@ -200,24 +200,21 @@ export default function CommunityModule() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="relative bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] rounded-xl p-8 overflow-hidden">
+          <div className="relative bg-primary-deep rounded-3xl p-8 overflow-hidden shadow-lg">
             {/* Decorative pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-lg bg-white blur-3xl" />
-              <div className="absolute bottom-0 left-1/3 w-48 h-48 rounded-lg bg-white blur-3xl" />
-            </div>
+            <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+            <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-accent-yellow/10 rounded-full blur-3xl pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
               <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0">
                 <Handshake className="w-10 h-10 text-white" />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
-                  AfriBayit <span className="text-[#D4AF37]">Connect</span>
+                <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-2">
+                  AfriBayit <span className="text-accent-yellow">Connect</span>
                 </h1>
-                <p className="text-white/80 text-sm max-w-2xl">
-                  Le réseau social de l&apos;immobilier ouest-africain. Forums par pays, groupes d&apos;investisseurs,
-                  événements de networking, marketplace de services et programme ambassadeurs.
-                </p>
+                <p className="text-white/80 text-sm max-w-2xl">Le réseau social de l&apos;immobilier ouest-africain. Forums par pays, groupes d&apos;investisseurs, événements de networking, marketplace de services et programme ambassadeurs.</p>
+                <div className="h-1 w-16 bg-accent-yellow mt-4 mx-auto md:mx-0 rounded-full" />
                 <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-white/70">
                   <span className="flex items-center gap-1">
                     <TrendingUp className="w-3.5 h-3.5" />
@@ -253,13 +250,13 @@ export default function CommunityModule() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-2xl p-3 border flex items-center gap-2"
+              className="bg-white rounded-3xl p-3 border border-primary-pale shadow-md flex items-center gap-2"
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${stat.color}15` }}>
                 <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
               </div>
               <div>
-                <p className="font-bold text-sm text-[#0a2a5e]">{stat.value}</p>
+                <p className="font-bold text-sm text-primary-deep">{stat.value}</p>
                 <p className="text-[10px] text-gray-400">{stat.label}</p>
               </div>
             </motion.div>
@@ -269,7 +266,7 @@ export default function CommunityModule() {
         <ReputationBar user={user} forumCity={forumCity} setForumCity={setForumCity} />
 
         {/* Tabs — LinkedIn style with icons */}
-        <div className="flex gap-1 overflow-x-auto pb-3 mb-6 bg-white rounded-2xl p-1.5 border">
+        <div className="flex gap-1 overflow-x-auto pb-3 mb-6 bg-white rounded-3xl p-1.5 border border-primary-pale shadow-md">
           {tabs.map(tab => {
             const tabIcons: Record<string, any> = {
               forum: MessageCircle,
@@ -285,10 +282,10 @@ export default function CommunityModule() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === tab.key
-                    ? 'bg-[#003087] text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-primary-deep text-white shadow-md'
+                    : 'text-gray-text hover:bg-primary-pale'
                 }`}
               >
                 <TabIcon className="w-4 h-4" />

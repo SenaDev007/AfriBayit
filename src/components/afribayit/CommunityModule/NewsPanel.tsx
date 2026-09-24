@@ -47,14 +47,14 @@ export default function NewsPanel() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
       {/* Header */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border">
+      <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-9 h-9 rounded-xl bg-[#003087]/10 flex items-center justify-center">
-            <Newspaper className="w-5 h-5 text-[#003087]" />
+          <div className="w-9 h-9 rounded-xl bg-primary-pale flex items-center justify-center">
+            <Newspaper className="w-5 h-5 text-primary-deep" />
           </div>
           <div>
-            <h3 className="font-display text-base font-bold text-[#0a2a5e]">{t('community.news.title', 'Actualités immobilières')}</h3>
-            <p className="text-xs text-gray-500">{t('community.news.subtitle', 'Réglementation, tendances de marché et annonces premium — curaté par IA + éditeur humain')}</p>
+            <h3 className="font-serif text-base font-bold text-primary-deep">{t('community.news.title', 'Actualités immobilières')}</h3>
+            <p className="text-xs text-gray-text">{t('community.news.subtitle', 'Réglementation, tendances de marché et annonces premium — curaté par IA + éditeur humain')}</p>
           </div>
         </div>
       </div>
@@ -66,9 +66,9 @@ export default function NewsPanel() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.08, ease: easeOut }}
-          className="bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:border-[#003087]/20 transition-all overflow-hidden group cursor-pointer"
+          className="bg-white rounded-3xl shadow-lg border border-primary-pale hover:shadow-xl hover:border-primary-green/30 transition-all overflow-hidden group cursor-pointer"
         >
-          <div className="h-1 bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="h-1 bg-gradient-to-r from-primary-deep via-primary-green to-accent-yellow opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="p-5">
             <div className="flex items-center gap-2 mb-2">
               <span
@@ -82,16 +82,16 @@ export default function NewsPanel() {
                 {new Date(news.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             </div>
-            <h4 className="font-semibold text-sm text-[#0a2a5e] mb-1.5 group-hover:text-[#003087] transition-colors">
+            <h4 className="font-semibold text-sm text-primary-deep mb-1.5 group-hover:text-primary-green transition-colors">
               {news.title}
             </h4>
-            <p className="text-xs text-gray-500 mb-3 leading-relaxed">{news.excerpt}</p>
-            <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+            <p className="text-xs text-gray-text mb-3 leading-relaxed">{news.excerpt}</p>
+            <div className="flex items-center justify-between pt-2 border-t border-primary-pale/60">
               <span className="flex items-center gap-1 text-[10px] text-gray-400">
                 <FileText className="w-3 h-3" />
                 {news.source}
               </span>
-              <span className="flex items-center gap-1 text-[10px] text-[#003087] font-semibold group-hover:gap-2 transition-all">
+              <span className="flex items-center gap-1 text-[10px] text-primary-deep font-semibold group-hover:gap-2 transition-all">
                 {t('community.news.readMore', 'Lire plus')}
                 <ExternalLink className="w-3 h-3" />
               </span>
@@ -101,10 +101,10 @@ export default function NewsPanel() {
       ))}
 
       {/* Info banner */}
-      <div className="bg-gradient-to-r from-[#003087]/5 to-[#009CDE]/5 rounded-2xl p-4 border flex items-start gap-3">
-        <TrendingUp className="w-5 h-5 text-[#009CDE] shrink-0 mt-0.5" />
-        <p className="text-xs text-gray-500">
-          <strong className="text-[#0a2a5e]">{t('community.news.bannerTitle', 'Fil actualités AfriBayit')}</strong> — {t('community.news.bannerDesc', 'Agrégation automatique des nouvelles réglementaires (Section 10B), tendances de marché (données AVM), et annonces premium de la plateforme.')}
+      <div className="bg-primary-pale/50 rounded-2xl p-4 border border-primary-pale flex items-start gap-3">
+        <TrendingUp className="w-5 h-5 text-primary-green shrink-0 mt-0.5" />
+        <p className="text-xs text-gray-text">
+          <strong className="text-primary-deep">{t('community.news.bannerTitle', 'Fil actualités AfriBayit')}</strong> — {t('community.news.bannerDesc', 'Agrégation automatique des nouvelles réglementaires (Section 10B), tendances de marché (données AVM), et annonces premium de la plateforme.')}
         </p>
       </div>
     </motion.div>

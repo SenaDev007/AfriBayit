@@ -133,11 +133,11 @@ export default function FinancingSimulator({
   const formatXOF = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
 
   return (
-    <div className="bg-white rounded-xl border shadow-lg overflow-hidden">
+    <div className="bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-[#003087] to-[#0047b3]">
+      <div className="flex items-center justify-between p-6 border-b border-accent-yellow/30 bg-primary-deep">
         <div>
-          <h2 className="font-display text-xl font-bold text-white">
+          <h2 className="font-serif text-xl font-bold text-white">
             Simulateur de Financement
           </h2>
           <p className="text-sm text-white/70">Calculez votre mensualité de crédit immobilier</p>
@@ -145,7 +145,7 @@ export default function FinancingSimulator({
         {onClose && (
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
           >
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -160,14 +160,14 @@ export default function FinancingSimulator({
           <div className="space-y-5">
             {/* Country */}
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">Pays</label>
+              <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">Pays</label>
               <select
                 value={selectedCountry}
                 onChange={(e) => {
                   setSelectedCountry(e.target.value);
                   setInterestRate(COUNTRY_RATES[e.target.value] || 8);
                 }}
-                className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm outline-none focus:border-[#003087] transition-colors"
+                className="w-full px-4 py-3.5 rounded-xl border border-primary-pale bg-white text-sm text-gray-text focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
               >
                 <option value="BJ">Bénin</option>
                 <option value="CI">Côte d'Ivoire</option>
@@ -178,7 +178,7 @@ export default function FinancingSimulator({
 
             {/* Property Price */}
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">
+              <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">
                 Prix du bien (FCFA)
               </label>
               <input
@@ -187,13 +187,13 @@ export default function FinancingSimulator({
                 onChange={(e) => setPrice(Number(e.target.value) || 0)}
                 min={0}
                 step={500000}
-                className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm outline-none focus:border-[#003087] transition-colors"
+                className="w-full px-4 py-3.5 rounded-xl border border-primary-pale bg-white text-sm text-gray-text focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
               />
             </div>
 
             {/* Down Payment */}
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">
+              <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">
                 Apport personnel : {downPaymentPct}% ({formatXOF(calculations.downPayment)})
               </label>
               <input
@@ -203,9 +203,9 @@ export default function FinancingSimulator({
                 step={5}
                 value={downPaymentPct}
                 onChange={(e) => setDownPaymentPct(Number(e.target.value))}
-                className="w-full accent-[#003087]"
+                className="w-full accent-primary-green"
               />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <div className="flex justify-between text-[10px] text-gray-text/70 mt-1">
                 <span>0%</span>
                 <span>50%</span>
                 <span>90%</span>
@@ -214,7 +214,7 @@ export default function FinancingSimulator({
 
             {/* Interest Rate */}
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">
+              <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">
                 Taux d&apos;intérêt annuel (%)
               </label>
               <input
@@ -224,16 +224,16 @@ export default function FinancingSimulator({
                 min={0}
                 max={25}
                 step={0.5}
-                className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm outline-none focus:border-[#003087] transition-colors"
+                className="w-full px-4 py-3.5 rounded-xl border border-primary-pale bg-white text-sm text-gray-text focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
               />
-              <p className="text-[10px] text-gray-400 mt-1">
+              <p className="text-[10px] text-gray-text/70 mt-1">
                 Taux moyen {selectedCountry} : {COUNTRY_RATES[selectedCountry]}%
               </p>
             </div>
 
             {/* Duration */}
             <div>
-              <label className="text-xs font-medium text-gray-500 mb-2 block">
+              <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">
                 Durée du crédit : {duration} ans
               </label>
               <input
@@ -243,9 +243,9 @@ export default function FinancingSimulator({
                 step={5}
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full accent-[#003087]"
+                className="w-full accent-primary-green"
               />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <div className="flex justify-between text-[10px] text-gray-text/70 mt-1">
                 <span>5 ans</span>
                 <span>15 ans</span>
                 <span>25 ans</span>
@@ -255,54 +255,57 @@ export default function FinancingSimulator({
 
           {/* Results */}
           <div className="space-y-4">
-            <div className="bg-gradient-to-br from-[#003087] to-[#0047b3] rounded-2xl p-6 text-white">
-              <p className="text-sm text-white/70 mb-1">Mensualité estimée</p>
-              <p className="font-mono-data text-3xl font-bold">
-                {formatXOF(calculations.monthlyPayment)}
-              </p>
-              <p className="text-xs text-white/60 mt-1">/mois pendant {duration} ans</p>
+            <div className="bg-primary-deep rounded-3xl p-6 text-white relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary-green/20 rounded-full blur-[60px]" />
+              <div className="relative z-10">
+                <p className="text-sm text-white/70 mb-1">Mensualité estimée</p>
+                <p className="font-mono-data text-3xl font-bold text-accent-yellow">
+                  {formatXOF(calculations.monthlyPayment)}
+                </p>
+                <p className="text-xs text-white/60 mt-1">/mois pendant {duration} ans</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-[10px] text-gray-500 mb-1">Montant du prêt</p>
-                <p className="font-semibold text-sm">{formatXOF(calculations.loanAmount)}</p>
+              <div className="bg-primary-pale/60 rounded-2xl p-4">
+                <p className="text-[10px] text-gray-text mb-1">Montant du prêt</p>
+                <p className="font-semibold text-sm text-primary-deep">{formatXOF(calculations.loanAmount)}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-[10px] text-gray-500 mb-1">Apport personnel</p>
-                <p className="font-semibold text-sm">{formatXOF(calculations.downPayment)}</p>
+              <div className="bg-primary-pale/60 rounded-2xl p-4">
+                <p className="text-[10px] text-gray-text mb-1">Apport personnel</p>
+                <p className="font-semibold text-sm text-primary-deep">{formatXOF(calculations.downPayment)}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-[10px] text-gray-500 mb-1">Coût total du crédit</p>
-                <p className="font-semibold text-sm">{formatXOF(calculations.totalCost + calculations.downPayment)}</p>
+              <div className="bg-primary-pale/60 rounded-2xl p-4">
+                <p className="text-[10px] text-gray-text mb-1">Coût total du crédit</p>
+                <p className="font-semibold text-sm text-primary-deep">{formatXOF(calculations.totalCost + calculations.downPayment)}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-[10px] text-gray-500 mb-1">Intérêts totaux</p>
-                <p className="font-semibold text-sm text-[#D4AF37]">{formatXOF(calculations.totalInterest)}</p>
+              <div className="bg-primary-pale/60 rounded-2xl p-4">
+                <p className="text-[10px] text-gray-text mb-1">Intérêts totaux</p>
+                <p className="font-semibold text-sm text-accent-dark">{formatXOF(calculations.totalInterest)}</p>
               </div>
             </div>
 
             {/* Duration Comparison Table */}
             <div>
-              <h3 className="text-xs font-semibold text-gray-700 mb-2">Comparaison par durée</h3>
-              <div className="overflow-x-auto rounded-xl border">
+              <h3 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-2">Comparaison par durée</h3>
+              <div className="overflow-x-auto rounded-2xl border border-primary-pale">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-3 py-2 text-left text-gray-500">Durée</th>
-                      <th className="px-3 py-2 text-right text-gray-500">Mensualité</th>
-                      <th className="px-3 py-2 text-right text-gray-500">Intérêts</th>
+                    <tr className="bg-primary-pale/60 text-primary-deep uppercase tracking-wider text-xs font-bold">
+                      <th className="px-3 py-2 text-left">Durée</th>
+                      <th className="px-3 py-2 text-right">Mensualité</th>
+                      <th className="px-3 py-2 text-right">Intérêts</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-primary-pale/60">
                     {calculations.durationComparison.map(dc => (
                       <tr
                         key={dc.duration}
-                        className={`border-t ${dc.duration === duration ? 'bg-[#003087]/5 font-semibold' : ''}`}
+                        className={`hover:bg-primary-pale/30 ${dc.duration === duration ? 'bg-primary-pale/50 font-semibold' : ''}`}
                       >
-                        <td className="px-3 py-2">{dc.duration} ans</td>
-                        <td className="px-3 py-2 text-right">{formatXOF(dc.monthlyPayment)}</td>
-                        <td className="px-3 py-2 text-right text-[#D4AF37]">{formatXOF(dc.totalInterest)}</td>
+                        <td className="px-3 py-2 text-gray-text">{dc.duration} ans</td>
+                        <td className="px-3 py-2 text-right text-gray-text">{formatXOF(dc.monthlyPayment)}</td>
+                        <td className="px-3 py-2 text-right text-accent-dark">{formatXOF(dc.totalInterest)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -316,37 +319,37 @@ export default function FinancingSimulator({
         <div className="mt-6">
           <button
             onClick={() => setShowSchedule(!showSchedule)}
-            className="text-sm text-[#003087] font-semibold hover:underline"
+            className="text-sm text-primary-green font-semibold hover:text-primary-deep hover:underline transition-colors"
           >
             {showSchedule ? 'Masquer' : 'Afficher'} le tableau d&apos;amortissement
           </button>
-          
+
           {showSchedule && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="mt-3 overflow-x-auto rounded-xl border max-h-96 overflow-y-auto"
+              className="mt-3 overflow-x-auto rounded-2xl border border-primary-pale max-h-96 overflow-y-auto"
             >
               <table className="w-full text-xs">
-                <thead className="sticky top-0 bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-gray-500">Mois</th>
-                    <th className="px-3 py-2 text-right text-gray-500">Mensualité</th>
-                    <th className="px-3 py-2 text-right text-gray-500">Capital</th>
-                    <th className="px-3 py-2 text-right text-gray-500">Intérêts</th>
-                    <th className="px-3 py-2 text-right text-gray-500">Solde restant</th>
+                <thead className="sticky top-0 bg-primary-pale/60">
+                  <tr className="text-primary-deep uppercase tracking-wider text-xs font-bold">
+                    <th className="px-3 py-2 text-left">Mois</th>
+                    <th className="px-3 py-2 text-right">Mensualité</th>
+                    <th className="px-3 py-2 text-right">Capital</th>
+                    <th className="px-3 py-2 text-right">Intérêts</th>
+                    <th className="px-3 py-2 text-right">Solde restant</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-primary-pale/60">
                   {calculations.schedule
                     .filter((_, i) => i % 12 === 0 || i === calculations.schedule.length - 1)
                     .map(row => (
-                      <tr key={row.month} className="border-t hover:bg-gray-50">
-                        <td className="px-3 py-2">{row.month}</td>
-                        <td className="px-3 py-2 text-right">{formatXOF(row.payment)}</td>
-                        <td className="px-3 py-2 text-right">{formatXOF(row.principal)}</td>
-                        <td className="px-3 py-2 text-right text-[#D4AF37]">{formatXOF(row.interest)}</td>
-                        <td className="px-3 py-2 text-right">{formatXOF(row.balance)}</td>
+                      <tr key={row.month} className="hover:bg-primary-pale/30">
+                        <td className="px-3 py-2 text-gray-text">{row.month}</td>
+                        <td className="px-3 py-2 text-right text-gray-text">{formatXOF(row.payment)}</td>
+                        <td className="px-3 py-2 text-right text-gray-text">{formatXOF(row.principal)}</td>
+                        <td className="px-3 py-2 text-right text-accent-dark">{formatXOF(row.interest)}</td>
+                        <td className="px-3 py-2 text-right text-gray-text">{formatXOF(row.balance)}</td>
                       </tr>
                     ))}
                 </tbody>
@@ -357,8 +360,8 @@ export default function FinancingSimulator({
 
         {/* Bank Partners */}
         {banks.length > 0 && (
-          <div className="mt-6 pt-6 border-t">
-            <h3 className="text-xs font-semibold text-gray-700 mb-3">Banques partenaires au {selectedCountry === 'BJ' ? 'Bénin' : selectedCountry === 'CI' ? 'Côte d\'Ivoire' : selectedCountry === 'BF' ? 'Burkina Faso' : 'Togo'}</h3>
+          <div className="mt-6 pt-6 border-t border-primary-pale">
+            <h3 className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-3">Banques partenaires au {selectedCountry === 'BJ' ? 'Bénin' : selectedCountry === 'CI' ? 'Côte d\'Ivoire' : selectedCountry === 'BF' ? 'Burkina Faso' : 'Togo'}</h3>
             <div className="flex flex-wrap gap-2">
               {banks.map(bank => (
                 <a
@@ -366,7 +369,7 @@ export default function FinancingSimulator({
                   href={bank.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-medium text-gray-600 hover:bg-[#003087]/5 hover:text-[#003087] transition-colors border"
+                  className="px-4 py-2 bg-white rounded-full text-xs font-medium text-gray-text hover:bg-primary-pale hover:text-primary-deep transition-colors border border-primary-pale"
                 >
                   {bank.name}
                 </a>

@@ -9,8 +9,8 @@ import SafeModule from '@/components/safe/SafeModule';
 
 const EnhancedSearchResults = dynamic(() => import('@/components/afribayit/EnhancedSearchResults'), {
   loading: () => (
-    <div className="min-h-screen flex items-center justify-center pt-20">
-      <div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" />
+    <div className="min-h-screen bg-cream flex items-center justify-center pt-20">
+      <div className="animate-spin w-8 h-8 border-4 border-primary-green border-t-transparent rounded-full" />
     </div>
   ),
 });
@@ -21,7 +21,7 @@ function SearchContent() {
   const tab = searchParams.get('tab') || 'achat';
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-cream">
       <SafeModule>
         <EnhancedSearchResults
           initialTab={tab}
@@ -34,7 +34,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="pt-20 min-h-screen flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-[#003087] border-t-transparent rounded-full" /></div>}>
+    <Suspense fallback={<div className="pt-20 min-h-screen bg-cream flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary-green border-t-transparent rounded-full" /></div>}>
       <SearchContent />
     </Suspense>
   );

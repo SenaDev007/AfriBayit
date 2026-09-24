@@ -103,8 +103,9 @@ export default function ModulesSection() {
   const { t } = useTranslation();
 
   return (
-    <section className="bg-white py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-cream py-24 sm:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -113,20 +114,19 @@ export default function ModulesSection() {
           transition={{ duration: 0.6, ease: easeOut }}
           className="mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#003366]">
-            <span className="h-px w-8 bg-[#003366]" />
+          <span className="inline-block px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
             {t('modules.eyebrow', 'Écosystème Complet')}
-            <span className="h-px w-8 bg-[#003366]" />
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-cormorant),Georgia,serif] text-4xl font-bold leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary-deep leading-tight">
             {t('modules.title', 'Nos modules')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-lg text-gray-500">
+          <p className="mx-auto mt-5 max-w-xl text-lg text-gray-text">
             {t(
               'modules.subtitle',
               'Une plateforme tout-en-un pour l\'immobilier en Afrique. Chaque module est conçu pour répondre à un besoin spécifique.'
             )}
           </p>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
         </motion.div>
 
         {/* Modules Grid */}
@@ -139,27 +139,27 @@ export default function ModulesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: easeOut }}
-              className="group relative block rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#003366]/30 hover:shadow-lg hover:shadow-gray-200/50"
+              className="group relative block rounded-3xl border border-primary-pale bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-primary-green/40 hover:shadow-xl card-shimmer"
             >
               {/* Badge */}
-              <span className="absolute right-6 top-6 rounded-full bg-[#FFCC00]/15 px-2.5 py-1 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-[10px] font-bold uppercase tracking-wider text-[#8B6914]">
+              <span className="absolute right-6 top-6 rounded-full bg-accent-yellow/15 border border-accent-yellow/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-dark">
                 {t(mod.badgeKey, mod.badgeFallback)}
               </span>
 
               {/* Icon */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#003366] text-white transition-colors duration-300 group-hover:bg-[#3399FF]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-deep text-white transition-colors duration-300 group-hover:bg-primary-green">
                 {mod.icon}
               </div>
 
-              <h3 className="mt-5 font-[family-name:var(--font-cormorant),Georgia,serif] text-2xl font-bold text-gray-900 transition-colors group-hover:text-[#003366]">
+              <h3 className="mt-5 font-serif text-2xl font-bold text-primary-deep transition-colors group-hover:text-primary-green">
                 {t(mod.nameKey, mod.nameFallback)}
               </h3>
-              <p className="mt-2 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm leading-relaxed text-gray-500">
+              <p className="mt-2 text-sm leading-relaxed text-gray-text">
                 {t(mod.descKey, mod.descFallback)}
               </p>
 
               {/* Arrow */}
-              <div className="mt-5 flex items-center gap-1 font-[family-name:var(--font-cormorant),system-ui,sans-serif] text-sm font-semibold text-[#003366] opacity-0 transition-all duration-300 group-hover:opacity-100">
+              <div className="mt-5 flex items-center gap-1 text-sm font-semibold text-primary-deep opacity-0 transition-all duration-300 group-hover:opacity-100">
                 {t('modules.explore', 'Explorer')}
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

@@ -264,17 +264,17 @@ export default function CourseDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-20 bg-gray-50/30">
+      <div className="min-h-screen pt-20 bg-cream">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-6 w-32 bg-gray-200 rounded" />
+            <div className="h-6 w-32 bg-primary-pale rounded" />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
-                <div className="h-64 bg-gray-200 rounded-2xl" />
-                <div className="h-8 w-3/4 bg-gray-200 rounded" />
-                <div className="h-4 w-1/2 bg-gray-100 rounded" />
+                <div className="h-64 bg-primary-pale rounded-3xl" />
+                <div className="h-8 w-3/4 bg-primary-pale rounded" />
+                <div className="h-4 w-1/2 bg-primary-pale/60 rounded" />
               </div>
-              <div className="h-96 bg-gray-200 rounded-2xl" />
+              <div className="h-96 bg-primary-pale rounded-3xl" />
             </div>
           </div>
         </div>
@@ -286,18 +286,18 @@ export default function CourseDetailPage() {
 
   if (error || !course) {
     return (
-      <div className="min-h-screen pt-20 bg-gray-50/30 flex items-center justify-center">
+      <div className="min-h-screen pt-20 bg-cream flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-700 mb-1">
+          <h2 className="text-lg font-semibold text-primary-deep mb-1">
             Cours introuvable
           </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-text mb-4">
             {error || "Ce cours n'existe pas ou n'est plus disponible."}
           </p>
           <button
             onClick={() => router.push('/academy')}
-            className="px-6 py-2 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors"
+            className="px-6 py-2.5 rounded-full bg-primary-green text-white text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all"
           >
             Retour à l&apos;académie
           </button>
@@ -315,14 +315,14 @@ export default function CourseDetailPage() {
   const totalModules = moduleList.length;
 
   return (
-    <div className="min-h-screen pt-20 pb-16 bg-gray-50/30">
+    <div className="min-h-screen pt-20 pb-16 bg-cream">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* ─── Back button ──────────────────────────────────────── */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => router.push('/academy')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#003087] transition-colors mb-6 mt-2"
+          className="flex items-center gap-2 text-sm text-gray-text hover:text-primary-deep transition-colors mb-6 mt-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Retour aux formations
@@ -337,7 +337,7 @@ export default function CourseDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: easeOut }}
-              className="rounded-2xl overflow-hidden shadow-sm border"
+              className="rounded-3xl overflow-hidden shadow-lg border border-primary-pale"
             >
               {course.videoUrl && isEnrolled ? (
                 <div className="aspect-video bg-black">
@@ -361,11 +361,11 @@ export default function CourseDetailPage() {
                   {/* Overlay gradient */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#003087] text-white text-[10px] font-bold rounded-full mb-2">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary-deep text-white text-[10px] font-bold rounded-full mb-2">
                       {levelLabels[course.level] || course.level}
                     </span>
                     {course.certificate && (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full ml-1.5">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-accent-yellow text-primary-deep text-[10px] font-bold rounded-full ml-1.5">
                         <Award className="w-3 h-3" /> Certifiant
                       </span>
                     )}
@@ -375,7 +375,7 @@ export default function CourseDetailPage() {
             </motion.div>
 
             {/* ─── Tab navigation ──────────────────────────────── */}
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+            <div className="flex gap-1 bg-primary-pale/60 rounded-2xl p-1">
               {(
                 [
                   { key: 'overview', label: 'Aperçu', icon: BookOpen },
@@ -396,10 +396,10 @@ export default function CourseDetailPage() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as typeof activeTab)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     activeTab === key
-                      ? 'bg-white shadow-sm text-[#003087]'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white shadow-md text-primary-deep'
+                      : 'text-gray-text hover:text-primary-deep'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -420,21 +420,21 @@ export default function CourseDetailPage() {
                   className="space-y-6"
                 >
                   {/* Course info */}
-                  <div className="bg-white rounded-2xl border shadow-sm p-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-[#0a2a5e] mb-2">
+                  <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6">
+                    <h1 className="font-serif text-2xl sm:text-3xl font-bold text-primary-deep mb-2">
                       {course.title}
                     </h1>
-                    <p className="text-gray-500 mb-4">
+                    <p className="text-gray-text mb-4">
                       Par{' '}
-                      <span className="font-medium text-[#003087]">
+                      <span className="font-medium text-primary-deep">
                         {course.instructor}
                       </span>
                     </p>
 
                     {/* Quick stats */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-text mb-4">
                       <span className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-[#D4AF37]" />
+                        <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
                         {course.rating.toFixed(1)}
                       </span>
                       <span className="flex items-center gap-1">
@@ -453,7 +453,7 @@ export default function CourseDetailPage() {
 
                     {/* Description */}
                     {course.description && (
-                      <div className="prose prose-sm max-w-none text-gray-700 border-t pt-4">
+                      <div className="prose prose-sm max-w-none text-gray-text border-t border-primary-pale/60 pt-4">
                         <p>{course.description}</p>
                       </div>
                     )}
@@ -461,13 +461,13 @@ export default function CourseDetailPage() {
 
                   {/* Module list (preview) */}
                   {totalModules > 0 && (
-                    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden">
                       <button
                         onClick={() => setExpandedModules(!expandedModules)}
-                        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-primary-pale/40 transition-colors"
                       >
-                        <h3 className="font-semibold text-[#0a2a5e] flex items-center gap-2">
-                          <BookOpen className="w-5 h-5 text-[#003087]" />
+                        <h3 className="font-semibold text-primary-deep flex items-center gap-2">
+                          <BookOpen className="w-5 h-5 text-primary-deep" />
                           Programme ({totalModules} modules)
                         </h3>
                         {expandedModules ? (
@@ -484,26 +484,26 @@ export default function CourseDetailPage() {
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="border-t max-h-96 overflow-y-auto"
+                            className="border-t border-primary-pale/60 max-h-96 overflow-y-auto"
                           >
                             {moduleList.map((mod, idx) => {
                               const modType = mod.type || 'video';
                               return (
                                 <div
                                   key={mod.id || idx}
-                                  className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-gray-50/50"
+                                  className="flex items-center gap-3 px-4 py-3 border-b border-primary-pale/40 last:border-b-0 hover:bg-primary-pale/30"
                                 >
-                                  <div className="w-8 h-8 rounded-lg bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-xl bg-primary-pale flex items-center justify-center flex-shrink-0">
                                     {modType === 'video' ? (
-                                      <Play className="w-3.5 h-3.5 text-[#003087]" />
+                                      <Play className="w-3.5 h-3.5 text-primary-deep" />
                                     ) : modType === 'text' ? (
-                                      <FileText className="w-3.5 h-3.5 text-[#003087]" />
+                                      <FileText className="w-3.5 h-3.5 text-primary-deep" />
                                     ) : (
-                                      <Zap className="w-3.5 h-3.5 text-[#003087]" />
+                                      <Zap className="w-3.5 h-3.5 text-primary-deep" />
                                     )}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-[#0a2a5e] truncate">
+                                    <p className="text-sm font-medium text-primary-deep truncate">
                                       {idx + 1}. {mod.title}
                                     </p>
                                   </div>
@@ -523,15 +523,15 @@ export default function CourseDetailPage() {
 
                   {/* Quiz availability card */}
                   {hasQuiz && !isEnrolled && (
-                    <div className="bg-gradient-to-r from-[#003087]/5 to-[#009CDE]/5 rounded-2xl border border-[#003087]/10 p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#003087]/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-[#003087]" />
+                    <div className="bg-primary-pale/50 rounded-2xl border border-primary-pale p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary-pale flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary-deep" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#0a2a5e] text-sm">
+                        <h4 className="font-semibold text-primary-deep text-sm">
                           Quiz de validation
                         </h4>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-gray-text mt-0.5">
                           Ce cours comporte un quiz (
                           {course.quizzes[0]?.passingScore}% de réussite
                           requis). Inscrivez-vous pour y accéder.
@@ -542,15 +542,15 @@ export default function CourseDetailPage() {
 
                   {/* Certificate availability card */}
                   {course.certificate && !isEnrolled && (
-                    <div className="bg-gradient-to-r from-[#D4AF37]/5 to-[#D4AF37]/10 rounded-2xl border border-[#D4AF37]/20 p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0">
-                        <Award className="w-5 h-5 text-[#D4AF37]" />
+                    <div className="bg-accent-yellow/10 rounded-2xl border border-accent-yellow/30 p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-accent-yellow/15 flex items-center justify-center flex-shrink-0">
+                        <Award className="w-5 h-5 text-accent-dark" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#0a2a5e] text-sm">
+                        <h4 className="font-semibold text-primary-deep text-sm">
                           Certificat de réussite
                         </h4>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-gray-text mt-0.5">
                           Obtenez un certificat officiel AfriBayit en réussissant
                           cette formation.
                         </p>
@@ -603,20 +603,20 @@ export default function CourseDetailPage() {
                       }
                     />
                   ) : (
-                    <div className="bg-white rounded-2xl border shadow-sm p-8 text-center">
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                        <FileText className="w-6 h-6 text-gray-400" />
+                    <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-8 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-primary-pale flex items-center justify-center mx-auto mb-3">
+                        <FileText className="w-6 h-6 text-primary-deep" />
                       </div>
-                      <h3 className="font-semibold text-[#0a2a5e] mb-1">
+                      <h3 className="font-semibold text-primary-deep mb-1">
                         Quiz de validation
                       </h3>
-                      <p className="text-sm text-gray-500 mb-4">
+                      <p className="text-sm text-gray-text mb-4">
                         Testez vos connaissances et validez votre formation.
                       </p>
                       <button
                         onClick={handleLoadQuiz}
                         disabled={isLoadingQuiz}
-                        className="px-6 py-2.5 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-full bg-primary-green text-white text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all disabled:opacity-50"
                       >
                         {isLoadingQuiz
                           ? 'Chargement...'
@@ -637,18 +637,18 @@ export default function CourseDetailPage() {
             className="space-y-5"
           >
             {/* Price & Enroll card */}
-            <div className="bg-white rounded-2xl border shadow-sm p-6 sticky top-24">
+            <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-6 sticky top-24">
               {/* Price */}
               <div className="mb-4">
                 {Number(course.price) > 0 ? (
-                  <p className="text-3xl font-bold text-[#D4AF37]">
+                  <p className="text-3xl font-bold text-accent-dark">
                     {new Intl.NumberFormat('fr-FR').format(course.price)}{' '}
                     <span className="text-sm font-normal text-gray-400">
                       {course.currency}
                     </span>
                   </p>
                 ) : (
-                  <p className="text-3xl font-bold text-[#00A651]">Gratuit</p>
+                  <p className="text-3xl font-bold text-green-600">Gratuit</p>
                 )}
               </div>
 
@@ -657,7 +657,7 @@ export default function CourseDetailPage() {
                 <button
                   onClick={handleEnroll}
                   disabled={isEnrolling}
-                  className="w-full py-3.5 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-primary-green text-white font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {isEnrolling ? (
                     <>
@@ -673,15 +673,15 @@ export default function CourseDetailPage() {
                 </button>
               ) : isCompleted ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 bg-[#00A651]/10 rounded-xl">
-                    <CheckCircle2 className="w-5 h-5 text-[#00A651]" />
-                    <span className="text-sm font-semibold text-[#00A651]">
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-semibold text-green-700">
                       Formation terminée !
                     </span>
                   </div>
                   <button
                     onClick={() => setActiveTab('lessons')}
-                    className="w-full py-3 bg-gray-100 text-[#003087] rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-full border border-primary-deep/20 text-primary-deep bg-white font-bold hover:bg-primary-pale transition-all flex items-center justify-center gap-2"
                   >
                     <Play className="w-4 h-4" />
                     Revoir les modules
@@ -690,7 +690,7 @@ export default function CourseDetailPage() {
                     <button
                       onClick={handleLoadQuiz}
                       disabled={isLoadingQuiz}
-                      className="w-full py-3 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-3 rounded-full bg-primary-green text-white font-bold shadow-md hover:bg-primary-deep transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <FileText className="w-4 h-4" />
                       Passer le quiz
@@ -701,7 +701,7 @@ export default function CourseDetailPage() {
                       href={`/api/academy/certificates/generate?download=true&certificateId=${userCertificate.certificateId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-3 bg-[#D4AF37] text-white rounded-xl font-semibold hover:bg-[#c9a22e] transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-full bg-accent-yellow text-primary-deep font-bold shadow-md hover:bg-[#c9a22e] transition-all flex items-center justify-center gap-2"
                     >
                       <Award className="w-4 h-4" />
                       Télécharger le certificat
@@ -712,7 +712,7 @@ export default function CourseDetailPage() {
                 <div className="space-y-3">
                   <button
                     onClick={() => setActiveTab('lessons')}
-                    className="w-full py-3.5 bg-[#003087] text-white rounded-xl font-semibold hover:bg-[#0047b3] transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-full bg-primary-green text-white font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all flex items-center justify-center gap-2"
                   >
                     <Play className="w-4 h-4" />
                     Continuer
@@ -721,7 +721,7 @@ export default function CourseDetailPage() {
                     <button
                       onClick={handleLoadQuiz}
                       disabled={isLoadingQuiz}
-                      className="w-full py-3 bg-gray-100 text-[#003087] rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-3 rounded-full border border-primary-deep/20 text-primary-deep bg-white font-bold hover:bg-primary-pale transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <FileText className="w-4 h-4" />
                       Passer le quiz
@@ -731,7 +731,7 @@ export default function CourseDetailPage() {
               )}
 
               {/* Course details list */}
-              <div className="mt-5 space-y-3 border-t pt-5">
+              <div className="mt-5 space-y-3 border-t border-primary-pale/60 pt-5">
                 {[
                   {
                     icon: BookOpen,
@@ -763,27 +763,27 @@ export default function CourseDetailPage() {
                     key={label}
                     className="flex items-center justify-between text-sm"
                   >
-                    <span className="flex items-center gap-2 text-gray-500">
+                    <span className="flex items-center gap-2 text-gray-text">
                       <Icon className="w-4 h-4" />
                       {label}
                     </span>
-                    <span className="font-medium text-[#0a2a5e]">{value}</span>
+                    <span className="font-medium text-primary-deep">{value}</span>
                   </div>
                 ))}
               </div>
 
               {/* Progress bar (enrolled) */}
               {isEnrolled && !isCompleted && (
-                <div className="mt-5 border-t pt-5">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <div className="mt-5 border-t border-primary-pale/60 pt-5">
+                  <div className="flex justify-between text-xs text-gray-text mb-1">
                     <span>Votre progression</span>
-                    <span className="font-semibold text-[#003087]">
+                    <span className="font-semibold text-primary-deep">
                       {Math.round(enrollment.progress)}%
                     </span>
                   </div>
-                  <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-2.5 bg-primary-pale/60 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-[#003087] to-[#009CDE] rounded-lg"
+                      className="h-full bg-gradient-to-r from-primary-deep to-primary-green rounded-full"
                       initial={{ width: 0 }}
                       animate={{
                         width: `${Math.round(enrollment.progress)}%`,
@@ -802,19 +802,19 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Instructor card */}
-            <div className="bg-white rounded-2xl border shadow-sm p-5">
-              <h4 className="text-sm font-semibold text-[#0a2a5e] mb-3">
+            <div className="bg-white rounded-3xl border border-primary-pale shadow-lg p-5">
+              <h4 className="text-sm font-semibold text-primary-deep mb-3">
                 Instructeur
               </h4>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center text-[#003087] font-bold text-lg">
+                <div className="w-12 h-12 rounded-xl bg-primary-pale flex items-center justify-center text-primary-deep font-bold text-lg">
                   {course.instructor.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-[#0a2a5e] text-sm">
+                  <p className="font-semibold text-primary-deep text-sm">
                     {course.instructor}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-text">
                     Formateur certifié AfriBayit
                   </p>
                 </div>

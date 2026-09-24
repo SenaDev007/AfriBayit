@@ -27,7 +27,7 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="aspect-[4/3] rounded-2xl" />
+          <Skeleton key={i} className="aspect-[4/3] rounded-3xl" />
         ))}
       </div>
     );
@@ -37,14 +37,14 @@ export default function InvestmentOpportunities({ limit = 6 }: { limit?: number 
 
   if (opportunities.length === 0) {
     return (
-      <div className="bg-white rounded-xl p-12 border text-center">
-        <div className="w-16 h-16 rounded-lg bg-[#003087]/5 flex items-center justify-center mx-auto mb-4">
-          <TrendingUp className="w-8 h-8 text-[#003087]" />
+      <div className="bg-white rounded-3xl p-12 border border-primary-pale shadow-lg text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary-pale flex items-center justify-center mx-auto mb-4">
+          <TrendingUp className="w-8 h-8 text-primary-deep" />
         </div>
-        <h3 className="font-display text-xl font-bold text-gray-700 mb-2">
+        <h3 className="font-serif text-xl font-bold text-primary-deep mb-2">
           {t('investment.noOpportunities', "Aucune opportunité d'investissement")}
         </h3>
-        <p className="text-sm text-gray-500 max-w-md mx-auto">
+        <p className="text-sm text-gray-text max-w-md mx-auto">
           {t('investment.noOpportunitiesDesc', "Les biens d'investissement apparaîtront ici dès qu'ils seront publiés. Chaque bien reçoit un score d'investissement 0-100 calculé par notre algorithme IA.")}
         </p>
       </div>
@@ -80,10 +80,10 @@ function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpport
     >
       <Link
         href={`/property/${opportunity.id}`}
-        className="block bg-white rounded-xl border overflow-hidden hover:shadow-lg hover:border-[#003087]/20 transition-all group"
+        className="block bg-white rounded-3xl border border-primary-pale shadow-lg overflow-hidden hover:shadow-xl hover:border-primary-green/40 transition-all group card-shimmer"
       >
         {/* Image with score badge */}
-        <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+        <div className="relative aspect-[4/3] bg-primary-pale overflow-hidden">
           <ImageWithFallback
             src={firstImage}
             alt={opportunity.title}
@@ -91,10 +91,10 @@ function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpport
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Score badge */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-md bg-white/90 shadow-sm">
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full backdrop-blur-md bg-white/90 shadow-sm border border-primary-pale/60">
             <Brain className="w-3.5 h-3.5" style={{ color: scoreColor }} />
             <span className="font-mono-data font-bold text-sm" style={{ color: scoreColor }}>{score}</span>
-            <span className="text-[9px] font-semibold text-gray-500">/100</span>
+            <span className="text-[9px] font-semibold text-gray-text">/100</span>
           </div>
           {/* Score label */}
           <div
@@ -111,7 +111,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpport
               </span>
             )}
             {opportunity.geoTrust && (
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-[#003087]/80 backdrop-blur-sm">
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-primary-deep/80 backdrop-blur-sm">
                 GeoTrust
               </span>
             )}
@@ -120,36 +120,36 @@ function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpport
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="font-display font-bold text-sm text-[#0a2a5e] truncate mb-1">
+          <h3 className="font-serif font-bold text-sm text-primary-deep truncate mb-1">
             {opportunity.title}
           </h3>
-          <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-3">
+          <p className="text-[10px] text-gray-text/60 flex items-center gap-1 mb-3">
             <MapPin className="w-3 h-3" />
             {opportunity.city}, {opportunity.country} · {opportunity.quartier}
           </p>
 
           {/* Price + price/m² */}
           <div className="flex items-baseline justify-between mb-3">
-            <p className="font-mono-data font-bold text-lg text-[#D4AF37]">
+            <p className="font-mono-data font-bold text-lg text-accent-dark">
               {fmt(opportunity.price)} <span className="text-xs">{opportunity.currency}</span>
             </p>
-            <p className="text-[10px] text-gray-400">{fmt(pricePerSqm)} FCFA/m²</p>
+            <p className="text-[10px] text-gray-text/60">{fmt(pricePerSqm)} FCFA/m²</p>
           </div>
 
           {/* ROI estimates */}
           {roi && (
-            <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-gray-50">
+            <div className="grid grid-cols-3 gap-2 text-center pt-3 border-t border-primary-pale/60">
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.estimatedRent', 'Loyer est.')}</p>
-                <p className="font-mono-data font-bold text-xs text-[#0a2a5e]">{fmt(roi.estimatedMonthlyRent)}</p>
+                <p className="text-[9px] text-gray-text/60 mb-0.5">{t('investment.estimatedRent', 'Loyer est.')}</p>
+                <p className="font-mono-data font-bold text-xs text-primary-deep">{fmt(roi.estimatedMonthlyRent)}</p>
               </div>
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.yield', 'Rendement')}</p>
+                <p className="text-[9px] text-gray-text/60 mb-0.5">{t('investment.yield', 'Rendement')}</p>
                 <p className="font-mono-data font-bold text-xs text-[#00A651]">{roi.grossYield}%</p>
               </div>
               <div>
-                <p className="text-[9px] text-gray-400 mb-0.5">{t('investment.fiveYearProj', '+5 ans')}</p>
-                <p className="font-mono-data font-bold text-xs text-[#D4AF37] flex items-center justify-center gap-0.5">
+                <p className="text-[9px] text-gray-text/60 mb-0.5">{t('investment.fiveYearProj', '+5 ans')}</p>
+                <p className="font-mono-data font-bold text-xs text-accent-dark flex items-center justify-center gap-0.5">
                   <ArrowUpRight className="w-3 h-3" />
                   +{roi.projectedGainPct5y}%
                 </p>
@@ -158,7 +158,7 @@ function OpportunityCard({ opportunity, index }: { opportunity: InvestmentOpport
           )}
 
           {/* Property specs */}
-          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-50 text-[10px] text-gray-400">
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-primary-pale/60 text-[10px] text-gray-text/60">
             {opportunity.bedrooms > 0 && <span>{opportunity.bedrooms} {t('investment.bedroomsShort', 'ch.')}</span>}
             {opportunity.bathrooms > 0 && <span>{opportunity.bathrooms} {t('investment.bathroomsShort', 'sdb')}</span>}
             <span className="flex items-center gap-0.5"><Maximize className="w-3 h-3" />{opportunity.surface} {t('investment.surfaceUnit', 'm²')}</span>

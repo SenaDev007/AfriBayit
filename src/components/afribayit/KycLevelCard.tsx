@@ -51,18 +51,18 @@ const levelColors: Record<number, { bg: string; border: string; badge: string; g
     icon: 'text-gray-500',
   },
   1: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-300',
-    badge: 'bg-blue-100 text-blue-800',
-    glow: 'shadow-blue-200/50',
-    icon: 'text-blue-600',
+    bg: 'bg-primary-pale/60',
+    border: 'border-primary-green/30',
+    badge: 'bg-primary-pale text-primary-deep',
+    glow: 'shadow-primary-green/20',
+    icon: 'text-primary-green',
   },
   2: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-300',
-    badge: 'bg-amber-100 text-amber-800',
-    glow: 'shadow-amber-200/50',
-    icon: 'text-amber-600',
+    bg: 'bg-accent-yellow/10',
+    border: 'border-accent-yellow/40',
+    badge: 'bg-accent-yellow/20 text-accent-dark',
+    glow: 'shadow-accent-yellow/20',
+    icon: 'text-accent-dark',
   },
   3: {
     bg: 'bg-emerald-50',
@@ -79,7 +79,7 @@ function getStatusIcon(status: KycDocRequirement['status']) {
     case 'ai_validated':
       return <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />;
     case 'pending':
-      return <Clock className="w-4 h-4 text-amber-500 shrink-0" />;
+      return <Clock className="w-4 h-4 text-accent-dark shrink-0" />;
     case 'rejected':
       return <XCircle className="w-4 h-4 text-red-500 shrink-0" />;
     default:
@@ -145,7 +145,7 @@ export default function KycLevelCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative rounded-2xl border-2 p-5 sm:p-6 transition-shadow ${
+      className={`relative rounded-3xl border-2 p-5 sm:p-6 transition-shadow ${
         isCurrentLevel ? `shadow-lg ${colors.glow}` : ''
       } ${state === 'locked' ? 'opacity-60' : ''} ${colors.border} ${colors.bg}`}
     >
@@ -158,48 +158,47 @@ export default function KycLevelCard({
         </span>
       )}
 
-      {/* En-tête */}
-      <div className="flex items-start gap-4 mb-4">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors.badge}`}>
+        <div className="flex items-start gap-4 mb-4">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${colors.badge}`}>
           <span className={colors.icon}>{getLevelIcon(level)}</span>
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="font-serif text-lg font-bold text-primary-deep">
               KYC {level} — {name}
             </h3>
             {state === 'locked' && <Lock className="w-4 h-4 text-gray-400" />}
           </div>
-          <p className="text-sm text-gray-600 mt-0.5">{description}</p>
+          <p className="text-sm text-gray-text mt-0.5">{description}</p>
         </div>
       </div>
 
       {/* Limite de transaction */}
-      <div className="mb-4 px-3 py-2 rounded-lg bg-white/70 border border-gray-200/60">
-        <p className="text-xs text-gray-500 font-medium">{t('kyc.transactionLimit', 'Limite de transaction mensuelle')}</p>
-        <p className="text-base font-bold text-gray-900">{limit}</p>
+      <div className="mb-4 px-3 py-2 rounded-xl bg-white/70 border border-primary-pale">
+        <p className="text-xs text-gray-text font-bold uppercase tracking-wider">{t('kyc.transactionLimit', 'Limite de transaction mensuelle')}</p>
+        <p className="text-base font-bold text-primary-deep">{limit}</p>
       </div>
 
       {/* Barre de progression */}
       {state !== 'locked' && requirements.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+          <div className="flex items-center justify-between text-xs text-gray-text mb-1.5">
             <span>{t('kyc.progress', 'Progression')}</span>
-            <span className="font-semibold">
+            <span className="font-bold">
               {validatedCount}/{requirements.length} {t('kyc.documents', 'documents')}
             </span>
           </div>
-          <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+          <div className="h-2 rounded-full bg-primary-pale overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.8, delay: index * 0.12 + 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={`h-full rounded-lg ${
+              className={`h-full rounded-full ${
                 progressPct === 100
                   ? 'bg-emerald-500'
                   : progressPct > 0
-                    ? 'bg-amber-400'
+                    ? 'bg-accent-yellow'
                     : 'bg-gray-300'
               }`}
             />
@@ -209,22 +208,22 @@ export default function KycLevelCard({
 
       {/* Liste des documents requis */}
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="text-xs font-bold text-primary-deep uppercase tracking-wider">
           {t('kyc.requiredDocuments', 'Documents requis')}
         </p>
         {requirements.map((req) => (
           <div
             key={req.docType}
-            className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-white/50 transition-colors"
+            className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-white/60 transition-colors"
           >
             {getStatusIcon(req.status)}
-            <span className="text-sm text-gray-700 flex-1">{req.label}</span>
+            <span className="text-sm text-gray-text flex-1">{req.label}</span>
             <span
-              className={`text-xs font-medium ${
+              className={`text-xs font-bold ${
                 req.status === 'human_validated' || req.status === 'ai_validated'
                   ? 'text-emerald-600'
                   : req.status === 'pending'
-                    ? 'text-amber-600'
+                    ? 'text-accent-dark'
                     : req.status === 'rejected'
                       ? 'text-red-600'
                       : 'text-gray-400'

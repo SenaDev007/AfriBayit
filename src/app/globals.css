@@ -1335,6 +1335,14 @@
   border-radius: 0.75rem;
 }
 
+/* Tuile logo — TOUJOURS sur fond blanc, même à l'intérieur du scope
+   .admin-dark (exigence utilisateur explicite : le logo reste sur
+   fond blanc partout : header, footer, sidebar admin, login...). */
+.logo-tile,
+.admin-dark .logo-tile {
+  background-color: #FFFFFF !important;
+}
+
 /* ── Scrollbar sombre dans le backoffice ── */
 .admin-dark ::-webkit-scrollbar-track {
   background: #060D1A;

@@ -109,28 +109,29 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
   // Guest mode banner when not logged in
   if (!isLoggedIn) {
     return (
-      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+      <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-20">
-            <div className="w-20 h-20 rounded-lg bg-[#003087]/10 flex items-center justify-center mx-auto mb-6">
-              <Home className="w-10 h-10 text-[#003087]" />
+            <div className="w-20 h-20 rounded-3xl bg-primary-pale border border-primary-green/20 flex items-center justify-center mx-auto mb-6">
+              <Home className="w-10 h-10 text-primary-deep" />
             </div>
-            <h2 className="font-display text-2xl font-bold text-[#0a2a5e] mb-3">
+            <h2 className="font-serif text-2xl font-bold text-primary-deep mb-3">
               {t('dashboard.welcomeGuest', 'Bienvenue sur AfriBayit')}
             </h2>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto font-body">
+            <p className="text-gray-text mb-6 max-w-md mx-auto font-body">
               {t('dashboard.guestPrompt', 'Connectez-vous pour accéder à votre tableau de bord, gérer vos transactions et suivre vos activités immobilières.')}
             </p>
             <div className="flex items-center justify-center gap-3">
               <a
                 href="/auth/login"
-                className="px-6 py-3 bg-[#003087] text-white rounded-lg text-sm font-semibold hover:bg-[#002266] transition-colors"
+                className="px-6 py-3 bg-primary-green text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all"
               >
                 {t('dashboard.login', 'Se connecter')}
               </a>
               <a
                 href="/auth/register"
-                className="px-6 py-3 bg-white text-[#003087] border border-[#003087]/20 rounded-lg text-sm font-semibold hover:bg-[#003087]/5 transition-colors"
+                className="px-6 py-3 bg-white text-primary-deep border border-primary-deep/20 rounded-full text-sm font-bold hover:bg-primary-pale transition-all"
               >
                 {t('dashboard.register', 'Créer un compte')}
               </a>
@@ -142,26 +143,27 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
   }
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
           <aside className="lg:w-60 shrink-0">
-            <div className="bg-white rounded-xl p-4 shadow-sm border sticky top-24">
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale sticky top-24">
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-primary-pale">
                 {userAvatar ? (
                   <img
                     src={userAvatar}
                     alt={userName}
-                    className="w-11 h-11 rounded-lg object-cover border-2 border-[#D4AF37]"
+                    className="w-11 h-11 rounded-full object-cover border-2 border-accent-yellow"
                   />
                 ) : (
-                  <div className="w-11 h-11 rounded-lg bg-gray-200 flex items-center justify-center border-2 border-[#D4AF37]">
-                    <span className="text-gray-500 text-sm font-bold">{userName.charAt(0)}</span>
+                  <div className="w-11 h-11 rounded-full bg-primary-pale flex items-center justify-center border-2 border-accent-yellow">
+                    <span className="text-primary-deep text-sm font-bold">{userName.charAt(0)}</span>
                   </div>
                 )}
                 <div>
-                  <h3 className="text-sm font-semibold text-[#0a2a5e]">{userName}</h3>
+                  <h3 className="text-sm font-semibold text-primary-deep">{userName}</h3>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${userKyc.color}15`, color: userKyc.color }}>
                     <userKyc.Icon className="w-3 h-3 inline" /> {t(userKyc.nameKey, userKyc.nameFallback)}
                   </span>
@@ -181,8 +183,8 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                       onClick={() => {
                         router.push(item.href);
                       }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                        activeTab === item.key ? 'bg-[#003087] text-white' : 'text-gray-600 hover:bg-gray-50'
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-medium transition-all ${
+                        activeTab === item.key ? 'bg-primary-deep text-white shadow-md' : 'text-gray-text hover:bg-primary-pale/60'
                       }`}
                     >
                       <IconComp className="w-5 h-5" />
@@ -208,19 +210,20 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+                className="bg-primary-deep rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+                <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative z-10">
-                  <h3 className="font-display text-xl font-bold mb-2">{t('dashboard.welcomeBack', 'Bienvenue sur AfriBayit !')} 🏠</h3>
+                  <h3 className="font-serif text-xl font-bold mb-2">{t('dashboard.welcomeBack', 'Bienvenue sur AfriBayit !')} 🏠</h3>
                   <p className="text-white/70 text-sm mb-4">
                     {t('dashboard.onboardTitle', 'Commencez par compléter votre profil et vérifier votre identité pour accéder à toutes les fonctionnalités.')}
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <a href="/kyc" className="px-4 py-2 bg-white text-[#003087] rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors">
+                    <a href="/kyc" className="px-4 py-2 bg-white text-primary-deep rounded-full text-sm font-bold shadow-sm hover:bg-white/90 transition-colors">
                       {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
                     </a>
-                    <a href="/publish" className="px-4 py-2 bg-[#D4AF37] text-white rounded-lg text-sm font-semibold hover:bg-[#b8961f] transition-colors">
+                    <a href="/publish" className="px-4 py-2 bg-accent-yellow text-primary-deep rounded-full text-sm font-bold shadow-sm hover:bg-accent-yellow/90 transition-colors">
                       {t('dashboard.publishAd', 'Publier une annonce')}
                     </a>
                   </div>
@@ -232,7 +235,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {walletLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border">
+                  <div key={i} className="bg-white rounded-3xl p-4 sm:p-6 shadow-lg border border-primary-pale">
                     <div className="flex items-center justify-between mb-3">
                       <Skeleton className="w-8 h-8 rounded" />
                       <Skeleton className="w-2 h-2 rounded-full" />
@@ -253,14 +256,14 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border"
+                    className="bg-white rounded-3xl p-4 sm:p-6 shadow-lg border border-primary-pale"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-2xl">{kpi.icon}</span>
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
                     </div>
-                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                    <p className="font-serif font-black text-lg sm:text-xl text-primary-deep">{kpi.value}</p>
+                    <p className="text-xs text-gray-text mt-0.5">{kpi.label}</p>
                   </motion.div>
                 ))
               ) : (
@@ -275,14 +278,14 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border"
+                    className="bg-white rounded-3xl p-4 sm:p-6 shadow-lg border border-primary-pale"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-2xl">{kpi.icon}</span>
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: kpi.color }} />
                     </div>
-                    <p className="font-mono-data text-lg sm:text-xl font-bold text-[#0a2a5e]">{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                    <p className="font-serif font-black text-lg sm:text-xl text-primary-deep">{kpi.value}</p>
+                    <p className="text-xs text-gray-text mt-0.5">{kpi.label}</p>
                   </motion.div>
                 ))
               )}
@@ -290,7 +293,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
 
             {/* Wallet Card */}
             {walletLoading ? (
-              <div className="bg-navy-gradient rounded-xl p-6 sm:p-8 mb-6">
+              <div className="bg-primary-deep rounded-3xl p-6 sm:p-8 mb-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+                <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
                 <Skeleton className="h-4 w-32 mb-2 bg-white/20" />
                 <Skeleton className="h-10 w-48 mb-6 bg-white/20" />
                 <div className="grid grid-cols-3 gap-4">
@@ -304,16 +309,17 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="bg-gradient-to-r from-[#003087] to-[#001f5c] rounded-xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
+                className="bg-primary-deep rounded-3xl p-6 sm:p-8 mb-6 text-white relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+                <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <Wallet className="w-6 h-6 text-[#D4AF37]" />
+                      <Wallet className="w-6 h-6 text-accent-yellow" />
                     </div>
                     <div>
-                      <p className="font-display text-lg font-bold">{t('dashboard.welcome', 'Bienvenue !')}</p>
+                      <p className="font-serif text-lg font-bold">{t('dashboard.welcome', 'Bienvenue !')}</p>
                       <p className="text-white/60 text-xs">{t('dashboard.walletSubtitle', 'Portefeuille AfriBayit')}</p>
                     </div>
                   </div>
@@ -322,7 +328,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                   </p>
                   <a
                     href="/kyc"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#003087] rounded-lg text-sm font-semibold hover:bg-white/90 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-primary-deep rounded-full text-sm font-bold shadow-sm hover:bg-white/90 transition-colors"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     {t('dashboard.verifyIdentity', 'Vérifier mon identité')}
@@ -334,25 +340,26 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
-                className="bg-navy-gradient rounded-xl p-6 sm:p-8 mb-6 relative overflow-hidden"
+                className="bg-primary-deep rounded-3xl p-6 sm:p-8 mb-6 relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-lg -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+                <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <p className="text-white/60 text-xs mb-1">{t('dashboard.walletSubtitle', 'Portefeuille AfriBayit')}</p>
-                      <p className="font-mono-data text-3xl sm:text-4xl font-bold text-white">
+                      <p className="font-serif font-black text-3xl sm:text-4xl text-white">
                         {new Intl.NumberFormat('fr-FR').format(walletBalance)} <span className="text-sm text-white/60">FCFA</span>
                       </p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                      <Wallet className="w-6 h-6 text-[#D4AF37]" />
+                      <Wallet className="w-6 h-6 text-accent-yellow" />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <p className="text-white/40 text-[10px] mb-0.5">{t('userDashboard.escrowHeld', 'Escrow bloqué')}</p>
-                      <p className="font-mono-data text-sm font-bold text-[#D4AF37]">{new Intl.NumberFormat('fr-FR').format(escrowHeld)}</p>
+                      <p className="font-mono-data text-sm font-bold text-accent-yellow">{new Intl.NumberFormat('fr-FR').format(escrowHeld)}</p>
                     </div>
                     <div>
                       <p className="text-white/40 text-[10px] mb-0.5">{t('userDashboard.pending', 'En attente')}</p>
@@ -372,9 +379,9 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4, ease: easeOut }}
-              className="bg-white rounded-xl p-6 shadow-sm border"
+              className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale"
             >
-              <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-4">{t('dashboard.recentTransactions', 'Transactions récentes')}</h3>
+              <h3 className="font-serif text-lg font-bold text-primary-deep mb-4">{t('dashboard.recentTransactions', 'Transactions récentes')}</h3>
               {txnLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -397,7 +404,7 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                 </div>
               ) : transactions.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-gray-500">{t('dashboard.noTransactions', 'Aucune transaction trouvée')}</p>
+                  <p className="text-sm text-gray-text">{t('dashboard.noTransactions', 'Aucune transaction trouvée')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -408,18 +415,18 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
                     const date = String(txn.date ?? txn.createdAt ?? '');
                     const displayDate = date ? new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
                     return (
-                      <div key={String(txn.id)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                      <div key={String(txn.id)} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-primary-pale/30 transition-colors">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10` }}>
                           <span className="text-lg">
                             {status === 'RELEASED' ? <CheckCircle className="w-4 h-4" /> : status === 'FUNDED' ? <Coins className="w-4 h-4" /> : status === 'IN_PROGRESS' ? <RefreshCw className="w-4 h-4" /> : <ClipboardList className="w-4 h-4" />}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#0a2a5e] truncate">{propertyTitle}</p>
-                          <p className="text-xs text-gray-400">{displayDate}</p>
+                          <p className="text-sm font-medium text-primary-deep truncate">{propertyTitle}</p>
+                          <p className="text-xs text-gray-text/60">{displayDate}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="font-mono-data text-sm font-bold text-[#0a2a5e]">{new Intl.NumberFormat('fr-FR').format(amount)}</p>
+                          <p className="font-mono-data text-sm font-bold text-primary-deep">{new Intl.NumberFormat('fr-FR').format(amount)}</p>
                           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${statusColors[status] || '#6b7280'}10`, color: statusColors[status] || '#6b7280' }}>
                             {statusLabels[status] || status}
                           </span>
@@ -436,25 +443,25 @@ export default function UserDashboard({ onNavigate, onLogout }: UserDashboardPro
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5, ease: easeOut }}
-              className="bg-white rounded-xl p-6 shadow-sm border mt-6"
+              className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale mt-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg font-bold text-[#0a2a5e]">{t('dashboard.kycLevel', 'Niveau KYC')}</h3>
-                <a href="/kyc" className="text-xs font-semibold text-[#003087] hover:underline">{t('dashboard.verifyIdentity', 'Vérifier mon identité')} →</a>
+                <h3 className="font-serif text-lg font-bold text-primary-deep">{t('dashboard.kycLevel', 'Niveau KYC')}</h3>
+                <a href="/kyc" className="text-xs font-bold text-primary-deep hover:underline">{t('dashboard.verifyIdentity', 'Vérifier mon identité')} →</a>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {kycLevels.map((level) => (
                   <div
                     key={level.level}
                     className={`p-3 rounded-2xl border-2 text-center transition-colors ${
-                      userKycLevel >= level.level ? 'border-[#00A651] bg-[#00A651]/5' : 'border-gray-100 bg-gray-50'
+                      userKycLevel >= level.level ? 'border-[#00A651] bg-[#00A651]/5' : 'border-primary-pale bg-primary-pale/30'
                     }`}
                   >
                     <level.Icon className="w-6 h-6 mx-auto mb-1" />
                     <p className="text-xs font-semibold" style={{ color: userKycLevel >= level.level ? '#00A651' : '#9ca3af' }}>
                       {t(level.nameKey, level.nameFallback)}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{t('userDashboard.levelLabel', 'Niveau')} {level.level}</p>
+                    <p className="text-[10px] text-gray-text/60 mt-0.5">{t('userDashboard.levelLabel', 'Niveau')} {level.level}</p>
                   </div>
                 ))}
               </div>

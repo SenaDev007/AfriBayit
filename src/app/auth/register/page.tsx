@@ -54,7 +54,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-6">
           {/* Logo — tuile blanche (le logo doit rester sur fond blanc) */}
-          <div className="inline-flex w-16 h-16 bg-white rounded-2xl p-2 mb-4 shadow-lg items-center justify-center border border-primary-green/20">
+          <div className="logo-tile inline-flex w-16 h-16 rounded-2xl p-2 mb-4 shadow-lg items-center justify-center border border-primary-green/20">
             <Image src="/logo.png" alt="AfriBayit" width={64} height={64} className="w-full h-full object-contain" priority />
           </div>
           <h1 className="font-serif text-2xl font-bold text-white tracking-wide">
@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
         {/* Signature bas de page — pattern Win-Agro */}
         <div className="mt-6 flex items-center justify-center gap-2 opacity-80">
-          <div className="w-8 h-8 bg-white rounded-lg p-1 flex items-center justify-center">
+          <div className="logo-tile w-8 h-8 rounded-lg p-1 flex items-center justify-center">
             <Image src="/logo.png" alt="AfriBayit" width={32} height={32} className="w-full h-full object-contain" />
           </div>
           <p className="text-[10px] text-gray-500">

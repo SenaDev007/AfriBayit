@@ -29,8 +29,8 @@ function OTASyncBar({ otaSyncStatus }: { otaSyncStatus: Record<string, { status:
       {['booking_com', 'expedia', 'airbnb'].map((ota) => {
         const info = otaSyncStatus[ota];
         return (
-          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-            info?.status === 'synced' ? 'bg-[#00A651]/10 text-[#00A651]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'
+          <span key={ota} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
+            info?.status === 'synced' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30'
           }`}>
             <RefreshCw className={`w-3 h-3 ${info?.status === 'synced' ? '' : 'animate-spin'}`} />
             {channelLabel(ota)}
@@ -225,30 +225,31 @@ export default function HotelPMS() {
   // OTA Sync Status Bar is now declared outside the component (above).
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#003087]/10 text-[#003087] text-sm font-semibold mb-4">
-            <Hotel className="w-4 h-4" /> PMS Hotelier — AfriBayit
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
+            <Hotel className="w-3.5 h-3.5" /> PMS Hotelier — AfriBayit
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-3">
-            Gestion <span className="text-[#003087]">Hoteliere</span>
+          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-deep mb-3">
+            Gestion <span className="text-accent-dark">Hoteliere</span>
           </h1>
-          <p className="text-gray-500 max-w-lg mx-auto">
+          <p className="text-gray-text max-w-lg mx-auto">
             Tableau de bord PMS complet : reservations, tarifs, disponibilites et canaux OTA
           </p>
+          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
         </motion.div>
 
         {/* Hotel Selector + OTA Sync */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-          <select value={hotelId} onChange={(e) => setHotelId(e.target.value)} className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white max-w-xs">
+          <select value={hotelId} onChange={(e) => setHotelId(e.target.value)} className="px-4 py-3 rounded-xl border border-primary-pale text-sm bg-white max-w-xs focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all">
             <option value="">Selectionner un hotel</option>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
           <div className="flex items-center gap-3">
             <OTASyncBar otaSyncStatus={otaSyncStatus} />
-            <button onClick={handleSyncOTA} className="px-4 py-2.5 bg-[#003087] text-white rounded-xl text-sm font-semibold hover:bg-[#0047b3] transition-colors flex items-center gap-2">
+            <button onClick={handleSyncOTA} className="px-4 py-2.5 rounded-full bg-primary-green text-white text-sm font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all flex items-center gap-2">
               <RefreshCw className="w-4 h-4" /> Sync OTA
             </button>
           </div>
@@ -257,8 +258,8 @@ export default function HotelPMS() {
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
           {TABS.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'
             }`}>
               {tab.icon} {tab.label}
             </button>

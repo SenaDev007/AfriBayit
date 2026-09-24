@@ -30,18 +30,18 @@ export default function ReportDialog({ open, onClose, reason, setReason, onSubmi
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl"
+        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-primary-pale"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-lg font-bold text-[#0a2a5e] mb-1 flex items-center gap-2"><Flag className="w-5 h-5 text-[#D93025]" /> {t('community.report.title', 'Signaler ce contenu')}</h3>
-        <p className="text-xs text-gray-500 mb-4">{t('community.report.moderationNote', 'Notre équipe de modération examinera votre signalement sous 24h.')}</p>
+        <h3 className="font-serif text-lg font-bold text-primary-deep mb-1 flex items-center gap-2"><Flag className="w-5 h-5 text-[#D93025]" /> {t('community.report.title', 'Signaler ce contenu')}</h3>
+        <p className="text-xs text-gray-text mb-4">{t('community.report.moderationNote', 'Notre équipe de modération examinera votre signalement sous 24h.')}</p>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-gray-500 mb-1.5 block">{t('community.report.reasonLabel', 'Raison du signalement')}</label>
+            <label className="text-xs font-bold text-primary-deep uppercase tracking-wider mb-1.5 block">{t('community.report.reasonLabel', 'Raison du signalement')}</label>
             <select
               value={reason}
               onChange={e => setReason(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border text-sm outline-none focus:border-[#003087] transition-colors"
+              className="w-full px-4 py-3.5 rounded-xl border border-primary-pale bg-white text-sm outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             >
               <option value="">{t('community.report.selectReason', 'Sélectionnez une raison')}</option>
               <option value="spam">{t('community.report.reasonSpam', 'Spam ou contenu indésirable')}</option>
@@ -54,11 +54,11 @@ export default function ReportDialog({ open, onClose, reason, setReason, onSubmi
             </select>
           </div>
           <div className="flex gap-3">
-            <button onClick={handleClose} className="flex-1 py-3 border rounded-lg text-sm font-semibold text-gray-600">{t('community.report.cancel', 'Annuler')}</button>
+            <button onClick={handleClose} className="flex-1 py-3 rounded-full border border-primary-deep/20 text-primary-deep text-sm font-bold hover:bg-primary-pale transition-all">{t('community.report.cancel', 'Annuler')}</button>
             <button
               onClick={onSubmit}
               disabled={isSubmitting || !reason}
-              className="flex-1 py-3 bg-[#D93025] text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+              className="flex-1 py-3 rounded-full bg-[#D93025] text-white text-sm font-bold shadow-md hover:bg-[#b5251f] transition-all disabled:opacity-50"
             >
               {isSubmitting ? t('community.report.sending', 'Envoi...') : t('community.report.submit', 'Signaler')}
             </button>

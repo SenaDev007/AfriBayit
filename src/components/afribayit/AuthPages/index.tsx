@@ -504,7 +504,7 @@ export default function AuthPages({ mode, onClose, onSwitch, onSuccess }: AuthPa
               {/* Header — logo sur tuile blanche + wordmark serif Win-Agro */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 bg-white rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
+                  <div className="logo-tile w-10 h-10 rounded-xl p-1.5 shrink-0 flex items-center justify-center shadow-md">
                     <Image
                       src="/logo.png"
                       alt="AfriBayit"

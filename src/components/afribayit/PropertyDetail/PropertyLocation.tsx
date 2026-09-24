@@ -82,12 +82,12 @@ export default function PropertyLocation({ property }: PropertyLocationProps) {
       transition={{ duration: 0.5, delay: 0.3, ease: easeOut }}
       className="mb-6"
     >
-      <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-3 flex items-center gap-2">
-        <MapPin className="w-5 h-5 text-[#003087]" />
+      <h2 className="font-serif text-xl font-bold text-primary-deep mb-3 flex items-center gap-2">
+        <MapPin className="w-5 h-5 text-primary-green" />
         {t('property.locationTitle', 'Localisation')}
       </h2>
       {property.lat && property.lng ? (
-        <div className="h-80 rounded-xl overflow-hidden">
+        <div className="h-80 rounded-3xl overflow-hidden border border-primary-pale shadow-lg">
           <PropertyMap
             properties={mapProperties}
             selectedCountry={property.country}
@@ -96,23 +96,23 @@ export default function PropertyLocation({ property }: PropertyLocationProps) {
           />
         </div>
       ) : (
-        <div className="relative h-64 rounded-xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-[#003087]/5">
+        <div className="relative h-64 rounded-3xl overflow-hidden border border-primary-pale">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-pale via-white to-primary-pale/60">
             <div className="absolute inset-0 opacity-[0.07]">
-              <div className="absolute top-1/4 left-0 right-0 h-px bg-[#003087]" />
-              <div className="absolute top-2/4 left-0 right-0 h-px bg-[#003087]" />
-              <div className="absolute top-3/4 left-0 right-0 h-px bg-[#003087]" />
-              <div className="absolute left-1/4 top-0 bottom-0 w-px bg-[#003087]" />
-              <div className="absolute left-2/4 top-0 bottom-0 w-px bg-[#003087]" />
-              <div className="absolute left-3/4 top-0 bottom-0 w-px bg-[#003087]" />
+              <div className="absolute top-1/4 left-0 right-0 h-px bg-primary-deep" />
+              <div className="absolute top-2/4 left-0 right-0 h-px bg-primary-deep" />
+              <div className="absolute top-3/4 left-0 right-0 h-px bg-primary-deep" />
+              <div className="absolute left-1/4 top-0 bottom-0 w-px bg-primary-deep" />
+              <div className="absolute left-2/4 top-0 bottom-0 w-px bg-primary-deep" />
+              <div className="absolute left-3/4 top-0 bottom-0 w-px bg-primary-deep" />
             </div>
           </div>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center mb-2">
-              <MapPin className="w-6 h-6 text-[#003087]" />
+            <div className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mb-2">
+              <MapPin className="w-6 h-6 text-primary-deep" />
             </div>
-            <p className="text-sm font-semibold text-[#0a2a5e] mt-2">{property.quartier}, {property.city}</p>
-            <p className="text-xs text-gray-400 mt-1">{t('propertyDetail.location.gpsUnavailable', 'Coordonnées GPS non disponibles')}</p>
+            <p className="text-sm font-bold text-primary-deep mt-2">{property.quartier}, {property.city}</p>
+            <p className="text-xs text-gray-text/60 mt-1">{t('propertyDetail.location.gpsUnavailable', 'Coordonnées GPS non disponibles')}</p>
           </div>
         </div>
       )}

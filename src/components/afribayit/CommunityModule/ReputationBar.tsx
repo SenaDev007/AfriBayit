@@ -26,16 +26,16 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
     <>
       {/* Country + City Filter */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-xs text-gray-500 font-medium">Pays:</span>
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+        <span className="text-xs text-gray-text font-medium">Pays:</span>
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-xs font-semibold">
           {COUNTRY_NAMES[selectedCountry] || selectedCountry}
         </span>
         <span className="text-xs text-gray-400 mx-1">|</span>
-        <span className="text-xs text-gray-500 font-medium">Ville:</span>
+        <span className="text-xs text-gray-text font-medium">Ville:</span>
         <select
           value={forumCity}
           onChange={e => setForumCity(e.target.value)}
-          className="text-xs border rounded-lg px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#003087]"
+          className="text-xs border border-primary-pale rounded-xl px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
         >
           <option value="">Toutes les villes</option>
           <option value="Cotonou">Cotonou</option>
@@ -50,7 +50,7 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl p-5 shadow-sm border mb-6"
+        className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale mb-6"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -58,14 +58,14 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
               <div className="flex items-center gap-2">
                 <span className="text-lg">{userRepLevel.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-[#0a2a5e]">{userRepLevel.name}</p>
-                  <p className="text-xs text-gray-500">Score AfriBayit : {currentUserScore}/1000</p>
+                  <p className="text-sm font-semibold text-primary-deep">{userRepLevel.name}</p>
+                  <p className="text-xs text-gray-text">Score AfriBayit : {currentUserScore}/1000</p>
                 </div>
               </div>
               <span className="text-xs font-medium px-2.5 py-1 rounded-lg" style={{ backgroundColor: `${userRepLevel.color}15`, color: userRepLevel.color }}>{userRepLevel.name}</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-lg transition-all" style={{ width: `${Math.min((currentUserScore / 1000) * 100, 100)}%`, backgroundColor: userRepLevel.color }} />
+            <div className="h-2 bg-primary-pale/60 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all" style={{ width: `${Math.min((currentUserScore / 1000) * 100, 100)}%`, backgroundColor: userRepLevel.color }} />
             </div>
             <div className="flex justify-between mt-1 text-[9px] text-gray-400">
               {reputationLevels.map(level => <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>)}
@@ -75,40 +75,40 @@ export default function ReputationBar({ user, forumCity, setForumCity }: Reputat
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">{afriLevel.icon}</span>
-                <div><p className="text-sm font-semibold text-[#0a2a5e]">AfriPoints</p><p className="text-xs text-gray-500">{userAfriPoints} points</p></div>
+                <div><p className="text-sm font-semibold text-primary-deep">AfriPoints</p><p className="text-xs text-gray-text">{userAfriPoints} points</p></div>
               </div>
               <span className="text-xs font-medium px-2.5 py-1 rounded-lg" style={{ backgroundColor: `${afriLevel.color}15`, color: afriLevel.color }}>{afriLevel.name}</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full rounded-lg transition-all bg-gradient-to-r from-[#D4AF37] to-[#003087]" style={{ width: nextLevel ? `${Math.min((userAfriPoints / nextLevel.min) * 100, 100)}%` : '100%' }} />
+            <div className="h-2 bg-primary-pale/60 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all bg-gradient-to-r from-accent-yellow to-primary-deep" style={{ width: nextLevel ? `${Math.min((userAfriPoints / nextLevel.min) * 100, 100)}%` : '100%' }} />
             </div>
             <div className="flex justify-between mt-1 text-[9px] text-gray-400">{afriPointLevels.slice(0, 4).map(level => <span key={level.name} className="flex items-center gap-0.5">{level.icon} {level.name}</span>)}</div>
           </div>
         </div>
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {badges.filter(b => b.earned).map(badge => (
-            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 bg-[#D4AF37]/10 text-[#D4AF37]" title={badge.description}>{badge.icon} {badge.name}</span>
+            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30" title={badge.description}>{badge.icon} {badge.name}</span>
           ))}
           {badges.filter(b => !b.earned).map(badge => (
-            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300" title={badge.description}><Lock className="w-3 h-3" /> {badge.name}</span>
+            <span key={badge.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0 bg-gray-50 text-gray-300" title={badge.description}><Lock className="w-3 h-3" /> {badge.name}</span>
           ))}
         </div>
         {/* NLP moderation + Signalement + Rebecca AI */}
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#009CDE]/5 rounded-xl">
-            <Bot className="w-3.5 h-3.5 text-[#009CDE] shrink-0" />
-            <span className="text-[10px] text-[#009CDE] font-medium">Modération NLP — Rebecca IA</span>
+          <div className="flex items-center gap-2 px-3 py-2 bg-primary-pale rounded-xl">
+            <Bot className="w-3.5 h-3.5 text-primary-green shrink-0" />
+            <span className="text-[10px] text-primary-deep font-medium">Modération NLP — Rebecca IA</span>
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#D4AF37]/5 rounded-xl">
-            <Flag className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-            <span className="text-[10px] text-[#D4AF37] font-medium">Signalement</span>
+          <div className="flex items-center gap-2 px-3 py-2 bg-accent-yellow/10 rounded-xl">
+            <Flag className="w-3.5 h-3.5 text-accent-dark shrink-0" />
+            <span className="text-[10px] text-accent-dark font-medium">Signalement</span>
           </div>
           <button
             onClick={() => toast({ title: 'Rebecca IA', description: 'Ouvrez le chat Rebecca pour obtenir de l\'aide.' })}
-            className="flex items-center gap-2 px-3 py-2 bg-[#00A651]/5 rounded-xl hover:bg-[#00A651]/10 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
           >
-            <MessageCircle className="w-3.5 h-3.5 text-[#00A651] shrink-0" />
-            <span className="text-[10px] text-[#00A651] font-medium">Chat Rebecca IA</span>
+            <MessageCircle className="w-3.5 h-3.5 text-green-600 shrink-0" />
+            <span className="text-[10px] text-green-700 font-medium">Chat Rebecca IA</span>
           </button>
         </div>
       </motion.div>

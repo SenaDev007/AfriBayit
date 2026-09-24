@@ -10,16 +10,21 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-[#003087] text-white py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-8 h-8 text-[#D4AF37]" />
-            <h1 className="text-3xl md:text-4xl font-display font-bold">
+    <div className="min-h-screen bg-cream">
+      {/* Header — P6 */}
+      <div className="bg-primary-deep text-white py-16 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px]" />
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+              <Shield className="w-6 h-6 text-accent-yellow" />
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold">
               Politique de Confidentialité
             </h1>
           </div>
+          <div className="h-1 w-16 bg-accent-yellow rounded-full mb-4" />
           <p className="text-white/70 text-sm">
             Dernière mise à jour : 2 juin 2026
           </p>
@@ -28,27 +33,27 @@ export default function PrivacyPage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-20">
-        <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-8">
+        <div className="prose prose-lg max-w-none text-gray-text leading-relaxed space-y-8">
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mt-0 mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mt-0 mb-4">
               1. Introduction
             </h2>
             <p>
               AfriBayit (ci-après &quot;nous&quot;, &quot;notre&quot; ou &quot;la Plateforme&quot;) s&apos;engage à protéger la vie privée et les données personnelles de ses Utilisateurs. La présente Politique de Confidentialité décrit les types de données que nous collectons, les finalités de cette collecte, la manière dont nous les utilisons, les partageons et les protégeons, ainsi que les droits dont vous disposez.
             </p>
             <p>
-              Cette politique s&apos;applique à l&apos;ensemble des services proposés par AfriBayit, y compris le site web (<a href="https://afri-bayit.vercel.app" className="text-[#003087] underline">https://afri-bayit.vercel.app</a>), l&apos;application progressive (PWA), les interfaces USSD et les API associées. Elle est conforme aux législations sur la protection des données en vigueur dans les pays couverts : Bénin (Loi n°2009-09), Côte d&apos;Ivoire (Loi n°2013-451), Burkina Faso (Loi n°061-2008/AN), Togo (Loi n°2019-014) et Sénégal (Loi n°2008-12).
+              Cette politique s&apos;applique à l&apos;ensemble des services proposés par AfriBayit, y compris le site web (<a href="https://afri-bayit.vercel.app" className="text-primary-green underline underline-offset-4 hover:text-primary-deep transition-colors">https://afri-bayit.vercel.app</a>), l&apos;application progressive (PWA), les interfaces USSD et les API associées. Elle est conforme aux législations sur la protection des données en vigueur dans les pays couverts : Bénin (Loi n°2009-09), Côte d&apos;Ivoire (Loi n°2013-451), Burkina Faso (Loi n°061-2008/AN), Togo (Loi n°2019-014) et Sénégal (Loi n°2008-12).
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               2. Données Collectées
             </h2>
             <p>Nous collectons les catégories de données suivantes :</p>
 
-            <h3 className="text-xl font-display font-semibold text-[#003087] mt-6 mb-3">
+            <h3 className="text-xl font-serif font-bold text-primary-deep mt-6 mb-3">
               2.1 Données fournies directement
             </h3>
             <ul className="list-disc pl-6 space-y-2">
@@ -58,7 +63,7 @@ export default function PrivacyPage() {
               <li><strong>Données financières :</strong> informations de paiement, historique des transactions, numéros de compte Mobile Money</li>
             </ul>
 
-            <h3 className="text-xl font-display font-semibold text-[#003087] mt-6 mb-3">
+            <h3 className="text-xl font-serif font-bold text-primary-deep mt-6 mb-3">
               2.2 Données collectées automatiquement
             </h3>
             <ul className="list-disc pl-6 space-y-2">
@@ -68,7 +73,7 @@ export default function PrivacyPage() {
               <li><strong>Cookies et technologies similaires :</strong> cookies de session, cookies de préférences, cookies analytiques (voir section Cookies)</li>
             </ul>
 
-            <h3 className="text-xl font-display font-semibold text-[#003087] mt-6 mb-3">
+            <h3 className="text-xl font-serif font-bold text-primary-deep mt-6 mb-3">
               2.3 Données provenant de tiers
             </h3>
             <ul className="list-disc pl-6 space-y-2">
@@ -79,7 +84,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               3. Finalités du Traitement
             </h2>
             <p>Vos données personnelles sont traitées pour les finalités suivantes :</p>
@@ -95,7 +100,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               4. Base Légale du Traitement
             </h2>
             <p>Le traitement de vos données repose sur les bases légales suivantes :</p>
@@ -108,7 +113,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               5. Partage des Données
             </h2>
             <p>Vos données personnelles peuvent être partagées avec :</p>
@@ -126,7 +131,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               6. Sécurité des Données
             </h2>
             <p>Nous mettons en oeuvre les mesures de sécurité suivantes :</p>
@@ -143,7 +148,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               7. Conservation des Données
             </h2>
             <p>Les données personnelles sont conservées pour les durées suivantes :</p>
@@ -161,7 +166,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               8. Cookies et Technologies de Suivi
             </h2>
             <p>La Plateforme utilise les types de cookies suivants :</p>
@@ -177,7 +182,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               9. Intelligence Artificielle et Rebecca
             </h2>
             <p>
@@ -195,7 +200,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               10. Vos Droits
             </h2>
             <p>Conformément aux législations locales, vous disposez des droits suivants :</p>
@@ -215,7 +220,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               11. Transferts Internationaux
             </h2>
             <p>
@@ -224,7 +229,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               12. Données des Mineurs
             </h2>
             <p>
@@ -233,7 +238,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               13. Modifications
             </h2>
             <p>
@@ -242,7 +247,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               14. Contact
             </h2>
             <p>
@@ -252,14 +257,14 @@ export default function PrivacyPage() {
               <li><strong>E-mail :</strong> contact@afribayit.com</li>
               <li><strong>Téléphone :</strong> +229 97 00 00 00</li>
               <li><strong>Adresse :</strong> Cotonou, Bénin</li>
-              <li><strong>Site web :</strong> <a href="https://afri-bayit.vercel.app" className="text-[#003087] underline">https://afri-bayit.vercel.app</a></li>
+              <li><strong>Site web :</strong> <a href="https://afri-bayit.vercel.app" className="text-primary-green underline underline-offset-4 hover:text-primary-deep transition-colors">https://afri-bayit.vercel.app</a></li>
             </ul>
 
-            <div className="mt-6 p-4 rounded-xl bg-[#003087]/5 border border-[#003087]/10">
-              <p className="text-sm text-gray-600">
+            <div className="mt-6 p-4 rounded-2xl bg-primary-pale/50 border border-primary-pale">
+              <p className="text-sm text-gray-text">
                 <strong>Autorités de protection des données par pays :</strong>
               </p>
-              <ul className="list-disc pl-6 text-sm text-gray-600 mt-2 space-y-1">
+              <ul className="list-disc pl-6 text-sm text-gray-text mt-2 space-y-1">
                 <li>Bénin : Autorité de Protection des Données Personnelles (APDP)</li>
                 <li>Côte d&apos;Ivoire : Autorité de Régulation des Télécommunications de Côte d&apos;Ivoire (ARTCI)</li>
                 <li>Burkina Faso : Commission Nationale de l&apos;Informatique et des Libertés (CNIL-BF)</li>

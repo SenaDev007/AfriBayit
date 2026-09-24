@@ -49,20 +49,20 @@ export default function PropertyHeader({
       >
         <div className="flex items-center gap-2 mb-2">
           {premium && (
-            <span className="px-2.5 py-0.5 bg-[#D4AF37] text-white text-[10px] font-bold rounded-full">{t('propertyDetail.header.premium', 'Premium')}</span>
+            <span className="px-2.5 py-0.5 bg-accent-yellow text-primary-deep text-[10px] font-bold rounded-full">{t('propertyDetail.header.premium', 'Premium')}</span>
           )}
           {avgRating && (
-            <span className="flex items-center gap-1 px-2.5 py-0.5 bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold rounded-full">
+            <span className="flex items-center gap-1 px-2.5 py-0.5 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[10px] font-bold rounded-full">
               <Star className="w-3 h-3 fill-current" />
               {avgRating}
             </span>
           )}
         </div>
-        <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a2a5e] mb-2">
+        <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-deep mb-2">
           {title}
         </h1>
-        <p className="text-gray-500 flex items-center gap-2">
-          <MapPin className="w-4 h-4" />
+        <p className="text-gray-text flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-primary-green" />
           {quartier}, {city}, {country}
         </p>
       </motion.div>
@@ -72,62 +72,62 @@ export default function PropertyHeader({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
-        className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-2xl mb-6"
+        className="flex flex-wrap gap-4 p-4 bg-primary-pale/40 rounded-3xl border border-primary-pale/60 mb-6"
       >
         {bedrooms > 0 && (
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
+              <svg className="w-5 h-5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
             </div>
             <div>
-              <span className="text-lg font-bold text-[#0a2a5e]">{bedrooms}</span>
-              <span className="text-xs text-gray-500 ml-1">{t('property.bedrooms', 'Chambres')}</span>
+              <span className="text-lg font-bold text-primary-deep">{bedrooms}</span>
+              <span className="text-xs text-gray-text ml-1">{t('property.bedrooms', 'Chambres')}</span>
             </div>
           </div>
         )}
         {bathrooms > 0 && (
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
+              <svg className="w-5 h-5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <span className="text-lg font-bold text-[#0a2a5e]">{bathrooms}</span>
-              <span className="text-xs text-gray-500 ml-1">{t('property.bathroomsShort', 'SdB')}</span>
+              <span className="text-lg font-bold text-primary-deep">{bathrooms}</span>
+              <span className="text-xs text-gray-text ml-1">{t('property.bathroomsShort', 'SdB')}</span>
             </div>
           </div>
         )}
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-            <svg className="w-5 h-5 text-[#003087]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
+            <svg className="w-5 h-5 text-primary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
             </svg>
           </div>
           <div>
-            <span className="text-lg font-bold text-[#0a2a5e]">{surface}</span>
-            <span className="text-xs text-gray-500 ml-1">{t('property.surfaceUnit', 'm²')}</span>
+            <span className="text-lg font-bold text-primary-deep">{surface}</span>
+            <span className="text-xs text-gray-text ml-1">{t('property.surfaceUnit', 'm²')}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
-            <Eye className="w-5 h-5 text-[#003087]" />
+          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
+            <Eye className="w-5 h-5 text-primary-green" />
           </div>
           <div>
-            <span className="text-lg font-bold text-[#0a2a5e]">{views}</span>
-            <span className="text-xs text-gray-500 ml-1">{t('propertyDetail.header.views', 'Vues')}</span>
+            <span className="text-lg font-bold text-primary-deep">{views}</span>
+            <span className="text-xs text-gray-text ml-1">{t('propertyDetail.header.views', 'Vues')}</span>
           </div>
         </div>
         {(favorites ?? 0) > 0 && (
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
               <Heart className="w-5 h-5 text-red-400" />
             </div>
             <div>
-              <span className="text-lg font-bold text-[#0a2a5e]">{favorites}</span>
-              <span className="text-xs text-gray-500 ml-1">{t('propertyDetail.header.favorites', 'Favoris')}</span>
+              <span className="text-lg font-bold text-primary-deep">{favorites}</span>
+              <span className="text-xs text-gray-text ml-1">{t('propertyDetail.header.favorites', 'Favoris')}</span>
             </div>
           </div>
         )}
@@ -140,8 +140,8 @@ export default function PropertyHeader({
         transition={{ duration: 0.5, delay: 0.2, ease: easeOut }}
         className="mb-6"
       >
-        <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-3">{t('property.descriptionTitle', 'Description')}</h2>
-        <p className="text-gray-600 leading-relaxed">{description}</p>
+        <h2 className="font-serif text-xl font-bold text-primary-deep mb-3">{t('property.descriptionTitle', 'Description')}</h2>
+        <p className="text-gray-text leading-relaxed">{description}</p>
       </motion.div>
 
       {/* Features */}
@@ -152,10 +152,10 @@ export default function PropertyHeader({
           transition={{ duration: 0.5, delay: 0.25, ease: easeOut }}
           className="mb-6"
         >
-          <h2 className="font-display text-xl font-bold text-[#0a2a5e] mb-3">{t('property.featuresTitle', 'Équipements')}</h2>
+          <h2 className="font-serif text-xl font-bold text-primary-deep mb-3">{t('property.featuresTitle', 'Équipements')}</h2>
           <div className="flex flex-wrap gap-2">
             {features.map((feature) => (
-              <span key={feature} className="px-4 py-2 bg-gray-50 rounded-xl text-sm text-gray-600 font-medium">
+              <span key={feature} className="px-4 py-2 bg-primary-pale/50 border border-primary-pale rounded-full text-sm text-gray-text font-medium">
                 {feature}
               </span>
             ))}

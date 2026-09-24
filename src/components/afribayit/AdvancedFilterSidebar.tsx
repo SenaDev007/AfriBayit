@@ -280,27 +280,27 @@ export default function AdvancedFilterSidebar({
           isOpen ? 'fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto' : 'hidden'
         } lg:block w-full lg:w-80 shrink-0 overflow-y-auto`}
       >
-        <div className="bg-white rounded-xl p-5 shadow-sm border min-h-[calc(100vh-8rem)] lg:min-h-0 lg:sticky lg:top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale min-h-[calc(100vh-8rem)] lg:min-h-0 lg:sticky lg:top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-[#003087]" />
-              <h3 className="font-semibold text-sm text-[#0a2a5e]">Filtres avancés</h3>
+              <SlidersHorizontal className="w-4 h-4 text-primary-deep" />
+              <h3 className="font-bold text-sm text-primary-deep">Filtres avancés</h3>
               {activeCount > 0 && (
-                <span className="px-2 py-0.5 bg-[#003087] text-white text-[10px] font-bold rounded-full">
+                <span className="px-2 py-0.5 bg-primary-deep text-white text-[10px] font-bold rounded-full">
                   {activeCount}
                 </span>
               )}
             </div>
             <div className="flex gap-2">
               {activeCount > 0 && (
-                <button onClick={resetFilters} className="text-[10px] text-[#003087] hover:underline">
+                <button onClick={resetFilters} className="text-[10px] font-bold text-primary-deep hover:underline">
                   Réinitialiser
                 </button>
               )}
               <button
                 onClick={onToggle}
-                className="lg:hidden w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center"
+                className="lg:hidden w-7 h-7 rounded-full bg-primary-pale text-primary-deep flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -312,7 +312,7 @@ export default function AdvancedFilterSidebar({
             <VoiceSearchButton onTranscript={handleVoiceTranscript} currentQuery={filters.query} />
             <button
               onClick={() => setShowAiSearch(!showAiSearch)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-medium hover:bg-[#D4AF37]/20 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 rounded-full text-xs font-bold hover:bg-accent-yellow/25 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" /> IA
             </button>
@@ -327,12 +327,12 @@ export default function AdvancedFilterSidebar({
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-4 overflow-hidden"
               >
-                <div className="p-3 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-xl">
+                <div className="p-3 bg-accent-yellow/5 border border-accent-yellow/30 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <MessageCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span className="text-[10px] font-semibold text-[#D4AF37]">Recherche conversationnelle IA</span>
+                    <MessageCircle className="w-3.5 h-3.5 text-accent-dark" />
+                    <span className="text-[10px] font-bold text-accent-dark">Recherche conversationnelle IA</span>
                   </div>
-                  <p className="text-[10px] text-gray-500 mb-2">
+                  <p className="text-[10px] text-gray-text mb-2">
                     Décrivez votre bien idéal en langage naturel...
                   </p>
                   <div className="flex gap-2">
@@ -342,11 +342,11 @@ export default function AdvancedFilterSidebar({
                       onChange={(e) => setAiQuery(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAiSearch()}
                       placeholder="Ex: Villa 3 chambres avec piscine à Cotonou sous 20M"
-                      className="flex-1 text-xs px-3 py-2 rounded-lg border bg-white outline-none focus:border-[#D4AF37]"
+                      className="flex-1 text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                     />
                     <button
                       onClick={handleAiSearch}
-                      className="px-3 py-2 bg-[#D4AF37] text-white rounded-lg text-xs font-semibold hover:bg-[#c4a030]"
+                      className="px-3 py-2 bg-accent-yellow text-primary-deep rounded-full text-xs font-bold hover:bg-accent-yellow/90 transition-colors"
                     >
                       <Search className="w-3.5 h-3.5" />
                     </button>
@@ -365,11 +365,11 @@ export default function AdvancedFilterSidebar({
           >
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-medium text-gray-500 mb-1 block">Pays</label>
+                <label className="text-[10px] font-bold text-primary-deep uppercase tracking-wider mb-1 block">Pays</label>
                 <select
                   value={filters.country || ''}
                   onChange={(e) => updateFilter('country', e.target.value || undefined)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 >
                   <option value="">Tous les pays</option>
                   {COUNTRIES_CONFIG.map(c => (
@@ -378,11 +378,11 @@ export default function AdvancedFilterSidebar({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-medium text-gray-500 mb-1 block">Ville</label>
+                <label className="text-[10px] font-bold text-primary-deep uppercase tracking-wider mb-1 block">Ville</label>
                 <select
                   value={filters.city || ''}
                   onChange={(e) => updateFilter('city', e.target.value || undefined)}
-                  className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 >
                   <option value="">Toutes les villes</option>
                   {allCities.map(city => (
@@ -391,13 +391,13 @@ export default function AdvancedFilterSidebar({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-medium text-gray-500 mb-1 block">Quartier</label>
+                <label className="text-[10px] font-bold text-primary-deep uppercase tracking-wider mb-1 block">Quartier</label>
                 <input
                   type="text"
                   value={filters.quartier || ''}
                   onChange={(e) => updateFilter('quartier', e.target.value || undefined)}
                   placeholder="Ex: Ganhi, Cocody..."
-                  className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 />
               </div>
             </div>
@@ -415,10 +415,10 @@ export default function AdvancedFilterSidebar({
                 <button
                   key={opt.value}
                   onClick={() => toggleTransaction(opt.value)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                     filters.transaction?.includes(opt.value)
-                      ? 'bg-[#003087] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary-deep text-white shadow-sm'
+                      : 'bg-primary-pale/60 text-gray-text hover:bg-primary-pale'
                   }`}
                 >
                   {opt.label}
@@ -444,10 +444,10 @@ export default function AdvancedFilterSidebar({
                 <button
                   key={opt.value}
                   onClick={() => toggleType(opt.value)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                     filters.type?.includes(opt.value)
-                      ? 'bg-[#003087] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary-deep text-white shadow-sm'
+                      : 'bg-primary-pale/60 text-gray-text hover:bg-primary-pale'
                   }`}
                 >
                   {opt.label}
@@ -471,23 +471,23 @@ export default function AdvancedFilterSidebar({
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Min (FCFA)</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Min (FCFA)</label>
                   <input
                     type="number"
                     value={filters.priceMin || ''}
                     onChange={(e) => updateFilter('priceMin', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="0"
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Max (FCFA)</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Max (FCFA)</label>
                   <input
                     type="number"
                     value={filters.priceMax || ''}
                     onChange={(e) => updateFilter('priceMax', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="Illimité"
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
               </div>
@@ -505,10 +505,10 @@ export default function AdvancedFilterSidebar({
                     onClick={() => {
                       onFiltersChange({ ...filters, priceMin: range.min, priceMax: range.max, page: 1 });
                     }}
-                    className={`px-2 py-1 rounded-full text-[10px] font-medium transition-all ${
+                    className={`px-2 py-1 rounded-full text-[10px] font-bold transition-all ${
                       filters.priceMin === range.min && filters.priceMax === range.max
-                        ? 'bg-[#003087] text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        ? 'bg-primary-deep text-white'
+                        : 'bg-primary-pale/60 text-gray-text/80 hover:bg-primary-pale'
                     }`}
                   >
                     {range.label}
@@ -528,58 +528,58 @@ export default function AdvancedFilterSidebar({
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Surface min (m²)</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Surface min (m²)</label>
                   <input
                     type="number"
                     value={filters.surfaceMin || ''}
                     onChange={(e) => updateFilter('surfaceMin', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="0"
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Surface max (m²)</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Surface max (m²)</label>
                   <input
                     type="number"
                     value={filters.surfaceMax || ''}
                     onChange={(e) => updateFilter('surfaceMax', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="Illimité"
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Ch. min</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Ch. min</label>
                   <input
                     type="number"
                     value={filters.bedroomsMin || ''}
                     onChange={(e) => updateFilter('bedroomsMin', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="0"
                     min={0}
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">SDB min</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">SDB min</label>
                   <input
                     type="number"
                     value={filters.bathroomsMin || ''}
                     onChange={(e) => updateFilter('bathroomsMin', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="0"
                     min={0}
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">Pièces min</label>
+                  <label className="text-[10px] font-bold text-primary-deep mb-1 block">Pièces min</label>
                   <input
                     type="number"
                     value={filters.roomsMin || ''}
                     onChange={(e) => updateFilter('roomsMin', e.target.value ? Number(e.target.value) : undefined)}
                     placeholder="0"
                     min={0}
-                    className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                   />
                 </div>
               </div>
@@ -596,16 +596,16 @@ export default function AdvancedFilterSidebar({
             <div className="space-y-2">
               {AMENITY_OPTIONS.map(({ key, label, icon }) => (
                 <label key={key} className="flex items-center justify-between cursor-pointer">
-                  <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <span className="flex items-center gap-1.5 text-xs text-gray-text">
                     {icon} {label}
                   </span>
                   <button
                     onClick={() => toggleAmenity(key)}
-                    className={`w-9 h-5 rounded-lg transition-colors relative ${
-                      filters[key] ? 'bg-[#00A651]' : 'bg-gray-200'
+                    className={`w-9 h-5 rounded-full transition-colors relative ${
+                      filters[key] ? 'bg-primary-green' : 'bg-primary-pale'
                     }`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-lg shadow-sm transition-transform ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
                       filters[key] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
@@ -623,9 +623,9 @@ export default function AdvancedFilterSidebar({
           >
             <div className="space-y-2">
               {NEIGHBORHOOD_OPTIONS.map(({ key, label, icon }) => (
-                <label key={key} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50">
-                  <input type="checkbox" className="rounded border-gray-300 text-[#003087]" />
-                  <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                <label key={key} className="flex items-center gap-2 cursor-pointer p-2 rounded-xl hover:bg-primary-pale/50">
+                  <input type="checkbox" className="rounded border-primary-pale text-primary-green focus:ring-primary-green/30" />
+                  <span className="flex items-center gap-1.5 text-xs text-gray-text">
                     {icon} {label}
                   </span>
                 </label>
@@ -645,14 +645,14 @@ export default function AdvancedFilterSidebar({
                 <button
                   key={opt.value}
                   onClick={() => updateFilter('sortBy', opt.value)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all ${
                     filters.sortBy === opt.value
-                      ? 'bg-[#003087]/5 text-[#003087] font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-primary-pale text-primary-deep font-bold'
+                      : 'text-gray-text hover:bg-primary-pale/50'
                   }`}
                 >
                   <span>{opt.label}</span>
-                  {filters.sortBy === opt.value && <Check className="w-3.5 h-3.5 text-[#003087]" />}
+                  {filters.sortBy === opt.value && <Check className="w-3.5 h-3.5 text-primary-deep" />}
                 </button>
               ))}
             </div>
@@ -672,14 +672,14 @@ export default function AdvancedFilterSidebar({
                 ['premium', 'Premium'],
               ] as const).map(([key, label]) => (
                 <label key={key} className="flex items-center justify-between cursor-pointer">
-                  <span className="text-xs text-gray-600">{label}</span>
+                  <span className="text-xs text-gray-text">{label}</span>
                   <button
                     onClick={() => updateFilter(key, !filters[key])}
-                    className={`w-9 h-5 rounded-lg transition-colors relative ${
-                      filters[key] ? 'bg-[#00A651]' : 'bg-gray-200'
+                    className={`w-9 h-5 rounded-full transition-colors relative ${
+                      filters[key] ? 'bg-primary-green' : 'bg-primary-pale'
                     }`}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-lg shadow-sm transition-transform ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
                       filters[key] ? 'left-4.5' : 'left-0.5'
                     }`} />
                   </button>
@@ -697,7 +697,7 @@ export default function AdvancedFilterSidebar({
           >
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Score d&apos;investissement min</label>
+                <label className="text-[10px] font-bold text-primary-deep mb-1 block">Score d&apos;investissement min</label>
                 <input
                   type="number"
                   value={filters.investmentScoreMin || ''}
@@ -705,18 +705,18 @@ export default function AdvancedFilterSidebar({
                   placeholder="0-100"
                   min={0}
                   max={100}
-                  className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">ROI min (%)</label>
+                <label className="text-[10px] font-bold text-primary-deep mb-1 block">ROI min (%)</label>
                 <input
                   type="number"
                   value={filters.roiMin || ''}
                   onChange={(e) => updateFilter('roiMin', e.target.value ? Number(e.target.value) : undefined)}
                   placeholder="0"
                   min={0}
-                  className="w-full text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 />
               </div>
             </div>
@@ -737,12 +737,12 @@ export default function AdvancedFilterSidebar({
                   value={savedSearchName}
                   onChange={(e) => setSavedSearchName(e.target.value)}
                   placeholder="Nom de la recherche..."
-                  className="flex-1 text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="flex-1 text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 />
                 <button
                   onClick={handleSaveSearch}
                   disabled={!savedSearchName.trim() || saveSearchMutation.isPending}
-                  className="px-3 py-2 bg-[#003087] text-white rounded-xl text-xs font-semibold hover:bg-[#0047b3] disabled:opacity-50"
+                  className="px-3 py-2 bg-primary-green text-white rounded-full text-xs font-bold hover:bg-primary-deep disabled:opacity-50 transition-colors"
                 >
                   <BookmarkPlus className="w-3.5 h-3.5" />
                 </button>
@@ -755,11 +755,11 @@ export default function AdvancedFilterSidebar({
                     <button
                       key={search.id}
                       onClick={() => onFiltersChange({ ...search.filters, page: 1 })}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs bg-primary-pale/50 hover:bg-primary-pale transition-colors"
                     >
-                      <span className="text-gray-700 font-medium truncate">{search.name}</span>
+                      <span className="text-primary-deep font-medium truncate">{search.name}</span>
                       {search.newMatches && search.newMatches > 0 && (
-                        <span className="px-1.5 py-0.5 bg-[#D4AF37] text-white text-[9px] font-bold rounded-full">
+                        <span className="px-1.5 py-0.5 bg-accent-yellow text-primary-deep text-[9px] font-bold rounded-full">
                           {search.newMatches}
                         </span>
                       )}
@@ -778,7 +778,7 @@ export default function AdvancedFilterSidebar({
             onToggle={() => toggleSection('alerts')}
           >
             <div className="space-y-3">
-              <p className="text-[10px] text-gray-500">
+              <p className="text-[10px] text-gray-text">
                 Soyez notifié quand un bien correspondant à vos critères est en dessous de ce prix.
               </p>
               <div className="flex gap-2">
@@ -787,12 +787,12 @@ export default function AdvancedFilterSidebar({
                   value={alertPrice}
                   onChange={(e) => setAlertPrice(e.target.value ? Number(e.target.value) : '')}
                   placeholder="Prix max (FCFA)"
-                  className="flex-1 text-xs px-3 py-2 rounded-xl border bg-gray-50 outline-none focus:border-[#003087]"
+                  className="flex-1 text-xs px-3 py-2 rounded-xl border border-primary-pale bg-white outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
                 />
                 <button
                   onClick={handleCreateAlert}
                   disabled={!alertPrice || alertMutation.isPending}
-                  className="px-3 py-2 bg-[#D4AF37] text-white rounded-xl text-xs font-semibold hover:bg-[#c4a030] disabled:opacity-50"
+                  className="px-3 py-2 bg-accent-yellow text-primary-deep rounded-full text-xs font-bold hover:bg-accent-yellow/90 disabled:opacity-50 transition-colors"
                 >
                   <Bell className="w-3.5 h-3.5" />
                 </button>
@@ -804,7 +804,7 @@ export default function AdvancedFilterSidebar({
           <div className="lg:hidden mt-6">
             <button
               onClick={onToggle}
-              className="w-full py-3 bg-[#003087] text-white text-sm font-semibold rounded-xl hover:bg-[#0047b3] transition-colors"
+              className="w-full py-3 bg-primary-green text-white text-sm font-bold rounded-full hover:bg-primary-deep shadow-md hover:shadow-lg transition-all"
             >
               Appliquer les filtres {activeCount > 0 && `(${activeCount})`}
             </button>
@@ -829,16 +829,16 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-4 border-b border-gray-100 pb-4">
+    <div className="mb-4 border-b border-primary-pale/60 pb-4">
       <button
         onClick={onToggle}
         className="flex items-center justify-between w-full text-left"
       >
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-[#0a2a5e]">
+        <span className="flex items-center gap-1.5 text-xs font-bold text-primary-deep">
           {icon} {title}
         </span>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-text/60 transition-transform ${expanded ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

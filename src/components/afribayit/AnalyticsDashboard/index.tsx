@@ -231,28 +231,30 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
   };
 
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-gray-50/30">
+    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream relative overflow-hidden">
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0a2a5e]">Analytique</h1>
-            <p className="text-sm text-gray-500 mt-1">Vue d&apos;ensemble de vos performances</p>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-primary-deep">Analytique</h1>
+            <div className="h-1 w-16 bg-accent-yellow rounded-full mt-2 mb-2" />
+            <p className="text-sm text-gray-text mt-1">Vue d&apos;ensemble de vos performances</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium">Pays:</span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#003087]/10 text-[#003087] text-xs font-semibold">
+              <span className="text-xs text-gray-text font-medium">Pays:</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold">
                 {COUNTRY_NAMES[selectedCountry] || selectedCountry}
               </span>
             </div>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+            <div className="flex gap-1 bg-primary-pale rounded-full p-1">
               {PERIOD_OPTIONS.map((p) => (
                 <button
                   key={p.key}
                   onClick={() => setPeriod(p.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    period === p.key ? 'bg-white shadow-sm text-[#003087]' : 'text-gray-500 hover:text-gray-700'
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    period === p.key ? 'bg-white shadow-sm text-primary-deep' : 'text-gray-text hover:text-primary-deep'
                   }`}
                 >
                   {p.label}
@@ -261,7 +263,7 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
             </div>
             <button
               onClick={() => handleExport('csv')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#003087] text-white text-xs font-medium hover:bg-[#003087]/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-green text-white text-xs font-bold shadow-md hover:bg-primary-deep hover:shadow-lg transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               Exporter
@@ -276,12 +278,12 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-4 flex items-center gap-3 bg-white p-3 rounded-xl border shadow-sm"
+              className="mb-4 flex items-center gap-3 bg-white p-3 rounded-2xl border border-primary-pale shadow-md"
             >
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]" />
-              <span className="text-sm text-gray-500">à</span>
-              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#003087]" />
+              <Calendar className="w-4 h-4 text-gray-text/60" />
+              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-sm border border-primary-pale rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green" />
+              <span className="text-sm text-gray-text">à</span>
+              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-sm border border-primary-pale rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -292,8 +294,8 @@ ${AGENT_ANALYTICS.conversionFunnel.map(s => `<tr><td>${s.stage}</td><td>${s.coun
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale/60'
               }`}
             >
               {tab.icon}

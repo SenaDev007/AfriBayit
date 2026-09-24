@@ -10,16 +10,21 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-[#003087] text-white py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <FileText className="w-8 h-8 text-[#D4AF37]" />
-            <h1 className="text-3xl md:text-4xl font-display font-bold">
+    <div className="min-h-screen bg-cream">
+      {/* Header — P6 */}
+      <div className="bg-primary-deep text-white py-16 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px]" />
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+              <FileText className="w-6 h-6 text-accent-yellow" />
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold">
               Conditions Générales d&apos;Utilisation
             </h1>
           </div>
+          <div className="h-1 w-16 bg-accent-yellow rounded-full mb-4" />
           <p className="text-white/70 text-sm">
             Dernière mise à jour : 2 juin 2026
           </p>
@@ -28,14 +33,14 @@ export default function TermsPage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-20">
-        <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-8">
+        <div className="prose prose-lg max-w-none text-gray-text leading-relaxed space-y-8">
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mt-0 mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mt-0 mb-4">
               1. Objet
             </h2>
             <p>
-              Les présentes Conditions Générales d&apos;Utilisation (ci-après &quot;CGU&quot;) régissent l&apos;utilisation de la plateforme AfriBayit (ci-après la &quot;Plateforme&quot;), accessible à l&apos;adresse <a href="https://afri-bayit.vercel.app" className="text-[#003087] underline">https://afri-bayit.vercel.app</a> et ses éventuels sous-domaines pays (bj.afribayit.com, ci.afribayit.com, etc.). AfriBayit est une plateforme immobilière panafricaine de nouvelle génération qui met en relation des vendeurs, acheteurs, locataires, artisans, notaires et autres professionnels de l&apos;immobilier en Afrique de l&apos;Ouest.
+              Les présentes Conditions Générales d&apos;Utilisation (ci-après &quot;CGU&quot;) régissent l&apos;utilisation de la plateforme AfriBayit (ci-après la &quot;Plateforme&quot;), accessible à l&apos;adresse <a href="https://afri-bayit.vercel.app" className="text-primary-green underline underline-offset-4 hover:text-primary-deep transition-colors">https://afri-bayit.vercel.app</a> et ses éventuels sous-domaines pays (bj.afribayit.com, ci.afribayit.com, etc.). AfriBayit est une plateforme immobilière panafricaine de nouvelle génération qui met en relation des vendeurs, acheteurs, locataires, artisans, notaires et autres professionnels de l&apos;immobilier en Afrique de l&apos;Ouest.
             </p>
             <p>
               En accédant à la Plateforme ou en utilisant ses services, vous reconnaissez avoir lu, compris et accepté les présentes CGU sans réserve. Si vous n&apos;acceptez pas ces conditions, vous devez cesser toute utilisation de la Plateforme.
@@ -43,7 +48,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               2. Définitions
             </h2>
             <ul className="list-disc pl-6 space-y-2">
@@ -59,7 +64,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               3. Inscription et Compte Utilisateur
             </h2>
             <p>
@@ -74,7 +79,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               4. Services Proposés
             </h2>
             <p>AfriBayit propose les services suivants :</p>
@@ -92,7 +97,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               5. Règles de Publication
             </h2>
             <p>
@@ -109,7 +114,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               6. Transactions et Escrow
             </h2>
             <p>
@@ -128,7 +133,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               7. Paiements et Virements
             </h2>
             <p>
@@ -140,7 +145,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               8. Vérification et KYC
             </h2>
             <p>
@@ -158,7 +163,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               9. Propriété Intellectuelle
             </h2>
             <p>
@@ -170,7 +175,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               10. Responsabilité
             </h2>
             <p>
@@ -185,7 +190,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               11. Signalement et Modération
             </h2>
             <p>
@@ -194,7 +199,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               12. Disponibilité des Services
             </h2>
             <p>
@@ -206,7 +211,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               13. Résiliation
             </h2>
             <p>
@@ -218,7 +223,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               14. Droit Applicable et Juridiction
             </h2>
             <p>
@@ -230,7 +235,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               15. Modifications
             </h2>
             <p>
@@ -239,7 +244,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-[#003087] mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-deep mb-4">
               16. Contact
             </h2>
             <p>
@@ -249,7 +254,7 @@ export default function TermsPage() {
               <li><strong>E-mail :</strong> contact@afribayit.com</li>
               <li><strong>Téléphone :</strong> +229 97 00 00 00</li>
               <li><strong>Adresse :</strong> Cotonou, Bénin</li>
-              <li><strong>Site web :</strong> <a href="https://afri-bayit.vercel.app" className="text-[#003087] underline">https://afri-bayit.vercel.app</a></li>
+              <li><strong>Site web :</strong> <a href="https://afri-bayit.vercel.app" className="text-primary-green underline underline-offset-4 hover:text-primary-deep transition-colors">https://afri-bayit.vercel.app</a></li>
             </ul>
           </section>
 

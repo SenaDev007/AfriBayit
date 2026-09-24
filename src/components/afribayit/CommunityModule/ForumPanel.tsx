@@ -63,7 +63,7 @@ export default function ForumPanel({
               value={forumSearch}
               onChange={e => setForumSearch(e.target.value)}
               placeholder={t('community.forumSearchPlaceholder', 'Rechercher dans le forum...')}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm outline-none focus:border-[#003087] transition-colors"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-primary-pale bg-white text-sm outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-all"
             />
             {forumSearch && (
               <button onClick={() => setForumSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -76,7 +76,7 @@ export default function ForumPanel({
               <button
                 key={cat.key}
                 onClick={() => setForumCategory(cat.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${forumCategory === cat.key ? 'bg-[#003087] text-white' : 'bg-white text-gray-500 border hover:bg-gray-50'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${forumCategory === cat.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'}`}
               >
                 {cat.label}
               </button>
@@ -85,18 +85,18 @@ export default function ForumPanel({
         </div>
 
         {/* Trending Topics */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border">
-          <h4 className="text-xs font-semibold text-[#0a2a5e] mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-[#D4AF37]" /> {t('community.trendingTitle', 'Tendances')}</h4>
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-primary-pale">
+          <h4 className="text-xs font-semibold text-primary-deep mb-3 flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-accent-yellow" /> {t('community.trendingTitle', 'Tendances')}</h4>
           {trendingTopics.length > 0 ? (
             <div className="space-y-2">
               {trendingTopics.map(topic => (
                 <button
                   key={topic.category}
                   onClick={() => setForumCategory(topic.category)}
-                  className="w-full flex items-center justify-between text-left hover:bg-gray-50 rounded-lg p-1.5 transition-colors"
+                  className="w-full flex items-center justify-between text-left hover:bg-primary-pale/50 rounded-xl p-1.5 transition-colors"
                 >
-                  <span className="text-xs text-gray-700 flex items-center gap-1.5">
-                    <Hash className="w-3 h-3 text-[#003087]" />
+                  <span className="text-xs text-gray-text flex items-center gap-1.5">
+                    <Hash className="w-3 h-3 text-primary-deep" />
                     {topic.category}
                   </span>
                   <span className="text-[10px] text-gray-400">{topic.count} {t('community.topicsCount', 'sujets')}</span>
@@ -106,9 +106,9 @@ export default function ForumPanel({
           ) : (
             <div className="space-y-2">
               {['Investissement', 'Juridique', 'Marché', 'Construction', 'Négociation'].map(topic => (
-                <button key={topic} onClick={() => setForumCategory(topic.toLowerCase())} className="w-full flex items-center justify-between text-left hover:bg-gray-50 rounded-lg p-1.5 transition-colors">
-                  <span className="text-xs text-gray-700 flex items-center gap-1.5"><Hash className="w-3 h-3 text-[#003087]" />{topic}</span>
-                  <TrendingUp className="w-3 h-3 text-[#D4AF37]" />
+                <button key={topic} onClick={() => setForumCategory(topic.toLowerCase())} className="w-full flex items-center justify-between text-left hover:bg-primary-pale/50 rounded-xl p-1.5 transition-colors">
+                  <span className="text-xs text-gray-text flex items-center gap-1.5"><Hash className="w-3 h-3 text-primary-deep" />{topic}</span>
+                  <TrendingUp className="w-3 h-3 text-accent-yellow" />
                 </button>
               ))}
             </div>
@@ -121,14 +121,14 @@ export default function ForumPanel({
       {postsError && (
         <div className="text-center py-12">
           <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">{t('community.unableToLoadPosts', 'Impossible de charger les posts')}</p>
+          <p className="text-gray-text font-semibold mb-1">{t('community.unableToLoadPosts', 'Impossible de charger les posts')}</p>
           <p className="text-sm text-gray-400">{postsError.message}</p>
         </div>
       )}
       {!postsLoading && !postsError && filteredPosts.length === 0 && (
         <div className="text-center py-12">
           <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-semibold mb-1">{t('community.noDiscussion', 'Aucun sujet de discussion')}</p>
+          <p className="text-gray-text font-semibold mb-1">{t('community.noDiscussion', 'Aucun sujet de discussion')}</p>
           <p className="text-sm text-gray-400">{t('community.beFirstToPost', 'Soyez le premier à lancer un débat !')}</p>
         </div>
       )}
@@ -138,14 +138,14 @@ export default function ForumPanel({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: i * 0.08, ease: easeOut }}
-          className="bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:border-[#003087]/20 transition-all overflow-hidden group"
+          className="bg-white rounded-3xl shadow-lg border border-primary-pale hover:shadow-xl hover:border-primary-green/30 transition-all overflow-hidden group"
         >
           {/* LinkedIn-style colored top border */}
-          <div className="h-1 bg-gradient-to-r from-[#003087] via-[#00A651] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="h-1 bg-gradient-to-r from-primary-deep via-primary-green to-accent-yellow opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="p-5">
             <div className="flex items-start gap-3">
               {/* Avatar */}
-              <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden border-2 border-[#003087]/10 relative bg-gray-100 cursor-pointer" onClick={() => onSelectPost(post.id)}>
+              <div className="shrink-0 w-11 h-11 rounded-full overflow-hidden border-2 border-primary-pale relative bg-gray-100 cursor-pointer" onClick={() => onSelectPost(post.id)}>
                 <ImageWithFallback
                   src={post.avatar}
                   alt=""
@@ -157,16 +157,16 @@ export default function ForumPanel({
               {/* Content */}
               <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onSelectPost(post.id)}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm text-[#003087]">
+                  <span className="font-semibold text-sm text-primary-deep">
                     {typeof post.author === 'object' && post.author !== null ? String((post.author as PostAuthor)?.name ?? '') : String(post.author ?? '')}
                   </span>
                   <span className="text-[10px] text-gray-400">·</span>
                   <span className="text-[10px] text-gray-400">{post.createdAt ? timeAgo(post.createdAt) : post.lastActivity}</span>
                 </div>
-                <h3 className="font-semibold text-[#0a2a5e] mb-2 group-hover:text-[#003087] transition-colors text-sm leading-snug">{post.title}</h3>
+                <h3 className="font-semibold text-primary-deep mb-2 group-hover:text-primary-green transition-colors text-sm leading-snug">{post.title}</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   {post.category && (
-                    <span className="px-2 py-0.5 bg-[#003087]/5 text-[#003087] text-[10px] font-semibold rounded-full">{post.category}</span>
+                    <span className="px-2 py-0.5 bg-primary-pale text-primary-deep border border-primary-green/20 text-[10px] font-semibold rounded-full">{post.category}</span>
                   )}
                   {post.city && (
                     <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
@@ -177,12 +177,12 @@ export default function ForumPanel({
                 </div>
               </div>
               {/* Report button */}
-              <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title={t('community.reportContent', 'Signaler ce contenu')}>
+              <button onClick={(e) => { e.stopPropagation(); onReport(post.id); }} className="shrink-0 p-1.5 rounded-full hover:bg-primary-pale/50 transition-colors" title={t('community.reportContent', 'Signaler ce contenu')}>
                 <Flag className="w-3.5 h-3.5 text-gray-300 hover:text-[#D93025]" />
               </button>
             </div>
             {/* LinkedIn-style engagement bar */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-primary-pale/60">
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <MessageCircle className="w-3.5 h-3.5" />
@@ -204,10 +204,10 @@ export default function ForumPanel({
 
       {/* Action buttons */}
       <div className="flex gap-3">
-        <button onClick={onNewPost} className="flex-1 py-3 border-2 border-dashed border-gray-200 rounded-2xl text-sm text-gray-400 hover:border-[#003087] hover:text-[#003087] transition-colors flex items-center justify-center gap-2">
+        <button onClick={onNewPost} className="flex-1 py-3 border-2 border-dashed border-primary-pale rounded-2xl text-sm text-gray-text hover:border-primary-green hover:text-primary-deep transition-colors flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> {t('community.newTopic', 'Nouveau sujet')}
         </button>
-        <button onClick={onNewPoll} className="py-3 px-4 border-2 border-dashed border-[#D4AF37]/40 rounded-2xl text-sm text-[#D4AF37] hover:border-[#D4AF37] transition-colors flex items-center gap-2">
+        <button onClick={onNewPoll} className="py-3 px-4 border-2 border-dashed border-accent-yellow/40 rounded-2xl text-sm text-accent-dark hover:border-accent-yellow transition-colors flex items-center gap-2">
           <BarChart3 className="w-4 h-4" /> {t('community.poll', 'Sondage')}
         </button>
       </div>
