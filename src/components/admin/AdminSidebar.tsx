@@ -269,12 +269,12 @@ export default function AdminSidebar({
     <aside
       className={cn(
         'fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300 ease-in-out',
-        'bg-[#003087] text-white',
+        'bg-[#061224] text-white',
         collapsed ? 'w-[72px]' : 'w-[280px]'
       )}
     >
       {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-white/10 shrink-0">
+      <div className="flex items-center h-16 px-4 border-b border-[#003087]/20 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Image src="/logo.png" alt="AfriBayit" width={160} height={48} className="h-12 w-auto object-contain shrink-0" priority />
           {!collapsed && (
@@ -287,7 +287,7 @@ export default function AdminSidebar({
         <button
           onClick={onToggle}
           className={cn(
-            'ml-auto p-1.5 rounded-md hover:bg-white/10 transition-colors shrink-0',
+            'ml-auto p-1.5 rounded-md hover:bg-[#0F1F3C] transition-colors shrink-0',
             collapsed && 'ml-0'
           )}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -307,7 +307,7 @@ export default function AdminSidebar({
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs bg-white/10 border-white/10 text-white placeholder:text-white/40 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+              className="pl-8 h-8 text-xs bg-white/10 border-[#003087]/20 text-white placeholder:text-white/40 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
             />
           </div>
         </div>
@@ -324,7 +324,7 @@ export default function AdminSidebar({
                 onClick={() => toggleGroup(group.label)}
                 className={cn(
                   'w-full flex items-center gap-1 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider',
-                  'text-white/50 hover:text-white/80 transition-colors rounded',
+                  'text-[#003087]/50 hover:text-white/80 transition-colors rounded',
                   collapsed && 'justify-center'
                 )}
               >
@@ -351,7 +351,7 @@ export default function AdminSidebar({
                           'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all',
                           active
                             ? 'bg-[#D4AF37] text-[#003087] shadow-sm'
-                            : 'text-white/75 hover:bg-white/10 hover:text-white',
+                            : 'text-white/75 hover:bg-[#0F1F3C] hover:text-white',
                           collapsed && 'justify-center px-2'
                         )}
                         title={collapsed ? item.label : undefined}
@@ -368,7 +368,7 @@ export default function AdminSidebar({
         })}
 
         {/* Country sections */}
-        <div className="mt-3 pt-3 border-t border-white/10">
+        <div className="mt-3 pt-3 border-t border-[#003087]/20">
           <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/40">
             {!collapsed ? 'BACKOFFICES PAR PAYS' : ''}
           </div>
@@ -386,7 +386,7 @@ export default function AdminSidebar({
                     'w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all',
                     isCountryActive
                       ? 'bg-white/15 text-white'
-                      : 'text-white/60 hover:bg-white/10 hover:text-white/90',
+                      : 'text-white/60 hover:bg-[#0F1F3C] hover:text-white/90',
                     collapsed && 'justify-center px-2'
                   )}
                   title={collapsed ? country.name : undefined}
@@ -407,7 +407,7 @@ export default function AdminSidebar({
 
                 {/* Country sub-items */}
                 {isCountryExpanded && !collapsed && (
-                  <div className="ml-3 border-l border-white/10 pl-2 space-y-0.5 mt-0.5">
+                  <div className="ml-3 border-l border-[#003087]/20 pl-2 space-y-0.5 mt-0.5">
                     {countryGroups.flatMap((group) =>
                       group.items.map((item) => {
                         const Icon = item.icon;
@@ -420,7 +420,7 @@ export default function AdminSidebar({
                               'flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-medium transition-all',
                               active
                                 ? 'bg-[#D4AF37] text-[#003087] shadow-sm'
-                                : 'text-white/60 hover:bg-white/10 hover:text-white/90'
+                                : 'text-white/60 hover:bg-[#0F1F3C] hover:text-white/90'
                             )}
                           >
                             <Icon className={cn('w-3.5 h-3.5 shrink-0', active && 'text-[#003087]')} />
@@ -438,11 +438,11 @@ export default function AdminSidebar({
       </nav>
 
       {/* Back to site */}
-      <div className="border-t border-white/10 px-3 py-3 shrink-0">
+      <div className="border-t border-[#003087]/20 px-3 py-3 shrink-0">
         <Link
           href="/"
           className={cn(
-            'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors',
+            'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-white/60 hover:bg-[#0F1F3C] hover:text-white transition-colors',
             collapsed && 'justify-center px-2'
           )}
         >

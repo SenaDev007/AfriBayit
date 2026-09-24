@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SessionProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#061224]">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar

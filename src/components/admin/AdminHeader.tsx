@@ -81,24 +81,24 @@ export default function AdminHeader({
   const selectedCountryData = COUNTRIES.find((c) => c.code === selectedCountry) || COUNTRIES[0];
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-3 shrink-0">
+    <header className="sticky top-0 z-30 h-16 bg-[#0F1F3C] border-b border-[#003087]/20 flex items-center px-4 lg:px-6 gap-3 shrink-0">
       {/* Mobile menu toggle */}
       <button
         onClick={onMobileMenuToggle}
-        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="lg:hidden p-2 rounded-lg hover:bg-[#0F1F3C]/60 transition-colors"
         aria-label="Toggle sidebar"
       >
-        <Menu className="w-5 h-5 text-gray-600" />
+        <Menu className="w-5 h-5 text-[#8b9cb8]" />
       </button>
 
       {/* Search bar */}
       <div className="hidden sm:flex items-center flex-1 max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b9cb8]/80" />
           <input
             type="text"
             placeholder="Rechercher utilisateurs, propriétés, transactions..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] transition-all"
+            className="w-full pl-10 pr-4 py-2 text-sm bg-[#0F1F3C]/40 border border-[#003087]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003087]/20 focus:border-[#003087] transition-all"
           />
         </div>
       </div>
@@ -109,20 +109,20 @@ export default function AdminHeader({
       <div ref={countryMenuRef} className="relative">
         <button
           onClick={() => setShowCountryMenu(!showCountryMenu)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-[#0F1F3C]/60 transition-colors text-sm font-medium text-[#E6EEF8]"
         >
           <span className="flex items-center gap-1.5">
             {selectedCountryData.flagIcon === 'globe' ? (
-              <Globe className="w-4 h-4 text-gray-500" />
+              <Globe className="w-4 h-4 text-[#8b9cb8]" />
             ) : (
-              <span className="text-xs font-bold text-gray-500 bg-gray-100 rounded px-1 py-0.5">{selectedCountryData.flagIcon}</span>
+              <span className="text-xs font-bold text-[#8b9cb8] bg-[#0F1F3C] rounded px-1 py-0.5">{selectedCountryData.flagIcon}</span>
             )}
           </span>
           <span className="hidden md:inline">{selectedCountryData.label}</span>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#8b9cb8]/80" />
         </button>
         {showCountryMenu && (
-          <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <div className="absolute right-0 mt-1 w-48 bg-[#0F1F3C] rounded-lg shadow-lg border border-[#003087]/20 py-1 z-50">
             {COUNTRIES.map((c) => (
               <button
                 key={c.code}
@@ -131,15 +131,15 @@ export default function AdminHeader({
                   setShowCountryMenu(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors',
+                  'w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#0F1F3C]/60 transition-colors',
                   selectedCountry === c.code && 'bg-[#003087]/5 text-[#003087] font-medium'
                 )}
               >
                 <span className="flex items-center gap-1.5">
                   {c.flagIcon === 'globe' ? (
-                    <Globe className="w-4 h-4 text-gray-500" />
+                    <Globe className="w-4 h-4 text-[#8b9cb8]" />
                   ) : (
-                    <span className="text-xs font-bold text-gray-500 bg-gray-100 rounded px-1 py-0.5">{c.flagIcon}</span>
+                    <span className="text-xs font-bold text-[#8b9cb8] bg-[#0F1F3C] rounded px-1 py-0.5">{c.flagIcon}</span>
                   )}
                 </span>
                 <span>{c.label}</span>
@@ -160,17 +160,17 @@ export default function AdminHeader({
           <ChevronDown className="w-3.5 h-3.5" />
         </button>
         {showActions && (
-          <div className="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <Plus className="w-4 h-4 text-gray-400" />
+          <div className="absolute right-0 mt-1 w-56 bg-[#0F1F3C] rounded-lg shadow-lg border border-[#003087]/20 py-1 z-50">
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <Plus className="w-4 h-4 text-[#8b9cb8]/80" />
               Nouvel utilisateur
             </button>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <Download className="w-4 h-4 text-gray-400" />
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <Download className="w-4 h-4 text-[#8b9cb8]/80" />
               Exporter les données
             </button>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <RefreshCw className="w-4 h-4 text-gray-400" />
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <RefreshCw className="w-4 h-4 text-[#8b9cb8]/80" />
               Synchroniser OTA
             </button>
           </div>
@@ -178,8 +178,8 @@ export default function AdminHeader({
       </div>
 
       {/* Notification bell */}
-      <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-        <Bell className="w-5 h-5 text-gray-600" />
+      <button className="relative p-2 rounded-lg hover:bg-[#0F1F3C]/60 transition-colors">
+        <Bell className="w-5 h-5 text-[#8b9cb8]" />
         {notificationCount > 0 && (
           <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 text-[10px] bg-[#D4AF37] text-[#003087] font-bold border-0">
             {notificationCount > 99 ? '99+' : notificationCount}
@@ -191,7 +191,7 @@ export default function AdminHeader({
       <div ref={userMenuRef} className="relative">
         <button
           onClick={() => setShowUserMenu(!showUserMenu)}
-          className="flex items-center gap-2.5 pl-2 pr-1.5 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex items-center gap-2.5 pl-2 pr-1.5 py-1 rounded-lg hover:bg-[#0F1F3C]/60 transition-colors"
         >
           <Avatar className="w-8 h-8">
             <AvatarImage src={userAvatar || undefined} />
@@ -201,27 +201,27 @@ export default function AdminHeader({
           </Avatar>
           <div className="hidden md:block text-left">
             <p className="text-sm font-medium text-gray-900 leading-tight">{userName}</p>
-            <p className="text-[11px] text-gray-500 leading-tight capitalize">{userRole}</p>
+            <p className="text-[11px] text-[#8b9cb8] leading-tight capitalize">{userRole}</p>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden md:block" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#8b9cb8]/80 hidden md:block" />
         </button>
 
         {showUserMenu && (
-          <div className="absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <div className="absolute right-0 mt-1 w-56 bg-[#0F1F3C] rounded-lg shadow-lg border border-[#003087]/20 py-1 z-50">
             <div className="px-3 py-2 border-b border-gray-100">
               <p className="text-sm font-medium text-gray-900">{userName}</p>
-              <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+              <p className="text-xs text-[#8b9cb8] capitalize">{userRole}</p>
             </div>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <User className="w-4 h-4 text-gray-400" />
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <User className="w-4 h-4 text-[#8b9cb8]/80" />
               Mon profil
             </button>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <Settings className="w-4 h-4 text-gray-400" />
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <Settings className="w-4 h-4 text-[#8b9cb8]/80" />
               Paramètres
             </button>
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-              <ShieldAlert className="w-4 h-4 text-gray-400" />
+            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#E6EEF8] hover:bg-[#0F1F3C]/60">
+              <ShieldAlert className="w-4 h-4 text-[#8b9cb8]/80" />
               Journal d&apos;audit
             </button>
             <div className="border-t border-gray-100 mt-1 pt-1">
