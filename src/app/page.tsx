@@ -1,78 +1,51 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import HeroSection from '@/components/afribayit/HeroSection';
-import FeaturedProperties from '@/components/afribayit/FeaturedProperties';
-import HowItWorks from '@/components/afribayit/HowItWorks';
-import ModulesSection from '@/components/afribayit/ModulesSection';
-import TrustSection from '@/components/afribayit/TrustSection';
-import PaysCouverts from '@/components/afribayit/PaysCouverts';
-import TestimonialsSection from '@/components/afribayit/TestimonialsSection';
-import CTABanner from '@/components/afribayit/CTABanner';
+import React from 'react';
+import Hero from '@/components/landing/Hero';
+import Stats from '@/components/landing/Stats';
+import Services from '@/components/landing/Services';
+import Catalog from '@/components/landing/Catalog';
+import About from '@/components/landing/About';
+import WhyUs from '@/components/landing/WhyUs';
+import Testimonials from '@/components/landing/Testimonials';
+import LeadForm from '@/components/landing/LeadForm';
 
-
+/**
+ * Page d'accueil AfriBayit — design Win-Agro appliqué de A à Z
+ * (structure, styles, animations) sur la palette AfriBayit.
+ *
+ * Flux stratégique identique Win-Agro :
+ *   Attirer (Hero) → Prouver (Stats) → Persuader (Services, Catalogue)
+ *   → Assurer (About, WhyUs, Témoignages) → Convertir (Contact)
+ *
+ * La navigation (header) et le pied de page sont fournis par AppShell.
+ */
 export default function HomePage() {
-  const router = useRouter();
-  const [rebeccaOpen, setRebeccaOpen] = useState(false);
-
-  const handleNavigate = useCallback((section: string) => {
-    switch (section) {
-      case 'search':
-        router.push('/search');
-        break;
-      case 'publish':
-        router.push('/publish');
-        break;
-      case 'booking':
-        router.push('/sejours');
-        break;
-      case 'dashboard':
-        router.push('/dashboard');
-        break;
-      case 'chat':
-        // Rebecca is handled by AppShell
-        break;
-      default:
-        router.push(`/${section}`);
-    }
-  }, [router]);
-
-  const handleSelectProperty = useCallback((id: string) => {
-    router.push(`/property/${id}`);
-  }, [router]);
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section with Search Bar */}
-      <HeroSection
-        onNavigate={handleNavigate}
-        onOpenRebecca={() => setRebeccaOpen(true)}
-      />
+    <main>
+      {/* Section 01 — Hero (focus problème-solution + recherche) */}
+      <Hero />
 
-      {/* Trust & Security Section */}
-      <TrustSection />
+      {/* Section 02 — Statistiques (preuve et autorité) */}
+      <Stats />
 
-      {/* Featured Properties */}
-      <FeaturedProperties
-        onSelectProperty={handleSelectProperty}
-        onNavigate={handleNavigate}
-      />
+      {/* Section 03 — Services (packs de valeur détaillés) */}
+      <Services />
 
-      {/* How It Works - 4 Steps */}
-      <HowItWorks />
+      {/* Section 04 — Catalogue (annonces vérifiées + biens en vedette) */}
+      <Catalog />
 
-      {/* Modules Ecosystem */}
-      <ModulesSection />
+      {/* Section 05 — À propos (mission & vision panafricaine) */}
+      <About />
 
-      {/* Countries Covered */}
-      <PaysCouverts />
+      {/* Section 06 — Objection killer (Pourquoi choisir AfriBayit) */}
+      <WhyUs />
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+      {/* Section 07 — Témoignages (preuve sociale) */}
+      <Testimonials />
 
-      {/* CTA Banner */}
-      <CTABanner onNavigate={handleNavigate} />
-    </div>
+      {/* Section 08 — Contact / formulaire de conversion */}
+      <LeadForm />
+    </main>
   );
 }

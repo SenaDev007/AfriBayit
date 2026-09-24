@@ -1,17 +1,68 @@
 'use client';
 
-import { Component, type ReactNode } from 'react';
+import { Component, type ReactNode, useEffect, useState } from 'react';
 import { Header } from '@/components/ui/header-3';
 import Footer from '@/components/afribayit/Footer';
 import NotificationsCenter from '@/components/afribayit/NotificationsCenter';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import RebeccaChat from '@/components/afribayit/RebeccaChat';
 import { motion } from 'framer-motion';
 import { CountryProvider } from '@/contexts/CountryContext';
 import { useAuthStore } from '@/stores/authStore';
 import { setAccessToken, apiFetch } from '@/lib/api-client';
+
+/**
+ * FAB Rebecca IA — portage du design WhatsAppFAB de Win-Agro :
+ * cercle blanc à bordure pâle avec pulsation lente, tooltip flottant
+ * « Une question ? » auto-masqué après 8 s et réaffiché au survol.
+ */
+function RebeccaFabTooltip({ onOpen }: { onOpen: () => void }) {
+  const [showTooltip, setShowTooltip] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTooltip(false), 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      {/* Tooltip flottant */}
+      {showTooltip && (
+        <div className="mb-3 mr-1 bg-white text-primary-deep text-xs font-semibold px-4 py-2 rounded-full shadow-lg border border-primary-pale max-w-xs animate-float flex items-center gap-2">
+          <span>Une question ? Demande à Rebecca IA →</span>
+          <button
+            onClick={() => setShowTooltip(false)}
+            className="text-gray-400 hover:text-primary-green ml-1 transition-colors"
+            aria-label="Fermer"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* FAB pulsé */}
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 200, delay: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={onOpen}
+        onMouseEnter={() => setShowTooltip(true)}
+        className="w-14 h-14 bg-white hover:bg-primary-pale rounded-full flex items-center justify-center shadow-2xl border border-primary-pale/60 transition-all duration-300 active:scale-95 animate-pulse-slow focus:outline-none focus:ring-4 focus:ring-primary-pale cursor-pointer relative"
+        aria-label="Discuter avec Rebecca, l'assistante IA AfriBayit"
+      >
+        <svg className="w-6 h-6 text-primary-deep" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-yellow rounded-full flex items-center justify-center shadow-md">
+          <span className="text-[8px] text-primary-deep font-black">IA</span>
+        </span>
+      </motion.button>
+    </>
+  );
+}
 
 function AppShellInner({ children }: { children: ReactNode }) {
   // useSession is called unconditionally per React's rules of hooks.
@@ -78,7 +129,6 @@ function AppShellInner({ children }: { children: ReactNode }) {
     }
   }, [session, sessionStatus]);
 
-  const isHomePage = pathname === '/';
   const isAuthPage = pathname.startsWith('/auth/');
   const isAdminPage = pathname.startsWith('/admin');
 
@@ -137,24 +187,11 @@ function AppShellInner({ children }: { children: ReactNode }) {
         {/* Rebecca Chat Widget (on all pages except auth) */}
         <RebeccaChat isOpen={isRebeccaOpen} onClose={() => setIsRebeccaOpen(false)} />
 
-        {/* Rebecca FAB Button */}
+        {/* Rebecca FAB Button — design Win-Agro (cercle blanc, pulse-slow, tooltip) */}
         {!isRebeccaOpen && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, delay: 1 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsRebeccaOpen(true)}
-            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-40 w-14 h-14 bg-[#003087] rounded-lg flex items-center justify-center shadow-xl hover:shadow-2xl transition-shadow"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] rounded-lg flex items-center justify-center">
-              <span className="text-[8px] text-white font-bold">IA</span>
-            </span>
-          </motion.button>
+          <div className="fixed bottom-24 sm:bottom-8 right-4 sm:right-6 z-40 flex flex-col items-end">
+            <RebeccaFabTooltip onOpen={() => setIsRebeccaOpen(true)} />
+          </div>
         )}
 
         {/* Notifications Panel */}

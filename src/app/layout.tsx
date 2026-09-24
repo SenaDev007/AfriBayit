@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import { Playfair_Display, DM_Sans, DM_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,15 +12,17 @@ import KeepWarmBeacon from "@/components/providers/KeepWarmBeacon";
 import { LocaleProvider } from "@/lib/i18n/context";
 import { LOCALES, type Locale } from "@/lib/i18n";
 
-// Module 4 — Design System:
-//   - Cormorant Garamond → `--font-cormorant` (display/headings) — fixed bug
-//     where it was aliased to `--font-inter` (clobbered Inter).
-//   - DM Sans → `--font-dm-sans` (body, replaces Inter).
-//   - DM Mono → `--font-dm-mono` (mono/data, replaces Space Grotesk).
-const cormorant = Cormorant_Garamond({
+// Module 4 — Design System (aligné Win-Agro, sept. 2026) :
+//   - Playfair Display → `--font-cormorant` (display/headings) — la police
+//     display de Win-Agro, mappée sur l'ancienne variable pour que tout le
+//     site (titres, .font-display, --font-serif) en hérite automatiquement.
+//   - DM Sans → `--font-dm-sans` (body, identique Win-Agro).
+//   - DM Mono → `--font-dm-mono` (mono/data).
+const cormorant = Playfair_Display({
   variable: "--font-cormorant",
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 

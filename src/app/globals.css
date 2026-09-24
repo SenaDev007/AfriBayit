@@ -862,3 +862,335 @@
     transition: color 0.01ms, background-color 0.01ms, border-color 0.01ms, opacity 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM WIN-AGRO — porté sur la palette AfriBayit (sept. 2026)
+   Structure, styles et animations de Win-Agro appliqués à AfriBayit,
+   en conservant la palette de couleurs officielle AfriBayit :
+     navy #003087 · innovation #009CDE · or #D4AF37 · navy-noir #0A1226
+   Mapping effectué depuis la palette Win-Agro :
+     primary-deep  #076B37 → navy #003087   (fond hero, titres, cartes premium)
+     primary-green #098947 → innovation #009CDE (CTA, icônes, accents vifs)
+     primary-pale  #E6F4EC → #E6EEF9        (badges, bordures pâles)
+     accent-yellow #FDDD00 → or #D4AF37     (soulignés, badges premium)
+     accent-dark   #C8A800 → #8B6914        (or texte AAA sur blanc)
+     accent-pale   #FFFBE0 → #FFFBE6        (halos or pâles)
+     cream         #FAFAF3 → #FAFAFA        (fond de page neutre)
+     noir-vert     #0F1F14 → #0A1226        (fond footer / sections sombres)
+     gray-text     #4A4A4A → #4B5563        (texte courant)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* Palette Win-Agro mappée AfriBayit — utilisable via bg-primary-deep, etc. */
+  --color-primary-deep: #003087;
+  --color-primary-green: #009CDE;
+  --color-primary-pale: #E6EEF9;
+  --color-accent-yellow: #D4AF37;
+  --color-accent-dark: #8B6914;
+  --color-accent-pale: #FFFBE6;
+  --color-cream: #FAFAFA;
+  --color-noir-vert: #0A1226;
+  --color-gray-text: #4B5563;
+
+  /* Backoffice Win-Agro mappé AfriBayit */
+  --color-admin-bg: #060D1A;
+  --color-admin-panel: #0A1A33;
+
+  /* Polices — corps DM Sans (identique Win-Agro). La police display serif
+     est fournie via l'utility manuelle .font-serif ci-dessous (résolution au
+     niveau élément, comme .font-display) car les variables next/font sont
+     définies sur <body> et non sur :root. */
+
+  /* Animations Win-Agro */
+  --animate-pulse-slow: pulse-slow 2s infinite ease-in-out;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-subtle-spin: subtle-spin 20s linear infinite;
+  --animate-marquee: marquee 180s linear infinite;
+  --animate-marquee-left: marquee-left 65s linear infinite;
+  --animate-marquee-right: marquee-right 65s linear infinite;
+  --animate-marquee-badge: marquee 16s linear infinite;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 156, 222, 0.7);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 12px rgba(0, 156, 222, 0);
+    }
+  }
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes subtle-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-150%) skewX(-20deg); }
+    100% { transform: translateX(200%) skewX(-20deg); }
+  }
+  @keyframes rotate-conic-light {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes marquee-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-33.3333%);
+    }
+  }
+  @keyframes marquee-right {
+    0% {
+      transform: translateX(-33.3333%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+@layer utilities {
+  /* Police serif display Win-Agro (Playfair Display) — résout au niveau
+     de l'élément car --font-cormorant est défini sur <body>. */
+  .font-serif {
+    font-family: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+
+  /* Logo à faisceau lumineux conique — anneau rotatif navy + or */
+  .logo-light-beam {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    clip-path: circle(50%);
+  }
+  .logo-light-beam::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 120deg,
+      #003087 180deg,
+      #D4AF37 240deg,
+      transparent 300deg,
+      transparent 360deg
+    );
+    animation: rotate-conic-light 3s linear infinite;
+    z-index: 1;
+  }
+  .logo-light-beam::after {
+    content: '';
+    position: absolute;
+    inset: 2.5px;
+    background: #0A1226;
+    border-radius: 50%;
+    z-index: 2;
+  }
+  .logo-light-beam > * {
+    position: relative;
+    z-index: 3;
+  }
+
+  /* Reflet balayant les boutons (Win-Agro btn-shimmer) */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: translateX(-150%) skewX(-20deg);
+    animation: shimmer 2.5s infinite linear;
+    pointer-events: none;
+  }
+
+  /* Reflet balayant les cartes au survol (Win-Agro card-shimmer) */
+  .card-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-shimmer:hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: translateX(-150%) skewX(-20deg);
+    animation: shimmer 1.5s infinite linear;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Grain de texture luxueux (points navy) */
+  .bg-grain {
+    background-image: radial-gradient(rgba(0, 48, 135, 0.03) 1px, transparent 0), radial-gradient(rgba(0, 48, 135, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+  }
+
+  /* Panneau glassmorphism Win-Agro */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(200, 220, 240, 0.4);
+  }
+
+  /* Surligné or sous un mot clé (Win-Agro underline-accent) */
+  .underline-accent {
+    position: relative;
+  }
+  .underline-accent::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-color: #D4AF37;
+    z-index: -1;
+    transform: skewX(-12deg);
+    opacity: 0.8;
+  }
+}
+
+/* Scrollbar premium navy (Win-Agro) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAFAFA;
+}
+::-webkit-scrollbar-thumb {
+  background: #003087;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00256e;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BACKOFFICE ADMIN — thème sombre Win-Agro appliqué via .admin-dark
+   (équivalent du backoffice #07130A de Win-Agro, en navy AfriBayit)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.admin-dark {
+  --background: #060D1A;
+  --foreground: #F0F4F8;
+  --card: #0A1A33;
+  --card-foreground: #F0F4F8;
+  --popover: #0D1F3C;
+  --popover-foreground: #F0F4F8;
+  --primary: #009CDE;
+  --primary-foreground: #FFFFFF;
+  --secondary: #0D1F3C;
+  --secondary-foreground: #E2E8F0;
+  --muted: #0D1F3C;
+  --muted-foreground: #94A3B8;
+  --accent: #009CDE;
+  --accent-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --border: rgba(0, 156, 222, 0.12);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #009CDE;
+  --sidebar: #060D1A;
+  --sidebar-foreground: #F0F4F8;
+  --sidebar-primary: #009CDE;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #0A1A33;
+  --sidebar-accent-foreground: #F0F4F8;
+  --sidebar-border: rgba(0, 156, 222, 0.12);
+  --sidebar-ring: #009CDE;
+}
+
+/* Adaptation des classes claires codées en dur dans les pages admin
+   (les pages admin ont été construites en clair — on les retourne en
+   thème sombre Win-Agro sans réécrire chaque page). */
+.admin-dark .bg-white,
+.admin-dark .bg-gray-50,
+.admin-dark .bg-gray-100\/50 {
+  background-color: #0A1A33;
+}
+.admin-dark .bg-gray-50,
+.admin-dark .bg-gray-100 {
+  background-color: #0D1F3C;
+}
+.admin-dark .hover\:bg-gray-50:hover,
+.admin-dark .hover\:bg-gray-100:hover {
+  background-color: #13294D;
+}
+.admin-dark .text-gray-900,
+.admin-dark .text-gray-800 {
+  color: #F0F4F8;
+}
+.admin-dark .text-gray-700 {
+  color: #CBD5E1;
+}
+.admin-dark .text-gray-600 {
+  color: #B6C2D4;
+}
+.admin-dark .border-gray-200,
+.admin-dark .border-gray-100,
+.admin-dark .border-gray-300 {
+  border-color: rgba(0, 156, 222, 0.12);
+}
+.admin-dark .divide-gray-200 > * + *,
+.admin-dark .divide-gray-100 > * + * {
+  border-color: rgba(0, 156, 222, 0.10);
+}
+.admin-dark .bg-blue-50 {
+  background-color: rgba(0, 156, 222, 0.10);
+}
+.admin-dark .bg-red-50 {
+  background-color: rgba(217, 48, 37, 0.12);
+}
+.admin-dark .bg-green-50 {
+  background-color: rgba(0, 166, 81, 0.12);
+}
+.admin-dark .bg-yellow-50 {
+  background-color: rgba(212, 175, 55, 0.12);
+}

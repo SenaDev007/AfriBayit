@@ -1567,3 +1567,29 @@ Top 10 critical backend issues found:
 9. withRBAC() and withTenantGuard() wrappers in src/lib/security/{rbac,tenant-guard}.ts are NO-OPs — they just call the handler without enforcing anything (deceptive — devs who wrap handlers think they're protected)
 10. Escrow state machine missing 3 CDC §7B.3 states (DOCS_VALIDATED, GEOTRUST_VALIDATED, NOTARY_IN_PROGRESS) — engine supports 7-state lifecycle while Rebecca UI shows 9-state lifecycle, creating UI/engine drift
 
+
+---
+
+Task ID: 1
+Agent: Super Z (main agent)
+Task: Appliquer le design Win-Agro (landing page, toutes les pages, backoffice admin) à AfriBayit en conservant la palette de couleurs AfriBayit (navy #003087, innovation #009CDE, or #D4AF37)
+
+Work Log:
+- Cloné afribayit (commit 662027d, main) et Win-Agro pour analyse comparative des deux design systems
+- Mapping de palette effectué : primary-deep #076B37→navy #003087, primary-green #098947→#009CDE, primary-pale→#E6EEF9, accent-yellow #FDDD00→or #D4AF37, accent-dark→#8B6914, accent-pale→#FFFBE6, cream→#FAFAFA, noir-vert #0F1F14→#0A1226, gray-text→#4B5563 ; backoffice #07130A→#060D1A, panneaux #0F2214→#0A1A33
+- globals.css : ajout du design system Win-Agro complet (tokens @theme mappés, animations pulse-slow/float/subtle-spin/marquee×4/shimmer/rotate-conic-light/fade-in, utilities logo-light-beam/btn-shimmer/card-shimmer/bg-grain/glass-panel/underline-accent, scrollbar navy, .font-serif manuel)
+- globals.css : ajout du scope .admin-dark (override des variables shadcn + des classes claires codées en dur) pour retourner tout le backoffice en thème sombre Win-Agro sans réécrire ~50 pages
+- layout.tsx : Cormorant Garamond → Playfair_Display (même variable --font-cormorant, héritage automatique sur tout le site)
+- Créé src/components/landing/ : PillNav (pilule 3D signature Win-Agro, dégradé navy + arête or, springs + auto-expansion 15s), Hero (fond navy, image Unsplash + voile dégradé, halos flottants, grain SVG, badge pulsé, titre staggered avec souligné or animé, barre de recherche glass, CTA shimmer + pulsation, divider incliné), Stats (compteurs IntersectionObserver), Services (3 cartes hook/problème/programme + carte premium navy/or avec badge couronne), Catalog (3 catégories + biens réels via react-query avec fallbacks), About (mission + panorama pays pionniers light-beam), WhyUs (5 cartes numérotées avec images), Testimonials + TestimonialsCarousel (double marquee pausable + modale d'expansion), LeadForm (formulaire glass-panel + soumission mailto pré-rempli)
+- page.tsx : landing reconstruite selon le flux stratégique Win-Agro (Attirer→Prouver→Persuader→Assurer→Convertir)
+- header-3.tsx : réécrit au design Navbar Win-Agro (fond blanc permanent, état scrollé blur+ombre+liseré navy, logo light-beam, PillNav + menu « Plus » 3 colonnes regroupant toute la navigation secondaire existante, CTA Publier shimmer/pulsé, menu mobile tiroir blanc) — fonctionnalités auth/notifications/profil préservées
+- Footer.tsx : réécrit au design footer-column Win-Agro (fond #0A1226, rounded-t-[2.5rem], liseré bleu 4px, logo light-beam, 4 colonnes serif, réseaux sociaux, barre légale)
+- AppShell.tsx : FAB Rebecca restylé en FAB Win-Agro (cercle blanc, pulse-slow, tooltip auto-masqué 8s, badge IA or)
+- Backoffice : admin/layout.tsx (fond #060D1A + classe admin-dark), AdminSidebar (sombre, items actifs bleu #009CDE, boîte logo blanche Win-Agro, pays sélectionné mis en avant), AdminHeader (glass sombre + indicateur LIVE pulsé + bouton « Voir le site »), admin/dashboard/page.tsx (cartes KPI bg-[#0A1A33]/50 border-primary-green/10, chiffres serif blancs, barres de progression bleues, cartes pays à dégradé navy→bleu→or)
+- Validation : tsc --noEmit OK, ESLint 0 erreur (105 warnings <img> conformes au style Win-Agro), build production complet OK (toutes les routes compilées), 268/268 tests Vitest passés, vérification DOM + captures d'écran (Playfair appliqué sur h1, pill nav rendue, hero bg-primary-deep, footer bg-noir-vert, CTA or rgb(212,175,55), palette strictement navy/or/bleu — aucun vert/jaune Win-Agro)
+
+Stage Summary:
+- Design Win-Agro appliqué de A à Z sur AfriBayit : design system, typographie (Playfair Display + DM Sans), header avec pilule 3D, landing complète (8 sections), footer, FAB — palette de couleurs AfriBayit strictement conservée
+- Backoffice admin entièrement passé au thème sombre premium Win-Agro (navy/bleu/or) via coque dédiée + couche CSS .admin-dark couvrant toutes les pages admin existantes
+- Toutes les fonctionnalités existantes préservées (auth multi-rôles, notifications, i18n, recherche, react-query, guards admin)
+- Fichiers clés modifiés : src/app/globals.css, src/app/layout.tsx, src/app/page.tsx, src/components/ui/header-3.tsx, src/components/afribayit/Footer.tsx, src/components/providers/AppShell.tsx, src/components/admin/{AdminSidebar,AdminHeader}.tsx, src/app/admin/{layout,dashboard/page}.tsx ; nouveaux : src/components/landing/{PillNav,Hero,Stats,Services,Catalog,About,WhyUs,Testimonials,TestimonialsCarousel,LeadForm}.tsx

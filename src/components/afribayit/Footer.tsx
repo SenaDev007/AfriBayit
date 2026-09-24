@@ -6,28 +6,9 @@ import {
   Mail,
   Phone,
   MapPin,
-  Home,
-  Shield,
-  Bot,
-  Building2,
-  Hotel,
-  Scale,
-  PlusCircle,
+  ArrowUpRight,
+  ShieldCheck,
   FileText,
-  Lock,
-  Cookie,
-  AlertTriangle,
-  Trash2,
-  LandPlot,
-  Building,
-  Warehouse,
-  ShoppingBag,
-  Briefcase,
-  HeartHandshake,
-  BadgeCheck,
-  Wrench,
-  GraduationCap,
-  Plane,
 } from 'lucide-react';
 import {
   FaFacebookF,
@@ -35,390 +16,323 @@ import {
   FaLinkedinIn,
   FaYoutube,
   FaTiktok,
-  FaCcVisa,
-  FaCcMastercard,
-  FaCcPaypal,
-  FaMobileAlt,
 } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
-// FedaPay doesn't exist in react-icons — custom SVG icon
-const FedaPayIcon = ({ size = 28 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="4" fill="#00C853" />
-    <path
-      d="M6 8h5.5c1.4 0 2.5 1.1 2.5 2.5S12.9 13 11.5 13H8v3H6V8zm2 2v1h3.5c.3 0 .5-.2.5-.5s-.2-.5-.5-.5H8zm5 2l3 4h-2.5l-2-2.7L11 16H8.5l3-4 2.5-2z"
-      fill="white"
-    />
-  </svg>
-);
-import { FooterBackgroundGradient, TextHoverEffect } from '@/components/ui/hover-footer';
 import { useTranslation } from '@/lib/i18n/use-translate';
+
+/**
+ * Pied de page AfriBayit — portage fidèle du design Win-Agro
+ * (components/ui/footer-column.tsx) sur la palette AfriBayit :
+ *   - Fond navy-noir #0A1226, coins supérieurs arrondis 2.5rem,
+ *     liseré supérieur bleu innovation 4px
+ *   - Grain de texture premium en surimpression
+ *   - Logo en cercle « light-beam » rotatif + wordmark serif + tagline or
+ *   - Colonnes de liens aux en-têtes serif soulignés
+ *   - Barre légale en pied avec crédits et liens juridiques
+ */
+
+const socialLinks = [
+  { icon: FaFacebookF, label: 'Facebook', href: 'https://facebook.com/afribayit', hoverClass: 'hover:bg-[#1877F2]' },
+  { icon: FaInstagram, label: 'Instagram', href: 'https://instagram.com/afribayit', hoverClass: 'hover:bg-[#E4405F]' },
+  { icon: FaXTwitter, label: 'X (Twitter)', href: 'https://x.com/afribayit', hoverClass: 'hover:bg-[#0f1117]' },
+  { icon: FaLinkedinIn, label: 'LinkedIn', href: 'https://linkedin.com/company/afribayit', hoverClass: 'hover:bg-[#0A66C2]' },
+  { icon: FaYoutube, label: 'YouTube', href: 'https://youtube.com/@afribayit', hoverClass: 'hover:bg-[#FF0000]' },
+  { icon: FaTiktok, label: 'TikTok', href: 'https://tiktok.com/@afribayit', hoverClass: 'hover:bg-[#0f1117]' },
+];
+
+const countries = [
+  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
+  { code: 'CI', name: 'Côte d\u2019Ivoire', flag: '🇨🇮' },
+  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
+  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
+];
 
 export default function Footer() {
   const router = useRouter();
   const { t } = useTranslation();
+  const currentYear = new Date().getFullYear();
 
   const navigateTo = (href: string) => {
+    if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('http')) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      return;
+    }
     router.push(href);
   };
 
-  // Footer link data — AfriBayit specific
-  const footerLinks = [
-    {
-      titleKey: 'footer.section.acheter',
-      titleFallback: 'Acheter',
-      icon: <Home size={16} className="text-[#D4AF37]" />,
-      links: [
-        { labelKey: 'footer.link.villas', labelFallback: 'Villas', href: '/acheter?type=villa', icon: <LandPlot size={14} /> },
-        { labelKey: 'footer.link.appartements', labelFallback: 'Appartements', href: '/acheter?type=appartement', icon: <Building size={14} /> },
-        { labelKey: 'footer.link.terrains', labelFallback: 'Terrains', href: '/acheter?type=terrain', icon: <Warehouse size={14} /> },
-        { labelKey: 'footer.link.bureaux', labelFallback: 'Bureaux', href: '/acheter?type=bureau', icon: <Briefcase size={14} /> },
-        { labelKey: 'footer.link.commerces', labelFallback: 'Commerces', href: '/acheter?type=commerce', icon: <ShoppingBag size={14} /> },
-      ],
-    },
-    {
-      titleKey: 'footer.section.services',
-      titleFallback: 'Services',
-      icon: <Shield size={16} className="text-[#D4AF37]" />,
-      links: [
-        { labelKey: 'footer.link.geotrust', labelFallback: 'GeoTrust', href: '/geotrust', icon: <BadgeCheck size={14} /> },
-        { labelKey: 'footer.link.proMatchArtisans', labelFallback: 'ProMatch Artisans', href: '/artisans', icon: <Wrench size={14} /> },
-        { labelKey: 'footer.link.rebeccaIA', labelFallback: 'Rebecca IA', href: '#', icon: <Bot size={14} /> },
-        { labelKey: 'footer.link.academy', labelFallback: 'Académie', href: '/academy', icon: <GraduationCap size={14} /> },
-      ],
-    },
-    {
-      titleKey: 'footer.section.entreprise',
-      titleFallback: 'Entreprise',
-      icon: <Building2 size={16} className="text-[#D4AF37]" />,
-      links: [
-        { labelKey: 'footer.link.community', labelFallback: 'Communauté', href: '/community', icon: <HeartHandshake size={14} /> },
-        { labelKey: 'footer.link.sejours', labelFallback: 'Séjours (Hôtels & Guesthouses)', href: '/sejours', icon: <Plane size={14} /> },
-        { labelKey: 'footer.link.notaries', labelFallback: 'Notaires', href: '/notary', icon: <Scale size={14} /> },
-        { labelKey: 'footer.link.publishAd', labelFallback: 'Publier une annonce', href: '/publish', icon: <PlusCircle size={14} /> },
-      ],
-    },
-    {
-      titleKey: 'footer.section.legal',
-      titleFallback: 'Légal',
-      icon: <Scale size={16} className="text-[#D4AF37]" />,
-      links: [
-        { labelKey: 'footer.link.cgu', labelFallback: 'CGU', href: '/terms', icon: <FileText size={14} /> },
-        { labelKey: 'footer.link.privacy', labelFallback: 'Confidentialité', href: '/privacy', icon: <Lock size={14} /> },
-        { labelKey: 'footer.link.cookies', labelFallback: 'Cookies', href: '/privacy#cookies', icon: <Cookie size={14} /> },
-        { labelKey: 'footer.link.legalMentions', labelFallback: 'Mentions légales', href: '/terms#droit-applicable', icon: <FileText size={14} /> },
-        { labelKey: 'footer.link.deleteData', labelFallback: 'Suppression de données', href: '/delete-data', icon: <Trash2 size={14} /> },
-        { labelKey: 'footer.link.report', labelFallback: 'Signaler', href: 'mailto:contact@afribayit.com', icon: <AlertTriangle size={14} /> },
-      ],
-    },
+  // ─── Groupes de liens (contenu AfriBayit, structure Win-Agro) ───
+  const immobilierLinks = [
+    { text: 'Acheter des villas', href: '/acheter?type=villa' },
+    { text: 'Appartements', href: '/acheter?type=appartement' },
+    { text: 'Terrains', href: '/acheter?type=terrain' },
+    { text: 'Investir', href: '/investir' },
   ];
 
-  // Contact info
+  const servicesLinks = [
+    { text: 'Artisans BTP', href: '/artisans' },
+    { text: 'Notaires', href: '/notary' },
+    { text: 'GeoTrust', href: '/geotrust' },
+    { text: 'Académie', href: '/academy' },
+    { text: 'Publier une annonce', href: '/publish' },
+  ];
+
+  const sejoursLinks = [
+    { text: 'Hôtels', href: '/sejours' },
+    { text: 'Guesthouses', href: '/sejours' },
+    { text: 'Locations courte durée', href: '/sejours' },
+    { text: 'Réservations', href: '/sejours' },
+  ];
+
+  const helpfulLinks = [
+    { text: 'Communauté', href: '/community', hasIndicator: true },
+    { text: 'Abonnements & Tarifs', href: '/subscriptions' },
+    { text: 'Centre d\u2019aide', href: '/help' },
+    { text: 'Blog', href: '/blog' },
+  ];
+
   const contactInfo = [
-    {
-      icon: <Mail size={18} className="text-[#D4AF37]" />,
-      text: 'contact@afribayit.com',
-      href: 'mailto:contact@afribayit.com',
-    },
-    {
-      icon: <Phone size={18} className="text-[#D4AF37]" />,
-      text: '+229 97 00 00 00',
-      href: 'tel:+22997000000',
-    },
-    {
-      icon: <MapPin size={18} className="text-[#D4AF37]" />,
-      text: 'Cotonou, Bénin | Abidjan, CI | Dakar, SN',
-    },
-  ];
-
-  // Social media — official brand icons from react-icons
-  const socialLinks = [
-    {
-      icon: <FaFacebookF size={18} />,
-      label: 'Facebook',
-      href: 'https://facebook.com/afribayit',
-      brandColor: '#1877F2',
-    },
-    {
-      icon: <FaInstagram size={18} />,
-      label: 'Instagram',
-      href: 'https://instagram.com/afribayit',
-      brandColor: '#E4405F',
-    },
-    {
-      icon: <FaXTwitter size={18} />,
-      label: 'X (Twitter)',
-      href: 'https://x.com/afribayit',
-      brandColor: '#FFFFFF',
-    },
-    {
-      icon: <FaLinkedinIn size={18} />,
-      label: 'LinkedIn',
-      href: 'https://linkedin.com/company/afribayit',
-      brandColor: '#0A66C2',
-    },
-    {
-      icon: <FaYoutube size={18} />,
-      label: 'YouTube',
-      href: 'https://youtube.com/@afribayit',
-      brandColor: '#FF0000',
-    },
-    {
-      icon: <FaTiktok size={18} />,
-      label: 'TikTok',
-      href: 'https://tiktok.com/@afribayit',
-      brandColor: '#FFFFFF',
-    },
-  ];
-
-  // Payment & telecom partners — using official brand icons
-  const paymentPartners = [
-    {
-      icon: <FaCcVisa size={36} />,
-      label: 'Visa',
-      brandColor: '#1A1F71',
-    },
-    {
-      icon: <FaCcMastercard size={36} />,
-      label: 'Mastercard',
-      brandColor: '#EB001B',
-    },
-    {
-      icon: <FaCcPaypal size={36} />,
-      label: 'PayPal',
-      brandColor: '#003087',
-    },
-    {
-      icon: <FedaPayIcon size={32} />,
-      label: 'FedaPay',
-      brandColor: '#00C853',
-    },
-  ];
-
-  // Mobile money partners with custom styled badges
-  const mobileMoneyPartners = [
-    {
-      name: 'MTN MoMo',
-      bg: 'bg-[#FFCC00]',
-      text: 'text-[#1a1a1a]',
-      icon: <FaMobileAlt size={14} className="text-[#1a1a1a]" />,
-    },
-    {
-      name: 'Orange Money',
-      bg: 'bg-[#FF7900]',
-      text: 'text-white',
-      icon: <FaMobileAlt size={14} className="text-white" />,
-    },
-    {
-      name: 'Moov Money',
-      bg: 'bg-[#009DE0]',
-      text: 'text-white',
-      icon: <FaMobileAlt size={14} className="text-white" />,
-    },
-  ];
-
-  // Countries covered
-  const countries = [
-    { code: 'BJ', nameKey: 'footer.country.benin', nameFallback: 'Bénin', flag: '🇧🇯' },
-    { code: 'CI', nameKey: 'footer.country.civ', nameFallback: "Côte d'Ivoire", flag: '🇨🇮' },
-    { code: 'SN', nameKey: 'footer.country.senegal', nameFallback: 'Sénégal', flag: '🇸🇳' },
-    { code: 'TG', nameKey: 'footer.country.togo', nameFallback: 'Togo', flag: '🇹🇬' },
-    { code: 'BF', nameKey: 'footer.country.burkina', nameFallback: 'Burkina Faso', flag: '🇧🇫' },
+    { icon: Mail, text: 'contact@afribayit.com', href: 'mailto:contact@afribayit.com' },
+    { icon: Phone, text: '+229 97 00 00 00', href: 'tel:+22997000000' },
+    { icon: MapPin, text: 'Cotonou · Abidjan · Ouagadougou · Lomé', href: null },
   ];
 
   return (
-    <footer className="bg-[#0a0a0c] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10 z-40 relative">
-        {/* Brand + Contact Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-8 lg:gap-12 pb-8">
-          {/* Brand section */}
-          <div className="flex flex-col space-y-3">
-            <div className="flex items-center space-x-3">
-              <img
-                src="/logo.png"
-                alt="AfriBayit"
-                className="h-12 w-auto object-contain brightness-0 invert"
-              />
-              <span className="text-white text-2xl font-bold tracking-tight">
-                AfriBayit
-              </span>
-            </div>
-            <p className="text-xs leading-relaxed text-gray-300">
-              {t('footer.tagline', "Où l'Afrique trouve sa maison. Où les rêves deviennent adresses. Plateforme immobilière de référence en Afrique de l'Ouest, agréée par les autorités immobilières.")}
-            </p>
+    <footer className="bg-noir-vert text-gray-300 mt-24 w-full place-self-end rounded-t-[2.5rem] border-t-4 border-primary-green relative overflow-hidden">
+      {/* Grain premium en surimpression pour des textures riches */}
+      <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
 
-            {/* Countries */}
-            <div className="mt-1">
-              <p className="text-[10px] font-semibold text-[#D4AF37] uppercase tracking-wider mb-1.5">
-                {t('footer.countries', 'Pays couverts')}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {countries.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => navigateTo(`/search?country=${c.code}`)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-[10px] text-white hover:text-[#D4AF37]"
-                  >
-                    <span>{c.flag}</span>
-                    <span>{t(c.nameKey, c.nameFallback)}</span>
-                  </button>
-                ))}
+      <div className="mx-auto max-w-7xl px-6 pt-20 pb-8 sm:px-8 lg:px-12 lg:pt-24 relative z-10">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+          {/* Colonne 1 : profil de l'entreprise */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="relative w-16 h-16 rounded-full overflow-hidden border border-primary-green/30 bg-noir-vert logo-light-beam shadow-md flex items-center justify-center p-0.5">
+                <img src="/logo.png" alt="AfriBayit" className="h-14 w-14 object-contain rounded-full" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif text-xl font-bold leading-tight text-white tracking-wide">AfriBayit</span>
+                <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-accent-yellow">
+                  La Plateforme Immobilière Africaine
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Contact section */}
-          <div className="flex flex-col space-y-3">
-            <h4 className="text-white text-sm font-semibold flex items-center gap-2">
-              <Mail size={16} className="text-[#D4AF37]" />
-              {t('footer.contact', 'Contactez-nous')}
-            </h4>
-            <ul className="space-y-2">
-              {contactInfo.map((item, i) => (
-                <li key={i} className="flex items-center space-x-2">
-                  {item.icon}
-                  {item.href ? (
-                    <a
-                      href={item.href}
-                      className="text-gray-100 hover:text-[#D4AF37] transition-colors text-xs"
-                    >
-                      {item.text}
-                    </a>
-                  ) : (
-                    <span className="text-gray-100 text-xs">
-                      {item.text}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <p className="text-gray-400 mt-6 max-w-md text-sm leading-relaxed text-left">
+              {t(
+                'footer.description',
+                'Où l\u2019Afrique trouve sa maison. Nous sécurisons chaque transaction immobilière — achat, location, séjours — avec séquestre digitalisé, notaires accrédités et vérification GeoTrust.'
+              )}
+            </p>
 
-            {/* Social icons */}
-            <div className="flex space-x-2 pt-1">
-              {socialLinks.map(({ icon, label, href, brandColor }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 transition-all duration-300 hover:scale-110"
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = brandColor;
-                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 10px ${brandColor}44`;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = '';
-                    (e.currentTarget as HTMLElement).style.boxShadow = '';
-                  }}
-                >
-                  {icon}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Partners & Payments */}
-          <div className="flex flex-col space-y-3">
-            <h4 className="text-white text-sm font-semibold flex items-center gap-2">
-              <Shield size={16} className="text-[#D4AF37]" />
-              {t('footer.partners', 'Paiement & Partenaires')}
-            </h4>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {paymentPartners.map((p) => (
-                <div
-                  key={p.label}
-                  className="flex items-center justify-center bg-white rounded-md px-1.5 py-1 transition-transform hover:scale-110"
-                  title={p.label}
-                >
-                  <span style={{ color: p.brandColor }}>
-                    {p.icon}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {mobileMoneyPartners.map((p) => (
+            {/* Pays couverts */}
+            <div className="flex flex-wrap gap-2">
+              {countries.map((country) => (
                 <span
-                  key={p.name}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${p.bg} ${p.text} transition-transform hover:scale-105`}
+                  key={country.code}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-green/10 border border-primary-green/20 text-xs font-sans font-semibold text-gray-300"
                 >
-                  {p.icon}
-                  {p.name}
+                  <span>{country.flag}</span> {country.name}
                 </span>
               ))}
             </div>
 
-            <div className="mt-2 p-2 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30">
-              <p className="text-[10px] text-[#D4AF37] font-medium flex items-center gap-1.5">
-                <Shield size={12} />
-                {t('footer.secure', 'Transactions sécurisées par Escrow & GeoTrust')}
-              </p>
-            </div>
+            {/* Réseaux sociaux */}
+            <ul className="mt-8 flex gap-3 justify-start flex-wrap">
+              {socialLinks.map(({ icon: Icon, label, href, hoverClass }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-10 h-10 rounded-full bg-primary-green/15 text-white flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-md ${hoverClass}`}
+                    aria-label={label}
+                  >
+                    <Icon size={17} />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
 
-        {/* Main Footer Links */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pb-6">
-          {footerLinks.map((section) => (
-            <div key={section.titleKey}>
-              <h4 className="text-white text-xs font-semibold mb-2.5 flex items-center gap-1.5">
-                {section.icon}
-                {t(section.titleKey, section.titleFallback)}
-              </h4>
-              <ul className="space-y-1.5">
-                {section.links.map((link) => (
-                  <li key={link.labelKey} className="relative">
-                    <button
-                      onClick={() => navigateTo(link.href)}
-                      className="flex items-center gap-1.5 text-gray-100 hover:text-[#D4AF37] transition-colors text-xs group"
+          {/* Colonnes 2-5 : liens dynamiques */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-2">
+            {/* Immobilier */}
+            <div className="text-left">
+              <p className="text-white font-serif text-base font-bold tracking-wider mb-6 border-b border-primary-green/20 pb-2">
+                Immobilier
+              </p>
+              <ul className="mt-2 space-y-4 text-sm font-sans">
+                {immobilierLinks.map(({ text, href }) => (
+                  <li key={text}>
+                    <a
+                      className="text-gray-400 hover:text-accent-yellow transition-colors duration-200 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateTo(href);
+                      }}
                     >
-                      <span className="opacity-50 group-hover:opacity-100 transition-opacity text-gray-300">
-                        {link.icon}
-                      </span>
-                      {t(link.labelKey, link.labelFallback)}
-                    </button>
+                      {text}
+                    </a>
                   </li>
                 ))}
               </ul>
             </div>
-          ))}
+
+            {/* Séjours */}
+            <div className="text-left">
+              <p className="text-white font-serif text-base font-bold tracking-wider mb-6 border-b border-primary-green/20 pb-2">
+                Séjours
+              </p>
+              <ul className="mt-2 space-y-4 text-sm font-sans">
+                {sejoursLinks.map(({ text, href }) => (
+                  <li key={text}>
+                    <a
+                      className="text-gray-400 hover:text-accent-yellow transition-colors duration-200 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateTo(href);
+                      }}
+                    >
+                      {text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Services */}
+            <div className="text-left">
+              <p className="text-white font-serif text-base font-bold tracking-wider mb-6 border-b border-primary-green/20 pb-2">
+                Services
+              </p>
+              <ul className="mt-2 space-y-4 text-sm font-sans">
+                {servicesLinks.map(({ text, href }) => (
+                  <li key={text}>
+                    <a
+                      className="text-gray-400 hover:text-accent-yellow transition-colors duration-200 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateTo(href);
+                      }}
+                    >
+                      {text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Utiles + Contact */}
+            <div className="text-left">
+              <p className="text-white font-serif text-base font-bold tracking-wider mb-6 border-b border-primary-green/20 pb-2">
+                Utiles
+              </p>
+              <ul className="mt-2 space-y-4 text-sm font-sans">
+                {helpfulLinks.map(({ text, href, hasIndicator }) => (
+                  <li key={text}>
+                    <a
+                      className={`${
+                        hasIndicator
+                          ? 'group flex items-center gap-1.5 justify-start hover:text-accent-yellow transition-colors cursor-pointer'
+                          : 'text-gray-400 hover:text-accent-yellow transition-colors cursor-pointer'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateTo(href);
+                      }}
+                    >
+                      <span className={`${hasIndicator ? 'text-gray-400 group-hover:text-accent-yellow' : ''} transition-colors`}>
+                        {text}
+                      </span>
+                      {hasIndicator && (
+                        <span className="relative flex size-2">
+                          <span className="bg-primary-green absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
+                          <span className="bg-primary-green relative inline-flex size-2 rounded-full" />
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Coordonnées */}
+              <ul className="mt-6 space-y-3 text-sm font-sans">
+                {contactInfo.map(({ icon: Icon, text, href }, idx) => (
+                  <li key={idx}>
+                    <a
+                      className="flex items-start gap-2 justify-start group hover:text-accent-yellow transition-colors duration-200"
+                      href={href ?? '#'}
+                      onClick={(e) => {
+                        if (!href) {
+                          e.preventDefault();
+                          return;
+                        }
+                        if (!href.startsWith('mailto:') && !href.startsWith('tel:')) {
+                          e.preventDefault();
+                          navigateTo(href);
+                        }
+                      }}
+                    >
+                      <Icon className="text-primary-green size-4 shrink-0 mt-0.5 transition-colors group-hover:text-accent-yellow" />
+                      <span className="text-gray-400 group-hover:text-accent-yellow transition-colors">{text}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <hr className="border-t border-white/10 my-4" />
+        {/* Barre légale & crédits */}
+        <div className="mt-16 border-t border-primary-green/10 pt-8 relative z-10">
+          <div className="text-center sm:flex sm:justify-between sm:text-left flex-row-reverse items-center justify-between gap-4">
+            {/* Crédits */}
+            <p className="text-xs text-gray-500 mt-4 sm:mt-0 font-sans flex gap-1 flex-wrap justify-center sm:justify-end">
+              <span>Conçu pour l&apos;Afrique — </span>
+              <a
+                href="/about"
+                className="text-accent-yellow hover:underline font-bold flex items-center gap-0.5"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/about');
+                }}
+              >
+                l&apos;équipe AfriBayit <ArrowUpRight className="w-3 h-3" />
+              </a>
+            </p>
 
-        {/* Footer bottom */}
-        <div className="flex flex-col md:flex-row justify-between items-center text-sm space-y-2 md:space-y-0">
-          <p className="text-gray-300 text-[10px] text-center md:text-left">
-            &copy; {new Date().getFullYear()} AfriBayit. {t('footer.rights', 'Tous droits réservés. Plateforme agréée par les autorités immobilières.')}
-          </p>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigateTo('/auth/login')}
-              className="text-[10px] text-gray-300 hover:text-[#D4AF37] transition-colors"
-            >
-              {t('footer.proSpace', 'Espace Pro')}
-            </button>
-            <span className="text-gray-600">|</span>
-            <button
-              onClick={() => navigateTo('/admin')}
-              className="text-[10px] text-gray-300 hover:text-[#D4AF37] transition-colors"
-            >
-              {t('footer.administration', 'Administration')}
-            </button>
+            {/* Copyright & liens juridiques */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-center sm:justify-start text-xs text-gray-400 font-sans">
+              <p>&copy; {currentYear} AfriBayit. Tous droits réservés.</p>
+              <div className="hidden sm:inline text-primary-green/30">|</div>
+              <div className="flex gap-3">
+                <a
+                  href="/privacy"
+                  className="hover:text-accent-yellow transition-colors flex items-center gap-1 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/privacy');
+                  }}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" /> Confidentialité
+                </a>
+                <span className="text-primary-green/30">·</span>
+                <a
+                  href="/terms"
+                  className="hover:text-accent-yellow transition-colors flex items-center gap-1 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateTo('/terms');
+                  }}
+                >
+                  <FileText className="w-3.5 h-3.5" /> Mentions Légales
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <FooterBackgroundGradient />
     </footer>
   );
 }
