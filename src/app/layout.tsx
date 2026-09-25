@@ -68,9 +68,14 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "AfriBayit" }],
   manifest: "/manifest.webmanifest",
+  // Pack favicon officiel AfriBayit (/public/AfriBayit_favicon/) —
+  // favicon.ico est également servi à la racine pour les navigateurs legacy.
   icons: {
-    icon: "/logo.png",
-    apple: "/icons/apple-touch-icon.png",
+    icon: [
+      { url: "/AfriBayit_favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/AfriBayit_favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [{ url: "/AfriBayit_favicon/apple-touch-icon.png", sizes: "180x180" }],
   },
   openGraph: {
     title: "AfriBayit — La Plateforme Immobilière Africaine",
