@@ -87,10 +87,14 @@ function generatePassword(length = 16): string {
 }
 
 // ── Test-account email domains (single list, mirrored in .gitignore docs) ─
+// NOTE: production seed data uses the FRENCH spelling '@notaire.afribayit.com'
+// (see src/lib/migrations/directory-data.ts) — both spellings are listed so no
+// test account is ever silently skipped.
 const TEST_EMAIL_DOMAINS = [
   '@afribayit.com',
   '@afribayit.bf',
   '@artisan.afribayit.com',
+  '@notaire.afribayit.com',
   '@notary.afribayit.com',
   '@example.com',
 ] as const;
