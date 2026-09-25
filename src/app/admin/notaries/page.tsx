@@ -57,6 +57,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminNotaries } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const STATUS_LABELS: Record<string, string> = {
   verified: 'Vérifié',
@@ -70,7 +71,6 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: 'bg-red-50 text-red-600 border-red-200',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 interface NotaryRow {
   id: string;
@@ -233,10 +233,10 @@ export default function AdminNotariesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminNotaries.selectAllCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -332,7 +332,7 @@ export default function AdminNotariesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {notary.country ? `${COUNTRY_FLAGS[notary.country] || ''} ${notary.country}` : '—'}
+                      {notary.country ? <><CountryFlag code={notary.country} /> {notary.country}</> : '—'}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{notary.city || '—'}</TableCell>
                     <TableCell>{renderStars(notary.rating)}</TableCell>

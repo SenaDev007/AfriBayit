@@ -55,8 +55,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAdminGeotrust } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 const MISSION_STATUS_LABELS: Record<string, string> = {
   scheduled: 'Planifiée',
@@ -253,10 +253,10 @@ export default function AdminGeotrustPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminGeotrust.selectAllCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -316,7 +316,7 @@ export default function AdminGeotrustPage() {
                       </TableCell>
                       <TableCell className="text-sm font-mono text-gray-600">{geo.license || '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {geo.country ? `${COUNTRY_FLAGS[geo.country] || ''} ${geo.country}` : '—'}
+                        {geo.country ? <><CountryFlag code={geo.country} /> {geo.country}</> : '—'}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">

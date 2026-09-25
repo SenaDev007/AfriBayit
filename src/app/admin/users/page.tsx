@@ -60,6 +60,7 @@ import {
   type AdminUserFilters,
 } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const ROLE_LABELS: Record<string, string> = {
   buyer: 'Acheteur',
@@ -74,12 +75,6 @@ const ROLE_LABELS: Record<string, string> = {
   banned: 'Banni',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-};
 
 const KYC_LABELS: Record<number, string> = {
   0: 'Anonyme',
@@ -189,10 +184,10 @@ export default function AdminUsersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminUsers.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
 
@@ -449,7 +444,7 @@ function UserRow({ user }: { user: AdminUser }) {
         </TableCell>
         <TableCell>
           <span className="text-sm">
-            {user.country ? `${COUNTRY_FLAGS[user.country] || ''} ${user.country}` : '—'}
+            {user.country ? <><CountryFlag code={user.country} /> {user.country}</> : '—'}
           </span>
         </TableCell>
         <TableCell>

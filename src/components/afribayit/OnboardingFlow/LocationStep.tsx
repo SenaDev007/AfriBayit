@@ -5,6 +5,7 @@ import { Check, Globe } from 'lucide-react';
 import type { StepProps } from './types';
 import { countries, citiesByCountry } from './constants';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 export default function LocationStep({ data, toggleArrayItem, direction, slideVariants, easeOut, setIsAnimating }: StepProps) {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ export default function LocationStep({ data, toggleArrayItem, direction, slideVa
                   : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/20'
               }`}
             >
-              <span className="text-3xl block mb-2">{c.flag}</span>
+              <span className="text-3xl block mb-2"><CountryFlag code={c.flag} /></span>
               <p className="text-sm font-semibold text-white">{c.name}</p>
               {data.countries.includes(c.code) && (
                 <motion.div

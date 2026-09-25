@@ -39,12 +39,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const PILOT_COUNTRIES = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 interface NavGroup {
@@ -393,7 +394,7 @@ export default function AdminSidebar({
                   )}
                   title={collapsed ? country.name : undefined}
                 >
-                  <span className="text-base shrink-0">{country.flag}</span>
+                  <span className="text-base shrink-0"><CountryFlag code={country.flag} /></span>
                   {!collapsed && (
                     <>
                       <span className="truncate flex-1 text-left">{country.name}</span>

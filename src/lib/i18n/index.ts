@@ -27,15 +27,15 @@ export interface LocaleMeta {
 }
 
 export const LOCALES: Record<Locale, LocaleMeta> = {
-  fr: { label: 'Français', flag: '🇫🇷' },
-  en: { label: 'English', flag: '🇬🇧' },
-  ar: { label: 'العربية', flag: '🇸🇦', rtl: true },
-  sw: { label: 'Kiswahili', flag: '🇰🇪' },
-  ha: { label: 'Hausa', flag: '🇳🇬' },
-  wo: { label: 'Wolof', flag: '🇸🇳' },
-  am: { label: 'አማርኛ', flag: '🇪🇹' },
-  ln: { label: 'Lingala', flag: '🇨🇩' },
-  fon: { label: 'Fon', flag: '🇧🇯' },
+  fr: { label: 'Français', flag: 'FR' },
+  en: { label: 'English', flag: 'GB' },
+  ar: { label: 'العربية', flag: 'SA', rtl: true },
+  sw: { label: 'Kiswahili', flag: 'KE' },
+  ha: { label: 'Hausa', flag: 'NG' },
+  wo: { label: 'Wolof', flag: 'SN' },
+  am: { label: 'አማርኛ', flag: 'ET' },
+  ln: { label: 'Lingala', flag: 'CD' },
+  fon: { label: 'Fon', flag: 'BJ' },
 };
 
 // Primary translations use the full FR type; local languages may have fewer keys

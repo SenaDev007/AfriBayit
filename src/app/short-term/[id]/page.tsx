@@ -26,9 +26,9 @@ import {
   Snowflake, Tv, Home, ChefHat, X,
 } from 'lucide-react';
 import Link from 'next/link';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
   appartement: 'Appartement', villa: 'Villa', studio: 'Studio', chambre: 'Chambre',
@@ -221,7 +221,7 @@ export default function ShortTermRentalDetailPage() {
               <h1 className="font-serif text-2xl md:text-3xl font-extrabold text-primary-deep">{rental.title}</h1>
               <p className="text-gray-text flex items-center gap-2 mt-1 text-sm">
                 <MapPin className="w-4 h-4" />
-                {rental.quartier ? `${rental.quartier}, ` : ''}{rental.city}, {COUNTRY_FLAGS[rental.country] || ''} {rental.country}
+                {rental.quartier ? `${rental.quartier}, ` : ''}{rental.city}, <CountryFlag code={rental.country} /> {rental.country}
               </p>
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 {/* Capacity badges */}

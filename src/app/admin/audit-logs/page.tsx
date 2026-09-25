@@ -45,14 +45,8 @@ import {
   type AdminAuditLogFilters,
 } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-  SN: '🇸🇳',
-};
 
 const ACTION_CATEGORIES: Record<string, { label: string; color: string }> = {
   // Destructive actions (red)
@@ -267,11 +261,11 @@ export default function AdminAuditLogsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminAuditLogs.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {countryLabel('BJ', t)}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {countryLabel('CI', t)}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {countryLabel('BF', t)}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {countryLabel('TG', t)}</SelectItem>
-                <SelectItem value="SN">🇸🇳 {countryLabel('SN', t)}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {countryLabel('BJ', t)}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {countryLabel('CI', t)}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {countryLabel('BF', t)}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {countryLabel('TG', t)}</SelectItem>
+                <SelectItem value="SN"><CountryFlag code="SN" /> {countryLabel('SN', t)}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -335,7 +329,7 @@ export default function AdminAuditLogsPage() {
             )}
             {filters.country && (
               <Badge variant="outline" className="text-[11px] gap-1 pr-1">
-                {t('adminAuditLogs.countryPill', 'Pays:')} {COUNTRY_FLAGS[filters.country] || ''} {countryLabel(filters.country, t)}
+                {t('adminAuditLogs.countryPill', 'Pays:')} <CountryFlag code={filters.country} /> {countryLabel(filters.country, t)}
                 <X
                   className="w-3 h-3 cursor-pointer hover:text-red-500"
                   onClick={() => setFilters((prev) => ({ ...prev, country: undefined, page: 1 }))}
@@ -566,7 +560,7 @@ export default function AdminAuditLogsPage() {
                   <span className="text-gray-500 text-xs">{t('adminAuditLogs.detailCountry', 'Pays')}</span>
                   <p className="text-xs mt-0.5">
                     {detailLog.country
-                      ? `${COUNTRY_FLAGS[detailLog.country] || ''} ${countryLabel(detailLog.country, t)}`
+                      ? <><CountryFlag code={detailLog.country} /> {countryLabel(detailLog.country, t)}</>
                       : '—'}
                   </p>
                 </div>
@@ -664,7 +658,7 @@ function AuditLogRow({
         <TableCell>
           <span className="text-xs">
             {log.country
-              ? `${COUNTRY_FLAGS[log.country] || ''} ${countryLabel(log.country, t)}`
+              ? <><CountryFlag code={log.country} /> {countryLabel(log.country, t)}</>
               : '—'}
           </span>
         </TableCell>

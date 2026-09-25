@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 /**
  * Pied de page AfriBayit — portage fidèle du design Win-Agro
@@ -41,11 +42,11 @@ const socialLinks = [
 ];
 
 const countries = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: 'Côte d\u2019Ivoire', flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
-  { code: 'SN', name: 'Sénégal', flag: '🇸🇳' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: 'Côte d\u2019Ivoire', flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
+  { code: 'SN', name: 'Sénégal', flag: 'SN' },
 ];
 
 export default function Footer() {
@@ -132,7 +133,7 @@ export default function Footer() {
                   key={country.code}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-green/10 border border-primary-green/20 text-xs font-sans font-semibold text-gray-300"
                 >
-                  <span>{country.flag}</span> {country.name}
+                  <span><CountryFlag code={country.flag} /></span> {country.name}
                 </span>
               ))}
             </div>

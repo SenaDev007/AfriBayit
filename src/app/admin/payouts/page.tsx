@@ -55,6 +55,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminPayouts, useProcessPayout } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente',
@@ -79,7 +80,6 @@ const METHOD_LABELS: Record<string, string> = {
   cash: 'Espèces',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
@@ -263,10 +263,10 @@ export default function AdminPayoutsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminPayouts.selectAllCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -437,7 +437,7 @@ export default function AdminPayoutsPage() {
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-gray-500">{t('adminPayouts.detailCountry', 'Pays')}</span>
-                    <span>{payout.country ? `${COUNTRY_FLAGS[payout.country] || ''} ${payout.country}` : '—'}</span>
+                    <span>{payout.country ? <><CountryFlag code={payout.country} /> {payout.country}</> : '—'}</span>
                   </div>
                 </>
               );

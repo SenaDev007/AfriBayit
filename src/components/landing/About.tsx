@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Globe2 } from 'lucide-react';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 /**
  * Section À Propos — portage du design Win-Agro About.tsx sur AfriBayit :
@@ -15,10 +16,10 @@ export default function About() {
   const router = useRouter();
 
   const countries = [
-    { code: 'BJ', name: 'Bénin', flag: '🇧🇯', city: 'Cotonou' },
-    { code: 'CI', name: 'Côte d\u2019Ivoire', flag: '🇨🇮', city: 'Abidjan' },
-    { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫', city: 'Ouagadougou' },
-    { code: 'TG', name: 'Togo', flag: '🇹🇬', city: 'Lomé' },
+    { code: 'BJ', name: 'Bénin', flag: 'BJ', city: 'Cotonou' },
+    { code: 'CI', name: 'Côte d\u2019Ivoire', flag: 'CI', city: 'Abidjan' },
+    { code: 'BF', name: 'Burkina Faso', flag: 'BF', city: 'Ouagadougou' },
+    { code: 'TG', name: 'Togo', flag: 'TG', city: 'Lomé' },
   ];
 
   return (
@@ -163,7 +164,7 @@ export default function About() {
                       whileHover={{ x: 6 }}
                       className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-accent-yellow/30 transition-all duration-300"
                     >
-                      <span className="text-3xl shrink-0">{country.flag}</span>
+                      <span className="text-3xl shrink-0"><CountryFlag code={country.flag} /></span>
                       <div className="flex-1 min-w-0">
                         <p className="font-sans font-bold text-white text-sm">{country.name}</p>
                         <p className="text-[11px] text-gray-400 font-sans">{country.city} &amp; environs</p>

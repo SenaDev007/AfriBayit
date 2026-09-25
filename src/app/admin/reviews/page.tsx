@@ -54,8 +54,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAdminReviews } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 interface ReviewRow {
   id: string;
@@ -224,10 +224,10 @@ export default function AdminReviewsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les pays</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>

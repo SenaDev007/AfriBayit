@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api-client';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { Globe } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -23,11 +24,11 @@ interface PlatformStatsResponse {
 }
 
 const countryMeta: Record<string, { flag: string; name: string }> = {
-  BJ: { flag: '🇧🇯', name: 'Bénin' },
-  CI: { flag: '🇨🇮', name: "Côte d'Ivoire" },
-  BF: { flag: '🇧🇫', name: 'Burkina Faso' },
-  TG: { flag: '🇹🇬', name: 'Togo' },
-  SN: { flag: '🇸🇳', name: 'Sénégal' },
+  BJ: { flag: 'BJ', name: 'Bénin' },
+  CI: { flag: 'CI', name: "Côte d'Ivoire" },
+  BF: { flag: 'BF', name: 'Burkina Faso' },
+  TG: { flag: 'TG', name: 'Togo' },
+  SN: { flag: 'SN', name: 'Sénégal' },
 };
 
 export default function PaysCouverts() {
@@ -114,7 +115,7 @@ export default function PaysCouverts() {
               >
                 {/* Flag */}
                 <div className="text-5xl transition-transform duration-300 group-hover:scale-110 sm:text-6xl">
-                  {meta?.flag || <Globe className="h-6 w-6 text-white" />}
+                  {meta?.flag ? <CountryFlag code={meta.flag} /> : <Globe className="h-6 w-6 text-white" />}
                 </div>
 
                 {/* Name */}

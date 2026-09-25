@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Check, Loader2, MapPin, Mail } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRIES = [
-  { value: 'BJ', label: 'Bénin', flag: '🇧🇯' },
-  { value: 'CI', label: "Côte d'Ivoire", flag: '🇨🇮' },
-  { value: 'BF', label: 'Burkina Faso', flag: '🇧🇫' },
-  { value: 'TG', label: 'Togo', flag: '🇹🇬' },
-  { value: 'SN', label: 'Sénégal', flag: '🇸🇳' },
+  { value: 'BJ', label: 'Bénin', flag: 'BJ' },
+  { value: 'CI', label: "Côte d'Ivoire", flag: 'CI' },
+  { value: 'BF', label: 'Burkina Faso', flag: 'BF' },
+  { value: 'TG', label: 'Togo', flag: 'TG' },
+  { value: 'SN', label: 'Sénégal', flag: 'SN' },
 ];
 
 const CITIES_BY_COUNTRY: Record<string, string[]> = {
@@ -226,7 +227,7 @@ export default function CompleteProfilePage() {
                       : 'border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-xl">{c.flag}</span>
+                  <span className="text-xl"><CountryFlag code={c.flag} /></span>
                   <span className="font-medium text-gray-700">{c.label}</span>
                   {selectedCountry === c.value && (
                     <Check className="w-4 h-4 text-[#003087] ml-auto" />

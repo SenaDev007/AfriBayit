@@ -18,10 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Key, Users, BedDouble, Zap, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬',
-};
 
 const PROPERTY_TYPE_LABELS: Record<string, string> = {
   appartement: 'Appartement',
@@ -107,7 +105,7 @@ export default function ShortTermRentalCard({ rental, index }: { rental: ShortTe
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
               <MapPin className="w-3 h-3" />
-              {rental.city}, {COUNTRY_FLAGS[rental.country] || ''} {rental.country}
+              {rental.city}, <CountryFlag code={rental.country} /> {rental.country}
             </p>
 
             {/* Hôte vérifié */}

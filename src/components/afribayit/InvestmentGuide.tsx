@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, FileText, Scale, TrendingUp, Lightbulb, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 interface CountryGuide {
   code: string;
@@ -36,7 +37,7 @@ interface CountryGuide {
 const GUIDES: CountryGuide[] = [
   {
     code: 'BJ',
-    flag: '🇧🇯',
+    flag: 'BJ',
     name: 'Bénin',
     legalBase: 'Loi n°2017-20 sur le numérique · Code foncier et domanial · OHADA',
     acceptedDocs: [
@@ -66,7 +67,7 @@ const GUIDES: CountryGuide[] = [
   },
   {
     code: 'CI',
-    flag: '🇨🇮',
+    flag: 'CI',
     name: 'Côte d\'Ivoire',
     legalBase: 'Code Foncier et Domanial · Décret 2024-1115 · ACD / ADU · OHADA',
     acceptedDocs: [
@@ -96,7 +97,7 @@ const GUIDES: CountryGuide[] = [
   },
   {
     code: 'BF',
-    flag: '🇧🇫',
+    flag: 'BF',
     name: 'Burkina Faso',
     legalBase: 'Nouvelle RAF 2025 (loi du 22 octobre 2025, 214 articles) · OHADA',
     acceptedDocs: [
@@ -126,7 +127,7 @@ const GUIDES: CountryGuide[] = [
   },
   {
     code: 'TG',
-    flag: '🇹🇬',
+    flag: 'TG',
     name: 'Togo',
     legalBase: 'Code Foncier et Domanial 2018 (Loi n°2018-005) · OTR n°003/2025 · OHADA',
     acceptedDocs: [
@@ -195,7 +196,7 @@ export default function InvestmentGuide() {
                 : 'bg-white text-gray-text hover:bg-primary-pale/60 border border-primary-pale'
             }`}
           >
-            <span className="text-base">{g.flag}</span>
+            <span className="text-base"><CountryFlag code={g.flag} /></span>
             {g.name}
           </button>
         ))}

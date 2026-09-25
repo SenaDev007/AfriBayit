@@ -26,12 +26,13 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const PILOT_COUNTRIES = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 interface AdminStats {
@@ -239,7 +240,7 @@ export default function GlobalAdminDashboard() {
               return (
                 <div key={c.code} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-gray-300">{countryInfo?.flag} {countryInfo?.name}</span>
+                    <span className="font-semibold text-gray-300"><CountryFlag code={countryInfo?.flag} /> {countryInfo?.name}</span>
                     <span className="text-gray-400 font-mono">{formatXOF(c.commission)}</span>
                   </div>
                   <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden">
@@ -263,7 +264,7 @@ export default function GlobalAdminDashboard() {
                     <div className="h-1.5 bg-gradient-to-r from-primary-deep via-primary-green to-accent-yellow" />
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="text-2xl">{country.flag}</span>
+                        <span className="text-2xl"><CountryFlag code={country.flag} /></span>
                         <div>
                           <h3 className="text-sm font-bold text-white">{country.name}</h3>
                           <Badge variant="outline" className="text-[10px] font-mono bg-white/5 border-white/10 text-gray-400">{country.code}</Badge>

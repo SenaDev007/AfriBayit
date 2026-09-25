@@ -12,9 +12,9 @@ import {
   ArrowLeftRight, Search, Wallet, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 interface TransactionRow {
   id: string;
@@ -68,7 +68,7 @@ export default function CountryTransactionsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <ArrowLeftRight className="w-6 h-6 text-[#003087]" />
-            {t('adminCountryTransactions.pageTitle', 'Transactions')} — {COUNTRY_FLAGS[country]} {COUNTRY_NAMES[country]}
+            {t('adminCountryTransactions.pageTitle', 'Transactions')} — <CountryFlag code={country} /> {COUNTRY_NAMES[country]}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">{t('adminCountryTransactions.pageSubtitle', 'Gestion des transactions du')} {COUNTRY_NAMES[country]}</p>
         </div>

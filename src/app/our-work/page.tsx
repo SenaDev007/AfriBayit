@@ -19,6 +19,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -46,7 +47,7 @@ interface Project {
 const PROJECTS: Project[] = [
   {
     country: "Côte d'Ivoire",
-    flag: '🇨🇮',
+    flag: 'CI',
     title: 'Résidence Les Palmiers',
     location: 'Cocody, Abidjan',
     type: 'Résidentiel',
@@ -58,7 +59,7 @@ const PROJECTS: Project[] = [
   },
   {
     country: 'Bénin',
-    flag: '🇧🇯',
+    flag: 'BJ',
     title: 'Éco-Village de Ganhi',
     location: 'Ganhi, Cotonou',
     type: 'Éco-résidentiel',
@@ -70,7 +71,7 @@ const PROJECTS: Project[] = [
   },
   {
     country: 'Sénégal',
-    flag: '🇸🇳',
+    flag: 'SN',
     title: 'Hôtel Baobab Premium',
     location: 'Almadies, Dakar',
     type: 'Hôtellerie',
@@ -82,7 +83,7 @@ const PROJECTS: Project[] = [
   },
   {
     country: 'Togo',
-    flag: '🇹🇬',
+    flag: 'TG',
     title: 'Résidence Les Cascades',
     location: 'Kpalimé',
     type: 'Résidentiel',
@@ -94,7 +95,7 @@ const PROJECTS: Project[] = [
   },
   {
     country: 'Burkina Faso',
-    flag: '🇧🇫',
+    flag: 'BF',
     title: 'Centre Affaires Ouaga',
     location: 'Ouagadougou',
     type: 'Commercial',
@@ -280,7 +281,7 @@ export default function OurWorkPage() {
                     />
                     <div className="absolute top-4 left-4">
                       <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-sm font-semibold text-primary-deep border border-primary-pale">
-                        {project.flag} {project.country}
+                        <CountryFlag code={project.flag} /> {project.country}
                       </span>
                     </div>
                   </div>

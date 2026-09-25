@@ -12,14 +12,9 @@ export const COUNTRY_NAMES: Record<string, string> = {
   ALL: 'Tous les pays',
 };
 
-// Country flags
-export const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-  SN: '🇸🇳',
-};
+// Country flags — les drapeaux ne sont plus des emojis (invisibles sur
+// Windows) : utiliser <CountryFlag code="BJ" /> (@/components/ui/CountryFlag)
+// ou la map ReactNode COUNTRY_FLAGS (@/lib/country-flags).
 
 // GeoTrust service codes (previously in lib/geotrust/service-codes.ts)
 export function geoServiceLabel(code: string): string {

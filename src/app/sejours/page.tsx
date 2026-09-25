@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 
 interface HotelData {
@@ -87,12 +88,6 @@ function safeJsonParse<T>(raw: string | null | undefined, fallback: T): T {
   try { const parsed = JSON.parse(raw); return (Array.isArray(parsed) ? parsed : fallback) as T; } catch { return fallback; }
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-};
 
 const COMMON_AMENITIES = [
   { key: 'wifi', label: 'Wi-Fi' },
@@ -354,7 +349,7 @@ export default function BookingPage() {
                     <option value="all">Tous les pays</option>
                     {COUNTRIES_CONFIG.map((c) => (
                       <option key={c.code} value={c.code}>
-                        {COUNTRY_FLAGS[c.code]} {c.name}
+                        <CountryFlag code={c.code} /> {c.name}
                       </option>
                     ))}
                   </select>

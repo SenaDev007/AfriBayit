@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 interface PilotCountry {
   code: string;
@@ -28,10 +29,10 @@ interface PilotCountry {
 }
 
 const PILOT_COUNTRIES: PilotCountry[] = [
-  { code: 'BJ', flag: '🇧🇯', capital: 'Cotonou', currency: 'FCFA' },
-  { code: 'CI', flag: '🇨🇮', capital: 'Abidjan', currency: 'FCFA' },
-  { code: 'BF', flag: '🇧🇫', capital: 'Ouagadougou', currency: 'FCFA' },
-  { code: 'TG', flag: '🇹🇬', capital: 'Lomé', currency: 'FCFA' },
+  { code: 'BJ', flag: 'BJ', capital: 'Cotonou', currency: 'FCFA' },
+  { code: 'CI', flag: 'CI', capital: 'Abidjan', currency: 'FCFA' },
+  { code: 'BF', flag: 'BF', capital: 'Ouagadougou', currency: 'FCFA' },
+  { code: 'TG', flag: 'TG', capital: 'Lomé', currency: 'FCFA' },
 ];
 
 interface AdminStats {
@@ -171,7 +172,7 @@ export default function CountriesPage() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-2xl bg-[#003087]/5 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                      {country.flag}
+                      <CountryFlag code={country.flag} />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">{countryName(country.code)}</h3>

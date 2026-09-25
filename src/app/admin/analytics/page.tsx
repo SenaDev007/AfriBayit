@@ -9,12 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import {
   BarChart3, TrendingUp, Users, Building2, ArrowLeftRight, Wallet,
 } from 'lucide-react';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const PILOT_COUNTRIES = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 interface AnalyticsData {
@@ -105,7 +106,7 @@ export default function AnalyticsPage() {
                 <Card key={c.code} className="rounded-2xl border border-gray-200">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-2xl">{info?.flag}</span>
+                      <span className="text-2xl"><CountryFlag code={info?.flag} /></span>
                       <div>
                         <p className="text-sm font-bold text-gray-900">{info?.name}</p>
                         <Badge variant="outline" className="text-[10px] font-mono">{c.code}</Badge>

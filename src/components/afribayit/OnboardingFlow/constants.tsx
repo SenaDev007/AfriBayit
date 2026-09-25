@@ -28,10 +28,10 @@ export const profileTypes = [
 
 // Countries — AfriBayit pilot zone
 export const countries = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 // Cities by country

@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { Activity, AlertTriangle, ArrowDownRight, ArrowLeftRight, ArrowUpRight, Building2, CheckCircle2, Clock, DollarSign, Eye, FileCheck, Globe, Home, Hotel, ShieldCheck, TrendingUp, UserPlus, Users, Wallet } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { COUNTRY_FLAGS } from '@/lib/country-flags';
 
 const COUNTRY_NAMES: Record<string, string> = {
   BJ: 'Bénin',
@@ -15,12 +16,6 @@ const COUNTRY_NAMES: Record<string, string> = {
   TG: 'Togo',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-};
 
 interface AdminStats {
   users: {

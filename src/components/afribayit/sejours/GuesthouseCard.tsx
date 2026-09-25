@@ -18,10 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Home, BedDouble, Coffee, Award } from 'lucide-react';
 import Link from 'next/link';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬',
-};
 
 export interface GuesthouseCardData {
   id: string;
@@ -88,7 +86,7 @@ export default function GuesthouseCard({ guesthouse, index }: { guesthouse: Gues
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
               <MapPin className="w-3 h-3" />
-              {guesthouse.city}, {COUNTRY_FLAGS[guesthouse.country] || ''} {guesthouse.country}
+              {guesthouse.city}, <CountryFlag code={guesthouse.country} /> {guesthouse.country}
             </p>
 
             {/* Petit-déjeuner */}

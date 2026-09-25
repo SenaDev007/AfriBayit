@@ -55,6 +55,7 @@ import {
   type AdminKycDocument,
 } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   id_card: "Carte d'identité",
@@ -88,7 +89,6 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
   rejected: XCircle,
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -212,10 +212,10 @@ export default function AdminKycPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminKyc.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -387,7 +387,7 @@ function KycCard({ doc }: { doc: AdminKycDocument }) {
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">{t('adminKyc.country', 'Pays')}</span>
               <span className="text-gray-900">
-                {doc.country ? `${COUNTRY_FLAGS[doc.country] || ''} ${doc.country}` : '—'}
+                {doc.country ? <><CountryFlag code={doc.country} /> {doc.country}</> : '—'}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -530,7 +530,7 @@ function KycListRow({ doc }: { doc: AdminKycDocument }) {
         </TableCell>
         <TableCell className="text-sm">{DOC_TYPE_LABELS[doc.docType] || doc.docType}</TableCell>
         <TableCell className="text-sm">
-          {doc.country ? `${COUNTRY_FLAGS[doc.country] || ''} ${doc.country}` : '—'}
+          {doc.country ? <><CountryFlag code={doc.country} /> {doc.country}</> : '—'}
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-1.5">

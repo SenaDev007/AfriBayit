@@ -60,6 +60,7 @@ import {
   type AdminEscrowAccount,
 } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const ESCROW_STATUS_LABELS: Record<string, string> = {
   EMPTY: 'Vide',
@@ -85,7 +86,6 @@ const TX_STATUS_LABELS: Record<string, string> = {
   EXPIRED: 'Expiré',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
@@ -223,10 +223,10 @@ export default function AdminEscrowPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminEscrow.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -394,7 +394,7 @@ function EscrowRow({ account }: { account: AdminEscrowAccount }) {
             </p>
             {tx?.property && (
               <p className="text-[11px] text-gray-400">
-                {tx.property.city}{tx.property.country ? ` · ${COUNTRY_FLAGS[tx.property.country] || ''} ${tx.property.country}` : ''}
+                {tx.property.city}{tx.property.country ? <> · <CountryFlag code={tx.property.country} /> {tx.property.country}</> : ''}
               </p>
             )}
           </div>

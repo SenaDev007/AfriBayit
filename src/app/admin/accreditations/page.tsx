@@ -25,13 +25,14 @@ import { AlertTriangle, Clock, Globe, KeyRound, Plus, Search, ShieldCheck, Shiel
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const PILOT_COUNTRIES = [
   { code: 'ALL', name: 'Tous les pays (SUPER_ADMIN)', flag: '🌐' },
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 interface Accreditation {
@@ -59,12 +60,12 @@ const roleLabels: Record<string, { label: string; color: string; description: st
   },
 };
 
-const countryNameMap: Record<string, string> = {
+const countryNameMap: Record<string, React.ReactNode> = {
   ALL: '🌐 Global (tous les pays)',
-  BJ: '🇧🇯 Bénin',
-  CI: "🇨🇮 Côte d'Ivoire",
-  BF: '🇧🇫 Burkina Faso',
-  TG: '🇹🇬 Togo',
+  BJ: <><CountryFlag code="BJ" /> Bénin</>,
+  CI: <><CountryFlag code="CI" /> Côte d'Ivoire</>,
+  BF: <><CountryFlag code="BF" /> Burkina Faso</>,
+  TG: <><CountryFlag code="TG" /> Togo</>,
 };
 
 export default function GlobalAccreditationsPage() {
@@ -238,7 +239,7 @@ export default function GlobalAccreditationsPage() {
                       {PILOT_COUNTRIES.filter((c) => c.code !== 'ALL').map((c) => (
                         <SelectItem key={c.code} value={c.code}>
                           <span className="flex items-center gap-2">
-                            {c.flag} {c.name}
+                            <CountryFlag code={c.flag} /> {c.name}
                           </span>
                         </SelectItem>
                       ))}

@@ -95,7 +95,7 @@ const TENANT_CONFIGS: Record<SupportedCountry, TenantConfig> = {
     defaultCity: 'Cotonou',
     cities: ['Cotonou', 'Porto-Novo', 'Parakou', 'Abomey-Calavi', 'Bohicon', 'Kandi', 'Lokossa', 'Ouidah'],
     phoneCode: '+229',
-    flag: '🇧🇯',
+    flag: 'BJ',
     timezone: 'Africa/Porto-Novo',
     requiredDocuments: {
       terrain: [['titre_foncier', 'acd']],
@@ -147,7 +147,7 @@ const TENANT_CONFIGS: Record<SupportedCountry, TenantConfig> = {
     defaultCity: 'Abidjan',
     cities: ['Abidjan', 'Yamoussoukro', 'Bouaké', 'Daloa', 'San-Pédro', 'Korhogo', 'Man', 'Gagnoa'],
     phoneCode: '+225',
-    flag: '🇨🇮',
+    flag: 'CI',
     timezone: 'Africa/Abidjan',
     requiredDocuments: {
       terrain: [['lettre_attribution'], ['acd', 'arrete_concession']],
@@ -210,7 +210,7 @@ const TENANT_CONFIGS: Record<SupportedCountry, TenantConfig> = {
     defaultCity: 'Ouagadougou',
     cities: ['Ouagadougou', 'Bobo-Dioulasso', 'Koudougou', 'Banfora', 'Ouahigouya', 'Kaya', 'Tenkodogo', 'Fada N\'gourma'],
     phoneCode: '+226',
-    flag: '🇧🇫',
+    flag: 'BF',
     timezone: 'Africa/Ouagadougou',
     requiredDocuments: {
       terrain: [['puh', 'titre_foncier']],
@@ -254,7 +254,7 @@ const TENANT_CONFIGS: Record<SupportedCountry, TenantConfig> = {
     defaultCity: 'Lomé',
     cities: ['Lomé', 'Sokodé', 'Kara', 'Atakpamé', 'Dapaong', 'Tsévié', 'Aného', 'Notsé'],
     phoneCode: '+228',
-    flag: '🇹🇬',
+    flag: 'TG',
     timezone: 'Africa/Lome',
     requiredDocuments: {
       tout_bien: [['titre_foncier'], ['acte_cession', 'certificat_andf']],
@@ -298,7 +298,7 @@ const TENANT_CONFIGS: Record<SupportedCountry, TenantConfig> = {
     defaultCity: 'Dakar',
     cities: ['Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kaolack', 'Tambacounda', 'Rufisque', 'Louga'],
     phoneCode: '+221',
-    flag: '🇸🇳',
+    flag: 'SN',
     timezone: 'Africa/Dakar',
     requiredDocuments: {
       terrain: [['titre_foncier'], ['concession', 'lettre_attribution']],

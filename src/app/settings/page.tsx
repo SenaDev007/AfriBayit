@@ -54,6 +54,7 @@ import { useToast } from '@/hooks/use-toast';
 import SecuritySettings from '@/components/afribayit/SecuritySettings';
 import ConnectedAccounts from '@/components/afribayit/ConnectedAccounts';
 import { apiFetch } from '@/lib/api-client';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 
 // Types
@@ -549,14 +550,14 @@ export default function SettingsPage() {
                             <SelectValue placeholder="Sélectionnez votre pays" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                            <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                            <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                            <SelectItem value="TG">🇹🇬 Togo</SelectItem>
-                            <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
-                            <SelectItem value="ML">🇲🇱 Mali</SelectItem>
-                            <SelectItem value="NE">🇳🇪 Niger</SelectItem>
-                            <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
+                            <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                            <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                            <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                            <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
+                            <SelectItem value="SN"><CountryFlag code="SN" /> Sénégal</SelectItem>
+                            <SelectItem value="ML"><CountryFlag code="ML" /> Mali</SelectItem>
+                            <SelectItem value="NE"><CountryFlag code="NE" /> Niger</SelectItem>
+                            <SelectItem value="GN"><CountryFlag code="GN" /> Guinée</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -839,8 +840,8 @@ export default function SettingsPage() {
                             <SelectValue placeholder="Sélectionnez une langue" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                            <SelectItem value="en">🇬🇧 English</SelectItem>
+                            <SelectItem value="fr"><CountryFlag code="FR" /> Français</SelectItem>
+                            <SelectItem value="en"><CountryFlag code="GB" /> English</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">

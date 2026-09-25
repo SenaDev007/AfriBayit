@@ -20,10 +20,8 @@ import {
   Coffee, Snowflake, Tv, ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬',
-};
 
 const AMENITY_ICONS: Record<string, any> = {
   wifi: Wifi, parking: Car, restaurant: Utensils, pool: Waves, gym: Dumbbell,
@@ -90,7 +88,7 @@ export default function HotelCard({ hotel, index }: { hotel: HotelCardData; inde
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
               <MapPin className="w-3 h-3" />
-              {hotel.city}, {COUNTRY_FLAGS[hotel.country] || ''} {hotel.country}
+              {hotel.city}, <CountryFlag code={hotel.country} /> {hotel.country}
             </p>
 
             {/* Amenities */}

@@ -59,6 +59,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminProperties, useUpdateProperty } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon',
@@ -92,7 +93,6 @@ const TYPE_LABELS: Record<string, string> = {
   guesthouse: 'Guesthouse',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
@@ -263,10 +263,10 @@ export default function AdminPropertiesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminProperties.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -518,7 +518,7 @@ function PropertyRowItem({
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{property.title}</p>
               <p className="text-[11px] text-gray-400 truncate">
-                {property.city}{property.country ? ` · ${COUNTRY_FLAGS[property.country] || ''} ${property.country}` : ''}
+                {property.city}{property.country ? <> · <CountryFlag code={property.country} /> {property.country}</> : ''}
               </p>
             </div>
           </div>
@@ -530,7 +530,7 @@ function PropertyRowItem({
         </TableCell>
         <TableCell className="text-sm font-mono text-gray-900">{formatXOF(property.price)}</TableCell>
         <TableCell className="text-sm">
-          {property.country ? `${COUNTRY_FLAGS[property.country] || ''} ${property.country}` : '—'}
+          {property.country ? <><CountryFlag code={property.country} /> {property.country}</> : '—'}
         </TableCell>
         <TableCell>
           <Badge variant="outline" className={cn('text-[10px]', STATUS_COLORS[property.status] || '')}>

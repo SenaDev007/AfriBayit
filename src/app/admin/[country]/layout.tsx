@@ -11,12 +11,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRY_CONFIG: Record<string, { name: string; flag: string }> = {
-  BJ: { name: 'Bénin', flag: '🇧🇯' },
-  CI: { name: "Côte d'Ivoire", flag: '🇨🇮' },
-  BF: { name: 'Burkina Faso', flag: '🇧🇫' },
-  TG: { name: 'Togo', flag: '🇹🇬' },
+  BJ: { name: 'Bénin', flag: 'BJ' },
+  CI: { name: "Côte d'Ivoire", flag: 'CI' },
+  BF: { name: 'Burkina Faso', flag: 'BF' },
+  TG: { name: 'Togo', flag: 'TG' },
 };
 
 interface NavGroup {
@@ -126,7 +127,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
       <div className="flex items-center h-16 px-4 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-lg bg-[#D4AF37] flex items-center justify-center shrink-0 text-lg">
-            {config.flag}
+            <CountryFlag code={config.flag} />
           </div>
           {!sidebarCollapsed && (
             <div className="min-w-0">
@@ -240,13 +241,13 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
             <Globe className="w-4 h-4 text-[#D4AF37] shrink-0" />
             <div className="min-w-0">
               <p className="text-xs font-semibold text-white truncate">
-                {config.flag} {config.name}
+                <CountryFlag code={config.flag} /> {config.name}
               </p>
               <p className="text-[10px] text-white/50">{t('adminCountryLayout.lockedCountry', 'Pays verrouillé')}</p>
             </div>
           </div>
         ) : (
-          <div className="flex justify-center text-lg">{config.flag}</div>
+          <div className="flex justify-center text-lg"><CountryFlag code={config.flag} /></div>
         )}
       </div>
     </aside>
@@ -274,7 +275,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
               <div className="flex items-center h-16 px-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-[#D4AF37] flex items-center justify-center text-lg">
-                    {config.flag}
+                    <CountryFlag code={config.flag} />
                   </div>
                   <div>
                     <h1 className="text-base font-bold">{config.name}</h1>
@@ -348,7 +349,7 @@ function CountryLayoutInner({ children }: CountryLayoutProps) {
             </svg>
           </button>
 
-          <span className="text-xl">{config.flag}</span>
+          <span className="text-xl"><CountryFlag code={config.flag} /></span>
           <h2 className="text-sm font-bold text-[#003087]">Backoffice {config.name}</h2>
           <Badge className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold border-0 hover:bg-[#D4AF37]/20">
             {country}

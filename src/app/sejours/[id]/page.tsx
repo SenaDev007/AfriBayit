@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 // Dynamic import for PropertyMap to avoid SSR issues with Mapbox
 const PropertyMap = dynamic(
@@ -47,12 +48,6 @@ const PropertyMap = dynamic(
   ) }
 );
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  BJ: '🇧🇯',
-  CI: '🇨🇮',
-  BF: '🇧🇫',
-  TG: '🇹🇬',
-};
 
 const AMENITY_ICONS: Record<string, React.ElementType> = {
   wifi: Wifi,
@@ -195,7 +190,7 @@ export default function BookingDetailPage() {
     : [];
   const description =
     guesthouse?.description ||
-    `Séjournez au ${name}, un établissement de qualité situé à ${city}, ${COUNTRY_FLAGS[country] || ''} ${country}. Profitez d'un confort exceptionnel et d'un service irréprochable.`;
+    `Séjournez au ${name}, un établissement de qualité situé à ${city}, ${country}. Profitez d'un confort exceptionnel et d'un service irréprochable.`;
   const reviewCount = hotel?._count?.reviews_hotel || guesthouse?.reviewCount || 0;
   const address = guesthouse?.address || guesthouse?.quartier ? `${guesthouse?.quartier || ''}, ${city}` : city;
   const lat = hotel?.lat || guesthouse?.lat || null;
@@ -342,7 +337,7 @@ export default function BookingDetailPage() {
               <h1 className="font-serif text-2xl md:text-3xl font-extrabold text-primary-deep">{name}</h1>
               <p className="text-gray-text flex items-center gap-2 mt-1 text-sm">
                 <MapPin className="w-4 h-4" />
-                {address}, {COUNTRY_FLAGS[country] || ''} {country}
+                {address}, <CountryFlag code={country} /> {country}
               </p>
               <div className="flex items-center gap-3 mt-2">
                 {stars > 0 && (

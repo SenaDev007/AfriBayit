@@ -354,7 +354,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
               >
                 {(Object.keys(LOCALES) as Locale[]).map((code) => (
                   <option key={code} value={code} className="text-gray-900">
-                    {LOCALES[code].flag} {LOCALES[code].label}
+                    {LOCALES[code].label}
                   </option>
                 ))}
               </select>
@@ -849,7 +849,7 @@ export default function Navbar({ onOpenNotifications, notificationCount }: Navba
                 >
                   {(Object.keys(LOCALES) as Locale[]).map((code) => (
                     <option key={code} value={code}>
-                      {LOCALES[code].flag} {LOCALES[code].label}
+                      {LOCALES[code].label}
                     </option>
                   ))}
                 </select>

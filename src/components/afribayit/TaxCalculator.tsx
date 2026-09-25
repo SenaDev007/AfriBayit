@@ -29,12 +29,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api-client';
 import type { ExtendedTaxCalculation, TaxLineItem } from '@/lib/constants';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRIES = [
-  { code: 'BJ', name: 'Bénin', flag: '🇧🇯' },
-  { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮' },
-  { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬' },
+  { code: 'BJ', name: 'Bénin', flag: 'BJ' },
+  { code: 'CI', name: "Côte d'Ivoire", flag: 'CI' },
+  { code: 'BF', name: 'Burkina Faso', flag: 'BF' },
+  { code: 'TG', name: 'Togo', flag: 'TG' },
 ];
 
 const PROPERTY_TYPES = [
@@ -203,7 +204,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                   <SelectContent>
                     {COUNTRIES.map(c => (
                       <SelectItem key={c.code} value={c.code}>
-                        {c.flag} {c.name}
+                        <CountryFlag code={c.flag} /> {c.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -351,7 +352,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                        <FileText className="w-4 h-4" /> Détail des frais — {selectedCountry?.flag} {selectedCountry?.name}
+                        <FileText className="w-4 h-4" /> Détail des frais — <CountryFlag code={selectedCountry?.flag} /> {selectedCountry?.name}
                       </h4>
                     </div>
                     <Table>
@@ -410,7 +411,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                       return (
                         <div key={comp.country} className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium">{countryInfo?.flag} {countryInfo?.name}</span>
+                            <span className="font-medium"><CountryFlag code={countryInfo?.flag} /> {countryInfo?.name}</span>
                             <span className="font-mono font-bold">{formatXOF((comp.grandTotal || 0))}</span>
                           </div>
                           <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden">
@@ -446,7 +447,7 @@ export default function TaxCalculator({ onClose }: TaxCalculatorProps) {
                         <TableHead className="text-xs">Frais</TableHead>
                         {comparisons.map(comp => (
                           <TableHead key={comp.country} className="text-xs text-right">
-                            {COUNTRIES.find(c => c.code === comp.country || 0)?.flag} {comp.countryName}
+                            <CountryFlag code={comp.country} /> {comp.countryName}
                           </TableHead>
                         ))}
                       </TableRow>

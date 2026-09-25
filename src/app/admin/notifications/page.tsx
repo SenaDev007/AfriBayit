@@ -58,8 +58,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminNotifications, useCreateNotification } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 const TYPE_LABELS: Record<string, string> = {
   info: 'Information',
@@ -278,10 +278,10 @@ export default function AdminNotificationsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminNotifications.selectAllCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -364,7 +364,7 @@ export default function AdminNotificationsPage() {
                     <TableCell className="text-sm font-medium text-gray-900 truncate max-w-[160px]">{notif.title || '—'}</TableCell>
                     <TableCell className="text-sm text-gray-600 max-w-[200px]">{truncate(notif.message, 50)}</TableCell>
                     <TableCell className="text-sm">
-                      {notif.country ? `${COUNTRY_FLAGS[notif.country] || ''} ${notif.country}` : '—'}
+                      {notif.country ? <><CountryFlag code={notif.country} /> {notif.country}</> : '—'}
                     </TableCell>
                     <TableCell>
                       {notif.read ? (
@@ -494,10 +494,10 @@ export default function AdminNotificationsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('adminNotifications.selectAllCountries', 'Tous les pays')}</SelectItem>
-                  <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                  <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                  <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                  <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                  <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                  <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                  <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                  <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

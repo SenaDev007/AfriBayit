@@ -53,8 +53,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAdminAmbassadors } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 const TIER_LABELS: Record<string, string> = {
   bronze: 'Bronze',
@@ -327,10 +327,10 @@ export default function AdminAmbassadorsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminAmbassadors.selectAllCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 {t('adminCommon.benin', 'Bénin')}</SelectItem>
-                <SelectItem value="CI">🇨🇮 {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
-                <SelectItem value="BF">🇧🇫 {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
-                <SelectItem value="TG">🇹🇬 {t('adminCommon.togo', 'Togo')}</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> {t('adminCommon.benin', 'Bénin')}</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> {t('adminCommon.coteIvoire', "Côte d'Ivoire")}</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> {t('adminCommon.burkinaFaso', 'Burkina Faso')}</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> {t('adminCommon.togo', 'Togo')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -391,7 +391,7 @@ export default function AdminAmbassadorsPage() {
                       </TableCell>
                       <TableCell className="text-sm text-gray-500 truncate max-w-[160px]">{amb.email || '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {amb.country ? `${COUNTRY_FLAGS[amb.country] || ''} ${amb.country}` : '—'}
+                        {amb.country ? <><CountryFlag code={amb.country} /> {amb.country}</> : '—'}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-[10px]', TIER_COLORS[amb.tier] || '')}>

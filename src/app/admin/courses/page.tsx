@@ -15,13 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRIES = [
   { value: '', label: 'Tous les pays' },
-  { value: 'BJ', label: '🇧🇯 Bénin' },
-  { value: 'CI', label: "🇨🇮 Côte d'Ivoire" },
-  { value: 'BF', label: '🇧🇫 Burkina Faso' },
-  { value: 'TG', label: '🇹🇬 Togo' },
+  { value: 'BJ', label: <><CountryFlag code="BJ" /> Bénin</> },
+  { value: 'CI', label: <><CountryFlag code="CI" /> Côte d'Ivoire</> },
+  { value: 'BF', label: <><CountryFlag code="BF" /> Burkina Faso</> },
+  { value: 'TG', label: <><CountryFlag code="TG" /> Togo</> },
 ];
 
 const CATEGORY_OPTIONS = [

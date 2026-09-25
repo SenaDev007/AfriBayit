@@ -25,13 +25,14 @@ import {
   Bell, Plus, Trash2, MapPin, Home, Coins, Brain, X,
   CheckCheck, BellOff, ChevronRight,
 } from 'lucide-react';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const COUNTRIES = [
   { code: '', label: 'Tous les pays' },
-  { code: 'BJ', label: '🇧🇯 Bénin' },
-  { code: 'CI', label: "🇨🇮 Côte d'Ivoire" },
-  { code: 'BF', label: '🇧🇫 Burkina Faso' },
-  { code: 'TG', label: '🇹🇬 Togo' },
+  { code: 'BJ', label: <><CountryFlag code="BJ" /> Bénin</> },
+  { code: 'CI', label: <><CountryFlag code="CI" /> Côte d'Ivoire</> },
+  { code: 'BF', label: <><CountryFlag code="BF" /> Burkina Faso</> },
+  { code: 'TG', label: <><CountryFlag code="TG" /> Togo</> },
 ];
 
 const PROPERTY_TYPES = [

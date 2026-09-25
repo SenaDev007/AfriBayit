@@ -63,6 +63,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useAdminUser, useUpdateUser, type AdminUser } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const ROLE_LABELS: Record<string, string> = {
   buyer: 'Acheteur',
@@ -77,7 +78,6 @@ const ROLE_LABELS: Record<string, string> = {
   banned: 'Banni',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 const KYC_LABELS: Record<number, string> = { 0: 'Anonyme', 1: 'Standard', 2: 'Avancé', 3: 'Pro' };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -324,7 +324,7 @@ export default function AdminUserDetailPage() {
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="w-4 h-4 text-gray-400" />{' '}
-                {user.city ? `${user.city}, ` : ''}{user.country ? `${COUNTRY_FLAGS[user.country] || ''} ${user.country}` : '—'}
+                {user.city ? `${user.city}, ` : ''}{user.country ? <><CountryFlag code={user.country} /> {user.country}</> : '—'}
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="w-4 h-4 text-gray-400" /> Inscrit le {formatDate(user.createdAt)}

@@ -27,8 +27,8 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAdminRevenue, type AdminRevenueResponse } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 const COUNTRY_NAMES: Record<string, string> = { BJ: 'Bénin', CI: "Côte d'Ivoire", BF: 'Burkina Faso', TG: 'Togo' };
 
 const SOURCE_ICONS: Record<string, React.ElementType> = {
@@ -426,7 +426,7 @@ export default function AdminRevenuePage() {
                       return (
                         <TableRow key={row.country || 'unknown'}>
                           <TableCell className="text-sm font-medium">
-                            {COUNTRY_FLAGS[row.country || ''] || '🌍'} {COUNTRY_NAMES[row.country || ''] || row.country || 'Inconnu'}
+                            <CountryFlag code={row.country || ''} /> {COUNTRY_NAMES[row.country || ''] || row.country || 'Inconnu'}
                           </TableCell>
                           <TableCell className="text-sm text-right font-mono font-bold">{formatXOF(row.revenue)}</TableCell>
                           <TableCell className="text-sm text-right">{row.count}</TableCell>

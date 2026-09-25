@@ -15,6 +15,7 @@ import {
 } from '@/hooks/useAdminApi';
 import { apiFetch } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const TABS = [
   { id: 'commissions', label: 'Commissions', icon: Percent },
@@ -261,7 +262,7 @@ function CountriesTab() {
           <tbody className="divide-y divide-gray-100">
             {countries.map((c) => (
               <tr key={c.code} className="hover:bg-gray-50">
-                <td className="px-4 py-3"><div className="flex items-center gap-2"><span className="text-xl">{c.flag}</span><span className="font-semibold text-[#0a2a5e]">{c.name}</span><span className="text-xs text-gray-400">({c.code})</span></div></td>
+                <td className="px-4 py-3"><div className="flex items-center gap-2"><span className="text-xl"><CountryFlag code={c.flag} /></span><span className="font-semibold text-[#0a2a5e]">{c.name}</span><span className="text-xs text-gray-400">({c.code})</span></div></td>
                 <td className="px-4 py-3"><code className="text-xs bg-gray-100 px-2 py-1 rounded">{c.subdomain}.afribayit.com</code></td>
                 <td className="px-4 py-3 text-right text-gray-700">{c.users.toLocaleString('fr-FR')}</td>
                 <td className="px-4 py-3 text-right text-gray-700">{c.properties}</td>

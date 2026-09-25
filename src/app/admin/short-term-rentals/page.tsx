@@ -54,6 +54,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAdminShortTermRentals } from '@/hooks/useAdmin';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 const LISTING_STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon',
@@ -87,7 +88,6 @@ const BOOKING_STATUS_COLORS: Record<string, string> = {
   no_show: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 
-const COUNTRY_FLAGS: Record<string, string> = { BJ: '🇧🇯', CI: '🇨🇮', BF: '🇧🇫', TG: '🇹🇬' };
 
 function formatXOF(n: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'decimal', maximumFractionDigits: 0 }).format(n) + ' XOF';
@@ -291,10 +291,10 @@ export default function AdminShortTermRentalsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('adminShortTermRentals.allCountries', 'Tous les pays')}</SelectItem>
-                <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                <SelectItem value="CI">🇨🇮 Côte d&apos;Ivoire</SelectItem>
-                <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                <SelectItem value="BJ"><CountryFlag code="BJ" /> Bénin</SelectItem>
+                <SelectItem value="CI"><CountryFlag code="CI" /> Côte d&apos;Ivoire</SelectItem>
+                <SelectItem value="BF"><CountryFlag code="BF" /> Burkina Faso</SelectItem>
+                <SelectItem value="TG"><CountryFlag code="TG" /> Togo</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 text-xs" onClick={handleSearch}>
@@ -471,7 +471,7 @@ function RentalListingRow({ rental }: { rental: ShortTermRentalRow }) {
           </div>
         </TableCell>
         <TableCell className="text-sm">
-          {rental.country ? `${COUNTRY_FLAGS[rental.country] || ''} ${rental.country}` : '—'}
+          {rental.country ? <><CountryFlag code={rental.country} /> {rental.country}</> : '—'}
         </TableCell>
         <TableCell className="text-sm text-gray-600">{rental.city || '—'}</TableCell>
         <TableCell className="text-sm font-mono text-gray-900">{formatXOF(rental.pricePerNight)}</TableCell>
