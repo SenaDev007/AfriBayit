@@ -1717,5 +1717,5 @@ Work Log:
 
 Stage Summary:
 - Décision ④ EXECUTÉE en production (plus seulement outillée) : les 47 identifiants de test divulgués dans l'audit sont révoqués et remplacés
-- Risque résiduel signalé à l'équipe : le mot de passe Neon npg_VPlSR7Z9UiYD reste exposé dans l'historique git → à changer depuis la console Neon + variable Vercel DATABASE_URL à mettre à jour + purge d'historique éventuelle (scripts/purge-git-history.sh existe)
+- Risque résiduel signalé à l'équipe : le mot de passe Neon (préfixe npg_VPlSR…, cf. audit P1.4) reste exposé dans l'historique git → à changer depuis la console Neon + variable Vercel DATABASE_URL à mettre à jour + purge d'historique éventuelle (scripts/purge-git-history.sh existe)
 - Reste externe : retour Legal Officer J-2/J-3 ; rotation du mot de passe Neon côté console (action humaine requise)
