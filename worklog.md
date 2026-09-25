@@ -1632,3 +1632,26 @@ Stage Summary:
 - Les APIs publiques filtrent désormais deletedAt: null — les compteurs et listes reflètent les données réellement vivantes
 - Re-déclencheur manuel disponible : POST /api/admin/migrate (authentifié) ou bouton « Maintenance » dans /admin/settings
 - Stratégie non destructive : soft-delete réversible, aucune suppression physique hors avis strictement identiques
+
+---
+Task ID: data-migration-1-verify
+Agent: Super Z (main agent)
+Task: Vérification en ligne après déploiement du commit 817c65f (migration auto-appliquée au build)
+
+Work Log:
+- Push 817c65f → Vercel a construit et déployé automatiquement ; la migration s'est exécutée en fin de build contre la base Neon de production (rapport dans les logs de build Vercel)
+- Vérifications live (afribayit.vercel.app) :
+  · /api/stats : properties 48→12, artisans 1→23, hotels 12→3, guesthouses 8→2 — compteurs publics honnêtes
+  · /api/artisans par pays : BJ 8, CI 6, TG 4, BF 5 (23 certifiés visibles + annuaire multi-tenant opérationnel)
+  · /api/notaries par pays : BJ 5, CI 3, TG 3, BF 2 (13 études, 4 pays, chambres réelles)
+  · communauté : groupes 12→4 uniques, événements 12→3, posts 32→8, reviews 28→7 (hard-delete)
+  · /api/properties : 12 annonces vivantes, 0 doublon ; les ids soft-supprimés répondent 404 (comportement voulu)
+  · /api/hotels : 1 hôtel unique (était ×4 identiques)
+  · /admin/settings : protégé par auth (307 → login) — onglet Maintenance déployé
+  · sitemap : encore 48 URLs property — force-dynamic + fetch revalidate 3600 → auto-correction < 1h (aucune action requise)
+- Cache : l'invalidation applicative a fonctionné (stats correctes immédiatement après déploiement) ; le SWR CDN (≤ 24h sur les listes) converge en arrière-plan
+
+Stage Summary:
+- Objectif « relancer le seeding pour voir l'effet en ligne » ATTEINT sans re-seed destructif et sans authentification manuelle : l'effet est visible en production au déploiement
+- La base de production est désormais saine : 12 biens uniques, annuaires alimentés (23 artisans certifiés / 13 études notariales sur 4 pays), communauté dédupliquée, avis uniques
+- La migration se re-jouera automatiquement (idempotente) à chaque futur déploiement — y compris après de nouveaux seeds ou imports
