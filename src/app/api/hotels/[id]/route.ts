@@ -26,7 +26,8 @@ export async function GET(
       },
     });
 
-    if (!hotel) {
+    if (!hotel || hotel.deletedAt) {
+      // Soft-deleted (déduplication data-migration) = invisible au public.
       return NextResponse.json({ error: 'Hotel not found' }, { status: 404 });
     }
 

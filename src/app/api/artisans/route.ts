@@ -17,7 +17,8 @@ export async function GET(request: Request) {
     const tenantCountry = extractTenantFromRequest(request);
     const tenantDb = getTenantDb(tenantCountry);
 
-    const where: Record<string, unknown> = { certified: true };
+    // deletedAt: null — les profils soft-supprimés (data-migration) sont exclus.
+    const where: Record<string, unknown> = { certified: true, deletedAt: null };
 
     if (trade) where.trade = trade;
     if (city) where.city = city;

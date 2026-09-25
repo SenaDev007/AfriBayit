@@ -19,6 +19,8 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = {
       certified: true,
+      // deletedAt: null — les profils soft-supprimés (data-migration) sont exclus.
+      deletedAt: null,
       // Apply tenant filter - explicit country param overrides tenant context
       ...(country ? { country } : getTenantFilter(tenantCountry)),
     };

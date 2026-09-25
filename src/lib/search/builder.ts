@@ -5,7 +5,9 @@ import { SearchFilters, FEATURE_MAP, type SortOption } from './filters';
 import { Prisma } from '@prisma/client';
 
 export function buildWhereClause(filters: SearchFilters): Prisma.PropertyWhereInput {
-  const where: Prisma.PropertyWhereInput = { status: 'published' };
+  // deletedAt: null — les lignes soft-supprimées (déduplication data-migration)
+  // n'apparaissent jamais dans les résultats de recherche publics.
+  const where: Prisma.PropertyWhereInput = { status: 'published', deletedAt: null };
 
   // Text search across title, description, city, quartier
   if (filters.query) {

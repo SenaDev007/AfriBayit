@@ -29,6 +29,10 @@ export async function GET(request: Request) {
     }
 
     const countryFilter = country ? { country } : {};
+    // Les doublons soft-supprimés (data-migration) ne comptent pas : les
+    // compteurs publics doivent refléter les enregistrements réellement
+    // visibles, pas les artefacts de l'ancien seed exécuté 4 fois.
+    const live = { deletedAt: null };
 
     const [
       propertiesCount,
@@ -42,23 +46,23 @@ export async function GET(request: Request) {
       hotelBookingsCount,
       guesthouseBookingsCount,
     ] = await Promise.all([
-      db.property.count({ where: { status: 'published', ...countryFilter } }),
+      db.property.count({ where: { status: 'published', ...live, ...countryFilter } }),
       db.transaction.count({
         where: { status: { in: ['CREATED', 'FUNDED', 'DOCS_VALIDATED', 'GEOTRUST_VALIDATED', 'NOTARY_ASSIGNED', 'NOTARY_IN_PROGRESS', 'DEED_SIGNED', 'ANDF_REGISTERED', 'RELEASED'] }, ...countryFilter },
       }),
       db.user.count({ where: { role: { in: ['agent', 'admin'] }, verified: true, ...countryFilter } }),
-      db.artisan.count({ where: { certified: true, ...countryFilter } }),
+      db.artisan.count({ where: { certified: true, ...live, ...countryFilter } }),
       db.course.count({ where: { published: true, ...countryFilter } }),
       db.review.count({ where: { rating: { gte: 4 }, ...countryFilter } }),
-      db.hotel.count({ where: { status: 'active', ...countryFilter } }),
-      db.guesthouse.count({ where: { status: 'active', ...countryFilter } }),
+      db.hotel.count({ where: { status: 'active', ...live, ...countryFilter } }),
+      db.guesthouse.count({ where: { status: 'active', ...live, ...countryFilter } }),
       db.hotelBooking.count(),
       db.guesthouseBooking.count(),
     ]);
 
     // Count distinct countries with published properties
     const countriesRaw = await db.property.findMany({
-      where: { status: 'published' },
+      where: { status: 'published', ...live },
       select: { country: true },
       distinct: ['country'],
     });

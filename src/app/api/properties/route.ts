@@ -58,7 +58,9 @@ export async function GET(request: Request) {
       const cached = await cache.get(cacheKey);
       if (cached) return NextResponse.json(cached, { headers: CDN_CACHE_HEADERS });
     }
-    const where: Record<string, unknown> = {};
+    // Soft-deleted records (data-migration dedup) are never part of any
+    // listing — public, agent-scoped or admin-scoped alike.
+    const where: Record<string, unknown> = { deletedAt: null };
     if (agentId) {
       const isOwner = authUserId === agentId;
       const isAdmin = authRole !== null && ADMIN_ROLES_SET.has(authRole);

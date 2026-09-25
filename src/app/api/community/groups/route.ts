@@ -11,7 +11,8 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
-    const where: Record<string, unknown> = {};
+    // deletedAt: null — les groupes doublons soft-supprimés (data-migration) sont exclus.
+    const where: Record<string, unknown> = { deletedAt: null };
 
     if (type) where.type = type;
     if (country) where.country = country;

@@ -1593,3 +1593,42 @@ Stage Summary:
 - Backoffice admin entièrement passé au thème sombre premium Win-Agro (navy/bleu/or) via coque dédiée + couche CSS .admin-dark couvrant toutes les pages admin existantes
 - Toutes les fonctionnalités existantes préservées (auth multi-rôles, notifications, i18n, recherche, react-query, guards admin)
 - Fichiers clés modifiés : src/app/globals.css, src/app/layout.tsx, src/app/page.tsx, src/components/ui/header-3.tsx, src/components/afribayit/Footer.tsx, src/components/providers/AppShell.tsx, src/components/admin/{AdminSidebar,AdminHeader}.tsx, src/app/admin/{layout,dashboard/page}.tsx ; nouveaux : src/components/landing/{PillNav,Hero,Stats,Services,Catalog,About,WhyUs,Testimonials,TestimonialsCarousel,LeadForm}.tsx
+
+---
+Task ID: data-migration-1
+Agent: Super Z (main agent)
+Task: Fiabiliser les données de production (audit P0/P1) — relancer le seeding sans re-seed destructif : annuaires alimentés, déduplication des enregistrements ×4, effet visible en ligne automatiquement à chaque déploiement.
+
+Work Log:
+- Diagnostic live (production, afribayit.vercel.app) : P0 parcours réparés et déployés (détail propriété 200 + API OK, /hospitality → 308 /sejours, Academy OK) mais la base de données de production reste polluée par l'ANCIEN seed exécuté 4 FOIS le 2026-07-14 :
+  · properties : 48 = 12 uniques ×4 (même titre/ville/transaction/prix/agent, vérifié via API)
+  · hotels : 4 « Résidence Cotonou Lodge » identiques (×4) ; guesthouses : 4 « Maison d'hôtes Ganvié » (×4)
+  · community groups : 12 avec 8 doublons ; events : 12 avec 9 doublons ; posts : 32 = 8 ×4 ; reviews : 28 = 7 ×4
+  · annuaires vides : 1 artisan / 1 notaire au lieu de 24 / 12
+  · stat : artisans 1, properties 48 — compteurs publics faussés
+- Créé src/lib/migrations/apply-data-migration.ts — moteur partagé (pur Prisma, sans import Next) :
+  · migrateDirectory() — upserts idempotents 24 artisans + 12 notaires + comptes dédiés (repris de /api/admin/migrate)
+  · dedupeImages() — déduplication des tableaux images (Json) de Property/Hotel/Guesthouse/ShortTermRental
+  · deduplicateRecords() — NOUVEAU : soft-delete (deletedAt) du doublon le plus récent par clé métier :
+    property (title|city|transaction|price|agentId), hotel (name|city|ownerId), guesthouse (idem),
+    shortTermRental (title|city|hostId), communityGroup (name|type), communityEvent (title|eventType|city|country|organizerId),
+    communityPost (title|authorId) ; reviews en hard-delete (pas de colonne deletedAt, aucune FK vers Review)
+  · runDataMigration() — orchestrateur + invalidation des caches (stats, properties) après application
+  · Champs propriétaire inclus dans les clés pour éviter les faux positifs (2 agents différents = 2 annonces légitimes)
+- Refactoré src/app/api/admin/migrate/route.ts sur le moteur partagé — GET preview + POST applique (directory, images, records — corps JSON optionnel), garde SUPER_ADMIN/COUNTRY_ADMIN + scope pays
+- Créé scripts/migrate-production.ts — runner de build : charge .env si besoin, saute sans DATABASE_URL, MIGRATION_SKIP=1 pour désactiver, JAMAIS en échec (try/catch global → exit 0), journalise le rapport complet
+- package.json : « build » = next build --webpack && tsx scripts/migrate-production.ts (+ « migrate:data » standalone) → la migration s'applique AUTOMATIQUEMENT à chaque déploiement Vercel (répond à « relancer le seeding pour voir l'effet en ligne » sans authentification manuelle)
+- Filtres deletedAt: null ajoutés aux APIs publiques (les lignes soft-supprimées disparaissent des pages publiques) :
+  · /api/properties (liste) + /api/properties/[id] (404 si soft-supprimé) + /api/properties/featured
+  · /api/hotels + /api/hotels/[id] ; /api/guesthouses + /api/guesthouses/[id] ; /api/short-term
+  · /api/community/{groups,events,posts} ; /api/artisans ; /api/notaries
+  · /api/stats — tous les compteurs (properties, hotels, guesthouses, artisans) + pays distincts
+  · src/lib/search/builder.ts — la recherche exclut les soft-supprimés
+- Onglet « Maintenance » ajouté à /admin/settings : aperçu (GET), bouton « Appliquer la migration » (POST), rapport détaillé (avant/après, doublons par modèle, caches), note explicative non-destructive — re-déclencheur manuel en plus de l'automatisme de build
+- Vérifications : npx tsc --noEmit → 0 erreur ; validate-directory-data.ts → dataset valide (22/24 artisans certifiés, 12/12 notaires) ; vitest → 268/268 tests OK ; script migrate-production.ts sans DATABASE_URL valide → exit 0 (jamais en échec) ; tsx résout bien les alias @/ (prouvé par la stack trace du run de test)
+
+Stage Summary:
+- La migration de données est désormais AUTO-APPLIQUÉE à chaque build de production (idempotente, non destructive) : plus besoin d'authentification admin pour voir l'effet en ligne — le prochain déploiement alimente les annuaires (24 artisans, 12 notaires), retire les doublons d'images et soft-supprime les enregistrements ×4 (48→12 properties, 12→3 hotels, 8→2 guesthouses, 12→4 groupes, 12→3 événements, 32→8 posts, 28→7 reviews)
+- Les APIs publiques filtrent désormais deletedAt: null — les compteurs et listes reflètent les données réellement vivantes
+- Re-déclencheur manuel disponible : POST /api/admin/migrate (authentifié) ou bouton « Maintenance » dans /admin/settings
+- Stratégie non destructive : soft-delete réversible, aucune suppression physique hors avis strictement identiques

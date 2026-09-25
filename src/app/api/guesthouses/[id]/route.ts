@@ -21,7 +21,8 @@ export async function GET(
       },
     });
 
-    if (!guesthouse) {
+    if (!guesthouse || guesthouse.deletedAt) {
+      // Soft-deleted (déduplication data-migration) = invisible au public.
       return NextResponse.json({ error: 'Guesthouse not found' }, { status: 404 });
     }
 

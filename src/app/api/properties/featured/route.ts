@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     const properties = await db.property.findMany({
       where: {
         status: 'published',
+        deletedAt: null,
         ...(country ? { country } : {}),
         images: { not: { equals: null } },
       },

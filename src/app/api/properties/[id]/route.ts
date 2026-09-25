@@ -44,7 +44,8 @@ export async function GET(
       },
     });
 
-    if (!propertyRaw) {
+    if (!propertyRaw || propertyRaw.deletedAt) {
+      // Soft-deleted (déduplication data-migration) = invisible au public.
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 

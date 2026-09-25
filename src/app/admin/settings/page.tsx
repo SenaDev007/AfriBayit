@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Settings, Percent, Globe, CreditCard, ShieldCheck, Crown,
+  Settings, Percent, Globe, CreditCard, ShieldCheck, Crown, DatabaseZap,
   Save, RefreshCw, AlertTriangle, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import {
   useAdminCommissions, useAdminSettingsPayments, useAdminSettingsKycLevels,
   useAdminSettingsCountries, useAdminSettingsPremiumTiers,
 } from '@/hooks/useAdminApi';
+import { apiFetch } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n/use-translate';
 
 const TABS = [
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'kyc', label: 'KYC & Limites', icon: ShieldCheck },
   { id: 'countries', label: 'Pays', icon: Globe },
   { id: 'premium', label: 'Premium', icon: Crown },
+  { id: 'maintenance', label: 'Maintenance', icon: DatabaseZap },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -62,6 +64,7 @@ export default function AdminSettingsPage() {
         {activeTab === 'kyc' && <KycTab />}
         {activeTab === 'countries' && <CountriesTab />}
         {activeTab === 'premium' && <PremiumTab />}
+        {activeTab === 'maintenance' && <MaintenanceTab />}
       </motion.div>
     </div>
   );
@@ -306,5 +309,197 @@ function PremiumTab() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Maintenance — migration idempotente des données (audit Manus P0/P1)
+// ─────────────────────────────────────────────────────────────────────────
+
+interface MigratePreview {
+  mode: 'preview';
+  scope: string;
+  current: { artisans: number; notaries: number };
+  pending: { directoryUsers: number; artisans: number; notaries: number; recordsDedup: string[] };
+}
+
+interface MigrateApplied {
+  mode: 'applied';
+  durationMs: number;
+  scope: string;
+  directory: { usersUpserted: number; artisansUpserted: number; notariesUpserted: number; before: { artisans: number; notaries: number }; after: { artisans: number; notaries: number } } | null;
+  images: { imagesScanned: number; duplicatesRemoved: number; recordsUpdated: number } | null;
+  records: { model: string; scanned: number; duplicatesSoftDeleted: number; hardDeleted?: number }[] | null;
+  cachesInvalidated: boolean;
+  message?: string;
+}
+
+function MaintenanceTab() {
+  const [applying, setApplying] = useState(false);
+  const [preview, setPreview] = useState<MigratePreview | null>(null);
+  const [result, setResult] = useState<MigrateApplied | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Charger l'aperçu (lecture seule) à l'ouverture de l'onglet
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<MigratePreview>('/api/admin/migrate', { auth: true });
+        if (!cancelled) setPreview(data);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Aperçu indisponible');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const refreshPreview = async () => {
+    setError(null);
+    try {
+      const data = await apiFetch<MigratePreview>('/api/admin/migrate', { auth: true });
+      setPreview(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Aperçu indisponible');
+    }
+  };
+
+  const apply = async () => {
+    setApplying(true);
+    setError(null);
+    setResult(null);
+    try {
+      const data = await apiFetch<MigrateApplied>('/api/admin/migrate', {
+        method: 'POST',
+        body: JSON.stringify({ directory: true, images: true, records: true }),
+        headers: { 'Content-Type': 'application/json' },
+        auth: true,
+      });
+      setResult(data);
+      // rafraîchir l'aperçu après application
+      void refreshPreview();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Échec de la migration');
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold text-[#0a2a5e] flex items-center gap-2">
+            <DatabaseZap className="w-4 h-4 text-[#D4AF37]" />
+            Migration des données (audit P0/P1 — annuaires &amp; déduplication)
+          </CardTitle>
+          <p className="text-xs text-gray-500 mt-1">
+            Patch idempotent et non destructif : alimente les annuaires Artisans/Notaires (upserts),
+            déduplique les tableaux d&apos;images et soft-supprime les enregistrements dupliqués
+            (annonces, hôtels, guesthouses, communauté, avis). Rejouable sans risque — appliqué
+            automatiquement à chaque déploiement.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {preview && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="p-3 rounded-lg bg-gray-50 border">
+                <p className="text-[10px] uppercase text-gray-500">Artisans en base</p>
+                <p className="text-xl font-bold text-[#003087]">{preview.current.artisans}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gray-50 border">
+                <p className="text-[10px] uppercase text-gray-500">Notaires en base</p>
+                <p className="text-xl font-bold text-[#003087]">{preview.current.notaries}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                <p className="text-[10px] uppercase text-gray-500">Artisans à importer</p>
+                <p className="text-xl font-bold text-[#D4AF37]">+{preview.pending.artisans}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                <p className="text-[10px] uppercase text-gray-500">Notaires à importer</p>
+                <p className="text-xl font-bold text-[#D4AF37]">+{preview.pending.notaries}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={apply} disabled={applying} className="bg-[#003087] hover:bg-[#001f5c]">
+              {applying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <DatabaseZap className="w-4 h-4 mr-2" />}
+              {applying ? 'Application en cours…' : 'Appliquer la migration'}
+            </Button>
+            <Button variant="outline" onClick={refreshPreview} disabled={applying}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Rafraîchir l&apos;aperçu
+            </Button>
+            <span className="text-xs text-gray-400">Portée : {preview?.scope ?? '—'}</span>
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2 text-sm text-red-700">
+              <XCircle className="w-4 h-4 shrink-0" /> {error}
+            </div>
+          )}
+
+          {result && (
+            <div className="p-4 rounded-lg bg-green-50 border border-green-200 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-green-800">
+                <CheckCircle2 className="w-4 h-4" />
+                {result.message ?? 'Migration appliquée'} ({Math.round(result.durationMs / 100) / 10}s)
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                {result.directory && (
+                  <>
+                    <div><span className="text-gray-500">Artisans :</span> <b>{result.directory.before.artisans} → {result.directory.after.artisans}</b></div>
+                    <div><span className="text-gray-500">Notaires :</span> <b>{result.directory.before.notaries} → {result.directory.after.notaries}</b></div>
+                  </>
+                )}
+                {result.images && (
+                  <div><span className="text-gray-500">Images dupliquées retirées :</span> <b>{result.images.duplicatesRemoved}</b></div>
+                )}
+                {result.directory && (
+                  <div><span className="text-gray-500">Comptes annuaire :</span> <b>{result.directory.usersUpserted}</b></div>
+                )}
+              </div>
+              {result.records && result.records.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="border-b"><tr>
+                      <th className="text-left py-1.5 pr-3 font-semibold text-gray-600">Modèle</th>
+                      <th className="text-right py-1.5 pr-3 font-semibold text-gray-600">Lignes vivantes</th>
+                      <th className="text-right py-1.5 font-semibold text-gray-600">Doublons retirés</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {result.records.map((r) => (
+                        <tr key={r.model}>
+                          <td className="py-1.5 pr-3 font-mono text-gray-700">{r.model}</td>
+                          <td className="py-1.5 pr-3 text-right text-gray-600">{r.scanned}</td>
+                          <td className="py-1.5 text-right font-semibold text-green-700">{r.hardDeleted ?? r.duplicatesSoftDeleted}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <Badge variant={result.cachesInvalidated ? 'default' : 'secondary'} className={result.cachesInvalidated ? 'bg-green-100 text-green-700 hover:bg-green-100' : ''}>
+                  {result.cachesInvalidated ? 'Caches invalidés' : 'Caches non invalidés'}
+                </Badge>
+                <Badge variant="outline" className="text-[10px]">Idempotent — rejouable</Badge>
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 flex items-start gap-2 text-xs text-blue-800">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-blue-500" />
+            <p>
+              Aucune donnée n&apos;est physiquement supprimée (hors avis strictement identiques) :
+              les doublons sont marqués <code className="px-1 py-0.5 bg-blue-100 rounded">deletedAt</code> et
+              disparaissent des pages publiques. Cette migration s&apos;exécute aussi automatiquement à la
+              fin de chaque build de production — ce bouton sert de re-déclencheur manuel.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -17,7 +17,8 @@ export async function GET(request: Request) {
     const tenantCountry = extractTenantFromRequest(request);
     const tenantDb = getTenantDb(tenantCountry);
 
-    const where: Record<string, unknown> = { status: 'active' };
+    // deletedAt: null — les doublons soft-supprimés (data-migration) sont exclus.
+    const where: Record<string, unknown> = { status: 'active', deletedAt: null };
 
     if (city) where.city = city;
     if (country) where.country = country;
