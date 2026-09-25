@@ -1719,3 +1719,20 @@ Stage Summary:
 - Décision ④ EXECUTÉE en production (plus seulement outillée) : les 47 identifiants de test divulgués dans l'audit sont révoqués et remplacés
 - Risque résiduel signalé à l'équipe : le mot de passe Neon (préfixe npg_VPlSR…, cf. audit P1.4) reste exposé dans l'historique git → à changer depuis la console Neon + variable Vercel DATABASE_URL à mettre à jour + purge d'historique éventuelle (scripts/purge-git-history.sh existe)
 - Reste externe : retour Legal Officer J-2/J-3 ; rotation du mot de passe Neon côté console (action humaine requise)
+
+---
+Task ID: ui-nav-simplify
+Agent: Super Z (main agent)
+Task: Navbar simple et professionnelle sans 3D ni animations + logos agrandis + badge Services visible + branchement du pack favicon uploadé.
+
+Work Log:
+- Navbar (header-3.tsx, montée via AppShell) réécrite : suppression de la pilule 3D PillNav (dégradés/gloss/reflets/reliefs) et de tout framer-motion dans le header ; navigation texte sobre (Accueil, Immobilier, Hôtellerie, Services, Communauté, Entreprise) avec menus déroulants instantanés au survol + clic, fermeture au clic extérieur, items authOnly filtrés (Escrow, Portefeuille) ; PillNav.tsx supprimé
+- Logo navbar : h-14 w-14 (+40 %), affiché seul — wordmark « AfriBayit / La Plateforme Immobilière Africaine » retiré de la navbar (conservé dans le Footer et les métadonnées SEO)
+- Footer : logo agrandi (cercle w-16 h-16 → w-20 h-20, image h-12 → h-16)
+- Services (landing) : badge or « Plus Haute Valeur » déplacé à l'EXTÉRIEUR de la carte premium — cause racine : .card-shimmer { overflow:hidden } rognait le badge positionné en -top-4 à l'intérieur ; le badge est désormais un sibling z-20 au-dessus de la carte « Acheter & Investir »
+- Pack favicon uploadé par le client (a592d8f, public/AfriBayit_favicon/) branché : metadata.icons (favicon.svg + 96x96 + apple-touch), favicon.ico copié à la racine public/, manifest.ts PWA (icônes 192/512 any+maskable + raccourcis) — commit 98fc846
+- QA : tsc 0 erreur, 298/298 tests verts, build production 239/239 pages, serveur local next start : rendu SSR contrôlé (navbar sans wordmark, 5 dropdowns aria-haspopup, footer w-20, badge sibling de card-shimmer, en-têtes link favicon corrects, /favicon.ico → 200 image/x-icon)
+
+Stage Summary:
+- Commits poussés : 33d46b1 (navbar/logos/badge) + 98fc846 (favicon pack) — déploiement Vercel automatique
+- Le seul point d'attention restant : vérifier le rendu en ligne après déploiement (dropdowns au survol sur desktop, tiroir mobile, badge visible)
