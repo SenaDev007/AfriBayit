@@ -156,7 +156,7 @@ export const TextHoverEffect = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="1.2"
-        className="fill-transparent stroke-white/20 font-[helvetica] font-bold"
+        className="fill-transparent stroke-white/20 font-bold"
         style={{ fontSize: "460px", letterSpacing: "-12px" }}
       >
         {text}
@@ -168,7 +168,7 @@ export const TextHoverEffect = ({
         y="300"
         textAnchor="middle"
         dominantBaseline="middle"
-        className="font-[helvetica] font-bold"
+        className="font-bold"
         fill="url(#filledWatermark)"
         style={{ fontSize: "460px", letterSpacing: "-12px" }}
         animate={{ opacity: [0.18, 0.42, 0.18] }}
@@ -184,7 +184,7 @@ export const TextHoverEffect = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="1.5"
-        className="fill-transparent font-[helvetica] font-bold"
+        className="fill-transparent font-bold"
         stroke="url(#animatedStroke)"
         style={{ fontSize: "460px", letterSpacing: "-12px" }}
         initial={{ strokeDashoffset: 6000, strokeDasharray: 6000 }}
@@ -210,7 +210,7 @@ export const TextHoverEffect = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.8"
-        className="fill-transparent stroke-[#D4AF37]/40 font-[helvetica] font-bold"
+        className="fill-transparent stroke-[#D4AF37]/40 font-bold"
         style={{ fontSize: "460px", letterSpacing: "-12px" }}
         animate={{ opacity: [0.3, 0.7, 0.3] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -227,7 +227,7 @@ export const TextHoverEffect = ({
         stroke="url(#textGradient)"
         strokeWidth="1.5"
         mask="url(#textMask)"
-        className="fill-transparent font-[helvetica] font-bold"
+        className="fill-transparent font-bold"
         style={{ fontSize: "460px", letterSpacing: "-12px" }}
       >
         {text}

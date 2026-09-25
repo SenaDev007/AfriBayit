@@ -112,7 +112,7 @@ export const typography = {
     fontSize: 'clamp(48px, 6vw, 80px)',
     lineHeight: 1.05,
     fontWeight: 700,
-    fontFamily: 'var(--font-cormorant), Georgia, serif',
+    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
     letterSpacing: '-0.02em',
   },
   /** Section Title: 40-56px */
@@ -120,7 +120,7 @@ export const typography = {
     fontSize: 'clamp(32px, 4vw, 56px)',
     lineHeight: 1.15,
     fontWeight: 700,
-    fontFamily: 'var(--font-cormorant), Georgia, serif',
+    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
     letterSpacing: '-0.01em',
   },
   /** Card Title: 18-22px */
@@ -128,7 +128,7 @@ export const typography = {
     fontSize: 'clamp(18px, 2vw, 22px)',
     lineHeight: 1.3,
     fontWeight: 600,
-    fontFamily: 'var(--font-cormorant), Georgia, serif',
+    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
     letterSpacing: '0em',
   },
   /** Body: 14-16px */
@@ -147,12 +147,14 @@ export const typography = {
     fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
     letterSpacing: '0.02em',
   },
-  /** Mono Data: for prices and numbers */
+  /** Data: for prices and numbers — DM Sans (police unique du site),
+      chiffres tabulaires pour l'alignement des colonnes. */
   monoData: {
     fontSize: 'clamp(14px, 1.2vw, 18px)',
     lineHeight: 1.3,
     fontWeight: 600,
-    fontFamily: 'var(--font-dm-mono), monospace',
+    fontFamily: 'var(--font-dm-sans), system-ui, sans-serif',
+    fontVariantNumeric: 'tabular-nums',
     letterSpacing: '-0.01em',
   },
 } as const;

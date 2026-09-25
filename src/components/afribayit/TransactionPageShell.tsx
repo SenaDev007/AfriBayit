@@ -96,7 +96,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, stats
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: easeOut }}
             className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-white"
-            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}
           >
             {title}
           </motion.h1>
@@ -113,7 +113,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, stats
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: easeOut }}
             className="mt-4 text-base sm:text-lg text-white/80 max-w-2xl"
-            style={{ fontFamily: 'var(--font-cormorant), system-ui, sans-serif' }}
+            style={{ fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}
           >
             {subtitle}
           </motion.p>
@@ -130,7 +130,7 @@ function TransactionHero({ badge, title, subtitle, backgroundImage, stats, stats
               <div key={i} className="text-center">
                 <div
                   className={`text-xl sm:text-2xl font-bold ${statsPending ? 'animate-pulse' : ''}`}
-                  style={{ color: GOLD, fontFamily: 'var(--font-space-grotesk), monospace' }}
+                  style={{ color: GOLD, fontFamily: 'var(--font-dm-sans), system-ui, sans-serif' }}
                 >
                   {stat.value}{stat.suffix || ''}
                 </div>

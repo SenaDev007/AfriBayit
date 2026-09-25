@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Playfair_Display, DM_Sans, DM_Mono } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,31 +12,17 @@ import KeepWarmBeacon from "@/components/providers/KeepWarmBeacon";
 import { LocaleProvider } from "@/lib/i18n/context";
 import { LOCALES, type Locale } from "@/lib/i18n";
 
-// Module 4 — Design System (aligné Win-Agro, sept. 2026) :
-//   - Playfair Display → `--font-cormorant` (display/headings) — la police
-//     display de Win-Agro, mappée sur l'ancienne variable pour que tout le
-//     site (titres, .font-display, --font-serif) en hérite automatiquement.
-//   - DM Sans → `--font-dm-sans` (body, identique Win-Agro).
-//   - DM Mono → `--font-dm-mono` (mono/data).
-const cormorant = Playfair_Display({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
+// Module 4 — Design System (unification typographique, sept. 2026) :
+//   - UNE SEULE police sur tout le site : DM Sans (celle du landing page).
+//     Textes, titres et chiffres utilisent tous `--font-dm-sans`.
+//   - Chargée en police variable (sans `weight`) pour couvrir toutes les
+//     graisses 100-1000 utilisées (font-light → font-black) avec un seul
+//     fichier, plus rapide que les instances statiques.
+//   - Playfair Display (serif) et DM Mono ont été retirées : plus aucune
+//     page ne peut afficher une autre police que DM Sans.
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -98,7 +84,7 @@ export default async function RootLayout({
     <html lang={locale} dir={isRtl ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <head />
       <body
-        className={`${dmSans.variable} ${cormorant.variable} ${dmMono.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${dmSans.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

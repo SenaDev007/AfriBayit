@@ -7,8 +7,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-dm-sans);
-  --font-mono: var(--font-dm-mono);
-  --font-display: var(--font-cormorant);
+  --font-mono: var(--font-dm-sans);
+  --font-display: var(--font-dm-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -232,10 +232,19 @@
     font-feature-settings: "cv11", "ss01";
     font-variation-settings: "opsz" 32;
   }
-  /* Module 4 — Headings use Cormorant Garamond (display serif) for a more
-     distinctive brand voice. Body copy stays on DM Sans for readability. */
+  /* Alias historiques — toute référence résiduelle aux anciennes polices
+     (Playfair "--font-cormorant", DM Mono, Space Grotesk) résout désormais
+     vers DM Sans, la police unique du site. Garde-fou anti-divergence. */
+  body {
+    --font-cormorant: var(--font-dm-sans);
+    --font-dm-mono: var(--font-dm-sans);
+    --font-space-grotesk: var(--font-dm-sans);
+  }
+  /* Module 4 — Unification typographique (sept. 2026) : UNE SEULE police,
+     DM Sans (celle du landing page), pour les textes, les titres ET les
+     chiffres. Plus de serif Playfair sur les titres. */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -244,7 +253,7 @@
 /* AfriBayit Custom Utilities */
 @layer utilities {
   .font-display {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -252,7 +261,13 @@
     font-family: var(--font-dm-sans), system-ui, sans-serif;
   }
   .font-mono-data {
-    font-family: var(--font-dm-mono), monospace;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Chiffres tabulaires (alignement colonnes dashboards/tableaux) —
+     même police DM Sans partout. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
   .glass {
     backdrop-filter: blur(20px) saturate(180%);
@@ -389,7 +404,8 @@
 
 /* Price display */
 .price-display {
-  font-family: var(--font-dm-mono), monospace;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: #D4AF37;
 }
@@ -583,7 +599,7 @@
 }
 
 .container-full > .container .cube .face.text p {
-  font-family: var(--font-cormorant), Georgia, serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-size: 10px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.9);
@@ -663,7 +679,7 @@
 }
 
 .container-reflect .cube .face.text p {
-  font-family: var(--font-cormorant), Georgia, serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-size: 10px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.7);
@@ -984,10 +1000,11 @@
 }
 
 @layer utilities {
-  /* Police serif display Win-Agro (Playfair Display) — résout au niveau
-     de l'élément car --font-cormorant est défini sur <body>. */
+  /* Unification typographique — même la classe utilitaire .font-serif
+     (utilisée sur de nombreuses pages) résout vers DM Sans : une seule
+     police d'écriture sur tout le site, textes et chiffres confondus. */
   .font-serif {
-    font-family: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
   }
 
   /* Logo à faisceau lumineux conique — anneau rotatif navy + or */
@@ -1329,10 +1346,10 @@
   background-color: #05C168;
 }
 
-/* ── Typographie Win-Agro : titres serif Playfair partout dans l'admin ── */
+/* ── Typographie unifiée : DM Sans partout dans l'admin (police unique du site) ── */
 .admin-dark h1,
 .admin-dark h2 {
-  font-family: var(--font-cormorant), Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 

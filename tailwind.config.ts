@@ -14,11 +14,13 @@ const config: Config = {
   theme: {
         extend: {
                 fontFamily: {
-                        display: ['var(--font-cormorant)', 'Georgia', 'serif'],
+                        // Unification typographique (sept. 2026) — UNE SEULE police :
+                        // DM Sans (celle du landing page) pour textes, titres ET chiffres.
+                        display: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
                         body: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
                         sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
-                        mono: ['var(--font-dm-mono)', 'monospace'],
-                        'mono-data': ['var(--font-dm-mono)', 'monospace'],
+                        mono: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+                        'mono-data': ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
                 },
                 screens: {
                         sm: '640px',

@@ -165,7 +165,7 @@ export const WaitlistHero = () => {
         className="relative w-full h-screen overflow-hidden shadow-2xl"
         style={{
           backgroundColor: colors.baseBg,
-          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         }}
       >
         {/* Background Decorative Layer */}
