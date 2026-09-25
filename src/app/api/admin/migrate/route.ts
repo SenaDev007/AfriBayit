@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { ensureRealtimeTables } from '@/lib/migrations/ensure-realtime-tables';
 import {
   runDataMigration,
   type MigrationReport,
@@ -78,11 +79,21 @@ export async function POST(request: NextRequest) {
     if (!auth.success) return auth.response;
     const countryFilter = auth.role === 'COUNTRY_ADMIN' && auth.country ? auth.country : null;
 
-    let body: { directory?: boolean; images?: boolean; records?: boolean } = {};
+    let body: { directory?: boolean; images?: boolean; records?: boolean; realtime?: boolean } = {};
     try {
       body = await request.json();
     } catch {
       body = {};
+    }
+
+    // DDL temps réel (channel_messages) — idempotent, toujours en premier.
+    let realtimeDdl: { applied: number; failed: number } | null = null;
+    if (body.realtime !== false) {
+      try {
+        realtimeDdl = await ensureRealtimeTables(db);
+      } catch (error) {
+        console.warn('Realtime DDL skipped:', error);
+      }
     }
 
     const report: MigrationReport = await runDataMigration({
@@ -96,6 +107,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       mode: 'applied',
       durationMs: Date.now() - startedAt,
+      realtimeDdl,
       ...report,
       message: 'Migration appliquée avec succès (idempotente — rejouable sans risque).',
     });

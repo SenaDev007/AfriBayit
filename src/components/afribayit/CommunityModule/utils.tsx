@@ -3,7 +3,7 @@ import type { CommunityEvent, Group, Post } from './types';
 
 export function PostSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale animate-pulse">
+    <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-200 animate-pulse">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-full bg-primary-pale shrink-0" />
         <div className="flex-1">
@@ -21,7 +21,7 @@ export function PostSkeleton() {
 
 export function EventSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale flex items-center gap-4 animate-pulse">
+    <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-200 flex items-center gap-4 animate-pulse">
       <div className="w-14 h-14 rounded-2xl bg-primary-pale shrink-0" />
       <div className="flex-1">
         <div className="h-4 bg-primary-pale rounded w-48 mb-2" />

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings, Percent, Globe, CreditCard, ShieldCheck, Crown, DatabaseZap,
-  Save, RefreshCw, AlertTriangle, Loader2, CheckCircle2, XCircle,
+  Save, RefreshCw, AlertTriangle, Loader2, CheckCircle2, XCircle, Radio,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const TABS = [
   { id: 'kyc', label: 'KYC & Limites', icon: ShieldCheck },
   { id: 'countries', label: 'Pays', icon: Globe },
   { id: 'premium', label: 'Premium', icon: Crown },
+  { id: 'realtime', label: 'Temps réel', icon: Radio },
   { id: 'maintenance', label: 'Maintenance', icon: DatabaseZap },
 ] as const;
 
@@ -64,6 +65,7 @@ export default function AdminSettingsPage() {
         {activeTab === 'kyc' && <KycTab />}
         {activeTab === 'countries' && <CountriesTab />}
         {activeTab === 'premium' && <PremiumTab />}
+        {activeTab === 'realtime' && <RealtimeTab />}
         {activeTab === 'maintenance' && <MaintenanceTab />}
       </motion.div>
     </div>
@@ -500,6 +502,127 @@ function MaintenanceTab() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Temps réel & Communications — état de configuration des providers
+   (LiveKit / Agora / Daily / Pusher / WebSocket API dédiée).
+   Aucun secret n'est exposé : la route ne renvoie que des booléens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+interface RealtimeProvider {
+  configured: boolean;
+  label: string;
+  envVars: string[];
+  activeUse: string;
+}
+interface RealtimeStatus {
+  providers: Record<string, RealtimeProvider>;
+  chatTransport: string;
+  generatedAt: string;
+}
+
+function RealtimeTab() {
+  const [status, setStatus] = useState<RealtimeStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetch<RealtimeStatus>('/api/admin/realtime/status', { auth: true });
+        if (!cancelled) setStatus(data);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'État indisponible');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 text-[#8b9cb8] animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-red-500/30 bg-red-500/5">
+        <CardContent className="p-6 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+          <p className="text-sm text-red-300">{error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Transport actif */}
+      <Card className="bg-admin-panel/50 border-primary-green/10">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Radio className="w-4 h-4 text-primary-green" />
+            Messages temps réel — Communauté
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+            <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-white">Chat des canaux actif</p>
+              <p className="text-xs text-gray-400 mt-0.5">{status?.chatTransport}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Les messages apparaissent en direct (≤ 2,5 s), avec envoi optimiste, notifications
+                par canal et salons vocaux LiveKit — aucun providers externe requis pour le texte.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Providers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {Object.entries(status?.providers ?? {}).map(([key, p]) => (
+          <Card key={key} className={`bg-admin-panel/50 ${p.configured ? 'border-green-500/25' : 'border-white/10'}`}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-white">{p.label}</p>
+                {p.configured ? (
+                  <Badge className="bg-green-500/15 text-green-400 border-green-500/30 border hover:bg-green-500/25">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Configuré
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-white/5 text-gray-400 border-white/10">
+                    <XCircle className="w-3 h-3 mr-1" /> Non configuré
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mb-3">{p.activeUse}</p>
+              <div className="space-y-1">
+                {p.envVars.map((v) => (
+                  <p key={v} className="font-mono text-[11px] text-gray-500 flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${p.configured ? 'bg-green-400' : 'bg-gray-600'}`} />
+                    {v}
+                  </p>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <p className="text-[11px] text-gray-500">
+        Ajoutez les variables dans Vercel (Settings → Environment Variables) puis redéployez.
+        La table <code className="px-1 py-0.5 bg-white/10 rounded text-gray-300">channel_messages</code> du
+        chat est créée automatiquement à chaque déploiement (DDL idempotent).
+      </p>
     </div>
   );
 }

@@ -1,15 +1,24 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { SessionProvider } from 'next-auth/react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { cn } from '@/lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('ALL');
+
+  // Le sélecteur pays suit l'URL : /admin/BJ/… → BJ, sinon console globale.
+  // Ainsi le « bord de contrôle » reflète toujours le backoffice visité.
+  useEffect(() => {
+    const match = pathname.match(/^\/admin\/([A-Z]{2})(?:\/|$)/);
+    setSelectedCountry(match ? match[1] : 'ALL');
+  }, [pathname]);
 
   // Thème sombre Win-Agro : la classe .admin-dark est posée sur la coque ET
   // sur <body> — les portails (Dialog, Select, DropdownMenu, Toaster) sont

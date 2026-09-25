@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -98,6 +98,16 @@ const KYC_COLORS: Record<number, string> = {
 export default function AdminUsersPage() {
   const [filters, setFilters] = useState<AdminUserFilters>({ page: 1, limit: 20 });
   const [searchInput, setSearchInput] = useState('');
+
+  // Deep-link ?q= depuis la recherche globale de l'AdminHeader (SSR-safe :
+  // lecture window au montage, pas de useSearchParams qui casse le prerender)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) {
+      setSearchInput(q);
+      setFilters((prev) => ({ ...prev, search: q, page: 1 }));
+    }
+  }, []);
   const { t } = useTranslation();
 
   const { data, isLoading } = useAdminUsers(filters);

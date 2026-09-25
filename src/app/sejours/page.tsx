@@ -577,7 +577,7 @@ export default function BookingPage() {
             {(hotelsLoading || ghLoading || stLoading) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse rounded-3xl border border-primary-pale">
+                  <Card key={i} className="animate-pulse rounded-3xl border border-gray-200">
                     <div className="aspect-[4/3] bg-primary-pale/60 rounded-t-3xl" />
                     <CardContent className="p-4 space-y-2">
                       <div className="h-5 bg-primary-pale/60 rounded w-3/4" />

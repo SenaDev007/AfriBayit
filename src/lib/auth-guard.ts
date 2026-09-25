@@ -28,6 +28,25 @@ interface AuthError {
 }
 
 /**
+ * Rôle requis — aligné sur le middleware (src/lib/auth.ts → isAdmin).
+ *
+ * « admin » est le rôle administrateur plateforme historique (compte seed
+ * admin@afribayit.com) : il a accès complet, exactement comme le middleware
+ * l'accepte déjà pour les PAGES /admin. Avant cet alignement, le compte
+ * voyait le back-office mais toutes ses API répondaient 403 — un bord de
+ * contrôle affiché mais vide. Les CountryAccreditations continuent de
+ * gouverner l'accès pays par pays (COUNTRY_ADMIN).
+ */
+function hasRequiredRole(
+  userRole: string | undefined | null,
+  requiredRoles: readonly string[] | undefined,
+): boolean {
+  if (!requiredRoles || requiredRoles.length === 0) return true;
+  if (userRole === 'admin') return true; // admin plateforme = accès complet
+  return requiredRoles.includes(userRole as never);
+}
+
+/**
  * Extract Bearer token from Authorization header
  */
 function extractBearerToken(request: Request): string | null {
@@ -83,7 +102,7 @@ export async function authGuard(
       if (payload) {
         // Validate role requirements
         if (guardOptions.requiredRoles && guardOptions.requiredRoles.length > 0) {
-          if (!guardOptions.requiredRoles.includes(payload.role as Role)) {
+          if (!hasRequiredRole(payload.role as string, guardOptions.requiredRoles)) {
             return {
               success: false,
               response: NextResponse.json(
@@ -149,7 +168,7 @@ export async function authGuard(
 
   // Check role requirements
   if (guardOptions.requiredRoles && guardOptions.requiredRoles.length > 0) {
-    if (!guardOptions.requiredRoles.includes(role as Role)) {
+    if (!hasRequiredRole(role, guardOptions.requiredRoles)) {
       return {
         success: false,
         response: NextResponse.json(

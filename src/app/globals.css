@@ -1189,6 +1189,15 @@
 .admin-dark .bg-blue-50 {
   background-color: rgba(0, 156, 222, 0.10);
 }
+
+/* ── Skeletons neutres (P3.6 — plus de flash bleu au chargement) ──
+   Le composant Skeleton utilise bg-gray-200/80 en clair ; en thème
+   admin sombre on le remplace par un blanc translucide discret. */
+.admin-dark .bg-gray-200\/80,
+.admin-dark .bg-gray-200\/70,
+.admin-dark .bg-gray-200 {
+  background-color: rgba(255, 255, 255, 0.07);
+}
 .admin-dark .bg-red-50 {
   background-color: rgba(217, 48, 37, 0.12);
 }

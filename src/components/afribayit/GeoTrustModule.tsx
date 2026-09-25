@@ -84,7 +84,7 @@ const geotrustPacks = GEO_PACKS.map((pack) => ({
 
 function GeometerSkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale animate-pulse">
+    <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-200 animate-pulse">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-14 h-14 rounded-2xl bg-primary-pale" />
         <div className="flex-1">

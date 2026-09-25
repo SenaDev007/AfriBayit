@@ -135,7 +135,7 @@ interface ArtisansMarketplaceProps {
 
 function ArtisanSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-primary-pale shadow-sm p-5 animate-pulse">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 animate-pulse">
       <div className="flex items-start gap-4">
         <div className="w-14 h-14 rounded-full bg-primary-pale shrink-0" />
         <div className="flex-1 space-y-2">

@@ -71,7 +71,7 @@ export const LEARNING_PATHS = [
 
 export function CourseSkeleton() {
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-primary-pale animate-pulse">
+    <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-200 animate-pulse">
       <div className="aspect-[16/9] bg-primary-pale" />
       <div className="p-5">
         <div className="h-3 bg-primary-pale/60 rounded-full w-16 mb-2" />

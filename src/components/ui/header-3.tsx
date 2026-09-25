@@ -273,7 +273,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
             {/* Connexion / Profil */}
             {status === 'loading' ? (
-              <div className="w-20 h-9 bg-primary-pale rounded-full animate-pulse" />
+              <div className="w-20 h-9 bg-gray-200/80 rounded-full animate-pulse" />
             ) : !isLoggedIn ? (
               <a
                 href="/auth/login"
@@ -372,7 +372,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
         <div className="flex flex-col gap-2 pt-4 border-t border-primary-pale/60">
           {status === 'loading' ? (
-            <div className="h-10 bg-primary-pale rounded-full animate-pulse" />
+            <div className="h-10 bg-gray-200/80 rounded-full animate-pulse" />
           ) : isLoggedIn ? (
             <>
               <div className="flex items-center gap-3 px-2 py-2 mb-1">

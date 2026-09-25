@@ -279,7 +279,7 @@ export default function PostDetailPage() {
           {repliesLoading && (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale animate-pulse">
+                <div key={i} className="bg-white rounded-3xl p-5 shadow-lg border border-gray-200 animate-pulse">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-full bg-primary-pale shrink-0" />
                     <div className="flex-1">

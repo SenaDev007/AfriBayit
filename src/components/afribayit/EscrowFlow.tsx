@@ -269,8 +269,8 @@ export default function EscrowFlow({ onNavigate }: EscrowFlowProps) {
               {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="flex items-start shrink-0">
                   <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-primary-pale animate-pulse" />
-                    <div className="w-20 h-3 bg-primary-pale/60 rounded-full mt-1 animate-pulse" />
+                    <div className="w-10 h-10 rounded-full bg-gray-200/80 animate-pulse" />
+                    <div className="w-20 h-3 bg-gray-200/60 rounded-full mt-1 animate-pulse" />
                   </div>
                   {i < 8 && <div className="w-8 h-0.5 mt-5 bg-primary-pale shrink-0" />}
                 </div>

@@ -63,6 +63,24 @@ async function main(): Promise<number> {
   }
 
   // Late import: only touch Prisma when we actually have a database.
+  const { ensureRealtimeTables } = await import('../src/lib/migrations/ensure-realtime-tables');
+
+  // 1) DDL idempotent — table du chat temps réel (channel_messages).
+  //    Toujours en premier : la migration de données peut y écrire.
+  try {
+    const { db } = await import('../src/lib/db');
+    const ddl = await ensureRealtimeTables(db);
+    console.info(
+      `[migration] Realtime DDL: ${ddl.applied}/${ddl.applied + ddl.failed} statements applied.` +
+        (ddl.failed ? ` Failures: ${ddl.results.filter((r) => !r.ok).map((r) => r.error).join(' | ')}` : '')
+    );
+  } catch (error) {
+    console.warn(
+      '[migration] Realtime DDL skipped (non-blocking):',
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+
   const { runDataMigration } = await import('../src/lib/migrations/apply-data-migration');
 
   console.info('[migration] Running idempotent data migration (directories, images, records)…');

@@ -152,7 +152,7 @@ export default function PropertyGrid({
               {isPending ? (
                 // Loading shimmer instead of a misleading "0 biens disponibles"
                 <span
-                  className="inline-block h-3 w-12 animate-pulse rounded bg-primary-pale"
+                  className="inline-block h-3 w-12 animate-pulse rounded bg-gray-200"
                   aria-label="Chargement du nombre de biens"
                 />
               ) : (

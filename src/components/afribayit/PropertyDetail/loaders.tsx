@@ -21,7 +21,7 @@ export function VirtualTourLoader() {
 // Loading skeleton for the PropertyMap (Mapbox)
 export function MapLoader() {
   return (
-    <div className="h-64 rounded-3xl bg-primary-pale/50 animate-pulse flex items-center justify-center">
+    <div className="h-64 rounded-3xl bg-gray-200/80 animate-pulse flex items-center justify-center">
       <MapPin className="w-8 h-8 text-primary-green/50" />
     </div>
   );

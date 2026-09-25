@@ -37,7 +37,7 @@ export default function MyCoursesPanel({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale animate-pulse">
+          <div key={i} className="bg-white rounded-3xl p-5 shadow-lg border border-gray-200 animate-pulse">
             <div className="h-4 bg-primary-pale rounded w-3/4 mb-3" />
             <div className="h-3 bg-primary-pale/60 rounded-full w-1/2 mb-4" />
             <div className="h-2 bg-primary-pale/60 rounded-full mb-2" />

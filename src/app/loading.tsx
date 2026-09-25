@@ -6,8 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Loading() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Top accent */}
-      <div className="h-1 bg-gradient-to-r from-[#003366] via-[#3399FF] to-[#FFCC00]" />
+      {/* Top accent — navy → or (brand, aucun bleu vif au chargement) */}
+      <div className="h-1 bg-gradient-to-r from-[#003087] via-[#003087] to-[#D4AF37]" />
 
       {/* Header skeleton */}
       <header className="border-b border-gray-100 px-6 py-4">

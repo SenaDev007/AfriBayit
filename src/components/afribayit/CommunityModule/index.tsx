@@ -22,19 +22,20 @@
  * Palette sombre AfriBayit : #060D1A / #0A1226 / navy — lisible et sobre.
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import {
   useCommunityPosts, useCommunityGroups, useCommunityEvents,
   useCreateCommunityPost, useRegisterCommunityEvent, useReportContent,
 } from '@/hooks/useCommunity';
+import { useChannelsOverview, type ChannelOverviewEntry } from '@/hooks/useChannelChat';
 import { useAuthStore } from '@/stores/authStore';
 import { useCountry } from '@/contexts/CountryContext';
 import {
   Handshake, MessageCircle, Users, Newspaper, Store, Calendar, Coins, Crown,
   Hash, Lock, Plus, Search, ChevronDown, Sparkles, ShieldCheck,
-  LogIn, Eye, EyeOff,
+  LogIn, Eye, EyeOff, Volume2,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
@@ -50,6 +51,7 @@ import MarketplacePanel from './MarketplacePanel';
 import EventsPanel from './EventsPanel';
 import AfriPointsPanel from './AfriPointsPanel';
 import AmbassadorPanel from './AmbassadorPanel';
+import VoiceChannelPanel, { VOICE_CHANNELS, type VoiceChannelDef } from './VoiceChannelPanel';
 
 import PostDetailDialog from './dialogs/PostDetailDialog';
 import GroupDetailDialog from './dialogs/GroupDetailDialog';
@@ -97,6 +99,7 @@ const FORUM_CHANNELS = FORUM_CHANNEL_GROUPS.flatMap((g) => g.channels);
 
 export default function CommunityModule() {
   const [activeTab, setActiveTab] = useState<CommunityTabKey>('forum');
+  const [activeVoiceRoom, setActiveVoiceRoom] = useState<VoiceChannelDef | null>(null);
   const [showNewPostDialog, setShowNewPostDialog] = useState(false);
   const [newPostForm, setNewPostForm] = useState<NewPostFormState>({ title: '', content: '', category: '', tags: '' });
   const [registeringEventId, setRegisteringEventId] = useState<string | null>(null);
@@ -123,6 +126,24 @@ export default function CommunityModule() {
   const { data: postsData, isLoading: postsLoading, error: postsError } = useCommunityPosts(forumCategory || undefined, selectedCountry);
   const { data: groupsData, isLoading: groupsLoading } = useCommunityGroups(undefined, selectedCountry);
   const { data: eventsData, isLoading: eventsLoading, error: eventsError } = useCommunityEvents(selectedCountry);
+
+  /* ── Temps réel : overview des canaux + notifications par canal ── */
+  const currentChannelKey = (forumCategory || 'accueil').toLowerCase();
+  const handleNewChannelMessage = useCallback((channelKey: string, entry: ChannelOverviewEntry) => {
+    // Pas de toast pour le canal actuellement affiché (l'utilisateur le voit)
+    // ni pour les canaux sans libellé connu.
+    const key = (channelKey || 'accueil').toLowerCase();
+    if (key === currentChannelKey && activeTab === 'forum' && !activeVoiceRoom) return;
+    const known = FORUM_CHANNELS.find((c) => (c.key || 'accueil') === key);
+    if (!known) return; // groupes privés : pas de toast (dialog dédié)
+    toast({
+      title: `#${known.label} — nouveau message`,
+      description: `${entry.lastAuthorName ?? 'Un membre'} : ${entry.lastPreview ?? ''}`,
+    });
+  }, [currentChannelKey, activeTab, activeVoiceRoom]);
+  const { unread: channelUnread, totalMessages: liveMessagesCount } = useChannelsOverview({
+    onNewMessage: handleNewChannelMessage,
+  });
 
   const createPost = useCreateCommunityPost();
   const registerEvent = useRegisterCommunityEvent();
@@ -282,6 +303,10 @@ export default function CommunityModule() {
 
   /* ── Rendu des panneaux selon l'espace actif ── */
   const renderMain = () => {
+    // Salon vocal sélectionné → panneau vocal LiveKit prioritaire
+    if (activeVoiceRoom) {
+      return <VoiceChannelPanel room={activeVoiceRoom} />;
+    }
     switch (activeTab) {
       case 'forum':
         return (
@@ -418,31 +443,60 @@ export default function CommunityModule() {
           >
             <div className="min-w-0">
               <p className="text-white text-sm font-bold truncate">AfriBayit Connect</p>
-              <p className="text-white/40 text-[10px] truncate">{COUNTRY_NAMES[selectedCountry] || selectedCountry}</p>
+              <p className="text-white/40 text-[10px] truncate">
+                {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+                {liveMessagesCount > 0 && ` · ${liveMessagesCount} messages en direct`}
+              </p>
             </div>
             <ChevronDown className="w-4 h-4 text-white/40 shrink-0" />
           </button>
 
           {/* Liste des canaux — scrollable */}
           <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
+            {/* ── Salons vocaux (LiveKit) ── */}
+            <div>
+              <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">Salons vocaux</p>
+              {VOICE_CHANNELS.map((vc) => {
+                const active = activeVoiceRoom?.key === vc.key;
+                return (
+                  <button
+                    key={vc.key}
+                    onClick={() => setActiveVoiceRoom(active ? null : vc)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${
+                      active ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white'
+                    }`}
+                    title={vc.desc}
+                  >
+                    <Volume2 className={`w-4 h-4 shrink-0 ${active ? 'text-accent-yellow' : 'text-white/30'}`} />
+                    <span className="text-[13px] truncate flex-1">{vc.label}</span>
+                    {active && <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+
             {activeTab === 'forum' && (
               <>
                 {FORUM_CHANNEL_GROUPS.map((group) => (
                   <div key={group.group}>
                     <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-wider text-white/40">{group.group}</p>
                     {group.channels.map((ch) => {
-                      const active = forumCategory === ch.key;
+                      const active = forumCategory === ch.key && !activeVoiceRoom;
                       const count = channelCounts[ch.key] ?? 0;
+                      const hasUnread = !!(ch.key ? channelUnread[ch.key.toLowerCase()] : channelUnread['accueil']);
                       return (
                         <button
                           key={ch.label}
-                          onClick={() => setForumCategory(ch.key)}
+                          onClick={() => { setForumCategory(ch.key); setActiveVoiceRoom(null); }}
                           className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${
-                            active ? 'bg-white/10 text-white' : 'text-white/50 hover:bg-white/5 hover:text-white'
+                            active ? 'bg-white/10 text-white' : hasUnread ? 'text-white/85 font-semibold hover:bg-white/5 hover:text-white' : 'text-white/50 hover:bg-white/5 hover:text-white'
                           }`}
                         >
                           <Hash className={`w-4 h-4 shrink-0 ${active ? 'text-primary-green' : 'text-white/30'}`} />
                           <span className="text-[13px] truncate flex-1">{ch.label}</span>
+                          {hasUnread && !active && (
+                            <span className="w-2 h-2 rounded-full bg-accent-yellow shrink-0" aria-label="Messages non lus" />
+                          )}
                           {count > 0 && (
                             <span className="text-[10px] font-mono-data bg-white/10 text-white/60 rounded-full px-1.5 py-0.5 shrink-0">{count}</span>
                           )}

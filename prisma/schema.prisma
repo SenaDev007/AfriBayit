@@ -154,6 +154,7 @@ model User {
   following               Follower[]                @relation("Following")
   followers               Follower[]                @relation("Followers")
   groupMemberships        GroupMembership[]
+  channelMessages         ChannelMessage[] // Discord-like realtime chat (community channels)
   replies                 CommunityReply[]
   artisanProfile          Artisan?
   notarySignatures        NotarySignature[] // P2.2 — inverse relation
@@ -746,6 +747,26 @@ model GroupMembership {
 
   @@unique([groupId, userId])
   @@map("group_memberships")
+}
+
+// ─── Chat temps réel des canaux (Discord-like) ───────────────────────────
+// Messages courts envoyés en direct dans un canal du workspace Communauté.
+// channelKey = clé du canal ('accueil', 'discussion', 'question', …) ou
+// 'group:<id>' pour les groupes privés. La table est créée automatiquement
+// au déploiement (CREATE TABLE IF NOT EXISTS — ensure-realtime-tables.ts).
+model ChannelMessage {
+  id         String   @id @default(cuid())
+  channelKey String
+  authorId   String
+  content    String   @db.Text
+  country    String?
+  createdAt  DateTime @default(now())
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([channelKey, createdAt])
+  @@index([channelKey, country, createdAt])
+  @@map("channel_messages")
 }
 
 model CommunityEvent {

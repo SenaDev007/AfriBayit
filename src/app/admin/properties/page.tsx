@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
 import {
   Search,
@@ -130,6 +130,22 @@ export default function AdminPropertiesPage() {
     limit: 20,
   });
   const [searchInput, setSearchInput] = useState('');
+
+  // Deep-links ?q= / ?status=pending depuis l'AdminHeader (SSR-safe)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    const status = params.get('status') || undefined;
+    if (q || status) {
+      if (q) setSearchInput(q);
+      setFilters((prev) => ({
+        ...prev,
+        ...(q ? { search: q } : {}),
+        ...(status ? { status } : {}),
+        page: 1,
+      }));
+    }
+  }, []);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchAction, setBatchAction] = useState<'approve' | 'reject' | null>(null);
   const { t } = useTranslation();

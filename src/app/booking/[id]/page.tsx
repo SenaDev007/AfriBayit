@@ -41,7 +41,7 @@ import dynamic from 'next/dynamic';
 const PropertyMap = dynamic(
   () => import('@/components/afribayit/PropertyMap'),
   { ssr: false, loading: () => (
-    <div className="w-full h-full bg-primary-pale/50 rounded-2xl animate-pulse flex items-center justify-center">
+    <div className="w-full h-full bg-gray-200/80 rounded-2xl animate-pulse flex items-center justify-center">
       <MapPin className="w-8 h-8 text-primary-deep/30" />
     </div>
   ) }

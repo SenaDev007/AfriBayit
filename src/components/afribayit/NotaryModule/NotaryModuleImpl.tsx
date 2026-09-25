@@ -119,7 +119,7 @@ const specialityOptions = ['Vente immobilière', 'Succession', 'Bail commercial'
 
 function NotarySkeleton() {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-lg border border-primary-pale animate-pulse">
+    <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-200 animate-pulse">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-14 h-14 rounded-2xl bg-primary-pale" />
         <div className="flex-1">
@@ -903,7 +903,7 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
               <div className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale">
                 <h3 className="font-serif text-lg font-bold text-primary-deep mb-4">{t('notary.assignedTransactionsTitle', 'Transactions assignées')}</h3>
                 {escrowLoading ? (
-                  <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-primary-pale/60 rounded-2xl animate-pulse" />)}</div>
+                  <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 bg-gray-200/80 rounded-2xl animate-pulse" />)}</div>
                 ) : escrowAccounts.length === 0 ? (
                   <div className="text-center py-8"><p className="text-sm text-gray-400">{t('notary.noAssignedTransaction', 'Aucune transaction assignée')}</p></div>
                 ) : (
