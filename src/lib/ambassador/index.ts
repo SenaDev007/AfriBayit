@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { AMBASSADOR_TIERS, generateReferralCode } from './tiers';
 import { COMMISSION_TIERS } from './commission-engine';
+import { computeAmbassadorCommission } from '@/lib/payments/fees';
 
 // Re-export commission engine (CDC §5.7.5)
 export {
@@ -120,13 +121,16 @@ export async function applyAsAmbassador(userId: string): Promise<AmbassadorStatu
 }
 
 /**
- * Enregistre une commission pour un ambassadeur
+ * Enregistre une commission pour un ambassadeur.
+ * ARBITRAGE T-10 : la base est la commission nette AfriBayit sur la transaction
+ * (fournie via `platformCommission`, ex. Transaction.commission), jamais le brut.
  */
 export async function recordCommission(
   ambassadorId: string,
   referredUserId: string,
   amount: number,
-  transactionId?: string
+  transactionId?: string,
+  platformCommission?: number
 ): Promise<void> {
   const ambassador = await db.ambassador.findUnique({
     where: { id: ambassadorId },
@@ -134,7 +138,11 @@ export async function recordCommission(
 
   if (!ambassador) return;
 
-  const commissionAmount = amount * Number(ambassador.commissionRate);
+  const { amount: commissionAmount } = computeAmbassadorCommission(
+    amount,
+    Number(ambassador.commissionRate),
+    platformCommission
+  );
 
   await db.ambassadorCommission.create({
     data: {

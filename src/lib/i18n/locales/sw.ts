@@ -1751,7 +1751,7 @@ export const sw = {
     countryLabel: 'Pays:',
     servicesTitle: 'Services',
     packsTitle: 'Packs GeoTrust',
-    packsSubtitle: 'Packs groupés à prix réduit — économisez jusqu\'à 20% vs. services à la carte.',
+    packsSubtitle: 'Packs groupés à prix réduit — le pourcentage d\'économie réel vs. services à la carte est affiché sur chaque pack.',
     priceInFcfa: 'Prix en FCFA (XOF)',
     recommendedBadge: 'Recommandé',
     choosePack: 'Choisir ce pack',

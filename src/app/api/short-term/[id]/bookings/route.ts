@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authGuard } from '@/lib/auth-guard';
+import { LCD_TRAVELER_SERVICE_FEE_RATE } from '@/lib/payments/fees';
 
 export async function GET(
   request: Request,
@@ -112,7 +113,7 @@ export async function POST(
     const pricePerNight = rental.pricePerNight;
     const cleaningFee = rental.cleaningFee;
     const securityDeposit = rental.securityDeposit;
-    const serviceFee = Math.round(pricePerNight * nights * 0.1); // 10% service fee
+    const serviceFee = Math.round(pricePerNight * nights * LCD_TRAVELER_SERVICE_FEE_RATE); // T-3 : taux unifié UI/API (10 % au lancement)
     const totalPrice = Number(pricePerNight) * nights + Number(cleaningFee) + Number(securityDeposit) + serviceFee;
 
     // Determine booking type

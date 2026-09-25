@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, apiPost } from '@/lib/api-client';
+import { LCD_TRAVELER_SERVICE_FEE_RATE } from '@/lib/payments/fees';
 import { useCountry } from '@/contexts/CountryContext';
 import { COUNTRY_NAMES } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -259,7 +260,7 @@ function BookingFlowModal({
   const nights = bookingForm.checkIn && bookingForm.checkOut ? getNights(bookingForm.checkIn, bookingForm.checkOut) : 0;
   const subtotal = nights * rental.pricePerNight;
   const cleaningFee = rental.cleaningFee || 0;
-  const serviceFee = Math.round(subtotal * 0.12);
+  const serviceFee = Math.round(subtotal * LCD_TRAVELER_SERVICE_FEE_RATE); // T-3 : taux unifié UI/API
   const total = subtotal + cleaningFee + serviceFee;
 
   return (
@@ -339,7 +340,7 @@ function BookingFlowModal({
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm"><span className="text-gray-500">{formatPrice(rental.pricePerNight)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span className="font-mono font-semibold">{formatPrice(subtotal)} FCFA</span></div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de ménage</span><span className="font-mono font-semibold">{formatPrice(cleaningFee)} FCFA</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de service (12%)</span><span className="font-mono font-semibold">{formatPrice(serviceFee)} FCFA</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">Frais de service ({Math.round(LCD_TRAVELER_SERVICE_FEE_RATE * 100)}%)</span><span className="font-mono font-semibold">{formatPrice(serviceFee)} FCFA</span></div>
                   <div className="border-t pt-2 flex justify-between"><span className="text-sm font-bold text-[#0a2a5e]">Total</span><span className="font-mono text-lg font-bold text-[#D4AF37]">{formatPrice(total)} FCFA</span></div>
                 </div>
               </div>

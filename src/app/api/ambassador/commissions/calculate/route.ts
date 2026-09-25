@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateCommission, recordReferralCommission } from '@/lib/ambassador/commission-engine';
+import { computeAmbassadorCommission } from '@/lib/payments/fees';
 import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate or record the commission
+    // Calculate or record the commission — base = commission nette plateforme (T-10)
     let result;
     if (record) {
       result = await recordReferralCommission(
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
         filleulUserId,
         transactionId,
         transactionAmount,
-        currency || 'XOF'
+        currency || 'XOF',
+        transaction.commission ? Number(transaction.commission) : undefined
       );
     } else {
       result = await calculateCommission(
@@ -99,7 +101,8 @@ export async function POST(request: NextRequest) {
         filleulUserId,
         transactionId,
         transactionAmount,
-        currency || 'XOF'
+        currency || 'XOF',
+        transaction.commission ? Number(transaction.commission) : undefined
       );
     }
 
@@ -153,18 +156,23 @@ export async function GET(request: NextRequest) {
 
     const tier = ambassador.tier as 'bronze' | 'silver' | 'gold';
     const commissionRate = Number(ambassador.commissionRate);
-    const commissionAmount = Math.round(transactionAmount * commissionRate);
+    // Aperçu — base = commission nette dérivée de la grille de vente (T-10)
+    const { amount: commissionAmount, base } = computeAmbassadorCommission(
+      transactionAmount,
+      commissionRate
+    );
 
     return NextResponse.json({
       ambassadorId,
       tier,
       commissionRate,
       transactionAmount,
+      base: `commission nette plateforme (${base.toLocaleString('fr-FR')} XOF)`,
       commissionAmount,
-      currency: ambassador.commissionRate ? 'XOF' : 'XOF',
+      currency: 'XOF',
       breakdown: [
         {
-          label: `Commission ${tier} (${(commissionRate * 100).toFixed(0)}%)`,
+          label: `Commission ${tier} (${(commissionRate * 100).toFixed(0)}%) de la commission nette AfriBayit`,
           rate: commissionRate,
           amount: commissionAmount,
         },

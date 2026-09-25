@@ -12,19 +12,23 @@
 import { db } from '@/lib/db';
 import type { TransactionState, ReleaseConditions, EscrowTransitionEvent, EscrowEntryType } from './types';
 import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
+import {
+  commissionNetteParType,
+  venteCommissionRate,
+  HOTELLERIE_RATE_BY_TIER,
+  GUESTHOUSE_VOYAGEUR_RATE_BY_TIER,
+  GUESTHOUSE_PROPRIETAIRE_RATE,
+} from './fees';
+import type { CommissionTransactionType, HotelTier } from './fees';
+
+export type { CommissionTransactionType, HotelTier } from './fees';
 
 // ============ CDC §11 — Commission Rates per Transaction Type ============
+// Mathématiques pures déléguées à src/lib/payments/fees.ts (source unique,
+// décisions d'arbitrage T-1, T-3, T-4, T-9 du registre AfriBayit_Arbitrage_CDC).
 
 /** Transaction types for commission calculation */
-export type CommissionTransactionType =
-  | 'vente_immobiliere'    // Vente immobilière
-  | 'location_courte_duree' // Location courte durée
-  | 'hotellerie'           // Hôtellerie
-  | 'artisan'              // Artisan
-  | 'guesthouse';          // Guesthouse
-
-/** Hotel tier for tiered commission */
-export type HotelTier = 1 | 2 | 3 | 4 | 5;
+export type CommissionTransactionTypeAlias = CommissionTransactionType;
 
 /** Commission calculation result */
 export interface CommissionResult {
@@ -47,17 +51,15 @@ export interface CommissionResult {
  * - > 50M XOF: 2%
  */
 function calculateVenteImmobiliereCommission(amount: number): { rate: number; commission: number } {
-  if (amount <= 5_000_000) return { rate: 0.05, commission: Math.round(amount * 0.05) };
-  if (amount <= 20_000_000) return { rate: 0.04, commission: Math.round(amount * 0.04) };
-  if (amount <= 50_000_000) return { rate: 0.03, commission: Math.round(amount * 0.03) };
-  return { rate: 0.02, commission: Math.round(amount * 0.02) };
+  const rate = venteCommissionRate(amount);
+  return { rate, commission: Math.round(amount * rate) };
 }
 
 /**
  * Calculate commission for location courte durée (3%).
  */
 function calculateLocationCourteDureeCommission(amount: number): { rate: number; commission: number } {
-  return { rate: 0.03, commission: Math.round(amount * 0.03) };
+  return commissionNetteParType('location_courte_duree', amount);
 }
 
 /**
@@ -68,18 +70,15 @@ function calculateLocationCourteDureeCommission(amount: number): { rate: number;
  * - 5 stars: 15%
  */
 function calculateHotellerieCommission(amount: number, tier: HotelTier): { rate: number; commission: number } {
-  const rateByTier: Record<HotelTier, number> = {
-    1: 0.12, 2: 0.12, 3: 0.13, 4: 0.14, 5: 0.15,
-  };
-  const rate = rateByTier[tier];
+  const rate = HOTELLERIE_RATE_BY_TIER[tier];
   return { rate, commission: Math.round(amount * rate) };
 }
 
 /**
- * Calculate commission for artisan services (5%).
+ * Calculate commission for artisan services (8% — décision T-4, borne basse CDC 8-12%).
  */
 function calculateArtisanCommission(amount: number): { rate: number; commission: number } {
-  return { rate: 0.05, commission: Math.round(amount * 0.05) };
+  return commissionNetteParType('artisan', amount);
 }
 
 /**
@@ -94,9 +93,8 @@ function calculateGuesthouseCommission(amount: number, guesthouseTier: 1 | 2 | 3
   proprietaireRate: number;
   proprietaireCommission: number;
 } {
-  const voyageurRateByTier: Record<number, number> = { 1: 0.10, 2: 0.12, 3: 0.13 };
-  const voyageurRate = voyageurRateByTier[guesthouseTier] || 0.12;
-  const proprietaireRate = 0.03;
+  const voyageurRate = GUESTHOUSE_VOYAGEUR_RATE_BY_TIER[guesthouseTier] || 0.12;
+  const proprietaireRate = GUESTHOUSE_PROPRIETAIRE_RATE;
   const voyageurCommission = Math.round(amount * voyageurRate);
   const proprietaireCommission = Math.round(amount * proprietaireRate);
   return {

@@ -409,3 +409,142 @@ describe('Typography (CDC §2.3)', () => {
     expect(weights).toHaveLength(4);
   });
 });
+
+// ============================================================
+// ARBITRAGE CDC V4.0 — valeurs canoniques verrouillées
+// Registre des décisions : AfriBayit_Arbitrage_CDC.pdf (T-1 … T-11)
+// Ces tests importent les VRAIES constantes de production : toute
+// régression sur une valeur arbitrée fait échouer la construction.
+// ============================================================
+
+import {
+  VENTE_COMMISSION_TIERS,
+  venteCommissionRate,
+  commissionNetteParType,
+  LCD_TRAVELER_SERVICE_FEE_RATE,
+  ARTISAN_MISSION_COMMISSION_RATE,
+  computeAmbassadorCommission,
+  TARIFF_PHASE,
+  HOTELLERIE_RATE_BY_TIER,
+  LAST_MINUTE_COMMISSION_RATE,
+  PMS_TIERS,
+  NOTARY_TIERS,
+} from '@/lib/payments/fees';
+import {
+  GEO_SERVICE_PRICES,
+  GEO_PACKS,
+  packALaCarteTotal,
+  packDiscount,
+} from '@/lib/geotrust/pricing';
+
+describe('Arbitrage T-1 — Vente immobilière : grille dégressive 5/4/3/2 %', () => {
+  it('5 % jusqu\'à 5M XOF', () => {
+    expect(venteCommissionRate(3_000_000)).toBe(0.05);
+  });
+  it('4 % de 5M à 20M XOF', () => {
+    expect(venteCommissionRate(10_000_000)).toBe(0.04);
+  });
+  it('3 % de 20M à 50M XOF', () => {
+    expect(venteCommissionRate(30_000_000)).toBe(0.03);
+  });
+  it('2 % au-delà de 50M XOF', () => {
+    expect(venteCommissionRate(80_000_000)).toBe(0.02);
+  });
+  it('la grille couvre exactement la fourchette CDC 2-5 %', () => {
+    const rates = VENTE_COMMISSION_TIERS.map((t) => t.rate);
+    expect(Math.min(...rates)).toBeGreaterThanOrEqual(0.02);
+    expect(Math.max(...rates)).toBeLessThanOrEqual(0.05);
+  });
+});
+
+describe('Arbitrage T-3 — LCD : frais voyageur unifiés à 10 % (UI = API)', () => {
+  it('taux unique 10 % au lancement', () => {
+    expect(LCD_TRAVELER_SERVICE_FEE_RATE).toBe(0.10);
+  });
+  it('commission hôte LCD confirmée à 3 %', () => {
+    const r = commissionNetteParType('location_courte_duree', 500_000);
+    expect(r.rate).toBe(0.03);
+    expect(r.commission).toBe(15_000);
+  });
+});
+
+describe('Arbitrage T-4 — Missions artisans & géomètres : 8 %', () => {
+  it('8 % — borne basse de la fourchette CDC 8-12 %', () => {
+    expect(ARTISAN_MISSION_COMMISSION_RATE).toBe(0.08);
+    expect(commissionNetteParType('artisan', 100_000).commission).toBe(8_000);
+  });
+});
+
+describe('Arbitrage T-5 — GeoTrust : packs CDC §7C.9 et grille unique', () => {
+  it('Pack Inspection Standard = 75 000 XOF', () => {
+    expect(GEO_PACKS.find((p) => p.code === 'standard')?.price).toBe(75_000);
+  });
+  it('Pack Certification = 150 000 XOF', () => {
+    expect(GEO_PACKS.find((p) => p.code === 'certification')?.price).toBe(150_000);
+  });
+  it('Pack Premium Drone = 350 000 XOF', () => {
+    expect(GEO_PACKS.find((p) => p.code === 'premium_drone')?.price).toBe(350_000);
+  });
+  it('chaque pack reste moins cher que les services à la carte (remise réelle)', () => {
+    for (const pack of GEO_PACKS) {
+      expect(pack.price).toBeLessThan(packALaCarteTotal(pack));
+      expect(packDiscount(pack)).toBeGreaterThan(0);
+    }
+  });
+  it('GEO_CONF (détection conflits) est présent et tarifé (CDC §7C.3)', () => {
+    expect(GEO_SERVICE_PRICES.GEO_CONF).toBe(50_000);
+  });
+  it('grille unitaire : toutes les prestations sont tarifées positivement', () => {
+    for (const price of Object.values(GEO_SERVICE_PRICES)) {
+      expect(price).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Arbitrage T-7 — Notaires : 0 / 25 000 / 50 000 FCFA (commissions 15/12/10 %)', () => {
+  it('trois paliers implémentés, 75 000 réservé au futur tier Cabinet', () => {
+    expect(NOTARY_TIERS.map((t) => t.price)).toEqual([0, 25_000, 50_000]);
+    expect(NOTARY_TIERS.map((t) => t.commission)).toEqual([0.15, 0.12, 0.10]);
+  });
+});
+
+describe('Arbitrage T-9 — Hôtellerie confirmée', () => {
+  it('commissions directes 12-15 % par catégorie d\'hôtel', () => {
+    expect(HOTELLERIE_RATE_BY_TIER[1]).toBe(0.12);
+    expect(HOTELLERIE_RATE_BY_TIER[5]).toBe(0.15);
+  });
+  it('last-minute 18 %', () => {
+    expect(LAST_MINUTE_COMMISSION_RATE).toBe(0.18);
+  });
+  it('PMS : STARTER 9 900 / PRO 24 900 XOF', () => {
+    expect(PMS_TIERS.starter).toBe(9_900);
+    expect(PMS_TIERS.pro).toBe(24_900);
+  });
+});
+
+describe('Arbitrage T-10 — Ambassadeurs : base = commission nette AfriBayit', () => {
+  it('vente 20M : base = 800 000 (4 %), Gold 4 % → 32 000 XOF, jamais 800 000', () => {
+    const r = computeAmbassadorCommission(20_000_000, 0.04);
+    expect(r.base).toBe(800_000);
+    expect(r.amount).toBe(32_000);
+    expect(r.amount).toBeLessThan(r.base);
+  });
+  it('platformCommission fournie (Transaction.commission) : elle est la base', () => {
+    const r = computeAmbassadorCommission(20_000_000, 0.02, 600_000);
+    expect(r.base).toBe(600_000);
+    expect(r.amount).toBe(12_000);
+  });
+  it('LCD 500K : la commission ambassadeur ne dépasse jamais la commission plateforme', () => {
+    const net = commissionNetteParType('location_courte_duree', 500_000).commission;
+    for (const rate of [0.02, 0.03, 0.04]) {
+      const r = computeAmbassadorCommission(500_000, rate, net);
+      expect(r.amount).toBeLessThanOrEqual(net);
+    }
+  });
+});
+
+describe('Arbitrage T-11 — Phase tarifaire', () => {
+  it('mode standard actif (grilles canoniques) tant que le lancement commercial n\'est pas déclaré', () => {
+    expect(TARIFF_PHASE).toBe('standard');
+  });
+});

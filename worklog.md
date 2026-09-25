@@ -1655,3 +1655,28 @@ Stage Summary:
 - Objectif « relancer le seeding pour voir l'effet en ligne » ATTEINT sans re-seed destructif et sans authentification manuelle : l'effet est visible en production au déploiement
 - La base de production est désormais saine : 12 biens uniques, annuaires alimentés (23 artisans certifiés / 13 études notariales sur 4 pays), communauté dédupliquée, avis uniques
 - La migration se re-jouera automatiquement (idempotente) à chaque futur déploiement — y compris après de nouveaux seeds ou imports
+
+---
+Task ID: cdc-arbitrage-1
+Agent: Super Z (main agent)
+Task: Arbitrer les incohérences du CDC (versions, tarification, portée juridique) et verrouiller les valeurs canoniques dans le code
+
+Work Log:
+- Extraction et analyse complète du AfriBayit_CDC_V4.pdf (103 pages) : recensement de toutes les grilles de commissions, packs, abonnements, projections et références juridiques
+- Recensement croisé avec le code de production : 4 grilles de prix GeoTrust divergentes (CDC / UI / API packs / escrow-integration), frais voyageur LCD 12 % UI vs 10 % API, commission artisan 5 % vs CDC 8-12 %, commission ambassadeur calculée sur le MONTANT BRUT (déficitaire par construction : Gold 4 % du brut = 100 % du revenu plateforme sur une vente)
+- Vérification légale web : ANDF = institution béninoise (le CDC l'attribuait à tort au Togo) ; Togo = loi n°2018-005 du 14 juin 2018 (Code foncier et domanial) ; réforme béninoise d'août 2023 (notaire obligatoire) confirmée ; parité XOF/EUR 655,957 exacte
+- Production du registre d'arbitrage (19 décisions V/T/J/F) : PDF 23 pages dans /home/z/my-project/download/AfriBayit_Arbitrage_CDC.pdf + source HTML de couverture
+- Verrouillage code :
+  · NOUVEAU src/lib/payments/fees.ts — source unique des taux (T-1 vente 5/4/3/2, T-3 LCD voyageur 10 %, T-4 artisan 8 %, T-9 hôtellerie/PMS, T-10 ambassadeurs base = commission nette, T-11 TARIFF_PHASE='standard')
+  · NOUVEAU src/lib/geotrust/pricing.ts — source unique GeoTrust : packs CDC §7C.9 (75 000/150 000/350 000 XOF) + grille unitaire arbitrée (GEO_CONF ajouté au catalogue, 50 000 XOF)
+  · packs.ts dérive désormais de pricing.ts (75/150/350 K) ; escrow-integration.ts importe getServicePrice ; GeoTrustModule.tsx affiche les prix de la source unique
+  · escrow-engine.ts délègue les maths à fees.ts (API exportée inchangée, CommissionTransactionType/HotelTier réexportés)
+  · commission-engine.ts + ambassador/index.ts + /api/ambassador/commissions/calculate : base = commission nette (Transaction.commission fournie, sinon dérivée de la grille de vente)
+  · ShortTermRentalModule (12 %→10 %) et /api/short-term/[id]/bookings importent LCD_TRAVELER_SERVICE_FEE_RATE — fini l'écart affiché/facturé
+  · service-codes.ts : GEO_CONF ajouté au type et aux labels ; sous-titre « jusqu'à 20 % » remplacé dans les 9 locales par le % réel affiché par pack
+- Tests : cdc-business-rules.test.ts étendu (imports réels, décisions T-1 à T-11 verrouillées) ; escrow.test.ts artisan 5 %→8 % ; 290/290 tests verts ; tsc 0 erreur ; npm run build exit 0
+
+Stage Summary:
+- Les 19 décisions d'arbitrage sont rendues, documentées (PDF) et effectives dans le code avec sources uniques — plus aucune valeur tarifaire dupliquée divergente
+- Correctif critique : le programme ambassadeurs n'est plus déficitaire par construction (partage de revenu sur commission nette)
+- Reste (plan ch. 6 du registre) : type location_longue_duree au moteur escrow (T-2), écran PMS + last-minute 18 % (T-9), matrice signature/notaire par pays (J-2/J-3), révision V4.1 du document CDC, rotation des identifiants de test

@@ -38,89 +38,49 @@ interface Mission {
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 // Static config — geometer service catalog using DB service codes (GEO_*)
+// Prix : source unique src/lib/geotrust/pricing.ts (décision T-5, registre d'arbitrage CDC)
+import { GEO_SERVICE_PRICES, GEO_PACKS } from '@/lib/geotrust/pricing';
+
 const geometerServices = [
-  { id: 'geo-1', name: geoServiceLabel('GEO_GPS'), code: 'GEO_GPS', price: 50000, priceLabel: '50 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Relevé GPS de précision pour repérage et coordonnées', descKey: 'geotrust.serviceGpsDesc' },
-  { id: 'geo-2', name: geoServiceLabel('GEO_SURF'), code: 'GEO_SURF', price: 75000, priceLabel: '75 000 FCFA', icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain', descKey: 'geotrust.serviceSurfDesc' },
-  { id: 'geo-3', name: geoServiceLabel('GEO_INSP'), code: 'GEO_INSP', price: 120000, priceLabel: '120 000 FCFA', icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques', descKey: 'geotrust.serviceInspDesc' },
-  { id: 'geo-4', name: geoServiceLabel('GEO_BORN'), code: 'GEO_BORN', price: 150000, priceLabel: '150 000 FCFA', icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes', descKey: 'geotrust.serviceBornDesc' },
-  { id: 'geo-5', name: geoServiceLabel('GEO_TOPO'), code: 'GEO_TOPO', price: 350000, priceLabel: '350 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan', descKey: 'geotrust.serviceTopoDesc' },
-  { id: 'geo-6', name: geoServiceLabel('GEO_DRON'), code: 'GEO_DRON', price: 200000, priceLabel: '200 000 FCFA', icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution', descKey: 'geotrust.serviceDronDesc' },
-  { id: 'geo-7', name: geoServiceLabel('GEO_CERT'), code: 'GEO_CERT', price: 30000, priceLabel: '30 000 FCFA', icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique', descKey: 'geotrust.serviceCertDesc' },
-  { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: 250000, priceLabel: '250 000 FCFA', icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions', descKey: 'geotrust.service3dDesc' },
-];
+  { id: 'geo-1', name: geoServiceLabel('GEO_GPS'), code: 'GEO_GPS', price: GEO_SERVICE_PRICES.GEO_GPS, icon: <MapPin className="w-4 h-4" />, description: 'Relevé GPS de précision pour repérage et coordonnées', descKey: 'geotrust.serviceGpsDesc' },
+  { id: 'geo-2', name: geoServiceLabel('GEO_SURF'), code: 'GEO_SURF', price: GEO_SERVICE_PRICES.GEO_SURF, icon: <Ruler className="w-4 h-4" />, description: 'Mesure précise de la superficie réelle du terrain', descKey: 'geotrust.serviceSurfDesc' },
+  { id: 'geo-3', name: geoServiceLabel('GEO_INSP'), code: 'GEO_INSP', price: GEO_SERVICE_PRICES.GEO_INSP, icon: <Search className="w-4 h-4" />, description: 'Inspection complète : limites, servitudes, risques', descKey: 'geotrust.serviceInspDesc' },
+  { id: 'geo-4', name: geoServiceLabel('GEO_BORN'), code: 'GEO_BORN', price: GEO_SERVICE_PRICES.GEO_BORN, icon: <MapPin className="w-4 h-4" />, description: 'Bornage officiel avec pose de bornes', descKey: 'geotrust.serviceBornDesc' },
+  { id: 'geo-5', name: geoServiceLabel('GEO_TOPO'), code: 'GEO_TOPO', price: GEO_SERVICE_PRICES.GEO_TOPO, icon: <Map className="w-4 h-4" />, description: 'Étude topographique complète avec plan', descKey: 'geotrust.serviceTopoDesc' },
+  { id: 'geo-6', name: geoServiceLabel('GEO_DRON'), code: 'GEO_DRON', price: GEO_SERVICE_PRICES.GEO_DRON, icon: <Drone className="w-4 h-4" />, description: 'Cartographie aérienne haute résolution', descKey: 'geotrust.serviceDronDesc' },
+  { id: 'geo-7', name: geoServiceLabel('GEO_CERT'), code: 'GEO_CERT', price: GEO_SERVICE_PRICES.GEO_CERT, icon: <CheckCircle className="w-4 h-4" />, description: 'Certificat de conformité géométrique', descKey: 'geotrust.serviceCertDesc' },
+  { id: 'geo-8', name: geoServiceLabel('GEO_3D'), code: 'GEO_3D', price: GEO_SERVICE_PRICES.GEO_3D, icon: <Map className="w-4 h-4" />, description: 'Modélisation 3D du terrain et des constructions', descKey: 'geotrust.service3dDesc' },
+].map((s) => ({ ...s, priceLabel: `${s.price.toLocaleString('fr-FR')} FCFA` }));
 
 // CDC §7C.9 — GeoTrust bundled packs (3 tiers: Standard / Certification / Premium Drone)
-// Prices in XOF (FCFA). Each pack bundles multiple GEO_* services with extras
-// (badge, escrow, VR, rapport) at a discount vs. à la carte.
-//
-// Audit Manus (P0) — pricing coherence: packs previously showed discounts of
-// 40% (Standard), 72% (Certification) and 27% (Premium) while the subtitle
-// promised "up to 20%". Pack prices are now aligned on a uniform ~20%
-// discount vs. the à-la-carte sum, and the exact percentage is displayed on
-// each card so the economy is explicit and verifiable:
-//   Standard:    125 000 → 99 000   (−26 000, ≈21%)
-//   Certificat.: 530 000 → 425 000  (−105 000, ≈20%)
-//   Premium:     480 000 → 385 000  (−95 000, ≈20%)
-const geotrustPacks = [
-  {
-    id: 'pack-standard',
-    name: 'Pack Standard',
-    nameKey: 'geotrust.packStandardName',
-    price: 99000,
-    priceLabel: '99 000 FCFA',
-    services: ['GEO_GPS', 'GEO_SURF'] as const,
-    includes: [
-      geoServiceLabel('GEO_GPS'),
-      geoServiceLabel('GEO_SURF'),
-      'Rapport de mission',
-    ],
-    includesKeys: [null, null, 'geotrust.packIncludeReport'] as const,
-    highlight: false,
-    icon: <MapPin className="w-4 h-4" />,
-    description: 'Vérification GPS et superficie du terrain avec rapport de mission.',
-    descKey: 'geotrust.packStandardDesc',
-  },
-  {
-    id: 'pack-certification',
-    name: 'Pack Certification',
-    nameKey: 'geotrust.packCertificationName',
-    price: 425000,
-    priceLabel: '425 000 FCFA',
-    services: ['GEO_TOPO', 'GEO_BORN', 'GEO_CERT'] as const,
-    includes: [
-      geoServiceLabel('GEO_TOPO'),
-      geoServiceLabel('GEO_BORN'),
-      geoServiceLabel('GEO_CERT'),
-      'Badge GeoTrust officiel',
-      'Sécurisation escrow AfriBayit',
-    ],
-    includesKeys: [null, null, null, 'geotrust.packIncludeBadge', 'geotrust.packIncludeEscrow'] as const,
-    highlight: true,
-    icon: <ShieldCheck className="w-4 h-4" />,
-    description: 'Pack complet : topographie, bornage officiel, certificat de conformité, badge et escrow.',
-    descKey: 'geotrust.packCertificationDesc',
-  },
-  {
-    id: 'pack-premium-drone',
-    name: 'Pack Premium Drone',
-    nameKey: 'geotrust.packPremiumName',
-    price: 385000,
-    priceLabel: '385 000 FCFA',
-    services: ['GEO_DRON', 'GEO_3D', 'GEO_CERT'] as const,
-    includes: [
-      geoServiceLabel('GEO_DRON'),
-      geoServiceLabel('GEO_3D'),
-      geoServiceLabel('GEO_CERT'),
-      'Visite VR immersive',
-      'Rapport détaillé',
-    ],
-    includesKeys: [null, null, null, 'geotrust.packIncludeVr', 'geotrust.packIncludeDetailedReport'] as const,
-    highlight: false,
-    icon: <Drone className="w-4 h-4" />,
-    description: 'Solution premium : cartographie drone, modélisation 3D, certificat, visite VR et rapport.',
-    descKey: 'geotrust.packPremiumDesc',
-  },
-];
+// Prix et services : source unique src/lib/geotrust/pricing.ts (décision T-5).
+// Packs = 75 000 / 150 000 / 350 000 XOF — remises réelles vs. à la carte :
+//   Standard:    95 000 → 75 000   (−21 %)
+//   Certificat.: 245 000 → 150 000  (−39 %)
+//   Premium:     395 000 → 350 000  (−11 %, + VR et rapport complet)
+// Le pourcentage exact est affiché sur chaque carte — économie vérifiable.
+const INCLUDE_KEYS: Record<string, string> = {
+  'Rapport de mission': 'geotrust.packIncludeReport',
+  'Badge GeoTrust officiel': 'geotrust.packIncludeBadge',
+  'Sécurisation escrow AfriBayit': 'geotrust.packIncludeEscrow',
+  'Visite VR immersive': 'geotrust.packIncludeVr',
+  'Rapport détaillé': 'geotrust.packIncludeDetailedReport',
+};
+
+const geotrustPacks = GEO_PACKS.map((pack) => ({
+  ...pack,
+  priceLabel: `${pack.price.toLocaleString('fr-FR')} FCFA`,
+  nameKey: pack.code === 'certification' ? 'geotrust.packCertificationName' : pack.code === 'premium_drone' ? 'geotrust.packPremiumName' : 'geotrust.packStandardName',
+  descKey: pack.code === 'certification' ? 'geotrust.packCertificationDesc' : pack.code === 'premium_drone' ? 'geotrust.packPremiumDesc' : 'geotrust.packStandardDesc',
+  description: pack.code === 'certification'
+    ? 'Pack complet : topographie, bornage officiel, certificat de conformité, badge et escrow.'
+    : pack.code === 'premium_drone'
+      ? 'Solution premium : cartographie drone, modélisation 3D, certificat, visite VR et rapport.'
+      : 'Vérification GPS et superficie du terrain avec rapport de mission.',
+  icon: pack.code === 'certification' ? <ShieldCheck className="w-4 h-4" /> : pack.code === 'premium_drone' ? <Drone className="w-4 h-4" /> : <MapPin className="w-4 h-4" />,
+  includes: pack.includes.map((item) => (item.startsWith('GEO_') ? geoServiceLabel(item) : item)),
+  includesKeys: pack.includes.map((item) => (item.startsWith('GEO_') ? null : INCLUDE_KEYS[item] ?? null)) as ReadonlyArray<string | null>,
+}));
 
 function GeometerSkeleton() {
   return (
@@ -466,7 +426,7 @@ export default function GeoTrustModule() {
             <div>
               <h2 className="font-serif text-xl font-bold text-primary-deep">{t('geotrust.packsTitle', 'Packs GeoTrust')}</h2>
               <p className="text-xs text-gray-text mt-1">
-                {t('geotrust.packsSubtitle', 'Packs groupés à prix réduit — économisez jusqu\'à 20% vs. services à la carte.')}
+                {t('geotrust.packsSubtitle', 'Packs groupés à prix réduit — le pourcentage d\'économie réel vs. services à la carte est affiché sur chaque pack.')}
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[11px] font-semibold w-fit">

@@ -1750,7 +1750,7 @@ export const en = {
     countryLabel: 'Country:',
     servicesTitle: 'Services',
     packsTitle: 'GeoTrust Packs',
-    packsSubtitle: 'Bundled packs at a discounted price — save up to 20% vs. à la carte services.',
+    packsSubtitle: 'Bundled packs at a discounted price — save the exact percentage shown on each pack vs. à la carte services.',
     priceInFcfa: 'Price in FCFA (XOF)',
     recommendedBadge: 'Recommended',
     choosePack: 'Choose this pack',

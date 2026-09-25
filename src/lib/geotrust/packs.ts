@@ -1,7 +1,9 @@
 /**
  * AfriBayit — GeoTrust Certification Packs
- * Available certification packs with pricing and features
+ * Prix issus de la source unique src/lib/geotrust/pricing.ts (décision T-5,
+ * registre d'arbitrage CDC V4.0) : 75 000 / 150 000 / 350 000 XOF.
  */
+import { GEO_PACKS, packALaCarteTotal } from './pricing';
 
 export interface CertificationPack {
   id: string;
@@ -25,23 +27,18 @@ export interface CertificationPack {
   };
 }
 
-export const CERTIFICATION_PACKS: CertificationPack[] = [
-  {
-    id: 'standard',
-    name: 'Standard',
-    nameFr: 'Standard',
-    price: 25000,
-    currency: 'XOF',
+const PACK_META: Record<string, { icon: string; color: string; turnaroundDays: number; features: string[];
+  includes: CertificationPack['includes'] }> = {
+  standard: {
+    icon: 'clipboard-list',
+    color: '#009CDE',
+    turnaroundDays: 7,
     features: [
       'Vérification cadastrale',
       'Rapport basique',
       'Vérification des limites de propriété',
       'Délai 5-7 jours ouvrés',
     ],
-    icon: 'clipboard-list',
-    color: '#009CDE',
-    popular: false,
-    turnaroundDays: 7,
     includes: {
       cadastralVerification: true,
       topographicSurvey: false,
@@ -52,12 +49,10 @@ export const CERTIFICATION_PACKS: CertificationPack[] = [
       premiumBadge: false,
     },
   },
-  {
-    id: 'geotrust',
-    name: 'GeoTrust',
-    nameFr: 'GeoTrust',
-    price: 75000,
-    currency: 'XOF',
+  geotrust: {
+    icon: 'map',
+    color: '#00A651',
+    turnaroundDays: 5,
     features: [
       'Vérification cadastrale',
       'Levé topographique',
@@ -65,10 +60,6 @@ export const CERTIFICATION_PACKS: CertificationPack[] = [
       'Badge vérifié sur l\'annonce',
       'Délai 3-5 jours ouvrés',
     ],
-    icon: 'map',
-    color: '#00A651',
-    popular: true,
-    turnaroundDays: 5,
     includes: {
       cadastralVerification: true,
       topographicSurvey: true,
@@ -79,12 +70,10 @@ export const CERTIFICATION_PACKS: CertificationPack[] = [
       premiumBadge: false,
     },
   },
-  {
-    id: 'premium',
-    name: 'Premium',
-    nameFr: 'Premium',
-    price: 150000,
-    currency: 'XOF',
+  premium: {
+    icon: 'crown',
+    color: '#D4AF37',
+    turnaroundDays: 3,
     features: [
       'Tout GeoTrust inclus',
       'Couverture drone HD',
@@ -93,10 +82,6 @@ export const CERTIFICATION_PACKS: CertificationPack[] = [
       'Délai 2-3 jours ouvrés',
       'Support prioritaire 24/7',
     ],
-    icon: 'crown',
-    color: '#D4AF37',
-    popular: false,
-    turnaroundDays: 3,
     includes: {
       cadastralVerification: true,
       topographicSurvey: true,
@@ -107,7 +92,30 @@ export const CERTIFICATION_PACKS: CertificationPack[] = [
       premiumBadge: true,
     },
   },
-];
+};
+
+const ID_BY_CODE: Record<string, string> = {
+  standard: 'standard',
+  certification: 'geotrust',
+  premium_drone: 'premium',
+};
+
+export const CERTIFICATION_PACKS: CertificationPack[] = GEO_PACKS.map((pack) => {
+  const meta = PACK_META[ID_BY_CODE[pack.code]] ?? PACK_META.geotrust;
+  return {
+    id: ID_BY_CODE[pack.code] ?? pack.id,
+    name: pack.code === 'certification' ? 'GeoTrust' : pack.code === 'premium_drone' ? 'Premium' : 'Standard',
+    nameFr: pack.name,
+    price: pack.price,
+    currency: pack.currency,
+    features: [...meta.features, `Valeur à la carte : ${packALaCarteTotal(pack).toLocaleString('fr-FR')} XOF`],
+    icon: meta.icon,
+    color: meta.color,
+    popular: pack.highlight,
+    turnaroundDays: meta.turnaroundDays,
+    includes: meta.includes,
+  };
+});
 
 export function getPackById(id: string): CertificationPack | undefined {
   return CERTIFICATION_PACKS.find(p => p.id === id);

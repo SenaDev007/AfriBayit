@@ -43,5 +43,5 @@ describe('Commission calculation — REAL engine', () => {
     expect(calculateCommissionByType('hotellerie', 100_000, { hotelTier: 1 }).rate).toBe(0.12);
     expect(calculateCommissionByType('hotellerie', 100_000, { hotelTier: 5 }).rate).toBe(0.15);
   });
-  it('artisan 5%', () => { expect(calculateCommissionByType('artisan', 100_000).rate).toBe(0.05); });
+  it('artisan 8% — arbitrage T-4 (borne basse CDC 8-12 %)', () => { expect(calculateCommissionByType('artisan', 100_000).rate).toBe(0.08); });
 });

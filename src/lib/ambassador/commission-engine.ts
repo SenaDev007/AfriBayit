@@ -13,6 +13,7 @@
 // - Commission payout scheduling
 
 import { db } from '@/lib/db';
+import { computeAmbassadorCommission } from '@/lib/payments/fees';
 
 // ============ Types ============
 
@@ -177,18 +178,25 @@ export const COMMISSION_TIERS: Record<'bronze' | 'silver' | 'gold', CommissionTi
  * Calculate commission for a referral transaction.
  * This is the primary function used when a filleul makes a transaction.
  *
+ * ARBITRAGE T-10 (registre CDC V4.0) : la base de calcul est la COMMISSION
+ * NETTE AfriBayit sur la transaction (partage de revenu), jamais le montant
+ * brut. Fournir `platformCommission` (ex. Transaction.commission) quand il
+ * est connu ; sinon il est dérivé de la grille de vente (lecture conservatrice).
+ *
  * @param ambassadorId - The ambassador who referred the user
  * @param filleulUserId - The referred user who made the transaction
  * @param transactionId - The transaction ID
  * @param transactionAmount - The transaction amount in XOF
  * @param currency - The currency (default: XOF)
+ * @param platformCommission - Commission nette AfriBayit sur la transaction (base du reversement)
  */
 export async function calculateCommission(
   ambassadorId: string,
   filleulUserId: string,
   transactionId: string,
   transactionAmount: number,
-  currency: string = 'XOF'
+  currency: string = 'XOF',
+  platformCommission?: number
 ): Promise<CommissionCalculation> {
   // Fetch ambassador to get current tier
   const ambassador = await db.ambassador.findUnique({
@@ -202,13 +210,23 @@ export async function calculateCommission(
   const tier = ambassador.tier as 'bronze' | 'silver' | 'gold';
   const tierConfig = COMMISSION_TIERS[tier] || COMMISSION_TIERS.bronze;
   const commissionRate = tierConfig.commissionRate;
-  const commissionAmount = Math.round(transactionAmount * commissionRate);
+  // Base = commission nette AfriBayit (T-10) — jamais le montant brut
+  const { base, amount: commissionAmount, derived } = computeAmbassadorCommission(
+    transactionAmount,
+    commissionRate,
+    platformCommission
+  );
 
   const breakdown = [
     {
-      label: `Commission ${tierConfig.tier} (${(commissionRate * 100).toFixed(0)}%)`,
+      label: `Commission ${tierConfig.tier} (${(commissionRate * 100).toFixed(0)}%) de la commission nette AfriBayit`,
       rate: commissionRate,
       amount: commissionAmount,
+    },
+    {
+      label: `Base : commission nette plateforme (${base.toLocaleString('fr-FR')} XOF${derived ? ', dérivée de la grille de vente' : ''})`,
+      rate: 0,
+      amount: base,
     },
   ];
 
@@ -243,14 +261,16 @@ export async function recordReferralCommission(
   filleulUserId: string,
   transactionId: string,
   transactionAmount: number,
-  currency: string = 'XOF'
+  currency: string = 'XOF',
+  platformCommission?: number
 ): Promise<CommissionCalculation> {
   const calculation = await calculateCommission(
     ambassadorId,
     filleulUserId,
     transactionId,
     transactionAmount,
-    currency
+    currency,
+    platformCommission
   );
 
   // Create commission record

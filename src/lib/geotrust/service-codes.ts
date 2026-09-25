@@ -8,6 +8,7 @@ export type GeoTrustServiceCode =
   | 'GEO_GPS'
   | 'GEO_SURF'
   | 'GEO_INSP'
+  | 'GEO_CONF'
   | 'GEO_BORN'
   | 'GEO_TOPO'
   | 'GEO_DRON'
@@ -19,6 +20,7 @@ export const GEO_SERVICE_LABELS: Record<GeoTrustServiceCode, string> = {
   GEO_GPS: 'Géolocalisation GPS',
   GEO_SURF: 'Arpenteur de surface',
   GEO_INSP: 'Inspection immobilière',
+  GEO_CONF: 'Détection conflits fonciers',
   GEO_BORN: 'Bornage',
   GEO_TOPO: 'Topographie',
   GEO_DRON: 'Drone',

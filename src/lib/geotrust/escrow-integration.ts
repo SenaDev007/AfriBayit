@@ -17,6 +17,7 @@
 import { db } from '@/lib/db';
 import { transition } from '@/lib/payments/escrow-engine';
 import type { TransactionState } from '@/lib/payments/types';
+import { getServicePrice } from '@/lib/geotrust/pricing';
 import type { GeoTrustServiceCode } from '@/lib/geotrust/service-codes';
 
 // ============ Types ============
@@ -335,18 +336,7 @@ export async function createEscrowGeoTrustMissions(
     throw new Error('Aucun géomètre disponible pour cette zone');
   }
 
-  // Service code pricing (XOF)
-  const SERVICE_PRICING: Record<GeoTrustServiceCode, number> = {
-    GEO_GPS: 25000,
-    GEO_SURF: 50000,
-    GEO_INSP: 40000,
-    GEO_BORN: 60000,
-    GEO_TOPO: 75000,
-    GEO_DRON: 100000,
-    GEO_CERT: 150000,
-    GEO_3D: 120000,
-  };
-
+  // Service code pricing (XOF) — source unique : src/lib/geotrust/pricing.ts (T-5)
   const missionIds: string[] = [];
 
   for (const serviceCode of requiredServices) {
@@ -356,7 +346,7 @@ export async function createEscrowGeoTrustMissions(
         geometerId: geometer.id,
         serviceCode,
         status: 'requested',
-        price: SERVICE_PRICING[serviceCode],
+        price: getServicePrice(serviceCode),
         currency: 'XOF',
       },
     });
