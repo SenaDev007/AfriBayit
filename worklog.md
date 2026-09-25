@@ -1680,3 +1680,23 @@ Stage Summary:
 - Les 19 décisions d'arbitrage sont rendues, documentées (PDF) et effectives dans le code avec sources uniques — plus aucune valeur tarifaire dupliquée divergente
 - Correctif critique : le programme ambassadeurs n'est plus déficitaire par construction (partage de revenu sur commission nette)
 - Reste (plan ch. 6 du registre) : type location_longue_duree au moteur escrow (T-2), écran PMS + last-minute 18 % (T-9), matrice signature/notaire par pays (J-2/J-3), révision V4.1 du document CDC, rotation des identifiants de test
+
+---
+Task ID: cdc-v41-impl
+Agent: Super Z (main agent)
+Task: Exécuter le plan V4.1 — ① valider le registre et lancer la révision V4.1 du CDC ; ② implémenter T-2 (commission LLD 50/50) et l'écran PMS (T-9) ; ③ pack de revue Legal Officer matrices signature/notaire ; ④ rotation des identifiants de test avant données réelles.
+
+Work Log:
+- Extraction complète du AfriBayit_CDC_V4.pdf (117 pages) et localisation des spécifications : §11.2.1 (LLD 1 mois 50/50), §7D.3 (PMS 8 modules + onboarding), §7D (last-minute 18 % + remise hôtelier configurable 48h), §10B.1-10B.5 (cadres fonciers), §5.0bis.6 (mandat Legal Officer)
+- ① Registre reconstruit et émis : AfriBayit_Arbitrage_CDC.pdf (8 pages, 19 décisions V/T/J/F) + révision AfriBayit_CDC_V4.1_Revision.pdf (6 pages, errata + amendements, unification de version V-1) — deux documents PDF dans /home/z/my-project/download/ avec sources HTML de couverture ; QA pdf_qa PASS (2 warnings acceptés), TOC auto validé, cover_validate rc=0
+- ② T-2 LLD : type location_longue_duree ajouté à CommissionTransactionType ; computeLLDCommission() + LLD_SPLIT 50/50 dans fees.ts ; case LLD dans commissionNetteParType et calculateCommissionByType (breakdown 2 lignes propriétaire/locataire, sellerPayout = loyer - part propriétaire) ; mapping corrigé : type « location »/« bail » → LLD (avant : grille LCD 3 % par erreur)
+- ② T-2 backend : escrow.service.ts (afribayit-api) — calculateLocationLongueDureeCommission réécrit en sémantique T-2 (loyer mensuel déduit du premier versement, commission = 1 mois, 50/50) + artisan aligné 8 % (T-4, le backend était resté à 5 %)
+- ② T-9 écran PMS : LastMinutePanel conforme CDC §7D — remise configurable par l'hôtelier (défaut 30 %, cap 90 %), commission last-minute 18 % importée de LAST_MINUTE_COMMISSION_RATE (affichage), fin du -30 % codé en dur ; SubscriptionsModule importe PMS_TIERS (9 900/24 900 XOF) — fin des prix codés en dur
+- ③ Pack de revue Legal Officer : docs/LEGAL_SIGNATURE_NOTARY_REVIEW.md — matrice J-2 (signature électronique par pays, Bénin n°2017-20/OHADA, 5 questions bloquantes) + matrice J-3 (notaire/documents par pays, TF Bénin, immatriculation préalable Togo art. 161-162, provision DCCF 2025) + procédure de validation + fallback signature physique Phase 1
+- ④ Rotation : scripts/rotate-test-credentials.ts — mots de passe aléatoires (crypto.randomInt, complexité garantie), hachage Argon2id (src/lib/security/password), sortie fichier 0600 hors git (jamais stdout), dry-run, refuse si PRODUCTION_DATA=1 sans --force, exit 0 non-bloquant ; npm credentials:rotate + credentials:rotate:dry ; .gitignore test-credentials-*.txt
+- Tests : cdc-business-rules.test.ts +6 tests T-2 ; escrow.test.ts +3 tests (breakdown 50/50, sellerPayout, mapping location→LLD) ; total 298/298 verts ; tsc --noEmit 0 erreur ; npm run build complet OK (compiled 54s, 239/239 pages statiques, migration non-bloquante sans DB locale)
+
+Stage Summary:
+- Les 4 points du plan V4.1 sont livrés : registre validé + révision V4.1 émise (PDF), T-2 et T-9 implémentés et testés (frontend + backend), pack Legal Officer J-2/J-3 prêt pour signature, rotation des identifiants outillée et protégée
+- Valeurs canoniques inchangées (fees.ts/pricing.ts restent les sources uniques) ; 298 tests verts verrouillent T-1..T-11 + T-2 nouveau
+- Reste en attente externe : retour du Legal Officer sur J-2/J-3 (bloque la signature électronique en production, fallback physique actif) ; exécution de credentials:rotate juste avant le branchement de données réelles ; passage TARIFF_PHASE éventuel par décision commerciale journalisée

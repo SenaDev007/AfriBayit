@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Ban, CheckCircle, ClipboardList, DollarSign, Download, Eye, MessageCircle,
-  PlaneLanding, PlaneTakeoff, QrCode, Star, Target, Users, Zap,
+  PlaneLanding, PlaneTakeoff, QrCode, Settings2, Star, Target, Users, Zap,
 } from 'lucide-react';
 import type { PMSDashboardData, ReservationItem, RoomItem } from './types';
 import { easeOut } from './types';
 import { fmt, formatDate, channelLabel } from './utils';
+import { LAST_MINUTE_COMMISSION_RATE } from '@/lib/payments/fees';
 
 interface CheckinPanelProps {
   reservations: ReservationItem[];
@@ -127,21 +129,51 @@ export function CancellationPanel({ reservations }: { reservations: ReservationI
   );
 }
 
+/**
+ * Offres Last-Minute (T-9) — CDC §7D :
+ * - déclenchement automatique si la chambre n'est pas réservée 48h avant la date ;
+ * - le seuil de remise est DÉFINI PAR L'HÔTELIER (valeur par défaut 30 %) ;
+ * - la commission plateforme est MAJORÉE à 18 % (LAST_MINUTE_COMMISSION_RATE,
+ *   source unique src/lib/payments/fees.ts — arbitrage T-9).
+ */
+const LAST_MINUTE_DEFAULT_DISCOUNT = 0.30;
+
 export function LastMinutePanel({ rooms }: { rooms: RoomItem[] }) {
+  const [discountPct, setDiscountPct] = useState(Math.round(LAST_MINUTE_DEFAULT_DISCOUNT * 100));
+  const discountRate = Math.min(Math.max(discountPct, 0), 90) / 100;
   return (
     <motion.div key="lastminute" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: easeOut }}>
       <div className="bg-gradient-to-br from-accent-yellow/10 to-primary-deep/10 rounded-3xl p-6 shadow-lg border border-accent-yellow/20">
-        <h3 className="font-serif text-base font-bold text-primary-deep mb-2 flex items-center gap-2"><Zap className="w-5 h-5 text-accent-dark" /> Offres Last-Minute</h3>
-        <p className="text-sm text-gray-text mb-4">Chambres disponibles aujourd&apos;hui avec reduction automatique</p>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
+          <div>
+            <h3 className="font-serif text-base font-bold text-primary-deep mb-1 flex items-center gap-2"><Zap className="w-5 h-5 text-accent-dark" /> Offres Last-Minute</h3>
+            <p className="text-sm text-gray-text">Chambres disponibles aujourd&apos;hui avec réduction automatique (non réservées 48h avant la date)</p>
+          </div>
+          <label className="flex items-center gap-2 text-xs font-semibold text-gray-text bg-white/80 rounded-full px-3 py-2 border border-primary-pale">
+            <Settings2 className="w-4 h-4 text-primary-deep" />
+            Remise hôtelier
+            <input
+              type="number" min={0} max={90} value={discountPct}
+              onChange={(e) => setDiscountPct(Number(e.target.value))}
+              className="w-14 px-2 py-0.5 rounded-lg border border-primary-pale text-right font-mono text-xs text-primary-deep bg-primary-pale/30 focus:outline-none focus:ring-2 focus:ring-primary-deep/30"
+              aria-label="Pourcentage de remise last-minute"
+            />
+            %
+          </label>
+        </div>
+        <p className="text-[11px] text-gray-text/80 mb-4 flex items-center gap-1.5">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent-yellow" />
+          Commission plateforme majorée sur les réservations last-minute (&lt; 48h) : {Math.round(LAST_MINUTE_COMMISSION_RATE * 100)} % (CDC §7D — arbitrage T-9)
+        </p>
         {rooms.filter(r => r.status === 'available' || r.status === 'AVAILABLE').length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {rooms.filter(r => r.status === 'available' || r.status === 'AVAILABLE').map((room) => {
-              const discountPrice = Math.round(Number(room.basePrice) * 0.7);
+              const discountPrice = Math.round(Number(room.basePrice) * (1 - discountRate));
               return (
                 <div key={room.id} className="bg-white rounded-3xl p-4 border border-primary-pale shadow-md">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-bold text-primary-deep">{room.name || room.type}</h4>
-                    <span className="px-2 py-0.5 bg-[#D93025] text-white text-[10px] font-bold rounded-full">-30%</span>
+                    <span className="px-2 py-0.5 bg-[#D93025] text-white text-[10px] font-bold rounded-full">-{discountPct}%</span>
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono text-lg font-bold text-accent-dark">{fmt(discountPrice)}</span>

@@ -429,6 +429,9 @@ import {
   LAST_MINUTE_COMMISSION_RATE,
   PMS_TIERS,
   NOTARY_TIERS,
+  LLD_COMMISSION_MONTHS,
+  LLD_SPLIT,
+  computeLLDCommission,
 } from '@/lib/payments/fees';
 import {
   GEO_SERVICE_PRICES,
@@ -454,6 +457,37 @@ describe('Arbitrage T-1 — Vente immobilière : grille dégressive 5/4/3/2 %', 
     const rates = VENTE_COMMISSION_TIERS.map((t) => t.rate);
     expect(Math.min(...rates)).toBeGreaterThanOrEqual(0.02);
     expect(Math.max(...rates)).toBeLessThanOrEqual(0.05);
+  });
+});
+
+describe('Arbitrage T-2 — LLD : 1 mois de loyer partagé 50/50 propriétaire/locataire', () => {
+  it('la commission totale vaut exactement 1 mois de loyer (CDC §11.2.1)', () => {
+    expect(LLD_COMMISSION_MONTHS).toBe(1);
+    const lld = computeLLDCommission(250_000);
+    expect(lld.totalCommission).toBe(250_000);
+  });
+  it('le partage est strictement 50/50 propriétaire/locataire', () => {
+    expect(LLD_SPLIT.proprietaire).toBe(0.5);
+    expect(LLD_SPLIT.locataire).toBe(0.5);
+    const lld = computeLLDCommission(250_000);
+    expect(lld.proprietairePart).toBe(125_000);
+    expect(lld.locatairePart).toBe(125_000);
+    expect(lld.proprietairePart + lld.locatairePart).toBe(lld.totalCommission);
+  });
+  it('les montants impairs restent exacts (arrondi conservé sur le total)', () => {
+    const lld = computeLLDCommission(123_457);
+    expect(lld.totalCommission).toBe(123_457);
+    expect(lld.proprietairePart + lld.locatairePart).toBe(123_457);
+  });
+  it('la commission LLD est un forfait : indépendante de la durée du bail', () => {
+    const sixMois = computeLLDCommission(200_000);
+    const douzeMois = computeLLDCommission(200_000);
+    expect(sixMois.totalCommission).toBe(douzeMois.totalCommission);
+  });
+  it('commissionNetteParType expose la commission LLD (base = loyer mensuel)', () => {
+    const r = commissionNetteParType('location_longue_duree', 300_000);
+    expect(r.commission).toBe(300_000);
+    expect(r.rate).toBe(1);
   });
 });
 

@@ -14,6 +14,7 @@ import type { TransactionState, ReleaseConditions, EscrowTransitionEvent, Escrow
 import { toJsonInput, fromJson, toNumber } from '@/lib/db-helpers';
 import {
   commissionNetteParType,
+  computeLLDCommission,
   venteCommissionRate,
   HOTELLERIE_RATE_BY_TIER,
   GUESTHOUSE_VOYAGEUR_RATE_BY_TIER,
@@ -60,6 +61,31 @@ function calculateVenteImmobiliereCommission(amount: number): { rate: number; co
  */
 function calculateLocationCourteDureeCommission(amount: number): { rate: number; commission: number } {
   return commissionNetteParType('location_courte_duree', amount);
+}
+
+/**
+ * Calculate commission for location longue durée (T-2) : 1 mois de loyer
+ * partagé 50/50 propriétaire/locataire — prélevé à la signature du bail.
+ * `amount` est le loyer mensuel de référence (ou le montant de la première
+ * échéance mise en escrow). Retourne un résultat à double répartition.
+ */
+function calculateLocationLongueDureeCommission(monthlyRent: number): {
+  rate: number;
+  commission: number;
+  proprietaireRate: number;
+  proprietairePart: number;
+  locataireRate: number;
+  locatairePart: number;
+} {
+  const lld = computeLLDCommission(monthlyRent);
+  return {
+    rate: lld.rate,
+    commission: lld.totalCommission,
+    proprietaireRate: 0.5,
+    proprietairePart: lld.proprietairePart,
+    locataireRate: 0.5,
+    locatairePart: lld.locatairePart,
+  };
 }
 
 /**
@@ -137,6 +163,20 @@ export function calculateCommissionByType(
       }];
       break;
     }
+    case 'location_longue_duree': {
+      // T-2 : le montant en escrow est le premier loyer ; la commission
+      // (1 mois de loyer) est supportée à 50 % par le propriétaire (retenue
+      // sur son décaissement) et à 50 % par le locataire (ajoutée au sien).
+      const calc = calculateLocationLongueDureeCommission(amount);
+      result.rate = calc.rate;
+      result.commission = calc.commission;
+      result.sellerPayout = amount - calc.proprietairePart;
+      result.breakdown = [
+        { label: 'Commission LLD — part propriétaire (50 %)', rate: calc.proprietaireRate, amount: calc.proprietairePart },
+        { label: 'Commission LLD — part locataire (50 %)', rate: calc.locataireRate, amount: calc.locatairePart },
+      ];
+      break;
+    }
     case 'location_courte_duree': {
       const calc = calculateLocationCourteDureeCommission(amount);
       result.rate = calc.rate;
@@ -194,6 +234,9 @@ export function calculateCommissionByType(
 /**
  * Auto-detect transaction type from a Transaction record and calculate commission.
  * Falls back to vente_immobiliere for achat/investissement transactions.
+ *
+ * Mapping CDC §11.2.1 (T-2) : `location` = location LONGUE durée (bail —
+ * 1 mois de loyer 50/50), `location_courte_duree` = courte durée (3 % hôte).
  */
 export function calculateTransactionCommission(
   transaction: { amount: number; type?: string; propertyType?: string },
@@ -204,8 +247,10 @@ export function calculateTransactionCommission(
 
   let commissionType: CommissionTransactionType = 'vente_immobiliere';
 
-  if (txType === 'location' || txType === 'location_courte_duree') {
+  if (txType === 'location_courte_duree') {
     commissionType = 'location_courte_duree';
+  } else if (txType === 'location' || txType === 'location_longue_duree' || txType === 'bail') {
+    commissionType = 'location_longue_duree';
   } else if (propType === 'hotel' || txType === 'hotel' || txType === 'hotellerie') {
     commissionType = 'hotellerie';
   } else if (propType === 'guesthouse' || txType === 'guesthouse') {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ESCROW_STATES, TERMINAL_STATES, canTransition, getValidTransitions, getTransitionMap, calculateCommissionByType } from '@/lib/payments/escrow-engine';
+import { ESCROW_STATES, TERMINAL_STATES, canTransition, getValidTransitions, getTransitionMap, calculateCommissionByType, calculateTransactionCommission } from '@/lib/payments/escrow-engine';
 import type { TransactionState } from '@/lib/payments/types';
 
 describe('Escrow state machine (CDC §7B.3 + §5.0bis.4) — REAL engine', () => {
@@ -44,4 +44,27 @@ describe('Commission calculation — REAL engine', () => {
     expect(calculateCommissionByType('hotellerie', 100_000, { hotelTier: 5 }).rate).toBe(0.15);
   });
   it('artisan 8% — arbitrage T-4 (borne basse CDC 8-12 %)', () => { expect(calculateCommissionByType('artisan', 100_000).rate).toBe(0.08); });
+  it('LLD 1 mois de loyer 50/50 — arbitrage T-2 (CDC §11.2.1)', () => {
+    const lld = calculateCommissionByType('location_longue_duree', 250_000);
+    expect(lld.commission).toBe(250_000); // 1 mois de loyer exactement
+    expect(lld.breakdown).toHaveLength(2); // part propriétaire + part locataire
+    const [prop, loc] = lld.breakdown;
+    expect(prop.amount).toBe(125_000);
+    expect(loc.amount).toBe(125_000);
+    expect(prop.amount + loc.amount).toBe(lld.commission);
+  });
+  it('LLD sellerPayout = loyer − part propriétaire (le locataire ajoute sa part)', () => {
+    const lld = calculateCommissionByType('location_longue_duree', 250_000);
+    expect(lld.sellerPayout).toBe(125_000);
+  });
+  it('type `location` (bail) mappé sur la grille LLD — plus sur la grille courte durée', () => {
+    // CDC §11.2.1 : `location` = location longue durée (1 mois 50/50).
+    // Avant T-2, ce type tombait par erreur sur la grille LCD 3 %.
+    const tx = calculateTransactionCommission({ amount: 200_000, type: 'location' });
+    expect(tx.transactionType).toBe('location_longue_duree');
+    expect(tx.commission).toBe(200_000);
+    const lcd = calculateTransactionCommission({ amount: 200_000, type: 'location_courte_duree' });
+    expect(lcd.transactionType).toBe('location_courte_duree');
+    expect(lcd.commission).toBe(6_000);
+  });
 });

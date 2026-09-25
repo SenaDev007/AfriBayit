@@ -78,3 +78,6 @@ prisma/*.db-journal
 
 # Playwright test artifacts (e2e runs)
 test-results/
+
+# Rotated test credentials (audit ④) — plaintext secrets, never commit
+test-credentials-*.txt

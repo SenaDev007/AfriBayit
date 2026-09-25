@@ -22,6 +22,7 @@ export const TARIFF_PHASE: TariffPhase = 'standard';
 
 export type CommissionTransactionType =
   | 'vente_immobiliere'
+  | 'location_longue_duree'
   | 'location_courte_duree'
   | 'hotellerie'
   | 'artisan'
@@ -49,6 +50,37 @@ export function venteCommissionRate(amount: number): number {
 
 export const LLD_COMMISSION_MONTHS = 1;
 export const LLD_SPLIT = { proprietaire: 0.5, locataire: 0.5 } as const;
+
+export interface LLDCommissionBreakdown {
+  /** Base de calcul : loyer mensuel (XOF). */
+  monthlyRent: number;
+  /** Commission totale AfriBayit = 1 mois de loyer (CDC §11.2.1). */
+  totalCommission: number;
+  /** Part à la charge du propriétaire (50 %). */
+  proprietairePart: number;
+  /** Part à la charge du locataire (50 %). */
+  locatairePart: number;
+  /** Taux exprimé par rapport au loyer mensuel (= 1 × LLD_COMMISSION_MONTHS). */
+  rate: number;
+}
+
+/**
+ * Commission LLD (T-2) : 1 mois de loyer partagé 50/50 propriétaire/locataire,
+ * prélevée à la signature du bail (document d'identité requis — CDC §11.2.1).
+ * `monthlyRent` est le loyer mensuel ; la commission totale vaut exactement
+ * LLD_COMMISSION_MONTHS mois de loyer, arrondie au XOF entier.
+ */
+export function computeLLDCommission(monthlyRent: number): LLDCommissionBreakdown {
+  const totalCommission = Math.round(monthlyRent * LLD_COMMISSION_MONTHS);
+  const proprietairePart = Math.round(totalCommission * LLD_SPLIT.proprietaire);
+  return {
+    monthlyRent,
+    totalCommission,
+    proprietairePart,
+    locatairePart: totalCommission - proprietairePart,
+    rate: LLD_COMMISSION_MONTHS,
+  };
+}
 
 // ============ T-3 — Location courte durée ============
 
@@ -102,12 +134,21 @@ export interface CommissionNetteResult {
 export function commissionNetteParType(
   type: CommissionTransactionType,
   amount: number,
-  options?: { hotelTier?: HotelTier; guesthouseTier?: 1 | 2 | 3 }
+  options?: { hotelTier?: HotelTier; guesthouseTier?: 1 | 2 | 3; lldMonths?: number }
 ): CommissionNetteResult {
   switch (type) {
     case 'vente_immobiliere': {
       const rate = venteCommissionRate(amount);
       return { rate, commission: Math.round(amount * rate) };
+    }
+    case 'location_longue_duree': {
+      // T-2 : `amount` = loyer mensuel de référence ; commission = 1 mois
+      // de loyer, partagé 50/50 propriétaire/locataire à la signature du bail.
+      // `lldMonths` (durée du bail en mois) ne change PAS la commission —
+      // c'est un forfait d'un mois, indépendant de la durée (CDC §11.2.1).
+      const lld = computeLLDCommission(amount);
+      void options?.lldMonths;
+      return { rate: lld.rate, commission: lld.totalCommission };
     }
     case 'location_courte_duree': {
       const rate = LCD_HOST_COMMISSION_RATE;

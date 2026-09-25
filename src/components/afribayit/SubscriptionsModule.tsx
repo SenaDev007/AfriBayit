@@ -13,6 +13,11 @@ import {
   CircleDollarSign, Target, MessageCircle, FileText, BadgeCheck,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+// Prix PMS issus de la SOURCE UNIQUE d'arbitrage (T-9) : src/lib/payments/fees.ts
+// → toute évolution tarifaire se fait là (et dans les tests CDC), pas ici.
+import { PMS_TIERS } from '@/lib/payments/fees';
+
+const fmtXof = (n: number) => `${n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g, ' ')} FCFA/mois`;
 
 interface ModuleProps {
   onNavigate?: (section: string) => void;
@@ -188,7 +193,7 @@ const agentTiers = [
 // ─── Hotel plan definitions ───
 const hotelTiers = [
   {
-    id: 'pms-starter', nameKey: 'subscriptionModule.tier.pmsStarter', nameFallback: 'STARTER', name: 'STARTER', planType: 'hotel_starter', price: 9900, priceLabel: '9 900 FCFA/mois',
+    id: 'pms-starter', nameKey: 'subscriptionModule.tier.pmsStarter', nameFallback: 'STARTER', name: 'STARTER', planType: 'hotel_starter', price: PMS_TIERS.starter, priceLabel: fmtXof(PMS_TIERS.starter),
     descKey: 'subscriptionModule.desc.pmsStarter', descFallback: 'Pour les petites guesthouses', desc: 'Pour les petites guesthouses', color: '#00A651',
     features: [
       { key: 'subscriptionModule.features.pmsStarter1', fallback: '5 chambres', label: '5 chambres' },
@@ -198,7 +203,7 @@ const hotelTiers = [
     ],
   },
   {
-    id: 'pms-pro', nameKey: 'subscriptionModule.tier.pmsPro', nameFallback: 'PRO', name: 'PRO', planType: 'hotel_pro', price: 24900, priceLabel: '24 900 FCFA/mois',
+    id: 'pms-pro', nameKey: 'subscriptionModule.tier.pmsPro', nameFallback: 'PRO', name: 'PRO', planType: 'hotel_pro', price: PMS_TIERS.pro, priceLabel: fmtXof(PMS_TIERS.pro),
     descKey: 'subscriptionModule.desc.pmsPro', descFallback: 'Pour les hôtels professionnels', desc: 'Pour les hôtels professionnels', color: '#009CDE', popular: true,
     features: [
       { key: 'subscriptionModule.features.pmsPro1', fallback: 'Chambres illimitées', label: 'Chambres illimitées' },
