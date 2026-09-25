@@ -1736,3 +1736,21 @@ Work Log:
 Stage Summary:
 - Commits poussés : 33d46b1 (navbar/logos/badge) + 98fc846 (favicon pack) — déploiement Vercel automatique
 - Le seul point d'attention restant : vérifier le rendu en ligne après déploiement (dropdowns au survol sur desktop, tiroir mobile, badge visible)
+
+---
+Task ID: ui-hubs-redesign
+Agent: Super Z (main agent)
+Task: Refonte des 5 pages « génériques » en véritables hubs structurés — Artisans (LinkedIn-like), Notaires/GeoTrust (hubs pro), Académie (école virtuelle), Communauté (Discord-like).
+
+Work Log:
+- HubShell.tsx créé (cadre LinkedIn partagé : barre sticky + 3 colonnes + cartes profils) ; ArtisansMarketplace réécrit (facettes 7 catégories, tri, cartes LinkedIn, rail ProMatch IA/escrow/urgence)
+- CommunityModule → workspace Discord plein écran : rail espaces, canaux groupés avec compteurs, groupes en canaux privés, flux messages + composeur, rail membres avec rôles ; ForumPanel → vue canal ; page.tsx sans hero
+- AcademyModule → école virtuelle : bandeau campus + stats réelles, sidebar Mon espace/Filières/Facultés, tableau de bord (progression, certificats, webinaires, recommandations) ; page.tsx sans hero
+- NotaryModuleImpl + GeoTrustModule restructurés : nav verticale + filtres à gauche, cartes profils LinkedIn, rails d'insights (certification 6 étapes, délai légal 30j, workflow mission, chiffres) — chirurgie Python par lignes pour préserver les 1451 lignes métier
+- BUG FIX : /notary redirigeait les visiteurs publics vers /auth/login (useEscrowList → /api/escrow 401 → handler api-client). Fix : option { enabled } sur useEscrowList + enabled: isAuthenticated — CDC « navigable sans compte » respecté
+- QA : tsc 0, 298/298 tests, build 239/239, SSR 200 sur les 5 routes, snapshots DOM + captures VLM validées ; commit f826988 poussé
+
+Stage Summary:
+- Les 5 pages sont des hubs applicatifs structurés, palette AfriBayit conservée, zéro animation 3D
+- Vercel redéploie automatiquement — vérifier les 5 routes en ligne après build
+- Captures : /home/z/my-project/download/hub_screenshots/*.png
