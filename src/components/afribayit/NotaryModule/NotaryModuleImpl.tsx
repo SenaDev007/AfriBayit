@@ -180,7 +180,10 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     selectedZone === 'Toutes' ? undefined : selectedZone,
     selectedCountry
   );
-  const { data: escrowData, isLoading: escrowLoading } = useEscrowList();
+  // /api/escrow est une route protégée : ne la requête QUE si connecté,
+  // sinon le 401 redirige le visiteur public vers /auth/login (CDC : la
+  // plateforme doit être navigable sans compte).
+  const { data: escrowData, isLoading: escrowLoading } = useEscrowList(1, 20, undefined, { enabled: isAuthenticated });
 
   const createConversation = useCreateConversation();
   const createSubscription = useCreateSubscription();
@@ -578,104 +581,164 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
     );
   }
 
-  // ─── LIST VIEW ────────────────────────────────────────────────────
+  // ─── LIST VIEW — hub professionnel « Espace Notarial » ──────────────
+  const NAV_TABS: { key: 'notaries' | 'dashboard' | 'certification' | 'deeds' | 'esignature' | 'revenue'; label: string; icon: typeof Scale }[] = [
+    { key: 'notaries', label: t('notary.tabDirectory', 'Répertoire Notaires'), icon: Scale },
+    { key: 'dashboard', label: t('notary.tabDashboard', 'Tableau de bord'), icon: BarChart3 },
+    { key: 'certification', label: t('notary.tabCertification', 'Certification'), icon: Award },
+    { key: 'deeds', label: t('notary.tabDeeds', 'Rédaction IA'), icon: Bot },
+    { key: 'esignature', label: t('notary.tabEsignature', 'Signature e-'), icon: FileSignature },
+    { key: 'revenue', label: t('notary.tabRevenue', 'Modèle revenus'), icon: Coins },
+  ];
+
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
-            <Scale className="w-3.5 h-3.5" /> {t('notary.headerBadge', 'Notaire Certifié')}
-          </span>
-          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-deep mb-3">
-            {t('notary.headerTitle1', 'Espace')} <span className="text-accent-dark">{t('notary.headerTitleAccent', 'Notarial')}</span>
-          </h1>
-          <p className="text-gray-text max-w-lg mx-auto">
-            {t('notary.headerSubtitle', 'Notaires certifiés, rédaction IA, signature électronique et gestion des actes immobiliers')}
-          </p>
-          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
-        </motion.div>
+    <section className="min-h-screen pb-24 bg-cream">
+      {/* Barre sticky du hub */}
+      <div className="sticky top-16 sm:top-18 z-30 bg-white/95 backdrop-blur border-b border-primary-pale shadow-sm">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 py-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="shrink-0 w-10 h-10 rounded-xl bg-primary-pale flex items-center justify-center text-primary-deep">
+                <Scale className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-serif text-lg font-bold text-primary-deep leading-tight truncate">
+                  {t('notary.headerTitle1', 'Espace')} <span className="text-accent-dark">{t('notary.headerTitleAccent', 'Notarial')}</span>
+                </h1>
+                <p className="text-[11px] text-gray-text truncate hidden sm:block">
+                  {t('notary.headerSubtitle', 'Notaires certifiés, rédaction IA, signature électronique et actes immobiliers')}
+                </p>
+              </div>
+              <span className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-[11px] font-semibold shrink-0">
+                {COUNTRY_NAMES[selectedCountry] || selectedCountry}
+              </span>
+            </div>
 
-        {/* Country Filter */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-text font-medium">{t('notary.countryLabel', 'Pays:')}</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-xs font-semibold">
-            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
-          </span>
+            {/* Recherche */}
+            <div className="relative flex-1 md:max-w-md md:ml-4">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t('notary.searchPlaceholder', 'Rechercher un notaire, une licence…')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-full border border-primary-pale bg-cream text-sm outline-none focus:ring-2 focus:ring-primary-green/30 focus:border-primary-green transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Corps du hub : nav verticale + contenu + insights */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {/* Navigation mobile */}
+        <div className="md:hidden flex gap-1.5 overflow-x-auto pb-3 mb-2 scrollbar-hide">
+          {NAV_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-colors ${
+                  active ? 'bg-primary-deep text-white' : 'bg-white text-gray-text border border-primary-pale'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" /> {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Tabs - Extended with new tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
-          {[
-            { key: 'notaries' as const, label: t('notary.tabDirectory', 'Répertoire Notaires'), icon: <Scale className="w-4 h-4" /> },
-            { key: 'dashboard' as const, label: t('notary.tabDashboard', 'Tableau de bord'), icon: <BarChart3 className="w-4 h-4" /> },
-            { key: 'certification' as const, label: t('notary.tabCertification', 'Certification'), icon: <Award className="w-4 h-4" /> },
-            { key: 'deeds' as const, label: t('notary.tabDeeds', 'Rédaction IA'), icon: <Bot className="w-4 h-4" /> },
-            { key: 'esignature' as const, label: t('notary.tabEsignature', 'Signature e-'), icon: <FileSignature className="w-4 h-4" /> },
-            { key: 'revenue' as const, label: t('notary.tabRevenue', 'Modèle revenus'), icon: <Coins className="w-4 h-4" /> },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.key ? 'bg-primary-deep text-white shadow-md' : 'bg-white text-gray-text border border-primary-pale hover:bg-primary-pale'
-              }`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
+        <div className="md:grid md:grid-cols-[248px_minmax(0,1fr)] lg:grid-cols-[248px_minmax(0,1fr)_312px] gap-5 items-start">
+          {/* Rail gauche — navigation + filtres */}
+          <aside className="hidden md:block sticky top-[148px] sm:top-[164px] max-h-[calc(100vh-176px)] overflow-y-auto pr-1 space-y-4">
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <p className="px-4 pt-3 pb-1 text-[10px] font-bold text-primary-deep uppercase tracking-wider">Navigation</p>
+              <nav className="p-1.5">
+                {NAV_TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  const active = activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-colors ${
+                        active ? 'bg-primary-pale text-primary-deep' : 'text-gray-text hover:bg-primary-pale/60'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-primary-deep' : 'text-gray-400'}`} />
+                      <span className="text-[13px] font-semibold truncate">{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Filtres — onglet répertoire uniquement */}
+            {activeTab === 'notaries' && (
+              <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+                <p className="px-4 pt-3 pb-1 text-[10px] font-bold text-primary-deep uppercase tracking-wider">Filtres</p>
+                <div className="p-3 space-y-2.5">
+                  <select
+                    value={selectedZone}
+                    onChange={(e) => setSelectedZone(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-primary-pale text-xs bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-colors"
+                  >
+                    {zones.map((z) => <option key={z} value={z}>{z === 'Toutes' ? t('notary.allZones', 'Toutes les zones') : z}</option>)}
+                  </select>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-primary-pale text-xs bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-colors"
+                  >
+                    {levels.map((l) => <option key={l} value={l}>{l === 'Tous' ? t('notary.allLevels', 'Tous niveaux') : l}</option>)}
+                  </select>
+                  <select
+                    value={selectedSpeciality}
+                    onChange={(e) => setSelectedSpeciality(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-primary-pale text-xs bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-colors"
+                  >
+                    <option value="Toutes">{t('notary.allSpecialities', 'Toutes spécialités')}</option>
+                    {specialityOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+          </aside>
+
+          {/* Contenu principal */}
+          <main className="min-w-0">
 
         <AnimatePresence mode="wait">
           {/* ===== NOTARIES LIST ===== */}
           {activeTab === 'notaries' && (
-            <motion.div key="notaries" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4, ease: easeOut }}>
-              {/* Search & Filters */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="flex-1 relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder={t('notary.searchPlaceholder', 'Rechercher un notaire...')}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-primary-pale text-sm focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 bg-white transition-all"
-                  />
-                </div>
-                <select
-                  value={selectedZone}
-                  onChange={e => setSelectedZone(e.target.value)}
-                  className="px-4 py-3 rounded-xl border border-primary-pale text-sm bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
-                >
-                  {zones.map(z => <option key={z} value={z}>{z === 'Toutes' ? t('notary.allZones', 'Toutes les zones') : z}</option>)}
-                </select>
-                <select
-                  value={selectedLevel}
-                  onChange={e => setSelectedLevel(e.target.value)}
-                  className="px-4 py-3 rounded-xl border border-primary-pale text-sm bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
-                >
-                  {levels.map(l => <option key={l} value={l}>{l === 'Tous' ? t('notary.allLevels', 'Tous niveaux') : l}</option>)}
-                </select>
-                <select
-                  value={selectedSpeciality}
-                  onChange={e => setSelectedSpeciality(e.target.value)}
-                  className="px-4 py-3 rounded-xl border border-primary-pale text-sm bg-white focus:outline-none focus:border-primary-green focus:ring-2 focus:ring-primary-green/30 transition-all"
-                >
-                  <option value="Toutes">{t('notary.allSpecialities', 'Toutes spécialités')}</option>
-                  {specialityOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+            <div key="notaries" className="space-y-4">
+              {/* En-tête de résultats */}
+              <div className="bg-white rounded-2xl border border-primary-pale shadow-sm px-4 py-3 flex flex-wrap items-center gap-3">
+                <p className="text-sm font-bold text-primary-deep">
+                  {filteredNotaries.length} notaire{filteredNotaries.length > 1 ? 's' : ''}
+                  {filteredNotaries.length !== notaries.length && (
+                    <span className="text-gray-400 font-normal"> sur {notaries.length}</span>
+                  )}
+                </p>
+                {(selectedZone !== 'Toutes' || selectedLevel !== 'Tous' || selectedSpeciality !== 'Toutes' || searchQuery) && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep text-[11px] font-semibold">
+                    <Filter className="w-3 h-3" /> Filtres actifs
+                  </span>
+                )}
               </div>
 
               {/* Loading */}
               {notariesLoading && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {Array.from({ length: 6 }).map((_, i) => <NotarySkeleton key={i} />)}
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => <NotarySkeleton key={i} />)}
                 </div>
               )}
 
               {/* Error */}
               {notariesError && (
-                <div className="text-center py-12">
+                <div className="bg-white rounded-2xl border border-primary-pale shadow-sm p-10 text-center">
                   <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-text font-semibold mb-1">{t('notary.unableToLoad', 'Impossible de charger les notaires')}</p>
                   <p className="text-sm text-gray-400">{notariesError.message}</p>
@@ -684,83 +747,29 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
 
               {/* Empty */}
               {!notariesLoading && !notariesError && filteredNotaries.length === 0 && (
-                <div className="text-center py-12">
+                <div className="bg-white rounded-2xl border border-primary-pale shadow-sm p-10 text-center">
                   <Scale className="w-8 h-8 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-text font-semibold mb-1">{t('notary.noNotaries', 'Aucun notaire trouvé')}</p>
                   <p className="text-sm text-gray-400">{t('notary.modifySearch', 'Modifiez vos critères de recherche')}</p>
                 </div>
               )}
 
-              {/* Notary Cards */}
+              {/* Cartes profils — style annuaire professionnel */}
               {!notariesLoading && !notariesError && filteredNotaries.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {filteredNotaries.map((notary, i) => (
-                    <motion.div
+                <div className="space-y-3">
+                  {filteredNotaries.map((notary) => (
+                    <NotaryProfileCard
                       key={notary.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                      whileHover={{ y: -4 }}
-                      className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale card-shimmer group cursor-pointer"
-                      onClick={() => handleOpenDetail(notary)}
-                    >
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="relative shrink-0">
-                          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-accent-yellow relative">
-                            <ImageWithFallback src={notary.avatar} alt={notary.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
-                          </div>
-                          <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-lg border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-serif text-base font-bold text-primary-deep truncate group-hover:text-primary-green transition-colors">
-                            {notary.name}
-                          </h3>
-                          <p className="text-xs text-gray-400 font-mono">{notary.license}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: getCertificationColor(notary.certificationLevel) }}>
-                              {notary.certificationLevel}
-                            </span>
-                            <span className="text-xs text-gray-text">{notary.zone}, {notary.country}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 mb-3">
-                        <span className="flex items-center gap-1 text-xs text-gray-text">
-                          <svg className="w-3.5 h-3.5 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          {notary.rating}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-gray-text">
-                          <ClipboardList className="w-3.5 h-3.5" /> {notary.missions} missions
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {notary.specialities.map(s => (
-                          <span key={s} className="px-2 py-0.5 bg-primary-pale rounded-full text-[10px] text-primary-deep">{s}</span>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center justify-between pt-3 border-t border-primary-pale/60">
-                        <span className={`text-xs font-medium flex items-center gap-1 ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
-                          <Circle className={`w-3 h-3 ${notary.available ? 'fill-[#00A651]' : 'fill-gray-300'}`} />
-                          {notary.available ? t('notary.available', 'Disponible') : t('notary.unavailable', 'Indisponible')}
-                        </span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleContactNotary(notary); }}
-                          disabled={contactingNotaryId === notary.id || createConversation.isPending}
-                          className="px-4 py-1.5 rounded-full bg-primary-green text-white text-xs font-bold hover:bg-primary-deep transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {contactingNotaryId === notary.id ? '...' : t('notary.contactBtn', 'Contacter')}
-                        </button>
-                      </div>
-                    </motion.div>
+                      notary={notary}
+                      contacting={contactingNotaryId === notary.id}
+                      contactPending={createConversation.isPending}
+                      onOpen={() => handleOpenDetail(notary)}
+                      onContact={() => handleContactNotary(notary)}
+                    />
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
           {/* ===== NOTARY DASHBOARD ===== */}
@@ -1338,8 +1347,197 @@ export default function NotaryModule({ onNavigate }: ModuleProps) {
             isAssigning={assigningNotaryId === showAssignModal.id}
           />
         )}
+          </main>
+
+          {/* Rail droit — insights de l'Espace Notarial */}
+          <aside className="hidden lg:block sticky top-[148px] sm:top-[164px] max-h-[calc(100vh-176px)] overflow-y-auto space-y-4">
+            {/* Processus de certification (CDC §5.0bis) */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <Award className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Certification AfriBayit</h3>
+              </div>
+              <div className="p-4">
+                <p className="text-[11px] text-gray-text leading-relaxed mb-3">
+                  6 étapes contrôlées : inscription, KYC (carte ANDF), vérification IA,
+                  validation humaine, certification, activation.
+                </p>
+                <button
+                  onClick={() => setActiveTab('certification')}
+                  className="w-full py-2.5 rounded-full bg-primary-deep text-white text-xs font-bold hover:bg-primary-green transition-colors"
+                >
+                  Voir le processus complet
+                </button>
+              </div>
+            </div>
+
+            {/* Chiffres du répertoire */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Le répertoire en chiffres</h3>
+              </div>
+              <dl className="p-4 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Notaires référencés</dt>
+                  <dd className="font-bold text-primary-deep font-mono">{notaries.length}</dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Actes signés</dt>
+                  <dd className="font-bold text-primary-deep font-mono">{notaries.reduce((s, n) => s + n.missions, 0)}</dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Note moyenne</dt>
+                  <dd className="font-bold text-primary-deep font-mono">
+                    {notaries.length ? (Math.round((notaries.reduce((s, n) => s + n.rating, 0) / notaries.length) * 10) / 10) + '/5' : '—'}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Dossiers en escrow</dt>
+                  <dd className="font-bold text-primary-deep font-mono">{escrowAccounts.length}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Délai légal 30 jours (CDC §5.0bis.6) */}
+            {notaryTimers.length > 0 && (
+              <div className="bg-white rounded-2xl border border-accent-yellow/40 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-accent-dark" />
+                  <h3 className="text-[11px] font-bold text-accent-dark uppercase tracking-wider">Délai légal 30 jours</h3>
+                </div>
+                <ul className="p-4 space-y-2">
+                  {notaryTimers.slice(0, 4).map(({ account, daysRemaining, severity }) => (
+                    <li key={account.id} className="flex items-center justify-between text-[11px]">
+                      <span className="text-gray-text truncate max-w-[150px]">{account.property}</span>
+                      <span
+                        className={`font-bold font-mono shrink-0 ${
+                          severity === 'overdue' ? 'text-[#D93025]' : severity === 'critical' ? 'text-orange-600' : severity === 'warning' ? 'text-accent-dark' : 'text-[#00A651]'
+                        }`}
+                      >
+                        {daysRemaining === null ? '—' : daysRemaining < 0 ? 'DÉPASSÉ' : `J-${daysRemaining}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Signature électronique */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <FileSignature className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Signature électronique</h3>
+              </div>
+              <div className="p-4">
+                <p className="text-[11px] text-gray-text leading-relaxed mb-3">
+                  Signez vos actes à distance — horodatage, audit trail et archivage sécurisé conformes.
+                </p>
+                <button
+                  onClick={() => setActiveTab('esignature')}
+                  className="w-full py-2.5 rounded-full border border-primary-deep/20 text-primary-deep text-xs font-bold hover:bg-primary-pale transition-colors"
+                >
+                  Accéder aux signatures
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </section>
+  );
+}
+
+
+// ─── Notary Profile Card — style annuaire professionnel ───────────────
+function NotaryProfileCard({ notary, contacting, contactPending, onOpen, onContact }: {
+  notary: Notary;
+  contacting: boolean;
+  contactPending: boolean;
+  onOpen: () => void;
+  onContact: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <article
+      onClick={onOpen}
+      className="bg-white rounded-2xl border border-primary-pale shadow-sm hover:shadow-md hover:border-primary-green/30 transition-all overflow-hidden cursor-pointer"
+    >
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="relative shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-pale bg-gray-100">
+            <ImageWithFallback src={notary.avatar} alt={notary.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
+            <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${notary.available ? 'bg-[#00A651]' : 'bg-gray-300'}`} />
+          </div>
+
+          {/* Identité */}
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-bold text-primary-deep text-[15px] leading-snug truncate">{notary.name}</h3>
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white shrink-0"
+                style={{ backgroundColor: getCertificationColor(notary.certificationLevel) }}
+              >
+                {notary.certificationLevel}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400 font-mono mt-0.5">{notary.license}</p>
+            <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {notary.zone}, {notary.country}
+            </div>
+
+            {/* Spécialités */}
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {notary.specialities.slice(0, 4).map((s) => (
+                <span key={s} className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary-pale text-primary-deep border border-primary-green/20">{s}</span>
+              ))}
+              {notary.specialities.length > 4 && (
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-cream text-gray-text border border-primary-pale">
+                  +{notary.specialities.length - 4}
+                </span>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3">
+              <span className="flex items-center gap-1.5 text-[11px] text-gray-text">
+                <Star className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />
+                <span className="font-bold text-primary-deep font-mono">{notary.rating || '—'}</span>
+                <span className="text-gray-400">/5</span>
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] text-gray-text">
+                <ClipboardList className="w-3.5 h-3.5 text-gray-400" />
+                <span className="font-bold text-primary-deep font-mono">{notary.missions}</span>
+                <span className="text-gray-400">missions</span>
+              </span>
+              <span className={`flex items-center gap-1.5 text-[11px] font-semibold ${notary.available ? 'text-[#00A651]' : 'text-gray-400'}`}>
+                <Circle className={`w-2.5 h-2.5 ${notary.available ? 'fill-[#00A651]' : 'fill-gray-300'}`} />
+                {notary.available ? t('notary.available', 'Disponible') : t('notary.unavailable', 'Indisponible')}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="shrink-0 flex sm:flex-col gap-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpen(); }}
+              className="px-4 py-2.5 rounded-full border border-primary-deep/20 text-primary-deep text-xs font-bold hover:bg-primary-pale transition-colors whitespace-nowrap"
+            >
+              Voir le profil
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onContact(); }}
+              disabled={contacting || contactPending}
+              className="px-4 py-2.5 rounded-full bg-primary-deep text-white text-xs font-bold shadow-sm hover:bg-primary-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {contacting ? '…' : t('notary.contactBtn', 'Contacter')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
 

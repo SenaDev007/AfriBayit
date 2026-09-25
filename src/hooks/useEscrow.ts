@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, apiPost, apiPatch } from '@/lib/api-client';
 
-export function useEscrowList(page = 1, limit = 20, country?: string) {
+export function useEscrowList(page = 1, limit = 20, country?: string, options?: { enabled?: boolean }) {
   const params = new URLSearchParams();
   params.set('page', String(page));
   params.set('limit', String(limit));
@@ -15,6 +15,11 @@ export function useEscrowList(page = 1, limit = 20, country?: string) {
   // still reads that field.
   return useQuery({
     queryKey: ['escrow', page, limit, country],
+    // `enabled` permet aux pages publiques (ex. /notary) de ne déclencher la
+    // requête protégée /api/escrow QUE pour les utilisateurs connectés —
+    // sinon le 401 redirigerait les visiteurs vers /auth/login (bug CDC :
+    // la plateforme doit être navigable sans compte).
+    enabled: options?.enabled ?? true,
     queryFn: async () => {
       const res = await api.get<{
         transactions?: unknown[];

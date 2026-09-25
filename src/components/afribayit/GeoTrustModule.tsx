@@ -363,270 +363,418 @@ export default function GeoTrustModule() {
     );
   }
 
-  // ─── LIST VIEW ────────────────────────────────────────────────────
+  // ─── LIST VIEW — hub professionnel GeoTrust ─────────────────────────
   return (
-    <section className="min-h-screen pt-20 pb-24 lg:pb-8 bg-cream">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
-        >
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-pale text-primary-deep text-xs font-bold uppercase tracking-wider mb-3">
-            <Map className="w-3.5 h-3.5" /> GeoTrust
-          </span>
-          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-deep mb-3">
-            {t('geotrust.headerTitle1', 'Géomètres')} <span className="text-accent-dark">{t('geotrust.headerTitleAccent', 'Certifiés')}</span>
-          </h1>
-          <p className="text-gray-text max-w-lg mx-auto">
-            {t('geotrust.headerSubtitle', 'Faites vérifier votre terrain par des géomètres professionnels certifiés GeoTrust. Superficie, bornage, et certification garantis.')}
-          </p>
-          <div className="h-1 w-16 bg-accent-yellow mx-auto mt-6 rounded-full" />
-        </motion.div>
-
-        {/* Country Filter Badge */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-gray-text font-medium">{t('geotrust.countryLabel', 'Pays:')}</span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-xs font-semibold">
-            {COUNTRY_NAMES[selectedCountry] || selectedCountry}
-          </span>
-        </div>
-
-        {/* Service Catalog — horizontal scroll */}
-        <div className="mb-10">
-          <h2 className="font-serif text-xl font-bold text-primary-deep mb-4">{t('geotrust.servicesTitle', 'Services')}</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
-            {geometerServices.map((service, i) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.06, ease: easeOut }}
-                whileHover={{ y: -4 }}
-                onClick={() => setSelectedService(service.id)}
-                className={`shrink-0 w-64 snap-center bg-white rounded-3xl p-5 shadow-lg border-2 cursor-pointer transition-all card-shimmer ${
-                  selectedService === service.id ? 'border-primary-green' : 'border-transparent hover:border-primary-pale'
-                }`}
-              >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-primary-pale">
-                  <span className="text-primary-green">{service.icon}</span>
-                </div>
-                <h3 className="font-semibold text-primary-deep mb-1">{service.name}</h3>
-                <p className="text-xs text-gray-text mb-3">{service.descKey ? t(service.descKey, service.description) : service.description}</p>
-                <p className="font-mono-data text-sm font-bold text-accent-dark">{service.priceLabel}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bundled Packs — CDC §7C.9 */}
-        <div className="mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
-            <div>
-              <h2 className="font-serif text-xl font-bold text-primary-deep">{t('geotrust.packsTitle', 'Packs GeoTrust')}</h2>
-              <p className="text-xs text-gray-text mt-1">
-                {t('geotrust.packsSubtitle', 'Packs groupés à prix réduit — le pourcentage d\'économie réel vs. services à la carte est affiché sur chaque pack.')}
+    <section className="min-h-screen pb-24 bg-cream">
+      {/* Barre sticky du hub */}
+      <div className="sticky top-16 sm:top-18 z-30 bg-white/95 backdrop-blur border-b border-primary-pale shadow-sm">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 py-3">
+            <div className="shrink-0 w-10 h-10 rounded-xl bg-primary-pale flex items-center justify-center text-primary-deep">
+              <Map className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-serif text-lg font-bold text-primary-deep leading-tight truncate">
+                {t('geotrust.headerTitle1', 'Géomètres')} <span className="text-accent-dark">{t('geotrust.headerTitleAccent', 'Certifiés')}</span>
+              </h1>
+              <p className="text-[11px] text-gray-text truncate hidden sm:block">
+                {t('geotrust.headerSubtitle', 'Vérification foncière, bornage et certification de vos terrains par géomètres agréés.')}
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[11px] font-semibold w-fit">
-              <Coins className="w-3.5 h-3.5" /> {t('geotrust.priceInFcfa', 'Prix en FCFA (XOF)')}
+            <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full bg-primary-pale text-primary-deep border border-primary-green/20 text-[11px] font-semibold shrink-0">
+              {COUNTRY_NAMES[selectedCountry] || selectedCountry}
             </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {geotrustPacks.map((pack, i) => {
-              const primaryCode = pack.services[0];
-              const primaryService = geometerServices.find(s => s.code === primaryCode);
-              const totalPrice = pack.services.reduce((sum, code) => {
-                const svc = geometerServices.find(s => s.code === code);
-                return sum + (svc?.price ?? 0);
-              }, 0);
-              const savings = totalPrice - pack.price;
-              return (
-                <motion.div
-                  key={pack.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.08, ease: easeOut }}
-                  whileHover={{ y: -4 }}
-                  onClick={() => setSelectedService(primaryService?.id ?? null)}
-                  className={`relative bg-white rounded-3xl p-6 shadow-lg border-2 cursor-pointer transition-all card-shimmer flex flex-col ${
-                    pack.highlight
-                      ? 'border-accent-yellow ring-2 ring-accent-yellow/25'
-                      : 'border-transparent hover:border-primary-pale'
-                  }`}
-                >
-                  {pack.highlight && (
-                    <span className="absolute -top-3 left-5 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent-yellow text-primary-deep text-[10px] font-bold shadow-md">
-                      <Star className="w-3 h-3 fill-primary-deep" /> {t('geotrust.recommendedBadge', 'Recommandé')}
-                    </span>
-                  )}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${pack.highlight ? 'bg-accent-yellow/15' : 'bg-primary-pale'}`}>
-                      <span className={pack.highlight ? 'text-accent-dark' : 'text-primary-green'}>{pack.icon}</span>
-                    </div>
-                    {savings > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold">
-                        −{savings.toLocaleString('fr-FR')} FCFA · −{Math.round((savings / totalPrice) * 100)}%
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-primary-deep mb-1">{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}</h3>
-                  <p className="text-xs text-gray-text mb-3 flex-1">{pack.descKey ? t(pack.descKey, pack.description) : pack.description}</p>
-                  {totalPrice > pack.price && (
-                    <p className="text-xs text-gray-text/60 line-through mb-0.5">
-                      {totalPrice.toLocaleString('fr-FR')} FCFA {t('geotrust.aLaCarte', 'à la carte')}
-                    </p>
-                  )}
-                  <p className="font-mono-data text-lg font-bold text-accent-dark mb-3">{pack.priceLabel}</p>
-                  <ul className="space-y-1.5">
-                    {pack.includes.map((item, idx) => {
-                      const keyArr = (pack as { includesKeys?: ReadonlyArray<string | null> }).includesKeys;
-                      const itemKey = keyArr?.[idx];
-                      return (
-                        <li key={item} className="flex items-start gap-2 text-xs text-gray-text">
-                          <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
-                          <span>{itemKey ? t(itemKey, item) : item}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedService(primaryService?.id ?? null);
-                      toast({
-                        title: t('geotrust.packSelected', 'Pack sélectionné'),
-                        description: `${pack.nameKey ? t(pack.nameKey, pack.name) : pack.name} (${pack.priceLabel}). ${t('geotrust.chooseGeometerBelow', 'Choisissez un géomètre ci-dessous pour démarrer la mission.')}`,
-                      });
-                    }}
-                    className={`mt-4 w-full py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${
-                      pack.highlight
-                        ? 'bg-accent-yellow text-primary-deep hover:bg-[#c4a030]'
-                        : 'bg-primary-green text-white hover:bg-primary-deep'
-                    }`}
-                  >
-                    {t('geotrust.choosePack', 'Choisir ce pack')}
-                  </button>
-                </motion.div>
-              );
-            })}
+            {selectedService && (
+              <span className="ml-auto hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent-pale text-accent-dark border border-accent-yellow/40 text-[11px] font-bold shrink-0">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {geometerServices.find((s) => s.id === selectedService)?.name}
+              </span>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Geometer Profiles */}
-        <div>
-          <h2 className="font-serif text-xl font-bold text-primary-deep mb-4">{t('geotrust.ourGeometers', 'Nos Géomètres')}</h2>
-
-          {/* Loading State */}
-          {geometersLoading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <GeometerSkeleton key={i} />
-              ))}
-            </div>
-          )}
-
-          {/* Error State */}
-          {geometersError && (
-            <div className="text-center py-12">
-              <span className="text-4xl block mb-3"><AlertTriangle className="w-4 h-4" /></span>
-              <p className="text-gray-text font-semibold mb-1">{t('geotrust.unableToLoad', 'Impossible de charger les géomètres')}</p>
-              <p className="text-sm text-gray-400">{geometersError.message}</p>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!geometersLoading && !geometersError && geometers.length === 0 && (
-            <div className="text-center py-12">
-              <span className="text-4xl block mb-3"><Map className="w-4 h-4" /></span>
-              <p className="text-gray-text font-semibold mb-1">{t('geotrust.noGeometers', 'Aucun géomètre disponible')}</p>
-              <p className="text-sm text-gray-400">{t('geotrust.comeBackLater', 'Revenez plus tard')}</p>
-            </div>
-          )}
-
-          {/* Geometer Cards */}
-          {!geometersLoading && !geometersError && geometers.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-6">
-              {geometers.map((geo, i) => (
-                <motion.div
-                  key={geo.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.1, ease: easeOut }}
-                  whileHover={{ y: -4 }}
-                  onClick={() => handleViewDetail(geo)}
-                  className="bg-white rounded-3xl p-6 shadow-lg border border-primary-pale card-shimmer cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-green relative">
-                      <ImageWithFallback src={geo.avatar} alt={geo.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-primary-deep">{geo.name}</h3>
-                      <p className="text-xs text-gray-text">{geo.city}, {geo.country}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-text mb-3">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                      {geo.rating} ({geo.reviews} {t('geotrust.reviewsLabel', 'avis')})
-                    </span>
-                    <span>{geo.missions} {t('geotrust.missionsCount', 'missions')}</span>
-                  </div>
-                  {(geo.certifiedAt || geo.createdAt) && (
-                    <p className="text-[10px] text-gray-400 mb-3">
-                      {geo.certifiedAt ? `${t('geotrust.certifiedAgo', 'Certifié')} ${timeAgo(geo.certifiedAt)}` : `${t('geotrust.registeredAgo', 'Inscrit')} ${timeAgo(geo.createdAt!)}`}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {geo.certifications.map((cert) => (
-                      <span key={cert} className="px-2.5 py-1 bg-primary-pale text-primary-deep text-[10px] font-medium rounded-full">
-                        {geoServiceLabel(cert)}
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
-                    className="w-full py-2.5 rounded-full bg-primary-green text-white text-sm font-bold hover:bg-primary-deep transition-all shadow-md"
+      {/* Corps du hub */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="md:grid md:grid-cols-[248px_minmax(0,1fr)] lg:grid-cols-[248px_minmax(0,1fr)_312px] gap-5 items-start">
+          {/* Rail gauche — navigation + garantie */}
+          <aside className="hidden md:block sticky top-[148px] sm:top-[164px] max-h-[calc(100vh-176px)] overflow-y-auto pr-1 space-y-4">
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <p className="px-4 pt-3 pb-1 text-[10px] font-bold text-primary-deep uppercase tracking-wider">Navigation</p>
+              <nav className="p-1.5">
+                {[
+                  { href: '#gt-services', label: 'Services à la carte' },
+                  { href: '#gt-packs', label: 'Packs GeoTrust' },
+                  { href: '#gt-geometers', label: 'Géomètres certifiés' },
+                ].map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-gray-text hover:bg-primary-pale/60 hover:text-primary-deep transition-colors"
                   >
-                    {t('geotrust.requestMission', 'Demander une mission')}
-                  </button>
-                </motion.div>
-              ))}
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-green shrink-0" />
+                    <span className="text-[13px] font-semibold">{item.label}</span>
+                  </a>
+                ))}
+              </nav>
             </div>
-          )}
-        </div>
 
-        {/* Mission Workflow */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10 bg-white rounded-3xl p-6 shadow-lg border border-primary-pale"
-        >
-          <h2 className="font-serif text-xl font-bold text-primary-deep mb-4">{t('geotrust.missionWorkflowTitle', 'Workflow de Mission')}</h2>
-          <div className="flex flex-col sm:flex-row gap-4">
-            {[
-              { step: '1', title: 'Demande', titleKey: 'geotrust.workflowDemande', desc: 'Décrivez votre besoin', descKey: 'geotrust.workflowDemandeDesc', icon: <ClipboardList className="w-4 h-4" /> },
-              { step: '2', title: 'Devis', titleKey: 'geotrust.workflowDevis', desc: 'Recevez un devis détaillé', descKey: 'geotrust.workflowDevisDesc', icon: <Coins className="w-4 h-4" /> },
-              { step: '3', title: 'Mission', titleKey: 'geotrust.workflowMission', desc: 'Le géomètre intervient', descKey: 'geotrust.workflowMissionDesc', icon: <MapPin className="w-4 h-4" /> },
-              { step: '4', title: 'Rapport', titleKey: 'geotrust.workflowRapport', desc: 'Recevez le certificat GeoTrust', descKey: 'geotrust.workflowRapportDesc', icon: <CheckCircle className="w-4 h-4" /> },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 flex-1">
-                <div className="w-10 h-10 rounded-xl bg-primary-pale text-primary-green flex items-center justify-center text-lg shrink-0">
-                  {item.icon}
-                </div>
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Pourquoi GeoTrust</h3>
+              </div>
+              <ul className="p-4 space-y-3">
+                {[
+                  'Géomètres agréés et certifiés par pays',
+                  'Bornage officiel opposable en cas de litige',
+                  'Paiement sécurisé via escrow AfriBayit',
+                  'Certificats vérifiables sur votre annonce',
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2 text-[11px] text-gray-text">
+                    <CheckCircle className="w-3.5 h-3.5 text-[#00A651] shrink-0 mt-0.5" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          {/* Contenu principal */}
+          <main className="min-w-0 space-y-10">
+            {/* ── Services à la carte ── */}
+            <section id="gt-services" className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
                 <div>
-                  <p className="text-sm font-semibold text-primary-deep">{t(item.titleKey, item.title)}</p>
-                  <p className="text-xs text-gray-text">{t(item.descKey, item.desc)}</p>
+                  <h2 className="font-serif text-xl font-bold text-primary-deep">{t('geotrust.servicesTitle', 'Services')}</h2>
+                  <p className="text-xs text-gray-text mt-0.5">
+                    Tarifs officiels GeoTrust — sélectionnez un service puis choisissez votre géomètre.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-yellow/15 text-accent-dark border border-accent-yellow/30 text-[11px] font-semibold w-fit">
+                  <Coins className="w-3.5 h-3.5" /> {t('geotrust.priceInFcfa', 'Prix en FCFA (XOF)')}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {geometerServices.map((service) => {
+                  const active = selectedService === service.id;
+                  return (
+                    <button
+                      key={service.id}
+                      onClick={() => setSelectedService(service.id)}
+                      className={`text-left bg-white rounded-2xl p-5 shadow-sm border-2 cursor-pointer transition-all ${
+                        active ? 'border-primary-green ring-2 ring-primary-green/20' : 'border-transparent hover:border-primary-pale'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? 'bg-primary-deep text-white' : 'bg-primary-pale text-primary-green'}`}>
+                          {service.icon}
+                        </div>
+                        {active && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-pale text-primary-deep text-[10px] font-bold border border-primary-green/30">
+                            <CheckCircle className="w-3 h-3" /> Sélectionné
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-primary-deep text-sm mb-1">{service.name}</h3>
+                      <p className="text-xs text-gray-text mb-3">{service.descKey ? t(service.descKey, service.description) : service.description}</p>
+                      <p className="font-mono-data text-sm font-bold text-accent-dark">{service.priceLabel}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* ── Packs GeoTrust — CDC §7C.9 ── */}
+            <section id="gt-packs" className="scroll-mt-36">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
+                <div>
+                  <h2 className="font-serif text-xl font-bold text-primary-deep">{t('geotrust.packsTitle', 'Packs GeoTrust')}</h2>
+                  <p className="text-xs text-gray-text mt-0.5">
+                    {t('geotrust.packsSubtitle', 'Packs groupés à prix réduit — économie réelle affichée sur chaque pack.')}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </motion.div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {geotrustPacks.map((pack) => {
+                  const primaryCode = pack.services[0];
+                  const primaryService = geometerServices.find((s) => s.code === primaryCode);
+                  const totalPrice = pack.services.reduce((sum, code) => {
+                    const svc = geometerServices.find((s) => s.code === code);
+                    return sum + (svc?.price ?? 0);
+                  }, 0);
+                  const savings = totalPrice - pack.price;
+                  return (
+                    <div
+                      key={pack.id}
+                      onClick={() => setSelectedService(primaryService?.id ?? null)}
+                      className={`relative bg-white rounded-2xl p-6 shadow-sm border-2 cursor-pointer transition-all flex flex-col ${
+                        pack.highlight
+                          ? 'border-accent-yellow ring-2 ring-accent-yellow/25'
+                          : 'border-transparent hover:border-primary-pale'
+                      }`}
+                    >
+                      {pack.highlight && (
+                        <span className="absolute -top-3 left-5 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent-yellow text-primary-deep text-[10px] font-bold shadow-md">
+                          <Star className="w-3 h-3 fill-primary-deep" /> {t('geotrust.recommendedBadge', 'Recommandé')}
+                        </span>
+                      )}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${pack.highlight ? 'bg-accent-yellow/15' : 'bg-primary-pale'}`}>
+                          <span className={pack.highlight ? 'text-accent-dark' : 'text-primary-green'}>{pack.icon}</span>
+                        </div>
+                        {savings > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold">
+                            −{savings.toLocaleString('fr-FR')} FCFA · −{Math.round((savings / totalPrice) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-primary-deep mb-1">{pack.nameKey ? t(pack.nameKey, pack.name) : pack.name}</h3>
+                      <p className="text-xs text-gray-text mb-3 flex-1">{pack.descKey ? t(pack.descKey, pack.description) : pack.description}</p>
+                      {totalPrice > pack.price && (
+                        <p className="text-xs text-gray-text/60 line-through mb-0.5">
+                          {totalPrice.toLocaleString('fr-FR')} FCFA {t('geotrust.aLaCarte', 'à la carte')}
+                        </p>
+                      )}
+                      <p className="font-mono-data text-lg font-bold text-accent-dark mb-3">{pack.priceLabel}</p>
+                      <ul className="space-y-1.5">
+                        {pack.includes.map((item, idx) => {
+                          const keyArr = (pack as { includesKeys?: ReadonlyArray<string | null> }).includesKeys;
+                          const itemKey = keyArr?.[idx];
+                          return (
+                            <li key={item} className="flex items-start gap-2 text-xs text-gray-text">
+                              <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                              <span>{itemKey ? t(itemKey, item) : item}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedService(primaryService?.id ?? null);
+                          toast({
+                            title: t('geotrust.packSelected', 'Pack sélectionné'),
+                            description: `${pack.nameKey ? t(pack.nameKey, pack.name) : pack.name} (${pack.priceLabel}). ${t('geotrust.chooseGeometerBelow', 'Choisissez un géomètre ci-dessous pour démarrer la mission.')}`,
+                          });
+                        }}
+                        className={`mt-4 w-full py-2.5 rounded-full text-sm font-bold transition-colors shadow-sm ${
+                          pack.highlight
+                            ? 'bg-accent-yellow text-primary-deep hover:bg-[#c4a030]'
+                            : 'bg-primary-deep text-white hover:bg-primary-green'
+                        }`}
+                      >
+                        {t('geotrust.choosePack', 'Choisir ce pack')}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* ── Géomètres certifiés ── */}
+            <section id="gt-geometers" className="scroll-mt-36">
+              <h2 className="font-serif text-xl font-bold text-primary-deep mb-1">{t('geotrust.ourGeometers', 'Nos Géomètres')}</h2>
+              <p className="text-xs text-gray-text mb-4">
+                {geometers.length} professionnel{geometers.length > 1 ? 's' : ''} certifié{geometers.length > 1 ? 's' : ''} — cliquez sur un profil pour consulter le détail ou demander une mission.
+              </p>
+
+              {geometersLoading && (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => <GeometerSkeleton key={i} />)}
+                </div>
+              )}
+
+              {geometersError && (
+                <div className="bg-white rounded-2xl border border-primary-pale shadow-sm p-10 text-center">
+                  <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-text font-semibold mb-1">{t('geotrust.unableToLoad', 'Impossible de charger les géomètres')}</p>
+                  <p className="text-sm text-gray-400">{geometersError.message}</p>
+                </div>
+              )}
+
+              {!geometersLoading && !geometersError && geometers.length === 0 && (
+                <div className="bg-white rounded-2xl border border-primary-pale shadow-sm p-10 text-center">
+                  <Map className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-text font-semibold mb-1">{t('geotrust.noGeometers', 'Aucun géomètre disponible')}</p>
+                  <p className="text-sm text-gray-400">{t('geotrust.comeBackLater', 'Revenez plus tard')}</p>
+                </div>
+              )}
+
+              {!geometersLoading && !geometersError && geometers.length > 0 && (
+                <div className="space-y-3">
+                  {geometers.map((geo) => (
+                    <article
+                      key={geo.id}
+                      onClick={() => handleViewDetail(geo)}
+                      className="bg-white rounded-2xl border border-primary-pale shadow-sm hover:shadow-md hover:border-primary-green/30 transition-all cursor-pointer"
+                    >
+                      <div className="p-4 sm:p-5">
+                        <div className="flex items-start gap-4">
+                          {/* Avatar */}
+                          <div className="shrink-0 w-14 h-14 rounded-full overflow-hidden border-2 border-primary-pale relative bg-gray-100">
+                            <ImageWithFallback src={geo.avatar} alt={geo.name} className="absolute inset-0 w-full h-full" fallbackType="avatar" fill />
+                          </div>
+
+                          {/* Identité */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-bold text-primary-deep text-[15px] leading-snug truncate">{geo.name}</h3>
+                              {geo.certifiedAt && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-pale text-primary-deep border border-primary-green/30 text-[10px] font-bold shrink-0">
+                                  <CheckCircle className="w-3 h-3" /> {t('geotrust.certifiedAgo', 'Certifié')} {timeAgo(geo.certifiedAt)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5" />
+                              {geo.city}, {geo.country}
+                            </div>
+
+                            {/* Certifications */}
+                            <div className="flex flex-wrap gap-1.5 mt-2.5">
+                              {geo.certifications.slice(0, 4).map((cert) => (
+                                <span key={cert} className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-primary-pale text-primary-deep border border-primary-green/20">
+                                  {geoServiceLabel(cert)}
+                                </span>
+                              ))}
+                              {geo.certifications.length > 4 && (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-cream text-gray-text border border-primary-pale">
+                                  +{geo.certifications.length - 4}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Stats */}
+                            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3">
+                              <span className="flex items-center gap-1.5 text-[11px] text-gray-text">
+                                <Star className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />
+                                <span className="font-bold text-primary-deep font-mono-data">{geo.rating || '—'}</span>
+                                <span className="text-gray-400">/5 · {geo.reviews} {t('geotrust.reviewsLabel', 'avis')}</span>
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[11px] text-gray-text">
+                                <Briefcase className="w-3.5 h-3.5 text-gray-400" />
+                                <span className="font-bold text-primary-deep font-mono-data">{geo.missions}</span>
+                                <span className="text-gray-400">{t('geotrust.missionsCount', 'missions')}</span>
+                              </span>
+                              {geo.createdAt && !geo.certifiedAt && (
+                                <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  {t('geotrust.registeredAgo', 'Inscrit')} {timeAgo(geo.createdAt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="shrink-0 flex sm:flex-col gap-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleViewDetail(geo); }}
+                              className="px-4 py-2.5 rounded-full border border-primary-deep/20 text-primary-deep text-xs font-bold hover:bg-primary-pale transition-colors whitespace-nowrap"
+                            >
+                              Voir le profil
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleOpenMissionDialog(geo); }}
+                              className="px-4 py-2.5 rounded-full bg-primary-deep text-white text-xs font-bold shadow-sm hover:bg-primary-green transition-colors whitespace-nowrap"
+                            >
+                              {t('geotrust.requestMission', 'Demander une mission')}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </main>
+
+          {/* Rail droit — insights */}
+          <aside className="hidden lg:block sticky top-[148px] sm:top-[164px] max-h-[calc(100vh-176px)] overflow-y-auto space-y-4">
+            {/* Service sélectionné */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <ClipboardList className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Votre sélection</h3>
+              </div>
+              <div className="p-4">
+                {selectedService ? (
+                  (() => {
+                    const svc = geometerServices.find((s) => s.id === selectedService);
+                    if (!svc) return null;
+                    return (
+                      <div>
+                        <p className="text-sm font-bold text-primary-deep">{svc.name}</p>
+                        <p className="text-[11px] text-gray-text mt-1 mb-2">{svc.descKey ? t(svc.descKey, svc.description) : svc.description}</p>
+                        <p className="font-mono-data text-lg font-bold text-accent-dark">{svc.priceLabel}</p>
+                        <p className="text-[10px] text-gray-400 mt-2">Choisissez ensuite un géomètre certifié ci-contre pour lancer la mission.</p>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <p className="text-[11px] text-gray-text leading-relaxed">
+                    Sélectionnez un service ou un pack — votre choix sera pré-rempli dans la demande de mission.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Workflow */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">Workflow de mission</h3>
+              </div>
+              <ol className="p-4 space-y-3">
+                {[
+                  { title: 'Demande', titleKey: 'geotrust.workflowDemande', desc: 'Décrivez votre besoin', descKey: 'geotrust.workflowDemandeDesc', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+                  { title: 'Devis', titleKey: 'geotrust.workflowDevis', desc: 'Recevez un devis détaillé', descKey: 'geotrust.workflowDevisDesc', icon: <Coins className="w-3.5 h-3.5" /> },
+                  { title: 'Mission', titleKey: 'geotrust.workflowMission', desc: 'Le géomètre intervient', descKey: 'geotrust.workflowMissionDesc', icon: <MapPin className="w-3.5 h-3.5" /> },
+                  { title: 'Rapport', titleKey: 'geotrust.workflowRapport', desc: 'Recevez le certificat GeoTrust', descKey: 'geotrust.workflowRapportDesc', icon: <CheckCircle className="w-3.5 h-3.5" /> },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="shrink-0 w-6 h-6 rounded-full bg-primary-deep text-white text-[10px] font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-primary-deep">{t(item.titleKey, item.title)}</p>
+                      <p className="text-[10px] text-gray-text">{t(item.descKey, item.desc)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Chiffres */}
+            <div className="bg-white rounded-2xl border border-primary-pale shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary-pale/70 flex items-center gap-2">
+                <Award className="w-3.5 h-3.5 text-primary-deep" />
+                <h3 className="text-[11px] font-bold text-primary-deep uppercase tracking-wider">GeoTrust en chiffres</h3>
+              </div>
+              <dl className="p-4 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Géomètres certifiés</dt>
+                  <dd className="font-bold text-primary-deep font-mono-data">{geometers.length}</dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Missions réalisées</dt>
+                  <dd className="font-bold text-primary-deep font-mono-data">{geometers.reduce((s, g) => s + g.missions, 0)}</dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Note moyenne</dt>
+                  <dd className="font-bold text-primary-deep font-mono-data">
+                    {geometers.length ? (Math.round((geometers.reduce((s, g) => s + g.rating, 0) / geometers.length) * 10) / 10) + '/5' : '—'}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <dt className="text-gray-text">Services catalogue</dt>
+                  <dd className="font-bold text-primary-deep font-mono-data">{geometerServices.length}</dd>
+                </div>
+              </dl>
+            </div>
+          </aside>
+        </div>
 
         {/* Mission Request Dialog */}
         {showMissionDialog && selectedGeometer && <MissionDialog />}
