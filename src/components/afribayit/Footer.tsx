@@ -106,9 +106,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
           {/* Colonne 1 : profil de l'entreprise */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="relative w-16 h-16 rounded-full bg-white border border-primary-green/30 shadow-md flex items-center justify-center p-1.5 shrink-0">
-                <img src="/logo.png" alt="AfriBayit" className="h-12 w-12 object-contain" />
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20 rounded-full bg-white border border-primary-green/30 shadow-md flex items-center justify-center p-1.5 shrink-0">
+                <img src="/logo.png" alt="AfriBayit" className="h-16 w-16 object-contain" />
               </div>
               <div className="flex flex-col">
                 <span className="font-serif text-xl font-bold leading-tight text-white tracking-wide">AfriBayit</span>

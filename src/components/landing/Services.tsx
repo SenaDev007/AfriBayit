@@ -129,62 +129,61 @@ export default function Services() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }}
-                  whileHover={{
-                    y: -10,
-                    scale: 1.03,
-                    borderColor: 'rgba(212, 175, 55, 0.4)',
-                    boxShadow: '0 20px 25px -5px rgba(212, 175, 55, 0.15), 0 8px 10px -6px rgba(212, 175, 55, 0.15)',
-                  }}
-                  className="relative rounded-3xl bg-primary-deep text-white border-2 border-accent-yellow shadow-2xl p-8 flex flex-col justify-between transition-all duration-300 card-shimmer"
+                  whileHover={{ y: -10, scale: 1.03 }}
+                  className="relative h-full"
                 >
-                  {/* Badge premium */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-accent-yellow text-primary-deep font-sans font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1">
+                  {/* Badge premium — À L'EXTÉRIEUR de la carte (au-dessus), jamais rogné :
+                      la carte elle-même porte card-shimmer (overflow:hidden) qui coupait
+                      le badge quand il était positionné à l'intérieur en -top-4. */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1 rounded-full bg-accent-yellow text-primary-deep font-sans font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1 whitespace-nowrap">
                     <Crown className="w-3.5 h-3.5 shrink-0" /> Plus Haute Valeur
                   </div>
 
-                  <div>
-                    {/* En-tête */}
-                    <div className="mb-6">
-                      <h3 className="font-serif text-2xl font-black text-white">{service.title}</h3>
-                      <p className="font-sans font-bold text-accent-yellow text-sm mt-3 leading-relaxed italic">
-                        &quot;{service.hook}&quot;
-                      </p>
+                  <div className="h-full rounded-3xl bg-primary-deep text-white border-2 border-accent-yellow shadow-2xl p-8 flex flex-col justify-between transition-all duration-300 card-shimmer">
+                    <div>
+                      {/* En-tête */}
+                      <div className="mb-6 pt-2">
+                        <h3 className="font-serif text-2xl font-black text-white">{service.title}</h3>
+                        <p className="font-sans font-bold text-accent-yellow text-sm mt-3 leading-relaxed italic">
+                          &quot;{service.hook}&quot;
+                        </p>
+                      </div>
+
+                      <div className="w-full h-px bg-white/10 my-4" />
+
+                      {/* Contenu */}
+                      <p className="font-sans text-sm text-gray-200 leading-relaxed mb-6">{service.problem}</p>
+
+                      <h4 className="font-sans font-bold text-sm text-accent-yellow uppercase tracking-wider mb-3">
+                        Ce que nous prenons en charge :
+                      </h4>
+
+                      <ul className="space-y-3 mb-8">
+                        {service.bullets.map((bullet, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-sm text-gray-200 font-sans">
+                            <span className="text-accent-yellow mt-0.5">✓</span>
+                            <span>{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
 
-                    <div className="w-full h-px bg-white/10 my-4" />
-
-                    {/* Contenu */}
-                    <p className="font-sans text-sm text-gray-200 leading-relaxed mb-6">{service.problem}</p>
-
-                    <h4 className="font-sans font-bold text-sm text-accent-yellow uppercase tracking-wider mb-3">
-                      Ce que nous prenons en charge :
-                    </h4>
-
-                    <ul className="space-y-3 mb-8">
-                      {service.bullets.map((bullet, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-200 font-sans">
-                          <span className="text-accent-yellow mt-0.5">✓</span>
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Pied de carte */}
-                  <div className="mt-auto">
-                    <p className="text-xs text-primary-pale font-sans font-medium mb-4 py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-center flex items-center justify-center gap-1.5">
-                      <Info className="w-3.5 h-3.5 shrink-0 text-accent-yellow" /> {service.availability}
-                    </p>
-                    <motion.button
-                      onClick={() => router.push(service.href)}
-                      whileHover={{ scale: 1.05, boxShadow: '0 10px 20px rgba(212, 175, 55, 0.3)' }}
-                      whileTap={{ scale: 0.98 }}
-                      animate={{ scale: [1, 1.03, 1] }}
-                      transition={{ scale: { repeat: Infinity, duration: 2.0, ease: 'easeInOut' } }}
-                      className="w-full py-4 rounded-full bg-accent-yellow hover:bg-white text-primary-deep font-sans font-black text-base shadow-xl cursor-pointer btn-shimmer"
-                    >
-                      {service.cta}
-                    </motion.button>
+                    {/* Pied de carte */}
+                    <div className="mt-auto">
+                      <p className="text-xs text-primary-pale font-sans font-medium mb-4 py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-center flex items-center justify-center gap-1.5">
+                        <Info className="w-3.5 h-3.5 shrink-0 text-accent-yellow" /> {service.availability}
+                      </p>
+                      <motion.button
+                        onClick={() => router.push(service.href)}
+                        whileHover={{ scale: 1.05, boxShadow: '0 10px 20px rgba(212, 175, 55, 0.3)' }}
+                        whileTap={{ scale: 0.98 }}
+                        animate={{ scale: [1, 1.03, 1] }}
+                        transition={{ scale: { repeat: Infinity, duration: 2.0, ease: 'easeInOut' } }}
+                        className="w-full py-4 rounded-full bg-accent-yellow hover:bg-white text-primary-deep font-sans font-black text-base shadow-xl cursor-pointer btn-shimmer"
+                      >
+                        {service.cta}
+                      </motion.button>
+                    </div>
                   </div>
                 </motion.div>
               );

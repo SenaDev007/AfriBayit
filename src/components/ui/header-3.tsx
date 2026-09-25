@@ -3,7 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
 import {
   Home,
   Key,
@@ -14,13 +13,9 @@ import {
   ShieldCheck,
   GraduationCap,
   Shield,
-  Wallet,
   CreditCard,
   MessageCircle,
-  Briefcase,
-  BarChart3,
   Users,
-  Star,
   RotateCcw,
   Handshake,
   HelpCircle,
@@ -32,43 +27,27 @@ import {
   LogOut,
   User,
   Settings,
-  KeyRound,
-  Building2,
   ChevronDown,
   Leaf,
+  Wallet,
+  CalendarDays,
+  BarChart3,
+  Briefcase,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { signOutAndClear } from '@/lib/signout';
 import ImageWithFallback from '@/components/afribayit/ImageWithFallback';
-import { PillNav } from '@/components/landing/PillNav';
+import { usePathname } from 'next/navigation';
 
 type LinkItem = {
   title: string;
   href: string;
   icon: LucideIcon;
   description?: string;
-  gold?: boolean;
+  /** Visible uniquement pour les utilisateurs connectés */
+  authOnly?: boolean;
 };
-
-function useScroll(threshold: number) {
-  const [scrolled, setScrolled] = React.useState(false);
-
-  const onScroll = React.useCallback(() => {
-    setScrolled(window.scrollY > threshold);
-  }, [threshold]);
-
-  React.useEffect(() => {
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [onScroll]);
-
-  React.useEffect(() => {
-    onScroll();
-  }, [onScroll]);
-
-  return scrolled;
-}
 
 // ─── AfriBayit Navigation Links ────────────────────────────────
 
@@ -76,11 +55,12 @@ const immobilierLinks: LinkItem[] = [
   { title: 'Acheter', href: '/acheter', description: 'Villas, appartements, terrains à vendre', icon: Home },
   { title: 'Louer', href: '/louer', description: 'Location longue durée dans 5 pays', icon: Key },
   { title: 'Investir', href: '/investir', description: 'Opportunités de rendement immobilier', icon: TrendingUp },
+  { title: 'Location courte durée', href: '/short-term', description: 'Appartements et villas à la nuit', icon: CalendarDays },
 ];
 
 const hospitalityLinks: LinkItem[] = [
   {
-    title: 'Séjours (Hôtels, Guesthouses & Locations)',
+    title: 'Séjours — Hôtels & Guesthouses',
     href: '/sejours',
     description: 'Hôtels, guesthouses et locations courte durée en Afrique de l\u2019Ouest',
     icon: Hotel,
@@ -92,40 +72,35 @@ const servicesLinks: LinkItem[] = [
   { title: 'Notaires', href: '/notary', description: 'Services notariaux certifiés', icon: Landmark },
   { title: 'GeoTrust', href: '/geotrust', description: 'Vérification géolocalisée des biens', icon: ShieldCheck },
   { title: 'Académie', href: '/academy', description: 'Formations immobilières en ligne', icon: GraduationCap },
+  { title: 'Escrow Sécurisé', href: '/escrow', description: 'Transactions protégées par séquestre', icon: Shield, authOnly: true },
+  { title: 'Portefeuille', href: '/wallet', description: 'Gérez vos fonds et paiements', icon: Wallet, authOnly: true },
+  { title: 'Abonnements', href: '/subscriptions', description: 'Plans professionnels et tarifs', icon: CreditCard },
 ];
 
-// Links visible only when logged in
-const authOnlyLinks: LinkItem[] = [
-  { title: 'Escrow Sécurisé', href: '/escrow', description: 'Transactions protégées par escrow', icon: Shield },
-  { title: 'Mes baux', href: '/leases', description: 'Contrats de location, signatures, états des lieux', icon: KeyRound },
-  { title: 'Dashboard bailleur', href: '/owner-dashboard', description: 'Revenus locatifs, taux d\u2019occupation, vacancies', icon: Building2 },
-  { title: 'Portfolio investisseur', href: '/investor-dashboard', description: 'Plus-value latente, ROI, revenus locatifs', icon: TrendingUp },
-  { title: 'Portefeuille', href: '/wallet', description: 'Gérez vos fonds et paiements', icon: Wallet },
+const communauteLinks: LinkItem[] = [
+  { title: 'Forum & Groupes', href: '/community', description: 'Communauté d\u2019investisseurs et d\u2019acteurs', icon: MessageCircle },
+  { title: 'Profils Pro', href: '/profile', description: 'Profils professionnels vérifiés', icon: Briefcase },
+  { title: 'Analytics', href: '/analytics', description: 'Statistiques et performances', icon: BarChart3 },
 ];
 
-const servicesLinks2: LinkItem[] = [
-  { title: 'Abonnements', href: '/subscriptions', icon: CreditCard },
-  { title: 'Communauté', href: '/community', icon: MessageCircle },
-];
-
-const authOnlyLinks2: LinkItem[] = [
-  { title: 'Profils Pro', href: '/profile', icon: Briefcase },
-  { title: 'Analytics', href: '/analytics', icon: BarChart3 },
-];
-
-const companyLinks: LinkItem[] = [
+const entrepriseLinks: LinkItem[] = [
   { title: 'À propos', href: '/about', description: 'Découvrez l\u2019équipe AfriBayit', icon: Users },
   { title: 'Nos réalisations', href: '/our-work', description: 'Projets immobiliers et hôteliers', icon: GlobeIcon },
-  { title: 'Témoignages', href: '/#témoignages', description: 'Ce que nos clients disent de nous', icon: Star },
-  { title: 'Partenariats', href: '/partnership', icon: Handshake, description: 'Collaborez avec AfriBayit' },
-];
-
-const companyLinks2: LinkItem[] = [
+  { title: 'Partenariats', href: '/partnership', description: 'Collaborez avec AfriBayit', icon: Handshake },
+  { title: 'Blog', href: '/blog', icon: Leaf },
+  { title: 'Centre d\u2019aide', href: '/help', icon: HelpCircle },
   { title: 'CGU', href: '/terms', icon: FileText },
   { title: 'Confidentialité', href: '/privacy', icon: Shield },
   { title: 'Remboursement', href: '/refund', icon: RotateCcw },
-  { title: 'Blog', href: '/blog', icon: Leaf },
-  { title: 'Aide', href: '/help', icon: HelpCircle },
+];
+
+/** Groupes de navigation desktop — menu déroulant simple (sans animation). */
+const NAV_GROUPS: { key: string; label: string; items: LinkItem[] }[] = [
+  { key: 'immobilier', label: 'Immobilier', items: immobilierLinks },
+  { key: 'hospitality', label: 'Hôtellerie', items: hospitalityLinks },
+  { key: 'services', label: 'Services', items: servicesLinks },
+  { key: 'communaute', label: 'Communauté', items: communauteLinks },
+  { key: 'entreprise', label: 'Entreprise', items: entrepriseLinks },
 ];
 
 // ─── Main Header Component ─────────────────────────────────────
@@ -136,44 +111,49 @@ interface HeaderProps {
 }
 
 /**
- * Header public AfriBayit — design Win-Agro (Navbar.tsx) appliqué de A à Z :
- *   - Fond blanc permanent, état scrollé = blur + ombre + liseré navy
- *   - Logo en cercle « light-beam » rotatif navy/or + wordmark serif
- *   - Pilule 3D adaptative au centre (composant signature Win-Agro)
- *   - Menu déroulant « Plus » regroupant la navigation secondaire
- *   - CTA « Publier » arrondi avec reflet shimmer + pulsation
- *   - Menu mobile blanc plein écran (design tiroir Win-Agro)
+ * Header public AfriBayit — navbar SIMPLE ET PROFESSIONNELLE :
+ *   - Logo seul (agrandi), sans wordmark
+ *   - Navigation texte horizontale avec menus déroulants au survol
+ *   - Aucun effet 3D, aucune animation (apparition instantanée)
+ *   - Fond blanc, ombre discrète au scroll
+ *   - Menu mobile en tiroir plein écran
  */
 export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderProps) {
   const [open, setOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
-  const [plusMenuOpen, setPlusMenuOpen] = React.useState(false);
-  const scrolled = useScroll(20);
+  const [openMenu, setOpenMenu] = React.useState<string | null>(null);
+  const [scrolled, setScrolled] = React.useState(false);
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const isLoggedIn = !!session?.user;
   const profileMenuRef = React.useRef<HTMLDivElement>(null);
-  const plusMenuRef = React.useRef<HTMLDivElement>(null);
+  const navRef = React.useRef<HTMLDivElement>(null);
 
-  // Close menus on outside click
+  // Scroll → fond légèrement ombré (transition CSS sobre, pas d'animation d'éléments)
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Fermer les menus au clic extérieur
   React.useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setProfileMenuOpen(false);
       }
-      if (plusMenuRef.current && !plusMenuRef.current.contains(e.target as Node)) {
-        setPlusMenuOpen(false);
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenMenu(null);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Verrouiller le scroll quand le menu mobile est ouvert
   React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = open ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
@@ -181,119 +161,78 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
   const userName = session?.user?.name || 'Utilisateur';
 
+  // Groupe actif = l'un de ses liens correspond à la route courante
+  const isGroupActive = (items: LinkItem[]) =>
+    items.some((i) => (i.href === '/' ? pathname === '/' : pathname.startsWith(i.href)));
+  const isHomeActive = pathname === '/';
+
+  const visibleItems = (items: LinkItem[]) => items.filter((i) => !i.authOnly || isLoggedIn);
+
   return (
     <header
       className={cn(
-        'sticky top-0 left-0 right-0 z-50 w-full transition-all duration-300',
+        'sticky top-0 left-0 right-0 z-50 w-full transition-colors duration-200',
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md border-b border-primary-green py-2'
-          : 'bg-white py-4 border-b border-transparent'
+          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-primary-pale'
+          : 'bg-white border-b border-transparent'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo — pastille blanche (le logo doit rester sur fond blanc) + wordmark serif Win-Agro */}
-          <Link href="/" className="flex items-center gap-3 focus:outline-none group shrink-0" aria-label="AfriBayit — Retour à l'accueil">
-            <div className="relative w-12 h-12 rounded-full bg-white border border-primary-pale shadow-md flex items-center justify-center p-1">
-              <img src="/logo.png" alt="AfriBayit" className="h-10 w-10 object-contain" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif text-lg font-bold leading-tight text-primary-deep tracking-wide">
-                AfriBayit
-              </span>
-              <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-primary-green">
-                La Plateforme Immobilière Africaine
-              </span>
-            </div>
+
+          {/* Logo — agrandi, sans texte */}
+          <Link href="/" className="flex items-center focus:outline-none shrink-0" aria-label="AfriBayit — Retour à l'accueil">
+            <img src="/logo.png" alt="AfriBayit" className="h-14 w-14 object-contain" />
           </Link>
 
-          {/* Navigation centrale : pilule 3D + menu Plus (desktop) */}
-          <div className="hidden lg:flex items-center gap-4">
-            <PillNav />
-
-            {/* Menu « Plus » — navigation secondaire */}
-            <div ref={plusMenuRef} className="relative">
-              <button
-                onClick={() => setPlusMenuOpen(!plusMenuOpen)}
-                className={cn(
-                  'flex items-center gap-1 px-3 py-2 rounded-full text-sm font-sans font-bold transition-colors cursor-pointer',
-                  plusMenuOpen
-                    ? 'bg-primary-pale text-primary-deep'
-                    : 'text-primary-deep hover:bg-primary-pale hover:text-primary-green'
-                )}
-                aria-expanded={plusMenuOpen}
-              >
-                Plus
-                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', plusMenuOpen && 'rotate-180')} />
-              </button>
-
-              {plusMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[560px] bg-white rounded-3xl shadow-2xl border border-primary-pale overflow-hidden z-50"
-                >
-                  <div className="grid grid-cols-3 gap-0 divide-x divide-primary-pale/60">
-                    {/* Colonne 1 — Immobilier & Séjours */}
-                    <div className="p-4">
-                      <p className="px-2 text-[10px] font-sans font-black uppercase tracking-wider text-primary-green mb-2">
-                        Immobilier &amp; Séjours
-                      </p>
-                      <MegaLink item={immobilierLinks[2]} />
-                      {hospitalityLinks.map((item) => (
-                        <MegaLink key={item.href} item={item} compact />
-                      ))}
-                      {isLoggedIn &&
-                        authOnlyLinks.slice(0, 3).map((item) => <MegaLink key={item.href} item={item} compact />)}
-                    </div>
-
-                    {/* Colonne 2 — Services Pro */}
-                    <div className="p-4">
-                      <p className="px-2 text-[10px] font-sans font-black uppercase tracking-wider text-primary-green mb-2">
-                        Services Pro
-                      </p>
-                      {servicesLinks.map((item) => (
-                        <MegaLink key={item.href} item={item} compact />
-                      ))}
-                      {isLoggedIn && authOnlyLinks2.map((item) => <MegaLink key={item.href} item={item} compact />)}
-                      {isLoggedIn && (
-                        <MegaLink item={{ title: 'Portefeuille', href: '/wallet', icon: Wallet }} compact />
-                      )}
-                    </div>
-
-                    {/* Colonne 3 — Entreprise */}
-                    <div className="p-4">
-                      <p className="px-2 text-[10px] font-sans font-black uppercase tracking-wider text-primary-green mb-2">
-                        Entreprise
-                      </p>
-                      {companyLinks.map((item) => (
-                        <MegaLink key={item.href} item={item} compact />
-                      ))}
-                      {servicesLinks2.map((item) => (
-                        <MegaLink key={item.href} item={item} compact />
-                      ))}
-                      {companyLinks2.slice(0, 2).map((item) => (
-                        <MegaLink key={item.href} item={item} compact />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Pied du menu */}
-                  <div className="px-4 py-3 bg-primary-pale/50 border-t border-primary-pale flex items-center justify-between">
-                    <p className="text-xs text-primary-deep font-sans font-semibold">
-                      Une question ? Rebecca IA répond 24h/24
-                    </p>
-                    <a
-                      href="/help"
-                      className="text-xs font-sans font-bold text-primary-green hover:text-primary-deep transition-colors"
-                    >
-                      Centre d&apos;aide →
-                    </a>
-                  </div>
-                </motion.div>
+          {/* Navigation centrale — menus déroulants simples (desktop) */}
+          <div className="hidden lg:flex items-center gap-1" ref={navRef}>
+            <Link
+              href="/"
+              className={cn(
+                'px-3 py-2 rounded-lg text-sm font-semibold transition-colors',
+                isHomeActive ? 'text-primary-green' : 'text-primary-deep hover:bg-primary-pale'
               )}
-            </div>
+            >
+              Accueil
+            </Link>
+
+            {NAV_GROUPS.map((group) => {
+              const isOpen = openMenu === group.key;
+              const isActive = isGroupActive(group.items);
+
+              return (
+                <div
+                  key={group.key}
+                  className="relative"
+                  onMouseEnter={() => setOpenMenu(group.key)}
+                  onMouseLeave={() => setOpenMenu(null)}
+                >
+                  <button
+                    onClick={() => setOpenMenu(isOpen ? null : group.key)}
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                    className={cn(
+                      'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer',
+                      isActive ? 'text-primary-green' : 'text-primary-deep hover:bg-primary-pale'
+                    )}
+                  >
+                    {group.label}
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+
+                  {isOpen && (
+                    <div className="absolute left-0 top-full pt-2 z-50">
+                      <div className="w-72 bg-white rounded-xl border border-primary-pale shadow-lg py-1.5">
+                        {visibleItems(group.items).map((item) => (
+                          <NavDropdownLink key={item.href} item={item} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Actions à droite */}
@@ -317,16 +256,16 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             {/* Admin / Backoffice */}
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-bold text-primary-deep border border-primary-deep/20 hover:bg-primary-pale transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-bold text-primary-deep border border-primary-deep/20 hover:bg-primary-pale transition-colors"
             >
               <LayoutDashboard className="w-4 h-4 text-primary-green" />
               Admin
             </Link>
 
-            {/* CTA Publier — design Win-Agro, statique (pas d'animation) */}
+            {/* CTA Publier */}
             <a
               href="/publish"
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-primary-green hover:bg-primary-deep text-white font-sans font-bold text-sm shadow-md transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-green focus:ring-offset-2"
             >
               <Plus className="w-4 h-4" />
               Publier
@@ -347,6 +286,9 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-primary-pale transition-colors cursor-pointer"
+                  aria-expanded={profileMenuOpen}
+                  aria-haspopup="true"
+                  aria-label="Menu du profil"
                 >
                   <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent-yellow">
                     <ImageWithFallback
@@ -359,18 +301,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                       fallbackType="avatar"
                     />
                   </div>
-                  <ChevronDown
-                    className={cn('w-3.5 h-3.5 text-primary-deep transition-transform', profileMenuOpen && 'rotate-180')}
-                  />
+                  <ChevronDown className="w-3.5 h-3.5 text-primary-deep" />
                 </button>
                 {profileMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-12 w-60 bg-white rounded-2xl shadow-xl border border-primary-pale overflow-hidden z-50"
-                  >
+                  <div className="absolute right-0 top-12 w-60 bg-white rounded-2xl shadow-xl border border-primary-pale overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-primary-pale/60">
                       <p className="text-sm font-semibold text-primary-deep">{userName}</p>
                       <p className="text-xs text-gray-400 truncate">{session?.user?.email || ''}</p>
@@ -397,7 +331,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                         <LogOut className="w-4 h-4" /> Déconnexion
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             )}
@@ -422,40 +356,17 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
         </div>
       </div>
 
-      {/* Menu mobile — tiroir blanc design Win-Agro */}
+      {/* Menu mobile — tiroir blanc simple */}
       <MobileMenu open={open} className="flex flex-col justify-between gap-2 overflow-y-auto">
         <div className="flex w-full flex-col gap-y-1">
-          <span className="text-sm font-serif font-bold text-primary-deep mt-2">Immobilier</span>
-          {immobilierLinks.map((link) => (
-            <MobileLink key={link.title} {...link} />
-          ))}
-          <span className="text-sm font-serif font-bold text-primary-deep mt-2">Hôtellerie</span>
-          {hospitalityLinks.map((link) => (
-            <MobileLink key={link.title} {...link} />
-          ))}
-          <span className="text-sm font-serif font-bold text-primary-deep mt-2">Services</span>
-          {servicesLinks.map((link) => (
-            <MobileLink key={link.title} {...link} />
-          ))}
-          {servicesLinks2.map((link) => (
-            <MobileLink key={link.title} {...link} />
-          ))}
-          {isLoggedIn && (
-            <>
-              {authOnlyLinks.map((link) => (
-                <MobileLink key={link.title} {...link} />
+          <MobileLink title="Accueil" href="/" icon={Home} />
+          {NAV_GROUPS.map((group) => (
+            <React.Fragment key={group.key}>
+              <span className="text-sm font-serif font-bold text-primary-deep mt-2">{group.label}</span>
+              {visibleItems(group.items).map((link) => (
+                <MobileLink key={link.href} {...link} />
               ))}
-              {authOnlyLinks2.map((link) => (
-                <MobileLink key={link.title} {...link} />
-              ))}
-            </>
-          )}
-          <span className="text-sm font-serif font-bold text-primary-deep mt-2">Entreprise</span>
-          {companyLinks.map((link) => (
-            <MobileLink key={link.title} {...link} />
-          ))}
-          {companyLinks2.map((link) => (
-            <MobileLink key={link.title} {...link} />
+            </React.Fragment>
           ))}
         </div>
 
@@ -534,13 +445,9 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
   return createPortal(
     <div
       id="mobile-menu"
-      className="bg-white fixed top-[72px] right-0 bottom-0 left-0 z-40 flex flex-col overflow-y-auto border-t border-primary-pale md:hidden shadow-2xl"
+      className="bg-white fixed top-[64px] right-0 bottom-0 left-0 z-40 flex flex-col overflow-y-auto border-t border-primary-pale md:hidden shadow-2xl"
     >
-      <div
-        data-slot={open ? 'open' : 'closed'}
-        className={cn('data-[slot=open]:animate-in data-[slot=open]:zoom-in-97 ease-out', 'size-full p-4', className)}
-        {...props}
-      >
+      <div className="size-full p-4" {...props}>
         {children}
       </div>
     </div>,
@@ -548,19 +455,16 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
   );
 }
 
-// ─── Lien de menu méga (desktop « Plus ») ──────────────────────
+// ─── Lien de menu déroulant (desktop) ──────────────────────────
 
-function MegaLink({ item, compact = false }: { item: LinkItem; compact?: boolean }) {
+function NavDropdownLink({ item }: { item: LinkItem }) {
   const Icon = item.icon;
   return (
-    <a
+    <Link
       href={item.href}
-      className={cn(
-        'flex items-center gap-2.5 rounded-xl transition-colors',
-        compact ? 'px-2 py-2 hover:bg-primary-pale/60' : 'p-2 hover:bg-primary-pale'
-      )}
+      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-pale/50 hover:text-primary-deep transition-colors"
     >
-      <span className="flex items-center justify-center rounded-lg bg-primary-pale border border-primary-green/10 shrink-0" style={{ width: 32, height: 32 }}>
+      <span className="flex items-center justify-center rounded-lg bg-primary-pale border border-primary-green/10 shrink-0 w-8 h-8">
         <Icon className="w-4 h-4 text-primary-deep" />
       </span>
       <span className="min-w-0">
@@ -569,13 +473,13 @@ function MegaLink({ item, compact = false }: { item: LinkItem; compact?: boolean
           <span className="block text-[10px] text-gray-500 truncate">{item.description}</span>
         )}
       </span>
-    </a>
+    </Link>
   );
 }
 
 // ─── Lien mobile (tiroir) ──────────────────────────────────────
 
-function MobileLink({ title, description, icon: Icon, href, gold }: LinkItem) {
+function MobileLink({ title, description, icon: Icon, href }: LinkItem) {
   return (
     <a
       href={href}
@@ -585,7 +489,7 @@ function MobileLink({ title, description, icon: Icon, href, gold }: LinkItem) {
         <Icon className="w-4 h-4 text-primary-deep" />
       </span>
       <span className="min-w-0">
-        <span className={cn('block truncate', gold && 'text-accent-dark')}>{title}</span>
+        <span className="block truncate">{title}</span>
         {description && <span className="block text-xs font-normal text-gray-500 truncate">{description}</span>}
       </span>
     </a>
