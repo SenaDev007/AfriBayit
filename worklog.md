@@ -1754,3 +1754,19 @@ Stage Summary:
 - Les 5 pages sont des hubs applicatifs structurés, palette AfriBayit conservée, zéro animation 3D
 - Vercel redéploie automatiquement — vérifier les 5 routes en ligne après build
 - Captures : /home/z/my-project/download/hub_screenshots/*.png
+
+---
+Task ID: realtime-backend-office
+Task: Retours client 25/09 PM — backend séparé (afribayit-api), flash bleu éliminé, back-office contrôle total multi-pays, Discord-like temps réel (LiveKit/Agora/Daily).
+
+Work Log:
+- Backend afribayit-api : module src/realtime/ complet (gateway Socket.IO /channels, /realtime/livekit-token, LiveKitService HS256 sans dépendance) + PREMIERS tests du repo (0 → 47/47 : frais V4.1 verrouillés, jetons LiveKit, gateway). Poussé 1b79129.
+- Flash bleu : Skeleton bg-accent (#009CDE) → gris neutre (+ override admin-dark) ; loading.tsx ; ~20 fichiers de skeletons bleu pâle neutralisés.
+- Temps réel : ChannelMessage (Prisma + DDL idempotent appliqué en production 3/3), routes messages/overview/voice-token/realtime-status, useChannelChat (polling incrémental 2,5 s, optimiste, unread, toasts), ForumPanel chat-first avec composer réel, VoiceChannelPanel LiveKit (import dynamique, dégradation propre), onglet Admin Paramètres → Temps réel.
+- Back-office : FIX authGuard (rôle 'admin' aligné sur le middleware — avant : toutes les API admin en 403, back-office vide), AdminHeader câblé (recherche globale, sélecteur pays → /admin/XX/dashboard, cloche compteur réel, menus en liens, deep-links ?q=/?status=).
+- QA : tsc 0, 298/298 front, 47/47 back, build 242/242. E2E navigateur vs production Neon : message chat envoyé/persisté/overview OK ; 20 users chargés ; recherche « Koffi » 2 résultats ; navigation BJ ; cloche 33. Front poussé 1d11dc4.
+
+Stage Summary:
+- Chat temps réel opérationnel en production ; voix LiveKit prête (clés à coller dans Vercel : LIVEKIT_URL/API_KEY/API_SECRET)
+- Back-office enfin « bord de contrôle » réel (données + recherche + bascule pays + notifications)
+- Vercel redéploie après 1d11dc4 — vérifier /community et /admin en ligne
