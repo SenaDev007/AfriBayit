@@ -41,7 +41,23 @@ export function useProperties(filters: PropertyFilters = {}) {
 export function useProperty(id: string) {
   return useQuery<PropertyDetailResponse>({
     queryKey: ['property', id],
-    queryFn: () => api.get<PropertyDetailResponse>(`/api/properties/${id}`),
+    queryFn: async () => {
+      try {
+        // L'API monolithe renvoie { data: property } (cf. /api/properties/[id]).
+        // On accepte aussi l'ancien format { property } par robustesse.
+        const raw = await api.get<{ data?: PropertyData; property?: PropertyData }>(
+          `/api/properties/${id}`,
+        );
+        return { property: raw?.data ?? raw?.property };
+      } catch (err) {
+        // 404 = bien supprimé / inexistant → UI « Bien non trouvé »
+        // (et non « Erreur de chargement », réservée aux vraies erreurs réseau).
+        if (err && typeof err === 'object' && 'statusCode' in err && (err as { statusCode?: number }).statusCode === 404) {
+          return { property: undefined };
+        }
+        throw err;
+      }
+    },
     enabled: !!id,
   });
 }

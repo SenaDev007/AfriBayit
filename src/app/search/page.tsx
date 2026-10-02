@@ -18,13 +18,24 @@ const EnhancedSearchResults = dynamic(() => import('@/components/afribayit/Enhan
 function SearchContent() {
   const { onSelectProperty } = useAfriBayitNav();
   const searchParams = useSearchParams();
-  const tab = searchParams.get('tab') || 'achat';
+  // Onglet par défaut : celui de l'URL, sinon 'achat'. Une recherche
+  // textuelle/vocale (paramètre q) sans onglet explicite ne restreint PAS
+  // la transaction — « villa à louer à Cotonou » doit trouver les locations,
+  // pas uniquement le catalogue achat.
+  const hasQuery = !!searchParams.get('q');
+  const tab = searchParams.get('tab') || (hasQuery ? 'all' : 'achat');
+  const initialQuery = (searchParams.get('q') || '').slice(0, 200);
+  // voice=1 → arrivée depuis la recherche vocale du Hero : bannière
+  // « Recherche vocale » + transcription affichée.
+  const isVoiceSearch = searchParams.get('voice') === '1' && hasQuery;
 
   return (
     <div className="min-h-screen bg-cream">
       <SafeModule>
         <EnhancedSearchResults
           initialTab={tab}
+          initialQuery={initialQuery}
+          voiceNotice={isVoiceSearch}
           onSelectProperty={onSelectProperty}
         />
       </SafeModule>

@@ -19,13 +19,14 @@
  */
 import { PrismaClient } from '@prisma/client';
 import argon2 from 'argon2';
+import type { HashOptions } from 'argon2';
 import { randomBytes } from 'crypto';
 import { writeFileSync, chmodSync } from 'fs';
 
 const prisma = new PrismaClient();
 
 // ─── Paramètres Argon2id — DOIVENT rester alignés sur src/lib/auth.ts ──────
-const ARGON2ID_OPTIONS = {
+const ARGON2ID_OPTIONS: HashOptions = {
   type: argon2.argon2id,
   memoryCost: 65536, // 64 MB
   timeCost: 3,
@@ -61,7 +62,7 @@ async function main() {
   const email = (positional[0] || arg('email') || '').trim().toLowerCase();
   const name = arg('name');
   const role = arg('role');
-  const outFile = arg('out', '/tmp/afribayit-owner-credentials.txt');
+  const outFile = arg('out') ?? '/tmp/afribayit-owner-credentials.txt';
 
   if (!email || !email.includes('@')) {
     console.error('Usage: npx tsx scripts/reset-owner-account.ts <email> [--name="Prénom Nom"] [--role=admin] [--out=fichier]');

@@ -13,11 +13,17 @@ import AdvancedFilterSidebar from './AdvancedFilterSidebar';
 import PropertyComparator from './PropertyComparator';
 import FinancingSimulator from './FinancingSimulator';
 import type { PropertyData } from '@/lib/afribayit-utils';
-import { Check, Coins } from 'lucide-react';
+import { Check, Coins, Mic } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
+import { VoiceSearchButtonCore, getVoiceStatusText } from './VoiceSearchButton';
 
 interface EnhancedSearchResultsProps {
   initialTab?: string;
+  /** Requête texte/vocale initiale (paramètre ?q= de l'URL). */
+  initialQuery?: string;
+  /** Vrai si la recherche provient du micro du Hero (?voice=1). */
+  voiceNotice?: boolean;
   onSelectProperty: (id: string) => void;
 }
 
@@ -108,13 +114,21 @@ function SearchCardSkeleton({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export default function EnhancedSearchResults({ initialTab = 'achat', onSelectProperty }: EnhancedSearchResultsProps) {
+export default function EnhancedSearchResults({
+  initialTab = 'achat',
+  initialQuery = '',
+  voiceNotice = false,
+  onSelectProperty,
+}: EnhancedSearchResultsProps) {
   const { t } = useTranslation();
+  // 'all' = aucune restriction de transaction (recherche texte/vocale large)
+  const initialTransaction = initialTab && initialTab !== 'all' ? [initialTab] : [];
   const [filters, setFilters] = useState<EnhancedSearchFiltersState>({
-    transaction: [initialTab],
+    transaction: initialTransaction,
     sortBy: 'newest',
     page: 1,
     limit: 24,
+    ...(initialQuery ? { query: initialQuery } : {}),
   });
 
   // Sync initialTab with filters when it changes (e.g. navigating from Acheter to Louer)
@@ -124,7 +138,7 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
     setPrevTab(initialTab);
     setFilters(prev => ({
       ...prev,
-      transaction: [initialTab],
+      transaction: initialTransaction,
       page: 1,
     }));
   }
@@ -134,7 +148,15 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
   const [showComparator, setShowComparator] = useState(false);
   const [showFinancing, setShowFinancing] = useState(false);
   const [financingPrice, setFinancingPrice] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+  // ── Recherche vocale (même micro que le Hero, pour affiner ici) ──
+  const applyVoiceTranscript = useCallback((transcript: string) => {
+    setSearchQuery(transcript);
+    setFilters(prev => ({ ...prev, query: transcript, page: 1 }));
+  }, []);
+  const voice = useVoiceSearch({ onResult: applyVoiceTranscript });
+  const voiceStatusText = getVoiceStatusText(voice.status, voice.mode, voice.interim, voice.error);
 
   // Search query.
   // `isPending` (not `isLoading`) + spaced retries: while Neon (free tier)
@@ -247,29 +269,70 @@ export default function EnhancedSearchResults({ initialTab = 'achat', onSelectPr
             </div>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar — texte + vocale */}
           <div className="flex gap-2 p-2 bg-white rounded-full shadow-lg border border-primary-pale">
-            <div className="flex-1 flex items-center gap-3 px-4 py-2">
+            <div className="flex-1 flex items-center gap-3 px-4 py-2 min-w-0">
               <svg className="w-5 h-5 text-primary-green shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
-                value={searchQuery}
+                value={voice.status === 'listening' && voice.interim ? voice.interim : searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 aria-label={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
-                placeholder={t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')}
-                className="flex-1 text-sm outline-none bg-transparent text-primary-deep placeholder:text-gray-text/50"
+                placeholder={
+                  voice.status === 'listening'
+                    ? t('search.voiceListening', 'Je vous écoute…')
+                    : t('search.placeholder', 'Rechercher par ville, quartier, mot-clé...')
+                }
+                className="flex-1 text-sm outline-none bg-transparent text-primary-deep placeholder:text-gray-text/50 min-w-0"
               />
+              {voice.supported && (
+                <VoiceSearchButtonCore
+                  status={voice.status}
+                  mode={voice.mode}
+                  onStart={voice.start}
+                  onStop={voice.stop}
+                  onCancel={voice.cancel}
+                  variant="default"
+                />
+              )}
             </div>
             <button
               onClick={handleSearch}
-              className="px-5 py-2 bg-primary-green text-white rounded-full text-sm font-bold hover:bg-primary-deep shadow-md hover:shadow-lg transition-all"
+              className="px-5 py-2 bg-primary-green text-white rounded-full text-sm font-bold hover:bg-primary-deep shadow-md hover:shadow-lg transition-all shrink-0"
             >
               {t('hero.cta', 'Rechercher')}
             </button>
           </div>
+
+          {/* État de la recherche vocale / bannière « Recherche vocale » */}
+          {(voiceStatusText || voiceNotice) && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 px-4 py-2.5 bg-primary-pale/60 border border-primary-green/20 rounded-2xl">
+              <Mic className="w-4 h-4 text-primary-green shrink-0" />
+              {voiceStatusText ? (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className={[
+                    'text-sm font-medium',
+                    voice.status === 'error' ? 'text-red-600' : 'text-primary-deep',
+                  ].join(' ')}
+                >
+                  {voiceStatusText}
+                </p>
+              ) : (
+                <p className="text-sm text-primary-deep">
+                  <span className="font-bold">
+                    {t('search.voiceResultTitle', 'Résultats de votre recherche vocale')}
+                  </span>
+                  {' — '}
+                  <span className="italic">« {searchQuery} »</span>
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Filter Chips */}
           {filterChips.length > 0 && (

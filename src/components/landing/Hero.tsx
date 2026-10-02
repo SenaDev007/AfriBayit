@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Home, ArrowRight, Search, MapPin, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, ArrowRight, Search, MapPin, Sparkles, Mic } from 'lucide-react';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
+import { VoiceSearchButtonCore, getVoiceStatusText } from '@/components/afribayit/VoiceSearchButton';
 
 /**
  * Hero — portage fidèle du design Win-Agro (components/sections/Hero.tsx)
@@ -23,6 +25,29 @@ export default function Hero() {
     if (query.trim()) params.set('q', query.trim());
     router.push(`/search?${params.toString()}`);
   };
+
+  // ── Recherche vocale (Web Speech API ; fallback NVIDIA côté serveur) ──
+  // La transcription finale remplit le champ puis lance la recherche avec
+  // le marqueur voice=1 → la page /search affiche la mention « Recherche
+  // vocale » et les résultats correspondants.
+  const launchVoiceSearch = useCallback(
+    (transcript: string) => {
+      setQuery(transcript);
+      const params = new URLSearchParams();
+      params.set('q', transcript);
+      params.set('voice', '1');
+      router.push(`/search?${params.toString()}`);
+    },
+    [router],
+  );
+
+  const voice = useVoiceSearch({ onResult: launchVoiceSearch });
+  const voiceStatusText = getVoiceStatusText(voice.status, voice.mode, voice.interim, voice.error);
+
+  // Pendant l'écoute, le champ affiche la transcription en direct
+  useEffect(() => {
+    if (voice.status === 'listening' && voice.interim) setQuery(voice.interim);
+  }, [voice.status, voice.interim]);
 
   const scrollTo = (href: string) => {
     const targetElement = document.querySelector(href);
@@ -141,7 +166,7 @@ export default function Hero() {
             <span className="font-bold text-white">AfriBayit</span> sécurise chaque étape — du premier clic à la signature notariée.
           </motion.p>
 
-          {/* Barre de recherche glassmorphism AfriBayit */}
+          {/* Barre de recherche glassmorphism AfriBayit — texte + vocale */}
           <motion.form
             onSubmit={handleSearch}
             initial={{ opacity: 0, y: 20 }}
@@ -155,10 +180,24 @@ export default function Hero() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Villa à Cotonou, appartement à Abidjan, terrain à Lomé..."
-                className="flex-1 bg-transparent px-2 py-2.5 text-sm text-primary-deep placeholder:text-primary-deep/50 focus:outline-none font-sans"
+                placeholder={
+                  voice.status === 'listening'
+                    ? 'Je vous écoute…'
+                    : 'Villa à Cotonou, appartement à Abidjan, terrain à Lomé…'
+                }
+                className="flex-1 bg-transparent px-2 py-2.5 text-sm text-primary-deep placeholder:text-primary-deep/50 focus:outline-none font-sans min-w-0"
                 aria-label="Rechercher un bien"
               />
+              {voice.supported && (
+                <VoiceSearchButtonCore
+                  status={voice.status}
+                  mode={voice.mode}
+                  onStart={voice.start}
+                  onStop={voice.stop}
+                  onCancel={voice.cancel}
+                  variant="hero"
+                />
+              )}
               <motion.button
                 type="submit"
                 whileHover={{ scale: 1.05 }}
@@ -168,6 +207,39 @@ export default function Hero() {
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Rechercher</span>
               </motion.button>
+            </div>
+
+            {/* Ligne d'état de la recherche vocale — informe l'internaute */}
+            <div className="min-h-[22px] mt-2 flex items-center justify-center gap-1.5">
+              <AnimatePresence mode="wait">
+                {voiceStatusText ? (
+                  <motion.p
+                    key={voiceStatusText}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    role="status"
+                    aria-live="polite"
+                    className={[
+                      'text-xs font-sans font-medium flex items-center gap-1.5',
+                      voice.status === 'error' ? 'text-red-300' : 'text-accent-yellow',
+                    ].join(' ')}
+                  >
+                    {voice.status !== 'error' && <Mic className="w-3.5 h-3.5 shrink-0" />}
+                    {voiceStatusText}
+                  </motion.p>
+                ) : (
+                  <motion.p
+                    key="hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs font-sans text-gray-300/80 hidden sm:flex items-center gap-1.5"
+                  >
+                    <Mic className="w-3.5 h-3.5 shrink-0 text-accent-yellow/70" />
+                    Recherche vocale disponible — cliquez sur le micro et parlez
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
           </motion.form>
 

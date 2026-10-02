@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiPost, apiFetch } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/authStore';
 import { COUNTRIES_CONFIG } from '@/lib/afribayit-utils';
 import { toast } from 'sonner';
 import {
@@ -154,10 +155,18 @@ export default function AdvancedFilterSidebar({
 
   const queryClient = useQueryClient();
 
+  // FIX (CDC — navigable sans compte) : la requête saved-searches est
+  // PROTÉGÉE (authGuard). Sans `enabled: isAuthenticated`, elle renvoie 401
+  // au montage pour tout visiteur anonyme et le handler api-client redirige
+  // toute la page /search vers /auth/login — la recherche publique devient
+  // inaccessible. Même correction que NotaryModuleImpl (session précédente).
+  const { isAuthenticated } = useAuthStore();
+
   // Saved searches
   const { data: savedSearchesData } = useQuery({
-    queryKey: ['saved-searches'],
+    queryKey: ['saved-searches', isAuthenticated],
     queryFn: () => apiFetch<{ searches: Array<{ id: string; name: string; filters: FilterState; newMatches?: number }> }>('/api/properties/saved-searches'),
+    enabled: isAuthenticated,
   });
 
   const saveSearchMutation = useMutation({

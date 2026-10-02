@@ -61,7 +61,8 @@ export interface PropertiesResponse {
 }
 
 export interface PropertyDetailResponse {
-  property: PropertyData;
+  /** Optionnel : absent = bien introuvable (404 → UI « Bien non trouvé »). */
+  property?: PropertyData;
 }
 
 // ============ COUNTRIES CONFIG (static, not from DB) ============
