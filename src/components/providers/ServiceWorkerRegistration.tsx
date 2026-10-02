@@ -3,6 +3,12 @@
 // Registers `/sw.js` in production only, and surfaces `updatefound` /
 // `controllerchange` events to the rest of the app via window CustomEvents
 // so the UI can prompt the user to refresh.
+//
+// Oct. 2026 — AUTO-RELOAD : quand un nouveau service worker prend le contrôle
+// (page précédemment pilotée par une version antérieure), la page se recharge
+// UNE SEULE FOIS automatiquement. Sans cela, les clients récurrents restaient
+// sur le HTML d'un ancien build jusqu'à leur prochain clic — les correctifs
+// déployés (drapeaux, polices…) n'étaient jamais visibles sur desktop.
 
 'use client';
 
@@ -19,6 +25,22 @@ export default function ServiceWorkerRegistration() {
     // Only register in production — dev mode pollutes the console with
     // HMR conflicts and the SW would cache stale dev assets.
     if (process.env.NODE_ENV !== 'production') return;
+
+    // La page était-elle déjà pilotée par un SW AVANT cette inscription ?
+    // (si oui, un controllerchange signale un UPDATE → recharger ; à la
+    // toute première installation, controller est null → rien à recharger)
+    const wasControlled = !!navigator.serviceWorker.controller;
+    let refreshing = false;
+
+    const onControllerChange = () => {
+      window.dispatchEvent(new CustomEvent(CONTROLLER_CHANGED_EVENT, {
+        detail: { controllerChanged: true },
+      }));
+      if (!wasControlled || refreshing) return;
+      refreshing = true;
+      // Un seul rechargement par mise à jour — le drapeau empêche toute boucle.
+      window.location.reload();
+    };
 
     const register = async () => {
       try {
@@ -48,11 +70,7 @@ export default function ServiceWorkerRegistration() {
         });
 
         // Listen for controller changes (the new SW took over).
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          window.dispatchEvent(new CustomEvent(CONTROLLER_CHANGED_EVENT, {
-            detail: { controllerChanged: true },
-          }));
-        });
+        navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
         // Periodically check for updates (every 60 min).
         const interval = setInterval(() => {
@@ -61,7 +79,10 @@ export default function ServiceWorkerRegistration() {
           });
         }, 60 * 60 * 1000);
 
-        return () => clearInterval(interval);
+        return () => {
+          clearInterval(interval);
+          navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+        };
       } catch (err) {
         console.warn('[ServiceWorkerRegistration] Registration failed:', err);
       }

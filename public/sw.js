@@ -1,35 +1,54 @@
-// AfriBayit Service Worker — app shell caching + offline fallback
+// AfriBayit Service Worker — v2 (oct. 2026)
 //
-// Strategies:
-//   - Install: pre-cache the app shell (HTML routes + critical assets).
-//   - Activate: clean up old cache versions.
-//   - Same-origin GET (non-API): cache-first, fall back to network, then
-//     offline fallback page.
-//   - Images (same-origin): stale-while-revalidate.
-//   - /api/ and /auth/ requests: network-first (always serve fresh data
-//     when online; never cache authenticated responses).
+// ⚠️ CONTEXTE DE LA RÉVISION v2 : la v1 servait les navigations HTML en
+// cache-first avec des noms de caches inchangés entre les déploiements.
+// Résultat : les visiteurs récurrents recevaient EN BOUCLE le HTML d'un
+// ancien build (le sw.js identique octet par octet ne déclenchait jamais de
+// mise à jour côté navigateur) — les corrections déployées n'étaient jamais
+// vues sur desktop. Les noms de caches sont désormais suffixés -v2 et le
+// hash du fichier change à chaque révision : tout client récurrent met à
+// jour son SW au prochain passage, les caches v1 sont purgés à l'activation.
+//
+// Stratégies v2 :
+//   - Install : pré-cache minimal du shell (page offline + manifest + logo).
+//   - Activate : purge des caches non listés (v1 → supprimés), claim immédiat.
+//   - NAVIGATIONS (HTML) : network-first — le HTML est TOUJOURS frais quand
+//     on est en ligne ; le cache n'est qu'un fallback hors-ligne. C'est le
+//     comportement correct pour un site qui déploie plusieurs fois par jour.
+//   - Assets immuables (/_next/static/, /flags/, /icons/, fonts) : cache-first
+//     — ces chemins sont content-hashed ou versionnés, aucun risque de périmé.
+//   - Images dynamiques : stale-while-revalidate.
+//   - /api/ et /auth/ : network-first, jamais de réponse authentifiée en cache.
 
-const APP_SHELL_CACHE = 'afribayit-shell-v1';
-const IMAGE_CACHE = 'afribayit-images-v1';
-const API_CACHE = 'afribayit-api-v1';
+const APP_SHELL_CACHE = 'afribayit-shell-v2';
+const IMAGE_CACHE = 'afribayit-images-v2';
+const API_CACHE = 'afribayit-api-v2';
 
 const APP_SHELL_URLS = [
-  '/',
   '/offline',
-  '/manifest.json',
+  '/manifest.webmanifest',
   '/logo.svg',
   '/logo.png',
   '/icons/icon-192x192.svg',
   '/icons/icon-512x512.svg',
 ];
 
-// ─── Install: pre-cache app shell ─────────────────────────────────────────
+// Chemins immuables (content-hashed par le build ou statiques versionnés) :
+// cache-first autorisé car leur contenu ne change jamais pour une URL donnée.
+const IMMUTABLE_PATHS = [
+  '/_next/static/',
+  '/flags/',
+  '/icons/',
+  '/images/',
+];
+
+// ─── Install : pré-cache minimal ─────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(APP_SHELL_CACHE);
-      // Use addAll with safe fall-back — a 404 on one asset shouldn't abort
-      // the whole install.
+      // addAll avec repli sécurisé — un 404 sur un asset ne doit pas avorter
+      // toute l'installation.
       await Promise.all(
         APP_SHELL_URLS.map(async (url) => {
           try {
@@ -44,7 +63,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// ─── Activate: clean old caches ───────────────────────────────────────────
+// ─── Activate : purge des caches obsolètes (v1…) ─────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
@@ -60,19 +79,19 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ─── Fetch: route by request type ─────────────────────────────────────────
+// ─── Fetch : routage par type de requête ─────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // Only handle GET — never intercept POST/PUT/DELETE.
+  // Seulement GET — jamais intercepter POST/PUT/DELETE.
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
 
-  // Skip cross-origin requests (let the browser handle them).
+  // Requêtes cross-origin : le navigateur s'en charge.
   if (url.origin !== self.location.origin) return;
 
-  // Skip Next.js internals / HMR / dev-only paths.
+  // Internes Next.js / dev-only : ignorer.
   if (
     url.pathname.startsWith('/_next/webpack-hmr') ||
     url.pathname.startsWith('/__nextjs') ||
@@ -81,13 +100,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ─── API requests: network-first ───
+  // ─── API / auth : network-first ───
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
     event.respondWith(networkFirst(request, API_CACHE, /* cacheTtl */ 0));
     return;
   }
 
-  // ─── Images: stale-while-revalidate ───
+  // ─── Assets immuables (hashés) : cache-first ───
+  if (
+    IMMUTABLE_PATHS.some((p) => url.pathname.startsWith(p)) &&
+    request.destination !== 'document'
+  ) {
+    event.respondWith(cacheFirst(request, APP_SHELL_CACHE));
+    return;
+  }
+
+  // ─── Images dynamiques : stale-while-revalidate ───
   if (
     request.destination === 'image' ||
     /\.(?:png|jpe?g|webp|gif|svg|avif|ico)$/i.test(url.pathname)
@@ -96,15 +124,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ─── Same-origin navigations + static assets: cache-first ───
-  event.respondWith(cacheFirst(request, APP_SHELL_CACHE));
+  // ─── NAVIGATIONS + reste : network-first (HTML toujours frais) ───
+  event.respondWith(networkFirst(request, APP_SHELL_CACHE));
 });
 
-// ─── Cache strategies ─────────────────────────────────────────────────────
-
+// ─── Stratégies de cache ─────────────────────────────────────────────────
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request, { ignoreSearch: true });
+  const cached = await cache.match(request, { ignoreSearch: false });
   if (cached) return cached;
 
   try {
@@ -114,7 +141,6 @@ async function cacheFirst(request, cacheName) {
     }
     return response;
   } catch (err) {
-    // Navigation requests fall back to the offline page.
     if (request.mode === 'navigate') {
       const offline = await cache.match('/offline');
       if (offline) return offline;
@@ -125,7 +151,7 @@ async function cacheFirst(request, cacheName) {
 
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request, { ignoreSearch: true });
+  const cached = await cache.match(request, { ignoreSearch: false });
 
   const fetchPromise = fetch(request)
     .then((response) => {
@@ -143,7 +169,7 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    // Only cache successful, non-authenticated GETs.
+    // Mettre en cache uniquement les GET réussis non authentifiés.
     if (
       response &&
       response.ok &&
@@ -154,13 +180,18 @@ async function networkFirst(request, cacheName) {
     }
     return response;
   } catch (err) {
-    const cached = await cache.match(request);
-    if (cached) return cached;
+    // Hors-ligne : dernier HTML connu, sinon page offline explicite.
+    if (request.mode === 'navigate') {
+      const cached = await cache.match(request, { ignoreSearch: true });
+      if (cached) return cached;
+      const offline = await cache.match('/offline');
+      if (offline) return offline;
+    }
     throw err;
   }
 }
 
-// ─── Message handler: skipWaiting on user prompt ──────────────────────────
+// ─── Message handler : skipWaiting sur demande explicite ─────────────────
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

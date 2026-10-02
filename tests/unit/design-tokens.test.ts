@@ -57,8 +57,8 @@ describe('Design tokens — Typography (CDC §2.3-2.4)', () => {
     expect(typography.monoData).toBeDefined();
   });
 
-  it('hero title uses Cormorant Garamond', () => {
-    expect(typography.heroTitle.fontFamily).toContain('cormorant');
+  it('hero title uses DM Sans (police unifiée oct. 2026)', () => {
+    expect(typography.heroTitle.fontFamily).toContain('dm-sans');
   });
 
   it('body uses DM Sans', () => {
@@ -69,8 +69,8 @@ describe('Design tokens — Typography (CDC §2.3-2.4)', () => {
     expect(typography.caption.fontFamily).toContain('dm-sans');
   });
 
-  it('monoData uses DM Mono', () => {
-    expect(typography.monoData.fontFamily).toContain('dm-mono');
+  it('monoData uses DM Sans (police unifiée oct. 2026)', () => {
+    expect(typography.monoData.fontFamily).toContain('dm-sans');
   });
 
   it('hero title has line-height 1.05', () => {
