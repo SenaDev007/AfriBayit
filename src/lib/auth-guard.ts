@@ -137,14 +137,14 @@ export async function authGuard(
         };
       }
 
-      // Token was present but invalid
-      return {
-        success: false,
-        response: NextResponse.json(
-          { error: 'Token invalide ou expiré', code: 'INVALID_TOKEN' },
-          { status: 401 }
-        ),
-      };
+      // FIX (retour client 02/10) : un Bearer STALE dans le localStorage ne doit
+      // PLUS court-circuiter l'authentification. Avant : retour 401 immédiat →
+      // le navigateur (apiFetch) redirigeait vers /auth/login alors que l'utilisateur
+      // avait une session cookie parfaitement valide (« on me demande de me
+      // connecter alors que je le suis déjà »). Désormais on retombe sur la
+      // stratégie cookie (getServerSession) ; le 401 n'est renvoyé que si les
+      // DEUX stratégies échouent. Le client purge son token périmé via le
+      // setAccessToken(null) sur 401 — auto-guérison.
     }
   }
 

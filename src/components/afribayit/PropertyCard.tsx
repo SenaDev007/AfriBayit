@@ -28,19 +28,27 @@ export default function PropertyCard({ property, index = 0, onSelect, compact = 
   const [isFavorited, setIsFavorited] = useState(false);
 
   // Check if this property is favorited by the current user
+  // FIX (retour client 02/10) : GET /api/favorites renvoie un TABLEAU BRUT
+  // (db.favorite.findMany), pas { favorites: [...] } — l'ancien code lisait
+  // favoritesData?.favorites (toujours undefined) donc le cœur n'était JAMAIS
+  // marqué sur les cartes des pages listes, même après un ajout réussi.
   const { data: favoritesData } = useQuery({
     queryKey: ['favorites'],
-    queryFn: () => apiFetch<{ favorites: { propertyId: string }[] }>('/api/favorites'),
+    queryFn: () => apiFetch<{ propertyId: string }[] | { favorites: { propertyId: string }[] }>('/api/favorites'),
     enabled: isAuthenticated,
     staleTime: 30 * 1000,
   });
 
+  // Normalize: raw array (réel) OU enveloppe {favorites} (défensive)
+  const favoritesList: { propertyId: string }[] = React.useMemo(
+    () => (Array.isArray(favoritesData) ? favoritesData : favoritesData?.favorites ?? []),
+    [favoritesData],
+  );
+
   // Update local favorite state when favorites data loads
   React.useEffect(() => {
-    if (favoritesData?.favorites) {
-      setIsFavorited(favoritesData.favorites.some((f) => f.propertyId === property.id));
-    }
-  }, [favoritesData, property.id]);
+    setIsFavorited(favoritesList.some((f) => f.propertyId === property.id));
+  }, [favoritesList, property.id]);
 
   // Toggle favorite mutation
   const toggleFavorite = useCallback(async () => {

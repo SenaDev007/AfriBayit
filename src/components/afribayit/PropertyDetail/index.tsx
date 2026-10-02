@@ -25,6 +25,8 @@ import PropertyHeader from './PropertyHeader';
 import PropertyLocation from './PropertyLocation';
 import PropertyReviews from './PropertyReviews';
 import PropertySidebar from './PropertySidebar';
+import VisitRequestModal from './VisitRequestModal';
+import ContactAgentModal from './ContactAgentModal';
 import PricePredictionChart from '../PricePredictionChart';
 import VRTourPlayer from '../VRTourPlayer';
 import DroneViewPlayer from '../DroneViewPlayer';
@@ -42,6 +44,8 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
   const [activeImage, setActiveImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
   const [showVRTour, setShowVRTour] = useState(false);
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -120,6 +124,28 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
 
   // Rental initiation (Lease + Escrow + first RentPayment)
   const initiateRent = useInitiateRent();
+
+  // ─── Visite & contact agent (retour client 02/10) ───
+  // Avant : « Demander une visite » et « Contacter l'agent » redirigeaient
+  // TOUJOURS vers /auth/login (y compris utilisateur connecté). Désormais :
+  // connecté → vraie modale fonctionnelle ; anonyme → login avec retour sur
+  // la fiche (le param `redirect` est honoré par la page de login).
+  const requireAuthOr = useCallback((action: () => void) => {
+    if (isAuthenticated) {
+      action();
+    } else {
+      window.location.href =
+        '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+    }
+  }, [isAuthenticated]);
+
+  const handleRequestVisit = useCallback(() => {
+    requireAuthOr(() => setShowVisitModal(true));
+  }, [requireAuthOr]);
+
+  const handleContactAgent = useCallback(() => {
+    requireAuthOr(() => setShowContactModal(true));
+  }, [requireAuthOr]);
 
   const handleRent = useCallback(async (propId: string) => {
     if (!isAuthenticated) {
@@ -369,7 +395,8 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
               geoTrust={property.geoTrust}
               onPurchase={handlePurchase}
               onRent={handleRent}
-              onContactAgent={() => { window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`; }}
+              onRequestVisit={handleRequestVisit}
+              onContactAgent={handleContactAgent}
               property={property}
             />
           </div>
@@ -412,6 +439,24 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
         />
       )}
 
+      {/* Demander une visite — vraie planification persistée (retour client 02/10) */}
+      <VisitRequestModal
+        open={showVisitModal}
+        onOpenChange={setShowVisitModal}
+        propertyId={propertyId}
+        propertyTitle={property.title}
+        agentName={agent?.name}
+      />
+
+      {/* Contacter l'agent — messagerie interne + WhatsApp (retour client 02/10) */}
+      <ContactAgentModal
+        open={showContactModal}
+        onOpenChange={setShowContactModal}
+        propertyId={propertyId}
+        propertyTitle={property.title}
+        agent={agent ? { id: agent.id, name: agent.name, phone: agent.phone } : undefined}
+      />
+
       {/* ═══ Advanced Features (CDC §5.1.2 compliance) ═══ */}
       <div className="mt-12 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Price Prediction ML Chart */}
@@ -430,6 +475,7 @@ export default function PropertyDetail({ propertyId, onBack, onNavigate: _onNavi
             propertyTitle={property.title}
             images={images}
             hasVR={hasVR}
+            onLaunch={() => setShowVRTour(true)}
           />
           <DroneViewPlayer
             propertyTitle={property.title}

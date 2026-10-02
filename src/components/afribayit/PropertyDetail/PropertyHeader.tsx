@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Eye, Heart, MapPin, Star } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n/use-translate';
+import { formatFeatureLabel } from '@/lib/afribayit-utils';
 import { easeOut } from './types';
 
 interface PropertyHeaderProps {
@@ -156,7 +157,7 @@ export default function PropertyHeader({
           <div className="flex flex-wrap gap-2">
             {features.map((feature) => (
               <span key={feature} className="px-4 py-2 bg-primary-pale/50 border border-primary-pale rounded-full text-sm text-gray-text font-medium">
-                {feature}
+                {formatFeatureLabel(feature)}
               </span>
             ))}
           </div>

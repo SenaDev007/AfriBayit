@@ -39,6 +39,7 @@ interface PropertySidebarProps {
   geoTrust: boolean;
   onPurchase?: (propertyId: string) => void;
   onRent?: (propertyId: string) => void;
+  onRequestVisit?: () => void;
   onContactAgent?: () => void;
   property?: { id?: string };
 }
@@ -69,6 +70,7 @@ export default function PropertySidebar({
   geoTrust,
   onPurchase,
   onRent,
+  onRequestVisit,
   onContactAgent,
   property,
 }: PropertySidebarProps) {
@@ -160,7 +162,7 @@ export default function PropertySidebar({
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            onClick={() => onContactAgent?.()}
+            onClick={() => onRequestVisit?.()}
             className="w-full py-3.5 bg-accent-yellow hover:bg-accent-yellow/90 text-primary-deep rounded-full font-bold text-sm shadow-lg transition-colors"
           >
             {t('propertyDetail.sidebar.requestVisit', 'Demander une visite')}

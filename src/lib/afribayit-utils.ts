@@ -105,6 +105,98 @@ export function getTransactionLabel(t: string): string {
   return labels[t] || t;
 }
 
+/**
+ * Libellés humains des équipements / atouts d'un bien (CDC §5.1).
+ *
+ * Les `features` sont stockées en base sous forme d'identifiants techniques
+ * en minuscules/snake_case (« wifi », « eau_chaude »…) — jamais affichables
+ * tels quels sur les fiches publiques. Cette map couvre les équipements
+ * connus du CDC + du formulaire de publication ; tout identifiant inconnu
+ * est humanisé proprement (snake_case → « Eau chaude ») au lieu d'être
+ * affiché brut.
+ */
+export const FEATURE_LABELS: Record<string, string> = {
+  // Connectivité & énergie
+  wifi: 'Wi-Fi',
+  internet: 'Internet fibre',
+  fibre: 'Fibre optique',
+  electricite: 'Électricité',
+  eau_courante: 'Eau courante',
+  eau_chaude: 'Eau chaude',
+  groupe_electrogene: 'Groupe électrogène',
+  panneau_solaire: 'Panneaux solaires',
+  borne_electrique: 'Borne de recharge',
+  // Confort thermique
+  climatisation: 'Climatisation',
+  ventilation: 'Ventilation',
+  cheminee: 'Cheminée',
+  // Stationnement & extérieur
+  parking: 'Parking',
+  garage: 'Garage',
+  parking_prive: 'Parking privé',
+  jardin: 'Jardin',
+  terrasse: 'Terrasse',
+  balcon: 'Balcon',
+  piscine: 'Piscine',
+  pool: 'Piscine',
+  cour: 'Cour',
+  // Cuisine & équipements
+  cuisine_equipee: 'Cuisine équipée',
+  cuisine: 'Cuisine',
+  buanderie: 'Buanderie',
+  // Sécurité
+  securite: 'Sécurité 24/7',
+  gardien: 'Gardien',
+  surveillance: 'Vidéosurveillance',
+  alarme: 'Alarme',
+  camera: 'Caméras',
+  portail_electrique: 'Portail électrique',
+  // Immeuble & divers
+  ascenseur: 'Ascenseur',
+  meuble: 'Meublé',
+  non_meuble: 'Non meublé',
+  equipe: 'Équipé',
+  nouvel_construction: 'Construction récente',
+  proche_ecole: 'Proche écoles',
+  proche_hopital: 'Proche hôpital',
+  proche_transport: 'Proche transports',
+  vue_mer: 'Vue mer',
+  vue_lagune: 'Vue lagune',
+  plage_privee: 'Accès plage privée',
+  plage: 'Accès plage',
+  animaux_acceptes: 'Animaux acceptés',
+  fumeur: 'Fumeur accepté',
+  // Anglais courant (données importées)
+  furnished: 'Meublé',
+  unfurnished: 'Non meublé',
+  air_conditioning: 'Climatisation',
+  hot_water: 'Eau chaude',
+  swimming_pool: 'Piscine',
+  security_system: 'Système de sécurité',
+  solar_panels: 'Panneaux solaires',
+};
+
+/**
+ * Formate un identifiant d'équipement en libellé affichable.
+ * @example formatFeatureLabel('eau_chaude')  // → « Eau chaude »
+ * @example formatFeatureLabel('wifi')        // → « Wi-Fi »
+ * @example formatFeatureLabel('truc_inconnu') // → « Truc inconnu »
+ */
+export function formatFeatureLabel(feature: string): string {
+  const known = FEATURE_LABELS[feature];
+  if (known) return known;
+
+  // Identifiant déjà affichable (lettre capitale, espace) → tel quel
+  if (/[\sA-Z]/.test(feature.slice(1))) return feature;
+
+  // Humanisation : snake_case → Capitalized words
+  return feature
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 // ============ DATE FORMATTING HELPERS ============
 
 export function formatDate(dateStr: string | Date | null | undefined): string {
