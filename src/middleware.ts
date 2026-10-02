@@ -387,7 +387,7 @@ async function authMiddleware(request: NextRequest): Promise<NextResponse> {
 // Main Middleware
 // ============================================================================
 
-export async function middleware(request: NextRequest) {
+async function middlewareInner(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   // --- Step 1: Subdomain/Country Detection ---
@@ -490,6 +490,52 @@ export async function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+// ============================================================================
+// Fault-Tolerant Wrapper
+// ============================================================================
+
+/**
+ * Point d'entrée du middleware — envelope à tolérance de pannes TOTALE.
+ *
+ * Contexte (retour client 02/10/2026) : erreur Vercel
+ * « 500 MIDDLEWARE_INVOCATION_FAILED — Routing Middleware for this page
+ * temporarily failed » sur /admin après connexion. Toute exception non
+ * interceptée qui remonte jusqu'au runtime Edge est affichée par Vercel
+ * comme une page d'erreur brute au lieu du site.
+ *
+ * Cette enveloppe garantit qu'AUCUNE exception ne peut s'échapper :
+ *   1. Le middleware interne s'exécute normalement.
+ *   2. En cas d'erreur (next-auth, import dynamique, Edge Runtime…), on
+ *      retombe sur le fallback local (redirection login / 401 API) —
+ *      dégradation propre et compréhensible pour l'utilisateur.
+ *   3. En dernier recours, si même le fallback échoue, on laisse passer
+ *      la requête (Next.js + gardes de route côté serveur reprennent la main).
+ */
+export async function middleware(request: NextRequest): Promise<NextResponse> {
+  try {
+    const response = await middlewareInner(request);
+    if (!response) {
+      // Défensive : ne jamais retourner undefined au runtime
+      return NextResponse.next();
+    }
+    return response;
+  } catch (error) {
+    console.error(
+      '[AfriBayit] Middleware inner error — falling back to safe routing:',
+      error instanceof Error ? `${error.message}\n${error.stack ?? ''}` : error
+    );
+    try {
+      return fallbackMiddleware(request);
+    } catch (fallbackError) {
+      console.error(
+        '[AfriBayit] Middleware fallback also failed — letting request through:',
+        fallbackError instanceof Error ? fallbackError.message : fallbackError
+      );
+      return NextResponse.next();
+    }
+  }
 }
 
 export const config = {

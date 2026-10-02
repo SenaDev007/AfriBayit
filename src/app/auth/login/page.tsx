@@ -19,10 +19,77 @@ const AuthPages = dynamic(() => import('@/components/afribayit/AuthPages'), {
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleSuccess = () => {
-    // Redirect to landing page after successful login
-    // (not /dashboard — users should land on the main page)
-    router.push('/');
+  /**
+   * Redirection après connexion réussie.
+   *
+   * Contexte (retour client du 02/10) : « après le login on retombe toujours
+   * sur le landing page » alors qu'on vient se connecter au back-office.
+   *
+   * Logique (la session est TOUJOURS consultée — le cookie est déjà posé
+   * par signIn(redirect:false), le fetch est immédiat) :
+   *   1. Utilisateur admin (admin/SUPER_ADMIN/COUNTRY_ADMIN) :
+   *      - callbackUrl de type /admin… → on l'honore (retour exact où il
+   *        allait, ex. /admin/users) ;
+   *      - sinon → directement /admin (le propriétaire DOIT arriver sur
+   *        son back-office, pas sur le landing page).
+   *   2. Utilisateur non-admin :
+   *      - callbackUrl de type /admin ou /api/admin → IGNORE (sinon boucle
+   *        login↔admin : le middleware le renverrait ici) → landing page ;
+   *      - autre callbackUrl relatif sûr (posé par le middleware pour les
+   *        routes protégées non-admin : /profile, /wallet…) → honoré ;
+   *      - sinon → landing page (comportement historique, CDC).
+   *
+   * Anti open-redirect : un callbackUrl n'est accepté que s'il commence
+   * par « / » sans « // » (protocole relatif) et n'est pas lui-même une
+   * page d'authentification.
+   */
+  const handleSuccess = async () => {
+    let target = '/';
+    let role: string | undefined;
+
+    try {
+      // Session fraîche → rôle (immédiat : cookie déjà posé par signIn)
+      const res = await fetch('/api/auth/session', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const session = await res.json();
+        role = (session?.user as { role?: string } | undefined)?.role;
+      }
+    } catch {
+      // Session illisible → comportement historique : landing page
+    }
+
+    const isAdmin =
+      role === 'admin' || role === 'SUPER_ADMIN' || role === 'COUNTRY_ADMIN';
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const callbackUrl = params.get('callbackUrl') || params.get('redirect') || '';
+      const isSafeRelative =
+        callbackUrl.startsWith('/') &&
+        !callbackUrl.startsWith('//') &&
+        !callbackUrl.startsWith('/auth/');
+      const isAdminPath =
+        callbackUrl.startsWith('/admin') || callbackUrl.startsWith('/api/admin');
+
+      if (isSafeRelative && isAdminPath && isAdmin) {
+        // Admin revenant d'une route admin → retour exact
+        target = callbackUrl;
+      } else if (isSafeRelative && !isAdminPath) {
+        // Route protégée classique (accessible à tout utilisateur connecté)
+        target = callbackUrl;
+      } else if (isAdmin) {
+        // Admin sans callbackUrl → son back-office
+        target = '/admin';
+      }
+    } catch {
+      // Dégradation silencieuse → défaut '/' (ou '/admin' si admin)
+      if (isAdmin) target = '/admin';
+    }
+
+    router.push(target);
   };
 
   const handleClose = () => {
