@@ -1770,3 +1770,29 @@ Stage Summary:
 - Chat temps réel opérationnel en production ; voix LiveKit prête (clés à coller dans Vercel : LIVEKIT_URL/API_KEY/API_SECRET)
 - Back-office enfin « bord de contrôle » réel (données + recherche + bascule pays + notifications)
 - Vercel redéploie après 1d11dc4 — vérifier /community et /admin en ligne
+
+---
+
+## 2026-10-02 — Drapeaux SVG inline + SW v2 auto-réparant + compte back-office propriétaire
+
+**Task ID 10 — commit b5340a9**
+
+### Problème 1 : drapeaux toujours invisibles/cassés sur desktop (Edge/Chrome/Brave), visibles sur mobile
+
+Diagnostic en profondeur :
+- Le build 1cdbe57 (SVG `<img src="/flags/x.svg">`) était **correct et déployé** : fichiers valides (200, image/svg+xml), HTML correct, CSP img-src 'self' OK, rendu parfait dans un Chromium desktop neuf.
+- ROOT CAUSE : **le service worker v1 servait les navigations HTML en cache-first avec des noms de caches inchangés entre déploiements**. sw.js étant identique octet par octet, aucun navigateur ne mettait jamais à jour son SW → les visiteurs récurrents desktop recevaient en boucle le HTML d'un ancien build (emojis invisibles sous Windows). Mobile = même HTML périmé mais les emojis de drapeaux y rendent → asymétrie mobile/desktop expliquée.
+
+Correctifs :
+1. **flag-art.ts** (généré par `scripts/gen-flag-art.py` depuis public/flags) : 16 drapeaux EMBEDDÉS dans le DOM via React.createElement. `CountryFlag` rend un `<svg viewBox>` inline — zéro requête réseau, zéro dépendance cache/SW/CDN, plus aucune image cassée possible. IDs internes préfixés `<iso>-` (collisions <use>/<clipPath> impossibles). public/flags/*.svg conservés comme repli des anciens HTML mis en cache.
+2. **sw.js v2** : caches `-v2` (octets différents → TOUS les clients récurrents mettent à jour au prochain passage, v1 purgé à l'activation) ; navigations en **network-first** (HTML toujours frais en ligne, cache = fallback hors-ligne) ; cache-first réservé aux immuables (/_next/static/, /flags/…) ; precache /manifest.webmanifest (l'ancien /manifest.json 404 silencieusement).
+3. **ServiceWorkerRegistration** : auto-rechargement unique sur controllerchange (garde anti-boucle + wasControlled).
+
+Validé E2E contre production (Chromium desktop) : reload 1 = HTML périmé servi une dernière fois + SW v2 installé ; reload 2/navigation = 0 <img>, 9 SVG inline, caches v2 uniquement. Capture : scripts/flags_prod_healed.png. Tests 298/298, tsc 0, build exit 0. Vérifié en ligne post-déploiement : svg inline 9/9, sw v2 servi.
+
+### Problème 2 : accès back-office pour s.akpovitohou@gmail.com
+
+- Le compte **n'existait pas** en base (aucun compte Gmail). Créé via `scripts/reset-owner-account.ts` (env-driven, sans secret dans le code) : rôle `admin` (accès back-office complet, aligné middleware/hasRequiredRole), Argon2id 64 Mo/3/4 identique à src/lib/auth.ts, 2FA off, email vérifié.
+- Login validé E2E contre production : CSRF → callback credentials → session (rôle admin) → /admin, /admin/dashboard, /admin/users tous HTTP 200 sans redirection login.
+- Identifiants transmis au propriétaire (fichier 0600 local). À changer après première connexion.
+- Rappel sécurité : rotation du mot de passe Neon (npg_VPlSR7Z9UiYD exposé dans l'historique git) toujours en attente côté humain.
