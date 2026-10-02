@@ -1796,3 +1796,21 @@ Validé E2E contre production (Chromium desktop) : reload 1 = HTML périmé serv
 - Login validé E2E contre production : CSRF → callback credentials → session (rôle admin) → /admin, /admin/dashboard, /admin/users tous HTTP 200 sans redirection login.
 - Identifiants transmis au propriétaire (fichier 0600 local). À changer après première connexion.
 - Rappel sécurité : rotation du mot de passe Neon (npg_VPlSR7Z9UiYD exposé dans l'historique git) toujours en attente côté humain.
+
+---
+
+## 2026-10-02 — Fix « bien non trouvé » + recherche publique accessible + recherche vocale NVIDIA (commit 40e40d78)
+
+**Task ID: 11** — deux demandes client : micro de recherche vocale (Hero) + bug critique des fiches biens.
+
+### Bugs réparés
+1. **« Bien non trouvé » sur toutes les fiches** : l'API `/api/properties/[id]` renvoie `{ data }` mais le front lisait `data?.property` → `undefined` → écran « Ce bien n'existe pas ou a été retiré » sur TOUS les biens (landing, acheter, louer, investir, search). Fix `useProperty` (adaptation d'enveloppe + 404 → UI notFound) ; `PropertyDetailResponse.property` optionnel.
+2. **`/search` inaccessible sans compte** (violation CDC) : `AdvancedFilterSidebar` requêtait `saved-searches` (protégé) au montage → 401 → redirection login de toute la page. Fix `enabled: isAuthenticated` (pattern NotaryModuleImpl).
+3. **`?q=` du Hero ignoré** : `EnhancedSearchResults` n'initialisait jamais `filters.query` depuis l'URL. Fix : transmission `q`+`voice`, tab implicite `all` si requête, bannière « Résultats de votre recherche vocale ».
+
+### Recherche vocale (NVIDIA)
+- **Web Speech API** native (Chrome/Edge/Brave, fr-FR, transcription en direct) + **fallback serveur** MediaRecorder → WAV 16 kHz mono → `/api/voice-search` → **NVIDIA NIM omni** (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`, API compatible OpenAI, `audio_url` base64).
+- Ancien fallback réparé au passage : il postait vers `/api/search/voice-search` (route inexistante) ; API publique de `VoiceSearchButton` conservée pour les consommateurs existants.
+- Hero : micro + ligne d'état informative + lancement auto `/search?q=…&voice=1`. Action propriétaire : ajouter `NVIDIA_API_KEY` (build.nvidia.com) dans Vercel pour le fallback Firefox/Safari (sinon dégradation propre).
+- QA : tsc 0, 298/298 tests, build 242/242, E2E local contre Neon (fiche bien, /search anonyme + bannière + micro, états vocaux informatifs).
+- Noté en passant : `NEXT_PUBLIC_API_URL` (Vercel) pointe encore vers le backend Railway mort → à supprimer dans les variables Vercel.
