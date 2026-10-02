@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import SafeModule from '@/components/safe/SafeModule';
 
@@ -17,16 +16,31 @@ const AuthPages = dynamic(() => import('@/components/afribayit/AuthPages'), {
 });
 
 export default function LoginPage() {
-  const router = useRouter();
-
   /**
    * Redirection après connexion réussie.
    *
-   * Contexte (retour client du 02/10) : « après le login on retombe toujours
-   * sur le landing page » alors qu'on vient se connecter au back-office.
+   * Contexte (retours client 02/10) : « après le login on retombe toujours
+   * sur le landing page » puis « on clique sur se connecter, rien ne se
+   * passe, on n'est pas dirigé vers le back-office ».
    *
-   * Logique (la session est TOUJOURS consultée — le cookie est déjà posé
-   * par signIn(redirect:false), le fetch est immédiat) :
+   * CAUSE RACINE (reproduite E2E en production le 02/10 soir) : le lien
+   * « Admin » du header est un <Link> Next.js avec prefetch par défaut.
+   * Tant que l'utilisateur n'est PAS connecté, ce prefetch de /admin est
+   * redirigé (307) par le middleware vers /auth/login — et le routeur
+   * client Next.js met en cache ce résultat redirigé SOUS la clé /admin.
+   * Après une connexion réussie, router.push('/admin') réutilise cette
+   * entrée de cache empoisonnée → il ré-applique la redirection → retour
+   * sur la page de login (URL identique) → « rien ne se passe ».
+   *
+   * CORRECTIF : navigation DURE (window.location.assign) au lieu du routeur
+   * client. Une requête document contourne totalement le cache de prefetch,
+   * part au serveur AVEC le cookie de session fraîchement posé, et le
+   * middleware autorise alors /admin. C'est aussi la bonne pratique après
+   * un changement d'état d'authentification : tout l'état client est
+   * réinitialisé proprement (stores, JWT localStorage, caches RSC).
+   *
+   * Logique de la cible (la session est TOUJOURS consultée — le cookie est
+   * déjà posé par signIn(redirect:false), le fetch est immédiat) :
    *   1. Utilisateur admin (admin/SUPER_ADMIN/COUNTRY_ADMIN) :
    *      - callbackUrl de type /admin… → on l'honore (retour exact où il
    *        allait, ex. /admin/users) ;
@@ -89,16 +103,20 @@ export default function LoginPage() {
       if (isAdmin) target = '/admin';
     }
 
-    router.push(target);
+    // Navigation DURE — voir le commentaire du composant : le cache de
+    // prefetch du routeur client peut contenir une entrée empoisonnée
+    // (redirection login) pour la route cible ; window.location.assign
+    // contourne ce cache et recharge l'application avec la session à jour.
+    window.location.assign(target);
   };
 
   const handleClose = () => {
-    router.push('/');
+    window.location.assign('/');
   };
 
   const handleSwitch = (mode: 'login' | 'register') => {
     if (mode === 'register') {
-      router.push('/auth/register');
+      window.location.assign('/auth/register');
     }
   };
 

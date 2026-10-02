@@ -254,8 +254,17 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             )}
 
             {/* Admin / Backoffice */}
+            {/* prefetch={false} — /admin est protégé par le middleware : tant
+                que le visiteur n'est pas connecté, tout prefetch de cette
+                route est redirigé (307) vers /auth/login et le routeur client
+                Next.js met en cache ce résultat sous la clé /admin. Après
+                connexion, une navigation douce vers /admin réutilisait cette
+                entrée empoisonnée → retour silencieux sur la page de login
+                (« rien ne se passe »). On désactive le prefetch de cette
+                route : zéro requête gâchée en redondance, zéro cache pollué. */}
             <Link
               href="/admin"
+              prefetch={false}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-bold text-primary-deep border border-primary-deep/20 hover:bg-primary-pale transition-colors"
             >
               <LayoutDashboard className="w-4 h-4 text-primary-green" />

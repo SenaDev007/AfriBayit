@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import SafeModule from '@/components/safe/SafeModule';
 
@@ -17,19 +16,23 @@ const AuthPages = dynamic(() => import('@/components/afribayit/AuthPages'), {
 });
 
 export default function RegisterPage() {
-  const router = useRouter();
-
+  // Navigation DURE après inscription (cf. login/page.tsx) : le routeur
+  // client Next.js peut avoir en cache un prefetch empoisonné (redirection
+  // vers /auth/login) pour la route cible — window.location.assign contourne
+  // ce cache et réinitialise tout l'état client avec la session fraîchement
+  // créée (stores, JWT localStorage, caches RSC). Bonne pratique après un
+  // changement d'état d'authentification.
   const handleSuccess = () => {
-    router.push('/dashboard');
+    window.location.assign('/dashboard');
   };
 
   const handleClose = () => {
-    router.push('/');
+    window.location.assign('/');
   };
 
   const handleSwitch = (mode: 'login' | 'register') => {
     if (mode === 'login') {
-      router.push('/auth/login');
+      window.location.assign('/auth/login');
     }
   };
 
