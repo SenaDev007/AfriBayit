@@ -1859,3 +1859,20 @@ Stage Summary:
 - Le bug racine authGuard (Bearer périmé > session valide) corrige AUSSI toutes les autres API protégées (wallet, escrow, KYC…) qui renvoyaient « session expirée » à tort
 - L'erreur MIDDLEWARE_INVOCATION_FAILED de 12:08 UTC datait d'avant le déploiement du middleware blindé (c803c11, ~12:15) ; le déploiement courant dpl_ER6FH7hU l'inclut — à re-surveiller
 - Reste connu : /investir sans biens (données, pas un bug) ; DroneView honnête mais sans vidéos (capture drone à organiser côté terrain)
+
+---
+Task ID: 14
+Agent: Super Z (main)
+Task: Retour client 06/10 — « lorsqu'on est totalement en haut des pages, en première section de page, le header devrait être transparent avec pour fond cette première section » : la barre blanche du header tranchait le hero sombre sur toutes les pages marketing.
+
+Work Log:
+- DIAGNOSTIC : le header actif est header-3.tsx (monté par AppShell — l'ancien afribayit/Navbar.tsx est du code mort, importé nulle part, laissé intact) ; il est sticky avec bg-white en haut de page tandis que les heroes commencent SOUS lui (pt-16/pt-24/pt-28 de compensation) → barre blanche qui coupait le hero.
+- IMPLÉMENTATION header (src/components/ui/header-3.tsx) : mode « overlay » — liste HERO_OVERLAY_ROUTES (14 routes + /blog et /blog/[slug]) et overlayMode = route à hero && scrollY ≤ 20 && menu mobile fermé ; en haut de page le header passe en bg-transparent avec textes blancs — logo navy inversé en blanc (brightness-0 invert + drop-shadow, même recette que l'ancien Navbar), liens blancs sur hover:bg-white/10, lien/groupe actif en or #D4AF37 (langage accent des heroes sombres), cloche + chevron profil + bouton hamburger blancs, pilule Admin texte blanc bord blanc/30, CTA Publier vert inchangé (lisible sur navy) ; au premier défilement il redevient opaque (bg-white/95 + blur + ombre, inchangé).
+- IMPLÉMENTATION pages (10 emplacements, 9 fichiers) : classe -mt-16 sur la première section sombre pour qu'elle glisse sous le header sticky z-50 — landing/Hero (accueil), TransactionPageShell (couvre /acheter /louer /investir /artisans /notary /geotrust /escrow en un seul point), about, our-work, blog, blog/[id], partnership, help, community (état de chargement dynamic inclus) ; padding interne conservé (pt-16 → 24 selon les pages) donc aucun contenu sous le header ; blog/partnership/help passés de py-20 à pt-24 pb-20 pour conserver l'aération sous le header.
+- Pages claires (/search, /academy, /sejours…) volontairement EXCLUES : texte blanc illisible sur fond clair — le header y reste blanc, comportement inchangé. Menu mobile : fond blanc forcé dès que le tiroir est ouvert (overlayMode désactivé) pour la lisibilité.
+- QA : tsc 0 erreur ; ESLint 0 nouvelle erreur (1 erreur préexistante react-hooks/set-state-in-effect dans le Hero voice-search, non touchée) ; 298/298 tests unitaires verts ; next build 242/242 pages exit 0 ; E2E navigateur sur next start local — vérifié DOM + analyse de pixels : /, /acheter, /about, /help, /community header rgba(0,0,0,0) avec hero commençant à y=1px (desktop 1440×900 ET mobile 390×844), après défilement header redevenu rgb(255,255,255) opaque, /search inchangé en blanc, zéro erreur console.
+
+Stage Summary:
+- Le hero sert désormais de fond au header au sommet de 16 pages (accueil, 7 pages transaction/services via le shell partagé, about, our-work, blog + articles, partnership, help, community) avec bascule automatique vers un header opaque et lisible dès le premier défilement
+- Recette documentée dans header-3.tsx (bloc HERO_OVERLAY_ROUTES) : pour étendre le comportement à une nouvelle page — première section sombre + classe -mt-16 + route dans la liste
+- Aucune régression : pages claires, menu mobile, menus déroulants (panneaux blancs inchangés) et seuil de déclenchement scrollY > 20 conservés
