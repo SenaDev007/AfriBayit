@@ -17,8 +17,8 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero — P6 */}
-      <section className="bg-primary-deep text-white py-20 relative overflow-hidden">
+      {/* Hero — P6 — -mt-16 : glisse sous le header transparent (header-3.tsx) */}
+      <section className="-mt-16 pt-24 pb-20 bg-primary-deep text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-grain opacity-[0.03]" />
         <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px]" />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

@@ -103,6 +103,41 @@ const NAV_GROUPS: { key: string; label: string; items: LinkItem[] }[] = [
   { key: 'entreprise', label: 'Entreprise', items: entrepriseLinks },
 ];
 
+// ─── Pages à hero sombre (header transparent au sommet) ──────────
+//
+// Sur ces pages, la première section est un hero sombre (image ou fond
+// navy) qui s'étend SOUS le header grâce à la classe `-mt-16` posée sur
+// cette section. Tant que la page est tout en haut (scrollY ≤ 20), le
+// header devient transparent : le hero lui sert de fond et ses textes
+// passent en blanc. Au premier défilement, il redevient opaque (fond
+// blanc, textes navy) pour rester lisible.
+//
+// Pour ajouter une page à ce comportement :
+//   1. sa première section doit avoir un fond sombre (hero image / navy) ;
+//   2. lui ajouter la classe `-mt-16` pour qu'elle glisse sous le header ;
+//   3. ajouter sa route ci-dessous.
+const HERO_OVERLAY_ROUTES = new Set([
+  '/',
+  '/acheter',
+  '/louer',
+  '/investir',
+  '/artisans',
+  '/notary',
+  '/geotrust',
+  '/escrow',
+  '/about',
+  '/our-work',
+  '/partnership',
+  '/help',
+  '/community',
+]);
+
+/** /blog et ses articles /blog/[slug] ont tous un hero sombre. */
+const isHeroOverlayRoute = (pathname: string) =>
+  HERO_OVERLAY_ROUTES.has(pathname) ||
+  pathname === '/blog' ||
+  pathname.startsWith('/blog/');
+
 // ─── Main Header Component ─────────────────────────────────────
 
 interface HeaderProps {
@@ -168,13 +203,21 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
   const visibleItems = (items: LinkItem[]) => items.filter((i) => !i.authOnly || isLoggedIn);
 
+  // Header transparent au sommet des pages à hero sombre (voir
+  // HERO_OVERLAY_ROUTES ci-dessus) : le hero s'étend sous le header et
+  // lui sert de fond. Désactivé dès qu'on défile (scrolled) ou quand le
+  // menu mobile est ouvert (fond blanc requis pour le tiroir).
+  const overlayMode = isHeroOverlayRoute(pathname) && !scrolled && !open;
+
   return (
     <header
       className={cn(
         'sticky top-0 left-0 right-0 z-50 w-full transition-colors duration-200',
-        scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-primary-pale'
-          : 'bg-white border-b border-transparent'
+        overlayMode
+          ? 'bg-transparent border-b border-transparent'
+          : scrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-primary-pale'
+            : 'bg-white border-b border-transparent'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -182,7 +225,16 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
 
           {/* Logo — agrandi, sans texte */}
           <Link href="/" className="flex items-center focus:outline-none shrink-0" aria-label="AfriBayit — Retour à l'accueil">
-            <img src="/logo.png" alt="AfriBayit" className="h-14 w-14 object-contain" />
+            <img
+              src="/logo.png"
+              alt="AfriBayit"
+              className={cn(
+                'h-14 w-14 object-contain transition-all duration-300',
+                // Sur hero sombre, le logo navy est inversé en blanc
+                // pour rester lisible sur le fond du hero.
+                overlayMode && 'brightness-0 invert drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]'
+              )}
+            />
           </Link>
 
           {/* Navigation centrale — menus déroulants simples (desktop) */}
@@ -191,7 +243,13 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
               href="/"
               className={cn(
                 'px-3 py-2 rounded-lg text-sm font-semibold transition-colors',
-                isHomeActive ? 'text-primary-green' : 'text-primary-deep hover:bg-primary-pale'
+                isHomeActive
+                  ? overlayMode
+                    ? 'text-accent-yellow'
+                    : 'text-primary-green'
+                  : overlayMode
+                    ? 'text-white hover:bg-white/10'
+                    : 'text-primary-deep hover:bg-primary-pale'
               )}
             >
               Accueil
@@ -214,7 +272,13 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                     aria-haspopup="true"
                     className={cn(
                       'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer',
-                      isActive ? 'text-primary-green' : 'text-primary-deep hover:bg-primary-pale'
+                      isActive
+                        ? overlayMode
+                          ? 'text-accent-yellow'
+                          : 'text-primary-green'
+                        : overlayMode
+                          ? 'text-white hover:bg-white/10'
+                          : 'text-primary-deep hover:bg-primary-pale'
                     )}
                   >
                     {group.label}
@@ -241,10 +305,13 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             {onOpenNotifications && (
               <button
                 onClick={onOpenNotifications}
-                className="relative p-2 rounded-xl hover:bg-primary-pale transition-colors cursor-pointer"
+                className={cn(
+                  'relative p-2 rounded-xl transition-colors cursor-pointer',
+                  overlayMode ? 'hover:bg-white/10' : 'hover:bg-primary-pale'
+                )}
                 aria-label="Notifications"
               >
-                <Bell className="w-5 h-5 text-primary-deep" />
+                <Bell className={cn('w-5 h-5', overlayMode ? 'text-white' : 'text-primary-deep')} />
                 {notificationCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-accent-yellow text-primary-deep text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                     {notificationCount > 9 ? '9+' : notificationCount}
@@ -265,7 +332,12 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             <Link
               href="/admin"
               prefetch={false}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-bold text-primary-deep border border-primary-deep/20 hover:bg-primary-pale transition-colors"
+              className={cn(
+                'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-bold border transition-colors',
+                overlayMode
+                  ? 'text-white border-white/30 hover:bg-white/10'
+                  : 'text-primary-deep border-primary-deep/20 hover:bg-primary-pale'
+              )}
             >
               <LayoutDashboard className="w-4 h-4 text-primary-green" />
               Admin
@@ -286,7 +358,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
             ) : !isLoggedIn ? (
               <a
                 href="/auth/login"
-                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-sans font-bold text-primary-deep hover:bg-primary-pale transition-colors"
+                className={cn(
+                  'inline-flex items-center px-4 py-2 rounded-full text-sm font-sans font-bold transition-colors',
+                  overlayMode ? 'text-white hover:bg-white/10' : 'text-primary-deep hover:bg-primary-pale'
+                )}
               >
                 Connexion
               </a>
@@ -310,7 +385,7 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
                       fallbackType="avatar"
                     />
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-primary-deep" />
+                  <ChevronDown className={cn('w-3.5 h-3.5', overlayMode ? 'text-white' : 'text-primary-deep')} />
                 </button>
                 {profileMenuOpen && (
                   <div className="absolute right-0 top-12 w-60 bg-white rounded-2xl shadow-xl border border-primary-pale overflow-hidden z-50">
@@ -349,7 +424,10 @@ export function Header({ onOpenNotifications, notificationCount = 0 }: HeaderPro
           {/* Bouton menu mobile */}
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden p-2 rounded-lg text-primary-deep hover:text-primary-green focus:outline-none"
+            className={cn(
+              'md:hidden p-2 rounded-lg focus:outline-none',
+              overlayMode ? 'text-white hover:text-white/80' : 'text-primary-deep hover:text-primary-green'
+            )}
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}

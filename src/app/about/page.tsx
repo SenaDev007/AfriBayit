@@ -37,8 +37,8 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden pt-16">
+      {/* Hero — -mt-16 : glisse sous le header transparent (header-3.tsx) */}
+      <section className="relative -mt-16 min-h-[50vh] flex items-center overflow-hidden pt-16">
         <div className="absolute inset-0">
           <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&h=900&fit=crop" alt="AfriBayit" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(0,48,135,0.92) 0%, rgba(0,48,135,0.78) 50%, rgba(0,156,222,0.65) 100%)' }} />

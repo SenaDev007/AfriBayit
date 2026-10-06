@@ -79,8 +79,8 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero image */}
-      <section className="relative h-[46vh] min-h-[320px] overflow-hidden bg-primary-deep">
+      {/* Hero image — -mt-16 : glisse sous le header transparent (header-3.tsx) */}
+      <section className="relative -mt-16 h-[46vh] min-h-[320px] overflow-hidden bg-primary-deep">
         <img
           src={article.image}
           alt={article.title}

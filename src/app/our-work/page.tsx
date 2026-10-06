@@ -181,8 +181,8 @@ export default function OurWorkPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero Section — P6 */}
-      <section className="pt-28 pb-20 bg-primary-deep relative overflow-hidden">
+      {/* Hero Section — P6 — -mt-16 : glisse sous le header transparent (header-3.tsx) */}
+      <section className="-mt-16 pt-28 pb-20 bg-primary-deep relative overflow-hidden">
         <div className="absolute inset-0 bg-grain opacity-[0.03]" />
         <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary-green/20 rounded-full blur-[100px]" />
         <div className="absolute bottom-10 -left-20 w-72 h-72 bg-accent-yellow/10 rounded-full blur-[100px]" />

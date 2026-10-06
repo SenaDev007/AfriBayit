@@ -60,9 +60,11 @@ export default function Hero() {
   };
 
   return (
+    // -mt-16 : le hero glisse sous le header, qui devient transparent
+    // au sommet de la page (voir HERO_OVERLAY_ROUTES dans header-3.tsx).
     <section
       id="hero"
-      className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-24 overflow-hidden bg-primary-deep text-white"
+      className="relative -mt-16 min-h-[90vh] flex items-center justify-center pt-24 pb-24 overflow-hidden bg-primary-deep text-white"
     >
       {/* 1. Image d'arrière-plan premium + voile dégradé navy */}
       <div className="absolute inset-0 z-0">

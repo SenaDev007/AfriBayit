@@ -59,7 +59,9 @@ interface HeroProps {
 
 function TransactionHero({ badge, title, subtitle, backgroundImage, stats, statsPending, ctaLabel, ctaHref }: HeroProps & { statsPending?: boolean }) {
   return (
-    <section className="relative flex items-center overflow-hidden pt-16 bg-grain" style={{ minHeight: '38vh' }}>
+    // -mt-16 : le hero glisse sous le header, qui devient transparent
+    // au sommet de la page (voir HERO_OVERLAY_ROUTES dans header-3.tsx).
+    <section className="relative -mt-16 flex items-center overflow-hidden pt-16 bg-grain" style={{ minHeight: '38vh' }}>
       {/* Background image — covers entire section */}
       <div className="absolute inset-0">
         <ImageWithFallback
